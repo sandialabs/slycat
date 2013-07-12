@@ -66,10 +66,14 @@ class apply_array_iterator(array_iterator):
         type, value = self.stack.pop(0)
         if type == "unary-operation":
           expr = self.evaluate()
-          if isinstance(value, ast.USub):
-            return -expr
+          if isinstance(value, ast.Invert):
+            return ~expr
           elif isinstance(value, ast.Not):
             return numpy.logical_not(expr)
+          elif isinstance(value, ast.UAdd):
+            return +expr
+          elif isinstance(value, ast.USub):
+            return -expr
           else:
             raise Exception("Unknown unary operator type: %s" % (value))
         elif type == "binary-operation":
