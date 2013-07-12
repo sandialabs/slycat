@@ -81,12 +81,16 @@ class apply_array_iterator(array_iterator):
             return lhs / rhs
           elif isinstance(value, ast.FloorDiv):
             return lhs // rhs
+          elif isinstance(value, ast.LShift):
+            return lhs << rhs
           elif isinstance(value, ast.Mod):
             return lhs % rhs
           elif isinstance(value, ast.Mult):
             return lhs * rhs
           elif isinstance(value, ast.Pow):
             return lhs ** rhs
+          elif isinstance(value, ast.RShift):
+            return lhs >> rhs
           elif isinstance(value, ast.Sub):
             return lhs - rhs
           else:
