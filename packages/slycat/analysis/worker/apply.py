@@ -2,6 +2,8 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+from __future__ import division
+
 import ast
 import numpy
 
@@ -75,16 +77,18 @@ class apply_array_iterator(array_iterator):
           rhs = self.evaluate()
           if isinstance(value, ast.Add):
             return lhs + rhs
-          elif isinstance(value, ast.Sub):
-            return lhs - rhs
-          elif isinstance(value, ast.Mult):
-            return lhs * rhs
           elif isinstance(value, ast.Div):
             return lhs / rhs
+          elif isinstance(value, ast.FloorDiv):
+            return lhs // rhs
           elif isinstance(value, ast.Mod):
             return lhs % rhs
+          elif isinstance(value, ast.Mult):
+            return lhs * rhs
           elif isinstance(value, ast.Pow):
             return lhs ** rhs
+          elif isinstance(value, ast.Sub):
+            return lhs - rhs
           else:
             raise Exception("Unknown binary operator type: %s" % (value))
         elif type == "name":
