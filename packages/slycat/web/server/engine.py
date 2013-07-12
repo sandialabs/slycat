@@ -31,18 +31,6 @@ class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
     #print "log file:", file.name, self.uid, self.gid, os.fstat(file.fileno())
     return file
 
-def custom_ssl_context(self):
-  """Return an SSL.Context from self attributes."""
-  cherrypy.log.error("Creating custom SSL context.")
-  # See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/442473
-  context = SSL.Context(SSL.SSLv23_METHOD)
-  context.use_privatekey_file(self.private_key)
-  if self.certificate_chain:
-    context.load_verify_locations(self.certificate_chain)
-  context.use_certificate_file(self.certificate)
-  context.set_cipher_list("CAMELLIA256-SHA:AES256-SHA:DES-CBC3-SHA:SEED-SHA:RC4-SHA:RC4-MD5:CAMELLIA128-SHA:AES128-SHA")
-  return context
-
 def start(config_file="config.ini"):
   configuration = {}
 
@@ -159,11 +147,13 @@ def start(config_file="config.ini"):
   log_configuration(configuration)
 
   # We want fine-grained control over PyOpenSSL here ...
-  cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-  cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
-  if "server.ssl_certificate_chain" in configuration["global"]:
-    cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
-  cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
-  cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
+  if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
+    cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
+    cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
+    cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
+    if "server.ssl_certificate_chain" in configuration["global"]:
+      cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
+    if "ssl-ciphers" in configuration["slycat"]:
+      cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 
   cherrypy.quickstart(None, "/", configuration)
