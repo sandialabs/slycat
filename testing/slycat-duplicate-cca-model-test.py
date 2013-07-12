@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import slycat.client
+import slycat.web.client
 import getpass
 import json
 import optparse
@@ -20,7 +20,7 @@ if len(arguments) != 1:
   raise Exception("You must specify exactly one model id to duplicate.")
 omid = arguments[0]
 
-connection = slycat.client.connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=not options.no_verify)
+connection = slycat.web.client.connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=not options.no_verify)
 
 original_model = connection.request("GET", "/models/%s" % omid, headers={"accept":"application/json"})
 pid = original_model["project"]

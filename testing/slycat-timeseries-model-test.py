@@ -3,10 +3,10 @@
 # rights in this software.
 
 import numpy
-import slycat.client
+import slycat.web.client
 import sys
 
-parser = slycat.client.option_parser()
+parser = slycat.web.client.option_parser()
 parser.add_option("--cluster-bin-count", type="int", default=500, help="Cluster bin count.  Default: %default")
 parser.add_option("--cluster-bin-type", default="naive", help="Cluster bin type.  Default: %default")
 parser.add_option("--cluster-type", default="average", help="Clustering type.  Default: %default")
@@ -23,7 +23,7 @@ options, arguments = parser.parse_args()
 
 numpy.random.seed(options.seed)
 
-connection = slycat.client.connect(options)
+connection = slycat.web.client.connect(options)
 
 pid = connection.create_project("Timeseries Serial Model Test")
 mwid = connection.create_timeseries_model_worker(pid, "Model", options.marking)

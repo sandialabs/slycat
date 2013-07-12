@@ -3,13 +3,13 @@
 # rights in this software.
 
 import cherrypy
-import slycat.server.worker.model
+import slycat.web.server.worker.model
 
-class implementation(slycat.server.worker.model.prototype):
+class implementation(slycat.web.server.worker.model.prototype):
   """Worker that computes a timeseries model, given an input table, a
   collection of timeseries, and a clustering type."""
   def __init__(self, security, pid, mid, name, marking, description):
-    slycat.server.worker.model.prototype.__init__(self, security, "Timeseries model", pid, mid, "timeseries", name, marking, description, incremental=True)
+    slycat.web.server.worker.model.prototype.__init__(self, security, "Timeseries model", pid, mid, "timeseries", name, marking, description, incremental=True)
 
   def compute_model(self):
     import math

@@ -3,13 +3,13 @@
 # rights in this software.
 
 import time
-import slycat.server.worker
+import slycat.web.server.worker
 
-class countdown(slycat.server.worker.prototype):
+class countdown(slycat.web.server.worker.prototype):
   """Worker that counts-down a given number of seconds before running a
   callback and exiting."""
   def __init__(self, security, name, seconds, callback, uri=None):
-    slycat.server.worker.prototype.__init__(self, security, name)
+    slycat.web.server.worker.prototype.__init__(self, security, name)
     self.seconds = seconds
     self.callback = callback
     self.uri = uri

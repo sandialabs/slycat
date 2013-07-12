@@ -2,11 +2,11 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 import math
-import slycat.client
+import slycat.web.client
 import StringIO
 import sys
 
-parser = slycat.client.option_parser()
+parser = slycat.web.client.option_parser()
 parser.add_option("--bundling", type="int", default=10, help="Maximum number of rows to bundle into a single request.  Default: %default")
 parser.add_option("--file", default="-", help="Input CSV file.  Use - for stdin.  Default: %default")
 parser.add_option("--input", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
@@ -62,7 +62,7 @@ for output in outputs:
   if column_types[output] != "double":
     raise Exception("Cannot analyze non-numeric output: %s" % output)
 
-connection = slycat.client.connect(options)
+connection = slycat.web.client.connect(options)
 
 pid = connection.find_or_create_project(options.project, options.project_name, options.project_description)
 mwid = connection.create_cca_model_worker(pid, options.model_name, options.marking, options.model_description)

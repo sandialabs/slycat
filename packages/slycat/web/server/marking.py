@@ -34,4 +34,4 @@ class basic(prototype):
     return self.allowed[type]["html"]
 
   def __repr__(self):
-    return "<slycat.server.marking.basic, allowed types: %s>" % (self.allowed.keys())
+    return "<slycat.web.server.marking.basic, allowed types: %s>" % (self.allowed.keys())

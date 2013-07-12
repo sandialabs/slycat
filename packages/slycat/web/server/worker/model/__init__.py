@@ -9,22 +9,22 @@ import json
 import multiprocessing
 import os
 import Queue
-import slycat.server.database.couchdb
-import slycat.server.database.scidb
-import slycat.server.spider
-import slycat.server.ssh
-import slycat.server.worker
+import slycat.web.server.database.couchdb
+import slycat.web.server.database.scidb
+import slycat.web.server.spider
+import slycat.web.server.ssh
+import slycat.web.server.worker
 import stat
 import struct
 import threading
 import time
 import uuid
 
-class prototype(slycat.server.worker.prototype):
+class prototype(slycat.web.server.worker.prototype):
   """Worker that computes and stores a model.  Derivatives must implement the
   compute_model() method."""
   def __init__(self, security, name, pid, mid, model_type, model_name, model_marking, model_description, incremental = False):
-    slycat.server.worker.prototype.__init__(self, security, name)
+    slycat.web.server.worker.prototype.__init__(self, security, name)
 
     self.mid = mid
     self.incremental = incremental
@@ -51,7 +51,7 @@ class prototype(slycat.server.worker.prototype):
       "artifact-types": self.artifact_types,
       "input-artifacts": list(self.input_artifacts)
       }
-    slycat.server.database.couchdb.connect().save(self.model)
+    slycat.web.server.database.couchdb.connect().save(self.model)
     self.model_lock = threading.Lock()
 
   def update_artifact(self, name, type, value, input):
@@ -66,7 +66,7 @@ class prototype(slycat.server.worker.prototype):
       self.model["artifact:%s" % name] = value
       self.model["artifact-types"] =  self.artifact_types
       self.model["input-artifacts"] = list(self.input_artifacts)
-      slycat.server.database.couchdb.connect().save(self.model)
+      slycat.web.server.database.couchdb.connect().save(self.model)
 
   def get_model_browse(self, arguments):
     try:
@@ -103,7 +103,7 @@ class prototype(slycat.server.worker.prototype):
       if self.ssh is not None:
         self.ssh.close()
         self.sftp = None
-      self.ssh = slycat.server.ssh.connect(arguments["hostname"], arguments["username"], arguments["password"])
+      self.ssh = slycat.web.server.ssh.connect(arguments["hostname"], arguments["username"], arguments["password"])
       self.sftp = self.ssh.open_sftp()
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
@@ -111,7 +111,7 @@ class prototype(slycat.server.worker.prototype):
   def post_model_copy_model_inputs(self, arguments):
     try:
       mid = arguments["mid"]
-      database = slycat.server.database.couchdb.connect()
+      database = slycat.web.server.database.couchdb.connect()
       original_model = database.get("model", mid)
       if original_model["project"] != self.model["project"]:
         raise cherrypy.HTTPError("400 Cannot duplicate a model from another project.")
@@ -130,7 +130,7 @@ class prototype(slycat.server.worker.prototype):
             raise Exception("Cannot copy unknown input artifact type %s." & original_type)
       self.model["artifact-types"] = self.artifact_types
       self.model["input-artifacts"] = list(self.artifact_types)
-      slycat.server.database.couchdb.connect().save(self.model)
+      slycat.web.server.database.couchdb.connect().save(self.model)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
@@ -149,7 +149,7 @@ class prototype(slycat.server.worker.prototype):
       nan_row_filtering = arguments.get("nan-row-filtering", False)
       self.set_message("Loading table %s." % name)
       content = file.file.read()
-      tables = [perspective for perspective in slycat.server.spider.extract(type="table", content=content, filename=file.filename, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
+      tables = [perspective for perspective in slycat.web.server.spider.extract(type="table", content=content, filename=file.filename, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % file.filename)
       table = tables[0]
@@ -171,7 +171,7 @@ class prototype(slycat.server.worker.prototype):
       if stat.S_ISDIR(self.sftp.stat(path).st_mode):
         raise cherrypy.HTTPError("400 Cannot load directory %s." % path)
       content = self.sftp.file(path).read()
-      tables = [perspective for perspective in slycat.server.spider.extract(type="table", content=content, filename=path, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
+      tables = [perspective for perspective in slycat.web.server.spider.extract(type="table", content=content, filename=path, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % path)
       table = tables[0]
@@ -248,8 +248,8 @@ class prototype(slycat.server.worker.prototype):
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
   def work(self):
-    self.couchdb = slycat.server.database.couchdb.connect()
-    self.scidb = slycat.server.database.scidb.connect()
+    self.couchdb = slycat.web.server.database.couchdb.connect()
+    self.scidb = slycat.web.server.database.scidb.connect()
 
     # Optionally, wait for clients to add input artifacts to the model ...
     if self.incremental:
@@ -345,8 +345,8 @@ class prototype(slycat.server.worker.prototype):
 class table_artifact:
   """Encapsulates all of the logic and state for incremental storage of a table to SciDB."""
   def __init__(self, column_names, column_types):
-    self.scidb = slycat.server.database.scidb.connect()
-    self.couchdb = slycat.server.database.couchdb.connect()
+    self.scidb = slycat.web.server.database.scidb.connect()
+    self.couchdb = slycat.web.server.database.couchdb.connect()
 
     self.column_types = column_types
     self.columns = "a" + uuid.uuid4().hex
@@ -416,8 +416,8 @@ class table_artifact:
 class timeseries_artifact:
   """Encapsulates all of the logic and state for incremental storage of a set of related timeseries to SciDB."""
   def __init__(self, column_names, column_types):
-    self.scidb = slycat.server.database.scidb.connect()
-    self.couchdb = slycat.server.database.couchdb.connect()
+    self.scidb = slycat.web.server.database.scidb.connect()
+    self.couchdb = slycat.web.server.database.couchdb.connect()
 
     self.column_types = column_types
     self.columns = "a" + uuid.uuid4().hex
@@ -476,8 +476,8 @@ class array_artifact:
   def __init__(self, attributes, dimensions):
     self.attributes = attributes
     self.dimensions = dimensions
-    self.scidb = slycat.server.database.scidb.connect()
-    self.couchdb = slycat.server.database.couchdb.connect()
+    self.scidb = slycat.web.server.database.scidb.connect()
+    self.couchdb = slycat.web.server.database.couchdb.connect()
 
     self.attribute_names_array = "a" + uuid.uuid4().hex
     self.scidb.execute("aql", "create array %s<name:string>[index=0:%s,100,0]" % (self.attribute_names_array, len(attributes)))

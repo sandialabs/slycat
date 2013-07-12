@@ -2,9 +2,9 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import slycat.server.database.couchdb
-import slycat.server.database.scidb
-import slycat.server.worker
+import slycat.web.server.database.couchdb
+import slycat.web.server.database.scidb
+import slycat.web.server.worker
 
 import cherrypy
 import json
@@ -13,10 +13,10 @@ import numpy
 import operator
 import Queue
 
-class prototype(slycat.server.worker.prototype):
+class prototype(slycat.web.server.worker.prototype):
   """Worker that provides interactive browsing of giant multidimensional arrays."""
   def __init__(self, security, name):
-    slycat.server.worker.prototype.__init__(self, security, name)
+    slycat.web.server.worker.prototype.__init__(self, security, name)
     self.request = Queue.Queue()
     self.response = Queue.Queue()
 
@@ -124,7 +124,7 @@ class artifact(prototype):
     self.artifact = model["artifact:%s" % artifact]
 
   def preload(self):
-    database = slycat.server.database.scidb.connect()
+    database = slycat.web.server.database.scidb.connect()
 
     attribute_names = self.artifact["attribute-names"]
     dimension_names = self.artifact["dimension-names"]

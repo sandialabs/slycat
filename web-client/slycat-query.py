@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import slycat.client
+import slycat.web.client
 import json
 import sys
 
@@ -22,10 +22,10 @@ print workers
 print workers <revision id>
 """
 
-parser = slycat.client.option_parser(usage)
+parser = slycat.web.client.option_parser(usage)
 options, tokens = parser.parse_args()
 
-connection = slycat.client.connect(options)
+connection = slycat.web.client.connect(options)
 
 def require_token():
   global tokens

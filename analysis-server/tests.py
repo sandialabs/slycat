@@ -9,10 +9,10 @@ import subprocess
 import time
 
 def setup():
-  subprocess.Popen(["python", "slycat-coordinator.py", "--nameserver-port", "9092", "--log-level", "info", "--local-workers", "0"])
+  subprocess.Popen(["python", "slycat-analysis-coordinator.py", "--nameserver-port", "9092", "--log-level", "info", "--local-workers", "0"])
   time.sleep(2.0)
   for i in range(4):
-    subprocess.Popen(["python", "slycat-worker.py", "--nameserver-port", "9092", "--log-level", "info"])
+    subprocess.Popen(["python", "slycat-analysis-worker.py", "--nameserver-port", "9092", "--log-level", "info"])
   time.sleep(2.0)
   log.setLevel(logging.WARNING)
   connect("127.0.0.1", 9092)

@@ -4,14 +4,14 @@
 
 import cherrypy
 import itertools
-import slycat.server.worker.model
+import slycat.web.server.worker.model
 import StringIO
 
-class implementation(slycat.server.worker.model.prototype):
+class implementation(slycat.web.server.worker.model.prototype):
   """Worker that computes a CCA model, given an input table, a set of input
   variable names, and a set of output variable names."""
   def __init__(self, security, pid, mid, name, marking, description):
-    slycat.server.worker.model.prototype.__init__(self, security, "CCA model", pid, mid, "cca3", name, marking, description, incremental=True)
+    slycat.web.server.worker.model.prototype.__init__(self, security, "CCA model", pid, mid, "cca3", name, marking, description, incremental=True)
 
   def compute_model(self):
     from vtk import vtkDenseArray, vtkArrayData

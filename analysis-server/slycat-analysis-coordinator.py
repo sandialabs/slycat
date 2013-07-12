@@ -48,7 +48,7 @@ nameserver_thread = nameserver()
 nameserver_thread.start()
 nameserver_thread.started.wait()
 
-workers = [subprocess.Popen(["python", "slycat-worker.py", "--nameserver-host", options.nameserver_host, "--nameserver-port", str(options.nameserver_port), "--hmac-key", options.hmac_key, "--host", "127.0.0.1"]) for i in range(options.local_workers)]
+workers = [subprocess.Popen(["python", "slycat-analysis-worker.py", "--nameserver-host", options.nameserver_host, "--nameserver-port", str(options.nameserver_port), "--hmac-key", options.hmac_key, "--host", "127.0.0.1"]) for i in range(options.local_workers)]
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(slycat.analysis.coordinator.factory(nameserver_thread.nameserver), "slycat.coordinator"))

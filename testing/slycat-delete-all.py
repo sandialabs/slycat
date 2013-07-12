@@ -2,14 +2,14 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import slycat.client
+import slycat.web.client
 import getpass
 import optparse
 
-parser = slycat.client.option_parser()
+parser = slycat.web.client.option_parser()
 options, arguments = parser.parse_args()
 
-connection = slycat.client.connect(options)
+connection = slycat.web.client.connect(options)
 
 for project in connection.get_projects():
   connection.delete_project(project["_id"])

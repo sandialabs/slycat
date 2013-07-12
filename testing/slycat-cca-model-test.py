@@ -3,10 +3,10 @@
 # rights in this software.
 
 import numpy
-import slycat.client
+import slycat.web.client
 import sys
 
-parser = slycat.client.option_parser()
+parser = slycat.web.client.option_parser()
 parser.add_option("--bundling", type="int", default=10, help="Maximum number of rows to bundle into a single request.  Default: %default")
 parser.add_option("--column-prefix", default="a", help="Column prefix.  Default: %default")
 parser.add_option("--input-count", type="int", default=3, help="Input column count.  Default: %default")
@@ -17,7 +17,7 @@ parser.add_option("--seed", type="int", default=12345, help="Random seed.  Defau
 parser.add_option("--unused-count", type="int", default=3, help="Unused column count.  Default: %default")
 options, arguments = parser.parse_args()
 
-connection = slycat.client.connect(options)
+connection = slycat.web.client.connect(options)
 
 numpy.random.seed(options.seed)
 

@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import slycat.client
+import slycat.web.client
 import getpass
 import json
 import optparse
@@ -15,10 +15,10 @@ def print_chunk(chunk):
       sys.stderr.write("{:<5}".format(field))
     sys.stderr.write("\n")
 
-parser = slycat.client.option_parser()
+parser = slycat.web.client.option_parser()
 options, arguments = parser.parse_args()
 
-connection = slycat.client.connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=not options.no_verify)
+connection = slycat.web.client.connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=not options.no_verify)
 
 wid = connection.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"table-chunker","row-count":100,"column-count":10,"generate-index":"Index"}))["id"]
 sys.stderr.write("%s\n" % connection.request("GET", "/workers/%s/table-chunker/metadata" % (wid)))

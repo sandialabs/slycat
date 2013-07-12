@@ -2,20 +2,20 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import slycat.server.database.couchdb
-import slycat.server.database.scidb
-import slycat.server.worker
+import slycat.web.server.database.couchdb
+import slycat.web.server.database.scidb
+import slycat.web.server.worker
 
 import cherrypy
 import json
 import random
 import Queue
 
-class prototype(slycat.server.worker.prototype):
+class prototype(slycat.web.server.worker.prototype):
   """Worker that serves up rectangular table "chunks", for interactive browsing
   of giant tables."""
   def __init__(self, security, name):
-    slycat.server.worker.prototype.__init__(self, security, name)
+    slycat.web.server.worker.prototype.__init__(self, security, name)
     self.request = Queue.Queue()
     self.response = Queue.Queue()
 
@@ -207,7 +207,7 @@ class file(prototype):
     self.generate_index = generate_index
 
   def preload(self):
-    database = slycat.server.database.couchdb.connect()
+    database = slycat.web.server.database.couchdb.connect()
     data = json.load(database.get_attachment(self.mid, self.fid))
 
     if isinstance(data, dict):
@@ -299,7 +299,7 @@ class artifact(prototype):
     self.generate_index = generate_index
 
   def preload(self):
-    database = slycat.server.database.scidb.connect()
+    database = slycat.web.server.database.scidb.connect()
 
     columns = self.artifact["columns"]
     column_names = self.artifact["column-names"]

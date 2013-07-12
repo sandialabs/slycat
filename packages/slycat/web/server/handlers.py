@@ -18,20 +18,20 @@ import pprint
 import Queue
 import subprocess
 import sys
-import slycat.server
-import slycat.server.authentication
-import slycat.server.database.couchdb
-import slycat.server.database.scidb
-import slycat.server.ssh
-import slycat.server.template
-import slycat.server.timer
-import slycat.server.worker
-import slycat.server.worker.model.cca3
-import slycat.server.worker.model.timeseries
-import slycat.server.worker.model.generic
-import slycat.server.worker.chunker.array
-import slycat.server.worker.chunker.table
-import slycat.server.worker.timer
+import slycat.web.server
+import slycat.web.server.authentication
+import slycat.web.server.database.couchdb
+import slycat.web.server.database.scidb
+import slycat.web.server.ssh
+import slycat.web.server.template
+import slycat.web.server.timer
+import slycat.web.server.worker
+import slycat.web.server.worker.model.cca3
+import slycat.web.server.worker.model.timeseries
+import slycat.web.server.worker.model.generic
+import slycat.web.server.worker.chunker.array
+import slycat.web.server.worker.chunker.table
+import slycat.web.server.worker.timer
 import threading
 import traceback
 import uuid
@@ -41,7 +41,7 @@ def get_context():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["security"] = cherrypy.request.security
-  context["is-server-administrator"] = slycat.server.authentication.is_server_administrator()
+  context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
 
   marking = cherrypy.request.app.config["slycat"]["marking"]
@@ -64,15 +64,15 @@ def get_projects():
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
-  database = slycat.server.database.couchdb.connect()
-  projects = [project for project in database.scan("slycat/projects") if slycat.server.authentication.is_project_reader(project) or slycat.server.authentication.is_project_writer(project) or slycat.server.authentication.is_project_administrator(project) or slycat.server.authentication.is_server_administrator()]
+  database = slycat.web.server.database.couchdb.connect()
+  projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
   projects = [project for project in projects if not is_deleted(project)]
   projects = sorted(projects, key = lambda x: x["created"], reverse=True)
 
   if accept == "text/html":
     context = get_context()
     context["projects"] = projects
-    return slycat.server.template.render("projects.html", context)
+    return slycat.web.server.template.render("projects.html", context)
 
   if accept == "application/json":
     return json.dumps(projects)
@@ -80,7 +80,7 @@ def get_projects():
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_projects():
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   pid, rev = database.save({
     "type" : "project",
     "acl" : {"administrators" : [{"user" : cherrypy.request.security["user"]}], "readers" : [], "writers" : []},
@@ -97,9 +97,9 @@ def get_project(pid):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
 
   models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
   models = sorted(models, key=lambda x: x["created"], reverse=True)
@@ -112,13 +112,13 @@ def get_project(pid):
     context = get_context()
     context.update(project)
     context["models"] = models
-    context["is-project-administrator"] = slycat.server.authentication.is_project_administrator(project)
+    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
     context["acl-json"] = json.dumps(project["acl"])
     context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
     context["remote-hosts"] = [{"name" : host} for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
     context["new-model-name"] = "Model-%s" % (len(models) + 1)
 
-    return slycat.server.template.render("project.html", context)
+    return slycat.web.server.template.render("project.html", context)
 
   if accept == "application/json":
     return json.dumps(project)
@@ -126,13 +126,13 @@ def get_project(pid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def put_project(pid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.server.authentication.require_project_writer(project)
+  slycat.web.server.authentication.require_project_writer(project)
 
   mutations = []
   if "acl" in cherrypy.request.json:
-    slycat.server.authentication.require_project_administrator(project)
+    slycat.web.server.authentication.require_project_administrator(project)
     if "administrators" not in cherrypy.request.json["acl"]:
       raise cherrypy.HTTPError("400 missing administrators")
     if "writers" not in cherrypy.request.json["acl"]:
@@ -154,8 +154,8 @@ def cleanup_array_worker():
   while True:
     cleanup_array_queue.get()
     cherrypy.log.error("Array cleanup started.")
-    couchdb = slycat.server.database.couchdb.connect()
-    scidb = slycat.server.database.scidb.connect()
+    couchdb = slycat.web.server.database.couchdb.connect()
+    scidb = slycat.web.server.database.scidb.connect()
     for array in couchdb.view("slycat/array-counts", group=True):
       if array.value == 0:
         scidb.execute("aql", "drop array %s" % array.key, ignore_errors=True)
@@ -169,9 +169,9 @@ def cleanup_arrays():
   cleanup_array_queue.put("cleanup")
 
 def delete_project(pid):
-  couchdb = slycat.server.database.couchdb.connect()
+  couchdb = slycat.web.server.database.couchdb.connect()
   project = couchdb.get("project", pid)
-  slycat.server.authentication.require_project_administrator(project)
+  slycat.web.server.authentication.require_project_administrator(project)
 
   for bookmark in couchdb.scan("slycat/project-bookmarks", startkey=pid, endkey=pid):
     couchdb.delete(bookmark)
@@ -183,19 +183,19 @@ def delete_project(pid):
   cherrypy.response.status = "204 Project deleted."
 
 def get_project_design(pid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
   context = get_context()
   context.update(project)
   context["project-design"] = json.dumps(project, indent=2, sort_keys=True)
-  return slycat.server.template.render("project-design.html", context)
+  return slycat.web.server.template.render("project-design.html", context)
 
 @cherrypy.tools.json_out(on = True)
 def get_project_models(pid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
 
   models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
   models = sorted(models, key=lambda x: x["created"], reverse=True)
@@ -204,9 +204,9 @@ def get_project_models(pid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_project_models(pid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.server.authentication.require_project_writer(project)
+  slycat.web.server.authentication.require_project_writer(project)
 
   for key in ["model-type", "marking", "name"]:
     if key not in cherrypy.request.json:
@@ -221,11 +221,11 @@ def post_project_models(pid):
   mid = uuid.uuid4().hex
 
   if model_type == "generic":
-    wid = pool.start_worker(slycat.server.worker.model.generic.implementation(cherrypy.request.security, pid, mid, name, marking, description))
+    wid = pool.start_worker(slycat.web.server.worker.model.generic.implementation(cherrypy.request.security, pid, mid, name, marking, description))
   elif model_type == "cca3":
-    wid = pool.start_worker(slycat.server.worker.model.cca3.implementation(cherrypy.request.security, pid, mid, name, marking, description))
+    wid = pool.start_worker(slycat.web.server.worker.model.cca3.implementation(cherrypy.request.security, pid, mid, name, marking, description))
   elif model_type == "timeseries":
-    wid = pool.start_worker(slycat.server.worker.model.timeseries.implementation(cherrypy.request.security, pid, mid, name, marking, description))
+    wid = pool.start_worker(slycat.web.server.worker.model.timeseries.implementation(cherrypy.request.security, pid, mid, name, marking, description))
   else:
     raise cherrypy.HTTPError("400 Unknown model type: %s" % cherrypy.request.json["model-type"])
 
@@ -235,9 +235,9 @@ def post_project_models(pid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_project_bookmarks(pid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.server.authentication.require_project_reader(project) # This is intentionally out-of-the-ordinary - we explicitly allow project *readers* to store bookmarks.
+  slycat.web.server.authentication.require_project_reader(project) # This is intentionally out-of-the-ordinary - we explicitly allow project *readers* to store bookmarks.
 
   content = json.dumps(cherrypy.request.json, separators=(",",":"), indent=None, sort_keys=True)
   bid = hashlib.md5(pid + content).hexdigest()
@@ -258,10 +258,10 @@ def post_project_bookmarks(pid):
   return {"id" : bid}
 
 def get_model(mid, **kwargs):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
 
   accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
   cherrypy.response.headers["content-type"] = accept
@@ -274,7 +274,7 @@ def get_model(mid, **kwargs):
     context = get_context()
     context["full-project"] = project
     context.update(model)
-    context["is-project-administrator"] = slycat.server.authentication.is_project_administrator(project)
+    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
     context["new-model-name"] = "Model-%s" % (model_count + 1)
 
     marking = cherrypy.request.app.config["slycat"]["marking"]
@@ -284,7 +284,7 @@ def get_model(mid, **kwargs):
       context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
       context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
       context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
-      return slycat.server.template.render("model-timeseries.html", context)
+      return slycat.web.server.template.render("model-timeseries.html", context)
 
     if "model-type" in model and model["model-type"] == "cca3":
       context["input-columns"] = model["artifact:input-columns"] if "artifact:input-columns" in model else "null"
@@ -297,17 +297,17 @@ def get_model(mid, **kwargs):
       context["x-structure-correlation"] = database.get_attachment(model, model["artifact:x-structure-correlation"]).read() if "artifact:x-structure-correlation" in model else "null"
       context["y-canonical-variables"] = database.get_attachment(model, model["artifact:y-canonical-variables"]).read() if "artifact:y-canonical-variables" in model else "null"
       context["y-structure-correlation"] = database.get_attachment(model, model["artifact:y-structure-correlation"]).read() if "artifact:y-structure-correlation" in model else "null"
-      return slycat.server.template.render("model-cca3.html", context)
+      return slycat.web.server.template.render("model-cca3.html", context)
 
-    return slycat.server.template.render("model-generic.html", context)
+    return slycat.web.server.template.render("model-generic.html", context)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def put_model(mid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
-  slycat.server.authentication.require_project_writer(project)
+  slycat.web.server.authentication.require_project_writer(project)
 
   if "name" in cherrypy.request.json:
     model["name"] = cherrypy.request.json["name"]
@@ -318,22 +318,22 @@ def put_model(mid):
   database.save(model)
 
 def delete_model(mid):
-  couchdb = slycat.server.database.couchdb.connect()
+  couchdb = slycat.web.server.database.couchdb.connect()
   model = couchdb.get("model", mid)
   project = couchdb.get("project", model["project"])
-  slycat.server.authentication.require_project_writer(project)
+  slycat.web.server.authentication.require_project_writer(project)
 
-  scidb = slycat.server.database.scidb.connect()
+  scidb = slycat.web.server.database.scidb.connect()
   couchdb.delete(model)
   cleanup_arrays()
 
   cherrypy.response.status = "204 Model deleted."
 
 def get_model_design(mid):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
   context = get_context()
   context["full-project"] = project
   context.update(model)
@@ -342,13 +342,13 @@ def get_model_design(mid):
   marking = cherrypy.request.app.config["slycat"]["marking"]
   context["marking-html"] = marking.html(model["marking"])
 
-  return slycat.server.template.render("model-design.html", context)
+  return slycat.web.server.template.render("model-design.html", context)
 
 def get_model_file(mid, name):
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
 
   key = "artifact:%s" % name
   if key not in model:
@@ -358,15 +358,15 @@ def get_model_file(mid, name):
   cherrypy.response.headers["content-type"] = model["_attachments"][fid]["content_type"]
   return database.get_attachment(mid, fid)
 
-pool = slycat.server.worker.pool
+pool = slycat.web.server.worker.pool
 
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
 
-  database = slycat.server.database.couchdb.connect()
+  database = slycat.web.server.database.couchdb.connect()
   bookmark = database.get("bookmark", bid)
   project = database.get("project", bookmark["project"])
-  slycat.server.authentication.require_project_reader(project)
+  slycat.web.server.authentication.require_project_reader(project)
 
   cherrypy.response.headers["content-type"] = accept
   return database.get_attachment(bookmark, "bookmark")
@@ -377,7 +377,7 @@ def get_user(uid):
   if user is None:
     raise cherrypy.HTTPError(404)
   # Only project administrators can get user details ...
-  if slycat.server.authentication.is_server_administrator():
+  if slycat.web.server.authentication.is_server_administrator():
     user["server-administrator"] = uid in cherrypy.request.app.config["slycat"]["server-admins"]
   return user
 
@@ -392,7 +392,7 @@ def get_workers(revision=None):
     return
   else:
     revision, workers = result
-    workers = [worker.status for worker in workers if slycat.server.authentication.is_server_administrator() or slycat.server.authentication.is_worker_creator(worker)]
+    workers = [worker.status for worker in workers if slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_worker_creator(worker)]
     return {"revision" : revision, "workers" : workers}
 
 def countdown_callback():
@@ -412,48 +412,48 @@ def post_workers():
     if "mid" in cherrypy.request.json and "artifact" in cherrypy.request.json:
       mid = cherrypy.request.json["mid"]
       artifact = cherrypy.request.json["artifact"]
-      database = slycat.server.database.couchdb.connect()
+      database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
       project = database.get("project", model["project"])
-      slycat.server.authentication.require_project_reader(project)
+      slycat.web.server.authentication.require_project_reader(project)
       if artifact not in model["artifact-types"]:
         raise cherrypy.HTTPError("400 Artifact %s not in model." % artifact)
       if model["artifact-types"][artifact] != "table":
         raise cherrypy.HTTPError("400 Artifact %s is not a table." % artifact)
-      wid = pool.start_worker(slycat.server.worker.chunker.table.artifact(cherrypy.request.security, model, artifact, generate_index))
+      wid = pool.start_worker(slycat.web.server.worker.chunker.table.artifact(cherrypy.request.security, model, artifact, generate_index))
     elif "mid" in cherrypy.request.json and "fid" in cherrypy.request.json:
       mid = cherrypy.request.json["mid"]
       fid = cherrypy.request.json["fid"]
-      database = slycat.server.database.couchdb.connect()
+      database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
       project = database.get("project", model["project"])
-      slycat.server.authentication.require_project_reader(project)
-      wid = pool.start_worker(slycat.server.worker.chunker.table.file(cherrypy.request.security, mid, fid, generate_index))
+      slycat.web.server.authentication.require_project_reader(project)
+      wid = pool.start_worker(slycat.web.server.worker.chunker.table.file(cherrypy.request.security, mid, fid, generate_index))
     elif "row-count" in cherrypy.request.json and "column-count" in cherrypy.request.json:
-      wid = pool.start_worker(slycat.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], cherrypy.request.json["column-count"], generate_index))
+      wid = pool.start_worker(slycat.web.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], cherrypy.request.json["column-count"], generate_index))
     else:
       raise cherrypy.HTTPError("400 Table chunker data source not specified.")
   elif cherrypy.request.json["type"] == "array-chunker":
     if "mid" in cherrypy.request.json and "artifact" in cherrypy.request.json:
       mid = cherrypy.request.json["mid"]
       artifact = cherrypy.request.json["artifact"]
-      database = slycat.server.database.couchdb.connect()
+      database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
       project = database.get("project", model["project"])
-      slycat.server.authentication.require_project_reader(project)
+      slycat.web.server.authentication.require_project_reader(project)
       if artifact not in model["artifact-types"]:
         raise cherrypy.HTTPError("400 Artifact %s not in model." % artifact)
       if model["artifact-types"][artifact] != "array":
         raise cherrypy.HTTPError("400 Artifact %s is not an array." % artifact)
-      wid = pool.start_worker(slycat.server.worker.chunker.array.artifact(cherrypy.request.security, model, artifact))
+      wid = pool.start_worker(slycat.web.server.worker.chunker.array.artifact(cherrypy.request.security, model, artifact))
     elif "shape" in cherrypy.request.json:
-      wid = pool.start_worker(slycat.server.worker.chunker.array.test(cherrypy.request.security, cherrypy.request.json["shape"]))
+      wid = pool.start_worker(slycat.web.server.worker.chunker.array.test(cherrypy.request.security, cherrypy.request.json["shape"]))
     else:
       raise cherrypy.HTTPError("400 Array chunker data source not specified.")
   elif cherrypy.request.json["type"] == "timeout":
-    wid = pool.start_worker(slycat.server.worker.timer.countdown(cherrypy.request.security, "30-second countdown", 30, countdown_callback, cherrypy.request.app.config["slycat"]["server-root"]))
+    wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "30-second countdown", 30, countdown_callback, cherrypy.request.app.config["slycat"]["server-root"]))
   elif cherrypy.request.json["type"] == "startup-failure":
-    wid = pool.start_worker(slycat.server.worker.timer.countdown(cherrypy.request.security, "Startup failure", 0, failure_callback))
+    wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "Startup failure", 0, failure_callback))
   else:
     raise cherrypy.HTTPError("400 Unknown worker type: %s" % cherrypy.request.json["type"])
 
@@ -465,14 +465,14 @@ def get_worker(wid):
   worker = pool.worker(wid)
   if worker is None:
     raise cherrypy.HTTPError(404)
-  slycat.server.authentication.require_worker_creator(worker)
+  slycat.web.server.authentication.require_worker_creator(worker)
 
   accept = cherrypy.lib.cptools.accept(media=["text/html", "application/json"])
 
   if accept == "text/html":
     context = get_context()
     context["wid"] = wid
-    return slycat.server.template.render("worker.html", context)
+    return slycat.web.server.template.render("worker.html", context)
 
   if accept == "application/json":
     cherrypy.response.headers["content-type"] = accept
@@ -483,7 +483,7 @@ def put_worker(wid):
   worker = pool.worker(wid)
   if worker is None:
     raise cherrypy.HTTPError(404)
-  slycat.server.authentication.require_worker_creator(worker)
+  slycat.web.server.authentication.require_worker_creator(worker)
 
   if "result" in cherrypy.request.json and cherrypy.request.json["result"] == "stopped":
     if worker.status["result"] is None:
@@ -500,7 +500,7 @@ def get_worker_endpoint(name):
     worker = pool.worker(wid)
     if worker is None:
       raise cherrypy.HTTPError(404)
-    slycat.server.authentication.require_worker_creator(worker)
+    slycat.web.server.authentication.require_worker_creator(worker)
 
     if not worker.is_alive():
       raise cherrypy.HTTPError("400 Model not running.")
@@ -522,7 +522,7 @@ def put_worker_endpoint(name):
     worker = pool.worker(wid)
     if worker is None:
       raise cherrypy.HTTPError(404)
-    slycat.server.authentication.require_worker_creator(worker)
+    slycat.web.server.authentication.require_worker_creator(worker)
 
     if not worker.is_alive():
       raise cherrypy.HTTPError("400 Model not running.")
@@ -544,7 +544,7 @@ def post_worker_endpoint(name):
     worker = pool.worker(wid)
     if worker is None:
       raise cherrypy.HTTPError(404)
-    slycat.server.authentication.require_worker_creator(worker)
+    slycat.web.server.authentication.require_worker_creator(worker)
 
     if not worker.is_alive():
       raise cherrypy.HTTPError("400 Model not running.")
@@ -567,7 +567,7 @@ def delete_worker(wid):
   worker = pool.worker(wid)
   if worker is None:
     raise cherrypy.HTTPError(404)
-  slycat.server.authentication.require_worker_creator(worker)
+  slycat.web.server.authentication.require_worker_creator(worker)
 
   pool.delete(wid)
   cherrypy.response.status = "204 Worker deleted."
@@ -581,7 +581,7 @@ def get_test():
 
   if accept == "text/html":
     context = get_context()
-    return slycat.server.template.render("test.html", context)
+    return slycat.web.server.template.render("test.html", context)
 
 def get_test_exception(code):
   def implementation():
