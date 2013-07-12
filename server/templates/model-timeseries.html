@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+{{> head}}
+    <title>{{name}} - Slycat XYCE Time Series Model</title>
+    <script type="text/javascript" src="{{server-root}}js/jquery-layout.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.ba-bbq.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/sort-table.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/d3.v2.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
+
+    <!-- SlickGrid sources -->
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/table-timeseries-simulation.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.timeseriesloader.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
+
+    <link rel="stylesheet" href="{{server-root}}style/model-xyce-time-series.css" type="text/css">
+
+    <!-- SlickGrid styles -->
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
+  </head>
+
+  <body>
+    <div class="ui-layout-north">
+{{> header}}
+      <div id="page-title">
+        <div class="width-wrapper">
+          <div class="marking">{{{marking-html}}}</div>
+          <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
+          <button id="rerun-timeseries-button" title="Rerun this model using different parameters.">Rerun Model</button>
+          <div id="breadcrumbs">
+            <a href="{{server-root}}projects">Projects</a> &rarr;
+            {{#full-project}}<a href="{{server-root}}projects/{{_id}}" id="project-link">{{name}}</a> &rarr;{{/full-project}}
+          </div>
+          <h2>{{name}}</h2>
+          <div id="model-desc">{{description}}</div>
+          <div id="edit-model">
+            <div id="edit-model-form" class="dialog" title="Edit Model">
+              <button id="delete-model-link">Delete Model</button>
+              <label for="new-model-name">Model Name</label>
+              <input id="new-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
+              <label for="new-model-description">Description</label>
+              <textarea id="new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+            </div>
+          </div>
+
+          <!-- Rerun Timeseries user interface -->
+          <div id="rerun-timeseries-form" class="dialog" title="Rerun Timeseries Model">
+            <div id="rerun-timeseries-basics">
+              <label for="rerun-timeseries-name">Model Name</label>
+              <input id="rerun-timeseries-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
+              <label for="rerun-timeseries-description">Description</label>
+              <textarea id="rerun-timeseries-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
+            </div>
+
+            <div id="rerun-timeseries-parameters">
+              <p>
+                <label for="rerun-timeseries-cluster-type">Cluster Type</label>
+                <select id="rerun-timeseries-cluster-type">
+                  <option value="complete">Complete</option>
+                  <option value="single">Single</option>
+                  <option value="average">Average</option>
+                  <option value="weighted">Weighted</option>
+                </select>
+              </p>
+              <p>
+                <label for="rerun-timeseries-cluster-bin-count">Bin Count</label>
+                <input id="rerun-timeseries-cluster-bin-count"></input>
+              </p>
+              <p>
+                <label for="rerun-timeseries-cluster-bin-type">Binning Type</label>
+                <select id="rerun-timeseries-cluster-bin-type">
+                  <option value="naive">Naive</option>
+                </select>
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="content-pane" class="ui-layout-center">
+      <div id="cluster-pane" class="ui-layout-north">
+        <table id="cluster-viewer">
+        </table>
+      </div>
+      <div id="model-pane" class="ui-layout-center">
+        <div id="dendrogram-pane" class="ui-layout-west">
+          <svg id="dendrogram-viewer" width="100%" height="100%">
+            <defs>
+              <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#7767b0" stop-opacity="1" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div id="waveform-pane" class="ui-layout-center">
+          <svg id="waveform-viewer" width="100%" height="100%">
+          </svg>
+        </div>
+      </div>
+      <div id="data-pane" class="ui-layout-south" style="overflow: auto">
+      </div>
+    </div>
+
+    <div id="footer" class="ui-layout-south">
+      <div class="width-wrapper">
+        <ul id="footer-links">
+          {{#is-project-administrator}}
+          <li class="admin">
+            <a href="{{server-root}}models/{{_id}}/design">Design View</a>
+          </li>
+          {{/is-project-administrator}}
+        </ul>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        // Setup the edit-model dialog ...
+        $("#edit-model-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 300,
+          modal: true,
+          buttons:
+          {
+            "Save Changes": function()
+            {
+              var modified_model = {};
+              modified_model.name = $("#new-model-name").val();
+              modified_model.description = $("#new-model-description").val();
+
+              $.ajax(
+              {
+                type : "PUT",
+                url : "{{server-root}}models/{{_id}}",
+                contentType : "application/json",
+                data : $.toJSON(modified_model),
+                processData : false,
+                success : function()
+                {
+                  window.location.reload();
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error updating model: " + reason_phrase);
+                }
+              });
+            },
+            Cancel: function()
+            {
+              $(this).dialog("close");
+            }
+          },
+          close: function()
+          {
+          }
+        });
+
+        $("#delete-model-link").click(function(){
+          if(!window.confirm("Delete model {{name}}? This cannot be undone."))
+            return false;
+
+          $.ajax(
+          {
+            type : "DELETE",
+            url : "{{server-root}}models/{{_id}}",
+            success : function(details)
+            {
+              window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error deleting model: " + reason_phrase);
+            }
+          });
+        });
+
+        $("#edit-model-button").button().click(function()
+        {
+          $("#edit-model-form").dialog("open");
+          $("#new-model-name").focus();
+        });
+
+        // Setup the Rerun Model form ...
+        rerun_timeseries_worker = null;
+        $("#rerun-timeseries-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 700,
+          modal: true,
+          open : function()
+          {
+            $("#rerun-timeseries-basics").css("display", "block");
+            $("#rerun-timeseries-parameters").css("display", "none");
+            $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
+            $(".ui-dialog-buttonpane button:contains('Next')").button("enable");
+            $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
+          },
+          close : function()
+          {
+            if(rerun_timeseries_worker)
+            {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}workers/" + rerun_timeseries_worker,
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error closing local worker: " + reason_phrase);
+                }
+              });
+              rerun_timeseries_worker = null;
+            }
+          },
+          buttons : 
+          {
+            "Previous" : function(){
+              $("#rerun-timeseries-basics").css("display", "block");
+              $("#rerun-timeseries-parameters").css("display", "none");
+              $(".ui-dialog-buttonpane button:contains('Next')").button("enable");
+              $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
+              $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
+            },
+            "Next" : function(){
+              $(".ui-dialog-buttonpane button:contains('Next')").button("disable");
+              $(".ui-dialog-buttonpane button:contains('Run')").button("enable");
+              $(".ui-dialog-buttonpane button:contains('Previous')").button("enable");
+              $("#rerun-timeseries-cluster-type").val("{{cluster-type}}");
+              $("#rerun-timeseries-cluster-bin-type").val("{{cluster-bin-type}}");
+              $("#rerun-timeseries-cluster-bin-count").val({{cluster-bin-count}});
+
+              $.ajax(
+              {
+                type : "POST",
+                url : "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}/models",
+                contentType : "application/json",
+                data: $.toJSON(
+                {
+                  "model-type" : "timeseries",
+                  "name" : $("#rerun-timeseries-name").val(),
+                  "marking" : "{{marking}}",
+                  "description" : $("#rerun-timeseries-description").val()
+                }),
+                processData: false,
+                success: function(result)
+                {
+                  rerun_timeseries_worker = result["wid"];
+                  $.ajax(
+                  {
+                    type : "POST",
+                    url : "{{server-root}}workers/" + rerun_timeseries_worker + "/model/copy-model-inputs",
+                    contentType : "application/json",
+                    data: $.toJSON(
+                    {
+                      "mid" : "{{_id}}"
+                    }),
+                    processData: false,
+                    success: function(result)
+                    {
+                      $("#rerun-timeseries-basics").css("display", "none");
+                      $("#rerun-timeseries-parameters").css("display", "block");
+                    },
+                    error: function(request, status, reason_phrase)
+                    {
+                      window.alert("Error copying model: " + reason_phrase);
+                    }
+                  });
+                },
+                error: function(request, status, reason_phrase)
+                {
+                  window.alert("Error creating model: " + reason_phrase);
+                }
+              });
+            },
+            "Run" : function(){
+              function set_parameter(name, value)
+              {
+                $.ajax(
+                {
+                  async : false,
+                  type : "POST",
+                  url : "{{server-root}}workers/" + rerun_timeseries_worker + "/model/set-parameter",
+                  contentType : "application/json",
+                  data: $.toJSON(
+                  {
+                    name : name,
+                    value : value
+                  }),
+                  processData : false,
+                  error: function(request, status, reason_phrase)
+                  {
+                    window.alert("Error setting model parameter: " + reason_phrase);
+                  }
+                });
+              }
+
+              set_parameter("cluster-type", $("#rerun-timeseries-cluster-type").val());
+              set_parameter("cluster-bin-count", parseInt($("#rerun-timeseries-cluster-bin-count").val()));
+              set_parameter("cluster-bin-type", $("#rerun-timeseries-cluster-bin-type").val());
+
+              $.ajax(
+              {
+                type : "POST",
+                url : "{{server-root}}workers/" + rerun_timeseries_worker + "/model/finish-model",
+                contentType : "application/json",
+                data: $.toJSON(
+                {
+                }),
+                processData: false,
+                success: function(result)
+                {
+                  rerun_timeseries_worker = null;
+                  window.alert("Model scheduled for generation. Watch the worker pane to see when it completes.");
+                  $("#rerun-timeseries-form").dialog("close");
+                },
+                error: function(request, status, reason_phrase)
+                {
+                  window.alert("Error creating model: " + reason_phrase);
+                }
+              });
+            },
+            Cancel : function(){
+              $(this).dialog("close");
+            },
+          },
+        });
+
+        $("#rerun-timeseries-button").button().click(function()
+        {
+          $("#rerun-timeseries-form").dialog("open");
+        });
+
+        // Verify that we have the required inputs before setting-up the rest of the visualization ...
+        var cluster_type = "{{cluster-type}}";
+        var cluster_bin_type = "{{cluster-bin-type}}";
+        var cluster_bin_count = {{cluster-bin-count}};
+
+        if(cluster_type === null || cluster_bin_type === null || cluster_bin_count === null)
+          return;
+
+        // Setup the resizing layout ...
+        $("body").layout({
+          north:
+            {
+              initClosed : true
+            },
+          south:
+            {
+              initClosed : true
+            }
+        });
+
+        $("#content-pane").layout({
+          north :
+          {
+            size: 45,
+            resizeWhileDragging : true
+          },
+          center :
+          {
+            resizeWhileDragging : true
+          },
+          south :
+          {
+            size: $("#content-pane").height() / 3,
+            resizeWhileDragging : true
+          }
+        })
+
+        $("#model-pane").layout({
+          west :
+          {
+            size : $("#model-pane").width() / 2,
+            resizeWhileDragging : true
+          }
+        })
+
+        var last_selected_node = null;
+
+        var cluster_viewer = new cluster_viewer_component($("#cluster-viewer"));
+        var dendrogram_viewer = new dendrogram_viewer_component(d3.select("#dendrogram-viewer"), $("#dendrogram-pane").width(), $("#dendrogram-pane").height());
+        var waveform_viewer = new waveform_viewer_component(d3.select("#waveform-viewer"), $("#waveform-pane").width(), $("#waveform-pane").height());
+
+        // Retrieve data ...
+        function deleteWorker(worker)
+        {
+          $.ajax(
+          {
+            type : "DELETE",
+            url : "{{server-root}}" + "workers/" + worker.id,
+            async: false,
+            success : function()
+            {
+            },
+            error : function(request, status, reason_phrase)
+            {
+              //window.alert("Error deleting remote worker: " + reason_phrase);
+            }
+          });
+        }
+
+        function stopWorker(worker)
+        {
+          $.ajax(
+          {
+            contentType : "application/json",
+            data : $.toJSON({ result : "stopped" }),
+            processData : false,
+            type : "PUT",
+            url : "{{server-root}}" + "workers/" + worker.id,
+            async: false, // Need to do this synchonously since it's called by the beforeunload even and will not happen otherwise.
+            timeout: 3000, // Setting timeout to a few seconds so user is not waiting forever after trying to leave page if worker can't be stopped.
+            success : function(worker)
+            {
+            },
+            error : function(request, status, reason_phrase)
+            {
+              //window.alert("Error stopping worker: " + reason_phrase);
+            }
+          });
+        }
+
+        var table_viewer_instance;
+        var workerId = null;
+
+        // Creating a table chunker worker for the data table
+        $.ajax(
+        {
+          contentType : "application/json",
+          data : $.toJSON({ type : "table-chunker", "mid" : "{{_id}}", "artifact" : "inputs", "generate-index" : "Simulation" }),
+          processData : false,
+          type : "POST",
+          cache: false,
+          url : "{{server-root}}" + "workers",
+          async: false, // Much of the rest of the script relies on this table chunker, so dong this synchronously
+          success : function(worker)
+          {
+            workerId = worker.id;
+            // setup beforeunload handler to stop and delete worker when user leaves page
+            window.onbeforeunload = function(){ stopWorker(worker); deleteWorker(worker); };
+          },
+          error : function(request, status, reason_phrase)
+          {
+            window.alert("Error creating table-chunker worker: " + reason_phrase);
+          },
+        });
+
+        // Start up a bookmark manager
+        var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+        // Retrieve bookmark
+        var bookmark = bookmarker.getState();
+
+        // First just a short list of the clusters
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}models/{{_id}}/file/clusters",
+          success : function(clusters)
+          {
+            cluster_viewer.set_clusters(clusters);
+          },
+          error : function(request, status, reason_phrase)
+          {
+            window.alert("Error retrieving cluster data: " + reason_phrase);
+          }
+        });
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // cluster_viewer_component
+
+        function cluster_viewer_component(container)
+        {
+          var self = this;
+          self.container = container;
+        }
+
+        cluster_viewer_component.prototype.set_clusters = function(clusters)
+        {
+          var self = this;
+
+          self.container.empty();
+
+          var row = $("<tr>").appendTo($("<thead>").appendTo(self.container));
+          $("<th>").text("Outputs:").appendTo(row);
+          $.each(clusters, function(index, name)
+          {
+            // This only fires on initial page load and POSTs twice. Pehaps it should be inside the click event below and POST the cluster ID?
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/cluster",
+            });
+
+            $("<th>")
+              .addClass("output")
+              .appendTo(row)
+              .click(function(event, skip_bookmarking)
+                {
+                  $(this).data("self").container.find("th").removeClass("selected");
+                  $(this).addClass("selected");
+
+                  var cluster_name = $(this).data("name");
+                  var cluster_index = $(this).data("index");
+
+                  $.ajax(
+                  {
+                    type : "GET",
+                    url : "{{server-root}}models/{{_id}}/file/cluster-" + cluster_name,
+                    success : function(cluster)
+                    {
+                      if(!skip_bookmarking) {
+                        bookmarker.updateState( {"cluster-index" : cluster_index,
+                                                 "cluster-name" : cluster_name} );
+                      }
+                      dendrogram_viewer.set_cluster(cluster, cluster_name, cluster_index);
+                      waveform_viewer.set_waveforms(cluster["waveforms"]);
+                    },
+                    error : function(request, status, reason_phrase)
+                    {
+                      window.alert("Error retrieving cluster data: " + reason_phrase);
+                    }
+                  });
+                })
+              .data("name", name)
+              .data("self", self)
+              .data("index", index)
+              .text(name)
+              ;
+          });
+
+          // Select the cluster according to what's bookmarked, or first available if no bookmark
+          var sliceIndex = 0;
+          if("cluster-index" in bookmark) {
+            sliceIndex = bookmark["cluster-index"];
+          }
+          self.container.find("th.output").slice(sliceIndex, sliceIndex+1).trigger("click", [true]);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // dendrogram_viewer_component
+
+        function dendrogram_viewer_component(container, width, height)
+        {
+          var self = this;
+          self.container = container;
+          self.width = width;
+          self.height = height;
+        }
+
+        dendrogram_viewer_component.prototype.set_color = function(color_array, colorMap, data_table_index_array)
+        {
+          this.container.selectAll("g.sparkline path")
+            .style("stroke", function(d, i){
+              var index = data_table_index_array.indexOf(d["data-table-index"]);
+              if(index > -1)
+                return colorMap( color_array[ data_table_index_array.indexOf(d["data-table-index"]) ] );
+              else if (d.selected || (d.parent && d.parent.selected))
+                return "black";
+              else
+                return "#C9C9C9";
+            })
+            ;
+        }
+
+        dendrogram_viewer_component.prototype.set_cluster = function(cluster, cluster_name, cluster_index)
+        {
+          var self = this;
+
+          // Convert the linkage matrix into a tree suitable for use with d3 ...
+          var linkage = cluster["linkage"];
+          var waveforms = cluster["waveforms"];
+          var exemplars = cluster["exemplars"];
+          var subtrees = [];
+          $.each(waveforms, function(index, waveform)
+          {
+            subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : waveform["data-table-index"]});
+          });
+          $.each(linkage, function(index, link)
+          {
+            subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + waveforms.length], selected: false, "waveform-index" : null, "data-table-index" : null})
+          });
+
+          var padding = 20;
+          var diagram_width = self.width - padding - padding - 110;
+          var diagram_height = self.height - padding - padding;
+
+          var layout = d3.layout.cluster()
+            .size([diagram_height, diagram_width]) // Width and height are transposed here because the layout defaults top-to-buttom.
+            .separation(function() { return 1; })
+            ;
+
+          self.container.selectAll("g").remove();
+
+          var vis = self.container.append("svg:g")
+            .attr("transform", "translate(" + padding + "," + padding + ")")
+            ;
+
+          var root = subtrees[subtrees.length - 1];
+          root.x0 = diagram_height / 2;
+          root.y0 = 0;
+
+          // Compute the layout once for the entire tree so we can capture the max depth ...
+          var nodes = layout.nodes(root).reverse();
+          var max_depth = -1;
+          nodes.forEach(function(d) { max_depth = Math.max(max_depth, d.depth); });
+
+          // Set up tree nodes according to what's in the bookmark
+          var collapsed_nodes = bookmark[cluster_index  + "-collapsed-nodes"];
+          var expanded_nodes = bookmark[cluster_index  + "-expanded-nodes"];
+          var selected_node_index = bookmark[cluster_index  + "-selected-node-index"];
+
+          // We have collapse/expand/selected node data in the bookmark. Let's go ahead and apply it.
+          if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_node_index!=null) ){
+            nodes.forEach(function(d) { 
+              if(selected_node_index != undefined) {
+                if( d["node-index"] == selected_node_index ) {
+                  select_node(d, true);
+                }
+              }
+              if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
+                toggle(d);
+              }
+              else if ( expanded_nodes && (expanded_nodes.indexOf(d["node-index"]) > -1) && d._children ) {
+                toggle(d);
+              }
+            });
+          }
+          // We have no data on expanded / collapsed nodes. Let's go ahead and just show the top four levels.
+          if( (expanded_nodes==null) && (collapsed_nodes==null) ) {
+            // Start showing the top four levels of the tree ...
+            nodes.forEach(function(d) { if(d.depth == 3) toggle(d); });
+          }
+          // We have no selected node data. Let's select the root node.
+          if(selected_node_index == null){
+            select_node(root, true);
+          }
+
+          // Initial update for the diagram ...
+          update_subtree(root, true);
+
+          // Helper function that draws dendrogram links with right-angles.
+          function path(d, i)
+          {
+            if(d.target._children) {
+              return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + (diagram_width);
+            }
+            return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
+          }
+
+          // Helper function that renders a waveform as a sparkline.
+          function sparkline(d, i)
+          {
+            if(d.exemplar == undefined)
+              return "";
+
+            var waveform = waveforms[d.exemplar];
+            var values = waveform["values"];
+            var data = [];
+            for(var i = 0; i != values.length; ++i)
+              data.push(values[i]);
+
+            var width = 100;
+            var height = 15;
+            var min = d3.min(data);
+            var max = d3.max(data);
+            var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
+            var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
+
+            var path = d3.svg.line()
+              .x(function(d,i) { return x(i); })
+              .y(function(d) { return y(d); })
+              ;
+
+            return path(data);
+            return "M 0 0 L 50 0 L 100 -5";
+          }
+
+          function select_node(d, skip_bookmarking)
+          {
+            if(last_selected_node === d)
+              return;
+            last_selected_node = d;
+
+            if(!skip_bookmarking){
+              var selected_node_index = {};
+              selected_node_index[cluster_index + "-selected-node-index"] = d["node-index"];
+              bookmarker.updateState(selected_node_index);
+            }
+
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/node/" + d["node-index"],
+            });
+
+            function select_subtree(d, selection)
+            {
+              selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
+              d.selected = true;
+              if(d.children)
+                $.each(d.children, function(index, subtree) { select_subtree(subtree, selection); });
+              if(d._children)
+                $.each(d._children, function(index, subtree) { select_subtree(subtree, selection); });
+            }
+
+            var selection = []
+            $.each(subtrees, function(index, subtree) { subtree.selected = false; });
+            select_subtree(d, selection);
+
+            self.container.selectAll(".node")
+              .classed("selected", function(d) { return d.selected; })
+              ;
+
+            color_links();
+
+            function make_selection_update(selection)
+            {
+              return function()
+              {
+                update_table_filter(selection, cluster_name, cluster_index);
+                waveform_viewer.set_visible(selection);
+              }
+            }
+            window.setTimeout(make_selection_update(selection), 750);
+          }
+
+          function color_links(){
+            self.container.selectAll("path.link").attr("style", function(d){
+              if(d.source.selected) {
+                return "stroke: black;";
+              }
+              else if(checkChildren(d.target)){
+                return "stroke: gray;";
+              }
+            });
+
+            // Checks if target or any of its children are selected
+            function checkChildren(target){
+              if(target.selected)
+                return true;
+              else if(!target.children)
+                return false;
+              else {
+                for(var i=0; i<target.children.length; i++){
+                  if(checkChildren(target.children[i]))
+                    return true
+                }
+                return false;
+              }
+            }
+          }
+
+
+
+          function update_subtree(source, skip_bookmarking)
+          {
+            var duration = d3.event && d3.event.altKey ? 5000 : 500;
+
+            // Compute the new layout.
+            var nodes = layout.nodes(root).reverse();
+
+            // Normalize for fixed-depth.
+            nodes.forEach(function(d) { if(d.children || d._children) d.y = d.depth * (diagram_width / max_depth); });
+
+            // Update the nodes.
+            var node = vis.selectAll("g.node")
+              .data(nodes, function(d) { return d["node-index"]; })
+              ;
+
+            // Expand all child nodes up to a certain level, collapse all child when level is rached
+            function expandUpToLevel(d, level) {
+              if(d.children) {
+                for(var i = 0; i < d.children.length; i++) {
+                  // If this child is at the correct depth and it is expanded, we collapse it
+                  if(d.children[i].depth == level && d.children[i].children) {
+                    toggle(d.children[i]);
+                  } 
+                  // If this child is above the correct depth and it is collapsed, we expand it and process its children
+                  else if(d.children[i].depth < level && d.children[i]._children) {
+                    toggle(d.children[i]);
+                    expandUpToLevel(d.children[i], level);
+                  }
+                  // If this child is above the correct depth and it is expanded, we just process its children
+                  else if(d.children[i].depth < level && d.children[i].children) {
+                    expandUpToLevel(d.children[i], level);
+                  }
+                }
+              } 
+              // If d has no children, we do nothing
+              else {
+                return;
+              }
+            }
+
+            // Create new nodes at the parent's previous position.
+            var node_enter = node.enter().append("svg:g")
+              .attr("class", "node")
+              .classed("selected", function(d) { return d.selected; })
+              .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+              .on("dblclick", function(d) { 
+                table_viewer_instance.setWaveformColorsPerSelectedColumn(true);
+                // Toggle the target node (expand if collapsed, collapse if expanded)
+                toggle(d);
+                // If target node is now expanded, expand its children up to a certain depth
+                if(d.children) {
+                  // Change expandThisFar to however deep below the target node you want to expand
+                  var expandThisFar = 2;
+                  expandUpToLevel(d, d.depth + expandThisFar);
+                }
+                update_subtree(d);
+              })
+              .on("click", function(d) {
+                // Shift+click expands current node
+                if(d3.event.shiftKey){
+                  table_viewer_instance.setWaveformColorsPerSelectedColumn(true); 
+                  toggle(d); 
+                  update_subtree(d);
+                } 
+                // Regular click just selects it
+                else {
+                  select_node(d);
+                }
+              })
+              .style("opacity", 1e-6)
+              ;
+
+            // Triangle
+            var node_subtree = node_enter.append("svg:g")
+              .attr("class", "subtree")
+              .style("opacity", 1e-6)
+              .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
+              ;
+
+            node_subtree.append("svg:path")
+              .attr("class", "subtree-glyph")
+              .attr("d", "M 0 0 L 40 -13 L 40 13 Z")
+              .style("fill", "url(#subtree-gradient)")
+              ;
+
+            node_subtree.append("svg:text")
+              .attr("x", 28)
+              .attr("dy", ".4em")
+              .attr("text-anchor", "middle")
+              .text(function(d) { return d.leaves; })
+              ;
+
+            // Circle
+            var node_glyph = node_enter.append("svg:g")
+              .attr("class", "glyph")
+              ;
+
+            node_glyph.append("svg:circle")
+              .attr("r", 4.5)
+              // All circles are clickable so all should use a pointer cursor
+              //.style("cursor", function(d) { return d.children || d._children ? "pointer" : ""; })
+              .style("cursor", "pointer")
+              .style("fill", function(d) { return d.children || d._children ? "#dbd9eb" : "white"; })
+              ;
+
+            // Sparkline
+            var node_sparkline = node_enter.append("svg:g")
+              .attr("class", "sparkline")
+              .attr("transform", function(d) { return d.leaves > 1 ? "translate(45, 0)" : "translate(10, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
+              .style("opacity", 1e-6)
+              .style("display", "none")
+              ;
+
+            node_sparkline.append("svg:path")
+              .attr("d", sparkline)
+              ;
+
+            // Transition new nodes to their final position.
+            var node_update = node.transition()
+              .duration(duration)
+              .attr("transform", function(d) { 
+                return "translate(" + (d._children ? (diagram_width - 35) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
+              })
+              .style("opacity", 1.0)
+              ;
+
+            node_update.select(".subtree")
+              .style("opacity", function(d) { return d._children ? 1.0 : 1e-6; })
+              .style("display", function(d) { return d._children ? "inline" : "none"; })
+              ;
+
+            node_update.select(".sparkline")
+              .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
+              .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
+              ;
+
+            // Transition exiting nodes to the parent's new position.
+            var node_exit = node.exit().transition()
+              .duration(duration)
+              .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+              .style("opacity", 1e-6)
+              .remove()
+              ;
+
+            node_exit.select(".sparkline")
+              .each("start", function() { d3.select(this).style("display", "none"); })
+              ;
+
+            // Update the links.
+            var link = vis.selectAll("path.link")
+              .data(layout.links(nodes), function(d) { return d.target["node-index"]; });
+
+            // Enter any new links at the parent's previous position.
+            link.enter().insert("svg:path", "g")
+              .attr("class", "link")
+              .attr("d", function(d)
+              {
+                var o = {x: source.x0, y: source.y0};
+                return path({source: o, target: o});
+              })
+            .transition()
+              .duration(duration)
+              .attr("d", path);
+
+            // Transition new links to their new position.
+            link.transition()
+              .duration(duration)
+              .attr("d", path);
+
+            // Transition exiting links to the parent's new position.
+            link.exit().transition()
+              .duration(duration)
+              .attr("d", function(d)
+              {
+                var o = {x: source.x, y: source.y};
+                return path({source: o, target: o});
+              })
+              .remove()
+              ;
+
+            color_links();
+
+            // Stash the old positions for transition.
+            nodes.forEach(function(d)
+            {
+              d.x0 = d.x;
+              d.y0 = d.y;
+            });
+
+            // Bookmark expanded and collapsed nodes
+            if(!skip_bookmarking){
+              var expanded = [];
+              var collapsed = [];
+              function findExpandedAndCollapsedNodes(d){
+                // If this node is expanded, add its node-index to the expanded array
+                if(d.children) {
+                  expanded.push(d["node-index"]);
+                  // Recursively call this function for each child to capture any collapsed and expanded ones
+                  for(var i = 0; i < d.children.length; i++) {
+                    findExpandedAndCollapsedNodes(d.children[i]);
+                  }
+                }
+                // Otherwise if this node is collapsed, add its node-index to the collapsed array
+                else if(d._children) {
+                  collapsed.push(d["node-index"]);
+                }
+              }
+              findExpandedAndCollapsedNodes(root);
+              var cluster_state = {};
+              cluster_state[cluster_index + "-expanded-nodes"] = expanded;
+              cluster_state[cluster_index + "-collapsed-nodes"] = collapsed;
+              bookmarker.updateState(cluster_state);
+            }
+          }
+
+          // Toggle children.
+          function toggle(d)
+          {
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/toggle/node/" + d["node-index"],
+            });
+
+            if(d.children)
+            {
+              d._children = d.children;
+              d.children = null;
+            }
+            else
+            {
+              d.children = d._children;
+              d._children = null;
+            }
+          }
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // waveform_viewer_component
+
+        function waveform_viewer_component(container, width, height)
+        {
+          this.container = container;
+          this.width = width;
+          this.height = height;
+          this.padding = 20;
+          this.diagram_width = this.width - this.padding - this.padding;
+          this.diagram_height = this.height - this.padding - this.padding;
+
+          this.waveforms = null;
+        }
+
+        waveform_viewer_component.prototype.set_waveforms = function(waveforms)
+        {
+          var self = this;
+
+          this.waveforms = waveforms;
+
+          var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["times"]); });
+          var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["times"]); });
+          var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["values"]); });
+          var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["values"]); });
+
+          this.x = d3.scale.linear()
+            .domain([x_min, x_max])
+            .range([0, this.diagram_width])
+            ;
+
+          this.y = d3.scale.linear()
+            .domain([y_max, y_min])
+            .range([0, this.diagram_height])
+            ;
+
+          this.container.selectAll("g").remove();
+
+          this.visualization = this.container.append("svg:g")
+            .attr("transform", "translate(" + this.padding + "," + this.padding + ")")
+            ;
+
+          this.visualization.append("svg:rect")
+            .attr("width", this.diagram_width)
+            .attr("height", this.diagram_height)
+            .attr("pointer-events", "all")
+            .style("fill", "#eee")
+//            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
+            ;
+
+/*
+          function redraw_waveforms()
+          {
+            // Update waveforms ...
+            self.container.selectAll("g.waveform path")
+              .attr("d", sax_line)
+              ;
+          }
+*/
+        }
+
+        waveform_viewer_component.prototype.make_sax_line = function()
+        {
+          var self = this;
+          return function(d)
+          {
+
+            result = "";
+            for(var i = 0; i != d.times.length; ++i)
+            {
+              result += "M" + self.x(d.times[i]) + "," + self.y(d.values[i]);
+              break;
+            }
+            for(var i = 1; i < d.times.length; ++i)
+            {
+              result += "L" + self.x(d.times[i]) + "," + self.y(d.values[i]);
+            }
+
+            return result;
+          }
+        }
+
+        waveform_viewer_component.prototype.set_visible = function(visible)
+        {
+          var self = this;
+
+          var waveform_subset = [];
+          $.each(visible, function(index, node)
+          {
+            if(node["waveform-index"] != null)
+              waveform_subset.push(self.waveforms[node["waveform-index"]]);
+          });
+
+          this.container.selectAll("g.waveform").remove();
+          this.container.selectAll("g.selection").remove();
+
+          waveform = this.visualization.selectAll("g.waveform")
+            .data(waveform_subset)
+          .enter().append("svg:g")
+            .attr("class", "waveform")
+          .append("svg:path")
+            .attr("d", this.make_sax_line())
+            .style("fill", "none")
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            ;
+        }
+
+        waveform_viewer_component.prototype.set_color = function(color_array, color_scale)
+        {
+          this.container.selectAll("g.waveform path")
+            .style("stroke", function(d, i) { return color_scale(color_array[i]); })
+            ;
+        }
+
+        waveform_viewer_component.prototype.select = function(selected)
+        {
+          var self = this;
+          var waveform_subset = [];
+          $.each(selected, function(index, node_index)
+          {
+            if(node_index < self.waveforms.length)
+              waveform_subset.push(self.waveforms[node_index]);
+          });
+
+          this.container.selectAll("g.selection").remove();
+
+          var waveforms = this.visualization.selectAll("g.selection")
+            .data(waveform_subset)
+          .enter().append("svg:g")
+            .attr("class", "selection");
+
+          waveforms.append("svg:path")
+            .attr("d", this.make_sax_line())
+            .style("fill", "none")
+            .style("stroke", "yellow")
+            .style("stroke-width", 5.0)
+            ;
+
+          waveforms.append("svg:path")
+            .attr("d", this.make_sax_line())
+            .style("fill", "none")
+            .style("stroke", "black")
+            .style("stroke-width", 1.5)
+            ;
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //table_viewer_component
+        function update_table_filter(visible, cluster_name, cluster_index) {
+          this.visible = visible;
+          var self = this;
+
+          var data_table_index, waveform_index;
+          var table_filter = [];
+          var waveform_indexes = [];
+          $.each(self.visible, function(index, node)
+          {
+            data_table_index = node["data-table-index"];
+            waveform_index   = node["waveform-index"];
+
+            if(data_table_index == null)
+              return;
+
+            table_filter.push(data_table_index);
+            waveform_indexes.push(waveform_index);
+          });
+
+          // Just update slickgrid with a new table filter. Or if we don't have a slickgrid yet, make one.
+          if(table_viewer_instance) {
+            table_viewer_instance.update({
+              table_filter : table_filter,
+              waveform_indexes: waveform_indexes,
+              cluster_name: cluster_name,
+              cluster_index: cluster_index,
+              selected_column_index: bookmark[cluster_index + "-column-index"],
+              selected_row_simulations: bookmark[cluster_index + "-selected-row-simulations"],
+            });
+          } else {
+            table_viewer_instance = new timeseries_simulation_table(
+              { container : "#data-pane", 
+                table_filter : table_filter,
+                waveform_indexes: waveform_indexes,
+                waveform_viewer : waveform_viewer,
+                dendrogram_viewer : dendrogram_viewer,
+                model_id : "{{_id}}",
+                bookmarker : bookmarker,
+                selected_column_index: bookmark[cluster_index + "-column-index"],
+                selected_row_simulations: bookmark[cluster_index + "-selected-row-simulations"],
+                cluster_name: cluster_name,
+                cluster_index: cluster_index,
+              }, 
+              "{{server-root}}", 
+              workerId
+            );
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

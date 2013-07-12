@@ -1,0 +1,323 @@
+    <script src="{{server-root}}js/jquery.knob.js"></script>
+    <script src="{{server-root}}js/jquery.qtip.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.css" />
+    <div id="workers">
+      <div id="workers-close" style="display: none;">Close</div>
+      <div id="workers-container" class="workersCompact">
+        <div id="workersWrapper"></div>
+        <div id="showChunkersWrapper">
+          <input id="showChunkers" type="checkbox" name="showChunkers" value="true" />
+          <label for="showChunkers">Show chunkers</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="header">
+      <div class="width-wrapper">
+        <a href="{{server-root}}projects" id="title-link">
+          <img id="logo" src="{{server-root}}style/slycat-small.png" title="A very sly cat." />
+          <h1 id="title">Slycat <span id="version">(Alpha)</span></h1>
+        </a>
+        <ul id="user-actions">
+          <li id="login"><span id="login-status" class="session">{{#security}}{{name}} ({{user}}){{/security}}</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        // Warn IE users they need a better browser
+        if ($.browser.msie) {
+          alert("Your browser doesn't provide the features needed to use this application.  We suggest switching to Firefox, Chrome, or Safari.");
+        }
+        // Check the "show chunkers" control according to what's in localStorage
+        update_showChunkers();
+
+        // Update localStorage whenever "show chunkers" control changes
+        $("input#showChunkers").change(function(){
+          $this = $(this);
+          localStorage[$this.attr("name")] = $this.attr("checked");
+          update_showChunkers();
+        });
+        // handle_storage whenever localStorage changes (e.g., in another tab or window)
+        window.addEventListener("storage", handle_storage, false);
+        function handle_storage(e) {
+          if (e.key == 'showChunkers'){
+            update_showChunkers();
+          }
+        }
+
+        function update_showChunkers(){
+          if (localStorage.showChunkers === "true") {
+            $("#showChunkers").attr("checked", true);
+            $("#workers").removeClass("hideChunkers");
+          } else {
+            $("#showChunkers").attr("checked", false);
+            $("#workers").addClass("hideChunkers");
+          }
+        }
+
+
+        var worker_timeout = null;
+
+        $('#workers-close').click(function(){
+          $('#workers-close').slideUp();
+          $('#workers-container').switchClass("workersDetail","workersCompact");
+          window.setTimeout( "$('#workers-container .worker').each(function() { $(this).qtip('enable'); })", 250 ); // Enable tooltips when collapsing status bar. Added dealy otherwise tooltips appear before slideUp is finished
+        });
+
+        // Expand status bar when any part of it is clicked
+        $('#workers-container.workersCompact').click(function(){
+          if($(this).hasClass('workersCompact')) {
+            document.getSelection().removeAllRanges(); // Need to clear selection after click since for some reason clicking an icon selects the status text to the right of it
+            // Hide and disable all tooltips when expanding status bar
+            disable_tooltips($("#workers-container .worker"));
+            $('#workers-close').slideDown();
+            $('#workers-container').switchClass("workersCompact","workersDetail");
+          }
+        });
+
+        function disable_tooltips(selector)
+        {
+          selector.each(function() { $(this).qtip('hide').qtip('api').disable(true); });
+        }
+
+        var revision = -1;
+
+        function worker_update()
+        {
+          if(worker_timeout)
+          {
+            window.clearTimeout(worker_timeout);
+            worker_timeout = null;
+          }
+
+          $.ajax(
+          {
+            dataType : "json",
+            type : "GET",
+            url : "{{server-root}}workers" + (revision > -1 ? "?revision=" + revision : ""),
+            success : function(results)
+            {
+              if(!results) // This means that nothing changed
+              {
+                worker_timeout = window.setTimeout(worker_update, 1000);
+                return;
+              }
+
+              revision = results.revision;
+              workers = results.workers;
+              workers.sort(function(a, b)
+              {
+                if(!a["finished"] && !b["finished"])
+                {
+                  if(a["started"] > b["started"])
+                    return -1;
+                  if(a["started"] == b["started"])
+                    return 0;
+                  return 1;
+                };
+                if(a["finished"] && b["finished"])
+                {
+                  if(a["finished"] > b["finished"])
+                    return -1;
+                  if(a["finished"] == b["finished"])
+                    return 0;
+                  return 1;
+                }
+                return a["finished"] ? 1 : -1;
+              });
+
+              // Stop and delete the worker
+              function worker_close(worker, noConfirm)
+              {
+                return function()
+                {
+                  // Confirm that worker should really be deleted
+                  if(!noConfirm) {
+                    if(!window.confirm("Delete worker?  This cannot be undone."))
+                      return;
+                  }
+
+                  // If the worker is not finished, stop it first
+                  if(!worker["finished"]) {
+                    $.ajax(
+                    {
+                      contentType : "application/json",
+                      data : $.toJSON({"result":"stopped"}),
+                      processData : false,
+                      async: false,
+                      type : "PUT",
+                      url : "{{server-root}}workers/" + worker["_id"],
+                      success : function(worker)
+                      {
+                        // No need to update the workers now that we are doing long polling since the server will send a response automatically
+                        //worker_update();
+                      },
+                      error : function(request, status, reason_phrase)
+                      {
+                        window.alert("Error stopping worker: " + reason_phrase);
+                      }
+                    });
+                  }
+
+                  // Now delete the worker
+                  $.ajax(
+                  {
+                    type : "DELETE",
+                    url : "{{server-root}}workers/" + worker["_id"],
+                    async: false, // Switching to synchronous because we need to delete the worker when linking to a newly created model before we actually start loading the model page
+                    success : function()
+                    {
+                      // No need to update the workers now that we are doing long polling since the server will send a response automatically
+                      //worker_update();
+                    },
+                    error : function(request, status, reason_phrase)
+                    {
+                      window.alert("Error deleting worker: " + reason_phrase);
+                    }
+                  });
+                }
+              }
+
+              function worker_details(worker)
+              {
+                return function()
+                {
+                  window.location = "{{server-root}}workers/" + worker["_id"];
+                }
+              }
+
+              function worker_uri(worker)
+              {
+                return function()
+                {
+                  window.location = worker["uri"];
+                }
+              }
+
+              function create_worker_scaffolding(worker) {
+                return $("<div class='worker'>")
+                  .attr('id', worker["_id"])
+                  .append($("<div>").addClass("message"))
+                  .append($("<div>").addClass("name"))
+                  .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Stop / delete worker.").click(worker_close(worker))))
+                  .qtip({
+                    position: {
+                      adjust: {
+                        x: -14
+                      }
+                    },
+                    content: {
+                      text: ' ' // Need to initiate with some text otherwise tooltip is never created
+                    },
+                    hide: {
+                      delay: 500,
+                      fixed: true,
+                    },
+                    show: {
+                      solo: true
+                    },
+                  });
+              }
+
+              $.each(workers, function(index, worker)
+              {
+                var workerId = worker["_id"];
+                var line = $("#" + workerId ,"#workers #workers-container");
+                if(line.length == 0)
+                  line = create_worker_scaffolding(worker).appendTo($("#workers #workers-container #workersWrapper"));
+
+                line.toggleClass("finished", worker["finished"] ? true : false)
+                  .toggleClass("chunker", worker['name'].indexOf('chunker') == 0)
+                  .addClass(worker["result"])
+                  .addClass("updated") // Mark each worker so we can remove the ones that no loner exist
+                  .qtip(
+                    'option',
+                    'content.title.text',
+                    (worker["name"] || "")
+                  );
+
+                if( $('#workers-container').hasClass('workersDetail') ) {
+                  disable_tooltips(line);
+                }
+                line.find(".message").text(worker["message"] || "");
+                line.find(".name").text(worker["name"] || "");
+                line.find(".close button").unbind('click').click(worker_close(worker));
+
+                // Set up progress indicator for workers with progress
+                if(worker.hasOwnProperty("progress")) {
+                  // If the line doesn't have a progress class, add the class and add a progress indicator if it's not finished yet
+                  if(!line.hasClass("progressDeterminate")) {
+                    line.addClass("progressDeterminate");
+                    if(!worker["finished"]){
+                      line.append($("<input>").addClass("pie").attr("value", worker["progress"]).knob({
+                        'min':0,
+                        'max':1,
+                        'readOnly':true,
+                        'displayInput':false,
+                        'fgColor':'#4D720C',
+                        'bgColor':'#D7D7D6',
+                        'width':15,
+                        'height':15,
+                        'thickness':0.4,
+                        'step':0.01,
+                      }));
+                    }
+                  }
+                  // Otherwise check if it's not finished and update the progress indicator with current value
+                  else if(!worker["finished"]){
+                    line.find(".pie").val(worker["progress"]).trigger('change');
+                  }
+                  else {
+                    line.find("input.pie").parent().remove();
+                  }
+                }
+
+                if(worker.hasOwnProperty("uri")) {
+                  $(line).find(".message").click(worker_uri(worker));
+                  $(line).find(".name").click(worker_uri(worker));
+                  line.find(".details").remove();
+                  line.append($("<div>").addClass("details").append($("<button>").html("&raquo;").attr("title", "Show worker details.").click(worker_details(worker))));
+                  line.qtip('option','content.text',
+                    $('<div>').append($('<div>').text((worker["message"] || ""))).append($('<a>').attr('href', worker['uri']).text('View').click(worker_close(worker, true)))
+                  );
+
+                } else {
+                  $(line).find(".message").click(worker_details(worker));
+                  $(line).find(".name").click(worker_details(worker));
+                  line.find(".details").remove();
+                  line.qtip('option','content.text',
+                    $('<div>').append($('<div>').text((worker["message"] || ""))).append($('<a href="#">').text('Delete').click(worker_close(worker)))
+                  );
+                }
+
+              });
+
+              $("#workers-container .worker").not(".updated").remove(); // Remove any non-existing workers
+              $("#workers-container .worker").removeClass("updated"); // Clear the updated flag
+
+              worker_timeout = window.setTimeout(worker_update, 1000);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              // Just restart polling if we just timed out, since we automatically time out after 30 seconds
+              if (status == "timeout"){
+                worker_update();
+              } else {
+                // This error happens frequently and harmlessly when we restart
+                // the server, so instead of bugging the way we normally would,
+                // ignore it and try again.
+                worker_timeout = window.setTimeout(worker_update, 5000);
+
+                // window.alert("Error retrieving workers: " + reason_phrase);
+              }
+            }
+          });
+        }
+
+        worker_update();
+
+      });
+    </script>

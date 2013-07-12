@@ -1,0 +1,49 @@
+# Copyright 2013, Sandia Corporation. Under the terms of Contract
+# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+# rights in this software.
+
+import numpy
+import slycat.client
+import sys
+
+parser = slycat.client.option_parser()
+parser.add_option("--bundling", type="int", default=10, help="Maximum number of rows to bundle into a single request.  Default: %default")
+parser.add_option("--column-prefix", default="a", help="Column prefix.  Default: %default")
+parser.add_option("--input-count", type="int", default=3, help="Input column count.  Default: %default")
+parser.add_option("--marking", default="", help="Marking type.  Default: %default")
+parser.add_option("--output-count", type="int", default=3, help="Output column count.  Default: %default")
+parser.add_option("--row-count", type="int", default=100, help="Row count.  Default: %default")
+parser.add_option("--seed", type="int", default=12345, help="Random seed.  Default: %default")
+parser.add_option("--unused-count", type="int", default=3, help="Unused column count.  Default: %default")
+options, arguments = parser.parse_args()
+
+connection = slycat.client.connect(options)
+
+numpy.random.seed(options.seed)
+
+pid = connection.create_project("CCA Model Test")
+mwid = connection.create_cca_model_worker(pid, "Model", options.marking)
+total_columns = options.input_count + options.output_count + options.unused_count
+connection.start_table(mwid, "data-table", ["%s%s" % (options.column_prefix, column) for column in range(total_columns)],["double" for column in range(total_columns)])
+rows = []
+for i in range(options.row_count):
+  values = numpy.random.random(max(options.input_count, options.output_count))
+  inputs = values[:options.input_count]
+  outputs = [numpy.random.normal(value ** (index * 0.5), 0.2 * value ** (index * 0.5)) for index, value in enumerate(values[:options.output_count])]
+  unused = numpy.random.random(options.unused_count)
+  row = numpy.concatenate((inputs, unused, outputs))
+
+  rows.append(row.tolist())
+  if len(rows) >= options.bundling:
+    connection.send_table_rows(mwid, "data-table", rows)
+    rows = []
+connection.send_table_rows(mwid, "data-table", rows)
+connection.finish_table(mwid, "data-table")
+
+connection.set_parameter(mwid, "input-columns", range(0, options.input_count))
+connection.set_parameter(mwid, "output-columns", range(options.input_count + options.unused_count, options.input_count + options.unused_count + options.output_count))
+connection.set_parameter(mwid, "scale-inputs", False)
+mid = connection.finish_model(mwid)
+#connection.delete_worker(mwid)
+
+sys.stderr.write("Your new model will be at %s/models/%s when complete.\n" % (options.host, mid))

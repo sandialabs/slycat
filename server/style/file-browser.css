@@ -1,0 +1,86 @@
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
+
+ul.file-browser, .file-browser ul
+{
+  list-style-type: none;
+}
+
+ul.file-browser
+{
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.file-browser .hidden
+{
+  display: none;
+}
+
+.file-browser li > div
+{
+  width: 100%;
+  height: 20px;
+}
+
+.file-browser li.selected > div
+{
+  background: #4478cf;
+  color: white;
+}
+
+.file-browser .arrow
+{
+  display: inline-block;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+}
+
+.file-browser .icon
+{
+  display: inline-block;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+}
+
+.file-browser .label
+{
+  display: inline-block;
+  vertical-align: middle;
+  height: 12px;
+  margin-left: 3px;
+  margin-top: 2px;
+}
+
+.file-browser li.host > div > .arrow, .file-browser li.directory > div > .arrow
+{
+  background: url(arrow-right-small.png) no-repeat center;
+}
+
+.file-browser li.host.open > div > .arrow, .file-browser li.directory.open > div > .arrow
+{
+  background: url(arrow-down-small.png) no-repeat center;
+}
+
+.file-browser li.host > div > .icon, .file-browser li.directory > div > .icon
+{
+  background: url(directory-small.png) no-repeat center;
+}
+
+.file-browser li.directory.forbidden > div > .icon
+{
+  background: url(directory-forbidden-small.png) no-repeat center;
+}
+
+.file-browser li.file > div > .icon
+{
+  background: url(file-small.png) no-repeat center;
+}

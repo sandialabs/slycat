@@ -1,0 +1,136 @@
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
+
+/* Hiding non-SlickGrid table for now to keep it from interferring. Keeping it around for comparison. */
+#cca-simulation-table {
+	display: none;
+}
+
+/* Absolute positioning SlickGrid container to get it to fit the box completely */
+#cca-simulation-table-slickgrid {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+#timeseries-table-slickgrid {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.ui-widget {
+	font-family: helvetica,arial,sans-serif;
+}
+.slick-header-columns,
+.slick-header-column,
+.slick-header-column:hover, 
+.slick-header-column-active
+{
+  background-image: none;
+}
+.slick-header-column.headerSimId.selected {
+	background-color: #888888;
+	color: white;
+}
+.slick-header-column.headerInput.selected {
+	background-color: #3CA654;
+	color: white;
+}
+.slick-header {
+	background-color: transparent;
+	background-image: none;
+}
+.headerSimId,
+.headerOther {
+	background-color: transparent;
+}
+.rowSimId,
+.rowOther {
+	background-color: transparent;
+}
+.rowSimId.selected,
+.rowOther.selected {
+	background-color: #DDDDDD;
+}
+.headerInput {
+    background-color: #EEFFE0;
+}
+.rowInput {
+	background-color: #C7E9C0;
+}
+.rowInput.selected {
+	background-color: #3CA654;
+	color: white;
+}
+.headerOutput {
+    background-color: #EEEEFF;
+}
+.rowOutput {
+	background-color: #DBD9EB;
+}
+.rowOutput.selected {
+	background-color: #7767B0;
+	color: white;
+}
+
+/* Removing zebra striping */
+.slick-row[row$="1"], .slick-row[row$="3"], .slick-row[row$="5"], .slick-row[row$="7"], .slick-row[row$="9"] {
+    background-color: transparent;
+}
+
+.slick-cell,
+.slick-header-column
+{
+	color: #666655;
+	font-size: small;
+}
+.slick-header-column {
+	font-weight: bold;
+}
+.highlight {
+	padding: 0;
+	height: auto !important;
+}
+.highlightWrapper {
+	padding: 2px 4px 3px 4px;
+}
+
+/* Removing borders around cells */
+.slick-cell, .slick-headerrow-column {
+	border-width: 0px;
+}
+.slick-header-columns {
+	border-bottom-width: 0px;
+}
+
+/* Styling sort controls */
+.icon-sort-off {
+	border: 1px solid transparent;
+}
+.slick-header-column:hover .icon-sort-off {
+	border: 1px solid transparent;
+	background: transparent url(../sort-asc-light.png) no-repeat center center;
+}
+.icon-sort-off:hover {
+	border: 1px solid #C7C7C7 !important;
+}
+.icon-sort-ascending {
+	border: 1px solid transparent;
+	background: transparent url(../sort-asc-gray.png) no-repeat center center;
+}
+.icon-sort-descending {
+	border: 1px solid transparent;
+	background: transparent url(../sort-desc-gray.png) no-repeat center center;
+}
+.icon-sort-ascending:hover,
+.icon-sort-descending:hover
+{
+	border: 1px solid #878787;
+}

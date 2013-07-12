@@ -1,0 +1,4 @@
+/* Modernizr 2.0.6 (Custom Build) | MIT & BSD
+ * Build: http://www.modernizr.com/download/#-svg
+  */
+  ;window.Modernizr=function(a,b,c){function x(a,b){return!!~(""+a).indexOf(b)}function w(a,b){return typeof a===b}function v(a,b){return u(prefixes.join(a+";")+(b||""))}function u(a){j.cssText=a}var d="2.0.6",e={},f=b.documentElement,g=b.head||b.getElementsByTagName("head")[0],h="modernizr",i=b.createElement(h),j=i.style,k,l=Object.prototype.toString,m={svg:"http://www.w3.org/2000/svg"},n={},o={},p={},q=[],r,s={}.hasOwnProperty,t;!w(s,c)&&!w(s.call,c)?t=function(a,b){return s.call(a,b)}:t=function(a,b){return b in a&&w(a.constructor.prototype[b],c)},n.svg=function(){return!!b.createElementNS&&!!b.createElementNS(m.svg,"svg").createSVGRect};for(var y in n)t(n,y)&&(r=y.toLowerCase(),e[r]=n[y](),q.push((e[r]?"":"no-")+r));u(""),i=k=null,e._version=d;return e}(this,this.document);

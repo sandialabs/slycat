@@ -1,0 +1,96 @@
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
+
+#edit-model-button,
+#rerun-timeseries-button
+{
+  float: right;
+}
+
+/* cluster table styles */
+
+#cluster-pane
+{
+  overflow: auto;
+}
+
+#cluster-viewer
+{
+  margin: 5px;
+  border-collapse: collapse;
+}
+
+#cluster-viewer th.output
+{
+  background: #dbd9eb;
+  cursor: pointer;
+}
+
+#cluster-viewer th.output.selected
+{
+  background: #7767b0;
+  color: white;
+}
+
+/* dendrogram styles */
+
+#dendrogram-viewer .node .glyph circle
+{
+  stroke: grey;
+}
+
+#dendrogram-viewer .node.selected .glyph circle
+{
+  fill: #7767b0 !important;
+  stroke: black;
+}
+
+#dendrogram-viewer .node .subtree
+{
+  cursor: pointer;
+}
+
+#dendrogram-viewer .node .subtree path
+{
+  stroke: none;
+}
+
+#dendrogram-viewer .node.selected .subtree path
+{
+  fill: #7767b0 !important;
+}
+
+#dendrogram-viewer .node.selected .subtree text
+{
+  fill: white;
+}
+
+#dendrogram-viewer .node .sparkline path
+{
+  fill: none;
+  stroke: black;
+}
+
+#dendrogram-viewer .link
+{
+  fill: none;
+  stroke: #C9C9C9;
+}
+
+/* waveform styles */
+
+#waveform
+{
+  width: 1000px;
+  height: 700px;
+}
+
+/* data table styles */
+
+#data-pane
+{
+  overflow: auto;
+}

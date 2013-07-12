@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+{{> head}}
+    <title>Slycat Projects</title>
+  </head>
+
+  <body>
+{{> header}}
+
+    <div id="page-title">
+      <div class="width-wrapper">
+        <h2>Projects</h2>
+      </div>
+    </div>
+
+    <div id="content">
+      <div class="width-wrapper">
+        <div id="new-project" class="buttonBar">
+          <div id="new-project-form" class="dialog" title="Add New Project">
+            <label for="new-project-name">Project Name</label>
+            <input id="new-project-name" class="text ui-widget-content ui-corner-all" />
+            <label for="new-project-description">Description</label>
+            <textarea id="new-project-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
+          </div>
+          <button id="create-project" title="Create new Slycat project.">Add New Project</button>
+        </div>
+        <ul id="project-list" class="main-list">
+          {{#projects}}
+          <li>
+            <div class='main-item'>
+              <h3 class='main-title'><a href="{{server-root}}projects/{{_id}}">{{name}}</a></h3>
+              <a class='main-tag project' href="{{server-root}}projects/{{_id}}">Project</a>
+              <div class='main-created'>Created {{created}} by {{creator}}</div>
+              <p class='main-description'>{{description}}</p>
+            </div>
+          </li>
+          {{/projects}}
+        </ul>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="width-wrapper">
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $( "#new-project-form" ).dialog(
+      {
+        autoOpen: false,
+        width: 700,
+        height: 400,
+        modal: true,
+        buttons:
+        {
+          "Create Project": function()
+          {
+            if(0 == $("#new-project-name").val().length)
+            {
+              alert("Cannot create new project with empty name.");
+              return;
+            }
+
+            $.ajax(
+            {
+              contentType : "application/json",
+              data: $.toJSON({
+                "name" : $("#new-project-name").val(),
+                "description": $("#new-project-description").val()
+              }),
+              processData: false,
+              type : "POST",
+              url : "{{server-root}}projects",
+              success: function(result)
+              {
+                window.location.href = "{{server-root}}projects/" + result.id;
+              },
+              error: function(request, status, reason_phrase)
+              {
+                window.alert("Error creating project: " + reason_phrase);
+              }
+            });
+          },
+          Cancel: function()
+          {
+            $(this).dialog("close");
+          }
+        },
+        close: function()
+        {
+        }
+      });
+
+	    $("#create-project").button().click(function()
+      {
+				$("#new-project-form").dialog("open");
+			});
+    </script>
+  </body>
+</html>

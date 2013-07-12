@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+{{> head}}
+    <title>Slycat Worker {{wid}}</title>
+  </head>
+
+  <body>
+{{> header}}
+
+    <div id="page-title">
+      <div class="width-wrapper">
+        <h2>Worker {{wid}}</h2>
+      </div>
+    </div>
+
+    <div id="content">
+      <div class="width-wrapper">
+        <dl id="worker-details">
+        </dl>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="width-wrapper">
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        function update()
+        {
+          $.ajax(
+          {
+            dataType : "json",
+            type : "GET",
+            url : "{{server-root}}workers/{{wid}}",
+            success : function(worker)
+            {
+              var fields = [];
+              $.each(worker, function(key, value)
+              {
+                fields.push([key, value]);
+              });
+
+              fields.sort(function(a, b)
+              {
+                if(a[0] < b[0])
+                  return -1;
+                if(a[0] > b[0])
+                  return 1;
+                return 0;
+              });
+
+              $("#worker-details").empty()
+              $.each(fields, function(index, pair)
+              {
+                $("#worker-details").append($("<dt>").text(pair[0]));
+
+                if(pair[0] == "uri")
+                  $("#worker-details").append($("<dd>").append($("<a>").attr("href", pair[1]).text(pair[1])));
+                else
+                  $("#worker-details").append($("<dd>").append($("<pre>").text(pair[1])));
+              });
+
+              window.setTimeout(update, 2000);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.setTimeout(update, 5000);
+            }
+          });
+        }
+
+        update();
+      });
+    </script>
+  </body>
+</html>

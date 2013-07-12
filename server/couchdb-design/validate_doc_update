@@ -1,0 +1,74 @@
+function(new_document, old_document, user_context)
+{
+  function require(expression, message)
+  {
+    if(!expression)
+      throw( { forbidden : message } );
+  }
+
+  if(new_document._deleted)
+    return;
+
+  if(old_document)
+  {
+    require(new_document["type"] == old_document["type"], "Document type cannot be modified." + new_document["type"] + " " + old_document["type"]);
+  }
+  else
+  {
+    require(new_document["type"] != null, "Document type is required.");
+  }
+
+  if(new_document["type"] == "project")
+  {
+    require(new_document["acl"] != null, "Project must contain security object.");
+    require(new_document["acl"].administrators != null, "Project security object must contain adminstrators.");
+    require(new_document["acl"].readers != null, "Project security object must contain readers.");
+    require(new_document["acl"].writers != null, "Project security object must contain writers.");
+
+    require(new_document["acl"].administrators.length > 0, "Project security object must contain at least one administrator.");
+
+    require(new_document["created"] != null, "Project must contain creation time.");
+    require(new_document["creator"] != null, "Project must contain creator.");
+    require(new_document["name"] != null, "Project must contain name.");
+
+    if(old_document)
+    {
+      require(new_document["created"] == old_document["created"], "Project creation time cannot be modified.");
+      require(new_document["creator"] == old_document["creator"], "Project creator cannot be modified.");
+    }
+  }
+  else if(new_document["type"] == "model")
+  {
+    require(new_document["project"] != null, "Model must contain project id.");
+    require(new_document["created"] != null, "Model must contain creation time.");
+    require(new_document["creator"] != null, "Model must contain creator.");
+    require(new_document["marking"] != null, "Model must contain marking information.");
+    require(new_document["name"] != null, "Model must have a name.");
+    require(new_document["model-type"] != null, "Model must have a model-type.")
+
+    if(old_document)
+    {
+      require(new_document["project"] == old_document["project"], "Model project id cannot be modified.");
+      require(new_document["created"] == old_document["created"], "Model creation time cannot be modified.");
+      require(new_document["creator"] == old_document["creator"], "Model creator creator cannot be modified.");
+      require(new_document["marking"] == old_document["marking"], "Model marking cannot be modified.");
+    }
+  }
+  else if(new_document["type"] == "array")
+  {
+  }
+  else if(new_document["type"] == "bookmark")
+  {
+    require(new_document["project"] != null, "Bookmark must contain project id.");
+
+    if(old_document)
+    {
+      require(new_document["project"] == old_document["project"], "Bookmark project id cannot be modified.");
+    }
+  }
+  else
+  {
+    throw( { forbidden : "Unknown document type: " + new_document["type"] } );
+  }
+}
+

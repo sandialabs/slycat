@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+{{> head}}
+    <title>{{name}} - Slycat Project</title>
+    <script type="text/javascript" src="{{server-root}}js/file-browser.js"></script>
+    <link rel="stylesheet" href="{{server-root}}style/file-browser.css" type="text/css">
+  </head>
+
+  <body>
+{{> header}}
+
+    <div id="page-title">
+      <div class="width-wrapper">
+        <button id="edit-project-button" class="edit-page" title="Edit this project's name, description, and security.">Edit Project</button>
+        <div id="breadcrumbs">
+          <a href="{{server-root}}projects">Projects</a> &rarr;
+        </div>
+        <h2>{{name}}</h2>
+        <div id="project-desc">{{description}}</div>
+        <div id="edit-project">
+
+          <div id="edit-project-form" class="dialog" title="Edit Project">
+            <button id="delete-project-link">Delete Project</button>
+            <label for="new-project-name">Project Name</label>
+            <input id="new-project-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
+            <label for="new-project-description">Description</label>
+            <textarea id="new-project-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+
+            <div id="sharing">
+              <div id="admins">
+                <label>Administrators</label>
+                <p class="helpText">Project administrators can read and write all data, and add or remove users.</p>
+                <table>
+                  <tbody id="administrator-list">
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td><input id="new-administrator" type='text' title='Username' placeholder="Username"></input></td>
+                      <td><button id="add-administrator" class='add' title='Add administrator'>Add</button></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <div id="writers">
+                <label>Writers</label>
+                <p class="helpText">Project writers can read and write all data.</p>
+                <table>
+                  <tbody id="writer-list">
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td><input id="new-writer" type='text' title='Username' placeholder="Username"></input></td>
+                      <td><button id="add-writer" class='add' title='Add writer'>Add</button></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <div id="readers">
+                <label>Readers</label>
+                <p class="helpText">Project readers can read all data.</p>
+                <table>
+                  <tbody id="reader-list">
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td><input id="new-reader" type='text' title='Username' placeholder="Username"></input></td>
+                      <td><button id="add-reader" class='add' title='Add reader'>Add</button></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="content">
+      <div class="width-wrapper">
+
+        <!-- Local CCA user interface -->
+        <div id="local-cca-form" class="dialog" title="Local File CCA Model">
+          <div id="local-cca-basics">
+            <label for="local-cca-name">Model Name</label>
+            <input id="local-cca-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
+            <label for="local-cca-description">Description</label>
+            <textarea id="local-cca-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
+            <label for="local-cca-marking">Marking</label>
+            <select id="local-cca-marking">
+              {{#marking-types}}
+              <option value='{{type}}'>{{label}}</option>
+              {{/marking-types}}
+            </select>
+            <button id="local-cca-basics-next">Next</button>
+          </div>
+
+          <div id="local-cca-browse">
+            <p>Choose a file to be analyzed:</p>
+            <input id="local-cca-file" type="file" name="file"/>
+            <button id="local-cca-browse-next">Next</button>
+          </div>
+
+          <div id="local-cca-parameters">
+            <table id="local-cca-variables">
+              <thead>
+                <tr><th>Variable</th><th>Input</th><th>Output</th></tr>
+                <tr>
+                  <td></td>
+                  <td><button id="local-cca-all-inputs-on" title="Turn all inputs on.">On</button><button id="local-cca-all-inputs-off" title="Turn all inputs off.">Off</button></td>
+                  <td><button id="local-cca-all-outputs-on" title="Turn all outputs on.">On</button><button id="local-cca-all-outputs-off" title="Turn all outputs off.">Off</button></td>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+
+            <div>
+              <p><input id="local-cca-scale-inputs" type="checkbox"></input>Scale inputs to unit variance.</p>
+            </div>
+            <button id="local-cca-parameters-next">Next</button>
+          </div>
+        </div>
+
+        <div class="buttonBar">
+          <button id="local-cca-button" title="Compute a CCA model using a local file.">Local CCA</button>
+          <button id="remote-cca-button" title="Compute a CCA model using a remote file.">Remote CCA</button>
+        </div>
+
+        <!-- Remote CCA user interface -->
+        <div id="remote-cca-form" class="dialog" title="Remote File CCA Model">
+          <div id="remote-cca-basics">
+            <label for="remote-cca-name">Model Name</label>
+            <input id="remote-cca-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
+            <label for="remote-cca-description">Description</label>
+            <textarea id="remote-cca-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
+            <select id="remote-cca-marking">
+              {{#marking-types}}
+              <option value='{{type}}'>{{label}}</option>
+              {{/marking-types}}
+            </select>
+            <button id="remote-cca-basics-next">Next</button>
+          </div>
+
+          <div id="remote-cca-connection">
+            <p>Select the remote host where your data is located:
+              <select id="remote-cca-hostname">
+                {{#remote-hosts}}
+                <option value="{{name}}">{{name}}</option>
+                {{/remote-hosts}}
+              </select>
+            </p>
+            <p><label for="remote-cca-username">Username</label><input id="remote-cca-username" name="remote-cca-username" type="input"/></p>
+            <p><label for="remote-cca-password">Password</label><input id="remote-cca-password" name="remote-cca-password" type="password"/></p>
+            <button id="remote-cca-connection-next">Next</button>
+          </div>
+
+          <div id="remote-cca-browse">
+            <p>Highlight the file to be analyzed:</p>
+            <p><button id="remote-cca-show-hidden">Show Hidden Files</button><button id="remote-cca-hide-dotfiles">Hide Dotfiles</button></p>
+            <ul id="remote-cca-browser" class="file-browser"></ul>
+            <button id="remote-cca-browse-next">Next</button>
+          </div>
+
+          <div id="remote-cca-parameters">
+            <table id="remote-cca-variables">
+              <thead>
+                <tr><th>Variable</th><th>Input</th><th>Output</th></tr>
+                <tr>
+                  <td></td>
+                  <td><button id="remote-cca-all-inputs-on" title="Turn all inputs on.">On</button><button id="remote-cca-all-inputs-off" title="Turn all inputs off.">Off</button></td>
+                  <td><button id="remote-cca-all-outputs-on" title="Turn all outputs on.">On</button><button id="remote-cca-all-outputs-off" title="Turn all outputs off.">Off</button></td>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+
+            <div>
+              <p><input id="remote-cca-scale-inputs" type="checkbox"></input>Scale inputs to unit variance.</p>
+            </div>
+            <button id="remote-cca-parameters-next">Next</button>
+          </div>
+        </div>
+
+        <ul id="models" class="main-list">
+        {{#models}}
+          <li>
+            <div class="main-item">
+              <h3 class="main-title"><a href="{{server-root}}models/{{_id}}">{{name}}</a></h3>
+              <a class="main-tag model" href="{{server-root}}models/{{_id}}">Model</a>
+              <div class="main-type">{{model-type}}</div>
+              <div class="main-created">Created {{created}} by {{creator}}</div>
+              <div class="main-marking">{{{marking-html}}}</div>
+              <p class="main-description">{{description}}</p>
+            </div>
+          </li>
+        {{/models}}
+        </ul>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="width-wrapper">
+        <ul id="footer-links">
+          {{#is-project-administrator}}
+          <li class="admin"><a href="{{server-root}}projects/{{_id}}/design">Design View</a></li>
+          {{/is-project-administrator}}
+        </ul>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+      $(document).ready(function()
+      {
+        /* Project user interface */
+        var security = {{acl-json}};
+        var modified_security = {{acl-json}};
+
+        function add_user(control, list, callback)
+        {
+          return function()
+          {
+            user_id = control.val();
+
+            $.ajax({
+              type : "GET",
+              url : "{{server-root}}users/" + user_id,
+              success : function(user)
+              {
+                if(!window.confirm("Add access for user " + user.name + "?  You must ensure that they have a need-to-know for access to all project data."))
+                  return;
+
+                list.push({user : user_id });
+                callback();
+              },
+              error : function()
+              {
+                alert("Unknown user " + user_id);
+              }
+            });
+          }
+        }
+
+        $("#add-administrator").button().click(add_user($("#new-administrator"), modified_security.administrators, update_administrator_acl));
+        $("#add-writer").button().click(add_user($("#new-writer"), modified_security.writers, update_writer_acl));
+        $("#add-reader").button().click(add_user($("#new-reader"), modified_security.readers, update_reader_acl));
+
+        function remove_user(list, index, callback)
+        {
+          return function()
+          {
+            list.splice(index, 1);
+            callback();
+          }
+        }
+
+        function update_administrator_acl()
+        {
+          $("#administrator-list").empty();
+          for(var i in modified_security.administrators)
+          {
+            var delete_button = $("<button class='delete' title='Remove administrator'>Remove</button>").button().click(remove_user(modified_security.administrators, i, update_administrator_acl));
+            var row = $("<tr>")
+            $("<td>").text(modified_security.administrators[i].user).appendTo(row);
+            $("<td>").append(delete_button).appendTo(row);
+            row.appendTo("#administrator-list");
+          }
+        }
+
+        function update_writer_acl()
+        {
+          $("#writer-list").empty();
+          for(var i in modified_security.writers)
+          {
+            var delete_button = $("<button class='delete' title='Remove writer'>Remove</button>").button().click(remove_user(modified_security.writers, i, update_writer_acl));
+            var row = $("<tr>")
+            $("<td>").text(modified_security.writers[i].user).appendTo(row);
+            $("<td>").append(delete_button).appendTo(row);
+            row.appendTo("#writer-list");
+          }
+        }
+
+        function update_reader_acl()
+        {
+          $("#reader-list").empty();
+          for(var i in modified_security.readers)
+          {
+            var delete_button = $("<button class='delete' title='Remove reader'>Remove</button>").button().click(remove_user(modified_security.readers, i, update_reader_acl));
+            var row = $("<tr>")
+            $("<td>").text(modified_security.readers[i].user).appendTo(row);
+            $("<td>").append(delete_button).appendTo(row);
+            row.appendTo("#reader-list");
+          }
+        }
+
+        update_administrator_acl();
+        update_writer_acl();
+        update_reader_acl();
+
+        $("#delete-project-link").click(function(){
+          if(!window.confirm("Delete project {{name}}?  This will delete all artifacts and analyses and cannot be undone."))
+            return false;
+
+          $.ajax(
+          {
+            type : "DELETE",
+            url : "{{server-root}}projects/{{_id}}",
+            success : function(details)
+            {
+              window.location.href = "{{server-root}}projects";
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error deleting project: " + reason_phrase);
+            }
+          });
+        });
+
+        $("#edit-project-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 600,
+          modal: true,
+          buttons:
+          {
+            "Save Changes": function()
+            {
+              var project =
+              {
+                "name" : $("#new-project-name").val(),
+                "description" : $("#new-project-description").val()
+              }
+
+              if(modified_security != security)
+                project["acl"] = modified_security;
+
+              $.ajax(
+              {
+                type : "PUT",
+                url : "{{server-root}}projects/{{_id}}",
+                contentType : "application/json",
+                data : $.toJSON(project),
+                processData : false,
+                success : function()
+                {
+                  window.location.reload();
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error updating project: " + reason_phrase);
+                }
+              });
+            },
+            Cancel: function()
+            {
+              $(this).dialog("close");
+            },
+          },
+        });
+
+        $("#edit-project-button").button().click(function()
+        {
+          $("#edit-project-form").dialog("open");
+          $("#new-project-name").focus();
+        });
+
+        /* Local CCA  user interface */
+
+        local_cca_worker = null;
+        $("#local-cca-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 700,
+          modal: true,
+          open : function()
+          {
+            $("#local-cca-basics").css("display", "block");
+            $("#local-cca-browse").css("display", "none");
+            $("#local-cca-parameters").css("display", "None");
+          },
+          close : function()
+          {
+            if(local_cca_worker)
+            {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}workers/" + local_cca_worker,
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error closing local worker: " + reason_phrase);
+                }
+              });
+              local_cca_worker = null;
+            }
+          }
+        });
+        $("#local-cca-basics-next").button().click(function()
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}projects/{{_id}}/models",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+              "model-type" : "cca3",
+              "name" : $("#local-cca-name").val(),
+              "marking" : $("#local-cca-marking").val(),
+              "description" : $("#local-cca-description").val()
+            }),
+            processData: false,
+            success: function(result)
+            {
+              local_cca_worker = result["wid"];
+              $("#local-cca-basics").css("display", "none");
+              $("#local-cca-browse").css("display", "block");
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error creating model: " + reason_phrase);
+            }
+          });
+        });
+        $("#local-cca-browse-next").button().click(function()
+        {
+          if($("#local-cca-file")[0].files.length != 1)
+          {
+            window.alert("You must select exactly one file to index.");
+            return;
+          }
+
+          var data = new FormData();
+          data.append("name", "data-table");
+          data.append("nan-row-filtering", "true");
+          data.append("file", $("#local-cca-file")[0].files[0]);
+
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}workers/" + local_cca_worker + "/model/load-table",
+            data : data,
+            contentType : false,
+            processData : false,
+            success : function(result)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}workers/" + local_cca_worker + "/model/table-columns",
+                data :
+                {
+                  name : "data-table"
+                },
+                success : function(table)
+                {
+                  function deselect_companion(companion)
+                  {
+                    return function()
+                    {
+                      companion.removeAttr("checked");
+                    }
+                  }
+                  $("#local-cca-variables tbody").empty();
+                  $.each(table["column-names"], function(index, column)
+                  {
+                    var row = $("<tr>").appendTo($("#local-cca-variables tbody"));
+                    $("<td>").text(column).appendTo(row);
+
+                    if(table["column-types"][index] == "double")
+                    {
+                      var input = $("<input type='checkbox' name='inputs' class='local-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                      var output = $("<input type='checkbox' name='outputs' class='local-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+
+                      input.attr("checked", "checked");
+                      input.click(deselect_companion(output));
+                      output.click(deselect_companion(input));
+                    }
+                    else
+                    {
+                      $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
+                    }
+                  });
+                  $("#local-cca-browse").css("display", "none");
+                  $("#local-cca-parameters").css("display", "block");
+                }
+              });
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error setting-up local connection: " + reason_phrase);
+            }
+          });
+        });
+        $("#local-cca-all-inputs-on").button().click(function()
+        {
+          $(".local-cca-input-variable").attr("checked", "checked");
+          $(".local-cca-output-variable").removeAttr("checked");
+        });
+        $("#local-cca-all-inputs-off").button().click(function()
+        {
+          $(".local-cca-input-variable").removeAttr("checked");
+        });
+        $("#local-cca-all-outputs-on").button().click(function()
+        {
+          $(".local-cca-output-variable").attr("checked", "checked");
+          $(".local-cca-input-variable").removeAttr("checked");
+        });
+        $("#local-cca-all-outputs-off").button().click(function()
+        {
+          $(".local-cca-output-variable").removeAttr("checked");
+        });
+        $("#local-cca-parameters-next").button().click(function()
+        {
+          function set_parameter(name, value)
+          {
+            $.ajax(
+            {
+              async : false,
+              type : "POST",
+              url : "{{server-root}}workers/" + local_cca_worker + "/model/set-parameter",
+              contentType : "application/json",
+              data: $.toJSON(
+              {
+                name : name,
+                value : value
+              }),
+              processData : false,
+              error: function(request, status, reason_phrase)
+              {
+                window.alert("Error setting model parameter: " + reason_phrase);
+              }
+            });
+          }
+
+          input_columns = [];
+          $(".local-cca-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
+          set_parameter("input-columns", input_columns);
+
+          output_columns = [];
+          $(".local-cca-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
+          set_parameter("output-columns", output_columns);
+
+          set_parameter("scale-inputs", $("#local-cca-scale-inputs").attr("checked"));
+
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}workers/" + local_cca_worker + "/model/finish-model",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+            }),
+            processData: false,
+            success: function(result)
+            {
+              local_cca_worker = null;
+              window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
+              $("#local-cca-form").dialog("close");
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error creating model: " + reason_phrase);
+            }
+          });
+        });
+        $("#local-cca-button").button().click(function()
+        {
+          $("#local-cca-form").dialog("open");
+        });
+
+        /* Remote CCA  user interface */
+
+        remote_cca_worker = null;
+        remote_cca_browser = null;
+        $("#remote-cca-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 700,
+          modal: true,
+          open : function()
+          {
+            $("#remote-cca-basics").css("display", "block");
+            $("#remote-cca-connection").css("display", "none");
+            $("#remote-cca-browse").css("display", "none");
+            $("#remote-cca-parameters").css("display", "None");
+          },
+          close : function()
+          {
+            remote_cca_browser = null;
+            if(remote_cca_worker)
+            {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}workers/" + remote_cca_worker,
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error closing remote worker: " + reason_phrase);
+                }
+              });
+              remote_cca_worker = null;
+            }
+            // Clear password field
+            $("#remote-cca-password").val("");
+            // Clear the username field
+            //$("#remote-cca-username").val("");
+          }
+        });
+        $("#remote-cca-basics-next").button().click(function()
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}projects/{{_id}}/models",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+              "model-type" : "cca3",
+              "name" : $("#remote-cca-name").val(),
+              "marking" : $("#remote-cca-marking").val(),
+              "description" : $("#remote-cca-description").val()
+            }),
+            processData: false,
+            success: function(result)
+            {
+              remote_cca_worker = result["wid"];
+              $("#remote-cca-basics").css("display", "none");
+              $("#remote-cca-connection").css("display", "block");
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error creating model: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-cca-connection-next").button().click(function()
+        {
+          $.ajax(
+          {
+            type : "PUT",
+            contentType : "application/json",
+            processData : false,
+            url : "{{server-root}}workers/" + remote_cca_worker + "/model/remote-connection",
+            data : $.toJSON(
+            {
+              hostname : $("#remote-cca-hostname").val(),
+              username : $("#remote-cca-username").val(),
+              password : $("#remote-cca-password").val()
+            }),
+            success : function(result)
+            {
+              remote_cca_browser = new file_browser({container: $("#remote-cca-browser"), label: $("#remote-cca-hostname").val() + "//", url: "{{server-root}}workers/" + remote_cca_worker + "/model/browse", path: "/", multiple_selection: false});
+              $("#remote-cca-connection").css("display", "none");
+              $("#remote-cca-browse").css("display", "block");
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error setting-up remote connection: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-cca-show-hidden").button().click(function()
+        {
+          remote_cca_browser.show_all();
+        });
+        $("#remote-cca-hide-dotfiles").button().click(function()
+        {
+          remote_cca_browser.hide_dotfiles();
+        });
+        $("#remote-cca-browse-next").button().click(function()
+        {
+          if(remote_cca_browser.selection().length != 1)
+          {
+            window.alert("You must select exactly one file to index.");
+            return;
+          }
+
+          $.ajax(
+          {
+            type : "POST",
+            contentType : "application/json",
+            processData : false,
+            url : "{{server-root}}workers/" + remote_cca_worker + "/model/load-remote-table",
+            data : $.toJSON(
+            {
+              name : "data-table",
+              path : remote_cca_browser.selection()[0],
+              "nan-row-filtering" : true
+            }),
+            success : function(result)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}workers/" + remote_cca_worker + "/model/table-columns",
+                data :
+                {
+                  name : "data-table"
+                },
+                success : function(table)
+                {
+                  function deselect_companion(companion)
+                  {
+                    return function()
+                    {
+                      companion.removeAttr("checked");
+                    }
+                  }
+                  $("#remote-cca-variables tbody").empty();
+                  $.each(table["column-names"], function(index, column)
+                  {
+                    var row = $("<tr>").appendTo($("#remote-cca-variables tbody"));
+                    $("<td>").text(column).appendTo(row);
+
+                    if(table["column-types"][index] == "double")
+                    {
+                      var input = $("<input type='checkbox' name='inputs' class='remote-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                      var output = $("<input type='checkbox' name='outputs' class='remote-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+
+                      input.attr("checked", "checked");
+                      input.click(deselect_companion(output));
+                      output.click(deselect_companion(input));
+                    }
+                    else
+                    {
+                      $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
+                    }
+                  });
+                  $("#remote-cca-browse").css("display", "none");
+                  $("#remote-cca-parameters").css("display", "block");
+                }
+              });
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error setting-up remote connection: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-cca-all-inputs-on").button().click(function()
+        {
+          $(".remote-cca-input-variable").attr("checked", "checked");
+          $(".remote-cca-output-variable").removeAttr("checked");
+        });
+        $("#remote-cca-all-inputs-off").button().click(function()
+        {
+          $(".remote-cca-input-variable").removeAttr("checked");
+        });
+        $("#remote-cca-all-outputs-on").button().click(function()
+        {
+          $(".remote-cca-output-variable").attr("checked", "checked");
+          $(".remote-cca-input-variable").removeAttr("checked");
+        });
+        $("#remote-cca-all-outputs-off").button().click(function()
+        {
+          $(".remote-cca-output-variable").removeAttr("checked");
+        });
+        $("#remote-cca-parameters-next").button().click(function()
+        {
+          function set_parameter(name, value)
+          {
+            $.ajax(
+            {
+              async : false,
+              type : "POST",
+              url : "{{server-root}}workers/" + remote_cca_worker + "/model/set-parameter",
+              contentType : "application/json",
+              data: $.toJSON(
+              {
+                name : name,
+                value : value
+              }),
+              processData : false,
+              error: function(request, status, reason_phrase)
+              {
+                window.alert("Error setting model parameter: " + reason_phrase);
+              }
+            });
+          }
+
+          input_columns = [];
+          $(".remote-cca-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
+          set_parameter("input-columns", input_columns);
+
+          output_columns = [];
+          $(".remote-cca-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
+          set_parameter("output-columns", output_columns);
+
+          set_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked"));
+
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}workers/" + remote_cca_worker + "/model/finish-model",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+            }),
+            processData: false,
+            success: function(result)
+            {
+              remote_cca_worker = null;
+              window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
+              $("#remote-cca-form").dialog("close");
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error creating model: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-cca-button").button().click(function()
+        {
+          $("#remote-cca-form").dialog("open");
+        });
+
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,218 @@
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
+
+/* Page header */
+
+#edit-model-button,
+#rerun-cca-button
+{
+  float: right;
+}
+
+#create-cca-model-button
+{
+  float: right;
+  clear: right;
+  width: 15em;
+}
+
+/* CCA table styles */
+#cca-component-pane
+{
+  overflow: auto;
+}
+
+#cca-table
+{
+  margin: 2em;
+  border-collapse: collapse;
+}
+
+#cca-table td
+{
+  text-align: right;
+}
+
+#cca-table td.value
+{
+  padding-right: 29px;
+  padding-left: 23px;
+}
+
+#cca-table .input th
+{
+  background: #eeffe0;
+}
+
+#cca-table .input td
+{
+  background: #c7e9c0;
+}
+
+#cca-table .output th
+{
+  background: #eeeeff;
+}
+
+#cca-table .output td
+{
+  background: #dbd9eb;
+}
+
+#cca-table .bar
+{
+  padding: 0;
+  margin: 0;
+}
+
+#cca-table td.bar:last-child 
+{
+  padding-right: 20px;
+}
+#cca-table td.bar:nth-child(2) 
+{
+  padding-left: 20px;
+}
+
+#cca-table .negative div
+{
+  float: right;
+  background-color: blue;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  height: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+#cca-table .positive div
+{
+  float: left;
+  background-color: red;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  height: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+#cca-table th.label
+{
+  border: 1px solid transparent;
+  padding-left: 23px;
+}
+
+#cca-table th.label:hover
+{
+  background: #ddd;
+  border: 1px solid gray;
+}
+
+#cca-table tr.input.selected-variable th, #cca-table tr.input.selected-variable td
+{
+  background: #3ca654;
+  color: white;
+}
+
+#cca-table tr.output.selected-variable th, #cca-table tr.output.selected-variable td
+{
+  background: #7767b0;
+  color: white;
+}
+
+#cca-table th.label.selected-component, #cca-table th.label.selected-component:hover
+{
+  background: #ddd;
+  border-top: 1px solid gray;
+  border-left: 1px solid gray;
+  border-right: 1px solid gray;
+  border-bottom: 1px solid transparent;
+}
+#cca-table th.label span.sortCCAComponent {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border: 1px solid transparent;
+  cursor: pointer;
+  position: relative;
+  top: 3px;
+  margin-left: 3px;
+}
+#cca-table th.label:hover .icon-sort-off,
+.icon-sort-off:hover {
+  background: transparent url(sort-desc-light.png) no-repeat center center;
+}
+.icon-sort-off:hover {
+  border: 1px solid #C7C7C7 !important;
+}
+.icon-sort-ascending:hover,
+.icon-sort-descending:hover
+{
+  border: 1px solid #878787 !important;
+}
+
+#cca-table td.value.selected-component
+{
+  background: #ddd;
+  border-left: 1px solid gray;
+  border-right: 1px solid gray;
+}
+
+/* CCA simulation table styles */
+
+#simulation-table-pane
+{
+  overflow: auto;
+}
+
+#cca-simulation-table
+{
+  margin: 2em;
+  border-collapse: collapse;
+}
+
+#cca-simulation-table td
+{
+  text-align: right;
+}
+
+#cca-simulation-table th.input
+{
+  background: #eeffe0;
+}
+
+#cca-simulation-table td.input
+{
+  background: #c7e9c0;
+}
+
+#cca-simulation-table th.output
+{
+  background: #eeeeff;
+}
+
+#cca-simulation-table td.output
+{
+  background: #dbd9eb;
+}
+
+#cca-simulation-table tr.selected td.simulation
+{
+  background: #ddd;
+}
+
+#cca-simulation-table tr.selected td.input
+{
+  background: #3ca654;
+  color: white;
+}
+
+#cca-simulation-table tr.selected td.output
+{
+  background: #7767b0;
+  color: white;
+}
+
