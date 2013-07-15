@@ -8,7 +8,9 @@ function bookmark_manager(server_root, pid, mid) {
 
   var bid = null;
   if($.deparam.querystring().bid == 'clear') {
-    // Do nothing to allow bookmark state to clear
+    // Remove the current model ID from localStorage to clear it
+    localStorage.removeItem(mid);
+    // Do nothing more to allow bookmark state to clear
   }
   else if($.deparam.querystring().bid != null) {
     bid = $.deparam.querystring().bid;
