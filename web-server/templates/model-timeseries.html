@@ -524,18 +524,24 @@ rights in this software.
                   var cluster_name = $(this).data("name");
                   var cluster_index = $(this).data("index");
 
+                  console.time("downloading cluster data for cluster " + cluster_name);
                   $.ajax(
                   {
                     type : "GET",
                     url : "{{server-root}}models/{{_id}}/file/cluster-" + cluster_name,
                     success : function(cluster)
                     {
+                      console.timeEnd("downloading cluster data for cluster " + cluster_name);
                       if(!skip_bookmarking) {
                         bookmarker.updateState( {"cluster-index" : cluster_index,
                                                  "cluster-name" : cluster_name} );
                       }
+                      console.time("calling dendrogram_viewer.set_cluster");
                       dendrogram_viewer.set_cluster(cluster, cluster_name, cluster_index);
+                      console.timeEnd("calling dendrogram_viewer.set_cluster");
+                      console.time("calling waveform_viewer.set_waveforms");
                       waveform_viewer.set_waveforms(cluster["waveforms"]);
+                      console.timeEnd("calling waveform_viewer.set_waveforms");
                     },
                     error : function(request, status, reason_phrase)
                     {
@@ -699,6 +705,7 @@ rights in this software.
 
           function select_node(d, skip_bookmarking)
           {
+            console.time("select_node");
             if(last_selected_node === d)
               return;
             last_selected_node = d;
@@ -739,11 +746,14 @@ rights in this software.
             {
               return function()
               {
+                console.time("make_selection_update");
                 update_table_filter(selection, cluster_name, cluster_index);
                 waveform_viewer.set_visible(selection);
+                console.timeEnd("make_selection_update");
               }
             }
             window.setTimeout(make_selection_update(selection), 750);
+            console.timeEnd("select_node");
           }
 
           function color_links(){
@@ -1095,28 +1105,92 @@ rights in this software.
 
         waveform_viewer_component.prototype.set_visible = function(visible)
         {
+          console.time("inside waveform_viewer_component.prototype.set_visible");
           var self = this;
 
           var waveform_subset = [];
+          console.time("each");
           $.each(visible, function(index, node)
           {
             if(node["waveform-index"] != null)
               waveform_subset.push(self.waveforms[node["waveform-index"]]);
           });
+          console.timeEnd("each");
 
           this.container.selectAll("g.waveform").remove();
           this.container.selectAll("g.selection").remove();
 
-          waveform = this.visualization.selectAll("g.waveform")
-            .data(waveform_subset)
-          .enter().append("svg:g")
-            .attr("class", "waveform")
-          .append("svg:path")
-            .attr("d", this.make_sax_line())
-            .style("fill", "none")
-            .style("stroke", "black")
-            .style("stroke-width", 1)
-            ;
+          console.time("d3");
+          // waveform = this.visualization.selectAll("g.waveform")
+          //   .data(waveform_subset)
+          // .enter().append("svg:g")
+          //   .attr("class", "waveform")
+          // .append("svg:path")
+          //   .attr("d", this.make_sax_line())
+          //   .style("fill", "none")
+          //   .style("stroke", "black")
+          //   .style("stroke-width", 1)
+          //   ;
+
+          waveform1 = this.visualization.selectAll("g.waveform");
+          waveform2 = waveform1.data(waveform_subset)
+            .enter();
+          waveform3 = waveform2
+            .append("svg:g")
+              .attr("class", "waveform");
+
+          // waveform4 = waveform3.append("svg:path")
+          //     .attr("d", this.make_sax_line())
+          //     .style("fill", "none")
+          //     .style("stroke", "black")
+          //     .style("stroke-width", 1)
+          //   ;
+
+          function processWaveform(waveform){
+            var testing = 2+2;
+            d3.select(waveform).append("svg:path")
+              .attr("d", self.make_sax_line())
+              .style("fill", "none")
+              .style("stroke", "black")
+              .style("stroke-width", 1);
+          }
+
+          timedProcessArray(waveform3[0], processWaveform, finishedProcessingWaveforms);
+
+          function finishedProcessingWaveforms(){
+            if(table_viewer_instance != null) {
+              table_viewer_instance.setWaveformColorsPerSelectedColumn(false);
+            }
+          }
+
+          function timedProcessArray(items, process, callback){
+            var timeout = 500; //how long to yield control to UI thread
+            var todo = items.concat(); //create a clone of the original
+
+            setTimeout(function(){
+              console.timeEnd("gap between waveform processing cycle");
+              console.time("processing waveform array");
+              var startLength = todo.length;
+              var start = +new Date();
+              do {
+                process(todo.shift());
+              } while (todo.length > 0 && (+new Date() - start < 50));
+
+              if (todo.length > 0){
+                setTimeout(arguments.callee, timeout);
+              } else {
+                callback(items);
+              }
+
+              console.timeEnd("processing waveform array");
+              console.log(startLength - todo.length + " waveforms processed during this cycle. " + todo.length + "-" + startLength);
+              console.time("gap between waveform processing cycle");
+
+            }, timeout);
+          }
+
+          console.timeEnd("d3");
+          console.timeEnd("inside waveform_viewer_component.prototype.set_visible");
         }
 
         waveform_viewer_component.prototype.set_color = function(color_array, color_scale)
@@ -1161,6 +1235,7 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //table_viewer_component
         function update_table_filter(visible, cluster_name, cluster_index) {
+          console.time("inside update_table_filter");
           this.visible = visible;
           var self = this;
 
@@ -1207,6 +1282,7 @@ rights in this software.
               workerId
             );
           }
+          console.timeEnd("inside update_table_filter");
         }
       });
     </script>
