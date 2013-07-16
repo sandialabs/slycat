@@ -59,8 +59,39 @@ class expression(ast.NodeVisitor):
     else:
       raise Exception("Unsupported unary operator: %s" % operator)
 
+  def visit_Compare(self, node):
+    #sys.stderr.write("Expression: %s\n" % ast.dump(node))
+    self.generic_visit(node)
+    operator = node.ops[0]
+    roperand = self.stack.pop()
+    loperand = self.stack.pop()
+    if isinstance(operator, ast.Eq):
+      self.stack.append(loperand == roperand)
+    elif isinstance(operator, ast.Gt):
+      self.stack.append(loperand > roperand)
+    elif isinstance(operator, ast.GtE):
+      self.stack.append(loperand >= roperand)
+    elif isinstance(operator, ast.Lt):
+      self.stack.append(loperand < roperand)
+    elif isinstance(operator, ast.LtE):
+      self.stack.append(loperand <= roperand)
+    else:
+      raise Exception("Unsupported comparison operator: %s" % operator)
+
+  def visit_BoolOp(self, node):
+    self.generic_visit(node)
+    operator = node.op
+    roperand = self.stack.pop()
+    loperand = self.stack.pop()
+    if isinstance(operator, ast.And):
+      self.stack.append(loperand and roperand)
+    elif isinstance(operator, ast.Or):
+      self.stack.append(loperand or roperand)
+    else:
+      raise Exception("Unsupported boolean operator: %s" % operator)
+
   def evaluate(self, node):
-    sys.stderr.write("Expression: %s\n" % ast.dump(node))
+    #sys.stderr.write("Expression: %s\n" % ast.dump(node))
     self.visit(node)
     return self.stack.pop()
 
@@ -85,11 +116,23 @@ def test_floordiv():
 def test_eq():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("2 == 3")), False)
 
+def test_gt():
+  numpy.testing.assert_equal(expression().evaluate(ast.parse("2 > 3")), False)
+
+def test_gte():
+  numpy.testing.assert_equal(expression().evaluate(ast.parse("2 >= 3")), False)
+
 def test_invert():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("~1")), -2)
 
 def test_lshift():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("2 << 1")), 4)
+
+def test_lt():
+  numpy.testing.assert_equal(expression().evaluate(ast.parse("2 < 3")), True)
+
+def test_lte():
+  numpy.testing.assert_equal(expression().evaluate(ast.parse("2 <= 3")), True)
 
 def test_mod():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("2 % 3")), 2)
@@ -112,5 +155,11 @@ def test_uadd():
 def test_usub():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("-(2+3)")), -5)
 
-def test_expr():
+def test_expr_1():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("1+2*3")), 7)
+
+def test_boolean_expr_1():
+  numpy.testing.assert_equal(expression().evaluate(ast.parse("1 < 2 and 2 < 3")), True)
+
+def test_boolean_expr_2():
+  numpy.testing.assert_equal(expression().evaluate(ast.parse("1 == 2 or 3 == 2 + 1")), True)
