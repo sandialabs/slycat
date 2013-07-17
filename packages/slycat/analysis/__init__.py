@@ -148,7 +148,7 @@ class coordinator(object):
         except StopIteration:
           pass
     else:
-      raise Exception("Unknown format: %s" % format)
+      raise Exception("Allowed formats: {}".format(", ".join(["null", "csv", "csv+", "dcsv (default)"])))
 
     log.info("elapsed time: %s seconds" % (time.time() - start_time))
   def value(self, source, attribute=0):
