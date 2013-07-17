@@ -58,6 +58,9 @@ def test_pow():
 def test_rshift():
   numpy.testing.assert_equal(evaluator().evaluate(ast.parse("8 >> 1")), 4)
 
+def test_sub():
+  numpy.testing.assert_equal(evaluator().evaluate(ast.parse("2 - 3")), -1)
+
 def test_uadd():
   numpy.testing.assert_equal(evaluator().evaluate(ast.parse("+(2+3)")), 5)
 
