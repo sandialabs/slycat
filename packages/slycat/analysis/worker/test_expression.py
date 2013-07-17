@@ -73,5 +73,19 @@ def test_boolean_expr_1():
 def test_boolean_expr_2():
   numpy.testing.assert_equal(evaluator().evaluate(ast.parse("1 == 2 or 3 == 2 + 1")), True)
 
-def test_name_lookup():
+def test_name_lookup_dict():
   numpy.testing.assert_almost_equal(evaluator({"pi" : scipy.constants.pi, "golden" : scipy.constants.golden}).evaluate(ast.parse("pi + golden")), scipy.constants.pi + scipy.constants.golden)
+
+def test_name_lookup_callback():
+  class custom_lookup:
+    def __contains__(self, key):
+      return key in ["pi", "golden"]
+    def __getitem__(self, key):
+      if key == "pi":
+        return scipy.constants.pi
+      elif key == "golden":
+        return scipy.constants.golden
+      else:
+        raise KeyError()
+  numpy.testing.assert_almost_equal(evaluator(custom_lookup()).evaluate(ast.parse("pi + golden")), scipy.constants.pi + scipy.constants.golden)
+
