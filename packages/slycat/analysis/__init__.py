@@ -215,9 +215,13 @@ class remote_array(object):
   def __getattr__(self, name):
     if name == "shape":
       return tuple([dimension["end"] - dimension["begin"] for dimension in self.proxy.dimensions()])
+    elif name == "ndim":
+      return len(self.proxy.dimensions())
+    elif name == "size":
+      return numpy.prod([dimension["end"] - dimension["begin"] for dimension in self.proxy.dimensions()])
   def __setattr__(self, name, value):
-    if name == "shape":
-      raise Exception("shape attribute is read-only.")
+    if name in ["shape", "ndim", "size"]:
+      raise Exception("{} attribute is read-only.".format(name))
     object.__setattr__(self, name, value)
   def dimensions(self):
     """Returns a list of {name, type, begin, end, chunk-size} dicts that describe the array dimensions."""
