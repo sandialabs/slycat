@@ -80,6 +80,12 @@ def test_aggregate_multiple():
   numpy.testing.assert_array_almost_equal(value(array2, 1), values(array1).mean())
   numpy.testing.assert_array_almost_equal(value(array2, 2), values(array1).max())
 
+def test_apply_attribute():
+  array1 = random(5)
+  array2 = apply(array1, "val2", "val")
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
+  numpy.testing.assert_array_equal(values(array2, 1), values(array1, 0))
+
 def test_apply_add_attribute_constant():
   array1 = random(5)
   array2 = apply(array1, "val2", "val + 3.4")
@@ -121,6 +127,12 @@ def test_apply_usub_attribute():
   array2 = apply(array1, "val2", "-val")
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), -values(array1, 0))
+
+def test_apply_dimension():
+  array1 = random(5)
+  array2 = apply(array1, "val2", "d0")
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 3, 4]))
 
 def test_apply_add_dimension_constant():
   array1 = random(5)
