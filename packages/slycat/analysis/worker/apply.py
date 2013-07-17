@@ -32,13 +32,17 @@ class symbol_lookup:
   def __contains__(self, key):
     return key in self.attribute_map or key in self.dimension_map
   def __getitem__(self, key):
-    if key in self.attribute_map:
-      return self.iterator.values(self.attribute_map[key])
-    if key in self.dimension_map:
-      dimension_index = self.dimension_map[key]
-      offset = self.iterator.coordinates()[dimension_index]
-      shape = self.iterator.shape()
-      return offset + numpy.array([coords[dimension_index] for coords in numpy.ndindex(shape)])
+    try:
+      if key in self.attribute_map:
+        return self.iterator.values(self.attribute_map[key])
+      if key in self.dimension_map:
+        dimension = self.dimension_map[key]
+        offset = self.iterator.coordinates()[dimension]
+        shape = tuple(self.iterator.shape())
+        slices = [slice(end) for end in shape]
+        return offset + numpy.mgrid[slices][dimension]
+    except Exception as e:
+      log.error("symbol_lookup exception: %s", e)
 
 class apply_array_iterator(array_iterator):
   def __init__(self, owner, source, attribute, expression):

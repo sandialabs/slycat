@@ -116,7 +116,7 @@ def test_apply_sub_attribute_constant():
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0) - 3.4)
 
-def test_apply_uadd():
+def test_apply_uadd_attribute():
   array1 = random(5)
   array2 = apply(array1, "val2", "+val")
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
@@ -128,11 +128,23 @@ def test_apply_usub_attribute():
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), -values(array1, 0))
 
-def test_apply_dimension():
+def test_apply_dimension_1d():
   array1 = random(5)
   array2 = apply(array1, "val2", "d0")
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 3, 4]))
+
+def test_apply_dimension_2d_1():
+  array1 = random((5, 5))
+  array2 = apply(array1, "val2", "d0")
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3], [4, 4, 4, 4, 4]]))
+
+def test_apply_dimension_2d_2():
+  array1 = random((5, 5))
+  array2 = apply(array1, "val2", "d1")
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]))
 
 def test_apply_add_dimension_constant():
   array1 = random(5)
