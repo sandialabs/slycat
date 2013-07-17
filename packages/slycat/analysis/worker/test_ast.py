@@ -2,15 +2,23 @@ from __future__ import division
 
 import ast
 import numpy
+import scipy.constants
 import sys
 
 class expression(ast.NodeVisitor):
-  def __init__(self):
+  def __init__(self, symbols = {}):
     self.stack = []
+    self.symbols = symbols
 
   def visit_Num(self, node):
     self.generic_visit(node)
     self.stack.append(node.n)
+
+  def visit_Name(self, node):
+    self.generic_visit(node)
+    if node.id not in self.symbols:
+      raise Exception("Unknown symbol: %s" % node.id)
+    self.stack.append(self.symbols[node.id])
 
   def visit_BinOp(self, node):
     self.generic_visit(node)
@@ -60,7 +68,8 @@ class expression(ast.NodeVisitor):
       raise Exception("Unsupported unary operator: %s" % operator)
 
   def visit_Compare(self, node):
-    #sys.stderr.write("Expression: %s\n" % ast.dump(node))
+    if len(node.ops) != 1:
+      raise Exception("Unexpected number of comparison operators: %s" % node.ops)
     self.generic_visit(node)
     operator = node.ops[0]
     roperand = self.stack.pop()
@@ -163,3 +172,6 @@ def test_boolean_expr_1():
 
 def test_boolean_expr_2():
   numpy.testing.assert_equal(expression().evaluate(ast.parse("1 == 2 or 3 == 2 + 1")), True)
+
+def test_name_lookup():
+  numpy.testing.assert_almost_equal(expression({"pi" : scipy.constants.pi, "golden" : scipy.constants.golden}).evaluate(ast.parse("pi + golden")), scipy.constants.pi + scipy.constants.golden)
