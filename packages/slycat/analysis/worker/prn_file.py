@@ -24,7 +24,7 @@ class prn_file_array(array):
   def attributes(self):
     with open(self.path, "r") as stream:
       line = stream.next()
-      return [{"name":name, "type":"int64" if name == "Index" else "double"} for name in line.split()]
+      return [{"name":name, "type":"int64" if name == "Index" else "float64"} for name in line.split()]
   def iterator(self):
     return self.pyro_register(prn_file_array_iterator(self, self.path, self.chunk_size, self.worker_index, len(self.siblings)))
   def file_path(self):
@@ -72,5 +72,5 @@ class prn_file_array_iterator(array_iterator):
     if attribute == 0: # Index
       return numpy.array([int(line[attribute]) for line in self.lines], dtype="int64")
     else:
-      return numpy.array([float(line[attribute]) for line in self.lines], dtype="double")
+      return numpy.array([float(line[attribute]) for line in self.lines], dtype="float64")
 
