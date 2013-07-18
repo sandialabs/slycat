@@ -60,6 +60,12 @@ def test_aggregate_max():
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_max", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).max())
 
+def test_aggregate_max_2():
+  array1 = random(50, 10)
+  array2 = aggregate(array1, ["max(val)"])
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_max", "float64")])
+  numpy.testing.assert_array_almost_equal(value(array2), values(array1).max())
+
 def test_aggregate_min():
   array1 = random(5, 3)
   array2 = aggregate(array1, ["min(val)"])

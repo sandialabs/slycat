@@ -73,7 +73,7 @@ class maximum(accumulator):
   def __init__(self):
     self.max = None
   def accumulate(self, observations):
-    self.max = observations.max() if self.max is None else max(self.max, observations.max)
+    self.max = observations.max() if self.max is None else max(self.max, observations.max())
   def reduce(self, other):
     self.max = other.max if self.max is None else self.max if other.max is None else max(self.max, other.max)
   def result(self):
@@ -83,7 +83,7 @@ class minimum(accumulator):
   def __init__(self):
     self.min = None
   def accumulate(self, observations):
-    self.min = observations.min() if self.min is None else min(self.min, observations.min)
+    self.min = observations.min() if self.min is None else min(self.min, observations.min())
   def reduce(self, other):
     self.min = other.min if self.min is None else self.min if other.min is None else min(self.min, other.min)
   def result(self):
