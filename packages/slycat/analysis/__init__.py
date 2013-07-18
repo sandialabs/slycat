@@ -86,6 +86,66 @@ def materialize(source):
 def project(source, *attributes):
   return get_coordinator().project(source, *attributes)
 def random(shape, chunks=None, seed=12345):
+  """Return an array of random values.
+
+  Creates an array with the given shape and chunk sizes, with a single
+  attribute filled with random numbers in the range [0, 1].
+
+  The shape parameter must be an int or a sequence of ints that specify the
+  size of the array along each dimension.  The chunk parameter must an int or
+  sequence of ints that specify the maximum size of an array chunk along each
+  dimension, and must match the number of dimensions implied by the shape
+  parameter.  If the chunk parameter is None, the chunk sizes will be identical
+  to the array shape (i.e. the array will have a single chunk).  The seed
+  parameter is used by the underlying random number generator and can be used
+  to repeat results.
+
+    >>> scan(attributes(random(4)))
+      {i} name,type
+    * {0} val,float64
+
+    >>> scan(dimensions(random(4)))
+      {i} name,type,begin,end,chunk-size
+    * {0} d0,int64,0,4,4
+
+    >>> scan(random(4))
+      {d0} val
+    * {0} 0.929616092817
+      {1} 0.316375554582
+      {2} 0.183918811677
+      {3} 0.204560278553
+
+    >>> scan(random(4, 2))
+      {d0} val
+    * {0} 0.929616092817
+      {1} 0.316375554582
+    * {2} 0.92899722191
+      {3} 0.449165754101
+
+    >>> scan(dimensions(random((4, 4), (2, 2))))
+      {i} name,type,begin,end,chunk-size
+    * {0} d0,int64,0,4,2
+      {1} d1,int64,0,4,2
+
+    >>> scan(random((4, 4), (2, 2)))
+      {d0,d1} val
+    * {0,0} 0.929616092817
+      {0,1} 0.316375554582
+      {1,0} 0.183918811677
+      {1,1} 0.204560278553
+    * {0,2} 0.92899722191
+      {0,3} 0.449165754101
+      {1,2} 0.228315321884
+      {1,3} 0.707144041509
+    * {2,0} 0.703148581097
+      {2,1} 0.537772928495
+      {3,0} 0.24899574575
+      {3,1} 0.534471770025
+    * {2,2} 0.370670417272
+      {2,3} 0.602791780041
+      {3,2} 0.229158970052
+      {3,3} 0.486744328559
+  """
   return get_coordinator().random(shape, chunks, seed)
 def redimension(source, dimensions, attributes):
   return get_coordinator().redimension(source, dimensions, attributes)
