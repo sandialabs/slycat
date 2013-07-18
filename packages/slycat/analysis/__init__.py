@@ -81,6 +81,7 @@ def materialize(source):
 
      >>> array1 = # Expensive-to-compute array
      >>> array2 = materialize(array1)
+     # Now, use array2 in place of array1, to avoid recomputing.
   """
   return get_coordinator().materialize(source)
 def project(source, *attributes):
@@ -363,6 +364,7 @@ class coordinator(object):
     return remote_array(self.proxy.zeros(shape, chunks))
 
 class remote_array(object):
+  """Proxy for a remote, multi-dimension, multi-attribute array."""
   def __init__(self, proxy):
     self.proxy = proxy
   def __del__(self):
@@ -379,13 +381,23 @@ class remote_array(object):
       raise Exception("{} attribute is read-only.".format(name))
     object.__setattr__(self, name, value)
   def dimensions(self):
-    """Returns a list of {name, type, begin, end, chunk-size} dicts that describe the array dimensions."""
+    """Return a sequence of dicts that describe the array dimensions.
+
+        >>> a = random((100, 2))
+        >>> a.dimensions()
+        [{'end': 100, 'begin': 0, 'type': 'int64', 'name': 'd0', 'chunk-size': 100}, {'end': 2, 'begin': 0, 'type': 'int64', 'name': 'd1', 'chunk-size': 2}]
+    """
     return self.proxy.dimensions()
   def attributes(self):
-    """Returns a list of {name, type} dicts that describe the attributes stored in each array cell."""
+    """Return a sequence of dicts that describe the attributes stored in each array cell.
+
+        >>> a = random((100, 2))
+        >>> a.attributes()
+        [{'type': 'float64', 'name': 'val'}]
+    """
     return self.proxy.attributes()
   def chunks(self):
-    """Returns an iterator over array chunks that delivers data to the client."""
+    """Return an iterator that accesses each chunk in the underlying array."""
     attributes = self.proxy.attributes()
     iterator = self.proxy.iterator()
     try:
@@ -399,13 +411,14 @@ class remote_array(object):
       raise
 
 class remote_file_array(remote_array):
+  """Proxy for a remote, multi-dimension, multi-attribute array that was loaded from a single file."""
   def __init__(self, proxy):
     remote_array.__init__(self, proxy)
   def file_path(self):
-    """Returns the underlying file path."""
+    """Return the path to the loaded file."""
     return self.proxy.file_path()
   def file_size(self):
-    """Returns the size in bytes of the underlying file."""
+    """Return the size in bytes of the loaded file."""
     return self.proxy.file_size()
 
 class array_chunk(object):
