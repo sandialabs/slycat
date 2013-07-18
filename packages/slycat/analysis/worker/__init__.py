@@ -12,6 +12,7 @@ import sys
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, chunk_iterator, chunk_range, chunk_count
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
+import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.redimension
 
 class factory(pyro_object):
@@ -35,7 +36,7 @@ class factory(pyro_object):
   def attribute_rename(self, worker_index, source, attributes):
     return self.pyro_register(attribute_rename_array(worker_index, self.require_object(source), attributes))
   def chunk_map(self, worker_index, source):
-    return self.pyro_register(chunk_map_array(worker_index, self.require_object(source)))
+    return self.pyro_register(slycat.analysis.worker.chunk_map.chunk_map_array(worker_index, self.require_object(source)))
   def csv_file(self, worker_index, path, chunk_size, format):
     return self.pyro_register(csv_file_array(worker_index, path, chunk_size, format))
   def dimensions(self, worker_index, source):
@@ -126,60 +127,6 @@ class attribute_rename_array(array):
     return [{"name":self.name_map[attribute["name"]], "type":attribute["type"]} for attribute in self.source.attributes()]
   def iterator(self):
     return self.source.iterator()
-
-class chunk_map_array(array):
-  def __init__(self, worker_index, source):
-    array.__init__(self, worker_index)
-    self.source = source
-    self.source_dimensions = source.dimensions()
-    self.chunk_map = None
-  def local_chunk_map(self):
-    results = []
-    with self.source.iterator() as iterator:
-      for index, ignored in enumerate(iterator):
-        results.append((self.worker_index, index, iterator.coordinates(), iterator.shape()))
-    return results
-  def gather_global_chunk_map(self):
-    if self.chunk_map is not None:
-      return
-    results = [Pyro4.async(sibling).local_chunk_map() for sibling in self.siblings]
-    results = [result.value for result in results]
-    results = [chunk for result in results for chunk in result]
-    self.chunk_map = results
-  def dimensions(self):
-    self.gather_global_chunk_map()
-    chunk_count = len(self.chunk_map)
-    return [{"name":"i", "type":"int64", "begin":0, "end":chunk_count, "chunk-size":chunk_count}]
-  def attributes(self):
-    return [{"name":"worker", "type":"int64"}, {"name":"index", "type":"int64"}] + [{"name":"c%s" % index, "type":dimension["type"]} for index, dimension in enumerate(self.source_dimensions)] + [{"name":"s%s" % index, "type":"int64"} for index, dimension in enumerate(self.source_dimensions)]
-  def iterator(self):
-    if 0 == self.worker_index:
-      return self.pyro_register(chunk_map_iterator(self))
-    else:
-      return self.pyro_register(null_array_iterator(self))
-
-class chunk_map_iterator(array_iterator):
-  def __init__(self, owner):
-    array_iterator.__init__(self, owner)
-    self.iterations = 0
-  def next(self):
-    if self.iterations:
-      raise StopIteration()
-    self.iterations += 1
-    self.owner.gather_global_chunk_map()
-  def coordinates(self):
-    return numpy.array([0], dtype="int64")
-  def shape(self):
-    return numpy.array([len(self.owner.chunk_map)], dtype="int64")
-  def values(self, attribute):
-    if attribute == 0: # worker
-      return numpy.array([chunk[0] for chunk in self.owner.chunk_map], dtype="int64")
-    elif attribute == 1: # index
-      return numpy.array([chunk[1] for chunk in self.owner.chunk_map], dtype="int64")
-    elif attribute >= 2 and attribute < 2 + len(self.owner.source_dimensions): # coordinates
-      return numpy.array([chunk[2][attribute - 2] for chunk in self.owner.chunk_map], dtype="int64")
-    else:
-      return numpy.array([chunk[3][attribute - 2 - len(self.owner.source_dimensions)] for chunk in self.owner.chunk_map], dtype="int64")
 
 class csv_file_array(array):
   def __init__(self, worker_index, path, chunk_size, format):
