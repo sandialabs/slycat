@@ -432,6 +432,13 @@ def test_load_csv_formatted():
   numpy.testing.assert_array_equal(values(array1, 6)[:2], numpy.array([130, 165], dtype="float64"))
   numpy.testing.assert_array_equal(values(array1, 7)[:2], numpy.array([18, 15], dtype="float64"))
 
+def test_materialize():
+  array1 = random((5, 5))
+  array2 = materialize(array1)
+  assert(array2.dimensions() == array1.dimensions())
+  assert(array2.attributes() == array1.attributes())
+  numpy.testing.assert_array_equal(values(array2, 0), values(array1, 0))
+
 def test_project_by_index():
   array1 = random(5)
   array2 = aggregate(array1, ["min(val)", "avg(val)", "max(val)"])

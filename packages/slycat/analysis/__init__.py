@@ -48,6 +48,8 @@ def dimensions(source):
   return get_coordinator().dimensions(source)
 def load(path, schema, *arguments, **keywords):
   return get_coordinator().load(path, schema, *arguments, **keywords)
+def materialize(source):
+  return get_coordinator().materialize(source)
 def project(source, *attributes):
   return get_coordinator().project(source, *attributes)
 def random(shape, chunks=None, seed=12345):
@@ -90,6 +92,8 @@ class coordinator(object):
     return remote_array(self.proxy.dimensions(source.proxy._pyroUri))
   def load(self, path, schema, *arguments, **keywords):
     return remote_file_array(self.proxy.load(path, schema, *arguments, **keywords))
+  def materialize(self, source):
+    return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
   def random(self, shape, chunks=None, seed=12345):

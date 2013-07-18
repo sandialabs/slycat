@@ -9,6 +9,7 @@ import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
 import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.csv_file
+import slycat.analysis.worker.materialize
 import slycat.analysis.worker.prn_file
 import slycat.analysis.worker.redimension
 
@@ -38,6 +39,8 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, chunk_size, format))
   def dimensions(self, worker_index, source):
     return self.pyro_register(dimensions_array(worker_index, self.require_object(source)))
+  def materialize(self, worker_index, source):
+    return self.pyro_register(slycat.analysis.worker.materialize.materialize_array(worker_index, self.require_object(source)))
   def prn_file(self, worker_index, path, chunk_size):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
