@@ -2,6 +2,17 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+"""Parallel streaming data analysis.
+
+Slycat Analysis provides a Pythonic API for interactive exploratory analysis of
+remote, multi-dimension, multi-attribute arrays.  Using Slycat Analysis, you
+connect to a running Slycat Analysis Coordinator to create, load, and
+manipulate arrays that are distributed across one-to-many Slycat Analysis
+Workers for parallel computation.  Arrays are further chunked (streamed)
+through the system, so you can manipulate arrays that are larger than the
+available system memory.
+"""
+
 import logging
 import numpy
 import Pyro4
@@ -22,13 +33,23 @@ sys.excepthook = Pyro4.util.excepthook
 current_coordinator = None
 
 def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
-  """Connects with a running Slycat Analysis server."""
+  """Return a connection to a running Slycat Analysis Coordinator.
+
+  Note that you only need to call connect() explicitly when supplying your own
+  parameters.  Otherwise, connect() will be called automatically when you use
+  any of the other functions in this module.
+
+  You will likely never need to call connect() more than once or keep track of
+  the returned connection object, unless you need connections to more than one
+  Slycat Analysis Coordinator.
+  """
   global current_coordinator
   Pyro4.config.HMAC_KEY = hmac_key
   nameserver = Pyro4.locateNS(host, port)
   current_coordinator = coordinator(nameserver)
   return current_coordinator
 def get_coordinator():
+  """Return the current (most recently connected) coordinator."""
   if current_coordinator is None:
     connect()
   return current_coordinator
@@ -49,6 +70,18 @@ def dimensions(source):
 def load(path, schema, *arguments, **keywords):
   return get_coordinator().load(path, schema, *arguments, **keywords)
 def materialize(source):
+  """Return a materialized (loaded into memory) version of an array.
+
+  Normally, array data is only loaded and streamed through the system when
+  needed, allowing you to work with arrays that would not fit into memory.
+  However, in some cases you may have an array of intermediate results that
+  were expensive to compute and can fit into memory - in this case, creating a
+  materialized version of the array allows you to re-use those results without
+  recomputing them every time:
+
+     >>> array1 = # Expensive-to-compute array
+     >>> array2 = materialize(array1)
+  """
   return get_coordinator().materialize(source)
 def project(source, *attributes):
   return get_coordinator().project(source, *attributes)
@@ -67,6 +100,64 @@ def values(source, attribute=0):
 def workers():
   return get_coordinator().workers()
 def zeros(shape, chunks=None):
+  """Return an array of all zeros.
+
+  Creates an array with the given shape and chunk sizes, with a single
+  attribute filled with zeros.
+
+  The shape parameter must be an int or a sequence of ints that specify the
+  size of the array along each dimension.  The chunk parameter must an int or
+  sequence of ints that specify the maximum size of an array chunk along each
+  dimension, and must match the number of dimensions implied by the shape
+  parameter.  If the chunk parameter is None, the chunk sizes will be identical
+  to the array shape (i.e. the array will have a single chunk).
+
+    >>> scan(attributes(zeros(4)))
+      {i} name,type
+    * {0} val,float64
+
+    >>> scan(dimensions(zeros(4)))
+      {i} name,type,begin,end,chunk-size
+    * {0} d0,int64,0,4,4
+
+    >>> scan(zeros(4))
+      {d0} val
+    * {0} 0.0
+      {1} 0.0
+      {2} 0.0
+      {3} 0.0
+
+    >>> scan(zeros(4, 2))
+      {d0} val
+    * {0} 0.0
+      {1} 0.0
+    * {2} 0.0
+      {3} 0.0
+
+    >>> scan(dimensions(zeros((4, 4), (2, 2))))
+      {i} name,type,begin,end,chunk-size
+    * {0} d0,int64,0,4,2
+      {1} d1,int64,0,4,2
+
+    >>> scan(zeros((4, 4), (2, 2)))
+      {d0,d1} val
+    * {0,0} 0.0
+      {0,1} 0.0
+      {1,0} 0.0
+      {1,1} 0.0
+    * {0,2} 0.0
+      {0,3} 0.0
+      {1,2} 0.0
+      {1,3} 0.0
+    * {2,0} 0.0
+      {2,1} 0.0
+      {3,0} 0.0
+      {3,1} 0.0
+    * {2,2} 0.0
+      {2,3} 0.0
+      {3,2} 0.0
+      {3,3} 0.0
+  """
   return get_coordinator().zeros(shape, chunks)
 
 class coordinator(object):
