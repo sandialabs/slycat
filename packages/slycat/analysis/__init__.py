@@ -380,6 +380,24 @@ class remote_array(object):
     if name in ["shape", "ndim", "size"]:
       raise Exception("{} attribute is read-only.".format(name))
     object.__setattr__(self, name, value)
+  def __repr__(self):
+    dimensions = self.proxy.dimensions()
+    if len(dimensions) > 1:
+      dimensions_repr = "x".join([str(dimension["end"] - dimension["begin"]) for dimension in dimensions])
+    else:
+      dimension = dimensions[0]
+      dimensions_repr = "{} element".format(dimension["end"] - dimension["begin"])
+
+    attributes = self.proxy.attributes()
+    attributes_repr = [attribute["name"] for attribute in attributes]
+    if len(attributes) > 6:
+      attributes_repr = attributes_repr[:3] + ["..."] + attributes_repr[-3:]
+    attributes_repr = ", ".join(attributes_repr)
+    if len(attributes) > 1:
+      attributes_repr = "attributes: " + attributes_repr
+    else:
+      attributes_repr = "attribute: " + attributes_repr
+    return "<{} remote array with {}>".format(dimensions_repr, attributes_repr)
   def dimensions(self):
     """Return a sequence of dicts that describe the array dimensions.
 
