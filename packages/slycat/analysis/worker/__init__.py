@@ -2,18 +2,14 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import ast
-import math
 import numpy
-import os
-import Pyro4
-import sys
 
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, chunk_iterator, chunk_range, chunk_count
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
 import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.csv_file
+import slycat.analysis.worker.prn_file
 import slycat.analysis.worker.redimension
 
 class factory(pyro_object):
@@ -43,7 +39,7 @@ class factory(pyro_object):
   def dimensions(self, worker_index, source):
     return self.pyro_register(dimensions_array(worker_index, self.require_object(source)))
   def prn_file(self, worker_index, path, chunk_size):
-    return self.pyro_register(prn_file_array(worker_index, path, chunk_size))
+    return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
     return self.pyro_register(project_array(worker_index, self.require_object(source), attributes))
   def random(self, worker_index, shape, chunk_sizes, seed):
@@ -166,73 +162,6 @@ class dimensions_array_iterator(array_iterator):
       return numpy.array([dimension["end"] for dimension in self.owner.source_dimensions], dtype="int64")
     elif attribute == 4:
       return numpy.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
-
-class prn_file_array(array):
-  def __init__(self, worker_index, path, chunk_size):
-    array.__init__(self, worker_index)
-    self.path = path
-    self.chunk_size = chunk_size
-  def dimensions(self):
-    with open(self.path, "r") as stream:
-      end = 0
-      for line in stream:
-        end += 1
-      if line.strip() == "End of Xyce(TM) Simulation":
-        end -= 1
-      end -= 1 # Skip the header
-    return [{"name":"i", "type":"int64", "begin":0, "end":end, "chunk-size":self.chunk_size}]
-  def attributes(self):
-    with open(self.path, "r") as stream:
-      line = stream.next()
-      return [{"name":name, "type":"int64" if name == "Index" else "double"} for name in line.split()]
-  def iterator(self):
-    return self.pyro_register(prn_file_array_iterator(self, self.path, self.chunk_size, self.worker_index, len(self.siblings)))
-  def file_path(self):
-    return self.path
-  def file_size(self):
-    return os.stat(self.path).st_size
-
-class prn_file_array_iterator(array_iterator):
-  def __init__(self, owner, path, chunk_size, worker_index, worker_count):
-    array_iterator.__init__(self, owner)
-    self.stream = open(path, "r")
-    self.stream.next() # Skip the header
-    self.chunk_size = chunk_size
-    self.worker_index = worker_index
-    self.worker_count = worker_count
-    self.chunk_id = -1
-    self.lines = []
-  def next(self):
-    self.lines = []
-    self.chunk_id += 1
-    while self.chunk_id % self.worker_count != self.worker_index:
-      try:
-        for i in range(self.chunk_size):
-          line = self.stream.next()
-          if line.strip() == "End of Xyce(TM) Simulation":
-            raise StopIteration()
-      except StopIteration:
-        raise StopIteration()
-      self.chunk_id += 1
-    try:
-      for i in range(self.chunk_size):
-        line = self.stream.next()
-        if line.strip() == "End of Xyce(TM) Simulation":
-          raise StopIteration()
-        self.lines.append(line.split())
-    except StopIteration:
-      pass
-    if not len(self.lines):
-      raise StopIteration()
-  def coordinates(self):
-    return numpy.array([self.chunk_id * self.chunk_size], dtype="int64")
-  def shape(self):
-    return numpy.array([len(self.lines)], dtype="int64")
-  def values(self, attribute):
-    if attribute == 0: # Index
-      return numpy.array([int(line[attribute]) for line in self.lines], dtype="int64")
-    else:
-      return numpy.array([float(line[attribute]) for line in self.lines], dtype="double")
 
 class project_array(array):
   def __init__(self, worker_index, source, attributes):
