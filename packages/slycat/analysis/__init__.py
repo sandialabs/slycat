@@ -383,10 +383,17 @@ class remote_array(object):
   def __repr__(self):
     dimensions = self.proxy.dimensions()
     if len(dimensions) > 1:
-      dimensions_repr = "x".join([str(dimension["end"] - dimension["begin"]) for dimension in dimensions])
+      shape_repr = "x".join([str(dimension["end"] - dimension["begin"]) for dimension in dimensions])
     else:
       dimension = dimensions[0]
-      dimensions_repr = "{} element".format(dimension["end"] - dimension["begin"])
+      shape_repr = "{} element".format(dimension["end"] - dimension["begin"])
+
+    dimensions_repr = [dimension["name"] for dimension in dimensions]
+    dimensions_repr = ", ".join(dimensions_repr)
+    if len(dimensions) > 1:
+      dimensions_repr = "dimensions: " + dimensions_repr
+    else:
+      dimensions_repr = "dimension: " + dimensions_repr
 
     attributes = self.proxy.attributes()
     attributes_repr = [attribute["name"] for attribute in attributes]
@@ -397,7 +404,7 @@ class remote_array(object):
       attributes_repr = "attributes: " + attributes_repr
     else:
       attributes_repr = "attribute: " + attributes_repr
-    return "<{} remote array with {}>".format(dimensions_repr, attributes_repr)
+    return "<{} remote_array with {} and {}>".format(shape_repr, dimensions_repr, attributes_repr)
   def dimensions(self):
     """Return a sequence of dicts that describe the array dimensions.
 
