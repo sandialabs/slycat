@@ -93,16 +93,27 @@ def chunk_count(shape, chunk_sizes):
   chunk_sizes = numpy.array(chunk_sizes)
   return int(numpy.prod(numpy.ceil(numpy.true_divide(shape, chunk_sizes))))
 
+def worker_chunk_counts(chunk_count, worker_count):
+  partition_size = int(chunk_count / worker_count)
+  extra = chunk_count % worker_count
+  for i in range(0, extra):
+    yield partition_size + 1
+  for i in range(extra, worker_count):
+    yield partition_size
+
+def worker_chunk_ranges(chunk_count, worker_count):
+  begin = 0
+  for count in worker_chunk_counts(chunk_count, worker_count):
+    yield begin, begin + count
+    begin += count
+
 def chunk_range(chunk_count, worker_index, worker_count):
   """Assigns a half-open range of chunks to a worker."""
   if worker_index < 0 or worker_index >= worker_count:
     raise Exception("Invalid worker index.")
-  worker_counts = [int(chunk_count / worker_count) for i in range(worker_count)]
-  for i in range(chunk_count % worker_count):
-    worker_counts[i] += 1
-  worker_begin = sum(worker_counts[:worker_index])
-  worker_end = worker_begin + worker_counts[worker_index]
-  return worker_begin, worker_end
+  for index, range in enumerate(worker_chunk_ranges(chunk_count, worker_count)):
+    if index == worker_index:
+      return range
 
 def chunk_iterator(shape, chunk_sizes, range=None):
   """Iterates over the chunks in an array in-order, returning the chunk id, begin coordinates, and end coordinates of each chunk."""
