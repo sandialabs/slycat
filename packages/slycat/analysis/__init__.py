@@ -404,7 +404,7 @@ class remote_array(object):
       attributes_repr = "attributes: " + attributes_repr
     else:
       attributes_repr = "attribute: " + attributes_repr
-    return "<{} remote_array with {} and {}>".format(shape_repr, dimensions_repr, attributes_repr)
+    return "<{} remote array with {} and {}>".format(shape_repr, dimensions_repr, attributes_repr)
   def dimensions(self):
     """Return a sequence of dicts that describe the array dimensions.
 
@@ -458,6 +458,16 @@ class array_chunk(object):
   def __init__(self, proxy, attributes):
     self._proxy = proxy
     self._attributes = attributes
+  def __repr__(self):
+    shape = self.shape()
+    if len(shape) > 1:
+      shape_repr = "x".join([str(size) for size in shape])
+    else:
+      shape_repr = "{} element".format(shape[0])
+
+    coordinates = self.coordinates()
+    coordinates_repr = ", ".join([str(coordinate) for coordinate in coordinates])
+    return "<{} remote array chunk at coordinates {}>".format(shape_repr, coordinates_repr)
   def coordinates(self):
     """Return a numpy array containing the lowest-numbered coordinates along each dimension for this chunk."""
     return self._proxy.coordinates()
@@ -478,6 +488,8 @@ class array_chunk_attribute(object):
     self.proxy = proxy
     self.index = index
     self.attribute = attribute
+  def __repr__(self):
+    return "<remote array chunk attribute: {}>".format(self.name())
   def name(self):
     """Return the name of the attribute."""
     return self.attribute["name"]
