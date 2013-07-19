@@ -56,12 +56,14 @@ class coordinator(object):
   def materialize(self, source):
     """Return a materialized (loaded into memory) version of an array.
 
-    Normally, array data is only loaded and streamed through the system when
-    needed, allowing you to work with arrays that would not fit into memory.
-    However, in some cases you may have an array of intermediate results that
-    were expensive to compute and can fit into memory - in this case, creating a
-    materialized version of the array allows you to re-use those results without
-    recomputing them every time:
+    Normally, array data is divided into chunks that are loaded and streamed
+    through the system only when needed, allowing you to work with arrays that
+    will not fit into memory.  The down-side to this approach is that the
+    results of a computation aren't retained, and will be recomputed the next
+    time they're needed.  However, in some cases you may have an array of
+    intermediate results that were expensive to compute and can fit into memory
+    - in this case, creating a materialized version of the array allows you to
+    re-use those results without recomputing them every time:
 
        >>> array1 = # Expensive-to-compute array
        >>> array2 = materialize(array1)
@@ -135,7 +137,56 @@ class coordinator(object):
   def redimension(self, source, dimensions, attributes):
     return remote_array(self.proxy.redimension(source.proxy._pyroUri, dimensions, attributes))
   def scan(self, source, format="dcsv", stream=sys.stdout):
-    """Formats the array contents to a stream."""
+    """Format the contents of an array, writing them to a stream.
+
+    Scanning an array is the easiest way to see its contents formatted for
+    human-consumption.  Use the stream parameter to control where the formatted
+    output is written, whether to stdout (the default), a file, or any other
+    file-like object.
+
+    The format parameter specifies how the array contents will be formatted - use
+    format "csv" to write each array cell as a line containing comma-separated
+    attribute values for that cell.  Note that cell coordinates and chunk
+    boundaries are lost with this format:
+
+      >>> scan(random((2, 2), (1, 2)), format="csv")
+      val
+      0.929616092817
+      0.316375554582
+      0.183918811677
+      0.204560278553
+
+    Use format "csv+" to write each array cell as a line containing
+    comma-separated cell coordinates and attribute values for that cell:
+
+      >>> scan(random((2, 2), (1, 2)), format="csv+")
+      d0,d1,val
+      0,0,0.929616092817
+      0,1,0.316375554582
+      1,0,0.183918811677
+      1,1,0.204560278553
+
+    Use format "dcsv" (the default) to write each array cell as a line with
+    markers for chunk boundaries along with comma-separated cell coordinates
+    and attribute values for that cell.  Cell coordinates are surrounded by
+    braces making them easier to distinguish from attribute values:
+
+    >>> scan(random((2, 2), (1, 2)), format="dcsv")
+      {d0,d1} val
+    * {0,0} 0.929616092817
+      {0,1} 0.316375554582
+    * {1,0} 0.92899722191
+      {1,1} 0.449165754101
+
+    Format "null" produces no written output, but is useful to force
+    computation for timing studies without cluttering the screen or interfering
+    with timing results:
+
+    >>> scan(random((2, 2), (1, 2)), format="null")
+
+    Note that scanning an array means sending all of its data to the client for
+    formatting, which may be impractical for large arrays.
+    """
     start_time = time.time()
     if format == "null":
       for chunk in source.chunks():
@@ -204,7 +255,8 @@ class coordinator(object):
       raise
 
   def values(self, source, attribute=0):
-    """Returns a numpy array extracted from a single array attribute."""
+    """Returns a remote array attribute as a numpy array.
+    """
     start_time = time.time()
 
     # Materialize every chunk into memory ...
@@ -409,10 +461,17 @@ class array_chunk(object):
     coordinates_repr = ", ".join([str(coordinate) for coordinate in coordinates])
     return "<{} remote array chunk at coordinates {}>".format(shape_repr, coordinates_repr)
   def coordinates(self):
-    """Return a numpy array containing the lowest-numbered coordinates along each dimension for this chunk."""
+    """Return a numpy array containing the coordinates of this chunk.
+
+    A chunk's coordinates are the lowest-numbered coordinates along each
+    dimension for that chunk.
+    """
     return self._proxy.coordinates()
   def shape(self):
-    """Return a numpy array containing the shape (size along each dimension) for this chunk."""
+    """Return a numpy array containing the shape of this chunk.
+
+    A chunk's shape is the size of the chunk along each of its dimensions.
+    """
     return self._proxy.shape()
   def attributes(self):
     """Return an iterator over the attributes within this chunk."""
