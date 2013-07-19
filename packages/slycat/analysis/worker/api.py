@@ -86,7 +86,7 @@ class null_array_iterator(array_iterator):
     raise Exception("No values available.")
 
 def chunk_count(shape, chunk_sizes):
-  """Return the total number of chunks in an array."""
+  """Return the number of chunks required to partition the given array shape."""
   if len(shape) != len(chunk_sizes):
     raise Exception("Dimension mismatch.")
   shape = numpy.array(shape)
@@ -94,6 +94,11 @@ def chunk_count(shape, chunk_sizes):
   return int(numpy.prod(numpy.ceil(numpy.true_divide(shape, chunk_sizes))))
 
 def worker_chunk_counts(chunk_count, worker_count):
+  """Iterate over the number of chunks assigned to each worker.
+
+  Given the number of chunks and the number of available workers, the results
+  attempt to spread chunks evenly among the workers.
+  """
   partition_size = int(chunk_count / worker_count)
   extra = chunk_count % worker_count
   for i in range(0, extra):
@@ -102,10 +107,35 @@ def worker_chunk_counts(chunk_count, worker_count):
     yield partition_size
 
 def worker_chunk_ranges(chunk_count, worker_count):
+  """Iterate over the range of chunk indices assigned to each worker.
+
+  Given the number of chunks and the number of available workers, the results
+  attempt to spread chunks evenly among the workers, returning a range (begin, end]
+  of chunk indices assigned to each worker.
+  """
   begin = 0
   for count in worker_chunk_counts(chunk_count, worker_count):
     yield begin, begin + count
     begin += count
+
+def worker_chunks(shape, chunk_sizes, worker_count):
+  """Iterate over the chunks assigned to each worker.
+
+  Given an array shape, maximum chunk sizes, and number of available workers,
+  returns the following for each chunk: global chunk index, worker index,
+  worker chunk index, chunk begin coordinates (minimum chunk coordinate along
+  each dimension), and chunk end coordinates (maximum chunk coordinate plus one
+  along each dimension).
+  """
+  shape = numpy.array(shape)
+  chunk_sizes = numpy.array(chunk_sizes)
+  iterator = numpy.ndindex(*numpy.ceil(numpy.true_divide(shape, chunk_sizes)))
+  for worker_index, (worker_begin, worker_end) in enumerate(worker_chunk_ranges(chunk_count(shape, chunk_sizes), worker_count)):
+    for worker_chunk_index, global_chunk_index in enumerate(range(worker_begin, worker_end)):
+      coordinates = numpy.array(iterator.next())
+      begin_coordinates = numpy.multiply(coordinates, chunk_sizes)
+      end_coordinates = numpy.minimum(shape, numpy.multiply(coordinates + 1, chunk_sizes))
+      yield global_chunk_index, worker_index, worker_chunk_index, begin_coordinates, end_coordinates
 
 def chunk_range(chunk_count, worker_index, worker_count):
   """Assigns a half-open range of chunks to a worker."""
