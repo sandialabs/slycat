@@ -8,9 +8,9 @@ Slycat Analysis provides a Pythonic API for interactive exploratory analysis of
 remote, multi-dimension, multi-attribute arrays.  Using Slycat Analysis, you
 connect to a running Slycat Analysis Coordinator to create, load, and
 manipulate arrays that are distributed across one-to-many Slycat Analysis
-Workers for parallel computation.  Arrays are further chunked (streamed)
-through the system, so you can manipulate arrays that are larger than the
-available system memory.
+Workers for parallel computation.  Further, arrays are split into chunks that
+are streamed through the system, so you can manipulate arrays that are larger
+than the available system memory.
 """
 
 import logging
@@ -29,197 +29,6 @@ log.addHandler(handler)
 Pyro4.config.SERIALIZER = "pickle"
 
 sys.excepthook = Pyro4.util.excepthook
-
-current_coordinator = None
-
-def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
-  """Return a connection to a running Slycat Analysis Coordinator.
-
-  Note that you only need to call connect() explicitly when supplying your own
-  parameters.  Otherwise, connect() will be called automatically when you use
-  any of the other functions in this module.
-
-  You will likely never need to call connect() more than once or keep track of
-  the returned connection object, unless you need connections to more than one
-  Slycat Analysis Coordinator.
-  """
-  global current_coordinator
-  Pyro4.config.HMAC_KEY = hmac_key
-  nameserver = Pyro4.locateNS(host, port)
-  current_coordinator = coordinator(nameserver)
-  return current_coordinator
-def get_coordinator():
-  """Return the current (most recently connected) coordinator."""
-  if current_coordinator is None:
-    connect()
-  return current_coordinator
-def aggregate(source, expressions):
-  return get_coordinator().aggregate(source, expressions)
-def apply(source, attribute, expression):
-  return get_coordinator().apply(source, attribute, expression)
-def array(initializer, type="float64"):
-  return get_coordinator().array(initializer, type)
-def attributes(source):
-  return get_coordinator().attributes(source)
-def attribute_rename(source, *attributes):
-  return get_coordinator().attribute_rename(source, *attributes)
-def chunk_map(source):
-  return get_coordinator().chunk_map(source)
-def dimensions(source):
-  return get_coordinator().dimensions(source)
-def load(path, schema, *arguments, **keywords):
-  return get_coordinator().load(path, schema, *arguments, **keywords)
-def materialize(source):
-  """Return a materialized (loaded into memory) version of an array.
-
-  Normally, array data is only loaded and streamed through the system when
-  needed, allowing you to work with arrays that would not fit into memory.
-  However, in some cases you may have an array of intermediate results that
-  were expensive to compute and can fit into memory - in this case, creating a
-  materialized version of the array allows you to re-use those results without
-  recomputing them every time:
-
-     >>> array1 = # Expensive-to-compute array
-     >>> array2 = materialize(array1)
-     # Now, use array2 in place of array1, to avoid recomputing.
-  """
-  return get_coordinator().materialize(source)
-def project(source, *attributes):
-  return get_coordinator().project(source, *attributes)
-def random(shape, chunks=None, seed=12345):
-  """Return an array of random values.
-
-  Creates an array with the given shape and chunk sizes, with a single
-  attribute filled with random numbers in the range [0, 1].
-
-  The shape parameter must be an int or a sequence of ints that specify the
-  size of the array along each dimension.  The chunk parameter must an int or
-  sequence of ints that specify the maximum size of an array chunk along each
-  dimension, and must match the number of dimensions implied by the shape
-  parameter.  If the chunk parameter is None, the chunk sizes will be identical
-  to the array shape (i.e. the array will have a single chunk).  The seed
-  parameter is used by the underlying random number generator and can be used
-  to repeat results.
-
-    >>> scan(attributes(random(4)))
-      {i} name,type
-    * {0} val,float64
-
-    >>> scan(dimensions(random(4)))
-      {i} name,type,begin,end,chunk-size
-    * {0} d0,int64,0,4,4
-
-    >>> scan(random(4))
-      {d0} val
-    * {0} 0.929616092817
-      {1} 0.316375554582
-      {2} 0.183918811677
-      {3} 0.204560278553
-
-    >>> scan(random(4, 2))
-      {d0} val
-    * {0} 0.929616092817
-      {1} 0.316375554582
-    * {2} 0.92899722191
-      {3} 0.449165754101
-
-    >>> scan(dimensions(random((4, 4), (2, 2))))
-      {i} name,type,begin,end,chunk-size
-    * {0} d0,int64,0,4,2
-      {1} d1,int64,0,4,2
-
-    >>> scan(random((4, 4), (2, 2)))
-      {d0,d1} val
-    * {0,0} 0.929616092817
-      {0,1} 0.316375554582
-      {1,0} 0.183918811677
-      {1,1} 0.204560278553
-    * {0,2} 0.92899722191
-      {0,3} 0.449165754101
-      {1,2} 0.228315321884
-      {1,3} 0.707144041509
-    * {2,0} 0.703148581097
-      {2,1} 0.537772928495
-      {3,0} 0.24899574575
-      {3,1} 0.534471770025
-    * {2,2} 0.370670417272
-      {2,3} 0.602791780041
-      {3,2} 0.229158970052
-      {3,3} 0.486744328559
-  """
-  return get_coordinator().random(shape, chunks, seed)
-def redimension(source, dimensions, attributes):
-  return get_coordinator().redimension(source, dimensions, attributes)
-def scan(source, format="dcsv", stream=sys.stdout):
-  return get_coordinator().scan(source, format, stream)
-def shutdown():
-  return get_coordinator().shutdown()
-def value(source, attribute=0):
-  return get_coordinator().value(source, attribute)
-def values(source, attribute=0):
-  return get_coordinator().values(source, attribute)
-def workers():
-  return get_coordinator().workers()
-def zeros(shape, chunks=None):
-  """Return an array of all zeros.
-
-  Creates an array with the given shape and chunk sizes, with a single
-  attribute filled with zeros.
-
-  The shape parameter must be an int or a sequence of ints that specify the
-  size of the array along each dimension.  The chunk parameter must an int or
-  sequence of ints that specify the maximum size of an array chunk along each
-  dimension, and must match the number of dimensions implied by the shape
-  parameter.  If the chunk parameter is None, the chunk sizes will be identical
-  to the array shape (i.e. the array will have a single chunk).
-
-    >>> scan(attributes(zeros(4)))
-      {i} name,type
-    * {0} val,float64
-
-    >>> scan(dimensions(zeros(4)))
-      {i} name,type,begin,end,chunk-size
-    * {0} d0,int64,0,4,4
-
-    >>> scan(zeros(4))
-      {d0} val
-    * {0} 0.0
-      {1} 0.0
-      {2} 0.0
-      {3} 0.0
-
-    >>> scan(zeros(4, 2))
-      {d0} val
-    * {0} 0.0
-      {1} 0.0
-    * {2} 0.0
-      {3} 0.0
-
-    >>> scan(dimensions(zeros((4, 4), (2, 2))))
-      {i} name,type,begin,end,chunk-size
-    * {0} d0,int64,0,4,2
-      {1} d1,int64,0,4,2
-
-    >>> scan(zeros((4, 4), (2, 2)))
-      {d0,d1} val
-    * {0,0} 0.0
-      {0,1} 0.0
-      {1,0} 0.0
-      {1,1} 0.0
-    * {0,2} 0.0
-      {0,3} 0.0
-      {1,2} 0.0
-      {1,3} 0.0
-    * {2,0} 0.0
-      {2,1} 0.0
-      {3,0} 0.0
-      {3,1} 0.0
-    * {2,2} 0.0
-      {2,3} 0.0
-      {3,2} 0.0
-      {3,3} 0.0
-  """
-  return get_coordinator().zeros(shape, chunks)
 
 class coordinator(object):
   def __init__(self, nameserver):
@@ -245,10 +54,83 @@ class coordinator(object):
   def load(self, path, schema, *arguments, **keywords):
     return remote_file_array(self.proxy.load(path, schema, *arguments, **keywords))
   def materialize(self, source):
+    """Return a materialized (loaded into memory) version of an array.
+
+    Normally, array data is only loaded and streamed through the system when
+    needed, allowing you to work with arrays that would not fit into memory.
+    However, in some cases you may have an array of intermediate results that
+    were expensive to compute and can fit into memory - in this case, creating a
+    materialized version of the array allows you to re-use those results without
+    recomputing them every time:
+
+       >>> array1 = # Expensive-to-compute array
+       >>> array2 = materialize(array1)
+       # Now, use array2 in place of array1, to avoid recomputing.
+    """
     return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
   def random(self, shape, chunks=None, seed=12345):
+    """Return an array of random values.
+
+    Creates an array with the given shape and chunk sizes, with a single
+    attribute filled with random numbers in the range [0, 1].
+
+    The shape parameter must be an int or a sequence of ints that specify the
+    size of the array along each dimension.  The chunk parameter must an int or
+    sequence of ints that specify the maximum size of an array chunk along each
+    dimension, and must match the number of dimensions implied by the shape
+    parameter.  If the chunk parameter is None, the chunk sizes will be identical
+    to the array shape (i.e. the array will have a single chunk).  The seed
+    parameter is used by the underlying random number generator and can be used
+    to repeat results.
+
+      >>> scan(attributes(random(4)))
+        {i} name,type
+      * {0} val,float64
+
+      >>> scan(dimensions(random(4)))
+        {i} name,type,begin,end,chunk-size
+      * {0} d0,int64,0,4,4
+
+      >>> scan(random(4))
+        {d0} val
+      * {0} 0.929616092817
+        {1} 0.316375554582
+        {2} 0.183918811677
+        {3} 0.204560278553
+
+      >>> scan(random(4, 2))
+        {d0} val
+      * {0} 0.929616092817
+        {1} 0.316375554582
+      * {2} 0.92899722191
+        {3} 0.449165754101
+
+      >>> scan(dimensions(random((4, 4), (2, 2))))
+        {i} name,type,begin,end,chunk-size
+      * {0} d0,int64,0,4,2
+        {1} d1,int64,0,4,2
+
+      >>> scan(random((4, 4), (2, 2)))
+        {d0,d1} val
+      * {0,0} 0.929616092817
+        {0,1} 0.316375554582
+        {1,0} 0.183918811677
+        {1,1} 0.204560278553
+      * {0,2} 0.92899722191
+        {0,3} 0.449165754101
+        {1,2} 0.228315321884
+        {1,3} 0.707144041509
+      * {2,0} 0.703148581097
+        {2,1} 0.537772928495
+        {3,0} 0.24899574575
+        {3,1} 0.534471770025
+      * {2,2} 0.370670417272
+        {2,3} 0.602791780041
+        {3,2} 0.229158970052
+        {3,3} 0.486744328559
+    """
     return remote_array(self.proxy.random(shape, chunks, seed))
   def redimension(self, source, dimensions, attributes):
     return remote_array(self.proxy.redimension(source.proxy._pyroUri, dimensions, attributes))
@@ -355,12 +237,70 @@ class coordinator(object):
     log.info("elapsed time: %s seconds" % (time.time() - start_time))
     return result
   def workers(self):
-    """Returns the set of available slycat analysis workers."""
+    """Return the current set of available slycat analysis workers."""
     for worker in self.nameserver.list(prefix="slycat.worker").keys():
       proxy = Pyro4.Proxy(self.nameserver.lookup(worker))
       proxy._pyroOneway.add("shutdown")
       yield proxy
   def zeros(self, shape, chunks=None):
+    """Return an array of all zeros.
+
+    Creates an array with the given shape and chunk sizes, with a single
+    attribute filled with zeros.
+
+    The shape parameter must be an int or a sequence of ints that specify the
+    size of the array along each dimension.  The chunk parameter must an int or
+    sequence of ints that specify the maximum size of an array chunk along each
+    dimension, and must match the number of dimensions implied by the shape
+    parameter.  If the chunk parameter is None, the chunk sizes will be identical
+    to the array shape (i.e. the array will have a single chunk).
+
+      >>> scan(attributes(zeros(4)))
+        {i} name,type
+      * {0} val,float64
+
+      >>> scan(dimensions(zeros(4)))
+        {i} name,type,begin,end,chunk-size
+      * {0} d0,int64,0,4,4
+
+      >>> scan(zeros(4))
+        {d0} val
+      * {0} 0.0
+        {1} 0.0
+        {2} 0.0
+        {3} 0.0
+
+      >>> scan(zeros(4, 2))
+        {d0} val
+      * {0} 0.0
+        {1} 0.0
+      * {2} 0.0
+        {3} 0.0
+
+      >>> scan(dimensions(zeros((4, 4), (2, 2))))
+        {i} name,type,begin,end,chunk-size
+      * {0} d0,int64,0,4,2
+        {1} d1,int64,0,4,2
+
+      >>> scan(zeros((4, 4), (2, 2)))
+        {d0,d1} val
+      * {0,0} 0.0
+        {0,1} 0.0
+        {1,0} 0.0
+        {1,1} 0.0
+      * {0,2} 0.0
+        {0,3} 0.0
+        {1,2} 0.0
+        {1,3} 0.0
+      * {2,0} 0.0
+        {2,1} 0.0
+        {3,0} 0.0
+        {3,1} 0.0
+      * {2,2} 0.0
+        {2,3} 0.0
+        {3,2} 0.0
+        {3,3} 0.0
+    """
     return remote_array(self.proxy.zeros(shape, chunks))
 
 class remote_array(object):
@@ -427,7 +367,7 @@ class remote_array(object):
     Iterating over an array's chunks allows you to access the contents of the
     array on the client while limiting memory consumption.  Note that sending the
     contents of the array to the client may still consume considerable bandwidth,
-    so you should try to perform as many operations remotely as possible before
+    so you should try to perform as many remote operations as possible before
     sending the results to the client.
     """
     attributes = self.proxy.attributes()
@@ -499,3 +439,81 @@ class array_chunk_attribute(object):
   def values(self):
     """Return a numpy array containing the values of the attribute for this chunk."""
     return self.proxy.values(self.index)
+
+current_coordinator = None
+
+def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
+  """Return a connection to a running Slycat Analysis Coordinator.
+
+  Note that you only need to call connect() explicitly when supplying your own
+  parameters.  Otherwise, connect() will be called automatically when you use
+  any of the other functions in this module.
+
+  You will likely never need to call connect() more than once or keep track of
+  the returned connection object, unless you need connections to more than one
+  Slycat Analysis Coordinator.
+  """
+  global current_coordinator
+  Pyro4.config.HMAC_KEY = hmac_key
+  nameserver = Pyro4.locateNS(host, port)
+  current_coordinator = coordinator(nameserver)
+  return current_coordinator
+def get_coordinator():
+  """Return the current (most recently connected) coordinator."""
+  if current_coordinator is None:
+    connect()
+  return current_coordinator
+def aggregate(source, expressions):
+  return get_coordinator().aggregate(source, expressions)
+aggregate.__doc__ = coordinator.aggregate.__doc__
+def apply(source, attribute, expression):
+  return get_coordinator().apply(source, attribute, expression)
+apply.__doc__ = coordinator.apply.__doc__
+def array(initializer, type="float64"):
+  return get_coordinator().array(initializer, type)
+array.__doc__ = coordinator.array.__doc__
+def attributes(source):
+  return get_coordinator().attributes(source)
+attributes.__doc__ = coordinator.attributes.__doc__
+def attribute_rename(source, *attributes):
+  return get_coordinator().attribute_rename(source, *attributes)
+attribute_rename.__doc__ = coordinator.attribute_rename.__doc__
+def chunk_map(source):
+  return get_coordinator().chunk_map(source)
+chunk_map.__doc__ = coordinator.chunk_map.__doc__
+def dimensions(source):
+  return get_coordinator().dimensions(source)
+dimensions.__doc__ = coordinator.dimensions.__doc__
+def load(path, schema, *arguments, **keywords):
+  return get_coordinator().load(path, schema, *arguments, **keywords)
+load.__doc__ = coordinator.load.__doc__
+def materialize(source):
+  return get_coordinator().materialize(source)
+materialize.__doc__ = coordinator.materialize.__doc__
+def project(source, *attributes):
+  return get_coordinator().project(source, *attributes)
+project.__doc__ = coordinator.project.__doc__
+def random(shape, chunks=None, seed=12345):
+  return get_coordinator().random(shape, chunks, seed)
+random.__doc__ = coordinator.random.__doc__
+def redimension(source, dimensions, attributes):
+  return get_coordinator().redimension(source, dimensions, attributes)
+redimension.__doc__ = coordinator.redimension.__doc__
+def scan(source, format="dcsv", stream=sys.stdout):
+  return get_coordinator().scan(source, format, stream)
+scan.__doc__ = coordinator.scan.__doc__
+def shutdown():
+  return get_coordinator().shutdown()
+shutdown.__doc__ = coordinator.shutdown.__doc__
+def value(source, attribute=0):
+  return get_coordinator().value(source, attribute)
+value.__doc__ = coordinator.value.__doc__
+def values(source, attribute=0):
+  return get_coordinator().values(source, attribute)
+values.__doc__ = coordinator.values.__doc__
+def workers():
+  return get_coordinator().workers()
+workers.__doc__ = coordinator.workers.__doc__
+def zeros(shape, chunks=None):
+  return get_coordinator().zeros(shape, chunks)
+zeros.__doc__ = coordinator.zeros.__doc__
