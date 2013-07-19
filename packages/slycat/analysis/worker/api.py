@@ -86,7 +86,7 @@ class null_array_iterator(array_iterator):
     raise Exception("No values available.")
 
 def chunk_count(shape, chunk_sizes):
-  """Given an array shape and chunk sizes, return the total number of chunks in the array."""
+  """Return the total number of chunks in an array."""
   if len(shape) != len(chunk_sizes):
     raise Exception("Dimension mismatch.")
   shape = numpy.array(shape)
@@ -97,8 +97,12 @@ def chunk_range(chunk_count, worker_index, worker_count):
   """Assigns a half-open range of chunks to a worker."""
   if worker_index < 0 or worker_index >= worker_count:
     raise Exception("Invalid worker index.")
-  partition = int(math.ceil(chunk_count / float(worker_count)))
-  return min(chunk_count, worker_index * partition), min(chunk_count, (worker_index + 1) * partition)
+  worker_counts = [int(chunk_count / worker_count) for i in range(worker_count)]
+  for i in range(chunk_count % worker_count):
+    worker_counts[i] += 1
+  worker_begin = sum(worker_counts[:worker_index])
+  worker_end = worker_begin + worker_counts[worker_index]
+  return worker_begin, worker_end
 
 def chunk_iterator(shape, chunk_sizes, range=None):
   """Iterates over the chunks in an array in-order, returning the chunk id, begin coordinates, and end coordinates of each chunk."""

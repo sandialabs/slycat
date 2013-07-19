@@ -347,8 +347,8 @@ def test_chunk_map_10_2():
   array1 = random(10, 2)
   array2 = chunk_map(array1)
   require_array_schema(array2, [("i", "int64", 0, 5, 5)], [("worker", "int64"), ("index", "int64"), ("c0", "int64"), ("s0", "int64")])
-  numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 1, 1, 2], dtype="int64"))
-  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 0, 1, 0], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 1, 2, 3], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 0, 0, 0], dtype="int64"))
   numpy.testing.assert_array_equal(values(array2, 2), numpy.array([0, 2, 4, 6, 8], dtype="int64"))
   numpy.testing.assert_array_equal(values(array2, 3), numpy.array([2, 2, 2, 2, 2], dtype="int64"))
 
