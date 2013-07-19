@@ -462,6 +462,19 @@ def test_random_2d():
   array1 = random((5, 4))
   require_array_schema(array1, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 4, 4)], [("val", "float64")])
 
+def test_random_values_consistency():
+  array1 = random(10, 5)
+  values1 = values(array1, 0)
+  values2 = values(array1, 0)
+  numpy.testing.assert_array_equal(values1, values2)
+
+def test_random_chunk_consistency():
+  array1 = random(10, 5)
+  for chunk in array1.chunks():
+    values1 = chunk.values(0)
+    values2 = chunk.values(0)
+    numpy.testing.assert_array_equal(values1, values2)
+
 def test_redimension_attribute_attribute():
   array1 = random((4, 4), (2, 2))
   array2 = apply(array1, "val2", "val * val")

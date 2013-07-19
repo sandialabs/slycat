@@ -76,7 +76,8 @@ class coordinator(object):
     """Return an array of random values.
 
     Creates an array with the given shape and chunk sizes, with a single
-    attribute filled with random numbers in the range [0, 1].
+    attribute containing samples drawn from a uniform distribution in the
+    range [0, 1).
 
     The shape parameter must be an int or a sequence of ints that specify the
     size of the array along each dimension.  The chunk parameter must an int or

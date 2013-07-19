@@ -4,7 +4,7 @@
 
 import numpy
 
-from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, chunk_iterator, chunk_range, chunk_count
+from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
 import slycat.analysis.worker.chunk_map
@@ -208,23 +208,28 @@ class random_array(array):
   def attributes(self):
     return [{"name":"val", "type":"float64"}]
   def iterator(self):
-    return self.pyro_register(random_array_iterator(self, self.shape, self.chunk_sizes, self.seed, self.worker_index, len(self.siblings)))
+    return self.pyro_register(random_array_iterator(self))
 
 class random_array_iterator(array_iterator):
-  def __init__(self, owner, shape, chunk_sizes, seed, worker_index, worker_count):
+  def __init__(self, owner):
     array_iterator.__init__(self, owner)
-    self.seed = seed
-    self.iterator = chunk_iterator(shape, chunk_sizes, chunk_range(chunk_count(shape, chunk_sizes), worker_index, worker_count))
+    self.iterator = worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+    self.generator = numpy.random.RandomState()
+    self.generator.seed(owner.seed + owner.worker_index)
   def next(self):
-    self.chunk_id, self.begin, self.end = self.iterator.next()
+    while True:
+      chunk_index, worker_index, begin, end = self.iterator.next()
+      if worker_index == self.owner.worker_index:
+        self._coordinates = begin
+        self._shape = end - begin
+        self._values = self.generator.uniform(size=self._shape)
+        break
   def coordinates(self):
-    return self.begin
+    return self._coordinates
   def shape(self):
-    return self.end - self.begin
+    return self._shape
   def values(self, index):
-    generator = numpy.random.RandomState()
-    generator.seed(self.seed + self.chunk_id)
-    return generator.random_sample(self.end - self.begin)
+    return self._values
 
 class zeros_array(array):
   def __init__(self, worker_index, shape, chunk_sizes):
@@ -236,18 +241,23 @@ class zeros_array(array):
   def attributes(self):
     return [{"name":"val", "type":"float64"}]
   def iterator(self):
-    return self.pyro_register(zeros_array_iterator(self, self.shape, self.chunk_sizes, self.worker_index, len(self.siblings)))
+    return self.pyro_register(zeros_array_iterator(self))
 
 class zeros_array_iterator(array_iterator):
-  def __init__(self, owner, shape, chunk_sizes, worker_index, worker_count):
+  def __init__(self, owner):
     array_iterator.__init__(self, owner)
-    self.iterator = chunk_iterator(shape, chunk_sizes, chunk_range(chunk_count(shape, chunk_sizes), worker_index, worker_count))
+    self.iterator = worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
   def next(self):
-    chunk_id, self.begin, self.end = self.iterator.next()
+    while True:
+      chunk_index, worker_index, begin, end = self.iterator.next()
+      if worker_index == self.owner.worker_index:
+        self._coordinates = begin
+        self._shape = end - begin
+        break
   def coordinates(self):
-    return self.begin
+    return self._coordinates
   def shape(self):
-    return self.end - self.begin
+    return self._shape
   def values(self, index):
-    return numpy.zeros(self.end - self.begin)
+    return numpy.zeros(self._shape)
 
