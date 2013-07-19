@@ -422,7 +422,14 @@ class remote_array(object):
     """
     return self.proxy.attributes()
   def chunks(self):
-    """Return an iterator that accesses each chunk in the underlying array."""
+    """Return an iterator over the array's chunks.
+
+    Iterating over an array's chunks allows you to access the contents of the
+    array on the client while limiting memory consumption.  Note that sending the
+    contents of the array to the client may still consume considerable bandwidth,
+    so you should try to perform as many operations remotely as possible before
+    sending the results to the client.
+    """
     attributes = self.proxy.attributes()
     iterator = self.proxy.iterator()
     try:
@@ -447,27 +454,36 @@ class remote_file_array(remote_array):
     return self.proxy.file_size()
 
 class array_chunk(object):
+  """Proxy for a chunk from a remote, multi-dimension, multi-attribute array."""
   def __init__(self, proxy, attributes):
     self._proxy = proxy
     self._attributes = attributes
   def coordinates(self):
+    """Return a numpy array containing the lowest-numbered coordinates along each dimension for this chunk."""
     return self._proxy.coordinates()
   def shape(self):
+    """Return a numpy array containing the shape (size along each dimension) for this chunk."""
     return self._proxy.shape()
   def attributes(self):
+    """Return an iterator over the attributes within this chunk."""
     for index, attribute in enumerate(self._attributes):
       yield array_chunk_attribute(self._proxy, index, attribute)
-  def values(self, index):
-    return self._proxy.values(index)
+  def values(self, n):
+    """Return a numpy array containing the values of attribute n for this chunk."""
+    return self._proxy.values(n)
 
 class array_chunk_attribute(object):
+  """Proxy for an individual chunk-attribute from a remote, multi-dimension, multi-attribute array."""
   def __init__(self, proxy, index, attribute):
     self.proxy = proxy
     self.index = index
     self.attribute = attribute
   def name(self):
+    """Return the name of the attribute."""
     return self.attribute["name"]
   def type(self):
+    """Return the type of the attribute."""
     return self.attribute["type"]
   def values(self):
+    """Return a numpy array containing the values of the attribute for this chunk."""
     return self.proxy.values(self.index)
