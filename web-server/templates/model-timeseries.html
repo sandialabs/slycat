@@ -1051,6 +1051,7 @@ rights in this software.
                         'thickness':0.35,
                         'step':1,
                       });
+          this.waveformProcessingTimeout = null;
         }
 
         waveform_viewer_component.prototype.set_waveforms = function(waveforms)
@@ -1124,6 +1125,9 @@ rights in this software.
         {
           console.time("inside waveform_viewer_component.prototype.set_visible");
           var self = this;
+
+          // Cancel any previously started work
+          clearTimeout(self.waveformProcessingTimeout);
 
           var waveform_subset = [];
           console.time("each");
@@ -1229,7 +1233,7 @@ rights in this software.
               } while (todo.length > 0 && (+new Date() - start < 50));
 
               if (todo.length > 0){
-                setTimeout(arguments.callee, timeout);
+                self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
               } else {
                 callback(items);
               }
