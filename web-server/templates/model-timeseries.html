@@ -113,6 +113,9 @@ rights in this software.
         <div id="waveform-pane" class="ui-layout-center">
           <svg id="waveform-viewer" width="100%" height="100%">
           </svg>
+          <div id="waveform-progress">
+            <input class="waveformPie" value="1" />
+          </div>
         </div>
       </div>
       <div id="data-pane" class="ui-layout-south" style="overflow: auto">
@@ -1034,6 +1037,20 @@ rights in this software.
           this.diagram_height = this.height - this.padding - this.padding;
 
           this.waveforms = null;
+
+          this.waveformPieContainer = $("#waveform-progress");
+          this.waveformPie = $("#waveform-progress .waveformPie")
+          this.waveformPie.knob({
+                        'min':0,
+                        'readOnly':true,
+                        'displayInput':false,
+                        'fgColor':'#4D720C',
+                        'bgColor':'#DDDDCC',
+                        'width':200,
+                        'height':200,
+                        'thickness':0.35,
+                        'step':1,
+                      });
         }
 
         waveform_viewer_component.prototype.set_waveforms = function(waveforms)
@@ -1132,45 +1149,80 @@ rights in this software.
           //   .style("stroke-width", 1)
           //   ;
 
-          waveform1 = this.visualization.selectAll("g.waveform");
-          waveform2 = waveform1.data(waveform_subset)
-            .enter();
-          waveform3 = waveform2
+          waveforms = this.visualization
+            .selectAll("g.waveform")
+            .data(waveform_subset)
+            .enter()
             .append("svg:g")
-              .attr("class", "waveform");
-
-          // waveform4 = waveform3.append("svg:path")
-          //     .attr("d", this.make_sax_line())
-          //     .style("fill", "none")
-          //     .style("stroke", "black")
-          //     .style("stroke-width", 1)
-          //   ;
+            .attr("class", "waveform");
 
           function processWaveform(waveform){
             var testing = 2+2;
             d3.select(waveform).append("svg:path")
               .attr("d", self.make_sax_line())
+              .style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
               .style("fill", "none")
               .style("stroke", "black")
               .style("stroke-width", 1);
           }
 
-          timedProcessArray(waveform3[0], processWaveform, finishedProcessingWaveforms);
+          var waveformsLength = waveforms[0].length;
+          self.waveformPie.trigger(
+            'configure',
+            {
+              "max":waveformsLength,
+            }
+          );
+
+          // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
+          var showWaveformPieContainerTimeout = setTimeout(function(){
+            self.waveformPieContainer.show(0);
+          }, 1000);
+          
+
+          timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
+          //previewWaveforms();
+
+          function previewWaveforms(){
+            var timeout = 100;
+            var counter = 8;
+            while(counter > 0){
+              console.log("iteration #" + counter + ", timeout: " + timeout);
+              setTimeout(function(){
+                self.visualization.selectAll("path").
+                  style("visibility", "visible") // displaying the hidden paths
+                ;
+                console.log("iteration #" + counter + ", timeout: " + timeout);
+              }, timeout);
+              counter--;
+              timeout = timeout * 2;
+
+            }
+            
+          }
 
           function finishedProcessingWaveforms(){
+
+            // Cancelling the timeout that was set to delay progress indicator display
+            clearTimeout(showWaveformPieContainerTimeout);
+            self.waveformPieContainer.hide();
+
             if(table_viewer_instance != null) {
               table_viewer_instance.setWaveformColorsPerSelectedColumn(false);
             }
+            self.visualization.selectAll("path").
+              style("visibility", "visible") // displaying the hidden paths
+              ;
           }
 
           function timedProcessArray(items, process, callback){
-            var timeout = 500; //how long to yield control to UI thread
+            var timeout = 100; //how long to yield control to UI thread
             var todo = items.concat(); //create a clone of the original
 
             setTimeout(function(){
-              console.timeEnd("gap between waveform processing cycle");
-              console.time("processing waveform array");
-              var startLength = todo.length;
+              //console.timeEnd("gap between waveform processing cycle");
+              //console.time("processing waveform array");
+              //var startLength = todo.length;
               var start = +new Date();
               do {
                 process(todo.shift());
@@ -1182,9 +1234,11 @@ rights in this software.
                 callback(items);
               }
 
-              console.timeEnd("processing waveform array");
-              console.log(startLength - todo.length + " waveforms processed during this cycle. " + todo.length + "-" + startLength);
-              console.time("gap between waveform processing cycle");
+              self.waveformPie.val(waveformsLength - todo.length).trigger('change');
+
+              //console.timeEnd("processing waveform array");
+              //console.log(startLength - todo.length + " waveforms processed during this cycle. " + todo.length + "-" + startLength);
+              //console.time("gap between waveform processing cycle");
 
             }, timeout);
           }

@@ -94,3 +94,15 @@ rights in this software.
 {
   overflow: auto;
 }
+
+/* Waveform Progress Indicator */
+#waveform-progress {
+    background-color: transparent;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 200px;
+    height: 200px;
+    margin: -100px 0 0 -100px;
+    display: none;
+}
