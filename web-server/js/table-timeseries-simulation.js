@@ -312,7 +312,7 @@ function timeseries_simulation_table(parameters, server_root, workerId)
         var color_array = resp["data"][0];
         var data_table_index_array = resp["data"][1];
         if(!dendrogramOnly)
-          parameters.waveform_viewer.set_color(color_array, colorMap);
+          parameters.waveform_viewer.set_color(color_array, colorMap, data_table_index_array);
         parameters.dendrogram_viewer.set_color(color_array, colorMap, data_table_index_array);
       },
       error: function(request, status, reason_phrase){
