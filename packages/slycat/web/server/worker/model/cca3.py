@@ -68,21 +68,6 @@ class implementation(slycat.web.server.worker.model.prototype):
     statistics = cca.GetOutput().GetArray(6)
 #    warnings = cca.GetOutput().GetArray(7)
 
-    def array_contents(array):
-      array_data = vtkArrayData()
-      array_data.AddArray(array)
-      array_writer = vtkJSONArrayWriter()
-      array_writer.SetWriteToOutputString(True)
-      array_writer.SetInputData(array_data)
-      array_writer.Write()
-      return StringIO.StringIO(array_writer.GetOutputString())
-
-    self.store_file_artifact("x-canonical-variables", array_contents(x_canonical_variables), "application/json", input=False)
-    self.store_file_artifact("y-canonical-variables", array_contents(y_canonical_variables), "application/json", input=False)
-    self.store_file_artifact("x-structure-correlation", array_contents(x_structure_correlation), "application/json", input=False)
-    self.store_file_artifact("y-structure-correlation", array_contents(y_structure_correlation), "application/json", input=False)
-    self.store_file_artifact("statistics", array_contents(statistics), "application/json", input=False)
-
     component_count = x_canonical_variables.GetExtents()[1].GetSize()
     sample_count = x_canonical_variables.GetExtents()[0].GetSize()
 
