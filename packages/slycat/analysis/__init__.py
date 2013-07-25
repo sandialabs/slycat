@@ -194,7 +194,7 @@ class coordinator(object):
         for attribute in chunk.attributes():
           values = attribute.values()
     elif format == "csv":
-      stream.write(",".join([attribute["name"] for attribute in source.attributes()]))
+      stream.write(",".join([attribute["name"] for attribute in source.attributes]))
       stream.write("\n")
       for chunk in source.chunks():
         iterators = [attribute.values().flat for attribute in chunk.attributes()]
@@ -205,7 +205,7 @@ class coordinator(object):
         except StopIteration:
           pass
     elif format == "csv+":
-      stream.write(",".join([dimension["name"] for dimension in source.dimensions()] + [attribute["name"] for attribute in source.attributes()]))
+      stream.write(",".join([dimension["name"] for dimension in source.dimensions] + [attribute["name"] for attribute in source.attributes]))
       stream.write("\n")
       for chunk in source.chunks():
         chunk_coordinates = chunk.coordinates()
@@ -219,8 +219,8 @@ class coordinator(object):
         except StopIteration:
           pass
     elif format == "dcsv":
-      stream.write("  {%s} " % ",".join([dimension["name"] for dimension in source.dimensions()]))
-      stream.write(",".join([attribute["name"] for attribute in source.attributes()]))
+      stream.write("  {%s} " % ",".join([dimension["name"] for dimension in source.dimensions]))
+      stream.write(",".join([attribute["name"] for attribute in source.attributes]))
       stream.write("\n")
       for chunk_index, chunk in enumerate(source.chunks()):
         chunk_coordinates = chunk.coordinates()
@@ -357,63 +357,63 @@ class coordinator(object):
     return remote_array(self.proxy.zeros(shape, chunks))
 
 class remote_array(object):
-  """Proxy for a remote, multi-dimension, multi-attribute array."""
+  """Proxy for a remote, multi-dimension, multi-attribute array.
+
+  Attributes:
+    attributes    A sequence of dicts that describe the name and type of each array attribute.
+    dimensions    A sequence of dicts that describe the name, type, size, and chunk-size of each array dimension.
+    ndim          The number of dimensions in the array.
+    shape         The size of the array along each dimension.
+    size          The number of cells in the array.
+  """
   def __init__(self, proxy):
     self.proxy = proxy
+    self._dimensions = None
+    self._attributes = None
   def __del__(self):
     self.proxy.release()
   def __getattr__(self, name):
-    if name == "shape":
-      return tuple([dimension["end"] - dimension["begin"] for dimension in self.proxy.dimensions()])
+    if name == "attributes":
+      if self._attributes is None:
+        self._attributes = self.proxy.attributes()
+      return self._attributes
+    elif name == "dimensions":
+      if self._dimensions is None:
+        self._dimensions = self.proxy.dimensions()
+      return self._dimensions
     elif name == "ndim":
-      return len(self.proxy.dimensions())
+      return len(self.dimensions)
+    elif name == "shape":
+      return tuple([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
     elif name == "size":
-      return numpy.prod([dimension["end"] - dimension["begin"] for dimension in self.proxy.dimensions()])
+      return numpy.prod([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
   def __setattr__(self, name, value):
-    if name in ["shape", "ndim", "size"]:
+    if name in ["attributes", "dimensions", "ndim", "shape", "size"]:
       raise Exception("{} attribute is read-only.".format(name))
     object.__setattr__(self, name, value)
   def __repr__(self):
-    dimensions = self.proxy.dimensions()
-    if len(dimensions) > 1:
-      shape_repr = "x".join([str(dimension["end"] - dimension["begin"]) for dimension in dimensions])
+    if len(self.dimensions) > 1:
+      shape_repr = "x".join([str(dimension["end"] - dimension["begin"]) for dimension in self.dimensions])
     else:
-      dimension = dimensions[0]
+      dimension = self.dimensions[0]
       shape_repr = "{} element".format(dimension["end"] - dimension["begin"])
 
-    dimensions_repr = [dimension["name"] for dimension in dimensions]
+    dimensions_repr = [dimension["name"] for dimension in self.dimensions]
     dimensions_repr = ", ".join(dimensions_repr)
-    if len(dimensions) > 1:
+    if len(self.dimensions) > 1:
       dimensions_repr = "dimensions: " + dimensions_repr
     else:
       dimensions_repr = "dimension: " + dimensions_repr
 
-    attributes = self.proxy.attributes()
-    attributes_repr = [attribute["name"] for attribute in attributes]
-    if len(attributes) > 6:
+    attributes_repr = [attribute["name"] for attribute in self.attributes]
+    if len(self.attributes) > 6:
       attributes_repr = attributes_repr[:3] + ["..."] + attributes_repr[-3:]
     attributes_repr = ", ".join(attributes_repr)
-    if len(attributes) > 1:
+    if len(self.attributes) > 1:
       attributes_repr = "attributes: " + attributes_repr
     else:
       attributes_repr = "attribute: " + attributes_repr
     return "<{} remote array with {} and {}>".format(shape_repr, dimensions_repr, attributes_repr)
-  def dimensions(self):
-    """Return a sequence of dicts that describe the array dimensions.
-
-        >>> a = random((100, 2))
-        >>> a.dimensions()
-        [{'end': 100, 'begin': 0, 'type': 'int64', 'name': 'd0', 'chunk-size': 100}, {'end': 2, 'begin': 0, 'type': 'int64', 'name': 'd1', 'chunk-size': 2}]
-    """
-    return self.proxy.dimensions()
-  def attributes(self):
-    """Return a sequence of dicts that describe the attributes stored in each array cell.
-
-        >>> a = random((100, 2))
-        >>> a.attributes()
-        [{'type': 'float64', 'name': 'val'}]
-    """
-    return self.proxy.attributes()
   def chunks(self):
     """Return an iterator over the array's chunks.
 
@@ -423,12 +423,11 @@ class remote_array(object):
     so you should try to perform as many remote operations as possible before
     sending the results to the client.
     """
-    attributes = self.proxy.attributes()
     iterator = self.proxy.iterator()
     try:
       while True:
         iterator.next()
-        yield array_chunk(iterator, attributes)
+        yield array_chunk(iterator, self.attributes)
     except StopIteration:
       iterator.release()
     except:

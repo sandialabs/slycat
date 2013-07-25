@@ -26,12 +26,12 @@ def teardown():
 
 def require_array_schema(array, dimensions, attributes):
   expected_dimensions = [{"name":name,"type":type,"begin":begin,"end":end,"chunk-size":chunk_size} for name, type, begin, end, chunk_size in dimensions]
-  array_dimensions = array.dimensions()
+  array_dimensions = array.dimensions
   if array_dimensions != expected_dimensions:
     raise Exception("dimension mismatch: expected %s, got %s" % (expected_dimensions, array_dimensions))
 
   expected_attributes = [{"name":name,"type":type} for name, type in attributes]
-  array_attributes = array.attributes()
+  array_attributes = array.attributes
   if array_attributes != expected_attributes:
     raise Exception("attribute mismatch: expected %s, got %s" % (expected_attributes, array_attributes))
   assert(array.shape == tuple([end - begin for name, type, begin, end, chunk_size in dimensions]))
@@ -435,8 +435,8 @@ def test_load_csv_formatted():
 def test_materialize():
   array1 = random((5, 5))
   array2 = materialize(array1)
-  assert(array2.dimensions() == array1.dimensions())
-  assert(array2.attributes() == array1.attributes())
+  assert(array2.dimensions == array1.dimensions)
+  assert(array2.attributes == array1.attributes)
   numpy.testing.assert_array_equal(values(array2, 0), values(array1, 0))
 
 def test_project_by_index():
@@ -502,6 +502,22 @@ def test_redimension_attribute_dimension():
   array2 = apply(array1, ("j", "int64"), "d0 % 2")
   array3 = redimension(array2, ["d0", "j"], ["val"])
   require_array_schema(array3, [("d0", "int64", 0, 4, 2), ("j", "int64", 0, 2, 2)], [("val", "float64")])
+
+def test_scan_csv():
+  array1 = random(5)
+  scan(array1, format="csv")
+
+def test_scan_csvp():
+  array1 = random(5)
+  scan(array1, format="csv+")
+
+def test_scan_dcsv():
+  array1 = random(5)
+  scan(array1, format="dcsv")
+
+def test_scan_null():
+  array1 = random(5)
+  scan(array1, format="null")
 
 def test_zeros_1d():
   array1 = zeros(5)
