@@ -10,6 +10,7 @@ import slycat.analysis.worker.apply
 import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.materialize
+import slycat.analysis.worker.project
 import slycat.analysis.worker.prn_file
 import slycat.analysis.worker.redimension
 
@@ -44,7 +45,7 @@ class factory(pyro_object):
   def prn_file(self, worker_index, path, chunk_size):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
-    return self.pyro_register(project_array(worker_index, self.require_object(source), attributes))
+    return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
   def random(self, worker_index, shape, chunk_sizes, seed):
     return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed))
   def redimension(self, worker_index, source, dimensions, attributes):
@@ -165,37 +166,6 @@ class dimensions_array_iterator(array_iterator):
       return numpy.array([dimension["end"] for dimension in self.owner.source_dimensions], dtype="int64")
     elif attribute == 4:
       return numpy.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
-
-class project_array(array):
-  def __init__(self, worker_index, source, attributes):
-    array.__init__(self, worker_index)
-    self.source = source
-    source_attributes = self.source.attributes()
-    source_map = dict([(i, i) for i in range(len(source_attributes))] + [(attribute["name"], index) for index, attribute in enumerate(source_attributes)])
-    self.indices = [source_map[attribute] for attribute in attributes if attribute in source_map]
-  def dimensions(self):
-    return self.source.dimensions()
-  def attributes(self):
-    source_attributes = self.source.attributes()
-    return [source_attributes[index] for index in self.indices]
-  def iterator(self):
-    return self.pyro_register(project_array_iterator(self, self.source, self.indices))
-
-class project_array_iterator(array_iterator):
-  def __init__(self, owner, source, indices):
-    array_iterator.__init__(self, owner)
-    self.iterator = source.iterator()
-    self.indices = indices
-  def __del__(self):
-    self.iterator.release()
-  def next(self):
-    self.iterator.next()
-  def coordinates(self):
-    return self.iterator.coordinates()
-  def shape(self):
-    return self.iterator.shape()
-  def values(self, attribute):
-    return self.iterator.values(self.indices[attribute])
 
 class random_array(array):
   def __init__(self, worker_index, shape, chunk_sizes, seed):
