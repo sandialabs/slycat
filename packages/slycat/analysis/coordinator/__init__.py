@@ -162,6 +162,13 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.dimensions(worker_index, source_proxy._pyroUri))
     return self.pyro_register(array(array_workers, [source]))
+  def join(self, array1, array2):
+    array1 = self.require_object(array1)
+    array2 = self.require_object(array2)
+    array_workers = []
+    for worker_index, (array1_proxy, array2_proxy, worker) in enumerate(zip(array1.workers, array2.workers, self.workers())):
+      array_workers.append(worker.join(worker_index, array1_proxy._pyroUri, array2_proxy._pyroUri))
+    return self.pyro_register(array(array_workers, [array1, array2]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
       chunk_size = self.require_chunk_size(keywords["chunk_size"])

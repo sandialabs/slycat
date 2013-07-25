@@ -392,6 +392,14 @@ def test_dimensions_2d():
   numpy.testing.assert_array_almost_equal(values(array2, 2), numpy.array([0, 0], dtype="int64"))
   numpy.testing.assert_array_almost_equal(values(array2, 3), numpy.array([5, 4], dtype="int64"))
 
+def test_join():
+  array1 = random((5, 4))
+  array2 = zeros((5, 4))
+  array3 = join(array1, array2)
+  require_array_schema(array3, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 4, 4)], [("val", "float64"), ("val", "float64")])
+  numpy.testing.assert_array_equal(values(array3, 0), values(array1, 0))
+  numpy.testing.assert_array_equal(values(array3, 1), values(array2, 0))
+
 def test_load_csv_unformatted():
   array1 = load("../data/automobiles.csv", schema="csv-file", chunk_size=100)
   array2 = chunk_map(array1)

@@ -51,6 +51,19 @@ class coordinator(object):
     return remote_array(self.proxy.chunk_map(source.proxy._pyroUri))
   def dimensions(self, source):
     return remote_array(self.proxy.dimensions(source.proxy._pyroUri))
+  def join(self, array1, array2):
+    """Return an array combining the attributes of two arrays.
+
+    The shape (number of dimensions, size, and chunk size of each dimension) of
+    the two inputs must be identical.  The result array will have the same
+    shape as the inputs, with the union of their attributes and dimension names
+    chosen from the first input.
+
+    Note that join() may create arrays with duplicate attribute names.  When
+    this happens, most operators allow you to reference attributes by index for
+    disambiguation.
+    """
+    return remote_array(self.proxy.join(array1.proxy._pyroUri, array2.proxy._pyroUri))
   def load(self, path, schema, *arguments, **keywords):
     return remote_file_array(self.proxy.load(path, schema, *arguments, **keywords))
   def materialize(self, source):
@@ -542,6 +555,9 @@ def chunk_map(source):
 chunk_map.__doc__ = coordinator.chunk_map.__doc__
 def dimensions(source):
   return get_coordinator().dimensions(source)
+def join(array1, array2):
+  return get_coordinator().join(array1, array2)
+join.__doc__ = coordinator.join.__doc__
 dimensions.__doc__ = coordinator.dimensions.__doc__
 def load(path, schema, *arguments, **keywords):
   return get_coordinator().load(path, schema, *arguments, **keywords)
