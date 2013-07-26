@@ -15,6 +15,7 @@ Y = Y[good]
 
 ###################################################
 # Introducing ... the Slycat implementation of CCA!
+
 n = X.shape[0]
 p1 = X.shape[1]
 p2 = Y.shape[1]
@@ -54,10 +55,21 @@ B = B.T[P2].T
 x = numpy.dot(X, A)
 y = numpy.dot(Y, B)
 
+x_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in X.T] for i in x.T]).T
+y_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in Y.T] for i in y.T]).T
+
+positive_output = 0
+if positive_output is not None:
+  pass
+
+
 ###################################################
 
+pyplot.figure()
 pyplot.scatter(x.T[0], y.T[0], color="red")
-#pyplot.scatter(x.T[1], y.T[1], color="green")
-#pyplot.scatter(x.T[2], y.T[2], color="blue")
+pyplot.figure()
+pyplot.scatter(x.T[1], y.T[1], color="green")
+pyplot.figure()
+pyplot.scatter(x.T[2], y.T[2], color="blue")
 pyplot.show(True)
 
