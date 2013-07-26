@@ -15,11 +15,8 @@ cca = CCA(n_components=3, scale=True)
 cca.fit(X, Y)
 x, y = cca.transform(X,Y)
 
-print cca.x_loadings_
-print cca.y_loadings_
-
 pyplot.scatter(x.T[0], y.T[0], color="red")
-pyplot.scatter(x.T[1], y.T[1], color="green")
-pyplot.scatter(x.T[2], y.T[2], color="blue")
+#pyplot.scatter(x.T[1], y.T[1], color="green")
+#pyplot.scatter(x.T[2], y.T[2], color="blue")
 pyplot.show(True)
 
