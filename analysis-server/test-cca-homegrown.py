@@ -58,10 +58,17 @@ y = numpy.dot(Y, B)
 x_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in X.T] for i in x.T]).T
 y_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in Y.T] for i in y.T]).T
 
-positive_output = 0
+positive_output = None
 if positive_output is not None:
-  pass
+  for j in range(y_loadings.shape[1]):
+    if y_loadings[positive_output, j] < 0:
+      x_loadings[:,j] = -x_loadings[:,j]
+      y_loadings[:,j] = -y_loadings[:,j]
+      x[:,j] = -x[:,j]
+      y[:,j] = -y[:,j]
 
+print x_loadings
+print y_loadings
 
 ###################################################
 
