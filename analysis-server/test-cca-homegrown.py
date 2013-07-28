@@ -30,6 +30,13 @@ if True: # Optionally scale data to unit variance
 Q1, R1, P1 = scipy.linalg.qr(X, mode="economic", pivoting=True)
 Q2, R2, P2 = scipy.linalg.qr(Y, mode="economic", pivoting=True)
 
+print "Q1", Q1
+print "R1", R1
+print "P1", P1
+print "Q2", Q2
+print "R2", R2
+print "P2", P2
+
 Xrank = sum((numpy.abs(numpy.diag(R1)) > 0) * max(n, p1))
 Yrank = sum((numpy.abs(numpy.diag(R2)) > 0) * max(n, p2))
 if Xrank == 0:
@@ -41,10 +48,20 @@ if Yrank == 0:
 if Yrank < p2:
   raise Exception("Y is not full rank.")
 
+print "Xrank", Xrank
+print "Yrank", Yrank
+
 L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)
+
+print "L", L
+print "D", D
+print "M", M
 
 A = numpy.linalg.solve(R1, L)
 B = numpy.linalg.solve(R2, M.T)
+
+print "A", A
+print "B", B
 
 A *= numpy.sqrt(n - 1)
 B *= numpy.sqrt(n - 1)
@@ -54,6 +71,9 @@ B = B.T[P2].T
 
 x = numpy.dot(X, A)
 y = numpy.dot(Y, B)
+
+print "x", x
+print "y", y
 
 x_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in X.T] for i in x.T]).T
 y_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in Y.T] for i in y.T]).T
@@ -67,8 +87,8 @@ if positive_output is not None:
       x[:,j] = -x[:,j]
       y[:,j] = -y[:,j]
 
-print x_loadings
-print y_loadings
+print "x_loadings", x_loadings
+print "y_loadings", y_loadings
 
 ###################################################
 
