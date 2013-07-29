@@ -1,5 +1,5 @@
 from slycat.analysis import *
-from slycat.web.server.worker.model.cca3 import cca
+from slycat.web.server.cca import cca
 import matplotlib.pyplot as pyplot
 import numpy
 
