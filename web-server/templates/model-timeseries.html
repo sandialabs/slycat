@@ -1158,6 +1158,42 @@ rights in this software.
             //.style("display", "none")
             ;
 
+          var waveformsLength = waveforms[0].length;
+          self.waveformPie.trigger(
+            'configure',
+            {
+              "max":waveformsLength,
+            }
+          );
+
+          // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
+          self.showWaveformPieContainerTimeout = setTimeout(function(){
+            self.waveformPieContainer.show(0);
+          }, 1000);
+
+          timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
+          previewWaveforms();
+
+          function timedProcessArray(items, process, callback){
+            var timeout = 100; //how long to yield control to UI thread
+            var todo = items.concat(); //create a clone of the original
+
+            self.waveformProcessingTimeout = setTimeout(function(){
+              var start = +new Date();
+              do {
+                process(todo.shift());
+              } while (todo.length > 0 && (+new Date() - start < 50));
+
+              if (todo.length > 0){
+                self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
+              } else {
+                callback(items);
+              }
+
+              self.waveformPie.val(waveformsLength - todo.length).trigger('change');
+            }, timeout);
+          }
+
           function processWaveform(waveform){
             d3.select(waveform).append("svg:path")
               .attr("d", self.make_sax_line())
@@ -1173,22 +1209,17 @@ rights in this software.
               .style("stroke-width", 1);
           }
 
-          var waveformsLength = waveforms[0].length;
-          self.waveformPie.trigger(
-            'configure',
-            {
-              "max":waveformsLength,
-            }
-          );
+          function finishedProcessingWaveforms(){
 
-          // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
-          self.showWaveformPieContainerTimeout = setTimeout(function(){
-            self.waveformPieContainer.show(0);
-          }, 1000);
-          
-
-          timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
-          previewWaveforms();
+            // Cancelling the timeout that was set to delay progress indicator display
+            clearTimeout(self.showWaveformPieContainerTimeout);
+            self.waveformPieContainer.hide();
+            clearTimeout(self.previewWaveformsTimeout);
+            
+            self.visualization.selectAll("path").
+              style("display", "block") // displaying the hidden paths
+              ;
+          }
 
           function previewWaveforms(timeout, maxIterations){
             if (timeout == null)
@@ -1209,38 +1240,6 @@ rights in this software.
                 }
             }, timeout );
             
-          }
-
-          function finishedProcessingWaveforms(){
-
-            // Cancelling the timeout that was set to delay progress indicator display
-            clearTimeout(self.showWaveformPieContainerTimeout);
-            self.waveformPieContainer.hide();
-            clearTimeout(self.previewWaveformsTimeout);
-            
-            self.visualization.selectAll("path").
-              style("display", "block") // displaying the hidden paths
-              ;
-          }
-
-          function timedProcessArray(items, process, callback){
-            var timeout = 100; //how long to yield control to UI thread
-            var todo = items.concat(); //create a clone of the original
-
-            self.waveformProcessingTimeout = setTimeout(function(){
-              var start = +new Date();
-              do {
-                process(todo.shift());
-              } while (todo.length > 0 && (+new Date() - start < 50));
-
-              if (todo.length > 0){
-                self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
-              } else {
-                callback(items);
-              }
-
-              self.waveformPie.val(waveformsLength - todo.length).trigger('change');
-            }, timeout);
           }
 
         }
