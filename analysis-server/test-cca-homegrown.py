@@ -86,17 +86,12 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
         y[:,j] = -y[:,j]
 
   d = min(Xrank, Yrank)
-  r2 = numpy.minimum(numpy.maximum(D[:d], 0), 1)
-  wilks = numpy.zeros((d))
+  r = numpy.minimum(numpy.maximum(D[:d], 0), 1)
 
-#  r = numpy.minimum(numpy.maximum(numpy.diag(D[:d]).T, 0), 1) # TODO: is the transpose really necessary?
-#  nondegen = find(r < 1);
-#  logLambda = repmat(-Inf, 1, d);
-#  logLambda(nondegen) = fliplr(cumsum(fliplr(log(1-r(nondegen).^2))));
-#  Wilks = exp(logLambda);
-#  stats = [r;Wilks];
+  nondegenerate = r < 1
+  wilks = numpy.exp(numpy.cumsum(numpy.log(1-(r[nondegenerate] ** 2))[::-1])[::-1])
 
-  return x, y, x_loadings, y_loadings, r2, wilks
+  return x, y, x_loadings, y_loadings, r, wilks
 
 autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
 inputs = project(autos, "Year", "Cylinders", "Displacement")
@@ -107,9 +102,9 @@ good = ~numpy.isnan(Y).any(axis=1)
 X = X[good]
 Y = Y[good]
 
-x, y, x_loadings, y_loadings, r2, wilks = cca(X, Y)
+x, y, x_loadings, y_loadings, r, wilks = cca(X, Y)
 
-print r2
+print r
 print wilks
 print x_loadings
 print y_loadings
