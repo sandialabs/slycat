@@ -4,7 +4,7 @@ import numpy
 import scipy.linalg
 import scipy.stats
 
-def cca(X, Y, scale=True, positive_output=1):
+def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
   """Custom implementation of CCA for use in Slycat."""
   def qr(A):
     """Custom implementation of QR for use with our CCA."""
@@ -29,6 +29,10 @@ def cca(X, Y, scale=True, positive_output=1):
 #
 #    return Q, R, P
 
+  eps = numpy.finfo("double").eps
+  if significant_digits is None or significant_digits > numpy.abs(numpy.log10(eps)):
+    significant_digits = numpy.abs(numpy.log10(eps))
+
   n = X.shape[0]
   p1 = X.shape[1]
   p2 = Y.shape[1]
@@ -43,8 +47,9 @@ def cca(X, Y, scale=True, positive_output=1):
   Q1, R1, P1 = qr(X)
   Q2, R2, P2 = qr(Y)
 
-  Xrank = sum((numpy.abs(numpy.diag(R1)) > 0) * max(n, p1))
-  Yrank = sum((numpy.abs(numpy.diag(R2)) > 0) * max(n, p2))
+  Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
+  Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
+
   if Xrank == 0:
     raise Exception("X must contain at least one non-constant column.")
   if Xrank < p1:
@@ -80,7 +85,18 @@ def cca(X, Y, scale=True, positive_output=1):
         x[:,j] = -x[:,j]
         y[:,j] = -y[:,j]
 
-  return x, y, x_loadings, y_loadings
+  d = min(Xrank, Yrank)
+  r2 = numpy.minimum(numpy.maximum(D[:d], 0), 1)
+  wilks = numpy.zeros((d))
+
+#  r = numpy.minimum(numpy.maximum(numpy.diag(D[:d]).T, 0), 1) # TODO: is the transpose really necessary?
+#  nondegen = find(r < 1);
+#  logLambda = repmat(-Inf, 1, d);
+#  logLambda(nondegen) = fliplr(cumsum(fliplr(log(1-r(nondegen).^2))));
+#  Wilks = exp(logLambda);
+#  stats = [r;Wilks];
+
+  return x, y, x_loadings, y_loadings, r2, wilks
 
 autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
 inputs = project(autos, "Year", "Cylinders", "Displacement")
@@ -91,8 +107,10 @@ good = ~numpy.isnan(Y).any(axis=1)
 X = X[good]
 Y = Y[good]
 
-x, y, x_loadings, y_loadings = cca(X, Y)
+x, y, x_loadings, y_loadings, r2, wilks = cca(X, Y)
 
+print r2
+print wilks
 print x_loadings
 print y_loadings
 
