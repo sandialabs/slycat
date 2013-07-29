@@ -521,30 +521,26 @@ rights in this software.
               .appendTo(row)
               .click(function(event, skip_bookmarking)
                 {
+                  waveform_viewer.stopProcessingWaveforms();
                   $(this).data("self").container.find("th").removeClass("selected");
                   $(this).addClass("selected");
 
                   var cluster_name = $(this).data("name");
                   var cluster_index = $(this).data("index");
 
-                  //console.time("downloading cluster data for cluster " + cluster_name);
                   $.ajax(
                   {
                     type : "GET",
                     url : "{{server-root}}models/{{_id}}/file/cluster-" + cluster_name,
                     success : function(cluster)
                     {
-                      //console.timeEnd("downloading cluster data for cluster " + cluster_name);
                       if(!skip_bookmarking) {
                         bookmarker.updateState( {"cluster-index" : cluster_index,
                                                  "cluster-name" : cluster_name} );
                       }
-                      //console.time("calling dendrogram_viewer.set_cluster");
+                      
                       dendrogram_viewer.set_cluster(cluster, cluster_name, cluster_index);
-                      //console.timeEnd("calling dendrogram_viewer.set_cluster");
-                      //console.time("calling waveform_viewer.set_waveforms");
                       waveform_viewer.set_waveforms(cluster["waveforms"]);
-                      //console.timeEnd("calling waveform_viewer.set_waveforms");
                     },
                     error : function(request, status, reason_phrase)
                     {
@@ -708,7 +704,6 @@ rights in this software.
 
           function select_node(d, skip_bookmarking)
           {
-            //console.time("select_node");
             if(last_selected_node === d)
               return;
             last_selected_node = d;
@@ -749,14 +744,11 @@ rights in this software.
             {
               return function()
               {
-                //console.time("make_selection_update");
                 update_table_filter(selection, cluster_name, cluster_index);
                 waveform_viewer.set_visible(selection);
-                //console.timeEnd("make_selection_update");
               }
             }
             window.setTimeout(make_selection_update(selection), 750);
-            //console.timeEnd("select_node");
           }
 
           function color_links(){
@@ -1052,14 +1044,29 @@ rights in this software.
                         'step':1,
                       });
           this.waveformProcessingTimeout = null;
+          this.previewWaveformsTimeout = null;
+          this.showWaveformPieContainerTimeout = null;
           this.color_array = null;
           this.color_scale = null;
           this.data_table_index_array = null;
         }
 
+        waveform_viewer_component.prototype.stopProcessingWaveforms = function()
+        {
+          var self = this;
+          // Cancel any previously started work
+          clearTimeout(self.waveformProcessingTimeout);
+          clearTimeout(self.previewWaveformsTimeout);
+          clearTimeout(self.showWaveformPieContainerTimeout);
+          self.waveformPieContainer.hide();
+        }
+
         waveform_viewer_component.prototype.set_waveforms = function(waveforms)
         {
           var self = this;
+
+          // Cancel any previously started work
+          self.stopProcessingWaveforms();
 
           this.waveforms = waveforms;
 
@@ -1126,11 +1133,10 @@ rights in this software.
 
         waveform_viewer_component.prototype.set_visible = function(visible)
         {
-          //console.time("inside waveform_viewer_component.prototype.set_visible");
           var self = this;
 
           // Cancel any previously started work
-          clearTimeout(self.waveformProcessingTimeout);
+          self.stopProcessingWaveforms();
 
           var waveform_subset = [];
           $.each(visible, function(index, node)
@@ -1152,21 +1158,6 @@ rights in this software.
             //.style("display", "none")
             ;
 
-          function processWaveform(waveform){
-            d3.select(waveform).append("svg:path")
-              .attr("d", self.make_sax_line())
-              //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
-              .style("display", "none")
-              .style("fill", "none")
-              .style("stroke", function(d, i) { 
-                if(self.color_scale != null)
-                  return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] ); 
-                else
-                  return "black";
-              })
-              .style("stroke-width", 1);
-          }
-
           var waveformsLength = waveforms[0].length;
           self.waveformPie.trigger(
             'configure',
@@ -1176,46 +1167,18 @@ rights in this software.
           );
 
           // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
-          var showWaveformPieContainerTimeout = setTimeout(function(){
+          self.showWaveformPieContainerTimeout = setTimeout(function(){
             self.waveformPieContainer.show(0);
           }, 1000);
-          
 
           timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
           previewWaveforms();
-
-          function previewWaveforms(){
-            var timeout = 100;
-            var counter = 8;
-            while(counter > 0){
-              setTimeout(function(){
-                self.visualization.selectAll("path").
-                  style("display", "block") // displaying the hidden paths
-                  ;
-              }, timeout);
-              counter--;
-              timeout = timeout * 2;
-
-            }
-            
-          }
-
-          function finishedProcessingWaveforms(){
-
-            // Cancelling the timeout that was set to delay progress indicator display
-            clearTimeout(showWaveformPieContainerTimeout);
-            self.waveformPieContainer.hide();
-            
-            self.visualization.selectAll("path").
-              style("display", "block") // displaying the hidden paths
-              ;
-          }
 
           function timedProcessArray(items, process, callback){
             var timeout = 100; //how long to yield control to UI thread
             var todo = items.concat(); //create a clone of the original
 
-            setTimeout(function(){
+            self.waveformProcessingTimeout = setTimeout(function(){
               var start = +new Date();
               do {
                 process(todo.shift());
@@ -1231,7 +1194,54 @@ rights in this software.
             }, timeout);
           }
 
-          //console.timeEnd("inside waveform_viewer_component.prototype.set_visible");
+          function processWaveform(waveform){
+            d3.select(waveform).append("svg:path")
+              .attr("d", self.make_sax_line())
+              //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
+              .style("display", "none")
+              .style("fill", "none")
+              .style("stroke", function(d, i) { 
+                if(self.color_scale != null)
+                  return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] ); 
+                else
+                  return "black";
+              })
+              .style("stroke-width", 1);
+          }
+
+          function finishedProcessingWaveforms(){
+
+            // Cancelling the timeout that was set to delay progress indicator display
+            clearTimeout(self.showWaveformPieContainerTimeout);
+            self.waveformPieContainer.hide();
+            clearTimeout(self.previewWaveformsTimeout);
+            
+            self.visualization.selectAll("path").
+              style("display", "block") // displaying the hidden paths
+              ;
+          }
+
+          function previewWaveforms(timeout, maxIterations){
+            if (timeout == null)
+              timeout = 100
+            if (maxIterations == null)
+              maxIterations = 6;
+
+            self.previewWaveformsTimeout = setTimeout( function(){
+                self.visualization.selectAll("path").
+                  style("display", "block") // displaying the hidden paths
+                  ;
+
+                maxIterations--;
+                timeout = timeout * 2;
+
+                if (maxIterations > 0) {
+                  self.previewWaveformsTimeout = setTimeout(arguments.callee, timeout);
+                }
+            }, timeout );
+            
+          }
+
         }
 
         waveform_viewer_component.prototype.set_color = function(color_array, color_scale, data_table_index_array)
@@ -1284,7 +1294,6 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //table_viewer_component
         function update_table_filter(visible, cluster_name, cluster_index) {
-          //console.time("inside update_table_filter");
           this.visible = visible;
           var self = this;
 
@@ -1331,7 +1340,6 @@ rights in this software.
               workerId
             );
           }
-          //console.timeEnd("inside update_table_filter");
         }
       });
     </script>
