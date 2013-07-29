@@ -7,7 +7,7 @@ import numpy
 
 autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
 inputs = project(autos, "Year", "Cylinders", "Displacement")
-outputs = project(autos, "Acceleration", "MPG", "Horsepower")
+outputs = project(autos, "Acceleration", "Horsepower", "MPG")
 X = numpy.array([values(inputs, 0), values(inputs, 1), values(inputs, 2)]).T.astype("double")
 Y = numpy.array([values(outputs, 0), values(outputs, 1), values(outputs, 2)]).T.astype("double")
 good = ~numpy.isnan(Y).any(axis=1)

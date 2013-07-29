@@ -46,10 +46,13 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
 
   Q1, R1, P1 = qr(X)
   Q2, R2, P2 = qr(Y)
+  numpy.testing.assert_array_almost_equal(X[:,P1], numpy.dot(Q1, R1))
+  numpy.testing.assert_array_almost_equal(Y[:,P2], numpy.dot(Q2, R2))
 
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
 
+  # TODO: Remove low-rank columns
   if Xrank == 0:
     raise Exception("X must contain at least one non-constant column.")
   if Xrank < p1:
@@ -63,12 +66,15 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
 
   A = numpy.linalg.solve(R1, L)
   B = numpy.linalg.solve(R2, M.T)
+  numpy.testing.assert_array_almost_equal(numpy.dot(R1, A), L)
+  numpy.testing.assert_array_almost_equal(numpy.dot(R2, B), M.T)
 
   A *= numpy.sqrt(n - 1)
   B *= numpy.sqrt(n - 1)
 
-  A = A.T[P1].T
-  B = B.T[P2].T
+  # TODO: Restore low-rank columns
+  A = A[P1]
+  B = B[P2]
 
   x = numpy.dot(X, A)
   y = numpy.dot(Y, B)
