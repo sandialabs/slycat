@@ -4,30 +4,34 @@ import numpy
 import scipy.linalg
 import scipy.stats
 
-def cca(X, Y, scale=True, positive_output=1):
+def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
   """Custom implementation of CCA for use in Slycat."""
   def qr(A):
     """Custom implementation of QR for use with our CCA."""
-    a1 = numpy.asarray_chkfinite(A)
-    geqp3, = scipy.linalg.lapack.get_lapack_funcs(("geqp3",), (a1,))
-    qr, P, tau, work, info = geqp3(A)
+    return scipy.linalg.qr(A, mode="economic", pivoting=True)
+#    a1 = numpy.asarray_chkfinite(A)
+#    geqp3, = scipy.linalg.lapack.get_lapack_funcs(("geqp3",), (a1,))
+#    qr, P, tau, work, info = geqp3(A)
+#
+#    m, n = A.shape
+#    k = min(m, n)
+#    R = numpy.triu(qr[:k,:k])
+#
+#    orgqr, = scipy.linalg.lapack.get_lapack_funcs(("orgqr",), (qr,))
+#    if m >= n: # Tall-skinny case
+#      Q, work, info = orgqr(qr[:m,:n], tau)
+#      Q = Q[:m, :n]
+#    else: # Short-wide case
+#      Q, work, info = orgqr(qr[:m,:m], tau)
+#      Q = Q[:m, :m]
+#
+#    P -= 1 # geqp3 returns a 1-based index array, so subtract 1
+#
+#    return Q, R, P
 
-    m, n = A.shape
-    k = min(m, n)
-    R = numpy.triu(qr[:k,:k])
-
-    orgqr, = scipy.linalg.lapack.get_lapack_funcs(("orgqr",), (qr,))
-    if m >= n: # Tall-skinny case
-      Q, work, info = orgqr(qr[:m,:n], tau)
-      Q = Q[:m, :n]
-    else: # Short-wide case
-      Q, work, info = orgqr(qr[:m,:m], tau)
-      Q = Q[:m, :m]
-
-    P -= 1 # geqp3 returns a 1-based index array, so subtract 1
-
-    return Q, R, P
-    #return scipy.linalg.qr(A, mode="economic", pivoting=True)
+  eps = numpy.finfo("double").eps
+  if significant_digits is None or significant_digits > numpy.abs(numpy.log10(eps)):
+    significant_digits = numpy.abs(numpy.log10(eps))
 
   n = X.shape[0]
   p1 = X.shape[1]
@@ -43,8 +47,9 @@ def cca(X, Y, scale=True, positive_output=1):
   Q1, R1, P1 = qr(X)
   Q2, R2, P2 = qr(Y)
 
-  Xrank = sum((numpy.abs(numpy.diag(R1)) > 0) * max(n, p1))
-  Yrank = sum((numpy.abs(numpy.diag(R2)) > 0) * max(n, p2))
+  Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
+  Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
+
   if Xrank == 0:
     raise Exception("X must contain at least one non-constant column.")
   if Xrank < p1:
@@ -80,7 +85,13 @@ def cca(X, Y, scale=True, positive_output=1):
         x[:,j] = -x[:,j]
         y[:,j] = -y[:,j]
 
-  return x, y, x_loadings, y_loadings
+  d = min(Xrank, Yrank)
+  r = numpy.minimum(numpy.maximum(D[:d], 0), 1)
+
+  nondegenerate = r < 1
+  wilks = numpy.exp(numpy.cumsum(numpy.log(1-(r[nondegenerate] ** 2))[::-1])[::-1])
+
+  return x, y, x_loadings, y_loadings, r, wilks
 
 autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
 inputs = project(autos, "Year", "Cylinders", "Displacement")
@@ -91,8 +102,10 @@ good = ~numpy.isnan(Y).any(axis=1)
 X = X[good]
 Y = Y[good]
 
-x, y, x_loadings, y_loadings = cca(X, Y)
+x, y, x_loadings, y_loadings, r, wilks = cca(X, Y)
 
+print r
+print wilks
 print x_loadings
 print y_loadings
 
