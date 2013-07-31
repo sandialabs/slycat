@@ -49,8 +49,8 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
     return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
-  def random(self, worker_index, shape, chunk_sizes, seed):
-    return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed))
+  def random(self, worker_index, shape, chunk_sizes, seed, attribute):
+    return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attribute))
   def redimension(self, worker_index, source, dimensions, attributes):
     return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
   def zeros(self, worker_index, shape, chunk_sizes):
@@ -171,15 +171,16 @@ class dimensions_array_iterator(array_iterator):
       return numpy.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
 
 class random_array(array):
-  def __init__(self, worker_index, shape, chunk_sizes, seed):
+  def __init__(self, worker_index, shape, chunk_sizes, seed, attribute):
     array.__init__(self, worker_index)
     self.shape = shape
     self.chunk_sizes = chunk_sizes
     self.seed = seed
+    self.attribute = attribute
   def dimensions(self):
     return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":dimension, "chunk-size":chunk_size} for index, (dimension, chunk_size) in enumerate(zip(self.shape, self.chunk_sizes))]
   def attributes(self):
-    return [{"name":"val", "type":"float64"}]
+    return [{"name":self.attribute, "type":"float64"}]
   def iterator(self):
     return self.pyro_register(random_array_iterator(self))
 

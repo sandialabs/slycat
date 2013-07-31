@@ -49,6 +49,10 @@ class factory(pyro_object):
     """Returns the set of available slycat analysis workers."""
     return [Pyro4.Proxy(self.nameserver.lookup(worker)) for worker in self.nameserver.list(prefix="slycat.worker").keys()]
 
+  def require_attribute_name(self, name):
+    if not isinstance(name, basestring):
+      raise Exception("attribute name must be a string.")
+    return name
   def require_attribute(self, attribute):
     if isinstance(attribute, basestring):
       attribute = {"name":attribute, "type":"float64"}
@@ -205,12 +209,13 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.project(worker_index, source_proxy._pyroUri, attributes))
     return self.pyro_register(array(array_workers, [source]))
-  def random(self, shape, chunk_sizes, seed):
+  def random(self, shape, chunk_sizes, seed, attribute):
     shape = self.require_shape(shape)
     chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
+    attribute = self.require_attribute_name(attribute)
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed))
+      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed, attribute))
     return self.pyro_register(array(array_workers, []))
   def redimension(self, source, dimensions, attributes):
     source = self.require_object(source)

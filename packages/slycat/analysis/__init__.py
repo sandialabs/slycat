@@ -85,7 +85,7 @@ class coordinator(object):
     return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
-  def random(self, shape, chunks=None, seed=12345):
+  def random(self, shape, chunks=None, seed=12345, attribute="val"):
     """Return an array of random values.
 
     Creates an array with the given shape and chunk sizes, with a single
@@ -147,7 +147,7 @@ class coordinator(object):
         {3,2} 0.229158970052
         {3,3} 0.486744328559
     """
-    return remote_array(self.proxy.random(shape, chunks, seed))
+    return remote_array(self.proxy.random(shape, chunks, seed, attribute))
   def redimension(self, source, dimensions, attributes):
     return remote_array(self.proxy.redimension(source.proxy._pyroUri, dimensions, attributes))
   def scan(self, source, format="dcsv", stream=sys.stdout):
@@ -568,8 +568,8 @@ materialize.__doc__ = coordinator.materialize.__doc__
 def project(source, *attributes):
   return get_coordinator().project(source, *attributes)
 project.__doc__ = coordinator.project.__doc__
-def random(shape, chunks=None, seed=12345):
-  return get_coordinator().random(shape, chunks, seed)
+def random(shape, chunks=None, seed=12345, attribute="val"):
+  return get_coordinator().random(shape, chunks, seed, attribute)
 random.__doc__ = coordinator.random.__doc__
 def redimension(source, dimensions, attributes):
   return get_coordinator().redimension(source, dimensions, attributes)
