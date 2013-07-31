@@ -3,7 +3,7 @@
 # rights in this software.
 
 from slycat.analysis.worker.accumulator import distinct
-from slycat.analysis.worker.api import array, array_iterator, chunk_count, chunk_range, chunk_iterator
+from slycat.analysis.worker.api import array, array_iterator, worker_chunks
 import numpy
 import Pyro4
 
@@ -84,8 +84,8 @@ class redimension_array(array):
     self.compute_dimensions()
     shape = [dimension["end"] - dimension["begin"] for dimension in self.target_dimensions]
     chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
-    iterator = chunk_iterator(shape, chunk_sizes, chunk_range(chunk_count(shape, chunk_sizes), self.worker_index, len(self.siblings)))
-    self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_id, begin, end in iterator]
+    iterator = worker_chunks(shape, chunk_sizes, len(self.siblings))
+    self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in iterator if worker_index == self.worker_index]
 
 class redimension_array_iterator(array_iterator):
   def __init__(self, owner):
