@@ -308,7 +308,7 @@ class coordinator(object):
       proxy = Pyro4.Proxy(self.nameserver.lookup(worker))
       proxy._pyroOneway.add("shutdown")
       yield proxy
-  def zeros(self, shape, chunks=None):
+  def zeros(self, shape, chunks=None, attribute="val"):
     """Return an array of all zeros.
 
     Creates an array with the given shape and chunk sizes, with a single
@@ -367,7 +367,7 @@ class coordinator(object):
         {3,2} 0.0
         {3,3} 0.0
     """
-    return remote_array(self.proxy.zeros(shape, chunks))
+    return remote_array(self.proxy.zeros(shape, chunks, attribute))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.
@@ -589,6 +589,6 @@ values.__doc__ = coordinator.values.__doc__
 def workers():
   return get_coordinator().workers()
 workers.__doc__ = coordinator.workers.__doc__
-def zeros(shape, chunks=None):
-  return get_coordinator().zeros(shape, chunks)
+def zeros(shape, chunks=None, attribute="val"):
+  return get_coordinator().zeros(shape, chunks, attribute)
 zeros.__doc__ = coordinator.zeros.__doc__
