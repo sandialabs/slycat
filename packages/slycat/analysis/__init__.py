@@ -18,6 +18,7 @@ import numpy
 import Pyro4
 import sys
 import time
+from slycat.analysis.api import InvalidArgument
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
@@ -29,6 +30,14 @@ log.addHandler(handler)
 Pyro4.config.SERIALIZER = "pickle"
 
 sys.excepthook = Pyro4.util.excepthook
+
+def translate_exceptions(f):
+  def implementation(*arguments, **keywords):
+    try:
+      return f(*arguments, **keywords)
+    except InvalidArgument as e:
+      raise InvalidArgument(e)
+  return implementation
 
 class coordinator(object):
   def __init__(self, nameserver):
@@ -85,6 +94,7 @@ class coordinator(object):
     return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
+  @translate_exceptions
   def random(self, shape, chunks=None, seed=12345, attribute="val"):
     """Return an array of random values.
 
@@ -568,9 +578,12 @@ materialize.__doc__ = coordinator.materialize.__doc__
 def project(source, *attributes):
   return get_coordinator().project(source, *attributes)
 project.__doc__ = coordinator.project.__doc__
+
+@translate_exceptions
 def random(shape, chunks=None, seed=12345, attribute="val"):
   return get_coordinator().random(shape, chunks, seed, attribute)
 random.__doc__ = coordinator.random.__doc__
+
 def redimension(source, dimensions, attributes):
   return get_coordinator().redimension(source, dimensions, attributes)
 redimension.__doc__ = coordinator.redimension.__doc__

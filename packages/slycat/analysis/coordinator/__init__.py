@@ -7,6 +7,7 @@ import logging
 import numpy
 import os
 import Pyro4
+from slycat.analysis.api import InvalidArgument
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
@@ -51,32 +52,32 @@ class factory(pyro_object):
 
   def require_attribute_name(self, name):
     if not isinstance(name, basestring):
-      raise Exception("attribute name must be a string.")
+      raise InvalidArgument("attribute name must be a string.")
     return name
   def require_attribute(self, attribute):
     if isinstance(attribute, basestring):
       attribute = {"name":attribute, "type":"float64"}
     elif isinstance(attribute, tuple):
       if len(attribute) != 2:
-        raise Exception("attribute should have a name and a type.")
+        raise InvalidArgument("attribute should have a name and a type.")
       attribute = {"name":attribute[0], "type":attribute[1]}
     elif isinstance(attribute, dict):
       if "name" not in attribute:
-        raise Exception("attribute missing name.")
+        raise InvalidArgument("attribute missing name.")
       if "type" not in attribute:
-        raise Exception("attribute missing type.")
+        raise InvalidArgument("attribute missing type.")
     if not isinstance(attribute["name"], basestring):
-      raise Exception("attribute name must be a string.")
+      raise InvalidArgument("attribute name must be a string.")
     self.require_type(attribute["type"])
     return attribute
   def require_attributes(self, attributes):
     attributes = [self.require_attribute(attribute) for attribute in attributes]
     if not len(attributes):
-      raise Exception("Array must have at least one attribute.")
+      raise InvalidArgument("Array must have at least one attribute.")
     return attributes
   def require_chunk_size(self, chunk_size):
     if not isinstance(chunk_size, int):
-      raise Exception("Chunk size must be an integer.")
+      raise InvalidArgument("Chunk size must be an integer.")
     return chunk_size
   def require_chunk_sizes(self, shape, chunk_sizes):
     """Return array chunk sizes (tuple of dimension lengths), treating a single integer as a 1-tuple and sanity-checking the results against an array shape."""
@@ -87,7 +88,7 @@ class factory(pyro_object):
     else:
       chunk_sizes = tuple(chunk_sizes)
     if len(shape) != len(chunk_sizes):
-      raise Exception("Array shape and chunk sizes must contain the same number of dimensions.")
+      raise InvalidArgument("Array shape and chunk sizes must contain the same number of dimensions.")
     return chunk_sizes
   def require_dimension(self, dimension):
     if isinstance(dimension, basestring):
@@ -96,7 +97,7 @@ class factory(pyro_object):
   def require_dimensions(self, dimensions):
     dimensions = [self.require_dimension(dimension) for dimension in dimensions]
     if not len(dimensions):
-      raise Exception("Array must have at least one dimension.")
+      raise InvalidArgument("Array must have at least one dimension.")
     return dimensions
   def require_expression(self, expression):
     if isinstance(expression, basestring):
@@ -112,12 +113,12 @@ class factory(pyro_object):
     else:
       shape = tuple(shape)
     if not len(shape):
-      raise Exception("Array shape must have at least one dimension.")
+      raise InvalidArgument("Array shape must have at least one dimension.")
     return shape
   def require_type(self, type):
     allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
     if type not in allowed_types:
-      raise Exception("Type must be one of %s" % ",".join(allowed_types))
+      raise InvalidArgument("Type must be one of %s" % ",".join(allowed_types))
     return type
 
   def aggregate(self, source, expressions):
@@ -173,7 +174,7 @@ class factory(pyro_object):
     dimensions1 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array1.dimensions()]
     dimensions2 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array2.dimensions()]
     if dimensions1 != dimensions2:
-      raise Exception("Arrays to be joined must have identical dimensions.")
+      raise InvalidArgument("Arrays to be joined must have identical dimensions.")
 
     array_workers = []
     for worker_index, (array1_proxy, array2_proxy, worker) in enumerate(zip(array1.workers, array2.workers, self.workers())):
@@ -194,7 +195,7 @@ class factory(pyro_object):
         array_workers.append(worker.prn_file(worker_index, path, chunk_size))
       return self.pyro_register(file_array(array_workers, []))
     else:
-      raise Exception("Unknown load schema: %s" % schema)
+      raise InvalidArgument("Unknown load schema: %s" % schema)
   def materialize(self, source):
     source = self.require_object(source)
     array_workers = []
@@ -204,7 +205,7 @@ class factory(pyro_object):
   def project(self, source, attributes):
     source = self.require_object(source)
     if not len(attributes):
-      raise Exception("project() operator requires at least one attribute.")
+      raise InvalidArgument("project() operator requires at least one attribute.")
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.project(worker_index, source_proxy._pyroUri, attributes))
