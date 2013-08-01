@@ -3,7 +3,7 @@
 # rights in this software.
 
 from slycat.analysis.worker.accumulator import distinct
-from slycat.analysis.worker.api import array, array_iterator, worker_chunks
+from slycat.analysis.worker.api import log, array, array_iterator, worker_chunks
 import numpy
 import Pyro4
 
@@ -12,6 +12,7 @@ class redimension_array(array):
     array.__init__(self, worker_index)
     self.source = source
     self.chunks = None
+    self.chunk_owners = None
     source_dimensions = source.dimensions()
     source_attributes = source.attributes()
     dimension_map = {dimension["name"]:index for index, dimension in enumerate(source_dimensions)}
@@ -84,8 +85,13 @@ class redimension_array(array):
     self.compute_dimensions()
     shape = [dimension["end"] - dimension["begin"] for dimension in self.target_dimensions]
     chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
-    iterator = worker_chunks(shape, chunk_sizes, len(self.siblings))
-    self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in iterator if worker_index == self.worker_index]
+    self.chunks = []
+    self.chunk_owners = {}
+    for chunk_index, worker_index, begin, end in  worker_chunks(shape, chunk_sizes, len(self.siblings)):
+      self.chunk_owners[(tuple(begin), tuple(end))] = worker_index
+      if worker_index == self.worker_index:
+        self.chunks.append(redimension_array_chunk(begin, end - begin, self.target_attributes))
+    log.debug("chunk owners: %s", self.chunk_owners)
 
 class redimension_array_iterator(array_iterator):
   def __init__(self, owner):
