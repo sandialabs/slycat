@@ -87,7 +87,7 @@ class factory(pyro_object):
   def require_attribute_names(self, names):
     if isinstance(names, basestring):
       return [self.require_attribute_name(names)]
-    return [self.require_attribute_name(name) for attribute_name in names]
+    return [self.require_attribute_name(name) for name in names]
   def require_chunk_size(self, chunk_size):
     if not isinstance(chunk_size, int):
       raise InvalidArgument("Chunk size must be an integer.")
