@@ -52,8 +52,8 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
     return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
-  def random(self, worker_index, shape, chunk_sizes, seed, attribute):
-    return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attribute))
+  def random(self, worker_index, shape, chunk_sizes, seed, attributes):
+    return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attributes))
   def redimension(self, worker_index, source, dimensions, attributes):
     return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
   def zeros(self, worker_index, shape, chunk_sizes, attributes):
@@ -174,16 +174,16 @@ class dimensions_array_iterator(array_iterator):
       return numpy.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
 
 class random_array(array):
-  def __init__(self, worker_index, shape, chunk_sizes, seed, attribute):
+  def __init__(self, worker_index, shape, chunk_sizes, seed, attributes):
     array.__init__(self, worker_index)
     self.shape = shape
     self.chunk_sizes = chunk_sizes
     self.seed = seed
-    self.attribute = attribute
+    self._attributes = attributes
   def dimensions(self):
     return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":dimension, "chunk-size":chunk_size} for index, (dimension, chunk_size) in enumerate(zip(self.shape, self.chunk_sizes))]
   def attributes(self):
-    return [{"name":self.attribute, "type":"float64"}]
+    return self._attributes
   def iterator(self):
     return self.pyro_register(random_array_iterator(self))
 
@@ -199,14 +199,14 @@ class random_array_iterator(array_iterator):
       if worker_index == self.owner.worker_index:
         self._coordinates = begin
         self._shape = end - begin
-        self._values = self.generator.uniform(size=self._shape)
+        self._values = [self.generator.uniform(size=self._shape).astype(attribute["type"]) for attribute in self.owner._attributes]
         break
   def coordinates(self):
     return self._coordinates
   def shape(self):
     return self._shape
   def values(self, index):
-    return self._values
+    return self._values[index]
 
 class zeros_array(array):
   def __init__(self, worker_index, shape, chunk_sizes, attributes):

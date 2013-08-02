@@ -224,13 +224,15 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.project(worker_index, source_proxy._pyroUri, attributes))
     return self.pyro_register(array(array_workers, [source]))
-  def random(self, shape, chunk_sizes, seed, attribute):
+  def random(self, shape, chunk_sizes, seed, attributes):
     shape = self.require_shape(shape)
     chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
-    attribute = self.require_attribute_name(attribute)
+    attributes = self.require_attributes(attributes)
+    if len(attributes) < 1:
+      raise InvalidArgument("random() requires at least one attribute.")
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed, attribute))
+      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed, attributes))
     return self.pyro_register(array(array_workers, []))
   def redimension(self, source, dimensions, attributes):
     source = self.require_object(source)
@@ -243,7 +245,7 @@ class factory(pyro_object):
     chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
     attributes = self.require_attributes(attributes)
     if len(attributes) < 1:
-      raise InvalidArgument("One-or-more attributes are required.")
+      raise InvalidArgument("zeros() requires at least one attribute.")
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
       array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attributes))

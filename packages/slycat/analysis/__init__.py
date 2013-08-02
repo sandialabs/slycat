@@ -97,11 +97,11 @@ class coordinator(object):
   def project(self, source, *attributes):
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
   @translate_exceptions
-  def random(self, shape, chunks=None, seed=12345, attribute="val"):
+  def random(self, shape, chunks=None, seed=12345, attributes="val"):
     """Return an array of random values.
 
-    Creates an array with the given shape and chunk sizes, with a single
-    attribute containing samples drawn from a uniform distribution in the
+    Creates an array with the given shape and chunk sizes, with one-or-more
+    attributes containing samples drawn from a uniform distribution in the
     range [0, 1).
 
     The shape parameter must be an int or a sequence of ints that specify the
@@ -112,6 +112,11 @@ class coordinator(object):
     to the array shape (i.e. the array will have a single chunk).  The seed
     parameter is used by the underlying random number generator and can be used
     to repeat results.
+
+    The attributes parameter may be a string attribute name, a tuple containing
+    attribute name and type, a sequence of attribute names, or a sequence of
+    name/type tuples.
+
 
       >>> scan(attributes(random(4)))
         {i} name,type
@@ -159,7 +164,7 @@ class coordinator(object):
         {3,2} 0.229158970052
         {3,3} 0.486744328559
     """
-    return remote_array(self.proxy.random(shape, chunks, seed, attribute))
+    return remote_array(self.proxy.random(shape, chunks, seed, attributes))
   def redimension(self, source, dimensions, attributes):
     return remote_array(self.proxy.redimension(source.proxy._pyroUri, dimensions, attributes))
   def scan(self, source, format="dcsv", stream=sys.stdout):
@@ -592,8 +597,8 @@ def project(source, *attributes):
 project.__doc__ = coordinator.project.__doc__
 
 @translate_exceptions
-def random(shape, chunks=None, seed=12345, attribute="val"):
-  return get_coordinator().random(shape, chunks, seed, attribute)
+def random(shape, chunks=None, seed=12345, attributes="val"):
+  return get_coordinator().random(shape, chunks, seed, attributes)
 random.__doc__ = coordinator.random.__doc__
 
 def redimension(source, dimensions, attributes):
