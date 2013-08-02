@@ -200,7 +200,7 @@ class coordinator(object):
     return remote_array(self.proxy.random(shape, chunks, seed, attributes))
   def redimension(self, source, dimensions, attributes):
     return remote_array(self.proxy.redimension(source.proxy._pyroUri, dimensions, attributes))
-  def scan(self, source, format="dcsv", stream=sys.stdout):
+  def scan(self, source, format="dcsv", separator=", ", stream=sys.stdout):
     """Format the contents of an array, writing them to a stream.
 
     Scanning an array is the easiest way to see its contents formatted for
@@ -248,6 +248,11 @@ class coordinator(object):
 
     >>> scan(random((2, 2), (1, 2)), format="null")
 
+    The separator parameter contains a string which is used as the separator
+    between values.  It defaults to ", " to provide better legibility for
+    humans, but could be set to "," to produce a more compact file, "\t" to
+    create a tab-delimited file, etc.
+
     Note that scanning an array means sending all of its data to the client for
     formatting, which may be impractically slow or exceed available client
     memory for large arrays.
@@ -258,18 +263,18 @@ class coordinator(object):
         for attribute in chunk.attributes():
           values = attribute.values()
     elif format == "csv":
-      stream.write(",".join([attribute["name"] for attribute in source.attributes]))
+      stream.write(separator.join([attribute["name"] for attribute in source.attributes]))
       stream.write("\n")
       for chunk in source.chunks():
         iterators = [attribute.values().flat for attribute in chunk.attributes()]
         try:
           while True:
-            stream.write(",".join([str(iterator.next()) for iterator in iterators]))
+            stream.write(separator.join([str(iterator.next()) for iterator in iterators]))
             stream.write("\n")
         except StopIteration:
           pass
     elif format == "csv+":
-      stream.write(",".join([dimension["name"] for dimension in source.dimensions] + [attribute["name"] for attribute in source.attributes]))
+      stream.write(separator.join([dimension["name"] for dimension in source.dimensions] + [attribute["name"] for attribute in source.attributes]))
       stream.write("\n")
       for chunk in source.chunks():
         chunk_coordinates = chunk.coordinates()
@@ -278,13 +283,13 @@ class coordinator(object):
           while True:
             values = [iterator.next() for iterator in iterators]
             coordinates = chunk_coordinates + values[0][0]
-            stream.write(",".join([str(coordinate) for coordinate in coordinates] + [str(value[1]) for value in values]))
+            stream.write(separator.join([str(coordinate) for coordinate in coordinates] + [str(value[1]) for value in values]))
             stream.write("\n")
         except StopIteration:
           pass
     elif format == "dcsv":
-      stream.write("  {%s} " % ",".join([dimension["name"] for dimension in source.dimensions]))
-      stream.write(",".join([attribute["name"] for attribute in source.attributes]))
+      stream.write("  {%s} " % separator.join([dimension["name"] for dimension in source.dimensions]))
+      stream.write(separator.join([attribute["name"] for attribute in source.attributes]))
       stream.write("\n")
       for chunk_index, chunk in enumerate(source.chunks()):
         chunk_coordinates = chunk.coordinates()
@@ -295,8 +300,8 @@ class coordinator(object):
             values = [iterator.next() for iterator in iterators]
             coordinates = chunk_coordinates + values[0][0]
             stream.write(chunk_marker)
-            stream.write("{%s} " % ",".join([str(coordinate) for coordinate in coordinates]))
-            stream.write(",".join([str(value[1]) for value in values]))
+            stream.write("{%s} " % separator.join([str(coordinate) for coordinate in coordinates]))
+            stream.write(separator.join([str(value[1]) for value in values]))
             stream.write("\n")
             chunk_marker = "  "
         except StopIteration:
@@ -685,8 +690,8 @@ random.__doc__ = coordinator.random.__doc__
 def redimension(source, dimensions, attributes):
   return get_coordinator().redimension(source, dimensions, attributes)
 redimension.__doc__ = coordinator.redimension.__doc__
-def scan(source, format="dcsv", stream=sys.stdout):
-  return get_coordinator().scan(source, format, stream)
+def scan(source, format="dcsv", separator=", ", stream=sys.stdout):
+  return get_coordinator().scan(source, format, separator, stream)
 scan.__doc__ = coordinator.scan.__doc__
 def shutdown():
   return get_coordinator().shutdown()
