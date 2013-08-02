@@ -48,8 +48,6 @@ class coordinator(object):
     self.nameserver = nameserver
     self.proxy = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
     self.proxy._pyroOneway.add("shutdown")
-  def shutdown(self):
-    self.proxy.shutdown()
 
   def aggregate(self, source, expressions):
     """Return an array containing one-or-more aggregates of a source array.
@@ -455,6 +453,16 @@ class coordinator(object):
       raise Exception("Allowed formats: {}".format(", ".join(["null", "csv", "csv+", "dcsv (default)"])))
 
     log.info("elapsed time: %s seconds" % (time.time() - start_time))
+
+  def shutdown(self):
+    """Request that the coordinator and all workers shut-down.
+
+    Note that this is currently an experimental feature, which does not enforce
+    any access controls.  Shutting down while other clients are working will
+    make you very unpopular!
+    """
+    self.proxy.shutdown()
+
   def value(self, source, attribute=0):
     """Returns a single value from an array."""
     iterator = source.proxy.iterator()
@@ -547,12 +555,14 @@ class coordinator(object):
 
     log.info("elapsed time: %s seconds" % (time.time() - start_time))
     return result
+
   def workers(self):
     """Return the current set of available slycat analysis workers."""
     for worker in self.nameserver.list(prefix="slycat.worker").keys():
       proxy = Pyro4.Proxy(self.nameserver.lookup(worker))
       proxy._pyroOneway.add("shutdown")
       yield proxy
+
   def zeros(self, shape, chunks=None, attributes="val"):
     """Return an array of all zeros.
 
