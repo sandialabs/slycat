@@ -16,7 +16,13 @@ def require_array_schema(array, dimensions, attributes):
     raise Exception("attribute mismatch: expected %s, got %s" % (expected_attributes, array_attributes))
   assert(array.shape == tuple([end - begin for name, type, begin, end, chunk_size in dimensions]))
 
-def test_redimension_attribute_attribute():
+def test_redimension_d0__a0():
+  array1 = random((4, 4), (2, 2))
+  array2 = redimension(array1, ["d0"], ["val"])
+  require_array_schema(array2, [("d0", "int64", 0, 4, 2)], [("val", "float64")])
+  scan(array2)
+
+def test_redimension_d0_d1__a3_a0():
   array1 = random((4, 4), (2, 2))
   array2 = apply(array1, "val2", "val * val")
   array3 = apply(array2, "val3", "val * val * val")
@@ -26,7 +32,7 @@ def test_redimension_attribute_attribute():
   #numpy.testing.assert_array_almost_equal(values(array4, 1), values(array1, 0))
   scan(array4)
 
-def test_redimension_dimension_attribute():
+def test_redimension_d0_d1__d0_d1():
   array1 = random((4, 4), (2, 2))
   array2 = redimension(array1, ["d0", "d1"], ["val", "d0", "d1"])
   require_array_schema(array2, [("d0", "int64", 0, 4, 2), ("d1", "int64", 0, 4, 2)], [("val", "float64"), ("d0", "int64"), ("d1", "int64")])
@@ -35,13 +41,7 @@ def test_redimension_dimension_attribute():
   #numpy.testing.assert_array_equal(values(array2, 2), numpy.array([[0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]], dtype="int64"))
   scan(array2)
 
-def test_redimension_dimension_dimension():
-  array1 = random((4, 4), (2, 2))
-  array2 = redimension(array1, ["d0"], ["val"])
-  require_array_schema(array2, [("d0", "int64", 0, 4, 2)], [("val", "float64")])
-  scan(array2)
-
-def test_redimension_attribute_dimension():
+def test_redimension_d0_a1__a0():
   array1 = random((4), (2))
   array2 = apply(array1, ("j", "int64"), "d0 % 2")
   array3 = redimension(array2, ["d0", "j"], ["val"])

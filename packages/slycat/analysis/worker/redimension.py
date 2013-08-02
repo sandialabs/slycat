@@ -86,11 +86,13 @@ class redimension_array(array):
     chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
     all_chunks = list(worker_chunks(shape, chunk_sizes, len(self.siblings)))
     if self.worker_index == 0:
-      log.info("redimension: all chunks: %s", all_chunks)
+      log.info("dimensions: %s", self.target_dimension_sources)
+      log.info("attributes: %s", self.target_attribute_sources)
     self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in all_chunks if worker_index == self.worker_index]
     with self.source.iterator() as iterator:
       for ignored in iterator:
-        log.info("worker: %s coords: %s shape: %s", self.worker_index, iterator.coordinates(), iterator.shape())
+        for source_coordinates, target_coordinates in remap(iterator, self.target_dimension_sources):
+          log.info("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
 
 class redimension_array_iterator(array_iterator):
   def __init__(self, owner):
@@ -120,3 +122,19 @@ class redimension_array_chunk:
     return self._shape
   def values(self, index):
     return self._values[index]
+
+def remap(iterator, dimension_sources):
+  begin = iterator.coordinates()
+  shape = iterator.shape()
+  values_cache = {}
+  for coordinates in numpy.ndindex(*shape):
+    source_coordinates = begin + coordinates
+    target_coordinates = []
+    for type, index in dimension_sources:
+      if type == "dimension":
+        target_coordinates.append(source_coordinates[index])
+      elif type == "attribute":
+        if index not in values_cache:
+          values_cache[index] = iterator.values(index)
+        target_coordinates.append(values_cache[index][coordinates])
+    yield source_coordinates, target_coordinates
