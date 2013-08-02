@@ -29,6 +29,8 @@ elif options.log_level == "error":
   slycat.analysis.worker.log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
   slycat.analysis.worker.log.setLevel(logging.CRITICAL)
+elif options.log_level is None:
+  pass
 else:
   raise Exception("Unknown log level: {}".format(options.log_level))
 
