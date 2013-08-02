@@ -316,6 +316,27 @@ def test_attribute_rename():
   numpy.testing.assert_array_almost_equal(value(array3, 1), values(array1).mean())
   numpy.testing.assert_array_almost_equal(value(array3, 2), values(array1).max())
 
+def test_cca():
+  from slycat.web.server.cca import cca
+  autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
+  inputs = project(autos, "Year", "Cylinders", "Displacement")
+  outputs = project(autos, "Acceleration", "MPG", "Horsepower")
+  X = numpy.column_stack(values(inputs)).astype("double")
+  Y = numpy.column_stack(values(outputs)).astype("double")
+  good = ~numpy.isnan(Y).any(axis=1)
+  X = X[good]
+  Y = Y[good]
+
+  x, y, x_loadings, y_loadings, r, wilks = cca(X, Y)
+
+  sys.stderr.write("\n")
+  sys.stderr.write("x: {}\n".format(x))
+  sys.stderr.write("y: {}\n".format(y))
+  sys.stderr.write("x-loadings: {}\n".format(x_loadings))
+  sys.stderr.write("y-loadings: {}\n".format(y_loadings))
+  sys.stderr.write("r: {}\n".format(r))
+  sys.stderr.write("wilks: {}\n".format(wilks))
+
 def test_chunk_map_10_10():
   array1 = random(10)
   array2 = chunk_map(array1)
