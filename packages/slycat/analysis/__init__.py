@@ -320,11 +320,11 @@ class coordinator(object):
       proxy = Pyro4.Proxy(self.nameserver.lookup(worker))
       proxy._pyroOneway.add("shutdown")
       yield proxy
-  def zeros(self, shape, chunks=None, attribute="val"):
+  def zeros(self, shape, chunks=None, attributes="val"):
     """Return an array of all zeros.
 
-    Creates an array with the given shape and chunk sizes, with a single
-    attribute filled with zeros.
+    Creates an array with the given shape and chunk sizes, with one-or-more
+    attributes filled with zeros.
 
     The shape parameter must be an int or a sequence of ints that specify the
     size of the array along each dimension.  The chunk parameter must an int or
@@ -332,6 +332,10 @@ class coordinator(object):
     dimension, and must match the number of dimensions implied by the shape
     parameter.  If the chunk parameter is None, the chunk sizes will be identical
     to the array shape (i.e. the array will have a single chunk).
+
+    The attributes parameter may be a string attribute name, a tuple containing
+    attribute name and type, a sequence of attribute names, or a sequence of
+    name/type tuples.
 
       >>> scan(attributes(zeros(4)))
         {i} name,type
@@ -379,7 +383,7 @@ class coordinator(object):
         {3,2} 0.0
         {3,3} 0.0
     """
-    return remote_array(self.proxy.zeros(shape, chunks, attribute))
+    return remote_array(self.proxy.zeros(shape, chunks, attributes))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.
@@ -610,6 +614,6 @@ values.__doc__ = coordinator.values.__doc__
 def workers():
   return get_coordinator().workers()
 workers.__doc__ = coordinator.workers.__doc__
-def zeros(shape, chunks=None, attribute="val"):
-  return get_coordinator().zeros(shape, chunks, attribute)
+def zeros(shape, chunks=None, attributes="val"):
+  return get_coordinator().zeros(shape, chunks, attributes)
 zeros.__doc__ = coordinator.zeros.__doc__

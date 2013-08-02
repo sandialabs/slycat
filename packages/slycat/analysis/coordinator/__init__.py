@@ -52,28 +52,37 @@ class factory(pyro_object):
 
   def require_attribute_name(self, name):
     if not isinstance(name, basestring):
-      raise InvalidArgument("attribute name must be a string.")
+      raise InvalidArgument("Attribute name must be a string.")
     return name
+  def require_attribute_type(self, type):
+    allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
+    if type not in allowed_types:
+      raise InvalidArgument("Attribute type must be one of %s" % ",".join(allowed_types))
+    return type
   def require_attribute(self, attribute):
     if isinstance(attribute, basestring):
       attribute = {"name":attribute, "type":"float64"}
     elif isinstance(attribute, tuple):
       if len(attribute) != 2:
-        raise InvalidArgument("attribute should have a name and a type.")
+        raise InvalidArgument("Attribute must have a name and a type.")
       attribute = {"name":attribute[0], "type":attribute[1]}
     elif isinstance(attribute, dict):
       if "name" not in attribute:
-        raise InvalidArgument("attribute missing name.")
+        raise InvalidArgument("Attribute must have a name.")
       if "type" not in attribute:
-        raise InvalidArgument("attribute missing type.")
-    if not isinstance(attribute["name"], basestring):
-      raise InvalidArgument("attribute name must be a string.")
-    self.require_type(attribute["type"])
+        raise InvalidArgument("Attribute must have a type.")
+    self.require_attribute_name(attribute["name"])
+    self.require_attribute_type(attribute["type"])
     return attribute
   def require_attributes(self, attributes):
-    attributes = [self.require_attribute(attribute) for attribute in attributes]
-    if not len(attributes):
-      raise InvalidArgument("Array must have at least one attribute.")
+    if isinstance(attributes, basestring):
+      attributes = [self.require_attribute(attributes)]
+    elif isinstance(attributes, tuple):
+      attributes = [self.require_attribute(attributes)]
+    elif isinstance(attributes, dict):
+      attributes = [self.require_attribute(attributes)]
+    else:
+      attributes = [self.require_attribute(attribute) for attribute in attributes]
     return attributes
   def require_chunk_size(self, chunk_size):
     if not isinstance(chunk_size, int):
@@ -115,11 +124,6 @@ class factory(pyro_object):
     if not len(shape):
       raise InvalidArgument("Array shape must have at least one dimension.")
     return shape
-  def require_type(self, type):
-    allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
-    if type not in allowed_types:
-      raise InvalidArgument("Type must be one of %s" % ",".join(allowed_types))
-    return type
 
   def aggregate(self, source, expressions):
     source = self.require_object(source)
@@ -138,7 +142,7 @@ class factory(pyro_object):
       array_workers.append(worker.apply(worker_index, source_proxy._pyroUri, attribute, expression))
     return self.pyro_register(array(array_workers, [source]))
   def array(self, initializer, type):
-    type = self.require_type(type)
+    type = self.require_attribute_type(type)
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
       array_workers.append(worker.array(worker_index, initializer, type))
@@ -234,13 +238,15 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.redimension(worker_index, source_proxy._pyroUri, dimensions, attributes))
     return self.pyro_register(array(array_workers, [source]))
-  def zeros(self, shape, chunk_sizes, attribute):
+  def zeros(self, shape, chunk_sizes, attributes):
     shape = self.require_shape(shape)
     chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
-    attribute = self.require_attribute_name(attribute)
+    attributes = self.require_attributes(attributes)
+    if len(attributes) < 1:
+      raise InvalidArgument("One-or-more attributes are required.")
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attribute))
+      array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attributes))
     return self.pyro_register(array(array_workers, []))
 
 class array(pyro_object):
