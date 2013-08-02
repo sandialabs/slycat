@@ -13,12 +13,13 @@ are streamed through the system, so you can manipulate arrays that are larger
 than the available system memory.
 """
 
+from functools import wraps
+from slycat.analysis.api import InvalidArgument
 import logging
 import numpy
 import Pyro4
 import sys
 import time
-from slycat.analysis.api import InvalidArgument
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
@@ -32,12 +33,14 @@ Pyro4.config.SERIALIZER = "pickle"
 sys.excepthook = Pyro4.util.excepthook
 
 def translate_exceptions(f):
-  def implementation(*arguments, **keywords):
+  """Catch and re-raise certain exceptions to hide the fact that they were raised remotely."""
+  @wraps(f)
+  def wrapper(*arguments, **keywords):
     try:
       return f(*arguments, **keywords)
     except InvalidArgument as e:
       raise InvalidArgument(e)
-  return implementation
+  return wrapper
 
 class coordinator(object):
   def __init__(self, nameserver):
@@ -46,7 +49,36 @@ class coordinator(object):
     self.proxy._pyroOneway.add("shutdown")
   def shutdown(self):
     self.proxy.shutdown()
+
+  @translate_exceptions
   def aggregate(self, source, expressions):
+    """Return an array containing one-or-more aggregates of a source array.
+
+    The result is a one-dimensional array with a single cell containing
+    one-or-more attributes, one for each aggregate expression supplied by the
+    caller.  Expressions are specified as a sequence of strings, each of the
+    form "function(attribute)" where "function" is an aggregate function and
+    "attribute" is the name of a source array attribute.  The available
+    aggregate functions are:
+
+      avg       Compute the average value of an attribute.
+      count     Compute the number of values stored in an attribute.
+      distinct  Compute the number of distinct values stored in an attribute.
+      max       Compute the maximum value of an attribute.
+      min       Compute the minimum value of an attribute.
+      sum       Compute the sum of an attribute's values.
+
+    The attribute names in the result array will be a combination of the source
+    attribute name and aggregate function name.
+
+      >>> scan(aggregate(random(5), ["min(val)"]))
+        {i} val_min
+      * {0} 0.183918811677
+
+      >>> scan(aggregate(random(5), ["avg(val)", "count(val)", "distinct(val)", "sum(val)"]))
+        {i} val_avg,val_count,val_distinct,val_sum
+      * {0} 0.440439153342,5,5,2.20219576671
+    """
     return remote_array(self.proxy.aggregate(source.proxy._pyroUri, expressions))
   def apply(self, source, attribute, expression):
     return remote_array(self.proxy.apply(source.proxy._pyroUri, attribute, expression))
@@ -89,9 +121,9 @@ class coordinator(object):
     - in this case, creating a materialized version of the array allows you to
     re-use those results without recomputing them every time:
 
-       >>> array1 = # Expensive-to-compute array
-       >>> array2 = materialize(array1)
-       # Now, use array2 in place of array1, to avoid recomputing.
+      >>> array1 = # Expensive-to-compute array
+      >>> array2 = materialize(array1)
+      # Now, use array2 in place of array1, to avoid recomputing.
     """
     return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
@@ -595,14 +627,18 @@ def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
   nameserver = Pyro4.locateNS(host, port)
   current_coordinator = coordinator(nameserver)
   return current_coordinator
+
 def get_coordinator():
   """Return the current (most recently connected) coordinator."""
   if current_coordinator is None:
     connect()
   return current_coordinator
+
+@translate_exceptions
 def aggregate(source, expressions):
   return get_coordinator().aggregate(source, expressions)
 aggregate.__doc__ = coordinator.aggregate.__doc__
+
 def apply(source, attribute, expression):
   return get_coordinator().apply(source, attribute, expression)
 apply.__doc__ = coordinator.apply.__doc__
