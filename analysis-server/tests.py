@@ -529,17 +529,24 @@ def test_scan_null():
 
 def test_values_default():
   array1 = random(5, attributes=["foo", "bar"])
-  b = values(array1)
+  numpy.testing.assert_equal(len(values(array1)), 2)
+  numpy.testing.assert_array_equal(values(array1)[0], values(array1, 0))
+  numpy.testing.assert_array_equal(values(array1)[1], values(array1, 1))
 
-def test_values_index():
-  array1 = random(5, attributes=["foo", "bar"])
-  b = values(array1, 0)
-  c = values(array1, 1)
-
-def test_values_name():
+def test_values_index_name():
   array1 = random(5, attributes=["foo", "bar"])
   numpy.testing.assert_array_equal(values(array1, "foo"), values(array1, 0))
   numpy.testing.assert_array_equal(values(array1, "bar"), values(array1, 1))
+
+def test_values_indexes():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_array_equal(values(array1, [1, 0])[0], values(array1, 1))
+  numpy.testing.assert_array_equal(values(array1, [1, 0])[1], values(array1, 0))
+
+def test_values_names():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_array_equal(values(array1, ["bar", "foo"])[0], values(array1, 1))
+  numpy.testing.assert_array_equal(values(array1, ["bar", "foo"])[1], values(array1, 0))
 
 def test_zeros_1d():
   array1 = zeros(5)
