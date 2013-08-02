@@ -130,6 +130,8 @@ class factory(pyro_object):
 
   def aggregate(self, source, expressions):
     source = self.require_object(source)
+    if isinstance(expressions, basestring):
+      expressions = [expressions]
     expressions = [self.require_expression(expression) for expression in expressions]
     expressions = [(expression.body[0].value.func.id, expression.body[0].value.args[0].id) for expression in expressions]
     array_workers = []
