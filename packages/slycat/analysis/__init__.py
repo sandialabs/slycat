@@ -136,13 +136,15 @@ class coordinator(object):
     range [0, 1).
 
     The shape parameter must be an int or a sequence of ints that specify the
-    size of the array along each dimension.  The chunk parameter must an int or
-    sequence of ints that specify the maximum size of an array chunk along each
-    dimension, and must match the number of dimensions implied by the shape
-    parameter.  If the chunk parameter is None, the chunk sizes will be identical
-    to the array shape (i.e. the array will have a single chunk).  The seed
-    parameter is used by the underlying random number generator and can be used
-    to repeat results.
+    size of the array along each dimension.  The chunks parameter must an int
+    or sequence of ints that specify the maximum size of an array chunk along
+    each dimension, and must match the number of dimensions implied by the
+    shape parameter.  If the chunks parameter is None (the default), the chunk
+    sizes will be identical to the array shape, i.e. the array will have a
+    single chunk.  This may be impractical for large arrays and prevents the
+    array from being distributed across multiple workers.  The seed parameter
+    is used by the underlying random number generator and can be used to generate
+    identical random arrays.
 
     The attributes parameter may be a string attribute name, a tuple containing
     attribute name and type, a sequence of attribute names, or a sequence of
@@ -247,7 +249,8 @@ class coordinator(object):
     >>> scan(random((2, 2), (1, 2)), format="null")
 
     Note that scanning an array means sending all of its data to the client for
-    formatting, which may be impractical for large arrays.
+    formatting, which may be impractically slow or exceed available client
+    memory for large arrays.
     """
     start_time = time.time()
     if format == "null":
@@ -333,8 +336,8 @@ class coordinator(object):
     numpy arrays will be returned.
 
     Note that converting an attribute from an array means moving all the
-    attribute data to the client, which may be impractical or exceed client
-    memory for large arrays.
+    attribute data to the client, which may be impractically slow or exceed
+    available client memory for large arrays.
     """
     def materialize_attribute(attribute, source_attributes):
       """Materializes one attribute into a numpy array."""
@@ -407,11 +410,13 @@ class coordinator(object):
     attributes filled with zeros.
 
     The shape parameter must be an int or a sequence of ints that specify the
-    size of the array along each dimension.  The chunk parameter must an int or
-    sequence of ints that specify the maximum size of an array chunk along each
-    dimension, and must match the number of dimensions implied by the shape
-    parameter.  If the chunk parameter is None, the chunk sizes will be identical
-    to the array shape (i.e. the array will have a single chunk).
+    size of the array along each dimension.  The chunks parameter must an int
+    or sequence of ints that specify the maximum size of an array chunk along
+    each dimension, and must match the number of dimensions implied by the
+    shape parameter.  If the chunks parameter is None (the default), the chunk
+    sizes will be identical to the array shape, i.e. the array will have a
+    single chunk.  This may be impractical for large arrays, and prevents the
+    array from being distributed across multiple remote workers.
 
     The attributes parameter may be a string attribute name, a tuple containing
     attribute name and type, a sequence of attribute names, or a sequence of
