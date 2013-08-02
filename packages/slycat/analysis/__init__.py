@@ -56,6 +56,8 @@ class coordinator(object):
     return remote_array(self.proxy.attributes(source.proxy._pyroUri))
   def attribute_rename(self, source, *attributes):
     return remote_array(self.proxy.attribute_rename(source.proxy._pyroUri, attributes))
+  def build(self, shape, attributes, chunks=None):
+    return remote_array(self.proxy.build(shape, chunks, attributes))
   def chunk_map(self, source):
     return remote_array(self.proxy.chunk_map(source.proxy._pyroUri))
   def dimensions(self, source):
@@ -560,6 +562,12 @@ attributes.__doc__ = coordinator.attributes.__doc__
 def attribute_rename(source, *attributes):
   return get_coordinator().attribute_rename(source, *attributes)
 attribute_rename.__doc__ = coordinator.attribute_rename.__doc__
+
+@translate_exceptions
+def build(shape, attributes, chunks=None):
+  return get_coordinator().build(shape, attributes, chunks)
+build.__doc__ = coordinator.build.__doc__
+
 def chunk_map(source):
   return get_coordinator().chunk_map(source)
 chunk_map.__doc__ = coordinator.chunk_map.__doc__

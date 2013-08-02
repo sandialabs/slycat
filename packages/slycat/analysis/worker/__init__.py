@@ -7,6 +7,7 @@ import numpy
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
+import slycat.analysis.worker.build
 import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.join
@@ -35,6 +36,8 @@ class factory(pyro_object):
     return self.pyro_register(attributes_array(worker_index, self.require_object(source)))
   def attribute_rename(self, worker_index, source, attributes):
     return self.pyro_register(attribute_rename_array(worker_index, self.require_object(source), attributes))
+  def build(self, worker_index, shape, chunk_sizes, attributes):
+    return self.pyro_register(slycat.analysis.worker.build.build_array(worker_index, shape, chunk_sizes, attributes))
   def chunk_map(self, worker_index, source):
     return self.pyro_register(slycat.analysis.worker.chunk_map.chunk_map_array(worker_index, self.require_object(source)))
   def csv_file(self, worker_index, path, chunk_size, format):
