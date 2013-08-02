@@ -12,8 +12,10 @@ parser.add_option("--cluster-bin-type", default="naive", help="Cluster bin type.
 parser.add_option("--cluster-type", default="average", help="Clustering type.  Default: %default")
 parser.add_option("--input-prefix", default="a", help="Input variable prefix.  Default: %default")
 parser.add_option("--marking", default="", help="Marking type.  Default: %default")
+parser.add_option("--model-name", default="Demo Timeseries Model", help="New model name.  Default: %default")
 parser.add_option("--output-count", type="int", default=2, help="Number of output variables.  Default: %default")
 parser.add_option("--output-prefix", default="b", help="Output variable prefix.  Default: %default")
+parser.add_option("--project-name", default="Demo Timeseries Project", help="New project name.  Default: %default")
 parser.add_option("--seed", type="int", default=12345, help="Random seed.  Default: %default")
 parser.add_option("--timeseries-bundling", type="int", default=10000, help="Maximum number of timeseries rows to send at once.  Default: %default")
 parser.add_option("--timeseries-count", type="int", default=10, help="Number of timeseries per output variable.  Default: %default")
@@ -25,8 +27,8 @@ numpy.random.seed(options.seed)
 
 connection = slycat.web.client.connect(options)
 
-pid = connection.create_project("Timeseries Serial Model Test")
-mwid = connection.create_timeseries_model_worker(pid, "Model", options.marking)
+pid = connection.create_project(options.project_name)
+mwid = connection.create_timeseries_model_worker(pid, options.model_name, options.marking)
 
 # Set-aside storage for our "input" variables ...
 inputs = numpy.random.random((options.timeseries_count, options.output_count * options.timeseries_waves))

@@ -11,7 +11,9 @@ parser.add_option("--bundling", type="int", default=10, help="Maximum number of 
 parser.add_option("--column-prefix", default="a", help="Column prefix.  Default: %default")
 parser.add_option("--input-count", type="int", default=3, help="Input column count.  Default: %default")
 parser.add_option("--marking", default="", help="Marking type.  Default: %default")
+parser.add_option("--model-name", default="Demo CCA Model", help="New model name.  Default: %default")
 parser.add_option("--output-count", type="int", default=3, help="Output column count.  Default: %default")
+parser.add_option("--project-name", default="Demo CCA Project", help="New project name.  Default: %default")
 parser.add_option("--row-count", type="int", default=100, help="Row count.  Default: %default")
 parser.add_option("--seed", type="int", default=12345, help="Random seed.  Default: %default")
 parser.add_option("--unused-count", type="int", default=3, help="Unused column count.  Default: %default")
@@ -21,8 +23,8 @@ connection = slycat.web.client.connect(options)
 
 numpy.random.seed(options.seed)
 
-pid = connection.create_project("CCA Model Test")
-mwid = connection.create_cca_model_worker(pid, "Model", options.marking)
+pid = connection.create_project(options.project_name)
+mwid = connection.create_cca_model_worker(pid, options.model_name, options.marking)
 total_columns = options.input_count + options.output_count + options.unused_count
 connection.start_table(mwid, "data-table", ["%s%s" % (options.column_prefix, column) for column in range(total_columns)],["double" for column in range(total_columns)])
 rows = []
