@@ -166,6 +166,8 @@ class factory(pyro_object):
     array_workers = []
     shape = self.require_shape(shape)
     chunks = self.require_chunk_sizes(shape, chunks)
+    if isinstance(attributes, tuple):
+      attributes = [attributes]
     if len(attributes) < 1:
       raise InvalidArgument("You must specify at least one attribute.")
     attributes = [(self.require_attribute(attribute), self.require_expression(expression)) for attribute, expression in attributes]

@@ -316,6 +316,23 @@ def test_attribute_rename():
   numpy.testing.assert_array_almost_equal(value(array3, 1), values(array1).mean())
   numpy.testing.assert_array_almost_equal(value(array3, 2), values(array1).max())
 
+def test_build_1():
+  array1 = build(5, ("val", "d0"))
+  require_array_schema(array1, [("d0", "int64", 0, 5, 5)], [("val", "float64")])
+  numpy.testing.assert_array_equal(values(array1, 0), numpy.array(range(5), dtype="float64"))
+
+def test_build_2():
+  array1 = build(5, [("val", "d0"), ("val2", "d0 ** 2")])
+  require_array_schema(array1, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
+  numpy.testing.assert_array_equal(values(array1, 0), numpy.array(range(5), dtype="float64"))
+  numpy.testing.assert_array_equal(values(array1, 1), numpy.array(range(5), dtype="float64") ** 2)
+
+def test_build_2_int():
+  array1 = build(5, [(("val", "int64"), "d0"), (("val2", "int64"), "d0 ** 2")])
+  require_array_schema(array1, [("d0", "int64", 0, 5, 5)], [("val", "int64"), ("val2", "int64")])
+  numpy.testing.assert_array_equal(values(array1, 0), numpy.array(range(5), dtype="int64"))
+  numpy.testing.assert_array_equal(values(array1, 1), numpy.array(range(5), dtype="int64") ** 2)
+
 def test_cca():
   from slycat.web.server.cca import cca
   autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
