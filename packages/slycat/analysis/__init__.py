@@ -32,6 +32,7 @@ Pyro4.config.SERIALIZER = "pickle"
 
 sys.excepthook = Pyro4.util.excepthook
 
+# We probably need to rethink this - the problem is that decorators obscure function parameters in help().
 def translate_exceptions(f):
   """Catch and re-raise certain exceptions to hide the fact that they were raised remotely."""
   @wraps(f)
@@ -50,7 +51,6 @@ class coordinator(object):
   def shutdown(self):
     self.proxy.shutdown()
 
-  @translate_exceptions
   def aggregate(self, source, expressions):
     """Return an array containing one-or-more aggregates of a source array.
 
@@ -128,7 +128,6 @@ class coordinator(object):
     return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
-  @translate_exceptions
   def random(self, shape, chunks=None, seed=12345, attributes="val"):
     """Return an array of random values.
 
@@ -634,7 +633,6 @@ def get_coordinator():
     connect()
   return current_coordinator
 
-@translate_exceptions
 def aggregate(source, expressions):
   return get_coordinator().aggregate(source, expressions)
 aggregate.__doc__ = coordinator.aggregate.__doc__
@@ -652,7 +650,6 @@ def attribute_rename(source, *attributes):
   return get_coordinator().attribute_rename(source, *attributes)
 attribute_rename.__doc__ = coordinator.attribute_rename.__doc__
 
-@translate_exceptions
 def build(shape, attributes, chunks=None):
   return get_coordinator().build(shape, attributes, chunks)
 build.__doc__ = coordinator.build.__doc__
@@ -676,7 +673,6 @@ def project(source, *attributes):
   return get_coordinator().project(source, *attributes)
 project.__doc__ = coordinator.project.__doc__
 
-@translate_exceptions
 def random(shape, chunks=None, seed=12345, attributes="val"):
   return get_coordinator().random(shape, chunks, seed, attributes)
 random.__doc__ = coordinator.random.__doc__
