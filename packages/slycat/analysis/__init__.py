@@ -105,6 +105,14 @@ class coordinator(object):
     Note that join() may create arrays with duplicate attribute names.  When
     this happens, most operators allow you to reference attributes by index for
     disambiguation.
+
+    >>> scan(join(random(5, attributes="foo"), zeros(5, attributes="bar")))
+      {d0} foo, bar
+    * {0} 0.929616092817, 0.0
+      {1} 0.316375554582, 0.0
+      {2} 0.183918811677, 0.0
+      {3} 0.204560278553, 0.0
+      {4} 0.567725029082, 0.0
     """
     return remote_array(self.proxy.join(array1.proxy._pyroUri, array2.proxy._pyroUri))
   def load(self, path, schema, *arguments, **keywords):
