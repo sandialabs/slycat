@@ -29,6 +29,8 @@ elif options.log_level == "error":
   slycat.analysis.worker.log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
   slycat.analysis.worker.log.setLevel(logging.CRITICAL)
+else:
+  raise Exception("Unknown log level: {}".format(options.log_level))
 
 slycat.analysis.worker.log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
 nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_port)
