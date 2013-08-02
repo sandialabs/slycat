@@ -527,6 +527,20 @@ def test_scan_null():
   array1 = random(5)
   scan(array1, format="null")
 
+def test_values_default():
+  array1 = random(5, attributes=["foo", "bar"])
+  b = values(array1)
+
+def test_values_index():
+  array1 = random(5, attributes=["foo", "bar"])
+  b = values(array1, 0)
+  c = values(array1, 1)
+
+def test_values_name():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_array_equal(values(array1, "foo"), values(array1, 0))
+  numpy.testing.assert_array_equal(values(array1, "bar"), values(array1, 1))
+
 def test_zeros_1d():
   array1 = zeros(5)
   require_array_schema(array1, [("d0", "int64", 0, 5, 5)], [("val", "float64")])

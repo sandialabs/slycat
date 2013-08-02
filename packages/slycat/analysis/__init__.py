@@ -286,9 +286,18 @@ class coordinator(object):
       raise
 
   def values(self, source, attribute=0):
-    """Returns a remote array attribute as a numpy array.
+    """Return an array attribute as a numpy array.
     """
     start_time = time.time()
+
+    # Handle attribute names ...
+    if isinstance(attribute, basestring):
+      for index, array_attribute in enumerate(source.attributes):
+        if array_attribute["name"] == attribute:
+          attribute = index
+          break
+      else:
+        raise InvalidArgument("Not an attribute name: {}".format(attribute))
 
     # Materialize every chunk into memory ...
     chunk_coordinates = []
