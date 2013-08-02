@@ -128,8 +128,6 @@ class coordinator(object):
     return remote_array(self.proxy.array(initializer, attribute))
   def attributes(self, source):
     return remote_array(self.proxy.attributes(source.proxy._pyroUri))
-  def attribute_rename(self, source, *attributes):
-    return remote_array(self.proxy.attribute_rename(source.proxy._pyroUri, attributes))
   def build(self, shape, attributes, chunks=None):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
 
@@ -312,6 +310,41 @@ class coordinator(object):
     return remote_array(self.proxy.random(shape, chunks, seed, attributes))
   def redimension(self, source, dimensions, attributes):
     return remote_array(self.proxy.redimension(source.proxy._pyroUri, dimensions, attributes))
+
+  def rename(self, source, attributes=[], dimensions=[]):
+    """Copy a source array, with renamed attributes and dimensions.
+
+    The caller specifies attributes and dimensions to be renamed by their
+    string name or integer index.
+
+    When specifying a single attribute or dimension to rename, pass a
+    (name-or-index, new-name) tuple to the appropriate parameter.  To rename
+    multiple attributes or dimensions, pass a list of (name-or-index, new-name)
+    tuples or a dictionary containing {name-or-index:new-name, ...} items.  You
+    may freely mix-and-match specifications to rename attributes and dimensions
+    simultaneously, if you wish.
+
+    Note that it is possible (though somewhat undesirable) for an array to
+    contain attributes or dimensions with identical names.  In this case, you
+    will want to use integer indices for renaming.
+
+    Also note that it is not an error condition if none of the attributes or
+    dimensions in the source array match the caller's specifications.  In this
+    case, the new array simply contains all the same attributes and dimensions
+    as the original.
+
+    >>> a = random((5, 5), attributes=["a", "b", "c"])
+    >>> a
+    <5x5 remote array with dimensions: d0, d1 and attributes: a, b, c>
+
+    >>> rename(a, dimensions=("d0", "i"), attributes=("c", "d"))
+    <5x5 remote array with dimensions: i, d1 and attributes: a, b, d>
+
+    >>> rename(a, dimensions={0:"i",1:"j"}, attributes={0:"d","c":"e"})
+    <5x5 remote array with dimensions: i, j and attributes: d, b, e>
+    """
+    return remote_array(self.proxy.rename(source.proxy._pyroUri, attributes, dimensions))
+
   def scan(self, source, format="dcsv", separator=", ", stream=sys.stdout):
     """Format the contents of an array, writing them to a stream.
 
@@ -770,9 +803,6 @@ array.__doc__ = coordinator.array.__doc__
 def attributes(source):
   return get_coordinator().attributes(source)
 attributes.__doc__ = coordinator.attributes.__doc__
-def attribute_rename(source, *attributes):
-  return get_coordinator().attribute_rename(source, *attributes)
-attribute_rename.__doc__ = coordinator.attribute_rename.__doc__
 
 def build(shape, attributes, chunks=None):
   return get_coordinator().build(shape, attributes, chunks)
@@ -804,6 +834,11 @@ random.__doc__ = coordinator.random.__doc__
 def redimension(source, dimensions, attributes):
   return get_coordinator().redimension(source, dimensions, attributes)
 redimension.__doc__ = coordinator.redimension.__doc__
+
+def rename(source, attributes=[], dimensions=[]):
+  return get_coordinator().rename(source, attributes, dimensions)
+rename.__doc__ = coordinator.rename.__doc__
+
 def scan(source, format="dcsv", separator=", ", stream=sys.stdout):
   return get_coordinator().scan(source, format, separator, stream)
 scan.__doc__ = coordinator.scan.__doc__

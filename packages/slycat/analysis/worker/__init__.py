@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import copy
 import numpy
 
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
@@ -34,8 +35,6 @@ class factory(pyro_object):
     return self.pyro_register(array_array(worker_index, initializer, attribute))
   def attributes(self, worker_index, source):
     return self.pyro_register(attributes_array(worker_index, self.require_object(source)))
-  def attribute_rename(self, worker_index, source, attributes):
-    return self.pyro_register(attribute_rename_array(worker_index, self.require_object(source), attributes))
   def build(self, worker_index, shape, chunk_sizes, attributes):
     return self.pyro_register(slycat.analysis.worker.build.build_array(worker_index, shape, chunk_sizes, attributes))
   def chunk_map(self, worker_index, source):
@@ -54,6 +53,8 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
   def random(self, worker_index, shape, chunk_sizes, seed, attributes):
     return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attributes))
+  def rename(self, worker_index, source, attributes, dimensions):
+    return self.pyro_register(rename_array(worker_index, self.require_object(source), attributes, dimensions))
   def redimension(self, worker_index, source, dimensions, attributes):
     return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
   def zeros(self, worker_index, shape, chunk_sizes, attributes):
@@ -121,17 +122,37 @@ class attributes_array_iterator(array_iterator):
     elif attribute == 1:
       return numpy.array([attribute["type"] for attribute in self.owner.source_attributes], dtype="string")
 
-class attribute_rename_array(array):
-  def __init__(self, worker_index, source, attributes):
+class rename_array(array):
+  def __init__(self, worker_index, source, attribute_map, dimension_map):
     array.__init__(self, worker_index)
     self.source = source
-    self.name_map = {attribute["name"]:attribute["name"] for attribute in self.source.attributes()}
-    for old_name, new_name in attributes:
-      self.name_map[old_name] = new_name
+    self.attribute_map = attribute_map
+    self.dimension_map = dimension_map
   def dimensions(self):
-    return self.source.dimensions()
+    results = []
+    for index, dimension in enumerate(self.source.dimensions()):
+      name = dimension["name"]
+      type = dimension["type"]
+      begin = dimension["begin"]
+      end = dimension["end"]
+      chunk_size = dimension["chunk-size"]
+      if index in self.dimension_map:
+        name = self.dimension_map[index]
+      elif name in self.dimension_map:
+        name = self.dimension_map[name]
+      results.append({"name":name, "type":type, "begin":begin, "end":end, "chunk-size":chunk_size})
+    return results
   def attributes(self):
-    return [{"name":self.name_map[attribute["name"]], "type":attribute["type"]} for attribute in self.source.attributes()]
+    results = []
+    for index, attribute in enumerate(self.source.attributes()):
+      name = attribute["name"]
+      type = attribute["type"]
+      if index in self.attribute_map:
+        name = self.attribute_map[index]
+      elif name in self.attribute_map:
+        name = self.attribute_map[name]
+      results.append({"name":name, "type":type})
+    return results
   def iterator(self):
     return self.source.iterator()
 

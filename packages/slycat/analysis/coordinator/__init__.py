@@ -156,12 +156,6 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.attributes(worker_index, source_proxy._pyroUri))
     return self.pyro_register(array(array_workers, [source]))
-  def attribute_rename(self, source, attributes):
-    source = self.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.attribute_rename(worker_index, source_proxy._pyroUri, attributes))
-    return self.pyro_register(array(array_workers, [source]))
   def build(self, shape, chunks, attributes):
     array_workers = []
     shape = self.require_shape(shape)
@@ -246,6 +240,28 @@ class factory(pyro_object):
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.redimension(worker_index, source_proxy._pyroUri, dimensions, attributes))
+    return self.pyro_register(array(array_workers, [source]))
+  def rename(self, source, attributes, dimensions):
+    source = self.require_object(source)
+    if isinstance(attributes, tuple):
+      attributes = {attributes[0]: attributes[1]}
+    elif isinstance(attributes, list):
+      attributes = {old : new for old, new in attributes}
+    elif isinstance(attributes, dict):
+      pass
+    else:
+      raise InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+    if isinstance(dimensions, tuple):
+      dimensions = {dimensions[0]: dimensions[1]}
+    elif isinstance(dimensions, list):
+      dimensions = {old : new for old, new in dimensions}
+    elif isinstance(dimensions, dict):
+      pass
+    else:
+      raise InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+    array_workers = []
+    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
+      array_workers.append(worker.rename(worker_index, source_proxy._pyroUri, attributes, dimensions))
     return self.pyro_register(array(array_workers, [source]))
   def zeros(self, shape, chunk_sizes, attributes):
     shape = self.require_shape(shape)

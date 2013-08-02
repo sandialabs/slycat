@@ -307,15 +307,6 @@ def test_attributes_2d():
   numpy.testing.assert_array_equal(values(array2, 0), numpy.array(["val"], dtype="string"))
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array(["float64"], dtype="string"))
 
-def test_attribute_rename():
-  array1 = random(5)
-  array2 = aggregate(array1, ["min(val)", "avg(val)", "max(val)"])
-  array3 = attribute_rename(array2, ("val_min", "a"), ("val_max", "b"))
-  require_array_schema(array3, [("i", "int64", 0, 1, 1)], [("a", "float64"), ("val_avg", "float64"), ("b", "float64")])
-  numpy.testing.assert_array_almost_equal(value(array3, 0), values(array1).min())
-  numpy.testing.assert_array_almost_equal(value(array3, 1), values(array1).mean())
-  numpy.testing.assert_array_almost_equal(value(array3, 2), values(array1).max())
-
 def test_build_1():
   array1 = build(5, ("val", "d0"))
   require_array_schema(array1, [("d0", "int64", 0, 5, 5)], [("val", "float64")])
@@ -548,6 +539,32 @@ def test_redimension_attribute_dimension():
   array2 = apply(array1, ("j", "int64"), "d0 % 2")
   array3 = redimension(array2, ["d0", "j"], ["val"])
   require_array_schema(array3, [("d0", "int64", 0, 4, 2), ("j", "int64", 0, 2, 2)], [("val", "float64")])
+
+def test_rename_by_name():
+  array1 = random((5, 5), attributes=["a", "b", "c"])
+  array2 = rename(array1, dimensions=("d0", "i"), attributes=("c", "d"))
+  require_array_schema(array2, [("i", "int64", 0, 5, 5), ("d1", "int64", 0, 5, 5)], [("a", "float64"), ("b", "float64"), ("d", "float64")])
+  numpy.testing.assert_array_equal(values(array2, "d"), values(array1, "c"))
+
+def test_rename_by_index():
+  array1 = random((5, 5), attributes=["a", "b", "c"])
+  array2 = rename(array1, dimensions=(1, "j"), attributes=(1, "d"))
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5), ("j", "int64", 0, 5, 5)], [("a", "float64"), ("d", "float64"), ("c", "float64")])
+  numpy.testing.assert_array_equal(values(array2, "d"), values(array1, "b"))
+
+def test_rename_multiple_dict():
+  array1 = random((5, 5), attributes=["a", "b", "c"])
+  array2 = rename(array1, dimensions={0:"i","d1":"j"}, attributes={0:"d", "c":"e"})
+  require_array_schema(array2, [("i", "int64", 0, 5, 5), ("j", "int64", 0, 5, 5)], [("d", "float64"), ("b", "float64"), ("e", "float64")])
+  numpy.testing.assert_array_equal(values(array2, "d"), values(array1, "a"))
+  numpy.testing.assert_array_equal(values(array2, "e"), values(array1, "c"))
+
+def test_rename_multiple_list():
+  array1 = random((5, 5), attributes=["a", "b", "c"])
+  array2 = rename(array1, dimensions=[(0,"i"),("d1","j")], attributes=[(0,"d"), ("c","e")])
+  require_array_schema(array2, [("i", "int64", 0, 5, 5), ("j", "int64", 0, 5, 5)], [("d", "float64"), ("b", "float64"), ("e", "float64")])
+  numpy.testing.assert_array_equal(values(array2, "d"), values(array1, "a"))
+  numpy.testing.assert_array_equal(values(array2, "e"), values(array1, "c"))
 
 def test_scan_csv():
   array1 = random(5)
