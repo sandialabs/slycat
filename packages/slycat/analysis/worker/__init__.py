@@ -30,8 +30,8 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.aggregate.aggregate_array(worker_index, self.require_object(source), expressions))
   def apply(self, worker_index, source, attribute, expression):
     return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attribute, expression))
-  def array(self, worker_index, initializer, type):
-    return self.pyro_register(array_array(worker_index, initializer, type))
+  def array(self, worker_index, initializer, attribute):
+    return self.pyro_register(array_array(worker_index, initializer, attribute))
   def attributes(self, worker_index, source):
     return self.pyro_register(attributes_array(worker_index, self.require_object(source)))
   def attribute_rename(self, worker_index, source, attributes):
@@ -60,14 +60,14 @@ class factory(pyro_object):
     return self.pyro_register(zeros_array(worker_index, shape, chunk_sizes, attributes))
 
 class array_array(array):
-  def __init__(self, worker_index, initializer, type):
+  def __init__(self, worker_index, initializer, attribute):
     array.__init__(self, worker_index)
-    self.chunk = numpy.array(initializer, dtype=type)
-    self.type = type
+    self.chunk = numpy.array(initializer, dtype=attribute["type"])
+    self.attribute = attribute
   def dimensions(self):
     return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":size, "chunk-size":size} for index, size in enumerate(self.chunk.shape)]
   def attributes(self):
-    return [{"name":"val", "type":self.type}]
+    return [self.attribute]
   def iterator(self):
     if 0 == self.worker_index:
       return self.pyro_register(array_array_iterator(self))

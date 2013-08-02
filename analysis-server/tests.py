@@ -281,16 +281,16 @@ def test_apply_usub_dimension():
 def test_array_auto_1d():
   array1 = array([1, 2, 3])
   require_array_schema(array1, [("d0", "int64", 0, 3, 3)], [("val", "float64")])
-  numpy.testing.assert_array_almost_equal(values(array1), numpy.array([1, 2, 3], dtype="float64"))
+  numpy.testing.assert_array_equal(values(array1), numpy.array([1, 2, 3], dtype="float64"))
 
 def test_array_int64_1d():
-  array1 = array([1, 2, 3], "int64")
-  require_array_schema(array1, [("d0", "int64", 0, 3, 3)], [("val", "int64")])
-  numpy.testing.assert_array_almost_equal(values(array1), numpy.array([1, 2, 3], dtype="int64"))
+  array1 = array([1, 2, 3], ("myint", "int64"))
+  require_array_schema(array1, [("d0", "int64", 0, 3, 3)], [("myint", "int64")])
+  numpy.testing.assert_array_equal(values(array1), numpy.array([1, 2, 3], dtype="int64"))
 
 def test_array_string_1d():
-  array1 = array([1, 2, 3], "string")
-  require_array_schema(array1, [("d0", "int64", 0, 3, 3)], [("val", "string")])
+  array1 = array([1, 2, 3], ("mystring", "string"))
+  require_array_schema(array1, [("d0", "int64", 0, 3, 3)], [("mystring", "string")])
   numpy.testing.assert_array_equal(values(array1), numpy.array(["1", "2", "3"]))
 
 def test_attributes_1d():

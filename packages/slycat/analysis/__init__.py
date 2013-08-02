@@ -82,8 +82,50 @@ class coordinator(object):
     return remote_array(self.proxy.aggregate(source.proxy._pyroUri, expressions))
   def apply(self, source, attribute, expression):
     return remote_array(self.proxy.apply(source.proxy._pyroUri, attribute, expression))
-  def array(self, initializer, type="float64"):
-    return remote_array(self.proxy.array(initializer, type))
+  def array(self, initializer, attribute="val"):
+    """Return an array containing client-supplied data.
+
+    Creates an array with a single attribute, populated from a client-supplied
+    initializer.  The initializer may be any numpy array, or any (arbitrarily
+    nested) sequence.  Use the attribute parameter to specify the name of the
+    resulting attribute, or a tuple with the attribute name and type, which
+    otherwise defaults to float64.
+
+    Because the array() operator copies data provided by the client, it is
+    necessarily limited in scope to data that fits within the client's memory.
+    Thus, the resulting array is presumed to be relatively small, e.g.
+    parameters provided by a user, small lookup dictionaries, etc.  You should
+    avoid using array() with "large" data, preferring to manipulate it all
+    remotely instead.
+
+    >>> scan(array([1, 2, 3]))
+      {d0} val
+    * {0} 1.0
+      {1} 2.0
+      {2} 3.0
+
+    >>> scan(array([1, 2, 3], attribute="foo"))
+      {d0} foo
+    * {0} 1.0
+      {1} 2.0
+      {2} 3.0
+
+    >>> scan(array([1, 2, 3], attribute=("foo", "int32")))
+      {d0} foo
+    * {0} 1
+      {1} 2
+      {2} 3
+
+    >>> scan(array([[1, 2, 3], [4, 5, 6]]))
+      {d0, d1} val
+    * {0, 0} 1.0
+      {0, 1} 2.0
+      {0, 2} 3.0
+      {1, 0} 4.0
+      {1, 1} 5.0
+      {1, 2} 6.0
+    """
+    return remote_array(self.proxy.array(initializer, attribute))
   def attributes(self, source):
     return remote_array(self.proxy.attributes(source.proxy._pyroUri))
   def attribute_rename(self, source, *attributes):
@@ -658,9 +700,11 @@ aggregate.__doc__ = coordinator.aggregate.__doc__
 def apply(source, attribute, expression):
   return get_coordinator().apply(source, attribute, expression)
 apply.__doc__ = coordinator.apply.__doc__
-def array(initializer, type="float64"):
-  return get_coordinator().array(initializer, type)
+
+def array(initializer, attribute="val"):
+  return get_coordinator().array(initializer, attribute)
 array.__doc__ = coordinator.array.__doc__
+
 def attributes(source):
   return get_coordinator().attributes(source)
 attributes.__doc__ = coordinator.attributes.__doc__
