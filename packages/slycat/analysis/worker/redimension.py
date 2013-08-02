@@ -12,7 +12,6 @@ class redimension_array(array):
     array.__init__(self, worker_index)
     self.source = source
     self.chunks = None
-    self.chunk_owners = None
     source_dimensions = source.dimensions()
     source_attributes = source.attributes()
     dimension_map = {dimension["name"]:index for index, dimension in enumerate(source_dimensions)}
@@ -85,13 +84,13 @@ class redimension_array(array):
     self.compute_dimensions()
     shape = [dimension["end"] - dimension["begin"] for dimension in self.target_dimensions]
     chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
-    self.chunks = []
-    self.chunk_owners = {}
-    for chunk_index, worker_index, begin, end in  worker_chunks(shape, chunk_sizes, len(self.siblings)):
-      self.chunk_owners[(tuple(begin), tuple(end))] = worker_index
-      if worker_index == self.worker_index:
-        self.chunks.append(redimension_array_chunk(begin, end - begin, self.target_attributes))
-    log.debug("chunk owners: %s", self.chunk_owners)
+    all_chunks = list(worker_chunks(shape, chunk_sizes, len(self.siblings)))
+    if self.worker_index == 0:
+      log.info("redimension: all chunks: %s", all_chunks)
+    self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in all_chunks if worker_index == self.worker_index]
+    with self.source.iterator() as iterator:
+      for ignored in iterator:
+        log.info("worker: %s coords: %s shape: %s", self.worker_index, iterator.coordinates(), iterator.shape())
 
 class redimension_array_iterator(array_iterator):
   def __init__(self, owner):
