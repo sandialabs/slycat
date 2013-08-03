@@ -144,9 +144,9 @@ class coordinator(object):
   def attributes(self, source):
     """Return an array that describes some other array's attributes.
 
-    Creates a 1D array with attributes "name" and "type" that describes
-    another array's attributes.  It is particularly useful when working with an
-    array with a large number of attributes.
+    Creates a 1D array with attributes "name" and "type" and one cell for each
+    of another array's attributes.  It is particularly useful when working with
+    an array with a large number of attributes.
 
       >>> scan(attributes(load("../data/automobiles.csv", schema="csv-file", chunk_size=100)))
         {i} name, type
@@ -225,12 +225,38 @@ class coordinator(object):
     """
     return remote_array(self.proxy.build(shape, chunks, attributes))
   def chunk_map(self, source):
+    """Return an array that describes how another array's data chunks are distributed.
+
+    Creates a 1D array containing a cell for each chunk in the source array.
+    Useful to understand how data is load balanced and to look for hot spots in
+    workers.  A "worker" attribute contains the zero-based index of the worker
+    where the chunk resides.  Since a worker is generally responsible for many
+    chanks, the "index" array contains a zero-based index that identifies the
+    chunk within its worker.  Note that the combination of "worker" and
+    "index" can be used as a unique global identifier for a chunk.  There will be
+    attributes "c[0, N)" - where N is the number of dimensions in the source
+    array - storing the lowest-numbered coordinates of the chunk along each
+    dimension.  Similarly, attributes "s[0, N]" store the shape of each chunk,
+    i.e. its size along each dimension.
+
+      >>> scan(chunk_map(random((100, 100), (40, 40))))
+        {i} worker, index, c0, c1, s0, s1
+      * {0} 0, 0, 0, 0, 40, 40
+        {1} 0, 1, 0, 40, 40, 40
+        {2} 0, 2, 0, 80, 40, 20
+        {3} 1, 0, 40, 0, 40, 40
+        {4} 1, 1, 40, 40, 40, 40
+        {5} 2, 0, 40, 80, 40, 20
+        {6} 2, 1, 80, 0, 20, 40
+        {7} 3, 0, 80, 40, 20, 40
+        {8} 3, 1, 80, 80, 20, 20
+    """
     return remote_array(self.proxy.chunk_map(source.proxy._pyroUri))
   def dimensions(self, source):
     """Return an array that describe's another array's dimensions.
 
     Creates a 1D array with attributes "name", "type", "begin", "end", and
-    "chunk-size"  that describes another array's dimensions.  It is
+    "chunk-size" and one cell for each of the source array's dimensions.  It is
     particularly useful when working with an array with a large number of
     dimensions.
 
