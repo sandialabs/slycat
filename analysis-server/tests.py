@@ -588,6 +588,31 @@ def test_scan_null():
   array1 = random(5)
   scan(array1, format="null")
 
+def test_value_default():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_equal(len(value(array1)), 2)
+  numpy.testing.assert_equal(value(array1)[0], values(array1, 0)[0])
+  numpy.testing.assert_equal(value(array1)[1], values(array1, 1)[0])
+
+def test_value_index_name():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_equal(value(array1, "foo"), value(array1, 0))
+  numpy.testing.assert_equal(value(array1, "bar"), value(array1, 1))
+
+def test_value_indexes():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_equal(value(array1, [1, 0])[0], value(array1, 1))
+  numpy.testing.assert_equal(value(array1, [1, 0])[1], value(array1, 0))
+
+def test_value_names():
+  array1 = random(5, attributes=["foo", "bar"])
+  numpy.testing.assert_equal(value(array1, ["bar", "foo"])[0], value(array1, 1))
+  numpy.testing.assert_equal(value(array1, ["bar", "foo"])[1], value(array1, 0))
+
+def test_value_2d():
+  array1 = random((4, 4))
+  numpy.testing.assert_equal(value(array1), values(array1)[0, 0])
+
 def test_values_default():
   array1 = random(5, attributes=["foo", "bar"])
   numpy.testing.assert_equal(len(values(array1)), 2)
