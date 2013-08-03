@@ -315,6 +315,36 @@ class coordinator(object):
     """
     return remote_array(self.proxy.materialize(source.proxy._pyroUri))
   def project(self, source, *attributes):
+    """Return an array with fewer attributes.
+
+    Creates an array that contains a subset of a source array's attributes.
+    Specify the attributes to be retained by passing one-or-more attribute
+    indices / names as parameters to project().  Attributes may be specified in
+    any order.
+
+    Note that it is also possible to duplicate attributes with project(),
+    although working with idenically-named attributes downstream can be
+    confusing.
+
+      >>> autos = load("../data/automobiles.csv", schema="csv-file", chunk_size=100)
+
+      >>> scan(attributes(autos))
+        {i} name, type
+      * {0} Model, string
+        {1} Origin, string
+        {2} Year, string
+        {3} Cylinders, string
+        {4} Acceleration, string
+        {5} Displacement, string
+        {6} Horsepower, string
+        {7} MPG, string
+
+      >>> project(autos, "Year", "MPG")
+      <406 element remote array with dimension: i and attributes: Year, MPG>
+
+      >>> project(autos, 1, 3, 2)
+      <406 element remote array with dimension: i and attributes: Origin, Cylinders, Year>
+    """
     return remote_array(self.proxy.project(source.proxy._pyroUri, attributes))
   def random(self, shape, chunks=None, seed=12345, attributes="val"):
     """Return an array of random values.
