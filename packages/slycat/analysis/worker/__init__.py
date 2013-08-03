@@ -29,8 +29,8 @@ class factory(pyro_object):
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
   def aggregate(self, worker_index, source, expressions):
     return self.pyro_register(slycat.analysis.worker.aggregate.aggregate_array(worker_index, self.require_object(source), expressions))
-  def apply(self, worker_index, source, attribute, expression):
-    return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attribute, expression))
+  def apply(self, worker_index, source, attributes):
+    return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attributes))
   def array(self, worker_index, initializer, attribute):
     return self.pyro_register(array_array(worker_index, initializer, attribute))
   def attributes(self, worker_index, source):

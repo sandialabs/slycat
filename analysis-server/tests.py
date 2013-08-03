@@ -96,199 +96,206 @@ def test_aggregate_individual():
 
 def test_apply_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "1")
+  array2 = apply(array1, ("val2", "1"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, "val2"), numpy.ones(5))
 
+def test_apply_multi():
+  array1 = random(5, attributes=["a", "b"])
+  array2 = apply(array1, [("sum", "a + b"), ("diff", "a - b")])
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("a", "float64"), ("b", "float64"), ("sum", "float64"), ("diff", "float64")])
+  numpy.testing.assert_array_almost_equal(values(array2, "sum"), values(array1, "a") + values(array1, "b"))
+  numpy.testing.assert_array_almost_equal(values(array2, "diff"), values(array1, "a") - values(array1, "b"))
+
 def test_apply_attribute():
   array1 = random(5)
-  array2 = apply(array1, "val2", "val")
+  array2 = apply(array1, ("val2", "val"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), values(array1, 0))
 
 def test_apply_add_attribute_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "val + 3.4")
+  array2 = apply(array1, ("val2", "val + 3.4"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0) + 3.4)
 
 def test_apply_div_attribute_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "val / 3.4")
+  array2 = apply(array1, ("val2", "val / 3.4"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0) / 3.4)
 
 def test_apply_mult_attribute_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "val * 3.4")
+  array2 = apply(array1, ("val2", "val * 3.4"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0) * 3.4)
 
 def test_apply_pow_attribute_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "val ** 2")
+  array2 = apply(array1, ("val2", "val ** 2"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0) ** 2.0)
 
 def test_apply_sub_attribute_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "val - 3.4")
+  array2 = apply(array1, ("val2", "val - 3.4"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0) - 3.4)
 
 def test_apply_uadd_attribute():
   array1 = random(5)
-  array2 = apply(array1, "val2", "+val")
+  array2 = apply(array1, ("val2", "+val"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), values(array1, 0))
 
 def test_apply_usub_attribute():
   array1 = random(5)
-  array2 = apply(array1, "val2", "-val")
+  array2 = apply(array1, ("val2", "-val"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), -values(array1, 0))
 
 def test_apply_dimension_1d():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0")
+  array2 = apply(array1, ("val2", "d0"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 3, 4]))
 
 def test_apply_dimension_2d_1():
   array1 = random((5, 5))
-  array2 = apply(array1, "val2", "d0")
+  array2 = apply(array1, ("val2", "d0"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3], [4, 4, 4, 4, 4]]))
 
 def test_apply_dimension_2d_2():
   array1 = random((5, 5))
-  array2 = apply(array1, "val2", "d1")
+  array2 = apply(array1, ("val2", "d1"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]))
 
 def test_apply_add_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 + 1")
+  array2 = apply(array1, ("val2", "d0 + 1"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([1, 2, 3, 4, 5]))
 
 def test_apply_bitand_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 & 3")
+  array2 = apply(array1, ("val2", "d0 & 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 3, 0]))
 
 def test_apply_bitor_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 | 3")
+  array2 = apply(array1, ("val2", "d0 | 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([3, 3, 3, 3, 7]))
 
 def test_apply_bitxor_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 ^ 3")
+  array2 = apply(array1, ("val2", "d0 ^ 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([3, 2, 1, 0, 7]))
 
 def test_apply_div_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 / 3")
+  array2 = apply(array1, ("val2", "d0 / 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), numpy.array([0, 0.333333, 0.666666, 1.0, 1.333333]))
 
 def test_apply_floordiv_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 // 3")
+  array2 = apply(array1, ("val2", "d0 // 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 0, 0, 1, 1]))
 
 def test_apply_eq_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 == 3")
+  array2 = apply(array1, ("val2", "d0 == 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 0, 0, 1, 0]))
 
 def test_apply_gt_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 > 3")
+  array2 = apply(array1, ("val2", "d0 > 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 0, 0, 0, 1]))
 
 def test_apply_gte_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 >= 3")
+  array2 = apply(array1, ("val2", "d0 >= 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 0, 0, 1, 1]))
 
 def test_apply_invert_dimension():
   array1 = random(5)
-  array2 = apply(array1, "val2", "~d0")
+  array2 = apply(array1, ("val2", "~d0"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([-1, -2, -3, -4, -5]))
 
 def test_apply_lshift_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 << 2")
+  array2 = apply(array1, ("val2", "d0 << 2"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 4, 8, 12, 16]))
 
 def test_apply_lt_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 < 3")
+  array2 = apply(array1, ("val2", "d0 < 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([1, 1, 1, 0, 0]))
 
 def test_apply_lte_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 <= 3")
+  array2 = apply(array1, ("val2", "d0 <= 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([1, 1, 1, 1, 0]))
 
 def test_apply_mod_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 % 3")
+  array2 = apply(array1, ("val2", "d0 % 3"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 0, 1]))
 
 def test_apply_mult_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 * 2")
+  array2 = apply(array1, ("val2", "d0 * 2"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 2, 4, 6, 8]))
 
 def test_apply_not_dimension():
   array1 = random(5)
-  array2 = apply(array1, "val2", "not d0")
+  array2 = apply(array1, ("val2", "not d0"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([1, 0, 0, 0, 0]))
 
 def test_apply_pow_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 ** 2")
+  array2 = apply(array1, ("val2", "d0 ** 2"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_almost_equal(values(array2, 1), numpy.array([0, 1, 4, 9, 16]))
 
 def test_apply_rshift_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 >> 2")
+  array2 = apply(array1, ("val2", "d0 >> 2"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 0, 0, 0, 1]))
 
 def test_apply_sub_dimension_constant():
   array1 = random(5)
-  array2 = apply(array1, "val2", "d0 - 4")
+  array2 = apply(array1, ("val2", "d0 - 4"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([-4, -3, -2, -1, 0]))
 
 def test_apply_uadd_dimension():
   array1 = random(5)
-  array2 = apply(array1, "val2", "+d0")
+  array2 = apply(array1, ("val2", "+d0"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 3, 4]))
 
 def test_apply_usub_dimension():
   array1 = random(5)
-  array2 = apply(array1, "val2", "-d0")
+  array2 = apply(array1, ("val2", "-d0"))
   require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, -1, -2, -3, -4]))
 
@@ -531,8 +538,8 @@ def test_random_chunk_consistency():
 
 def test_redimension_attribute_attribute():
   array1 = random((4, 4), (2, 2))
-  array2 = apply(array1, "val2", "val * val")
-  array3 = apply(array2, "val3", "val * val * val")
+  array2 = apply(array1, ("val2", "val * val"))
+  array3 = apply(array2, ("val3", "val * val * val"))
   array4 = redimension(array3, ["d0", "d1"], ["val3", "val"])
   require_array_schema(array4, [("d0", "int64", 0, 4, 2), ("d1", "int64", 0, 4, 2)], [("val3", "float64"), ("val", "float64")])
   #numpy.testing.assert_array_almost_equal(values(array4, 0), values(array3, 2))
@@ -553,7 +560,7 @@ def test_redimension_dimension_dimension():
 
 def test_redimension_attribute_dimension():
   array1 = random((4), (2))
-  array2 = apply(array1, ("j", "int64"), "d0 % 2")
+  array2 = apply(array1, (("j", "int64"), "d0 % 2"))
   array3 = redimension(array2, ["d0", "j"], ["val"])
   require_array_schema(array3, [("d0", "int64", 0, 4, 2), ("j", "int64", 0, 2, 2)], [("val", "float64")])
 
@@ -661,5 +668,5 @@ def test_timeseries_model():
   time_min = value(aggregate(array, ("min", "TIME")))
   time_max = value(aggregate(array, ("max", "TIME")))
   bin_size = (time_max - time_min) / bin_count
-  scan(apply(project(array, "Index", "TIME", 2, 3, 4, 5), ("bin", "int64"), "(TIME - %s) / %s" % (time_min, bin_size)))
+  scan(apply(project(array, "Index", "TIME", 2, 3, 4, 5), (("bin", "int64"), "(TIME - %s) / %s" % (time_min, bin_size))))
 

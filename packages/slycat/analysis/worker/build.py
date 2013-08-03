@@ -58,7 +58,7 @@ class build_array_iterator(array_iterator):
     return self._shape
   def values(self, attribute):
     attribute, expression = self.owner.attribute_expressions[attribute]
-    log.debug("Evaluating %s." % ast.dump(expression))
+    #log.debug("Evaluating %s." % ast.dump(expression))
     result = evaluator(self.symbol_lookup).evaluate(expression)
     if isinstance(result, int) or isinstance(result, float):
       temp = numpy.empty(self._shape)

@@ -9,17 +9,16 @@ from slycat.analysis.worker.api import log, array, array_iterator
 from slycat.analysis.worker.expression import evaluator
 
 class apply_array(array):
-  def __init__(self, worker_index, source, attribute, expression):
+  def __init__(self, worker_index, source, attribute_expressions):
     array.__init__(self, worker_index)
     self.source = source
-    self.attribute = attribute
-    self.expression = expression
+    self.attribute_expressions = attribute_expressions
   def dimensions(self):
     return self.source.dimensions()
   def attributes(self):
-    return self.source.attributes() + [self.attribute]
+    return self.source.attributes() + [attribute for attribute, expression in self.attribute_expressions]
   def iterator(self):
-    return self.pyro_register(apply_array_iterator(self, self.source, self.attribute, self.expression))
+    return self.pyro_register(apply_array_iterator(self))
 
 class symbol_lookup:
   """Helper class that looks-up expression symbols, returning array attributes / dimensions."""
@@ -45,13 +44,11 @@ class symbol_lookup:
       log.error("symbol_lookup exception: %s", e)
 
 class apply_array_iterator(array_iterator):
-  def __init__(self, owner, source, attribute, expression):
+  def __init__(self, owner):
     array_iterator.__init__(self, owner)
-    self.iterator = source.iterator()
-    self.attribute = attribute
-    self.expression = expression
-    self.attributes = source.attributes()
-    self.symbol_lookup = symbol_lookup(self.iterator, self.attributes, source.dimensions())
+    self.iterator = owner.source.iterator()
+    self.source_attributes = owner.source.attributes()
+    self.symbol_lookup = symbol_lookup(self.iterator, self.source_attributes, owner.source.dimensions())
   def __del__(self):
     self.iterator.release()
   def next(self):
@@ -61,13 +58,15 @@ class apply_array_iterator(array_iterator):
   def shape(self):
     return self.iterator.shape()
   def values(self, attribute):
-    if attribute != len(self.attributes):
+    if attribute < len(self.source_attributes):
       return self.iterator.values(attribute)
 
-    result = evaluator(self.symbol_lookup).evaluate(self.expression)
+    attribute, expression = self.owner.attribute_expressions[attribute - len(self.source_attributes)]
+    #log.debug("Evaluating %s." % ast.dump(expression))
+    result = evaluator(self.symbol_lookup).evaluate(expression)
     if isinstance(result, int) or isinstance(result, float):
       temp = numpy.empty(self.iterator.shape())
       temp.fill(result)
       result = temp
-    return result.astype(self.attribute["type"])
+    return result.astype(attribute["type"])
 
