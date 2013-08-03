@@ -59,5 +59,10 @@ class build_array_iterator(array_iterator):
   def values(self, attribute):
     attribute, expression = self.owner.attribute_expressions[attribute]
     log.debug("Evaluating %s." % ast.dump(expression))
-    return evaluator(self.symbol_lookup).evaluate(expression).astype(attribute["type"])
+    result = evaluator(self.symbol_lookup).evaluate(expression)
+    if isinstance(result, int) or isinstance(result, float):
+      temp = numpy.empty(self._shape)
+      temp.fill(result)
+      result = temp
+    return result.astype(attribute["type"])
 

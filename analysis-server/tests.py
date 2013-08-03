@@ -94,6 +94,12 @@ def test_aggregate_individual():
   numpy.testing.assert_array_almost_equal(value(array2, 1), values(array1, "b").mean())
   numpy.testing.assert_array_almost_equal(value(array2, 2), values(array1, "c").max())
 
+def test_apply_constant():
+  array1 = random(5)
+  array2 = apply(array1, "val2", "1")
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("val", "float64"), ("val2", "float64")])
+  numpy.testing.assert_array_equal(values(array2, "val2"), numpy.ones(5))
+
 def test_apply_attribute():
   array1 = random(5)
   array2 = apply(array1, "val2", "val")
@@ -314,6 +320,11 @@ def test_attributes_2d():
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("name", "string"), ("type", "string")])
   numpy.testing.assert_array_equal(values(array2, 0), numpy.array(["val"], dtype="string"))
   numpy.testing.assert_array_equal(values(array2, 1), numpy.array(["float64"], dtype="string"))
+
+def test_build_constant():
+  array1 = build(5, ("val", "1"))
+  require_array_schema(array1, [("d0", "int64", 0, 5, 5)], [("val", "float64")])
+  numpy.testing.assert_array_equal(values(array1, 0), numpy.ones(5, dtype="float64"))
 
 def test_build_1():
   array1 = build(5, ("val", "d0"))

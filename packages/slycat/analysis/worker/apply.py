@@ -64,6 +64,10 @@ class apply_array_iterator(array_iterator):
     if attribute != len(self.attributes):
       return self.iterator.values(attribute)
 
-    #log.debug("Evaluating %s." % ast.dump(self.expression))
-    return evaluator(self.symbol_lookup).evaluate(self.expression).astype(self.attribute["type"])
+    result = evaluator(self.symbol_lookup).evaluate(self.expression)
+    if isinstance(result, int) or isinstance(result, float):
+      temp = numpy.empty(self.iterator.shape())
+      temp.fill(result)
+      result = temp
+    return result.astype(self.attribute["type"])
 

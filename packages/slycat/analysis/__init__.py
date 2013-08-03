@@ -164,7 +164,7 @@ class coordinator(object):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
 
     Creates an array with the given shape and chunk sizes, with one-or-more
-    attributes computed using an arbitrary mathematical expression.
+    attributes computed using mathematical expressions.
 
     The shape parameter must be an int or a sequence of ints that specify the
     size of the array along each dimension.  The chunks parameter must an int
@@ -181,6 +181,13 @@ class coordinator(object):
     type, which otherwise defaults to float64.  Each expression must be a string
     containing a valid mathematical expression.  Expressions may refer to any
     of the array dimensions by name.
+
+    >>> scan(build(4, ("val", "1")))
+      {d0} val
+    * {0} 1.0
+      {1} 1.0
+      {2} 1.0
+      {3} 1.0
 
     >>> scan(build(4, ("val", "d0")))
       {d0} val
