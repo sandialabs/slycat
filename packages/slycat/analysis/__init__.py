@@ -53,11 +53,18 @@ class coordinator(object):
     """Return an array containing one-or-more aggregates of a source array.
 
     The result is a one-dimensional array with a single cell containing
-    one-or-more attributes, one for each aggregate expression supplied by the
-    caller.  Expressions are specified as a sequence of strings, each of the
-    form "function(attribute)" where "function" is an aggregate function and
-    "attribute" is the name of a source array attribute.  The available
-    aggregate functions are:
+    aggregate attributes specified via one-or-more aggregate expressions by the
+    caller.  An aggregate expression can take one of three forms:
+
+      "function"            Apply an aggregate function to every attribute in
+                            the source array.
+      ("function", index)   Apply an aggregate function to a single source
+                            attribute, identified by its index.
+      ("function", "name")  Apply an aggregate function to a single source
+                            attribute, identified by its name.
+
+    The expressions parameter accepts a single expression or a list of
+    one-or-more expressions.  The available aggregate functions are:
 
       avg       Compute the average value of an attribute.
       count     Compute the number of values stored in an attribute.
@@ -66,16 +73,26 @@ class coordinator(object):
       min       Compute the minimum value of an attribute.
       sum       Compute the sum of an attribute's values.
 
-    The attribute names in the result array will be a combination of the source
-    attribute name and aggregate function name.
+    The attribute names in the result array will be a combination of the
+    function name with the attribute name:
 
-      >>> scan(aggregate(random(5), ["min(val)"]))
-        {i} val_min
-      * {0} 0.183918811677
+      >>> a = random(5, attributes=["b", "c"])
 
-      >>> scan(aggregate(random(5), ["avg(val)", "count(val)", "distinct(val)", "sum(val)"]))
-        {i} val_avg,val_count,val_distinct,val_sum
-      * {0} 0.440439153342,5,5,2.20219576671
+      >>> scan(aggregate(a, "min"))
+        {i} min_b, min_c
+      * {0} 0.183918811677, 0.595544702979
+
+      >>> scan(aggregate(a, ("avg", 0)))
+        {i} avg_b
+      * {0} 0.440439153342
+
+      >>> scan(aggregate(a, ("max", "c")))
+        {i} max_c
+      * {0} 0.964514519736
+
+      >>> scan(aggregate(a, ["min", "max", ("count", 0), ("sum", "c")]))
+        {i} min_b, min_c, max_b, max_c, count_b, sum_c
+      * {0} 0.183918811677, 0.595544702979, 0.929616092817, 0.964514519736, 5, 3.61571282797
     """
     return remote_array(self.proxy.aggregate(source.proxy._pyroUri, expressions))
   def apply(self, source, attribute, expression):
@@ -96,32 +113,32 @@ class coordinator(object):
     avoid using array() with "large" data, preferring to manipulate it all
     remotely instead.
 
-    >>> scan(array([1, 2, 3]))
-      {d0} val
-    * {0} 1.0
-      {1} 2.0
-      {2} 3.0
+      >>> scan(array([1, 2, 3]))
+        {d0} val
+      * {0} 1.0
+        {1} 2.0
+        {2} 3.0
 
-    >>> scan(array([1, 2, 3], attribute="foo"))
-      {d0} foo
-    * {0} 1.0
-      {1} 2.0
-      {2} 3.0
+      >>> scan(array([1, 2, 3], attribute="foo"))
+        {d0} foo
+      * {0} 1.0
+        {1} 2.0
+        {2} 3.0
 
-    >>> scan(array([1, 2, 3], attribute=("foo", "int32")))
-      {d0} foo
-    * {0} 1
-      {1} 2
-      {2} 3
+      >>> scan(array([1, 2, 3], attribute=("foo", "int32")))
+        {d0} foo
+      * {0} 1
+        {1} 2
+        {2} 3
 
-    >>> scan(array([[1, 2, 3], [4, 5, 6]]))
-      {d0, d1} val
-    * {0, 0} 1.0
-      {0, 1} 2.0
-      {0, 2} 3.0
-      {1, 0} 4.0
-      {1, 1} 5.0
-      {1, 2} 6.0
+      >>> scan(array([[1, 2, 3], [4, 5, 6]]))
+        {d0, d1} val
+      * {0, 0} 1.0
+        {0, 1} 2.0
+        {0, 2} 3.0
+        {1, 0} 4.0
+        {1, 1} 5.0
+        {1, 2} 6.0
     """
     return remote_array(self.proxy.array(initializer, attribute))
   def attributes(self, source):
@@ -206,13 +223,13 @@ class coordinator(object):
     this happens, most operators allow you to reference attributes by index for
     disambiguation.
 
-    >>> scan(join(random(5, attributes="foo"), zeros(5, attributes="bar")))
-      {d0} foo, bar
-    * {0} 0.929616092817, 0.0
-      {1} 0.316375554582, 0.0
-      {2} 0.183918811677, 0.0
-      {3} 0.204560278553, 0.0
-      {4} 0.567725029082, 0.0
+      >>> scan(join(random(5, attributes="foo"), zeros(5, attributes="bar")))
+        {d0} foo, bar
+      * {0} 0.929616092817, 0.0
+        {1} 0.316375554582, 0.0
+        {2} 0.183918811677, 0.0
+        {3} 0.204560278553, 0.0
+        {4} 0.567725029082, 0.0
     """
     return remote_array(self.proxy.join(array1.proxy._pyroUri, array2.proxy._pyroUri))
   def load(self, path, schema, *arguments, **keywords):
@@ -331,15 +348,15 @@ class coordinator(object):
     case, the new array simply contains all the same attributes and dimensions
     as the original.
 
-    >>> a = random((5, 5), attributes=["a", "b", "c"])
-    >>> a
-    <5x5 remote array with dimensions: d0, d1 and attributes: a, b, c>
+      >>> a = random((5, 5), attributes=["a", "b", "c"])
+      >>> a
+      <5x5 remote array with dimensions: d0, d1 and attributes: a, b, c>
 
-    >>> rename(a, dimensions=("d0", "i"), attributes=("c", "d"))
-    <5x5 remote array with dimensions: i, d1 and attributes: a, b, d>
+      >>> rename(a, dimensions=("d0", "i"), attributes=("c", "d"))
+      <5x5 remote array with dimensions: i, d1 and attributes: a, b, d>
 
-    >>> rename(a, dimensions={0:"i",1:"j"}, attributes={0:"d","c":"e"})
-    <5x5 remote array with dimensions: i, j and attributes: d, b, e>
+      >>> rename(a, dimensions={0:"i",1:"j"}, attributes={0:"d","c":"e"})
+      <5x5 remote array with dimensions: i, j and attributes: d, b, e>
     """
     return remote_array(self.proxy.rename(source.proxy._pyroUri, attributes, dimensions))
 
@@ -378,12 +395,12 @@ class coordinator(object):
     and attribute values for that cell.  Cell coordinates are surrounded by
     braces making them easier to distinguish from attribute values:
 
-    >>> scan(random((2, 2), (1, 2)), format="dcsv")
-      {d0,d1} val
-    * {0,0} 0.929616092817
-      {0,1} 0.316375554582
-    * {1,0} 0.92899722191
-      {1,1} 0.449165754101
+      >>> scan(random((2, 2), (1, 2)), format="dcsv")
+        {d0,d1} val
+      * {0,0} 0.929616092817
+        {0,1} 0.316375554582
+      * {1,0} 0.92899722191
+        {1,1} 0.449165754101
 
     Format "null" produces no written output, but is useful to force
     computation for timing studies without cluttering the screen or interfering

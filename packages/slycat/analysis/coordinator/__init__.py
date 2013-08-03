@@ -114,6 +114,8 @@ class factory(pyro_object):
   def require_expression(self, expression):
     if isinstance(expression, basestring):
       expression = ast.parse(expression)
+    else:
+      raise InvalidArgument("Expression must be a string.")
     return expression
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
@@ -131,9 +133,11 @@ class factory(pyro_object):
   def aggregate(self, source, expressions):
     source = self.require_object(source)
     if isinstance(expressions, basestring):
+      expressions = [(expressions, None)]
+    elif isinstance(expressions, tuple):
       expressions = [expressions]
-    expressions = [self.require_expression(expression) for expression in expressions]
-    expressions = [(expression.body[0].value.func.id, expression.body[0].value.args[0].id) for expression in expressions]
+    elif isinstance(expressions, list):
+      expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.aggregate(worker_index, source_proxy._pyroUri, expressions))

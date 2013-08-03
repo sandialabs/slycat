@@ -38,53 +38,61 @@ def require_array_schema(array, dimensions, attributes):
 
 def test_aggregate_avg():
   array1 = random(5, 3)
-  array2 = aggregate(array1, ["avg(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_avg", "float64")])
+  array2 = aggregate(array1, "avg")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("avg_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).mean())
 
 def test_aggregate_count():
   array1 = random(5, 3)
-  array2 = aggregate(array1, ["count(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_count", "float64")])
+  array2 = aggregate(array1, "count")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("count_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).size)
 
 def test_aggregate_distinct():
   array1 = array(numpy.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 14]).reshape((4, 4)))
-  array2 = aggregate(array1, ["distinct(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_distinct", "float64")])
+  array2 = aggregate(array1, "distinct")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("distinct_val", "float64")])
   numpy.testing.assert_array_equal(value(array2), [15])
 
 def test_aggregate_max():
   array1 = random(5, 3)
-  array2 = aggregate(array1, ["max(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_max", "float64")])
+  array2 = aggregate(array1, "max")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("max_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).max())
 
 def test_aggregate_max_2():
   array1 = random(50, 10)
-  array2 = aggregate(array1, ["max(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_max", "float64")])
+  array2 = aggregate(array1, "max")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("max_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).max())
 
 def test_aggregate_min():
   array1 = random(5, 3)
-  array2 = aggregate(array1, ["min(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_min", "float64")])
+  array2 = aggregate(array1, "min")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).min())
 
 def test_aggregate_sum():
   array1 = random(5, 3)
-  array2 = aggregate(array1, ["sum(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_sum", "float64")])
+  array2 = aggregate(array1, "sum")
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("sum_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).sum())
 
 def test_aggregate_multiple():
   array1 = random(5, 3)
-  array2 = aggregate(array1, ["min(val)", "avg(val)", "max(val)"])
-  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("val_min", "float64"), ("val_avg", "float64"), ("val_max", "float64")])
+  array2 = aggregate(array1, ["min", "avg", "max"])
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_val", "float64"), ("avg_val", "float64"), ("max_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2, 0), values(array1).min())
   numpy.testing.assert_array_almost_equal(value(array2, 1), values(array1).mean())
   numpy.testing.assert_array_almost_equal(value(array2, 2), values(array1).max())
+
+def test_aggregate_individual():
+  array1 = random(5, attributes=["a", "b", "c"])
+  array2 = aggregate(array1, [("min", "a"), ("avg", 1), ("max", "c")])
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_a", "float64"), ("avg_b", "float64"), ("max_c", "float64")])
+  numpy.testing.assert_array_almost_equal(value(array2, 0), values(array1, "a").min())
+  numpy.testing.assert_array_almost_equal(value(array2, 1), values(array1, "b").mean())
+  numpy.testing.assert_array_almost_equal(value(array2, 2), values(array1, "c").max())
 
 def test_apply_attribute():
   array1 = random(5)
@@ -477,19 +485,17 @@ def test_materialize():
   numpy.testing.assert_array_equal(values(array2, 0), values(array1, 0))
 
 def test_project_by_index():
-  array1 = random(5)
-  array2 = aggregate(array1, ["min(val)", "avg(val)", "max(val)"])
-  array3 = project(array2, 2, 0)
-  require_array_schema(array3, [("i", "int64", 0, 1, 1)], [("val_max", "float64"), ("val_min", "float64")])
-  numpy.testing.assert_array_almost_equal(value(array3, 0), values(array1).max())
-  numpy.testing.assert_array_almost_equal(value(array3, 1), values(array1).min())
+  array1 = random(5, attributes=["a", "b", "c"])
+  array2 = project(array1, 2, 0)
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("c", "float64"), ("a", "float64")])
+  numpy.testing.assert_array_equal(values(array2, 0), values(array1, 2))
+  numpy.testing.assert_array_equal(values(array2, 1), values(array1, 0))
 
 def test_project_by_name():
-  array1 = random(5)
-  array2 = aggregate(array1, ["min(val)", "avg(val)", "max(val)"])
-  array3 = project(array2, "val_max")
-  require_array_schema(array3, [("i", "int64", 0, 1, 1)], [("val_max", "float64")])
-  numpy.testing.assert_array_almost_equal(value(array3, 0), values(array1).max())
+  array1 = random(5, attributes=["a", "b", "c"])
+  array2 = project(array1, "b")
+  require_array_schema(array2, [("d0", "int64", 0, 5, 5)], [("b", "float64")])
+  numpy.testing.assert_array_equal(values(array2, 0), values(array1, 1))
 
 def test_random_1d():
   array1 = random(5)
@@ -616,8 +622,8 @@ def test_zeros_2d():
 def test_timeseries_model():
   array = load("/home/slycat/Documents/XyceBrette-250/workdir.1/circuit.cir.prn", schema="prn-file", chunk_size=10000)
   bin_count = 100
-  time_min = value(aggregate(array, ["min(TIME)"]))
-  time_max = value(aggregate(array, ["max(TIME)"]))
+  time_min = value(aggregate(array, ("min", "TIME")))
+  time_max = value(aggregate(array, ("max", "TIME")))
   bin_size = (time_max - time_min) / bin_count
   scan(apply(project(array, "Index", "TIME", 2, 3, 4, 5), ("bin", "int64"), "(TIME - %s) / %s" % (time_min, bin_size)))
 
