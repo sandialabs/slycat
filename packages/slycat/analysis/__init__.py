@@ -142,6 +142,23 @@ class coordinator(object):
     """
     return remote_array(self.proxy.array(initializer, attribute))
   def attributes(self, source):
+    """Return an array that describes some other array's attributes.
+
+    Creates a 1D array with attributes "name" and "type" that describes
+    another array's attributes.  It is particularly useful when working with an
+    array with a large number of attributes.
+
+      >>> scan(attributes(load("../data/automobiles.csv", schema="csv-file", chunk_size=100)))
+        {i} name, type
+      * {0} Model, string
+        {1} Origin, string
+        {2} Year, string
+        {3} Cylinders, string
+        {4} Acceleration, string
+        {5} Displacement, string
+        {6} Horsepower, string
+        {7} MPG, string
+    """
     return remote_array(self.proxy.attributes(source.proxy._pyroUri))
   def build(self, shape, attributes, chunks=None):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
@@ -210,6 +227,19 @@ class coordinator(object):
   def chunk_map(self, source):
     return remote_array(self.proxy.chunk_map(source.proxy._pyroUri))
   def dimensions(self, source):
+    """Return an array that describe's another array's dimensions.
+
+    Creates a 1D array with attributes "name", "type", "begin", "end", and
+    "chunk-size"  that describes another array's dimensions.  It is
+    particularly useful when working with an array with a large number of
+    dimensions.
+
+      >>> scan(dimensions(random((1000, 2000, 3000), (100, 100, 100))))
+        {i} name, type, begin, end, chunk-size
+      * {0} d0, int64, 0, 1000, 100
+        {1} d1, int64, 0, 2000, 100
+        {2} d2, int64, 0, 3000, 100
+    """
     return remote_array(self.proxy.dimensions(source.proxy._pyroUri))
   def join(self, array1, array2):
     """Return an array combining the attributes of two arrays.
