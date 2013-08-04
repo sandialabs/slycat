@@ -38,9 +38,11 @@ class array(pyro_object):
   def __init__(self, worker_index):
     pyro_object.__init__(self)
     self.worker_index = worker_index
+    self.worker_count = None
   def set_siblings(self, siblings):
     """Populates the iterator with handles to all its siblings (including itself)."""
     self.siblings = siblings
+    self.worker_count = len(siblings)
   def dimensions(self):
     raise NotImplementedError()
   def attributes(self):

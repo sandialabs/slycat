@@ -382,8 +382,38 @@ class connection(object):
         {4} 0.567725029082, 0.0
     """
     return remote_array(self.proxy.join(array1.proxy._pyroUri, array2.proxy._pyroUri))
-  def load(self, path, schema, *arguments, **keywords):
-    return remote_file_array(self.proxy.load(path, schema, *arguments, **keywords))
+  def load(self, path, schema="csv-file", **keywords):
+    """Load an array from a filesystem.
+
+    Use the required parameter path to specify the location of the data to be
+    loaded.  Note that the data is loaded remotely by the connected Slycat Analysis
+    workers, from the workers' filesystems, not the client's, and that you will have
+    to ensure that the same path refers to the same data across every worker.
+
+    By default, the data to be loaded is assumed to be contained in a single
+    CSV (delimited-text) file.  You may override this with the optional schema
+    parameter, which specifies the data's organization on disk.  Note that a
+    particular schema will capture both the data file format (CSV, PRN,
+    ExodusII), and its layout on disk (one file, multiple partitioned files,
+    etc).  Depending on the schema, you may need to provide additional
+    schema-specific keyword parameters when calling load().  The
+    currently-supported schemas are:
+
+      csv-file    Loads data from a single CSV file, partitioned in round-robin
+                  order among workers.  Use the "delimiter" parameter to specify the field
+                  delimiter, which defaults to ",".  If the "format" parameter is None (the
+                  default), every attribute in the output array will be of type "string".
+                  Pass a list of types to "format" to specify alternate attribute types in
+                  the output array.  Use the "chunk_size" parameter to specify the maximum
+                  chunk size of the output array.  Otherwise, the file will be evenly split
+                  into N chunks, one on each of N workers.
+
+      prn-file    Loads data from a single PRN file, partitioned in round-robin
+                  order among workers.  Use the "chunk_size" parameter to specify the
+                  maximum chunk size of the output array.  Otherwise, the file will be
+                  evenly split into N chunks, one on each of N workers.
+    """
+    return remote_file_array(self.proxy.load(path, schema, **keywords))
   def materialize(self, source):
     """Return a materialized (loaded into memory) version of an array.
 
@@ -1072,8 +1102,8 @@ def join(array1, array2):
   return get_connection().join(array1, array2)
 join.__doc__ = connection.join.__doc__
 dimensions.__doc__ = connection.dimensions.__doc__
-def load(path, schema, *arguments, **keywords):
-  return get_connection().load(path, schema, *arguments, **keywords)
+def load(path, schema="csv-file", **keywords):
+  return get_connection().load(path, schema, **keywords)
 load.__doc__ = connection.load.__doc__
 def materialize(source):
   return get_connection().materialize(source)

@@ -88,10 +88,6 @@ class factory(pyro_object):
     if isinstance(names, basestring):
       return [self.require_attribute_name(names)]
     return [self.require_attribute_name(name) for name in names]
-  def require_chunk_size(self, chunk_size):
-    if not isinstance(chunk_size, int):
-      raise InvalidArgument("Chunk size must be an integer.")
-    return chunk_size
   def require_chunk_sizes(self, shape, chunk_sizes):
     """Return array chunk sizes (tuple of dimension lengths), treating a single integer as a 1-tuple and sanity-checking the results against an array shape."""
     if chunk_sizes is None:
@@ -204,14 +200,21 @@ class factory(pyro_object):
     return self.pyro_register(array(array_workers, [array1, array2]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
-      chunk_size = self.require_chunk_size(keywords["chunk_size"])
       format = keywords.get("format", None)
+      delimiter = keywords.get("delimiter", ",")
+      chunk_size = keywords.get("chunk_size", None)
+      if chunk_size is not None:
+        if not isinstance(chunk_size, int):
+          raise InvalidArgument("chunk_size must be an integer.")
       array_workers = []
       for worker_index, worker in enumerate(self.workers()):
-        array_workers.append(worker.csv_file(worker_index, path, chunk_size, format))
+        array_workers.append(worker.csv_file(worker_index, path, format, delimiter, chunk_size))
       return self.pyro_register(file_array(array_workers, []))
     elif schema == "prn-file":
-      chunk_size = keywords["chunk_size"]
+      chunk_size = keywords.get("chunk_size", None)
+      if chunk_size is not None:
+        if not isinstance(chunk_size, int):
+          raise InvalidArgument("chunk_size must be an integer.")
       array_workers = []
       for worker_index, worker in enumerate(self.workers()):
         array_workers.append(worker.prn_file(worker_index, path, chunk_size))

@@ -12,42 +12,49 @@ class prn_file_array(array):
     array.__init__(self, worker_index)
     self.path = path
     self.chunk_size = chunk_size
+    self.line_count = None
+  def update_metrics(self):
+    # Count the number of lines in the file.
+    if self.line_count is None:
+      with open(self.path, "r") as stream:
+        self.line_count = 0
+        for line in stream:
+          self.line_count += 1
+        if line.strip() == "End of Xyce(TM) Simulation":
+          self.line_count -= 1
+        self.line_count -= 1 # Skip the header
+    # If the caller didn't specify a chunk size, split the file evenly among workers.
+    if self.chunk_size is None:
+      self.chunk_size = int(numpy.ceil(self.line_count / self.worker_count))
+
   def dimensions(self):
-    with open(self.path, "r") as stream:
-      end = 0
-      for line in stream:
-        end += 1
-      if line.strip() == "End of Xyce(TM) Simulation":
-        end -= 1
-      end -= 1 # Skip the header
-    return [{"name":"i", "type":"int64", "begin":0, "end":end, "chunk-size":self.chunk_size}]
+    self.update_metrics()
+    return [{"name":"i", "type":"int64", "begin":0, "end":self.line_count, "chunk-size":self.chunk_size}]
   def attributes(self):
     with open(self.path, "r") as stream:
       line = stream.next()
       return [{"name":name, "type":"int64" if name == "Index" else "float64"} for name in line.split()]
   def iterator(self):
-    return self.pyro_register(prn_file_array_iterator(self, self.path, self.chunk_size, self.worker_index, len(self.siblings)))
+    self.update_metrics()
+    return self.pyro_register(prn_file_array_iterator(self))
   def file_path(self):
     return self.path
   def file_size(self):
     return os.stat(self.path).st_size
 
 class prn_file_array_iterator(array_iterator):
-  def __init__(self, owner, path, chunk_size, worker_index, worker_count):
+  def __init__(self, owner):
     array_iterator.__init__(self, owner)
-    self.stream = open(path, "r")
+    self.stream = open(owner.path, "r")
     self.stream.next() # Skip the header
-    self.chunk_size = chunk_size
-    self.worker_index = worker_index
-    self.worker_count = worker_count
     self.chunk_id = -1
     self.lines = []
   def next(self):
     self.lines = []
     self.chunk_id += 1
-    while self.chunk_id % self.worker_count != self.worker_index:
+    while self.chunk_id % self.owner.worker_count != self.owner.worker_index:
       try:
-        for i in range(self.chunk_size):
+        for i in range(self.owner.chunk_size):
           line = self.stream.next()
           if line.strip() == "End of Xyce(TM) Simulation":
             raise StopIteration()
@@ -55,7 +62,7 @@ class prn_file_array_iterator(array_iterator):
         raise StopIteration()
       self.chunk_id += 1
     try:
-      for i in range(self.chunk_size):
+      for i in range(self.owner.chunk_size):
         line = self.stream.next()
         if line.strip() == "End of Xyce(TM) Simulation":
           raise StopIteration()
@@ -65,7 +72,7 @@ class prn_file_array_iterator(array_iterator):
     if not len(self.lines):
       raise StopIteration()
   def coordinates(self):
-    return numpy.array([self.chunk_id * self.chunk_size], dtype="int64")
+    return numpy.array([self.chunk_id * self.owner.chunk_size], dtype="int64")
   def shape(self):
     return numpy.array([len(self.lines)], dtype="int64")
   def values(self, attribute):

@@ -39,8 +39,8 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.build.build_array(worker_index, shape, chunk_sizes, attributes))
   def chunk_map(self, worker_index, source):
     return self.pyro_register(slycat.analysis.worker.chunk_map.chunk_map_array(worker_index, self.require_object(source)))
-  def csv_file(self, worker_index, path, chunk_size, format):
-    return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, chunk_size, format))
+  def csv_file(self, worker_index, path, format, delimiter, chunk_size):
+    return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
   def dimensions(self, worker_index, source):
     return self.pyro_register(dimensions_array(worker_index, self.require_object(source)))
   def join(self, worker_index, array1, array2):
