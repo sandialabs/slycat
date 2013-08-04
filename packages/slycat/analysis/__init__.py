@@ -43,7 +43,7 @@ def translate_exceptions(f):
       raise InvalidArgument(e)
   return wrapper
 
-class coordinator(object):
+class connection(object):
   def __init__(self, nameserver):
     self.nameserver = nameserver
     self.proxy = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
@@ -652,7 +652,7 @@ class coordinator(object):
     log.info("elapsed time: %s seconds" % (time.time() - start_time))
 
   def shutdown(self):
-    """Request that the coordinator and all workers shut-down.
+    """Request that the connected coordinator and all workers shut-down.
 
     Note that this is currently an experimental feature, which does not enforce
     any access controls.  Shutting down while other clients are working will
@@ -1018,7 +1018,7 @@ class array_chunk_attribute(object):
     """Return a numpy array containing the values of the attribute for this chunk."""
     return self.proxy.values(self.index)
 
-current_coordinator = None
+current_connection = None
 
 def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
   """Return a connection to a running Slycat Analysis Coordinator.
@@ -1028,90 +1028,90 @@ def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
   any of the other functions in this module.
 
   You will likely never need to call connect() more than once or keep track of
-  the returned connection object, unless you need connections to more than one
-  Slycat Analysis Coordinator.
+  the returned connection object, unless you need to manage connections to more
+  than one Slycat Analysis Coordinator.
   """
-  global current_coordinator
+  global current_connection
   Pyro4.config.HMAC_KEY = hmac_key
   nameserver = Pyro4.locateNS(host, port)
-  current_coordinator = coordinator(nameserver)
-  return current_coordinator
+  current_connection = connection(nameserver)
+  return current_connection
 
-def get_coordinator():
-  """Return the current (most recently connected) coordinator."""
-  if current_coordinator is None:
+def get_connection():
+  """Return the current (most recent) connection."""
+  if current_connection is None:
     connect()
-  return current_coordinator
+  return current_connection
 
 def aggregate(source, expressions):
-  return get_coordinator().aggregate(source, expressions)
-aggregate.__doc__ = coordinator.aggregate.__doc__
+  return get_connection().aggregate(source, expressions)
+aggregate.__doc__ = connection.aggregate.__doc__
 
 def apply(source, attributes):
-  return get_coordinator().apply(source, attributes)
-apply.__doc__ = coordinator.apply.__doc__
+  return get_connection().apply(source, attributes)
+apply.__doc__ = connection.apply.__doc__
 
 def array(initializer, attribute="val"):
-  return get_coordinator().array(initializer, attribute)
-array.__doc__ = coordinator.array.__doc__
+  return get_connection().array(initializer, attribute)
+array.__doc__ = connection.array.__doc__
 
 def attributes(source):
-  return get_coordinator().attributes(source)
-attributes.__doc__ = coordinator.attributes.__doc__
+  return get_connection().attributes(source)
+attributes.__doc__ = connection.attributes.__doc__
 
 def build(shape, attributes, chunks=None):
-  return get_coordinator().build(shape, attributes, chunks)
-build.__doc__ = coordinator.build.__doc__
+  return get_connection().build(shape, attributes, chunks)
+build.__doc__ = connection.build.__doc__
 
 def chunk_map(source):
-  return get_coordinator().chunk_map(source)
-chunk_map.__doc__ = coordinator.chunk_map.__doc__
+  return get_connection().chunk_map(source)
+chunk_map.__doc__ = connection.chunk_map.__doc__
 def dimensions(source):
-  return get_coordinator().dimensions(source)
+  return get_connection().dimensions(source)
 def join(array1, array2):
-  return get_coordinator().join(array1, array2)
-join.__doc__ = coordinator.join.__doc__
-dimensions.__doc__ = coordinator.dimensions.__doc__
+  return get_connection().join(array1, array2)
+join.__doc__ = connection.join.__doc__
+dimensions.__doc__ = connection.dimensions.__doc__
 def load(path, schema, *arguments, **keywords):
-  return get_coordinator().load(path, schema, *arguments, **keywords)
-load.__doc__ = coordinator.load.__doc__
+  return get_connection().load(path, schema, *arguments, **keywords)
+load.__doc__ = connection.load.__doc__
 def materialize(source):
-  return get_coordinator().materialize(source)
-materialize.__doc__ = coordinator.materialize.__doc__
+  return get_connection().materialize(source)
+materialize.__doc__ = connection.materialize.__doc__
 def project(source, *attributes):
-  return get_coordinator().project(source, *attributes)
-project.__doc__ = coordinator.project.__doc__
+  return get_connection().project(source, *attributes)
+project.__doc__ = connection.project.__doc__
 
 def random(shape, chunks=None, seed=12345, attributes="val"):
-  return get_coordinator().random(shape, chunks, seed, attributes)
-random.__doc__ = coordinator.random.__doc__
+  return get_connection().random(shape, chunks, seed, attributes)
+random.__doc__ = connection.random.__doc__
 
 def redimension(source, dimensions, attributes):
-  return get_coordinator().redimension(source, dimensions, attributes)
-redimension.__doc__ = coordinator.redimension.__doc__
+  return get_connection().redimension(source, dimensions, attributes)
+redimension.__doc__ = connection.redimension.__doc__
 
 def rename(source, attributes=[], dimensions=[]):
-  return get_coordinator().rename(source, attributes, dimensions)
-rename.__doc__ = coordinator.rename.__doc__
+  return get_connection().rename(source, attributes, dimensions)
+rename.__doc__ = connection.rename.__doc__
 
 def scan(source, format="dcsv", separator=", ", stream=sys.stdout):
-  return get_coordinator().scan(source, format, separator, stream)
-scan.__doc__ = coordinator.scan.__doc__
+  return get_connection().scan(source, format, separator, stream)
+scan.__doc__ = connection.scan.__doc__
 def shutdown():
-  return get_coordinator().shutdown()
-shutdown.__doc__ = coordinator.shutdown.__doc__
+  return get_connection().shutdown()
+shutdown.__doc__ = connection.shutdown.__doc__
 
 def value(source, attributes=None):
-  return get_coordinator().value(source, attributes)
-value.__doc__ = coordinator.value.__doc__
+  return get_connection().value(source, attributes)
+value.__doc__ = connection.value.__doc__
 
 def values(source, attributes=None):
-  return get_coordinator().values(source, attributes)
-values.__doc__ = coordinator.values.__doc__
+  return get_connection().values(source, attributes)
+values.__doc__ = connection.values.__doc__
 
 def workers():
-  return get_coordinator().workers()
-workers.__doc__ = coordinator.workers.__doc__
+  return get_connection().workers()
+workers.__doc__ = connection.workers.__doc__
 def zeros(shape, chunks=None, attributes="val"):
-  return get_coordinator().zeros(shape, chunks, attributes)
-zeros.__doc__ = coordinator.zeros.__doc__
+  return get_connection().zeros(shape, chunks, attributes)
+zeros.__doc__ = connection.zeros.__doc__
