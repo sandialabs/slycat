@@ -618,5 +618,7 @@ def load_plugins(root):
       import traceback
       log.error(traceback.format_exc())
 
-load_plugins(__file__)
+import __main__
+if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
+  load_plugins(__file__)
 

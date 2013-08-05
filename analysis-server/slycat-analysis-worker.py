@@ -2,6 +2,8 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+slycat_analysis_disable_client_plugins = True # Prevent client plugins from being loaded when we import from slycat.analysis
+
 from slycat.analysis import __file__ as plugin_root
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
