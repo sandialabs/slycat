@@ -124,52 +124,6 @@ class connection(object):
       raise InvalidArgument("Array shape must have at least one dimension.")
     return shape
 
-  def aggregate(self, source, expressions):
-    """Return an array containing one-or-more aggregates of a source array.
-
-    The result is a one-dimensional array with a single cell containing
-    aggregate attributes specified via one-or-more aggregate expressions by the
-    caller.  An aggregate expression can take one of three forms:
-
-      "function"            Apply an aggregate function to every attribute in
-                            the source array.
-      ("function", index)   Apply an aggregate function to a single source
-                            attribute, identified by its index.
-      ("function", "name")  Apply an aggregate function to a single source
-                            attribute, identified by its name.
-
-    The expressions parameter accepts a single expression or a list of
-    one-or-more expressions.  The available aggregate functions are:
-
-      avg       Compute the average value of an attribute.
-      count     Compute the number of values stored in an attribute.
-      distinct  Compute the number of distinct values stored in an attribute.
-      max       Compute the maximum value of an attribute.
-      min       Compute the minimum value of an attribute.
-      sum       Compute the sum of an attribute's values.
-
-    The attribute names in the result array will be a combination of the
-    function name with the attribute name:
-
-      >>> a = random(5, attributes=["b", "c"])
-
-      >>> scan(aggregate(a, "min"))
-        {i} min_b, min_c
-      * {0} 0.183918811677, 0.595544702979
-
-      >>> scan(aggregate(a, ("avg", 0)))
-        {i} avg_b
-      * {0} 0.440439153342
-
-      >>> scan(aggregate(a, ("max", "c")))
-        {i} max_c
-      * {0} 0.964514519736
-
-      >>> scan(aggregate(a, ["min", "max", ("count", 0), ("sum", "c")]))
-        {i} min_b, min_c, max_b, max_c, count_b, sum_c
-      * {0} 0.183918811677, 0.595544702979, 0.929616092817, 0.964514519736, 5, 3.61571282797
-    """
-    return remote_array(self.proxy.aggregate(source.proxy._pyroUri, expressions))
   def load(self, path, schema="csv-file", **keywords):
     """Load an array from a filesystem.
 
@@ -370,10 +324,6 @@ def get_connection():
   if current_connection is None:
     connect()
   return current_connection
-
-def aggregate(source, expressions):
-  return get_connection().aggregate(source, expressions)
-aggregate.__doc__ = connection.aggregate.__doc__
 
 def load(path, schema="csv-file", **keywords):
   return get_connection().load(path, schema, **keywords)

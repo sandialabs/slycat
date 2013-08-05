@@ -129,18 +129,6 @@ class factory(pyro_object):
       raise InvalidArgument("Array shape must have at least one dimension.")
     return shape
 
-  def aggregate(self, source, expressions):
-    source = self.require_object(source)
-    if isinstance(expressions, basestring):
-      expressions = [(expressions, None)]
-    elif isinstance(expressions, tuple):
-      expressions = [expressions]
-    elif isinstance(expressions, list):
-      expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.aggregate(worker_index, source_proxy._pyroUri, expressions))
-    return self.pyro_register(array(array_workers, [source]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
       format = keywords.get("format", None)
