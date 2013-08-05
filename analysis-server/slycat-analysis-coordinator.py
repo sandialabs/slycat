@@ -141,17 +141,6 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.aggregate(worker_index, source_proxy._pyroUri, expressions))
     return self.pyro_register(array(array_workers, [source]))
-  def apply(self, source, attributes):
-    source = self.require_object(source)
-    if isinstance(attributes, tuple):
-      attributes = [attributes]
-    if len(attributes) < 1:
-      raise InvalidArgument("You must specify at least one attribute.")
-    attributes = [(self.require_attribute(attribute), self.require_expression(expression)) for attribute, expression in attributes]
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.apply(worker_index, source_proxy._pyroUri, attributes))
-    return self.pyro_register(array(array_workers, [source]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
       format = keywords.get("format", None)

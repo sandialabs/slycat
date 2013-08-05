@@ -7,7 +7,6 @@ slycat_analysis_disable_client_plugins = True # Prevent client plugins from bein
 from slycat.analysis import __file__ as plugin_root
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
-import slycat.analysis.worker.apply
 import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.prn_file
 
@@ -23,8 +22,6 @@ class factory(pyro_object):
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
   def aggregate(self, worker_index, source, expressions):
     return self.pyro_register(slycat.analysis.worker.aggregate.aggregate_array(worker_index, self.require_object(source), expressions))
-  def apply(self, worker_index, source, attributes):
-    return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attributes))
   def csv_file(self, worker_index, path, format, delimiter, chunk_size):
     return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
   def prn_file(self, worker_index, path, chunk_size):
