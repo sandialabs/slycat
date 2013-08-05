@@ -1036,8 +1036,8 @@ rights in this software.
                         'min':0,
                         'readOnly':true,
                         'displayInput':false,
-                        'fgColor':'#4D720C',
-                        'bgColor':'#DDDDCC',
+                        'fgColor':'#7767B0',
+                        'bgColor':'#DBD9EB',
                         'width':200,
                         'height':200,
                         'thickness':0.35,
@@ -1252,11 +1252,48 @@ rights in this software.
           self.color_scale = color_scale;
           self.data_table_index_array = data_table_index_array;
 
-          this.container.selectAll("g.waveform path")
-            .style("stroke", function(d, i) { 
-              return color_scale(color_array[i]); 
+          var blah;
+          // this.container.selectAll("g.waveform path")
+          //   .style("stroke", function(d, i) { 
+          //     return color_scale(color_array[i]); 
+          //   })
+          //   ;
+          this.container.style("display", "none");
+          timedColorWaveforms(this.container.selectAll("g.waveform path").pop(), colorWaveform, finishedColoringWaveforms);
+          
+
+          function timedColorWaveforms(items, process, callback){
+            var timeout = 100; //how long to yield control to UI thread
+            var todo = items.concat(); //create a clone of the original
+
+            self.waveformProcessingTimeout = setTimeout(function(){
+              var start = +new Date();
+              do {
+                process(todo.shift());
+              } while (todo.length > 0 && (+new Date() - start < 50));
+
+              if (todo.length > 0){
+                self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
+              } else if (callback != null) {
+                callback(items);
+              }
+
+              //self.waveformPie.val(waveformsLength - todo.length).trigger('change');
+            }, timeout);
+          }
+
+          function colorWaveform(waveform){
+            d3.select(waveform).style("stroke", function(d, i) { 
+              return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
             })
             ;
+          }
+
+          function finishedColoringWaveforms(){
+
+            self.container.style("display", "block");
+            
+          }
         }
 
         waveform_viewer_component.prototype.select = function(selected)
