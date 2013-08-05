@@ -309,6 +309,8 @@ def load_plugins(root):
   import imp
   import os
 
+  operators = []
+
   def make_connection_method(function):
     def implementation(self, *arguments, **keywords):
       return function(self, *arguments, **keywords)
@@ -318,8 +320,11 @@ def load_plugins(root):
 
   class plugin_context(object):
     def add_operator(self, name, function):
+      if name in operators:
+        raise Exception("Cannot load operator with duplicate name: %s" % name)
+      operators.append(name)
       setattr(factory, name, make_connection_method(function))
-      log.info("Registered operator %s", name)
+      #log.debug("Registered operator %s", name)
 
   context = plugin_context()
 
@@ -343,6 +348,8 @@ def load_plugins(root):
     except Exception as e:
       import traceback
       log.error(traceback.format_exc())
+
+  log.info("Loaded operators: %s", ", ".join(sorted(operators)))
 
 load_plugins(plugin_root)
 

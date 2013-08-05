@@ -478,6 +478,8 @@ def load_plugins(root):
   import imp
   import os
 
+  operators = []
+
   def make_connection_method(function):
     def implementation(self, *arguments, **keywords):
       return function(self, *arguments, **keywords)
@@ -494,9 +496,12 @@ def load_plugins(root):
 
   class plugin_context(object):
     def add_operator(self, name, function):
+      if name in operators:
+        raise Exception("Cannot load operator with duplicate name: %s" % name)
+      operators.append(name)
       setattr(connection, name, make_connection_method(function))
       globals()[name] = make_standalone_method(function)
-      log.info("Registered operator %s", name)
+      #log.debug("Registered operator %s", name)
   context = plugin_context()
 
   plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
@@ -519,6 +524,7 @@ def load_plugins(root):
     except Exception as e:
       import traceback
       log.error(traceback.format_exc())
+  log.info("Loaded operators: %s", ", ".join(sorted(operators)))
 
 import __main__
 if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
