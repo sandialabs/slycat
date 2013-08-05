@@ -420,21 +420,6 @@ class connection(object):
         {8} 3, 1, 80, 80, 20, 20
     """
     return remote_array(self.proxy.chunk_map(source.proxy._pyroUri))
-  def dimensions(self, source):
-    """Return an array that describe's another array's dimensions.
-
-    Creates a 1D array with attributes "name", "type", "begin", "end", and
-    "chunk-size" and one cell for each of the source array's dimensions.  It is
-    particularly useful when working with an array with a large number of
-    dimensions.
-
-      >>> scan(dimensions(random((1000, 2000, 3000), (100, 100, 100))))
-        {i} name, type, begin, end, chunk-size
-      * {0} d0, int64, 0, 1000, 100
-        {1} d1, int64, 0, 2000, 100
-        {2} d2, int64, 0, 3000, 100
-    """
-    return remote_array(self.proxy.dimensions(source.proxy._pyroUri))
   def load(self, path, schema="csv-file", **keywords):
     """Load an array from a filesystem.
 
@@ -659,10 +644,6 @@ build.__doc__ = connection.build.__doc__
 def chunk_map(source):
   return get_connection().chunk_map(source)
 chunk_map.__doc__ = connection.chunk_map.__doc__
-
-def dimensions(source):
-  return get_connection().dimensions(source)
-dimensions.__doc__ = connection.dimensions.__doc__
 
 def load(path, schema="csv-file", **keywords):
   return get_connection().load(path, schema, **keywords)

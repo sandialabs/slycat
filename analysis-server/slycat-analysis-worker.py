@@ -3,7 +3,7 @@
 # rights in this software.
 
 from slycat.analysis import __file__ as plugin_root
-from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, worker_chunks
+from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
 import slycat.analysis.worker.attributes
@@ -11,7 +11,6 @@ import slycat.analysis.worker.build
 import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.client_array
 import slycat.analysis.worker.csv_file
-import slycat.analysis.worker.dimensions
 import slycat.analysis.worker.prn_file
 
 class factory(pyro_object):
@@ -38,8 +37,6 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.chunk_map.chunk_map_array(worker_index, self.require_object(source)))
   def csv_file(self, worker_index, path, format, delimiter, chunk_size):
     return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
-  def dimensions(self, worker_index, source):
-    return self.pyro_register(slycat.analysis.worker.dimensions.dimensions_array(worker_index, self.require_object(source)))
   def prn_file(self, worker_index, path, chunk_size):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
 
@@ -60,6 +57,7 @@ def load_plugins(root):
       log.info("Registered operator %s", name)
   plugin_context.array = array
   plugin_context.array_iterator = array_iterator
+  plugin_context.null_array_iterator = null_array_iterator
   plugin_context.worker_chunks = staticmethod(worker_chunks)
 
   context = plugin_context()
