@@ -435,27 +435,6 @@ class connection(object):
         {2} d2, int64, 0, 3000, 100
     """
     return remote_array(self.proxy.dimensions(source.proxy._pyroUri))
-  def join(self, array1, array2):
-    """Return an array combining the attributes of two arrays.
-
-    The shape (number of dimensions, size, and chunk size of each dimension) of
-    the two inputs must be identical.  The result array will have the same
-    shape as the inputs, with the union of their attributes and dimension names
-    chosen from the first input.
-
-    Note that join() may create arrays with duplicate attribute names.  When
-    this happens, most operators allow you to reference attributes by index for
-    disambiguation.
-
-      >>> scan(join(random(5, attributes="foo"), zeros(5, attributes="bar")))
-        {d0} foo, bar
-      * {0} 0.929616092817, 0.0
-        {1} 0.316375554582, 0.0
-        {2} 0.183918811677, 0.0
-        {3} 0.204560278553, 0.0
-        {4} 0.567725029082, 0.0
-    """
-    return remote_array(self.proxy.join(array1.proxy._pyroUri, array2.proxy._pyroUri))
   def load(self, path, schema="csv-file", **keywords):
     """Load an array from a filesystem.
 
@@ -680,12 +659,11 @@ build.__doc__ = connection.build.__doc__
 def chunk_map(source):
   return get_connection().chunk_map(source)
 chunk_map.__doc__ = connection.chunk_map.__doc__
+
 def dimensions(source):
   return get_connection().dimensions(source)
-def join(array1, array2):
-  return get_connection().join(array1, array2)
-join.__doc__ = connection.join.__doc__
 dimensions.__doc__ = connection.dimensions.__doc__
+
 def load(path, schema="csv-file", **keywords):
   return get_connection().load(path, schema, **keywords)
 load.__doc__ = connection.load.__doc__

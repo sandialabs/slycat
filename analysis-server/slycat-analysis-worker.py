@@ -12,7 +12,6 @@ import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.client_array
 import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.dimensions
-import slycat.analysis.worker.join
 import slycat.analysis.worker.prn_file
 
 class factory(pyro_object):
@@ -41,8 +40,6 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
   def dimensions(self, worker_index, source):
     return self.pyro_register(slycat.analysis.worker.dimensions.dimensions_array(worker_index, self.require_object(source)))
-  def join(self, worker_index, array1, array2):
-    return self.pyro_register(slycat.analysis.worker.join.join_array(worker_index, self.require_object(array1), self.require_object(array2)))
   def prn_file(self, worker_index, path, chunk_size):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
 

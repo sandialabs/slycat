@@ -186,19 +186,6 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.dimensions(worker_index, source_proxy._pyroUri))
     return self.pyro_register(array(array_workers, [source]))
-  def join(self, array1, array2):
-    array1 = self.require_object(array1)
-    array2 = self.require_object(array2)
-
-    dimensions1 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array1.dimensions()]
-    dimensions2 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array2.dimensions()]
-    if dimensions1 != dimensions2:
-      raise InvalidArgument("Arrays to be joined must have identical dimensions.")
-
-    array_workers = []
-    for worker_index, (array1_proxy, array2_proxy, worker) in enumerate(zip(array1.workers, array2.workers, self.workers())):
-      array_workers.append(worker.join(worker_index, array1_proxy._pyroUri, array2_proxy._pyroUri))
-    return self.pyro_register(array(array_workers, [array1, array2]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
       format = keywords.get("format", None)
