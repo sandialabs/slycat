@@ -168,12 +168,6 @@ class factory(pyro_object):
     for worker_index, worker in enumerate(self.workers()):
       array_workers.append(worker.build(worker_index, shape, chunks, attributes))
     return self.pyro_register(array(array_workers, []))
-  def chunk_map(self, source):
-    source = self.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.chunk_map(worker_index, source_proxy._pyroUri))
-    return self.pyro_register(array(array_workers, [source]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
       format = keywords.get("format", None)
