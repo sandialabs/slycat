@@ -3,7 +3,7 @@
 # rights in this software.
 
 from slycat.analysis import __file__ as plugin_root
-from slycat.analysis.worker.api import log, pyro_object
+from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
 import slycat.analysis.worker.attributes
@@ -76,6 +76,9 @@ def load_plugins(root):
     def add_operator(self, name, function):
       setattr(factory, name, make_connection_method(function))
       log.info("Registered operator %s", name)
+  plugin_context.array = array
+  plugin_context.array_iterator = array_iterator
+  plugin_context.worker_chunks = staticmethod(worker_chunks)
 
   context = plugin_context()
 
