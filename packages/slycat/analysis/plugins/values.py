@@ -5,7 +5,7 @@
 import numpy
 import time
 
-def values(self, source, attributes=None):
+def values(connection, source, attributes=None):
   """Convert array attributes into numpy arrays.
 
   Attributes can be specified by-index or by-name, or any mixture of the two.

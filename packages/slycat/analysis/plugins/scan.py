@@ -7,7 +7,7 @@ import numpy
 import sys
 import time
 
-def scan(self, source, format="dcsv", separator=", ", stream=sys.stdout):
+def scan(connection, source, format="dcsv", separator=", ", stream=sys.stdout):
   """Format the contents of an array, writing them to a stream.
 
   Scanning an array is the easiest way to see its contents formatted for
