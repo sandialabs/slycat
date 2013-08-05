@@ -3,17 +3,17 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  def zeros(connection, shape, chunks=None, attributes="val"):
+  def zeros(connection, shape, chunk_sizes=None, attributes="val"):
     """Return an array of all zeros.
 
     Creates an array with the given shape and chunk sizes, with one-or-more
     attributes filled with zeros.
 
     The shape parameter must be an int or a sequence of ints that specify the
-    size of the array along each dimension.  The chunks parameter must an int
+    size of the array along each dimension.  The chunk_sizes parameter must an int
     or sequence of ints that specify the maximum size of an array chunk along
     each dimension, and must match the number of dimensions implied by the
-    shape parameter.  If the chunks parameter is None (the default), the chunk
+    shape parameter.  If the chunk_sizes parameter is None (the default), the chunk
     sizes will be identical to the array shape, i.e. the array will have a
     single chunk.  This may be impractical for large arrays, and prevents the
     array from being distributed across multiple remote workers.
@@ -68,16 +68,16 @@ def register_client_plugin(context):
         {3,2} 0.0
         {3,3} 0.0
     """
-    return connection.remote_array(connection.proxy.zeros(shape, chunks, attributes))
+    shape = connection.require_shape(shape)
+    chunk_sizes = connection.require_chunk_sizes(shape, chunk_sizes)
+    attributes = connection.require_attributes(attributes)
+    if len(attributes) < 1:
+      raise connection.InvalidArgument("zeros() requires at least one attribute.")
+    return connection.remote_array(connection.proxy.zeros(shape, chunk_sizes, attributes))
   context.add_operator("zeros", zeros)
 
 def register_coordinator_plugin(context):
   def zeros(factory, shape, chunk_sizes, attributes):
-    shape = factory.require_shape(shape)
-    chunk_sizes = factory.require_chunk_sizes(shape, chunk_sizes)
-    attributes = factory.require_attributes(attributes)
-    if len(attributes) < 1:
-      raise InvalidArgument("zeros() requires at least one attribute.")
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
       array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attributes))
