@@ -7,6 +7,7 @@ import logging
 import numpy
 import os
 import Pyro4
+from slycat.analysis.api import InvalidArgument
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
@@ -49,31 +50,44 @@ class factory(pyro_object):
     """Returns the set of available slycat analysis workers."""
     return [Pyro4.Proxy(self.nameserver.lookup(worker)) for worker in self.nameserver.list(prefix="slycat.worker").keys()]
 
+  def require_attribute_name(self, name):
+    if not isinstance(name, basestring):
+      raise InvalidArgument("Attribute name must be a string.")
+    return name
+  def require_attribute_type(self, type):
+    allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
+    if type not in allowed_types:
+      raise InvalidArgument("Attribute type must be one of %s" % ",".join(allowed_types))
+    return type
   def require_attribute(self, attribute):
     if isinstance(attribute, basestring):
       attribute = {"name":attribute, "type":"float64"}
     elif isinstance(attribute, tuple):
       if len(attribute) != 2:
-        raise Exception("attribute should have a name and a type.")
+        raise InvalidArgument("Attribute must have a name and a type.")
       attribute = {"name":attribute[0], "type":attribute[1]}
     elif isinstance(attribute, dict):
       if "name" not in attribute:
-        raise Exception("attribute missing name.")
+        raise InvalidArgument("Attribute must have a name.")
       if "type" not in attribute:
-        raise Exception("attribute missing type.")
-    if not isinstance(attribute["name"], basestring):
-      raise Exception("attribute name must be a string.")
-    self.require_type(attribute["type"])
+        raise InvalidArgument("Attribute must have a type.")
+    self.require_attribute_name(attribute["name"])
+    self.require_attribute_type(attribute["type"])
     return attribute
   def require_attributes(self, attributes):
-    attributes = [self.require_attribute(attribute) for attribute in attributes]
-    if not len(attributes):
-      raise Exception("Array must have at least one attribute.")
+    if isinstance(attributes, basestring):
+      attributes = [self.require_attribute(attributes)]
+    elif isinstance(attributes, tuple):
+      attributes = [self.require_attribute(attributes)]
+    elif isinstance(attributes, dict):
+      attributes = [self.require_attribute(attributes)]
+    else:
+      attributes = [self.require_attribute(attribute) for attribute in attributes]
     return attributes
-  def require_chunk_size(self, chunk_size):
-    if not isinstance(chunk_size, int):
-      raise Exception("Chunk size must be an integer.")
-    return chunk_size
+  def require_attribute_names(self, names):
+    if isinstance(names, basestring):
+      return [self.require_attribute_name(names)]
+    return [self.require_attribute_name(name) for name in names]
   def require_chunk_sizes(self, shape, chunk_sizes):
     """Return array chunk sizes (tuple of dimension lengths), treating a single integer as a 1-tuple and sanity-checking the results against an array shape."""
     if chunk_sizes is None:
@@ -83,20 +97,21 @@ class factory(pyro_object):
     else:
       chunk_sizes = tuple(chunk_sizes)
     if len(shape) != len(chunk_sizes):
-      raise Exception("Array shape and chunk sizes must contain the same number of dimensions.")
+      raise InvalidArgument("Array shape and chunk sizes must contain the same number of dimensions.")
     return chunk_sizes
-  def require_dimension(self, dimension):
-    if isinstance(dimension, basestring):
-      dimension = {"name":dimension, "type":"int64"}
-    return dimension
-  def require_dimensions(self, dimensions):
-    dimensions = [self.require_dimension(dimension) for dimension in dimensions]
-    if not len(dimensions):
-      raise Exception("Array must have at least one dimension.")
-    return dimensions
+  def require_dimension_name(self, name):
+    if not isinstance(name, basestring):
+      raise InvalidArgument("Dimension name must be a string.")
+    return name
+  def require_dimension_names(self, names):
+    if isinstance(names, basestring):
+      return [self.require_dimension_name(names)]
+    return [self.require_dimension_name(name) for name in names]
   def require_expression(self, expression):
     if isinstance(expression, basestring):
       expression = ast.parse(expression)
+    else:
+      raise InvalidArgument("Expression must be a string.")
     return expression
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
@@ -108,35 +123,37 @@ class factory(pyro_object):
     else:
       shape = tuple(shape)
     if not len(shape):
-      raise Exception("Array shape must have at least one dimension.")
+      raise InvalidArgument("Array shape must have at least one dimension.")
     return shape
-  def require_type(self, type):
-    allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
-    if type not in allowed_types:
-      raise Exception("Type must be one of %s" % ",".join(allowed_types))
-    return type
 
   def aggregate(self, source, expressions):
     source = self.require_object(source)
-    expressions = [self.require_expression(expression) for expression in expressions]
-    expressions = [(expression.body[0].value.func.id, expression.body[0].value.args[0].id) for expression in expressions]
+    if isinstance(expressions, basestring):
+      expressions = [(expressions, None)]
+    elif isinstance(expressions, tuple):
+      expressions = [expressions]
+    elif isinstance(expressions, list):
+      expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.aggregate(worker_index, source_proxy._pyroUri, expressions))
     return self.pyro_register(array(array_workers, [source]))
-  def apply(self, source, attribute, expression):
+  def apply(self, source, attributes):
     source = self.require_object(source)
-    attribute = self.require_attribute(attribute)
-    expression = self.require_expression(expression)
+    if isinstance(attributes, tuple):
+      attributes = [attributes]
+    if len(attributes) < 1:
+      raise InvalidArgument("You must specify at least one attribute.")
+    attributes = [(self.require_attribute(attribute), self.require_expression(expression)) for attribute, expression in attributes]
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.apply(worker_index, source_proxy._pyroUri, attribute, expression))
+      array_workers.append(worker.apply(worker_index, source_proxy._pyroUri, attributes))
     return self.pyro_register(array(array_workers, [source]))
-  def array(self, initializer, type):
-    type = self.require_type(type)
+  def array(self, initializer, attribute):
+    attribute = self.require_attribute(attribute)
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.array(worker_index, initializer, type))
+      array_workers.append(worker.array(worker_index, initializer, attribute))
     return self.pyro_register(array(array_workers, []))
   def attributes(self, source):
     source = self.require_object(source)
@@ -144,12 +161,18 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.attributes(worker_index, source_proxy._pyroUri))
     return self.pyro_register(array(array_workers, [source]))
-  def attribute_rename(self, source, attributes):
-    source = self.require_object(source)
+  def build(self, shape, chunks, attributes):
     array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.attribute_rename(worker_index, source_proxy._pyroUri, attributes))
-    return self.pyro_register(array(array_workers, [source]))
+    shape = self.require_shape(shape)
+    chunks = self.require_chunk_sizes(shape, chunks)
+    if isinstance(attributes, tuple):
+      attributes = [attributes]
+    if len(attributes) < 1:
+      raise InvalidArgument("You must specify at least one attribute.")
+    attributes = [(self.require_attribute(attribute), self.require_expression(expression)) for attribute, expression in attributes]
+    for worker_index, worker in enumerate(self.workers()):
+      array_workers.append(worker.build(worker_index, shape, chunks, attributes))
+    return self.pyro_register(array(array_workers, []))
   def chunk_map(self, source):
     source = self.require_object(source)
     array_workers = []
@@ -165,26 +188,39 @@ class factory(pyro_object):
   def join(self, array1, array2):
     array1 = self.require_object(array1)
     array2 = self.require_object(array2)
+
+    dimensions1 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array1.dimensions()]
+    dimensions2 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array2.dimensions()]
+    if dimensions1 != dimensions2:
+      raise InvalidArgument("Arrays to be joined must have identical dimensions.")
+
     array_workers = []
     for worker_index, (array1_proxy, array2_proxy, worker) in enumerate(zip(array1.workers, array2.workers, self.workers())):
       array_workers.append(worker.join(worker_index, array1_proxy._pyroUri, array2_proxy._pyroUri))
     return self.pyro_register(array(array_workers, [array1, array2]))
   def load(self, path, schema, **keywords):
     if schema == "csv-file":
-      chunk_size = self.require_chunk_size(keywords["chunk_size"])
       format = keywords.get("format", None)
+      delimiter = keywords.get("delimiter", ",")
+      chunk_size = keywords.get("chunk_size", None)
+      if chunk_size is not None:
+        if not isinstance(chunk_size, int):
+          raise InvalidArgument("chunk_size must be an integer.")
       array_workers = []
       for worker_index, worker in enumerate(self.workers()):
-        array_workers.append(worker.csv_file(worker_index, path, chunk_size, format))
+        array_workers.append(worker.csv_file(worker_index, path, format, delimiter, chunk_size))
       return self.pyro_register(file_array(array_workers, []))
     elif schema == "prn-file":
-      chunk_size = keywords["chunk_size"]
+      chunk_size = keywords.get("chunk_size", None)
+      if chunk_size is not None:
+        if not isinstance(chunk_size, int):
+          raise InvalidArgument("chunk_size must be an integer.")
       array_workers = []
       for worker_index, worker in enumerate(self.workers()):
         array_workers.append(worker.prn_file(worker_index, path, chunk_size))
       return self.pyro_register(file_array(array_workers, []))
     else:
-      raise Exception("Unknown load schema: %s" % schema)
+      raise InvalidArgument("Unknown load schema: %s" % schema)
   def materialize(self, source):
     source = self.require_object(source)
     array_workers = []
@@ -194,30 +230,60 @@ class factory(pyro_object):
   def project(self, source, attributes):
     source = self.require_object(source)
     if not len(attributes):
-      raise Exception("project() operator requires at least one attribute.")
+      raise InvalidArgument("project() operator requires at least one attribute.")
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.project(worker_index, source_proxy._pyroUri, attributes))
     return self.pyro_register(array(array_workers, [source]))
-  def random(self, shape, chunk_sizes, seed):
+  def random(self, shape, chunk_sizes, seed, attributes):
     shape = self.require_shape(shape)
     chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
+    attributes = self.require_attributes(attributes)
+    if len(attributes) < 1:
+      raise InvalidArgument("random() requires at least one attribute.")
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed))
+      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed, attributes))
     return self.pyro_register(array(array_workers, []))
   def redimension(self, source, dimensions, attributes):
     source = self.require_object(source)
+    dimensions = self.require_dimension_names(dimensions)
+    attributes = self.require_attribute_names(attributes)
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.redimension(worker_index, source_proxy._pyroUri, dimensions, attributes))
     return self.pyro_register(array(array_workers, [source]))
-  def zeros(self, shape, chunk_sizes):
+  def rename(self, source, attributes, dimensions):
+    source = self.require_object(source)
+    if isinstance(attributes, tuple):
+      attributes = {attributes[0]: attributes[1]}
+    elif isinstance(attributes, list):
+      attributes = {old : new for old, new in attributes}
+    elif isinstance(attributes, dict):
+      pass
+    else:
+      raise InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+    if isinstance(dimensions, tuple):
+      dimensions = {dimensions[0]: dimensions[1]}
+    elif isinstance(dimensions, list):
+      dimensions = {old : new for old, new in dimensions}
+    elif isinstance(dimensions, dict):
+      pass
+    else:
+      raise InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+    array_workers = []
+    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
+      array_workers.append(worker.rename(worker_index, source_proxy._pyroUri, attributes, dimensions))
+    return self.pyro_register(array(array_workers, [source]))
+  def zeros(self, shape, chunk_sizes, attributes):
     shape = self.require_shape(shape)
     chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
+    attributes = self.require_attributes(attributes)
+    if len(attributes) < 1:
+      raise InvalidArgument("zeros() requires at least one attribute.")
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.zeros(worker_index, shape, chunk_sizes))
+      array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attributes))
     return self.pyro_register(array(array_workers, []))
 
 class array(pyro_object):

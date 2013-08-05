@@ -19,3 +19,4 @@ Slycat incorporates several components:
 
 The Slycat Web Server provides easy collaboration and a graphical user interface for analyses that have broad appeal, while the Slycat Analysis Server provides highly-scalable, highly-interactive analysis for ad-hoc data exploration and power users who prefer an interactive shell interface / scripted environments.
 
+To get started see our [Documentation](https://github.com/sandialabs/slycat/wiki).

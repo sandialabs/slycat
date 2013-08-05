@@ -31,6 +31,10 @@ elif options.log_level == "error":
   slycat.analysis.coordinator.log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
   slycat.analysis.coordinator.log.setLevel(logging.CRITICAL)
+elif options.log_level is None:
+  pass
+else:
+  raise Exception("Unknown log level: {}".format(options.log_level))
 
 class nameserver(threading.Thread):
   def __init__(self):
@@ -48,7 +52,15 @@ nameserver_thread = nameserver()
 nameserver_thread.start()
 nameserver_thread.started.wait()
 
-workers = [subprocess.Popen(["python", "slycat-analysis-worker.py", "--nameserver-host", options.nameserver_host, "--nameserver-port", str(options.nameserver_port), "--hmac-key", options.hmac_key, "--host", "127.0.0.1"]) for i in range(options.local_workers)]
+command = ["python", "slycat-analysis-worker.py"]
+command += ["--nameserver-host={}".format(options.nameserver_host)]
+command += ["--nameserver-port={}".format(options.nameserver_port)]
+command += ["--hmac-key={}".format(options.hmac_key)]
+command += ["--host=127.0.0.1"]
+if options.log_level is not None:
+  command += ["--log-level={}".format(options.log_level)]
+
+workers = [subprocess.Popen(command) for i in range(options.local_workers)]
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(slycat.analysis.coordinator.factory(nameserver_thread.nameserver), "slycat.coordinator"))

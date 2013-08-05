@@ -2,11 +2,13 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import copy
 import numpy
 
 from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
+import slycat.analysis.worker.build
 import slycat.analysis.worker.chunk_map
 import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.join
@@ -27,18 +29,18 @@ class factory(pyro_object):
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
   def aggregate(self, worker_index, source, expressions):
     return self.pyro_register(slycat.analysis.worker.aggregate.aggregate_array(worker_index, self.require_object(source), expressions))
-  def apply(self, worker_index, source, attribute, expression):
-    return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attribute, expression))
-  def array(self, worker_index, initializer, type):
-    return self.pyro_register(array_array(worker_index, initializer, type))
+  def apply(self, worker_index, source, attributes):
+    return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attributes))
+  def array(self, worker_index, initializer, attribute):
+    return self.pyro_register(array_array(worker_index, initializer, attribute))
   def attributes(self, worker_index, source):
     return self.pyro_register(attributes_array(worker_index, self.require_object(source)))
-  def attribute_rename(self, worker_index, source, attributes):
-    return self.pyro_register(attribute_rename_array(worker_index, self.require_object(source), attributes))
+  def build(self, worker_index, shape, chunk_sizes, attributes):
+    return self.pyro_register(slycat.analysis.worker.build.build_array(worker_index, shape, chunk_sizes, attributes))
   def chunk_map(self, worker_index, source):
     return self.pyro_register(slycat.analysis.worker.chunk_map.chunk_map_array(worker_index, self.require_object(source)))
-  def csv_file(self, worker_index, path, chunk_size, format):
-    return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, chunk_size, format))
+  def csv_file(self, worker_index, path, format, delimiter, chunk_size):
+    return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
   def dimensions(self, worker_index, source):
     return self.pyro_register(dimensions_array(worker_index, self.require_object(source)))
   def join(self, worker_index, array1, array2):
@@ -49,22 +51,24 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
     return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
-  def random(self, worker_index, shape, chunk_sizes, seed):
-    return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed))
+  def random(self, worker_index, shape, chunk_sizes, seed, attributes):
+    return self.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attributes))
+  def rename(self, worker_index, source, attributes, dimensions):
+    return self.pyro_register(rename_array(worker_index, self.require_object(source), attributes, dimensions))
   def redimension(self, worker_index, source, dimensions, attributes):
     return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
-  def zeros(self, worker_index, shape, chunk_sizes):
-    return self.pyro_register(zeros_array(worker_index, shape, chunk_sizes))
+  def zeros(self, worker_index, shape, chunk_sizes, attributes):
+    return self.pyro_register(zeros_array(worker_index, shape, chunk_sizes, attributes))
 
 class array_array(array):
-  def __init__(self, worker_index, initializer, type):
+  def __init__(self, worker_index, initializer, attribute):
     array.__init__(self, worker_index)
-    self.chunk = numpy.array(initializer, dtype=type)
-    self.type = type
+    self.chunk = numpy.array(initializer, dtype=attribute["type"])
+    self.attribute = attribute
   def dimensions(self):
     return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":size, "chunk-size":size} for index, size in enumerate(self.chunk.shape)]
   def attributes(self):
-    return [{"name":"val", "type":self.type}]
+    return [self.attribute]
   def iterator(self):
     if 0 == self.worker_index:
       return self.pyro_register(array_array_iterator(self))
@@ -118,17 +122,37 @@ class attributes_array_iterator(array_iterator):
     elif attribute == 1:
       return numpy.array([attribute["type"] for attribute in self.owner.source_attributes], dtype="string")
 
-class attribute_rename_array(array):
-  def __init__(self, worker_index, source, attributes):
+class rename_array(array):
+  def __init__(self, worker_index, source, attribute_map, dimension_map):
     array.__init__(self, worker_index)
     self.source = source
-    self.name_map = {attribute["name"]:attribute["name"] for attribute in self.source.attributes()}
-    for old_name, new_name in attributes:
-      self.name_map[old_name] = new_name
+    self.attribute_map = attribute_map
+    self.dimension_map = dimension_map
   def dimensions(self):
-    return self.source.dimensions()
+    results = []
+    for index, dimension in enumerate(self.source.dimensions()):
+      name = dimension["name"]
+      type = dimension["type"]
+      begin = dimension["begin"]
+      end = dimension["end"]
+      chunk_size = dimension["chunk-size"]
+      if index in self.dimension_map:
+        name = self.dimension_map[index]
+      elif name in self.dimension_map:
+        name = self.dimension_map[name]
+      results.append({"name":name, "type":type, "begin":begin, "end":end, "chunk-size":chunk_size})
+    return results
   def attributes(self):
-    return [{"name":self.name_map[attribute["name"]], "type":attribute["type"]} for attribute in self.source.attributes()]
+    results = []
+    for index, attribute in enumerate(self.source.attributes()):
+      name = attribute["name"]
+      type = attribute["type"]
+      if index in self.attribute_map:
+        name = self.attribute_map[index]
+      elif name in self.attribute_map:
+        name = self.attribute_map[name]
+      results.append({"name":name, "type":type})
+    return results
   def iterator(self):
     return self.source.iterator()
 
@@ -171,15 +195,16 @@ class dimensions_array_iterator(array_iterator):
       return numpy.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
 
 class random_array(array):
-  def __init__(self, worker_index, shape, chunk_sizes, seed):
+  def __init__(self, worker_index, shape, chunk_sizes, seed, attributes):
     array.__init__(self, worker_index)
     self.shape = shape
     self.chunk_sizes = chunk_sizes
     self.seed = seed
+    self._attributes = attributes
   def dimensions(self):
     return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":dimension, "chunk-size":chunk_size} for index, (dimension, chunk_size) in enumerate(zip(self.shape, self.chunk_sizes))]
   def attributes(self):
-    return [{"name":"val", "type":"float64"}]
+    return self._attributes
   def iterator(self):
     return self.pyro_register(random_array_iterator(self))
 
@@ -195,24 +220,25 @@ class random_array_iterator(array_iterator):
       if worker_index == self.owner.worker_index:
         self._coordinates = begin
         self._shape = end - begin
-        self._values = self.generator.uniform(size=self._shape)
+        self._values = [self.generator.uniform(size=self._shape).astype(attribute["type"]) for attribute in self.owner._attributes]
         break
   def coordinates(self):
     return self._coordinates
   def shape(self):
     return self._shape
   def values(self, index):
-    return self._values
+    return self._values[index]
 
 class zeros_array(array):
-  def __init__(self, worker_index, shape, chunk_sizes):
+  def __init__(self, worker_index, shape, chunk_sizes, attributes):
     array.__init__(self, worker_index)
     self.shape = shape
     self.chunk_sizes = chunk_sizes
+    self._attributes = attributes
   def dimensions(self):
     return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":dimension, "chunk-size":chunk_size} for index, (dimension, chunk_size) in enumerate(zip(self.shape, self.chunk_sizes))]
   def attributes(self):
-    return [{"name":"val", "type":"float64"}]
+    return self._attributes
   def iterator(self):
     return self.pyro_register(zeros_array_iterator(self))
 
@@ -232,5 +258,5 @@ class zeros_array_iterator(array_iterator):
   def shape(self):
     return self._shape
   def values(self, index):
-    return numpy.zeros(self._shape)
+    return numpy.zeros(self._shape, dtype=self.owner._attributes[index]["type"])
 

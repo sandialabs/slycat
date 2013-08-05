@@ -3,7 +3,7 @@
 # rights in this software.
 
 from slycat.analysis.worker.accumulator import distinct
-from slycat.analysis.worker.api import array, array_iterator, chunk_count, chunk_range, chunk_iterator
+from slycat.analysis.worker.api import log, array, array_iterator, worker_chunks
 import numpy
 import Pyro4
 
@@ -84,8 +84,15 @@ class redimension_array(array):
     self.compute_dimensions()
     shape = [dimension["end"] - dimension["begin"] for dimension in self.target_dimensions]
     chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
-    iterator = chunk_iterator(shape, chunk_sizes, chunk_range(chunk_count(shape, chunk_sizes), self.worker_index, len(self.siblings)))
-    self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_id, begin, end in iterator]
+    all_chunks = list(worker_chunks(shape, chunk_sizes, len(self.siblings)))
+    if self.worker_index == 0:
+      log.info("dimensions: %s", self.target_dimension_sources)
+      log.info("attributes: %s", self.target_attribute_sources)
+    self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in all_chunks if worker_index == self.worker_index]
+    with self.source.iterator() as iterator:
+      for ignored in iterator:
+        for source_coordinates, target_coordinates in remap(iterator, self.target_dimension_sources):
+          log.info("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
 
 class redimension_array_iterator(array_iterator):
   def __init__(self, owner):
@@ -115,3 +122,19 @@ class redimension_array_chunk:
     return self._shape
   def values(self, index):
     return self._values[index]
+
+def remap(iterator, dimension_sources):
+  begin = iterator.coordinates()
+  shape = iterator.shape()
+  values_cache = {}
+  for coordinates in numpy.ndindex(*shape):
+    source_coordinates = begin + coordinates
+    target_coordinates = []
+    for type, index in dimension_sources:
+      if type == "dimension":
+        target_coordinates.append(source_coordinates[index])
+      elif type == "attribute":
+        if index not in values_cache:
+          values_cache[index] = iterator.values(index)
+        target_coordinates.append(values_cache[index][coordinates])
+    yield source_coordinates, target_coordinates

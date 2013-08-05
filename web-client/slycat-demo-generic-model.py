@@ -7,12 +7,14 @@ import sys
 
 parser = slycat.web.client.option_parser()
 parser.add_option("--marking", default="", help="Marking type.  Default: %default")
+parser.add_option("--model-name", default="Demo Generic Model", help="New model name.  Default: %default")
+parser.add_option("--project-name", default="Demo Generic Project", help="New project name.  Default: %default")
 options, arguments = parser.parse_args()
 
 connection = slycat.web.client.connect(options)
 
-pid = connection.create_project("Generic Model Test")
-mwid = connection.create_generic_model_worker(pid, "Model", options.marking)
+pid = connection.create_project(options.project_name)
+mwid = connection.create_generic_model_worker(pid, options.model_name, options.marking)
 connection.set_parameter(mwid, "MyParameter", ["My", {"Complex" : "Value"}])
 connection.start_table(mwid, "MyTable", ["Name","Height","Weight"],["string","double","double"])
 connection.send_table_rows(mwid, "MyTable", [["Fred", 2.03, 78], ["Jan", 1.45, 54]])

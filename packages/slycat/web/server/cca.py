@@ -1,11 +1,16 @@
-from slycat.analysis import *
-import matplotlib.pyplot as pyplot
+# Copyright 2013, Sandia Corporation. Under the terms of Contract
+# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+# rights in this software.
+
 import numpy
 import scipy.linalg
 import scipy.stats
 
-def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
-  """Custom implementation of CCA for use in Slycat."""
+def cca(X, Y, scale_inputs=True, positive_output=1, significant_digits=None):
+  """Compute Canonical Correlation Analysis (CCA).
+
+  Returns: x, y, x_loadings, y_loadings, r, wilks
+  """
   def qr(A):
     """Custom implementation of QR for use with our CCA."""
     return scipy.linalg.qr(A, mode="economic", pivoting=True)
@@ -40,7 +45,7 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
   X -= X.mean(axis=0)
   Y -= Y.mean(axis=0)
 
-  if scale:
+  if scale_inputs:
     X /= X.std(axis=0)
     Y /= Y.std(axis=0)
 
@@ -50,6 +55,7 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
 
+  # TODO: Remove low-rank columns
   if Xrank == 0:
     raise Exception("X must contain at least one non-constant column.")
   if Xrank < p1:
@@ -67,8 +73,9 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
   A *= numpy.sqrt(n - 1)
   B *= numpy.sqrt(n - 1)
 
-  A = A.T[P1].T
-  B = B.T[P2].T
+  # TODO: Restore low-rank columns
+  A = A[P1]
+  B = B[P2]
 
   x = numpy.dot(X, A)
   y = numpy.dot(Y, B)
@@ -92,28 +99,4 @@ def cca(X, Y, scale=True, positive_output=1, significant_digits=None):
   wilks = numpy.exp(numpy.cumsum(numpy.log(1-(r[nondegenerate] ** 2))[::-1])[::-1])
 
   return x, y, x_loadings, y_loadings, r, wilks
-
-autos = load("../data/automobiles.csv", "csv-file", chunk_size=100)
-inputs = project(autos, "Year", "Cylinders", "Displacement")
-outputs = project(autos, "Acceleration", "MPG", "Horsepower")
-X = numpy.array([values(inputs, 0), values(inputs, 1), values(inputs, 2)]).T.astype("double")
-Y = numpy.array([values(outputs, 0), values(outputs, 1), values(outputs, 2)]).T.astype("double")
-good = ~numpy.isnan(Y).any(axis=1)
-X = X[good]
-Y = Y[good]
-
-x, y, x_loadings, y_loadings, r, wilks = cca(X, Y)
-
-print r
-print wilks
-print x_loadings
-print y_loadings
-
-pyplot.figure()
-pyplot.scatter(x.T[0], y.T[0], color="red")
-pyplot.figure()
-pyplot.scatter(x.T[1], y.T[1], color="green")
-pyplot.figure()
-pyplot.scatter(x.T[2], y.T[2], color="blue")
-pyplot.show(True)
 
