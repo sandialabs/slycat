@@ -14,9 +14,7 @@ import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.dimensions
 import slycat.analysis.worker.join
 import slycat.analysis.worker.materialize
-import slycat.analysis.worker.project
 import slycat.analysis.worker.prn_file
-import slycat.analysis.worker.redimension
 
 class factory(pyro_object):
   """Top-level factory for worker objects."""
@@ -50,10 +48,6 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.materialize.materialize_array(worker_index, self.require_object(source)))
   def prn_file(self, worker_index, path, chunk_size):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
-  def project(self, worker_index, source, attributes):
-    return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
-  def redimension(self, worker_index, source, dimensions, attributes):
-    return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
 
 def load_plugins(root):
   import imp

@@ -228,22 +228,6 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.materialize(worker_index, source_proxy._pyroUri))
     return self.pyro_register(array(array_workers, [source]))
-  def project(self, source, attributes):
-    source = self.require_object(source)
-    if not len(attributes):
-      raise InvalidArgument("project() operator requires at least one attribute.")
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.project(worker_index, source_proxy._pyroUri, attributes))
-    return self.pyro_register(array(array_workers, [source]))
-  def redimension(self, source, dimensions, attributes):
-    source = self.require_object(source)
-    dimensions = self.require_dimension_names(dimensions)
-    attributes = self.require_attribute_names(attributes)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.redimension(worker_index, source_proxy._pyroUri, dimensions, attributes))
-    return self.pyro_register(array(array_workers, [source]))
 
 class array(pyro_object):
   """Abstract interface for a remote, multi-attribute, multi-dimensional array."""
