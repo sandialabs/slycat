@@ -17,7 +17,6 @@ import slycat.analysis.worker.materialize
 import slycat.analysis.worker.project
 import slycat.analysis.worker.prn_file
 import slycat.analysis.worker.redimension
-import slycat.analysis.worker.rename
 
 class factory(pyro_object):
   """Top-level factory for worker objects."""
@@ -53,8 +52,6 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
     return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
-  def rename(self, worker_index, source, attributes, dimensions):
-    return self.pyro_register(slycat.analysis.worker.rename.rename_array(worker_index, self.require_object(source), attributes, dimensions))
   def redimension(self, worker_index, source, dimensions, attributes):
     return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
 
