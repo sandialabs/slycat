@@ -2,10 +2,76 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+slycat_analysis_disable_client_plugins = True # Prevent client plugins from being loaded when we import from slycat.analysis
+
+from slycat.analysis import __file__ as plugin_root
+from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
+
+class factory(pyro_object):
+  """Top-level factory for worker objects."""
+  def __init__(self):
+    pyro_object.__init__(self)
+  def shutdown(self):
+    log.info("Client requested shutdown.")
+    self._pyroDaemon.shutdown()
+  def require_object(self, uri):
+    """Lookup a Pyro URI, returning the corresponding Python object."""
+    return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
+
+def load_plugins(root):
+  import imp
+  import os
+
+  operators = []
+
+  def make_connection_method(function):
+    def implementation(self, *arguments, **keywords):
+      return function(self, *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  class plugin_context(object):
+    def add_operator(self, name, function):
+      if name in operators:
+        raise Exception("Cannot add operator with duplicate name: %s" % name)
+      operators.append(name)
+      setattr(factory, name, make_connection_method(function))
+      #log.debug("Registered operator %s", name)
+  plugin_context.array = array
+  plugin_context.array_iterator = array_iterator
+  plugin_context.null_array_iterator = null_array_iterator
+  plugin_context.worker_chunks = staticmethod(worker_chunks)
+
+  context = plugin_context()
+
+  plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
+  for plugin_dir in plugin_dirs:
+    try:
+      log.info("Loading plugins from %s", plugin_dir)
+      plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
+      for plugin_name in plugin_names:
+        try:
+          module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_dir])
+          plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
+          if hasattr(plugin, "register_worker_plugin"):
+            plugin.register_worker_plugin(context)
+        except Exception as e:
+          import traceback
+          log.error(traceback.format_exc())
+        finally:
+          if module_fp:
+            module_fp.close()
+    except Exception as e:
+      import traceback
+      log.error(traceback.format_exc())
+  log.info("Loaded operators: %s", ", ".join(sorted(operators)))
+
+load_plugins(plugin_root)
+
 import logging
 import optparse
 import Pyro4
-import slycat.analysis.worker
 import uuid
 
 parser = optparse.OptionParser()
@@ -20,30 +86,30 @@ Pyro4.config.HMAC_KEY = options.hmac_key
 Pyro4.config.SERIALIZER = "pickle"
 
 if options.log_level == "debug":
-  slycat.analysis.worker.log.setLevel(logging.DEBUG)
+  log.setLevel(logging.DEBUG)
 elif options.log_level == "info":
-  slycat.analysis.worker.log.setLevel(logging.INFO)
+  log.setLevel(logging.INFO)
 elif options.log_level == "warning":
-  slycat.analysis.worker.log.setLevel(logging.WARNING)
+  log.setLevel(logging.WARNING)
 elif options.log_level == "error":
-  slycat.analysis.worker.log.setLevel(logging.ERROR)
+  log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
-  slycat.analysis.worker.log.setLevel(logging.CRITICAL)
+  log.setLevel(logging.CRITICAL)
 elif options.log_level is None:
   pass
 else:
   raise Exception("Unknown log level: {}".format(options.log_level))
 
-slycat.analysis.worker.log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
+log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
 nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_port)
 
 daemon = Pyro4.Daemon(host=options.host)
-nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(slycat.analysis.worker.factory(), "slycat.worker"))
-slycat.analysis.worker.log.info("Listening on %s", options.host)
+nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory(), "slycat.worker"))
+log.info("Listening on %s", options.host)
 daemon.requestLoop()
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.worker", "Pyro.Daemon"]:
-    slycat.analysis.worker.log.debug("Leaked object %s: %s", key, value)
+    log.debug("Leaked object %s: %s", key, value)
 
-slycat.analysis.worker.log.info("Shutdown complete.")
+log.info("Shutdown complete.")
