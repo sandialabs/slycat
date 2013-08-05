@@ -129,30 +129,6 @@ class factory(pyro_object):
       raise InvalidArgument("Array shape must have at least one dimension.")
     return shape
 
-  def load(self, path, schema, **keywords):
-    if schema == "csv-file":
-      format = keywords.get("format", None)
-      delimiter = keywords.get("delimiter", ",")
-      chunk_size = keywords.get("chunk_size", None)
-      if chunk_size is not None:
-        if not isinstance(chunk_size, int):
-          raise InvalidArgument("chunk_size must be an integer.")
-      array_workers = []
-      for worker_index, worker in enumerate(self.workers()):
-        array_workers.append(worker.csv_file(worker_index, path, format, delimiter, chunk_size))
-      return self.pyro_register(file_array(array_workers, []))
-    elif schema == "prn-file":
-      chunk_size = keywords.get("chunk_size", None)
-      if chunk_size is not None:
-        if not isinstance(chunk_size, int):
-          raise InvalidArgument("chunk_size must be an integer.")
-      array_workers = []
-      for worker_index, worker in enumerate(self.workers()):
-        array_workers.append(worker.prn_file(worker_index, path, chunk_size))
-      return self.pyro_register(file_array(array_workers, []))
-    else:
-      raise InvalidArgument("Unknown load schema: %s" % schema)
-
 class array(pyro_object):
   """Abstract interface for a remote, multi-attribute, multi-dimensional array."""
   def __init__(self, workers, sources):
