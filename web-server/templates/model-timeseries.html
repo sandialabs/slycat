@@ -1259,8 +1259,8 @@ rights in this software.
           //   })
           //   ;
           this.container.style("display", "none");
-          timedColorWaveforms(this.container.selectAll("g.waveform path").pop(), colorWaveform, finishedColoringWaveforms);
-          
+          // Coloring both the standard waveforms (g.waveform path) and the ones used to show selected simulations (g.selection path.highlight)
+          timedColorWaveforms(this.container.selectAll("g.waveform path, g.selection path.highlight").pop(), colorWaveform, finishedColoringWaveforms);
 
           function timedColorWaveforms(items, process, callback){
             var timeout = 100; //how long to yield control to UI thread
@@ -1277,8 +1277,6 @@ rights in this software.
               } else if (callback != null) {
                 callback(items);
               }
-
-              //self.waveformPie.val(waveformsLength - todo.length).trigger('change');
             }, timeout);
           }
 
@@ -1307,24 +1305,44 @@ rights in this software.
           });
 
           this.container.selectAll("g.selection").remove();
+          this.container.selectAll("rect.selectionMask").remove();
+
+          if(selected.length > 0) {
+            this.visualization.append("svg:rect")
+              .attr("width", this.diagram_width)
+              .attr("height", this.diagram_height)
+              .attr("pointer-events", "all")
+              .style("fill", "#eee")
+              .style("fill-opacity", 0.7)
+              .attr("class", "selectionMask")
+              ;
+          }
 
           var waveforms = this.visualization.selectAll("g.selection")
             .data(waveform_subset)
           .enter().append("svg:g")
             .attr("class", "selection");
 
-          waveforms.append("svg:path")
-            .attr("d", this.make_sax_line())
-            .style("fill", "none")
-            .style("stroke", "yellow")
-            .style("stroke-width", 5.0)
-            ;
+          // Turning off yellow highlighting now that the background waveforms are faded out.
+          // waveforms.append("svg:path")
+          //   .attr("d", this.make_sax_line())
+          //   .style("fill", "none")
+          //   .style("stroke", "yellow")
+          //   .style("stroke-width", 5.0)
+          //   ;
 
           waveforms.append("svg:path")
             .attr("d", this.make_sax_line())
             .style("fill", "none")
-            .style("stroke", "black")
-            .style("stroke-width", 1.5)
+            .style("stroke", function(d, i) { 
+              if (self.color_scale != null && self.color_array != null && self.data_table_index_array != null)
+                return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
+              else
+                return "black";
+            })
+            .style("stroke-width", 2.5)
+            .style("stroke-linecap", "round").
+            attr("class", "highlight")
             ;
         }
 
