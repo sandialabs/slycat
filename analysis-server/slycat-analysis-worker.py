@@ -2,10 +2,70 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+from slycat.analysis.worker.api import log, pyro_object
+import slycat.analysis.worker.aggregate
+import slycat.analysis.worker.apply
+import slycat.analysis.worker.attributes
+import slycat.analysis.worker.build
+import slycat.analysis.worker.chunk_map
+import slycat.analysis.worker.client_array
+import slycat.analysis.worker.csv_file
+import slycat.analysis.worker.dimensions
+import slycat.analysis.worker.join
+import slycat.analysis.worker.materialize
+import slycat.analysis.worker.project
+import slycat.analysis.worker.prn_file
+import slycat.analysis.worker.random
+import slycat.analysis.worker.redimension
+import slycat.analysis.worker.rename
+import slycat.analysis.worker.zeros
+
+class factory(pyro_object):
+  """Top-level factory for worker objects."""
+  def __init__(self):
+    pyro_object.__init__(self)
+  def shutdown(self):
+    log.info("Client requested shutdown.")
+    self._pyroDaemon.shutdown()
+  def require_object(self, uri):
+    """Lookup a Pyro URI, returning the corresponding Python object."""
+    return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
+  def aggregate(self, worker_index, source, expressions):
+    return self.pyro_register(slycat.analysis.worker.aggregate.aggregate_array(worker_index, self.require_object(source), expressions))
+  def apply(self, worker_index, source, attributes):
+    return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attributes))
+  def array(self, worker_index, initializer, attribute):
+    return self.pyro_register(slycat.analysis.worker.client_array.array_array(worker_index, initializer, attribute))
+  def attributes(self, worker_index, source):
+    return self.pyro_register(slycat.analysis.worker.attributes.attributes_array(worker_index, self.require_object(source)))
+  def build(self, worker_index, shape, chunk_sizes, attributes):
+    return self.pyro_register(slycat.analysis.worker.build.build_array(worker_index, shape, chunk_sizes, attributes))
+  def chunk_map(self, worker_index, source):
+    return self.pyro_register(slycat.analysis.worker.chunk_map.chunk_map_array(worker_index, self.require_object(source)))
+  def csv_file(self, worker_index, path, format, delimiter, chunk_size):
+    return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
+  def dimensions(self, worker_index, source):
+    return self.pyro_register(slycat.analysis.worker.dimensions.dimensions_array(worker_index, self.require_object(source)))
+  def join(self, worker_index, array1, array2):
+    return self.pyro_register(slycat.analysis.worker.join.join_array(worker_index, self.require_object(array1), self.require_object(array2)))
+  def materialize(self, worker_index, source):
+    return self.pyro_register(slycat.analysis.worker.materialize.materialize_array(worker_index, self.require_object(source)))
+  def prn_file(self, worker_index, path, chunk_size):
+    return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
+  def project(self, worker_index, source, attributes):
+    return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
+  def random(self, worker_index, shape, chunk_sizes, seed, attributes):
+    return self.pyro_register(slycat.analysis.worker.random.random_array(worker_index, shape, chunk_sizes, seed, attributes))
+  def rename(self, worker_index, source, attributes, dimensions):
+    return self.pyro_register(slycat.analysis.worker.rename.rename_array(worker_index, self.require_object(source), attributes, dimensions))
+  def redimension(self, worker_index, source, dimensions, attributes):
+    return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
+  def zeros(self, worker_index, shape, chunk_sizes, attributes):
+    return self.pyro_register(slycat.analysis.worker.zeros.zeros_array(worker_index, shape, chunk_sizes, attributes))
+
 import logging
 import optparse
 import Pyro4
-import slycat.analysis.worker
 import uuid
 
 parser = optparse.OptionParser()
@@ -20,30 +80,30 @@ Pyro4.config.HMAC_KEY = options.hmac_key
 Pyro4.config.SERIALIZER = "pickle"
 
 if options.log_level == "debug":
-  slycat.analysis.worker.log.setLevel(logging.DEBUG)
+  log.setLevel(logging.DEBUG)
 elif options.log_level == "info":
-  slycat.analysis.worker.log.setLevel(logging.INFO)
+  log.setLevel(logging.INFO)
 elif options.log_level == "warning":
-  slycat.analysis.worker.log.setLevel(logging.WARNING)
+  log.setLevel(logging.WARNING)
 elif options.log_level == "error":
-  slycat.analysis.worker.log.setLevel(logging.ERROR)
+  log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
-  slycat.analysis.worker.log.setLevel(logging.CRITICAL)
+  log.setLevel(logging.CRITICAL)
 elif options.log_level is None:
   pass
 else:
   raise Exception("Unknown log level: {}".format(options.log_level))
 
-slycat.analysis.worker.log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
+log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
 nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_port)
 
 daemon = Pyro4.Daemon(host=options.host)
-nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(slycat.analysis.worker.factory(), "slycat.worker"))
-slycat.analysis.worker.log.info("Listening on %s", options.host)
+nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory(), "slycat.worker"))
+log.info("Listening on %s", options.host)
 daemon.requestLoop()
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.worker", "Pyro.Daemon"]:
-    slycat.analysis.worker.log.debug("Leaked object %s: %s", key, value)
+    log.debug("Leaked object %s: %s", key, value)
 
-slycat.analysis.worker.log.info("Shutdown complete.")
+log.info("Shutdown complete.")
