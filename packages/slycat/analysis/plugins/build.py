@@ -3,6 +3,8 @@
 from __future__ import division
 
 def register_client_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def build(connection, shape, attributes, chunk_sizes=None):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
 

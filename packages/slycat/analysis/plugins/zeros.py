@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def zeros(connection, shape, chunk_sizes=None, attributes="val"):
     """Return an array of all zeros.
 

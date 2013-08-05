@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_coordinator_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def prn_file(factory, path, **keywords):
     chunk_size = keywords.get("chunk_size", None)
     if chunk_size is not None:

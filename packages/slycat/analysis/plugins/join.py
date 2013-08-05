@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def join(connection, array1, array2):
     """Return an array combining the attributes of two arrays.
 

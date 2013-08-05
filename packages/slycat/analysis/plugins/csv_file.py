@@ -5,6 +5,8 @@
 from __future__ import division
 
 def register_coordinator_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def csv_file(factory, path, **keywords):
     format = keywords.get("format", None)
     delimiter = keywords.get("delimiter", ",")

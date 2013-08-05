@@ -14,7 +14,7 @@ than the available system memory.
 """
 
 from functools import wraps
-from slycat.analysis.api import InvalidArgument
+from slycat.analysis.client import InvalidArgument
 import logging
 import numpy
 import Pyro4

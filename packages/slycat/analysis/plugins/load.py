@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def load(connection, path, schema="csv-file", **keywords):
     """Load an array from a filesystem.
 

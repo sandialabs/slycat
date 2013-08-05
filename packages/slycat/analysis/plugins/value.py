@@ -2,6 +2,8 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+from slycat.analysis.client import InvalidArgument
+
 import numpy
 
 def value(connection, source, attributes=None):

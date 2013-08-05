@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def random(connection, shape, chunk_sizes=None, seed=12345, attributes="val"):
     """Return an array of random values.
 

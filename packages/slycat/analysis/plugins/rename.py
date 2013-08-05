@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  from slycat.analysis.client import InvalidArgument
+
   def rename(connection, source, attributes=[], dimensions=[]):
     """Copy a source array, with renamed attributes and dimensions.
 
