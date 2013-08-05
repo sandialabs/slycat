@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+from slycat.analysis import __file__ as plugin_root
 from slycat.analysis.worker.api import log, pyro_object
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
@@ -18,7 +19,6 @@ import slycat.analysis.worker.prn_file
 import slycat.analysis.worker.random
 import slycat.analysis.worker.redimension
 import slycat.analysis.worker.rename
-import slycat.analysis.worker.zeros
 
 class factory(pyro_object):
   """Top-level factory for worker objects."""
@@ -60,8 +60,47 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.rename.rename_array(worker_index, self.require_object(source), attributes, dimensions))
   def redimension(self, worker_index, source, dimensions, attributes):
     return self.pyro_register(slycat.analysis.worker.redimension.redimension_array(worker_index, self.require_object(source), dimensions, attributes))
-  def zeros(self, worker_index, shape, chunk_sizes, attributes):
-    return self.pyro_register(slycat.analysis.worker.zeros.zeros_array(worker_index, shape, chunk_sizes, attributes))
+
+def load_plugins(root):
+  import imp
+  import os
+
+  def make_connection_method(function):
+    def implementation(self, *arguments, **keywords):
+      return function(self, *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  class plugin_context(object):
+    def add_operator(self, name, function):
+      setattr(factory, name, make_connection_method(function))
+      log.info("Registered operator %s", name)
+
+  context = plugin_context()
+
+  plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
+  for plugin_dir in plugin_dirs:
+    try:
+      log.info("Loading plugins from %s", plugin_dir)
+      plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
+      for plugin_name in plugin_names:
+        try:
+          module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_dir])
+          plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
+          if hasattr(plugin, "register_worker_plugin"):
+            plugin.register_worker_plugin(context)
+        except Exception as e:
+          import traceback
+          log.error(traceback.format_exc())
+        finally:
+          if module_fp:
+            module_fp.close()
+    except Exception as e:
+      import traceback
+      log.error(traceback.format_exc())
+
+load_plugins(plugin_root)
 
 import logging
 import optparse

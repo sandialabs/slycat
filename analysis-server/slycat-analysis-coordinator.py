@@ -7,6 +7,7 @@ import logging
 import numpy
 import os
 import Pyro4
+from slycat.analysis import __file__ as plugin_root
 from slycat.analysis.api import InvalidArgument
 
 handler = logging.StreamHandler()
@@ -275,16 +276,6 @@ class factory(pyro_object):
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
       array_workers.append(worker.rename(worker_index, source_proxy._pyroUri, attributes, dimensions))
     return self.pyro_register(array(array_workers, [source]))
-  def zeros(self, shape, chunk_sizes, attributes):
-    shape = self.require_shape(shape)
-    chunk_sizes = self.require_chunk_sizes(shape, chunk_sizes)
-    attributes = self.require_attributes(attributes)
-    if len(attributes) < 1:
-      raise InvalidArgument("zeros() requires at least one attribute.")
-    array_workers = []
-    for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attributes))
-    return self.pyro_register(array(array_workers, []))
 
 class array(pyro_object):
   """Abstract interface for a remote, multi-attribute, multi-dimensional array."""
@@ -317,6 +308,9 @@ class file_array(array):
     return self.workers[0].file_path()
   def file_size(self):
     return self.workers[0].file_size()
+
+factory.array = array
+factory.file_array = file_array
 
 class array_iterator(pyro_object):
   """Abstract interface for iterating over an array one chunk (hypercube) at a time."""
@@ -405,6 +399,48 @@ class parallel_remote_array_iterator(array_iterator):
   def values(self, attribute):
     log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
     return self.iterator.values(attribute)
+
+def load_plugins(root):
+  import imp
+  import os
+
+  def make_connection_method(function):
+    def implementation(self, *arguments, **keywords):
+      return function(self, *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  class plugin_context(object):
+    def add_operator(self, name, function):
+      setattr(factory, name, make_connection_method(function))
+      log.info("Registered operator %s", name)
+
+  context = plugin_context()
+
+  plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
+  for plugin_dir in plugin_dirs:
+    try:
+      log.info("Loading plugins from %s", plugin_dir)
+      plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
+      for plugin_name in plugin_names:
+        try:
+          module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_dir])
+          plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
+          if hasattr(plugin, "register_coordinator_plugin"):
+            plugin.register_coordinator_plugin(context)
+        except Exception as e:
+          import traceback
+          log.error(traceback.format_exc())
+        finally:
+          if module_fp:
+            module_fp.close()
+    except Exception as e:
+      import traceback
+      log.error(traceback.format_exc())
+
+load_plugins(plugin_root)
+
 import logging
 import Pyro4
 import subprocess
