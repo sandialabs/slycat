@@ -47,7 +47,6 @@ class connection(object):
   def __init__(self, nameserver):
     self.nameserver = nameserver
     self.proxy = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
-    self.proxy._pyroOneway.add("shutdown")
 
   def aggregate(self, source, expressions):
     """Return an array containing one-or-more aggregates of a source array.
@@ -681,15 +680,6 @@ class connection(object):
 
     log.info("elapsed time: %s seconds" % (time.time() - start_time))
 
-  def shutdown(self):
-    """Request that the connected coordinator and all workers shut-down.
-
-    Note that this is currently an experimental feature, which does not enforce
-    any access controls.  Shutting down while other clients are working will
-    make you very unpopular!
-    """
-    self.proxy.shutdown()
-
   def value(self, source, attributes=None):
     """Returns first values (values at the lowest-numbered set of coordinates) from array attributes.
 
@@ -1127,9 +1117,6 @@ rename.__doc__ = connection.rename.__doc__
 def scan(source, format="dcsv", separator=", ", stream=sys.stdout):
   return get_connection().scan(source, format, separator, stream)
 scan.__doc__ = connection.scan.__doc__
-def shutdown():
-  return get_connection().shutdown()
-shutdown.__doc__ = connection.shutdown.__doc__
 
 def value(source, attributes=None):
   return get_connection().value(source, attributes)
@@ -1145,3 +1132,48 @@ workers.__doc__ = connection.workers.__doc__
 def zeros(shape, chunks=None, attributes="val"):
   return get_connection().zeros(shape, chunks, attributes)
 zeros.__doc__ = connection.zeros.__doc__
+
+def load_plugins(root):
+  import imp
+  import os
+
+  def make_connection_method(function):
+    def implementation(self, *arguments, **keywords):
+      return function(self, *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  def make_standalone_method(function):
+    def implementation(*arguments, **keywords):
+      return function(get_connection(), *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  class plugin_context(object):
+    def add_operator(self, name, function):
+      setattr(connection, name, make_connection_method(function))
+      globals()[name] = make_standalone_method(function)
+      log.info("Registered operator %s", name)
+  context = plugin_context()
+
+  plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
+  for plugin_dir in plugin_dirs:
+    try:
+      log.info("Loading plugins from %s", plugin_dir)
+      plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
+      for plugin_name in plugin_names:
+        module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_dir])
+        try:
+          plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
+          if hasattr(plugin, "register_client_plugin"):
+            plugin.register_client_plugin(context)
+        finally:
+          if module_fp:
+            module_fp.close()
+    except:
+      pass
+
+load_plugins(__file__)
+
