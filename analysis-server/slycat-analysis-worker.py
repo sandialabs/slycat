@@ -9,7 +9,6 @@ from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, 
 import slycat.analysis.worker.aggregate
 import slycat.analysis.worker.apply
 import slycat.analysis.worker.attributes
-import slycat.analysis.worker.build
 import slycat.analysis.worker.csv_file
 import slycat.analysis.worker.prn_file
 
@@ -29,8 +28,6 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.apply.apply_array(worker_index, self.require_object(source), attributes))
   def attributes(self, worker_index, source):
     return self.pyro_register(slycat.analysis.worker.attributes.attributes_array(worker_index, self.require_object(source)))
-  def build(self, worker_index, shape, chunk_sizes, attributes):
-    return self.pyro_register(slycat.analysis.worker.build.build_array(worker_index, shape, chunk_sizes, attributes))
   def csv_file(self, worker_index, path, format, delimiter, chunk_size):
     return self.pyro_register(slycat.analysis.worker.csv_file.csv_file_array(worker_index, path, format, delimiter, chunk_size))
   def prn_file(self, worker_index, path, chunk_size):
