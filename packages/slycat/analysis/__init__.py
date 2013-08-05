@@ -235,25 +235,6 @@ class connection(object):
         {4} 0.567725029082, 0.653569870852, -0.08584484177, 1
     """
     return remote_array(self.proxy.apply(source.proxy._pyroUri, attributes))
-  def attributes(self, source):
-    """Return an array that describes some other array's attributes.
-
-    Creates a 1D array with attributes "name" and "type" and one cell for each
-    of another array's attributes.  It is particularly useful when working with
-    an array with a large number of attributes.
-
-      >>> scan(attributes(load("../data/automobiles.csv", schema="csv-file", chunk_size=100)))
-        {i} name, type
-      * {0} Model, string
-        {1} Origin, string
-        {2} Year, string
-        {3} Cylinders, string
-        {4} Acceleration, string
-        {5} Displacement, string
-        {6} Horsepower, string
-        {7} MPG, string
-    """
-    return remote_array(self.proxy.attributes(source.proxy._pyroUri))
   def load(self, path, schema="csv-file", **keywords):
     """Load an array from a filesystem.
 
@@ -462,10 +443,6 @@ aggregate.__doc__ = connection.aggregate.__doc__
 def apply(source, attributes):
   return get_connection().apply(source, attributes)
 apply.__doc__ = connection.apply.__doc__
-
-def attributes(source):
-  return get_connection().attributes(source)
-attributes.__doc__ = connection.attributes.__doc__
 
 def load(path, schema="csv-file", **keywords):
   return get_connection().load(path, schema, **keywords)
