@@ -16,7 +16,6 @@ import slycat.analysis.worker.join
 import slycat.analysis.worker.materialize
 import slycat.analysis.worker.project
 import slycat.analysis.worker.prn_file
-import slycat.analysis.worker.random
 import slycat.analysis.worker.redimension
 import slycat.analysis.worker.rename
 
@@ -54,8 +53,6 @@ class factory(pyro_object):
     return self.pyro_register(slycat.analysis.worker.prn_file.prn_file_array(worker_index, path, chunk_size))
   def project(self, worker_index, source, attributes):
     return self.pyro_register(slycat.analysis.worker.project.project_array(worker_index, self.require_object(source), attributes))
-  def random(self, worker_index, shape, chunk_sizes, seed, attributes):
-    return self.pyro_register(slycat.analysis.worker.random.random_array(worker_index, shape, chunk_sizes, seed, attributes))
   def rename(self, worker_index, source, attributes, dimensions):
     return self.pyro_register(slycat.analysis.worker.rename.rename_array(worker_index, self.require_object(source), attributes, dimensions))
   def redimension(self, worker_index, source, dimensions, attributes):
