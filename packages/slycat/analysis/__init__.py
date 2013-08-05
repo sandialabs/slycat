@@ -234,50 +234,6 @@ class connection(object):
         {4} 0.567725029082, 0.653569870852, -0.08584484177, 1
     """
     return remote_array(self.proxy.apply(source.proxy._pyroUri, attributes))
-  def array(self, initializer, attribute="val"):
-    """Return an array containing client-supplied data.
-
-    Creates an array with a single attribute, populated from a client-supplied
-    initializer.  The initializer may be any numpy array, or any (arbitrarily
-    nested) sequence.  Use the attribute parameter to specify the name of the
-    resulting attribute, or a tuple with the attribute name and type, which
-    otherwise defaults to float64.
-
-    Because the array() operator copies data provided by the client, it is
-    necessarily limited in scope to data that fits within the client's memory.
-    Thus, the resulting array is presumed to be relatively small, e.g.
-    parameters provided by a user, small lookup dictionaries, etc.  You should
-    avoid using array() with "large" data, preferring to manipulate it all
-    remotely instead.
-
-      >>> scan(array([1, 2, 3]))
-        {d0} val
-      * {0} 1.0
-        {1} 2.0
-        {2} 3.0
-
-      >>> scan(array([1, 2, 3], attribute="foo"))
-        {d0} foo
-      * {0} 1.0
-        {1} 2.0
-        {2} 3.0
-
-      >>> scan(array([1, 2, 3], attribute=("foo", "int32")))
-        {d0} foo
-      * {0} 1
-        {1} 2
-        {2} 3
-
-      >>> scan(array([[1, 2, 3], [4, 5, 6]]))
-        {d0, d1} val
-      * {0, 0} 1.0
-        {0, 1} 2.0
-        {0, 2} 3.0
-        {1, 0} 4.0
-        {1, 1} 5.0
-        {1, 2} 6.0
-    """
-    return remote_array(self.proxy.array(initializer, attribute))
   def attributes(self, source):
     """Return an array that describes some other array's attributes.
 
@@ -628,10 +584,6 @@ aggregate.__doc__ = connection.aggregate.__doc__
 def apply(source, attributes):
   return get_connection().apply(source, attributes)
 apply.__doc__ = connection.apply.__doc__
-
-def array(initializer, attribute="val"):
-  return get_connection().array(initializer, attribute)
-array.__doc__ = connection.array.__doc__
 
 def attributes(source):
   return get_connection().attributes(source)
