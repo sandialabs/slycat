@@ -222,12 +222,6 @@ class factory(pyro_object):
       return self.pyro_register(file_array(array_workers, []))
     else:
       raise InvalidArgument("Unknown load schema: %s" % schema)
-  def materialize(self, source):
-    source = self.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, self.workers())):
-      array_workers.append(worker.materialize(worker_index, source_proxy._pyroUri))
-    return self.pyro_register(array(array_workers, [source]))
 
 class array(pyro_object):
   """Abstract interface for a remote, multi-attribute, multi-dimensional array."""

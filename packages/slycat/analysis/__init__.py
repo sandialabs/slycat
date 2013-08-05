@@ -488,23 +488,6 @@ class connection(object):
                   evenly split into N chunks, one on each of N workers.
     """
     return remote_file_array(self.proxy.load(path, schema, **keywords))
-  def materialize(self, source):
-    """Return a materialized (loaded into memory) version of an array.
-
-    Normally, array data is divided into chunks that are loaded and streamed
-    through the system only when needed, allowing you to work with arrays that
-    will not fit into memory.  The down-side to this approach is that the
-    results of a computation aren't retained, and will be recomputed the next
-    time they're needed.  However, in some cases you may have an array of
-    intermediate results that were expensive to compute and can fit into memory
-    - in this case, creating a materialized version of the array allows you to
-    re-use those results without recomputing them every time:
-
-      >>> array1 = # Expensive-to-compute array
-      >>> array2 = materialize(array1)
-      # Now, use array2 in place of array1, to avoid recomputing.
-    """
-    return remote_array(self.proxy.materialize(source.proxy._pyroUri))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.
@@ -706,9 +689,6 @@ dimensions.__doc__ = connection.dimensions.__doc__
 def load(path, schema="csv-file", **keywords):
   return get_connection().load(path, schema, **keywords)
 load.__doc__ = connection.load.__doc__
-def materialize(source):
-  return get_connection().materialize(source)
-materialize.__doc__ = connection.materialize.__doc__
 
 connection.InvalidArgument = InvalidArgument
 connection.remote_array = remote_array
