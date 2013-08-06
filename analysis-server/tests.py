@@ -662,11 +662,11 @@ def test_zeros_2d():
   require_array_schema(array1, [("d0", "int64", 0, 5, 5), ("d1", "int64", 0, 4, 4)], [("val", "float64")])
   numpy.testing.assert_array_almost_equal(values(array1), numpy.zeros((5, 4), dtype="float64"))
 
-def test_timeseries_model():
-  array = load("/home/slycat/Documents/XyceBrette-250/workdir.1/circuit.cir.prn", schema="prn-file", chunk_size=10000)
-  bin_count = 100
-  time_min = value(aggregate(array, ("min", "TIME")))
-  time_max = value(aggregate(array, ("max", "TIME")))
-  bin_size = (time_max - time_min) / bin_count
-  scan(apply(project(array, "Index", "TIME", 2, 3, 4, 5), (("bin", "int64"), "(TIME - %s) / %s" % (time_min, bin_size))))
+#def test_timeseries_model():
+#  array = load("/home/slycat/Documents/XyceBrette-250/workdir.1/circuit.cir.prn", schema="prn-file", chunk_size=10000)
+#  bin_count = 100
+#  time_min = value(aggregate(array, ("min", "TIME")))
+#  time_max = value(aggregate(array, ("max", "TIME")))
+#  bin_size = (time_max - time_min) / bin_count
+#  scan(apply(project(array, "Index", "TIME", 2, 3, 4, 5), (("bin", "int64"), "(TIME - %s) / %s" % (time_min, bin_size))))
 

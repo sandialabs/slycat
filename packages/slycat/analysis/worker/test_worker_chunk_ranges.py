@@ -1,6 +1,6 @@
 import numpy
 
-from slycat.analysis.worker.api import worker_chunk_ranges
+from slycat.analysis.worker import worker_chunk_ranges
 
 def test_10_4():
   numpy.testing.assert_equal(list(worker_chunk_ranges(10, 4)), [(0, 3), (3, 6), (6, 8), (8, 10)])

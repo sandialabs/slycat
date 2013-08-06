@@ -3,7 +3,6 @@
 # rights in this software.
 
 import numpy
-from slycat.analysis.worker.api import log
 
 class accumulator(object):
   """Abstract interface for an accumulator object that performs an incremental statistical calculation."""

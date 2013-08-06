@@ -1,6 +1,6 @@
 import numpy
 
-from slycat.analysis.worker.api import worker_chunk_counts
+from slycat.analysis.worker import worker_chunk_counts
 
 def test_10_4():
   numpy.testing.assert_equal(list(worker_chunk_counts(10, 4)), [3, 3, 2, 2])

@@ -1,6 +1,6 @@
 import numpy
 
-from slycat.analysis.worker.api import chunk_count
+from slycat.analysis.worker import chunk_count
 
 def test_10_10():
  numpy.testing.assert_equal(chunk_count((10,), (10,)), 1)
