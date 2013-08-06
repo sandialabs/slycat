@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def join(connection, array1, array2):
     """Return an array combining the attributes of two arrays.
@@ -25,13 +25,13 @@ def register_client_plugin(context):
         {3} 0.204560278553, 0.0
         {4} 0.567725029082, 0.0
     """
+    array1 = slycat.analysis.client.require_array(array1)
+    array2 = slycat.analysis.client.require_array(array2)
     dimensions1 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array1.dimensions]
     dimensions2 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array2.dimensions]
     if dimensions1 != dimensions2:
-      raise InvalidArgument("Arrays to be joined must have identical dimensions.")
-    array1 = connection.require_object(array1)
-    array2 = connection.require_object(array2)
-    return connection.remote_array(connection.proxy.join(array1, array2))
+      raise slycat.analysis.client.InvalidArgument("Arrays to be joined must have identical dimensions.")
+    return connection.remote_array(connection.proxy.join(connection.require_object(array1), connection.require_object(array2)))
   context.add_operator("join", join)
 
 def register_coordinator_plugin(context):

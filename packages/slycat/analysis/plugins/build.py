@@ -3,7 +3,7 @@
 from __future__ import division
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def build(connection, shape, attributes, chunk_sizes=None):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
@@ -99,13 +99,13 @@ def register_client_plugin(context):
       {3} 3.0, 9.0
       {4} 4.0, 16.0
     """
-    shape = connection.require_shape(shape)
-    chunk_sizes = connection.require_chunk_sizes(shape, chunk_sizes)
+    shape = slycat.analysis.client.require_shape(shape)
+    chunk_sizes = slycat.analysis.client.require_chunk_sizes(shape, chunk_sizes)
     if isinstance(attributes, tuple):
       attributes = [attributes]
     if len(attributes) < 1:
-      raise connection.InvalidArgument("You must specify at least one attribute.")
-    attributes = [(connection.require_attribute(attribute), connection.require_expression(expression)) for attribute, expression in attributes]
+      raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
+    attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
     return connection.remote_array(connection.proxy.build(shape, chunk_sizes, attributes))
   context.add_operator("build", build)
 

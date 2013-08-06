@@ -3,7 +3,7 @@
 from __future__ import division
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def apply(connection, source, attributes):
     """Add attributes based on mathmatical expressions to a source array.
@@ -69,13 +69,13 @@ def register_client_plugin(context):
         {3} 0.204560278553, 0.748906637534, -0.544346358981, 0
         {4} 0.567725029082, 0.653569870852, -0.08584484177, 1
     """
-    source = connection.require_object(source)
+    source = slycat.analysis.client.require_array(source)
     if isinstance(attributes, tuple):
       attributes = [attributes]
     if len(attributes) < 1:
-      raise InvalidArgument("You must specify at least one attribute.")
-    attributes = [(connection.require_attribute(attribute), connection.require_expression(expression)) for attribute, expression in attributes]
-    return connection.remote_array(connection.proxy.apply(source, attributes))
+      raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
+    attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
+    return connection.remote_array(connection.proxy.apply(connection.require_object(source), attributes))
   context.add_operator("apply", apply)
 
 def register_coordinator_plugin(context):

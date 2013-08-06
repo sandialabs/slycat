@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import slycat.analysis.client
+
   def aggregate(connection, source, expressions):
     """Return an array containing one-or-more aggregates of a source array.
 
@@ -48,14 +50,14 @@ def register_client_plugin(context):
         {i} min_b, min_c, max_b, max_c, count_b, sum_c
       * {0} 0.183918811677, 0.595544702979, 0.929616092817, 0.964514519736, 5, 3.61571282797
     """
-    source = connection.require_object(source)
+    source = slycat.analysis.client.require_array(source)
     if isinstance(expressions, basestring):
       expressions = [(expressions, None)]
     elif isinstance(expressions, tuple):
       expressions = [expressions]
     elif isinstance(expressions, list):
       expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
-    return connection.remote_array(connection.proxy.aggregate(source, expressions))
+    return connection.remote_array(connection.proxy.aggregate(connection.require_object(source), expressions))
   context.add_operator("aggregate", aggregate)
 
 def register_coordinator_plugin(context):

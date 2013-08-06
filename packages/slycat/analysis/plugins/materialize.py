@@ -2,6 +2,8 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 
 def register_client_plugin(context):
+  import slycat.analysis.client
+
   def materialize(connection, source):
     """Return a materialized (loaded into memory) version of an array.
 
@@ -18,8 +20,8 @@ def register_client_plugin(context):
       >>> array2 = materialize(array1)
       # Now, use array2 in place of array1, to avoid recomputing.
     """
-    source = connection.require_object(source)
-    return connection.remote_array(connection.proxy.materialize(source))
+    source = slycat.analysis.client.require_array(source)
+    return connection.remote_array(connection.proxy.materialize(connection.require_object(source)))
   context.add_operator("materialize", materialize)
 
 def register_coordinator_plugin(context):

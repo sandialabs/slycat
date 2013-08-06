@@ -3,11 +3,12 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import slycat.analysis.client
   def redimension(connection, source, dimensions, attributes):
-    source = connection.require_object(source)
-    dimensions = connection.require_dimension_names(dimensions)
-    attributes = connection.require_attribute_names(attributes)
-    return connection.remote_array(connection.proxy.redimension(source, dimensions, attributes))
+    source = slycat.analysis.client.require_array(source)
+    dimensions = slycat.analysis.client.require_dimension_names(dimensions)
+    attributes = slycat.analysis.client.require_attribute_names(attributes)
+    return connection.remote_array(connection.proxy.redimension(connection.require_object(source), dimensions, attributes))
   context.add_operator("redimension", redimension)
 
 def register_coordinator_plugin(context):

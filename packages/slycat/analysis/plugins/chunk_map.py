@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import slycat.analysis.client
+
   def chunk_map(connection, source):
     """Return an array that describes how another array's data chunks are distributed.
 
@@ -30,8 +32,8 @@ def register_client_plugin(context):
         {7} 3, 0, 80, 40, 20, 40
         {8} 3, 1, 80, 80, 20, 20
     """
-    source = connection.require_object(source)
-    return connection.remote_array(connection.proxy.chunk_map(source))
+    source = slycat.analysis.client.require_array(source)
+    return connection.remote_array(connection.proxy.chunk_map(connection.require_object(source)))
   context.add_operator("chunk_map", chunk_map)
 
 def register_coordinator_plugin(context):

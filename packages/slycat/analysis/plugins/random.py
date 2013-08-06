@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def random(connection, shape, chunk_sizes=None, seed=12345, attributes="val"):
     """Return an array of random values.
@@ -74,11 +74,11 @@ def register_client_plugin(context):
         {3,2} 0.229158970052
         {3,3} 0.486744328559
     """
-    shape = connection.require_shape(shape)
-    chunk_sizes = connection.require_chunk_sizes(shape, chunk_sizes)
-    attributes = connection.require_attributes(attributes)
+    shape = slycat.analysis.client.require_shape(shape)
+    chunk_sizes = slycat.analysis.client.require_chunk_sizes(shape, chunk_sizes)
+    attributes = slycat.analysis.client.require_attributes(attributes)
     if len(attributes) < 1:
-      raise connection.InvalidArgument("random() requires at least one attribute.")
+      raise slycat.analysis.client.InvalidArgument("random() requires at least one attribute.")
     return connection.remote_array(connection.proxy.random(shape, chunk_sizes, seed, attributes))
   context.add_operator("random", random)
 

@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def project(connection, source, *attributes):
     """Return an array with fewer attributes.
@@ -36,10 +36,10 @@ def register_client_plugin(context):
       >>> project(autos, 1, 3, 2)
       <406 element remote array with dimension: i and attributes: Origin, Cylinders, Year>
     """
-    source = connection.require_object(source)
+    source = slycat.analysis.client.require_array(source)
     if not len(attributes):
-      raise connection.InvalidArgument("project() operator requires at least one attribute.")
-    return connection.remote_array(connection.proxy.project(source, attributes))
+      raise slycat.analysis.client.InvalidArgument("project() operator requires at least one attribute.")
+    return connection.remote_array(connection.proxy.project(connection.require_object(source), attributes))
   context.add_operator("project", project)
 
 def register_coordinator_plugin(context):

@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def rename(connection, source, attributes=[], dimensions=[]):
     """Copy a source array, with renamed attributes and dimensions.
@@ -37,7 +37,7 @@ def register_client_plugin(context):
       >>> rename(a, dimensions={0:"i",1:"j"}, attributes={0:"d","c":"e"})
       <5x5 remote array with dimensions: i, j and attributes: d, b, e>
     """
-    source = connection.require_object(source)
+    source = slycat.analysis.client.require_array(source)
     if isinstance(attributes, tuple):
       attributes = {attributes[0]: attributes[1]}
     elif isinstance(attributes, list):
@@ -45,7 +45,7 @@ def register_client_plugin(context):
     elif isinstance(attributes, dict):
       pass
     else:
-      raise connection.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+      raise slycat.analysis.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
 
     if isinstance(dimensions, tuple):
       dimensions = {dimensions[0]: dimensions[1]}
@@ -54,8 +54,8 @@ def register_client_plugin(context):
     elif isinstance(dimensions, dict):
       pass
     else:
-      raise connection.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
-    return connection.remote_array(connection.proxy.rename(source, attributes, dimensions))
+      raise slycat.analysis.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+    return connection.remote_array(connection.proxy.rename(connection.require_object(source), attributes, dimensions))
   context.add_operator("rename", rename)
 
 def register_coordinator_plugin(context):

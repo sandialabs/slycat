@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.client
 
   def zeros(connection, shape, chunk_sizes=None, attributes="val"):
     """Return an array of all zeros.
@@ -70,11 +70,11 @@ def register_client_plugin(context):
         {3,2} 0.0
         {3,3} 0.0
     """
-    shape = connection.require_shape(shape)
-    chunk_sizes = connection.require_chunk_sizes(shape, chunk_sizes)
-    attributes = connection.require_attributes(attributes)
+    shape = slycat.analysis.client.require_shape(shape)
+    chunk_sizes = slycat.analysis.client.require_chunk_sizes(shape, chunk_sizes)
+    attributes = slycat.analysis.client.require_attributes(attributes)
     if len(attributes) < 1:
-      raise connection.InvalidArgument("zeros() requires at least one attribute.")
+      raise slycat.analysis.client.InvalidArgument("zeros() requires at least one attribute.")
     return connection.remote_array(connection.proxy.zeros(shape, chunk_sizes, attributes))
   context.add_operator("zeros", zeros)
 

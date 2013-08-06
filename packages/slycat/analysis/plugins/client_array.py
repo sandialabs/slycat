@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import slycat.analysis.client
+
   def array(connection, initializer, attribute="val"):
     """Return an array containing client-supplied data.
 
@@ -46,7 +48,7 @@ def register_client_plugin(context):
         {1, 1} 5.0
         {1, 2} 6.0
     """
-    attribute = connection.require_attribute(attribute)
+    attribute = slycat.analysis.client.require_attribute(attribute)
     return connection.remote_array(connection.proxy.client_array(initializer, attribute))
   context.add_operator("array", array)
 

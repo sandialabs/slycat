@@ -3,6 +3,8 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import slycat.analysis.client
+
   def attributes(connection, source):
     """Return an array that describes some other array's attributes.
 
@@ -21,8 +23,8 @@ def register_client_plugin(context):
         {6} Horsepower, string
         {7} MPG, string
     """
-    source = connection.require_object(source)
-    return connection.remote_array(connection.proxy.attributes(source))
+    source = slycat.analysis.client.require_array(source)
+    return connection.remote_array(connection.proxy.attributes(connection.require_object(source)))
   context.add_operator("attributes", attributes)
 
 def register_coordinator_plugin(context):
