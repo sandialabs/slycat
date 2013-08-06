@@ -34,12 +34,13 @@ def register_coordinator_plugin(context):
 
 def register_worker_plugin(context):
   import numpy
+  import slycat.analysis.worker
   def dimensions(factory, worker_index, source):
     return factory.pyro_register(dimensions_array(worker_index, factory.require_object(source)))
 
-  class dimensions_array(context.array):
+  class dimensions_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source_dimensions = source.dimensions()
     def dimensions(self):
       return [{"name":"i", "type":"int64", "begin":0, "end":len(self.source_dimensions), "chunk-size":len(self.source_dimensions)}]
@@ -49,11 +50,11 @@ def register_worker_plugin(context):
       if self.worker_index == 0:
         return self.pyro_register(dimensions_array_iterator(self))
       else:
-        return self.pyro_register(context.null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
 
-  class dimensions_array_iterator(context.array_iterator):
+  class dimensions_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:

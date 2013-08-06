@@ -69,13 +69,14 @@ def register_coordinator_plugin(context):
 
 def register_worker_plugin(context):
   import numpy
+  import slycat.analysis.worker
 
   def rename(factory, worker_index, source, attributes, dimensions):
     return factory.pyro_register(rename_array(worker_index, factory.require_object(source), attributes, dimensions))
 
-  class rename_array(context.array):
+  class rename_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source, attribute_map, dimension_map):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       self.attribute_map = attribute_map
       self.dimension_map = dimension_map

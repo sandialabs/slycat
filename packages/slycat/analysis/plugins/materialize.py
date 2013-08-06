@@ -35,13 +35,14 @@ def register_coordinator_plugin(context):
 
 def register_worker_plugin(context):
   import numpy
+  import slycat.analysis.worker
 
   def materialize(factory, worker_index, source):
     return factory.pyro_register(materialize_array(worker_index, factory.require_object(source)))
 
-  class materialize_array(context.array):
+  class materialize_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       self.chunks = None
     def dimensions(self):
@@ -68,9 +69,9 @@ def register_worker_plugin(context):
     def values(self, attribute):
       return self._values[attribute]
 
-  class materialize_array_iterator(context.array_iterator):
+  class materialize_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.index = -1
     def next(self):
       self.owner.materialize()

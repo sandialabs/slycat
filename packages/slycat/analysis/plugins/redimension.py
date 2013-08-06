@@ -21,6 +21,7 @@ def register_coordinator_plugin(context):
   context.add_operator("redimension", redimension)
 
 def register_worker_plugin(context):
+  import slycat.analysis.worker
   from slycat.analysis.worker.accumulator import distinct
   import numpy
   import Pyro4
@@ -28,9 +29,9 @@ def register_worker_plugin(context):
   def redimension(factory, worker_index, source, dimensions, attributes):
     return factory.pyro_register(redimension_array(worker_index, factory.require_object(source), dimensions, attributes))
 
-  class redimension_array(context.array):
+  class redimension_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source, dimensions, attributes):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       self.chunks = None
       source_dimensions = source.dimensions()
@@ -105,7 +106,7 @@ def register_worker_plugin(context):
       self.compute_dimensions()
       shape = [dimension["end"] - dimension["begin"] for dimension in self.target_dimensions]
       chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
-      all_chunks = list(context.worker_chunks(shape, chunk_sizes, len(self.siblings)))
+      all_chunks = list(slycat.analysis.worker.worker_chunks(shape, chunk_sizes, len(self.siblings)))
       if self.worker_index == 0:
         context.log.info("dimensions: %s", self.target_dimension_sources)
         context.log.info("attributes: %s", self.target_attribute_sources)
@@ -115,9 +116,9 @@ def register_worker_plugin(context):
           for source_coordinates, target_coordinates in remap(iterator, self.target_dimension_sources):
             context.log.info("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
 
-  class redimension_array_iterator(context.array_iterator):
+  class redimension_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.index = -1
     def next(self):
       self.owner.create_chunks()

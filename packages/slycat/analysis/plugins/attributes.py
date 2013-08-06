@@ -39,14 +39,14 @@ def register_coordinator_plugin(context):
 def register_worker_plugin(context):
   import numpy
 
-  from slycat.analysis.worker.api import array, array_iterator, null_array_iterator
+  import slycat.analysis.worker
 
   def attributes(factory, worker_index, source):
     return factory.pyro_register(attributes_array(worker_index, factory.require_object(source)))
 
-  class attributes_array(array):
+  class attributes_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source):
-      array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source_attributes = source.attributes()
     def dimensions(self):
       return [{"name":"i", "type":"int64", "begin":0, "end":len(self.source_attributes), "chunk-size":len(self.source_attributes)}]
@@ -56,11 +56,11 @@ def register_worker_plugin(context):
       if 0 == self.worker_index:
         return self.pyro_register(attributes_array_iterator(self))
       else:
-        return self.pyro_register(null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
 
-  class attributes_array_iterator(array_iterator):
+  class attributes_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:

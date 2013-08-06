@@ -73,15 +73,15 @@ def register_worker_plugin(context):
   import numpy
   import Pyro4
 
-  from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator
+  import slycat.analysis.worker
   import slycat.analysis.worker.accumulator
 
   def aggregate(factory, worker_index, source, expressions):
     return factory.pyro_register(aggregate_array(worker_index, factory.require_object(source), expressions))
 
-  class aggregate_array(array):
+  class aggregate_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source, expressions):
-      array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       self.expressions = []
 
@@ -101,7 +101,7 @@ def register_worker_plugin(context):
       if self.worker_index == 0:
         return self.pyro_register(aggregate_array_iterator(self))
       else:
-        return self.pyro_register(null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
     def calculate_local(self):
       accumulators = [slycat.analysis.worker.accumulator.create(operator) for operator, attribute, index in self.expressions]
       with self.source.iterator() as source_iterator:
@@ -119,9 +119,9 @@ def register_worker_plugin(context):
           local_accumulator.reduce(remote_accumulator)
       return global_accumulators
 
-  class aggregate_array_iterator(array_iterator):
+  class aggregate_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:

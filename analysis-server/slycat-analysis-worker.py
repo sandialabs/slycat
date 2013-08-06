@@ -5,14 +5,14 @@
 slycat_analysis_disable_client_plugins = True # Prevent client plugins from being loaded when we import from slycat.analysis
 
 from slycat.analysis import __file__ as plugin_root
-from slycat.analysis.worker.api import log, pyro_object, array, array_iterator, null_array_iterator, worker_chunks
+import slycat.analysis.worker
 
-class factory(pyro_object):
+class factory(slycat.analysis.worker.pyro_object):
   """Top-level factory for worker objects."""
   def __init__(self):
-    pyro_object.__init__(self)
+    slycat.analysis.worker.pyro_object.__init__(self)
   def shutdown(self):
-    log.info("Client requested shutdown.")
+    slycat.analysis.worker.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
@@ -37,18 +37,14 @@ def load_plugins(root):
         raise Exception("Cannot add operator with duplicate name: %s" % name)
       operators.append(name)
       setattr(factory, name, make_connection_method(function))
-      #log.debug("Registered operator %s", name)
-  plugin_context.array = array
-  plugin_context.array_iterator = array_iterator
-  plugin_context.null_array_iterator = null_array_iterator
-  plugin_context.worker_chunks = staticmethod(worker_chunks)
+      #slycat.analysis.worker.log.debug("Registered operator %s", name)
 
   context = plugin_context()
 
   plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
   for plugin_dir in plugin_dirs:
     try:
-      log.info("Loading plugins from %s", plugin_dir)
+      slycat.analysis.worker.log.info("Loading plugins from %s", plugin_dir)
       plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
       for plugin_name in plugin_names:
         try:
@@ -58,14 +54,14 @@ def load_plugins(root):
             plugin.register_worker_plugin(context)
         except Exception as e:
           import traceback
-          log.error(traceback.format_exc())
+          slycat.analysis.worker.log.error(traceback.format_exc())
         finally:
           if module_fp:
             module_fp.close()
     except Exception as e:
       import traceback
-      log.error(traceback.format_exc())
-  log.info("Loaded operators: %s", ", ".join(sorted(operators)))
+      slycat.analysis.worker.log.error(traceback.format_exc())
+  slycat.analysis.worker.log.info("Loaded operators: %s", ", ".join(sorted(operators)))
 
 load_plugins(plugin_root)
 
@@ -86,30 +82,30 @@ Pyro4.config.HMAC_KEY = options.hmac_key
 Pyro4.config.SERIALIZER = "pickle"
 
 if options.log_level == "debug":
-  log.setLevel(logging.DEBUG)
+  slycat.analysis.worker.log.setLevel(logging.DEBUG)
 elif options.log_level == "info":
-  log.setLevel(logging.INFO)
+  slycat.analysis.worker.log.setLevel(logging.INFO)
 elif options.log_level == "warning":
-  log.setLevel(logging.WARNING)
+  slycat.analysis.worker.log.setLevel(logging.WARNING)
 elif options.log_level == "error":
-  log.setLevel(logging.ERROR)
+  slycat.analysis.worker.log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
-  log.setLevel(logging.CRITICAL)
+  slycat.analysis.worker.log.setLevel(logging.CRITICAL)
 elif options.log_level is None:
   pass
 else:
   raise Exception("Unknown log level: {}".format(options.log_level))
 
-log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
+slycat.analysis.worker.log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
 nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_port)
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory(), "slycat.worker"))
-log.info("Listening on %s", options.host)
+slycat.analysis.worker.log.info("Listening on %s", options.host)
 daemon.requestLoop()
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.worker", "Pyro.Daemon"]:
-    log.debug("Leaked object %s: %s", key, value)
+    slycat.analysis.worker.log.debug("Leaked object %s: %s", key, value)
 
-log.info("Shutdown complete.")
+slycat.analysis.worker.log.info("Shutdown complete.")

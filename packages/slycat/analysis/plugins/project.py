@@ -52,12 +52,13 @@ def register_coordinator_plugin(context):
   context.add_operator("project", project)
 
 def register_worker_plugin(context):
+  import slycat.analysis.worker
   def project(factory, worker_index, source, attributes):
     return factory.pyro_register(project_array(worker_index, factory.require_object(source), attributes))
 
-  class project_array(context.array):
+  class project_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source, attributes):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       source_attributes = self.source.attributes()
       source_map = dict([(i, i) for i in range(len(source_attributes))] + [(attribute["name"], index) for index, attribute in enumerate(source_attributes)])
@@ -70,9 +71,9 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(project_array_iterator(self, self.source, self.indices))
 
-  class project_array_iterator(context.array_iterator):
+  class project_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner, source, indices):
-      context.array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.iterator = source.iterator()
       self.indices = indices
     def __del__(self):

@@ -92,13 +92,14 @@ def register_coordinator_plugin(context):
 
 def register_worker_plugin(context):
   import numpy
+  import slycat.analysis.worker
 
   def random(factory, worker_index, shape, chunk_sizes, seed, attributes):
     return factory.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attributes))
 
-  class random_array(context.array):
+  class random_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, shape, chunk_sizes, seed, attributes):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.shape = shape
       self.chunk_sizes = chunk_sizes
       self.seed = seed
@@ -110,10 +111,10 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(random_array_iterator(self))
 
-  class random_array_iterator(context.array_iterator):
+  class random_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
-      self.iterator = context.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      self.iterator = slycat.analysis.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
       self.generator = numpy.random.RandomState()
       self.generator.seed(owner.seed + owner.worker_index)
     def next(self):

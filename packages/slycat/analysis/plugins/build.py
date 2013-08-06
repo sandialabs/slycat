@@ -120,15 +120,15 @@ def register_coordinator_plugin(context):
 def register_worker_plugin(context):
   import numpy
 
-  from slycat.analysis.worker.api import log, array, array_iterator, worker_chunks
-  from slycat.analysis.worker.expression import evaluator
+  import slycat.analysis.worker
+  import slycat.analysis.worker.expression
 
   def build(factory, worker_index, shape, chunk_sizes, attributes):
     return factory.pyro_register(build_array(worker_index, shape, chunk_sizes, attributes))
 
-  class build_array(array):
+  class build_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, shape, chunk_sizes, attribute_expressions):
-      array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.shape = shape
       self.chunk_sizes = chunk_sizes
       self.attribute_expressions = attribute_expressions
@@ -158,11 +158,11 @@ def register_worker_plugin(context):
       except Exception as e:
         log.error("symbol_lookup exception: %s", e)
 
-  class build_array_iterator(array_iterator):
+  class build_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.symbol_lookup = symbol_lookup(self, self.owner.dimensions())
-      self.iterator = worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+      self.iterator = slycat.analysis.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
     def next(self):
       while True:
         chunk_index, worker_index, begin, end = self.iterator.next()
@@ -177,7 +177,7 @@ def register_worker_plugin(context):
     def values(self, attribute):
       attribute, expression = self.owner.attribute_expressions[attribute]
       #log.debug("Evaluating %s." % ast.dump(expression))
-      result = evaluator(self.symbol_lookup).evaluate(expression)
+      result = slycat.analysis.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
       if isinstance(result, int) or isinstance(result, float):
         temp = numpy.empty(self._shape)
         temp.fill(result)

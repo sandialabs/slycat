@@ -90,15 +90,15 @@ def register_coordinator_plugin(context):
 def register_worker_plugin(context):
   import numpy
 
-  from slycat.analysis.worker.api import log, array, array_iterator
-  from slycat.analysis.worker.expression import evaluator
+  import slycat.analysis.worker
+  import slycat.analysis.worker.expression
 
   def apply(factory, worker_index, source, attributes):
     return factory.pyro_register(apply_array(worker_index, factory.require_object(source), attributes))
 
-  class apply_array(array):
+  class apply_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source, attribute_expressions):
-      array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       self.attribute_expressions = attribute_expressions
     def dimensions(self):
@@ -131,9 +131,9 @@ def register_worker_plugin(context):
       except Exception as e:
         log.error("symbol_lookup exception: %s", e)
 
-  class apply_array_iterator(array_iterator):
+  class apply_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.iterator = owner.source.iterator()
       self.source_attributes = owner.source.attributes()
       self.symbol_lookup = symbol_lookup(self.iterator, self.source_attributes, owner.source.dimensions())
@@ -151,7 +151,7 @@ def register_worker_plugin(context):
 
       attribute, expression = self.owner.attribute_expressions[attribute - len(self.source_attributes)]
       #log.debug("Evaluating %s." % ast.dump(expression))
-      result = evaluator(self.symbol_lookup).evaluate(expression)
+      result = slycat.analysis.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
       if isinstance(result, int) or isinstance(result, float):
         temp = numpy.empty(self.iterator.shape())
         temp.fill(result)

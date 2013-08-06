@@ -48,13 +48,14 @@ def register_coordinator_plugin(context):
 def register_worker_plugin(context):
   import numpy
   import Pyro4
+  import slycat.analysis.worker
 
   def chunk_map(factory, worker_index, source):
     return factory.pyro_register(chunk_map_array(worker_index, factory.require_object(source)))
 
-  class chunk_map_array(context.array):
+  class chunk_map_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source = source
       self.source_dimensions = source.dimensions()
       self.chunk_map = None
@@ -81,11 +82,11 @@ def register_worker_plugin(context):
       if 0 == self.worker_index:
         return self.pyro_register(chunk_map_iterator(self))
       else:
-        return self.pyro_register(context.null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
 
-  class chunk_map_iterator(context.array_iterator):
+  class chunk_map_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:

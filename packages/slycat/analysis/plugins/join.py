@@ -45,12 +45,14 @@ def register_coordinator_plugin(context):
   context.add_operator("join", join)
 
 def register_worker_plugin(context):
+  import slycat.analysis.worker
+
   def join(factory, worker_index, array1, array2):
     return factory.pyro_register(join_array(worker_index, factory.require_object(array1), factory.require_object(array2)))
 
-  class join_array(context.array):
+  class join_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, source1, source2):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.source1 = source1
       self.source2 = source2
     def dimensions(self):
@@ -60,9 +62,9 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(join_array_iterator(self))
 
-  class join_array_iterator(context.array_iterator):
+  class join_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
       self.offset = len(self.owner.source1.attributes())
       self.iterator1 = self.owner.source1.iterator()
       self.iterator2 = self.owner.source2.iterator()

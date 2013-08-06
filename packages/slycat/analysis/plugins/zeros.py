@@ -88,13 +88,14 @@ def register_coordinator_plugin(context):
 
 def register_worker_plugin(context):
   import numpy
+  import slycat.analysis.worker
 
   def zeros(factory, worker_index, shape, chunk_sizes, attributes):
     return factory.pyro_register(zeros_array(worker_index, shape, chunk_sizes, attributes))
 
-  class zeros_array(context.array):
+  class zeros_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, shape, chunk_sizes, attributes):
-      context.array.__init__(self, worker_index)
+      slycat.analysis.worker.array.__init__(self, worker_index)
       self.shape = shape
       self.chunk_sizes = chunk_sizes
       self._attributes = attributes
@@ -105,10 +106,10 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(zeros_array_iterator(self))
 
-  class zeros_array_iterator(context.array_iterator):
+  class zeros_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
-      context.array_iterator.__init__(self, owner)
-      self.iterator = context.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      self.iterator = slycat.analysis.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
     def next(self):
       while True:
         chunk_index, worker_index, begin, end = self.iterator.next()
