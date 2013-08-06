@@ -57,18 +57,7 @@ def register_client_plugin(context):
       expressions = [expressions]
     elif isinstance(expressions, list):
       expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
-    return connection.remote_array(connection.proxy.call_operator("aggregate", connection.require_object(source), expressions))
-  context.add_operator("aggregate", aggregate)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def aggregate(factory, source, expressions):
-    source = factory.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.call_operator("aggregate", worker_index, source_proxy._pyroUri, expressions))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
+    return connection.remote_array(connection.proxy.standard_call("aggregate", [connection.require_object(source)], expressions))
   context.add_operator("aggregate", aggregate)
 
 def register_worker_plugin(context):

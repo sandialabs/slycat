@@ -8,18 +8,7 @@ def register_client_plugin(context):
     source = slycat.analysis.client.require_array(source)
     dimensions = slycat.analysis.client.require_dimension_names(dimensions)
     attributes = slycat.analysis.client.require_attribute_names(attributes)
-    return connection.remote_array(connection.proxy.call_operator("redimension", connection.require_object(source), dimensions, attributes))
-  context.add_operator("redimension", redimension)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def redimension(factory, source, dimensions, attributes):
-    source = factory.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.call_operator("redimension", worker_index, source_proxy._pyroUri, dimensions, attributes))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
+    return connection.remote_array(connection.proxy.standard_call("redimension", [connection.require_object(source)], dimensions, attributes))
   context.add_operator("redimension", redimension)
 
 def register_worker_plugin(context):

@@ -55,18 +55,7 @@ def register_client_plugin(context):
       pass
     else:
       raise slycat.analysis.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
-    return connection.remote_array(connection.proxy.call_operator("rename", connection.require_object(source), attributes, dimensions))
-  context.add_operator("rename", rename)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def rename(factory, source, attributes, dimensions):
-    source = factory.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.call_operator("rename", worker_index, source_proxy._pyroUri, attributes, dimensions))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
+    return connection.remote_array(connection.proxy.standard_call("rename", [connection.require_object(source)], attributes, dimensions))
   context.add_operator("rename", rename)
 
 def register_worker_plugin(context):

@@ -20,18 +20,7 @@ def register_client_plugin(context):
         {2} d2, int64, 0, 3000, 100
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.call_operator("dimensions", connection.require_object(source)))
-  context.add_operator("dimensions", dimensions)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def dimensions(factory, source):
-    source = factory.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.call_operator("dimensions", worker_index, source_proxy._pyroUri))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
+    return connection.remote_array(connection.proxy.standard_call("dimensions", [connection.require_object(source)]))
   context.add_operator("dimensions", dimensions)
 
 def register_worker_plugin(context):

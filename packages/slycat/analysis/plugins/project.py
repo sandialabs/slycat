@@ -39,18 +39,7 @@ def register_client_plugin(context):
     source = slycat.analysis.client.require_array(source)
     if not len(attributes):
       raise slycat.analysis.client.InvalidArgument("project() operator requires at least one attribute.")
-    return connection.remote_array(connection.proxy.call_operator("project", connection.require_object(source), attributes))
-  context.add_operator("project", project)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def project(factory, source, attributes):
-    source = factory.require_object(source)
-    array_workers = []
-    for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.call_operator("project", worker_index, source_proxy._pyroUri, attributes))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
+    return connection.remote_array(connection.proxy.standard_call("project", [connection.require_object(source)], attributes))
   context.add_operator("project", project)
 
 def register_worker_plugin(context):

@@ -87,11 +87,18 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
     self.operators[name] = function
   def call_operator(self, name, *arguments, **keywords):
     return self.operators[name](self, *arguments, **keywords)
-  def standard_call(self, name, *arguments, **keywords):
+  def standard_call(self, name, sources, *arguments, **keywords):
+    sources = [self.require_object(source) for source in sources]
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
-      array_workers.append(worker.call_operator(name, worker_index, *arguments, **keywords))
-    return self.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
+      source_workers = [source.workers[worker_index]._pyroUri for source in sources]
+      if len(source_workers) > 1:
+        array_workers.append(worker.call_operator(name, worker_index, source_workers, *arguments, **keywords))
+      elif len(source_workers) == 1:
+        array_workers.append(worker.call_operator(name, worker_index, source_workers[0], *arguments, **keywords))
+      else:
+        array_workers.append(worker.call_operator(name, worker_index, *arguments, **keywords))
+    return self.pyro_register(slycat.analysis.coordinator.array(array_workers, sources))
 
 factory = coordinator_factory(nameserver_thread.nameserver)
 
