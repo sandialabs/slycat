@@ -21,7 +21,7 @@ def register_client_plugin(context):
       # Now, use array2 in place of array1, to avoid recomputing.
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.materialize(connection.require_object(source)))
+    return connection.remote_array(connection.proxy.call_operator("materialize", connection.require_object(source)))
   context.add_operator("materialize", materialize)
 
 def register_coordinator_plugin(context):

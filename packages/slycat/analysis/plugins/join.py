@@ -31,7 +31,7 @@ def register_client_plugin(context):
     dimensions2 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array2.dimensions]
     if dimensions1 != dimensions2:
       raise slycat.analysis.client.InvalidArgument("Arrays to be joined must have identical dimensions.")
-    return connection.remote_array(connection.proxy.join(connection.require_object(array1), connection.require_object(array2)))
+    return connection.remote_array(connection.proxy.call_operator("join", connection.require_object(array1), connection.require_object(array2)))
   context.add_operator("join", join)
 
 def register_coordinator_plugin(context):

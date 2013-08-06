@@ -106,7 +106,7 @@ def register_client_plugin(context):
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
     attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
-    return connection.remote_array(connection.proxy.build(shape, chunk_sizes, attributes))
+    return connection.remote_array(connection.proxy.call_operator("build", shape, chunk_sizes, attributes))
   context.add_operator("build", build)
 
 def register_coordinator_plugin(context):

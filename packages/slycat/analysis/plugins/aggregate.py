@@ -57,7 +57,7 @@ def register_client_plugin(context):
       expressions = [expressions]
     elif isinstance(expressions, list):
       expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
-    return connection.remote_array(connection.proxy.aggregate(connection.require_object(source), expressions))
+    return connection.remote_array(connection.proxy.call_operator("aggregate", connection.require_object(source), expressions))
   context.add_operator("aggregate", aggregate)
 
 def register_coordinator_plugin(context):

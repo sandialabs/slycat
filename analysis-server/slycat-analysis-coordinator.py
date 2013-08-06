@@ -45,42 +45,57 @@ else:
   raise Exception("Unknown log level: {}".format(options.log_level))
 
 ######################################################################################################
+## Start a nameserver to coordinate remote objects.
+
+class nameserver(threading.Thread):
+  def __init__(self):
+    threading.Thread.__init__(self)
+    self.daemon = True
+    self.started = threading.Event()
+
+  def run(self):
+    uri, daemon, server = Pyro4.naming.startNS(host=options.nameserver_host, port=options.nameserver_port, enableBroadcast=False)
+    self.nameserver = daemon.nameserver
+    self.started.set()
+    daemon.requestLoop()
+
+nameserver_thread = nameserver()
+nameserver_thread.start()
+nameserver_thread.started.wait()
+
+######################################################################################################
 ## Load coordinator plugins.
 
-class factory(slycat.analysis.coordinator.pyro_object):
+class coordinator_factory(slycat.analysis.coordinator.pyro_object):
   """Top-level factory for coordinator objects."""
   def __init__(self, nameserver):
     slycat.analysis.coordinator.pyro_object.__init__(self)
     self.nameserver = nameserver
+    self.operators = {}
   def shutdown(self):
     slycat.analysis.coordinator.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
-
   def workers(self):
     """Returns the set of available slycat analysis workers."""
     return [Pyro4.Proxy(self.nameserver.lookup(worker)) for worker in self.nameserver.list(prefix="slycat.worker").keys()]
-
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
-
-def make_connection_method(function):
-  def implementation(self, *arguments, **keywords):
-    return function(self, *arguments, **keywords)
-  implementation.__name__ = function.__name__
-  implementation.__doc__ = function.__doc__
-  return implementation
-
-class plugin_context(object):
-  def __init__(self):
-    self.operators = []
   def add_operator(self, name, function):
     if name in self.operators:
-      raise Exception("Cannot load operator with duplicate name: %s" % name)
-    self.operators.append(name)
-    setattr(factory, name, make_connection_method(function))
+      raise Exception("Cannot add operator with duplicate name: %s" % name)
+    self.operators[name] = function
+  def call_operator(self, name, *arguments, **keywords):
+    return self.operators[name](self, *arguments, **keywords)
+factory = coordinator_factory(nameserver_thread.nameserver)
+
+class plugin_context(object):
+  def __init__(self, factory):
+    self.factory = factory
+  def add_operator(self, name, function):
+    self.factory.add_operator(name, function)
     slycat.analysis.coordinator.log.debug("Registered operator %s", name)
-context = plugin_context()
+context = plugin_context(factory)
 
 plugin_directories = [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")]
 for plugin_directory in plugin_directories:
@@ -104,25 +119,6 @@ for plugin_directory in plugin_directories:
     slycat.analysis.coordinator.log.error(traceback.format_exc())
 
 ######################################################################################################
-## Start a nameserver to coordinate remote objects.
-
-class nameserver(threading.Thread):
-  def __init__(self):
-    threading.Thread.__init__(self)
-    self.daemon = True
-    self.started = threading.Event()
-
-  def run(self):
-    uri, daemon, server = Pyro4.naming.startNS(host=options.nameserver_host, port=options.nameserver_port, enableBroadcast=False)
-    self.nameserver = daemon.nameserver
-    self.started.set()
-    daemon.requestLoop()
-
-nameserver_thread = nameserver()
-nameserver_thread.start()
-nameserver_thread.started.wait()
-
-######################################################################################################
 ## Optionally start local workers.
 
 command = ["python", "slycat-analysis-worker.py"]
@@ -139,7 +135,7 @@ workers = [subprocess.Popen(command) for i in range(options.local_workers)]
 ## Run the main event-handling loop.
 
 daemon = Pyro4.Daemon(host=options.host)
-nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(factory(nameserver_thread.nameserver), "slycat.coordinator"))
+nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(factory, "slycat.coordinator"))
 slycat.analysis.coordinator.log.info("Listening on %s, nameserver listening on %s:%s", options.host, options.nameserver_host, options.nameserver_port)
 daemon.requestLoop()
 

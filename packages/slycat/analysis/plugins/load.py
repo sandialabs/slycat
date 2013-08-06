@@ -37,7 +37,7 @@ def register_client_plugin(context):
                   evenly split into N chunks, one on each of N workers.
     """
     if schema == "csv-file":
-      return connection.remote_file_array(connection.proxy.csv_file(path, **keywords))
+      return connection.remote_file_array(connection.proxy.call_operator("csv_file", path, **keywords))
     elif schema == "prn-file":
       return connection.remote_file_array(connection.proxy.prn_file(path, **keywords))
     else:

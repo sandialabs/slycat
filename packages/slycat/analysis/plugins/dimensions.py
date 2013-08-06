@@ -20,7 +20,7 @@ def register_client_plugin(context):
         {2} d2, int64, 0, 3000, 100
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.dimensions(connection.require_object(source)))
+    return connection.remote_array(connection.proxy.call_operator("dimensions", connection.require_object(source)))
   context.add_operator("dimensions", dimensions)
 
 def register_coordinator_plugin(context):

@@ -33,7 +33,7 @@ def register_client_plugin(context):
         {8} 3, 1, 80, 80, 20, 20
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.chunk_map(connection.require_object(source)))
+    return connection.remote_array(connection.proxy.call_operator("chunk_map", connection.require_object(source)))
   context.add_operator("chunk_map", chunk_map)
 
 def register_coordinator_plugin(context):

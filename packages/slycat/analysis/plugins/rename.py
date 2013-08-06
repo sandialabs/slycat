@@ -55,7 +55,7 @@ def register_client_plugin(context):
       pass
     else:
       raise slycat.analysis.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
-    return connection.remote_array(connection.proxy.rename(connection.require_object(source), attributes, dimensions))
+    return connection.remote_array(connection.proxy.call_operator("rename", connection.require_object(source), attributes, dimensions))
   context.add_operator("rename", rename)
 
 def register_coordinator_plugin(context):

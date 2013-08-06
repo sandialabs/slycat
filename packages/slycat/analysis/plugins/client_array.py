@@ -49,7 +49,7 @@ def register_client_plugin(context):
         {1, 2} 6.0
     """
     attribute = slycat.analysis.client.require_attribute(attribute)
-    return connection.remote_array(connection.proxy.client_array(initializer, attribute))
+    return connection.remote_array(connection.proxy.call_operator("client_array", initializer, attribute))
   context.add_operator("array", array)
 
 def register_coordinator_plugin(context):
