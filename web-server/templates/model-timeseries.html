@@ -111,7 +111,7 @@ rights in this software.
           </svg>
         </div>
         <div id="waveform-pane" class="ui-layout-center">
-          <svg id="waveform-viewer" width="100%" height="100%">
+          <svg id="waveform-viewer" class="dayMode" width="100%" height="100%">
           </svg>
           <div id="waveform-progress">
             <input class="waveformPie" value="1" />
@@ -1095,7 +1095,7 @@ rights in this software.
             .attr("width", this.diagram_width)
             .attr("height", this.diagram_height)
             .attr("pointer-events", "all")
-            .style("fill", "#eee")
+            .style("fill", "transparent")
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
             ;
 
@@ -1204,7 +1204,7 @@ rights in this software.
                 if(self.color_scale != null)
                   return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] ); 
                 else
-                  return "black";
+                  return "white";
               })
               .style("stroke-width", 1);
           }
@@ -1312,8 +1312,8 @@ rights in this software.
               .attr("width", this.diagram_width)
               .attr("height", this.diagram_height)
               .attr("pointer-events", "all")
-              .style("fill", "#eee")
-              .style("fill-opacity", 0.7)
+              //.style("fill", "#333333")
+              //.style("fill-opacity", 0.5)
               .attr("class", "selectionMask")
               ;
           }
@@ -1338,9 +1338,9 @@ rights in this software.
               if (self.color_scale != null && self.color_array != null && self.data_table_index_array != null)
                 return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
               else
-                return "black";
+                return "white";
             })
-            .style("stroke-width", 2.5)
+            .style("stroke-width", 4.0)
             .style("stroke-linecap", "round").
             attr("class", "highlight")
             ;

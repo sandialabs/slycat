@@ -106,3 +106,19 @@ rights in this software.
     margin: -100px 0 0 -100px;
     display: none;
 }
+/* Use these colors for the dark night mode */
+#waveform-viewer.nightMode,
+.nightMode rect.selectionMask
+{
+  background-color: #333333;
+  fill: #333333;
+  fill-opacity: 0.5;
+}
+/* Use these colors for the white day mode */
+.dayMode #waveform-viewer.dayMode,
+.dayMode rect.selectionMask
+{
+  background-color: white;
+  fill: white;
+  fill-opacity: 0.7;
+}
