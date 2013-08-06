@@ -43,12 +43,14 @@ def register_client_plugin(context):
   context.add_operator("project", project)
 
 def register_coordinator_plugin(context):
+  import slycat.analysis.coordinator
+
   def project(factory, source, attributes):
     source = factory.require_object(source)
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
       array_workers.append(worker.project(worker_index, source_proxy._pyroUri, attributes))
-    return factory.pyro_register(factory.array(array_workers, [source]))
+    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
   context.add_operator("project", project)
 
 def register_worker_plugin(context):

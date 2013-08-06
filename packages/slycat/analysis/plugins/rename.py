@@ -59,12 +59,14 @@ def register_client_plugin(context):
   context.add_operator("rename", rename)
 
 def register_coordinator_plugin(context):
+  import slycat.analysis.coordinator
+
   def rename(factory, source, attributes, dimensions):
     source = factory.require_object(source)
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
       array_workers.append(worker.rename(worker_index, source_proxy._pyroUri, attributes, dimensions))
-    return factory.pyro_register(factory.array(array_workers, [source]))
+    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
   context.add_operator("rename", rename)
 
 def register_worker_plugin(context):

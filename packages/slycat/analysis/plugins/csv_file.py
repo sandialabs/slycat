@@ -6,6 +6,7 @@ from __future__ import division
 
 def register_coordinator_plugin(context):
   from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.coordinator
 
   def csv_file(factory, path, **keywords):
     format = keywords.get("format", None)
@@ -17,7 +18,7 @@ def register_coordinator_plugin(context):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
       array_workers.append(worker.csv_file(worker_index, path, format, delimiter, chunk_size))
-    return factory.pyro_register(factory.file_array(array_workers, []))
+    return factory.pyro_register(slycat.analysis.coordinator.file_array(array_workers, []))
   context.add_operator("csv_file", csv_file)
 
 def register_worker_plugin(context):

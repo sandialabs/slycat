@@ -35,13 +35,15 @@ def register_client_plugin(context):
   context.add_operator("join", join)
 
 def register_coordinator_plugin(context):
+  import slycat.analysis.coordinator
+
   def join(factory, array1, array2):
     array1 = factory.require_object(array1)
     array2 = factory.require_object(array2)
     array_workers = []
     for worker_index, (array1_proxy, array2_proxy, worker) in enumerate(zip(array1.workers, array2.workers, factory.workers())):
       array_workers.append(worker.join(worker_index, array1_proxy._pyroUri, array2_proxy._pyroUri))
-    return factory.pyro_register(factory.array(array_workers, [array1, array2]))
+    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [array1, array2]))
   context.add_operator("join", join)
 
 def register_worker_plugin(context):

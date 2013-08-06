@@ -4,6 +4,7 @@
 
 def register_coordinator_plugin(context):
   from slycat.analysis.client import InvalidArgument
+  import slycat.analysis.coordinator
 
   def prn_file(factory, path, **keywords):
     chunk_size = keywords.get("chunk_size", None)
@@ -13,7 +14,7 @@ def register_coordinator_plugin(context):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
       array_workers.append(worker.prn_file(worker_index, path, chunk_size))
-    return factory.pyro_register(factory.file_array(array_workers, []))
+    return factory.pyro_register(slycat.analysis.coordinator.file_array(array_workers, []))
   context.add_operator("prn_file", prn_file)
 
 def register_worker_plugin(context):
