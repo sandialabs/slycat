@@ -22,7 +22,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
 
 log = logging.getLogger("slycat.analysis.client")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 log.addHandler(handler)
 
 Pyro4.config.SERIALIZER = "pickle"
@@ -235,13 +235,13 @@ def load_plugins(root):
       operators.append(name)
       setattr(connection, name, make_connection_method(function))
       globals()[name] = make_standalone_method(function)
-      #log.debug("Registered operator %s", name)
+      log.debug("Registered operator %s", name)
   context = plugin_context()
 
   plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
   for plugin_dir in plugin_dirs:
     try:
-      log.info("Loading plugins from %s", plugin_dir)
+      log.debug("Loading plugins from %s", plugin_dir)
       plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
       for plugin_name in plugin_names:
         try:
@@ -258,7 +258,6 @@ def load_plugins(root):
     except Exception as e:
       import traceback
       log.error(traceback.format_exc())
-  log.info("Loaded operators: %s", ", ".join(sorted(operators)))
 
 import __main__
 if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):

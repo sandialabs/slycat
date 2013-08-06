@@ -37,14 +37,14 @@ def load_plugins(root):
         raise Exception("Cannot add operator with duplicate name: %s" % name)
       operators.append(name)
       setattr(factory, name, make_connection_method(function))
-      #slycat.analysis.worker.log.debug("Registered operator %s", name)
+      slycat.analysis.worker.log.debug("Registered operator %s", name)
 
   context = plugin_context()
 
   plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
   for plugin_dir in plugin_dirs:
     try:
-      slycat.analysis.worker.log.info("Loading plugins from %s", plugin_dir)
+      slycat.analysis.worker.log.debug("Loading plugins from %s", plugin_dir)
       plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
       for plugin_name in plugin_names:
         try:
@@ -61,7 +61,6 @@ def load_plugins(root):
     except Exception as e:
       import traceback
       slycat.analysis.worker.log.error(traceback.format_exc())
-  slycat.analysis.worker.log.info("Loaded operators: %s", ", ".join(sorted(operators)))
 
 load_plugins(plugin_root)
 

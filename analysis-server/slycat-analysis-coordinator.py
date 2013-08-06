@@ -4,19 +4,13 @@
 
 slycat_analysis_disable_client_plugins = True
 
-import ast
+from slycat.analysis import __file__ as plugin_root
 import logging
-import numpy
 import os
 import Pyro4
-from slycat.analysis import __file__ as plugin_root
-
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-
-log = logging.getLogger("slycat.analysis.coordinator")
-log.setLevel(logging.DEBUG)
-log.addHandler(handler)
+import slycat.analysis.coordinator
+import subprocess
+import threading
 
 class pyro_object(object):
   """Provides some standardized functionality for objects that are exported via Pyro4."""
@@ -24,19 +18,19 @@ class pyro_object(object):
     self.refcount = 1
   def __del__(self):
     if self.refcount != 0:
-      log.error("Deleting object with nonzero reference count: %s", self)
-    #log.debug("Deleted %s", self)
+      slycat.analysis.coordinator.log.error("Deleting object with nonzero reference count: %s", self)
+    #slycat.analysis.coordinator.log.debug("Deleted %s", self)
   def register(self):
     self.refcount += 1
   def release(self):
     self.refcount = max(0, self.refcount - 1)
     if self.refcount == 0:
-      log.debug("Releasing %s %s", self._pyroId, self)
+      slycat.analysis.coordinator.log.debug("Releasing %s %s", self._pyroId, self)
       self._pyroDaemon.unregister(self)
   def pyro_register(self, thing):
     """Register a Python object to be shared via Pyro."""
     self._pyroDaemon.register(thing)
-    log.debug("Registered %s %s", thing._pyroId, thing)
+    slycat.analysis.coordinator.log.debug("Registered %s %s", thing._pyroId, thing)
     return thing
 
 class factory(pyro_object):
@@ -45,7 +39,7 @@ class factory(pyro_object):
     pyro_object.__init__(self)
     self.nameserver = nameserver
   def shutdown(self):
-    log.info("Client requested shutdown.")
+    slycat.analysis.coordinator.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
 
   def workers(self):
@@ -132,7 +126,7 @@ class serial_remote_array_iterator(array_iterator):
   def shape(self):
     return self.iterator.shape()
   def values(self, attribute):
-    log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
+    slycat.analysis.coordinator.log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
     return self.iterator.values(attribute)
 
 class parallel_remote_array_iterator(array_iterator):
@@ -176,7 +170,7 @@ class parallel_remote_array_iterator(array_iterator):
   def shape(self):
     return self.iterator.shape()
   def values(self, attribute):
-    log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
+    slycat.analysis.coordinator.log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
     return self.iterator.values(attribute)
 
 def load_plugins(root):
@@ -198,14 +192,14 @@ def load_plugins(root):
         raise Exception("Cannot load operator with duplicate name: %s" % name)
       operators.append(name)
       setattr(factory, name, make_connection_method(function))
-      #log.debug("Registered operator %s", name)
+      slycat.analysis.coordinator.log.debug("Registered operator %s", name)
 
   context = plugin_context()
 
   plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
   for plugin_dir in plugin_dirs:
     try:
-      log.info("Loading plugins from %s", plugin_dir)
+      slycat.analysis.coordinator.log.debug("Loading plugins from %s", plugin_dir)
       plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
       for plugin_name in plugin_names:
         try:
@@ -215,22 +209,15 @@ def load_plugins(root):
             plugin.register_coordinator_plugin(context)
         except Exception as e:
           import traceback
-          log.error(traceback.format_exc())
+          slycat.analysis.coordinator.log.error(traceback.format_exc())
         finally:
           if module_fp:
             module_fp.close()
     except Exception as e:
       import traceback
-      log.error(traceback.format_exc())
-
-  log.info("Loaded operators: %s", ", ".join(sorted(operators)))
+      slycat.analysis.coordinator.log.error(traceback.format_exc())
 
 load_plugins(plugin_root)
-
-import logging
-import Pyro4
-import subprocess
-import threading
 
 import optparse
 parser = optparse.OptionParser()
@@ -246,15 +233,15 @@ Pyro4.config.HMAC_KEY = options.hmac_key
 Pyro4.config.SERIALIZER = "pickle"
 
 if options.log_level == "debug":
-  log.setLevel(logging.DEBUG)
+  slycat.analysis.coordinator.log.setLevel(logging.DEBUG)
 elif options.log_level == "info":
-  log.setLevel(logging.INFO)
+  slycat.analysis.coordinator.log.setLevel(logging.INFO)
 elif options.log_level == "warning":
-  log.setLevel(logging.WARNING)
+  slycat.analysis.coordinator.log.setLevel(logging.WARNING)
 elif options.log_level == "error":
-  log.setLevel(logging.ERROR)
+  slycat.analysis.coordinator.log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
-  log.setLevel(logging.CRITICAL)
+  slycat.analysis.coordinator.log.setLevel(logging.CRITICAL)
 elif options.log_level is None:
   pass
 else:
@@ -288,11 +275,11 @@ workers = [subprocess.Popen(command) for i in range(options.local_workers)]
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(factory(nameserver_thread.nameserver), "slycat.coordinator"))
-log.info("Listening on %s, nameserver listening on %s:%s", options.host, options.nameserver_host, options.nameserver_port)
+slycat.analysis.coordinator.log.info("Listening on %s, nameserver listening on %s:%s", options.host, options.nameserver_host, options.nameserver_port)
 daemon.requestLoop()
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.coordinator", "Pyro.Daemon"]:
-    log.debug("Leaked object %s: %s", key, value)
+    slycat.analysis.coordinator.log.debug("Leaked object %s: %s", key, value)
 
-log.info("Shutdown complete.")
+slycat.analysis.coordinator.log.info("Shutdown complete.")
