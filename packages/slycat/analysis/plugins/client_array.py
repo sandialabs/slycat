@@ -50,7 +50,7 @@ def register_client_plugin(context):
     """
     attribute = slycat.analysis.client.require_attribute(attribute)
     return connection.remote_array(connection.proxy.standard_call("client_array", [], initializer, attribute))
-  context.add_operator("array", array)
+  context.register_plugin_function("array", array)
 
 def register_worker_plugin(context):
   import numpy
@@ -88,4 +88,4 @@ def register_worker_plugin(context):
       return self.owner.chunk.shape
     def values(self, attribute):
       return self.owner.chunk
-  context.add_operator("client_array", client_array)
+  context.register_plugin_function("client_array", client_array)

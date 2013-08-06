@@ -9,7 +9,7 @@ def register_client_plugin(context):
     dimensions = slycat.analysis.client.require_dimension_names(dimensions)
     attributes = slycat.analysis.client.require_attribute_names(attributes)
     return connection.remote_array(connection.proxy.standard_call("redimension", [connection.require_object(source)], dimensions, attributes))
-  context.add_operator("redimension", redimension)
+  context.register_plugin_function("redimension", redimension)
 
 def register_worker_plugin(context):
   import slycat.analysis.worker
@@ -151,4 +151,4 @@ def register_worker_plugin(context):
             values_cache[index] = iterator.values(index)
           target_coordinates.append(values_cache[index][coordinates])
       yield source_coordinates, target_coordinates
-  context.add_operator("redimension", redimension)
+  context.register_plugin_function("redimension", redimension)

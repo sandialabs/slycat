@@ -205,8 +205,6 @@ def load_plugins(plugin_directory):
   from slycat.analysis.client import log
   import imp
 
-  operators = []
-
   def make_connection_method(function):
     def implementation(self, *arguments, **keywords):
       return function(self, *arguments, **keywords)
@@ -222,10 +220,12 @@ def load_plugins(plugin_directory):
     return implementation
 
   class plugin_context(object):
-    def add_operator(self, name, function):
-      if name in operators:
-        raise Exception("Cannot load operator with duplicate name: %s" % name)
-      operators.append(name)
+    def __init__(self):
+      self.plugin_functions = []
+    def register_plugin_function(self, name, function):
+      if name in self.plugin_functions:
+        raise Exception("Cannot load plugin function with duplicate name: %s" % name)
+      self.plugin_functions.append(name)
       setattr(connection, name, make_connection_method(function))
       globals()[name] = make_standalone_method(function)
       log.debug("Registered operator %s", name)

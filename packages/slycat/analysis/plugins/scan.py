@@ -119,4 +119,4 @@ def scan(connection, source, format="dcsv", separator=", ", stream=sys.stdout):
   log.info("elapsed time: %s seconds" % (time.time() - start_time))
 
 def register_client_plugin(context):
-  context.add_operator("scan", scan)
+  context.register_plugin_function("scan", scan)

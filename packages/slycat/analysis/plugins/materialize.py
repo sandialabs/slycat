@@ -22,7 +22,7 @@ def register_client_plugin(context):
     """
     source = slycat.analysis.client.require_array(source)
     return connection.remote_array(connection.proxy.standard_call("materialize", [connection.require_object(source)]))
-  context.add_operator("materialize", materialize)
+  context.register_plugin_function("materialize", materialize)
 
 def register_worker_plugin(context):
   import numpy
@@ -76,4 +76,4 @@ def register_worker_plugin(context):
     def values(self, attribute):
       return self.owner.chunks[self.index].values(attribute)
 
-  context.add_operator("materialize", materialize)
+  context.register_plugin_function("materialize", materialize)

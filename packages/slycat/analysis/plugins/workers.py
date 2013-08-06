@@ -12,4 +12,4 @@ def workers(connection):
     yield proxy
 
 def register_client_plugin(context):
-  context.add_operator("workers", workers)
+  context.register_plugin_function("workers", workers)

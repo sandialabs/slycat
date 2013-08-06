@@ -40,7 +40,7 @@ def register_client_plugin(context):
     if not len(attributes):
       raise slycat.analysis.client.InvalidArgument("project() operator requires at least one attribute.")
     return connection.remote_array(connection.proxy.standard_call("project", [connection.require_object(source)], attributes))
-  context.add_operator("project", project)
+  context.register_plugin_function("project", project)
 
 def register_worker_plugin(context):
   import slycat.analysis.worker
@@ -77,4 +77,4 @@ def register_worker_plugin(context):
       return self.iterator.shape()
     def values(self, attribute):
       return self.iterator.values(self.indices[attribute])
-  context.add_operator("project", project)
+  context.register_plugin_function("project", project)

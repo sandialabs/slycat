@@ -76,7 +76,7 @@ def register_client_plugin(context):
       raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
     attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
     return connection.remote_array(connection.proxy.standard_call("apply", [connection.require_object(source)], attributes))
-  context.add_operator("apply", apply)
+  context.register_plugin_function("apply", apply)
 
 def register_worker_plugin(context):
   import numpy
@@ -148,4 +148,4 @@ def register_worker_plugin(context):
         temp.fill(result)
         result = temp
       return result.astype(attribute["type"])
-  context.add_operator("apply", apply)
+  context.register_plugin_function("apply", apply)

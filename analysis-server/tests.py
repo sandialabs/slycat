@@ -3,6 +3,7 @@
 # rights in this software.
 
 from slycat.analysis import *
+from slycat.analysis.client import log
 import logging
 import numpy
 import subprocess

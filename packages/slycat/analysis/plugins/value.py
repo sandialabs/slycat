@@ -69,4 +69,4 @@ def value(connection, source, attributes=None):
     raise
 
 def register_client_plugin(context):
-  context.add_operator("value", value)
+  context.register_plugin_function("value", value)

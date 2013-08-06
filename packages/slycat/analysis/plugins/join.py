@@ -31,8 +31,8 @@ def register_client_plugin(context):
     dimensions2 = [{"type":dimension["type"], "begin":dimension["begin"], "end":dimension["end"], "chunk-size":dimension["chunk-size"]} for dimension in array2.dimensions]
     if dimensions1 != dimensions2:
       raise slycat.analysis.client.InvalidArgument("Arrays to be joined must have identical dimensions.")
-    return connection.remote_array(connection.proxy.call_operator("join", connection.require_object(array1), connection.require_object(array2)))
-  context.add_operator("join", join)
+    return connection.remote_array(connection.proxy.call_plugin_function("join", connection.require_object(array1), connection.require_object(array2)))
+  context.register_plugin_function("join", join)
 
 def register_coordinator_plugin(context):
   import slycat.analysis.coordinator
@@ -42,9 +42,9 @@ def register_coordinator_plugin(context):
     array2 = factory.require_object(array2)
     array_workers = []
     for worker_index, (array1_proxy, array2_proxy, worker) in enumerate(zip(array1.workers, array2.workers, factory.workers())):
-      array_workers.append(worker.call_operator("join", worker_index, array1_proxy._pyroUri, array2_proxy._pyroUri))
+      array_workers.append(worker.call_plugin_function("join", worker_index, array1_proxy._pyroUri, array2_proxy._pyroUri))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [array1, array2]))
-  context.add_operator("join", join)
+  context.register_plugin_function("join", join)
 
 def register_worker_plugin(context):
   import slycat.analysis.worker
@@ -85,4 +85,4 @@ def register_worker_plugin(context):
         return self.iterator1.values(attribute)
       else:
         return self.iterator2.values(attribute - self.offset)
-  context.add_operator("join", join)
+  context.register_plugin_function("join", join)

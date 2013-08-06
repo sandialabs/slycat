@@ -72,7 +72,7 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
   def __init__(self, nameserver):
     slycat.analysis.coordinator.pyro_object.__init__(self)
     self.nameserver = nameserver
-    self.operators = {}
+    self.plugin_functions = {}
   def shutdown(self):
     slycat.analysis.coordinator.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
@@ -82,23 +82,23 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
-  def add_operator(self, name, function):
-    if name in self.operators:
-      raise Exception("Cannot add operator with duplicate name: %s" % name)
-    self.operators[name] = function
-  def call_operator(self, name, *arguments, **keywords):
-    return self.operators[name](self, *arguments, **keywords)
+  def register_plugin_function(self, name, function):
+    if name in self.plugin_functions:
+      raise Exception("Cannot add plugin function with duplicate name: %s" % name)
+    self.plugin_functions[name] = function
+  def call_plugin_function(self, name, *arguments, **keywords):
+    return self.plugin_functions[name](self, *arguments, **keywords)
   def standard_call(self, name, sources, *arguments, **keywords):
     sources = [self.require_object(source) for source in sources]
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):
       source_workers = [source.workers[worker_index]._pyroUri for source in sources]
       if len(source_workers) > 1:
-        array_workers.append(worker.call_operator(name, worker_index, source_workers, *arguments, **keywords))
+        array_workers.append(worker.call_plugin_function(name, worker_index, source_workers, *arguments, **keywords))
       elif len(source_workers) == 1:
-        array_workers.append(worker.call_operator(name, worker_index, source_workers[0], *arguments, **keywords))
+        array_workers.append(worker.call_plugin_function(name, worker_index, source_workers[0], *arguments, **keywords))
       else:
-        array_workers.append(worker.call_operator(name, worker_index, *arguments, **keywords))
+        array_workers.append(worker.call_plugin_function(name, worker_index, *arguments, **keywords))
     return self.pyro_register(slycat.analysis.coordinator.array(array_workers, sources))
 
 factory = coordinator_factory(nameserver_thread.nameserver)
@@ -106,8 +106,8 @@ factory = coordinator_factory(nameserver_thread.nameserver)
 class plugin_context(object):
   def __init__(self, factory):
     self.factory = factory
-  def add_operator(self, name, function):
-    self.factory.add_operator(name, function)
+  def register_plugin_function(self, name, function):
+    self.factory.register_plugin_function(name, function)
     slycat.analysis.coordinator.log.debug("Registered operator %s", name)
 context = plugin_context(factory)
 

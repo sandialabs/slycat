@@ -25,7 +25,7 @@ def register_client_plugin(context):
     """
     source = slycat.analysis.client.require_array(source)
     return connection.remote_array(connection.proxy.standard_call("attributes", [connection.require_object(source)]))
-  context.add_operator("attributes", attributes)
+  context.register_plugin_function("attributes", attributes)
 
 def register_worker_plugin(context):
   import numpy
@@ -66,4 +66,4 @@ def register_worker_plugin(context):
         return numpy.array([attribute["name"] for attribute in self.owner.source_attributes], dtype="string")
       elif attribute == 1:
         return numpy.array([attribute["type"] for attribute in self.owner.source_attributes], dtype="string")
-  context.add_operator("attributes", attributes)
+  context.register_plugin_function("attributes", attributes)

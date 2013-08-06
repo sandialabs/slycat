@@ -86,4 +86,4 @@ def values(connection, source, attributes=None):
   return result
 
 def register_client_plugin(context):
-  context.add_operator("values", values)
+  context.register_plugin_function("values", values)

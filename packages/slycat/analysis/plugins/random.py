@@ -80,7 +80,7 @@ def register_client_plugin(context):
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("random() requires at least one attribute.")
     return connection.remote_array(connection.proxy.standard_call("random", [], shape, chunk_sizes, seed, attributes))
-  context.add_operator("random", random)
+  context.register_plugin_function("random", random)
 
 def register_worker_plugin(context):
   import numpy
@@ -124,4 +124,4 @@ def register_worker_plugin(context):
     def values(self, index):
       return self._values[index]
 
-  context.add_operator("random", random)
+  context.register_plugin_function("random", random)

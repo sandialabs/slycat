@@ -58,7 +58,7 @@ def register_client_plugin(context):
     elif isinstance(expressions, list):
       expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
     return connection.remote_array(connection.proxy.standard_call("aggregate", [connection.require_object(source)], expressions))
-  context.add_operator("aggregate", aggregate)
+  context.register_plugin_function("aggregate", aggregate)
 
 def register_worker_plugin(context):
   import numpy
@@ -125,4 +125,4 @@ def register_worker_plugin(context):
       return numpy.array([1], dtype="int64")
     def values(self, attribute):
       return numpy.array([self.accumulators[attribute].result()])
-  context.add_operator("aggregate", aggregate)
+  context.register_plugin_function("aggregate", aggregate)

@@ -34,7 +34,7 @@ def register_client_plugin(context):
     """
     source = slycat.analysis.client.require_array(source)
     return connection.remote_array(connection.proxy.standard_call("chunk_map", [connection.require_object(source)]))
-  context.add_operator("chunk_map", chunk_map)
+  context.register_plugin_function("chunk_map", chunk_map)
 
 def register_worker_plugin(context):
   import numpy
@@ -97,4 +97,4 @@ def register_worker_plugin(context):
         return numpy.array([chunk[2][attribute - 2] for chunk in self.owner.chunk_map], dtype="int64")
       else:
         return numpy.array([chunk[3][attribute - 2 - len(self.owner.source_dimensions)] for chunk in self.owner.chunk_map], dtype="int64")
-  context.add_operator("chunk_map", chunk_map)
+  context.register_plugin_function("chunk_map", chunk_map)

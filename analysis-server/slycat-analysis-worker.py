@@ -50,19 +50,19 @@ class worker_factory(slycat.analysis.worker.pyro_object):
   """Top-level factory for worker objects."""
   def __init__(self):
     slycat.analysis.worker.pyro_object.__init__(self)
-    self.operators = {}
+    self.plugin_functions = {}
   def shutdown(self):
     slycat.analysis.worker.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
-  def add_operator(self, name, function):
-    if name in self.operators:
-      raise Exception("Cannot add operator with duplicate name: %s" % name)
-    self.operators[name] = function
-  def call_operator(self, name, *arguments, **keywords):
-    return self.operators[name](self, *arguments, **keywords)
+  def register_plugin_function(self, name, function):
+    if name in self.plugin_functions:
+      raise Exception("Cannot add plugin function with duplicate name: %s" % name)
+    self.plugin_functions[name] = function
+  def call_plugin_function(self, name, *arguments, **keywords):
+    return self.plugin_functions[name](self, *arguments, **keywords)
 
 factory = worker_factory()
 
@@ -70,8 +70,8 @@ class plugin_context(object):
   def __init__(self, factory):
     self.factory = factory
 
-  def add_operator(self, name, function):
-    self.factory.add_operator(name, function)
+  def register_plugin_function(self, name, function):
+    self.factory.register_plugin_function(name, function)
     slycat.analysis.worker.log.debug("Registered operator %s", name)
 context = plugin_context(factory)
 

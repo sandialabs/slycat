@@ -13,4 +13,4 @@ def shutdown(connection):
   connection.proxy.shutdown()
 
 def register_client_plugin(context):
-  context.add_operator("shutdown", shutdown)
+  context.register_plugin_function("shutdown", shutdown)

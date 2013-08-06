@@ -37,10 +37,10 @@ def register_client_plugin(context):
                   evenly split into N chunks, one on each of N workers.
     """
     if schema == "csv-file":
-      return connection.remote_file_array(connection.proxy.call_operator("csv_file", path, **keywords))
+      return connection.remote_file_array(connection.proxy.call_plugin_function("csv_file", path, **keywords))
     elif schema == "prn-file":
-      return connection.remote_file_array(connection.proxy.prn_file(path, **keywords))
+      return connection.remote_file_array(connection.proxy.call_plugin_function("prn_file", path, **keywords))
     else:
       raise connection.InvalidArgument("Unknown load schema: %s" % schema)
-  context.add_operator("load", load)
+  context.register_plugin_function("load", load)
 

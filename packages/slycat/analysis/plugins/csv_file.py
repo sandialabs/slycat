@@ -17,9 +17,9 @@ def register_coordinator_plugin(context):
         raise InvalidArgument("chunk_size must be an integer.")
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_operator("csv_file", worker_index, path, format, delimiter, chunk_size))
+      array_workers.append(worker.call_plugin_function("csv_file", worker_index, path, format, delimiter, chunk_size))
     return factory.pyro_register(slycat.analysis.coordinator.file_array(array_workers, []))
-  context.add_operator("csv_file", csv_file)
+  context.register_plugin_function("csv_file", csv_file)
 
 def register_worker_plugin(context):
   import numpy
@@ -108,4 +108,4 @@ def register_worker_plugin(context):
       return numpy.array([len(self.lines)], dtype="int64")
     def values(self, attribute):
       return numpy.array([line[attribute].strip() for line in self.lines], dtype=self.owner.format[attribute])
-  context.add_operator("csv_file", csv_file)
+  context.register_plugin_function("csv_file", csv_file)
