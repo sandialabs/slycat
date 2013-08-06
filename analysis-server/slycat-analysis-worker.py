@@ -45,35 +45,34 @@ else:
 ######################################################################################################
 ## Load worker plugins.
 
-class factory(slycat.analysis.worker.pyro_object):
+class worker_factory(slycat.analysis.worker.pyro_object):
   """Top-level factory for worker objects."""
   def __init__(self):
     slycat.analysis.worker.pyro_object.__init__(self)
+    self.operators = {}
   def shutdown(self):
     slycat.analysis.worker.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
-
-def make_connection_method(function):
-  def implementation(self, *arguments, **keywords):
-    return function(self, *arguments, **keywords)
-  implementation.__name__ = function.__name__
-  implementation.__doc__ = function.__doc__
-  return implementation
-
-class plugin_context(object):
-  def __init__(self):
-    self.operators = []
-
   def add_operator(self, name, function):
     if name in self.operators:
       raise Exception("Cannot add operator with duplicate name: %s" % name)
-    self.operators.append(name)
-    setattr(factory, name, make_connection_method(function))
+    self.operators[name] = function
+  def call_operator(self, name, *arguments, **keywords):
+    return self.operators[name](self, *arguments, **keywords)
+
+factory = worker_factory()
+
+class plugin_context(object):
+  def __init__(self, factory):
+    self.factory = factory
+
+  def add_operator(self, name, function):
+    self.factory.add_operator(name, function)
     slycat.analysis.worker.log.debug("Registered operator %s", name)
-context = plugin_context()
+context = plugin_context(factory)
 
 plugin_directories = [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")]
 for plugin_directory in plugin_directories:
@@ -106,7 +105,7 @@ nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_p
 ## Run the main event-handling loop.
 
 daemon = Pyro4.Daemon(host=options.host)
-nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory(), "slycat.worker"))
+nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory, "slycat.worker"))
 slycat.analysis.worker.log.info("Listening on %s", options.host)
 daemon.requestLoop()
 

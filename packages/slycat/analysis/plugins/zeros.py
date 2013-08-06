@@ -84,7 +84,7 @@ def register_coordinator_plugin(context):
   def zeros(factory, shape, chunk_sizes, attributes):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.zeros(worker_index, shape, chunk_sizes, attributes))
+      array_workers.append(worker.call_operator("zeros", worker_index, shape, chunk_sizes, attributes))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
   context.add_operator("zeros", zeros)
 

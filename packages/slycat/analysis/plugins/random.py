@@ -88,7 +88,7 @@ def register_coordinator_plugin(context):
   def random(factory, shape, chunk_sizes, seed, attributes):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.random(worker_index, shape, chunk_sizes, seed, attributes))
+      array_workers.append(worker.call_operator("random", worker_index, shape, chunk_sizes, seed, attributes))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
   context.add_operator("random", random)
 

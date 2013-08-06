@@ -43,7 +43,7 @@ def register_coordinator_plugin(context):
     source = factory.require_object(source)
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.chunk_map(worker_index, source_proxy._pyroUri))
+      array_workers.append(worker.call_operator("chunk_map", worker_index, source_proxy._pyroUri))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
   context.add_operator("chunk_map", chunk_map)
 

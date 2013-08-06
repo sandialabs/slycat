@@ -65,7 +65,7 @@ def register_coordinator_plugin(context):
     source = factory.require_object(source)
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.rename(worker_index, source_proxy._pyroUri, attributes, dimensions))
+      array_workers.append(worker.call_operator("rename", worker_index, source_proxy._pyroUri, attributes, dimensions))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
   context.add_operator("rename", rename)
 

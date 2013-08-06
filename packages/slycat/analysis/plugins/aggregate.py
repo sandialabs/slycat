@@ -67,7 +67,7 @@ def register_coordinator_plugin(context):
     source = factory.require_object(source)
     array_workers = []
     for worker_index, (source_proxy, worker) in enumerate(zip(source.workers, factory.workers())):
-      array_workers.append(worker.aggregate(worker_index, source_proxy._pyroUri, expressions))
+      array_workers.append(worker.call_operator("aggregate", worker_index, source_proxy._pyroUri, expressions))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, [source]))
   context.add_operator("aggregate", aggregate)
 

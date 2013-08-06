@@ -58,7 +58,7 @@ def register_coordinator_plugin(context):
   def client_array(factory, initializer, attribute):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.client_array(worker_index, initializer, attribute))
+      array_workers.append(worker.call_operator("client_array", worker_index, initializer, attribute))
     return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
   context.add_operator("client_array", client_array)
 
