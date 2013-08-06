@@ -3,71 +3,18 @@
 # rights in this software.
 
 slycat_analysis_disable_client_plugins = True # Prevent client plugins from being loaded when we import from slycat.analysis
+import slycat.analysis
 
-from slycat.analysis import __file__ as plugin_root
-import slycat.analysis.worker
-
-class factory(slycat.analysis.worker.pyro_object):
-  """Top-level factory for worker objects."""
-  def __init__(self):
-    slycat.analysis.worker.pyro_object.__init__(self)
-  def shutdown(self):
-    slycat.analysis.worker.log.info("Client requested shutdown.")
-    self._pyroDaemon.shutdown()
-  def require_object(self, uri):
-    """Lookup a Pyro URI, returning the corresponding Python object."""
-    return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
-
-def load_plugins(root):
-  import imp
-  import os
-
-  operators = []
-
-  def make_connection_method(function):
-    def implementation(self, *arguments, **keywords):
-      return function(self, *arguments, **keywords)
-    implementation.__name__ = function.__name__
-    implementation.__doc__ = function.__doc__
-    return implementation
-
-  class plugin_context(object):
-    def add_operator(self, name, function):
-      if name in operators:
-        raise Exception("Cannot add operator with duplicate name: %s" % name)
-      operators.append(name)
-      setattr(factory, name, make_connection_method(function))
-      slycat.analysis.worker.log.debug("Registered operator %s", name)
-
-  context = plugin_context()
-
-  plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
-  for plugin_dir in plugin_dirs:
-    try:
-      slycat.analysis.worker.log.debug("Loading plugins from %s", plugin_dir)
-      plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
-      for plugin_name in plugin_names:
-        try:
-          module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_dir])
-          plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
-          if hasattr(plugin, "register_worker_plugin"):
-            plugin.register_worker_plugin(context)
-        except Exception as e:
-          import traceback
-          slycat.analysis.worker.log.error(traceback.format_exc())
-        finally:
-          if module_fp:
-            module_fp.close()
-    except Exception as e:
-      import traceback
-      slycat.analysis.worker.log.error(traceback.format_exc())
-
-load_plugins(plugin_root)
-
+import imp
 import logging
 import optparse
+import os
 import Pyro4
+import slycat.analysis.worker
 import uuid
+
+######################################################################################################
+## Handle command-line arguments.
 
 parser = optparse.OptionParser()
 parser.add_option("--hmac-key", default="slycat1", help="Unique communication key.  Default: %default")
@@ -95,13 +42,76 @@ elif options.log_level is None:
 else:
   raise Exception("Unknown log level: {}".format(options.log_level))
 
+######################################################################################################
+## Load worker plugins.
+
+class factory(slycat.analysis.worker.pyro_object):
+  """Top-level factory for worker objects."""
+  def __init__(self):
+    slycat.analysis.worker.pyro_object.__init__(self)
+  def shutdown(self):
+    slycat.analysis.worker.log.info("Client requested shutdown.")
+    self._pyroDaemon.shutdown()
+  def require_object(self, uri):
+    """Lookup a Pyro URI, returning the corresponding Python object."""
+    return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
+
+def make_connection_method(function):
+  def implementation(self, *arguments, **keywords):
+    return function(self, *arguments, **keywords)
+  implementation.__name__ = function.__name__
+  implementation.__doc__ = function.__doc__
+  return implementation
+
+class plugin_context(object):
+  def __init__(self):
+    self.operators = []
+
+  def add_operator(self, name, function):
+    if name in self.operators:
+      raise Exception("Cannot add operator with duplicate name: %s" % name)
+    self.operators.append(name)
+    setattr(factory, name, make_connection_method(function))
+    slycat.analysis.worker.log.debug("Registered operator %s", name)
+context = plugin_context()
+
+plugin_directories = [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")]
+for plugin_directory in plugin_directories:
+  try:
+    slycat.analysis.worker.log.debug("Loading plugins from %s", plugin_directory)
+    plugin_names = [x[:-3] for x in os.listdir(plugin_directory) if x.endswith(".py")]
+    for plugin_name in plugin_names:
+      try:
+        module_fp, module_path, module_description = imp.find_module(plugin_name, [plugin_directory])
+        plugin = imp.load_module(plugin_name, module_fp, module_path, module_description)
+        if hasattr(plugin, "register_worker_plugin"):
+          plugin.register_worker_plugin(context)
+      except Exception as e:
+        import traceback
+        slycat.analysis.worker.log.error(traceback.format_exc())
+      finally:
+        if module_fp:
+          module_fp.close()
+  except Exception as e:
+    import traceback
+    slycat.analysis.worker.log.error(traceback.format_exc())
+
+######################################################################################################
+## Locate a nameserver to coordinate remote objects.
+
 slycat.analysis.worker.log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
 nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_port)
+
+######################################################################################################
+## Run the main event-handling loop.
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory(), "slycat.worker"))
 slycat.analysis.worker.log.info("Listening on %s", options.host)
 daemon.requestLoop()
+
+######################################################################################################
+## Cleanup.
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.worker", "Pyro.Daemon"]:
