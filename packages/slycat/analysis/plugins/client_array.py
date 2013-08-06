@@ -49,18 +49,8 @@ def register_client_plugin(context):
         {1, 2} 6.0
     """
     attribute = slycat.analysis.client.require_attribute(attribute)
-    return connection.remote_array(connection.proxy.call_operator("client_array", initializer, attribute))
+    return connection.remote_array(connection.proxy.standard_call("client_array", initializer, attribute))
   context.add_operator("array", array)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def client_array(factory, initializer, attribute):
-    array_workers = []
-    for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_operator("client_array", worker_index, initializer, attribute))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
-  context.add_operator("client_array", client_array)
 
 def register_worker_plugin(context):
   import numpy

@@ -79,17 +79,7 @@ def register_client_plugin(context):
     attributes = slycat.analysis.client.require_attributes(attributes)
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("random() requires at least one attribute.")
-    return connection.remote_array(connection.proxy.call_operator("random", shape, chunk_sizes, seed, attributes))
-  context.add_operator("random", random)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def random(factory, shape, chunk_sizes, seed, attributes):
-    array_workers = []
-    for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_operator("random", worker_index, shape, chunk_sizes, seed, attributes))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
+    return connection.remote_array(connection.proxy.standard_call("random", shape, chunk_sizes, seed, attributes))
   context.add_operator("random", random)
 
 def register_worker_plugin(context):

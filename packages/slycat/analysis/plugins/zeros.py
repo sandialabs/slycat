@@ -75,17 +75,7 @@ def register_client_plugin(context):
     attributes = slycat.analysis.client.require_attributes(attributes)
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("zeros() requires at least one attribute.")
-    return connection.remote_array(connection.proxy.call_operator("zeros", shape, chunk_sizes, attributes))
-  context.add_operator("zeros", zeros)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def zeros(factory, shape, chunk_sizes, attributes):
-    array_workers = []
-    for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_operator("zeros", worker_index, shape, chunk_sizes, attributes))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
+    return connection.remote_array(connection.proxy.standard_call("zeros", shape, chunk_sizes, attributes))
   context.add_operator("zeros", zeros)
 
 def register_worker_plugin(context):

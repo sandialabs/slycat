@@ -106,17 +106,7 @@ def register_client_plugin(context):
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
     attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
-    return connection.remote_array(connection.proxy.call_operator("build", shape, chunk_sizes, attributes))
-  context.add_operator("build", build)
-
-def register_coordinator_plugin(context):
-  import slycat.analysis.coordinator
-
-  def build(factory, shape, chunk_sizes, attributes):
-    array_workers = []
-    for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_operator("build", worker_index, shape, chunk_sizes, attributes))
-    return factory.pyro_register(slycat.analysis.coordinator.array(array_workers, []))
+    return connection.remote_array(connection.proxy.standard_call("build", shape, chunk_sizes, attributes))
   context.add_operator("build", build)
 
 def register_worker_plugin(context):
