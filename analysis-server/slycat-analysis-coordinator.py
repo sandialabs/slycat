@@ -24,6 +24,7 @@ parser.add_option("--local-workers", type="int", default=4, help="Number of loca
 parser.add_option("--log-level", default=None, help="Set the default log level to one of: debug, info, warning, error, critical")
 parser.add_option("--nameserver-host", default="127.0.0.1", help="Nameserver host.  Default: %default")
 parser.add_option("--nameserver-port", type="int", default=9090, help="Nameserver port.  Default: %default")
+parser.add_option("--plugins", type="string", default=[], action="append", help="Add a directory to search for plugins.  You may use --plugins multiple time to add multiple locations.")
 options, arguments = parser.parse_args()
 
 Pyro4.config.HMAC_KEY = options.hmac_key
@@ -110,7 +111,7 @@ class plugin_context(object):
     slycat.analysis.coordinator.log.debug("Registered operator %s", name)
 context = plugin_context(factory)
 
-plugin_directories = [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")]
+plugin_directories = [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")] + options.plugins
 for plugin_directory in plugin_directories:
   try:
     slycat.analysis.coordinator.log.debug("Loading plugins from %s", plugin_directory)
@@ -141,6 +142,8 @@ command += ["--hmac-key={}".format(options.hmac_key)]
 command += ["--host=127.0.0.1"]
 if options.log_level is not None:
   command += ["--log-level=%s" % options.log_level]
+for plugin_directory in options.plugins:
+  command += ["--plugins", plugin_directory]
 
 workers = [subprocess.Popen(command) for i in range(options.local_workers)]
 

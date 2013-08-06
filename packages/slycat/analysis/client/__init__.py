@@ -1,3 +1,12 @@
+import logging
+
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+
+log = logging.getLogger("slycat.analysis.client")
+log.setLevel(logging.INFO)
+log.addHandler(handler)
+
 class InvalidArgument(Exception):
   """Exception thrown when the public API is called with invalid arguments."""
   def __init__(self, message):

@@ -13,17 +13,10 @@ are streamed through the system, so you can manipulate arrays that are larger
 than the available system memory.
 """
 
-import logging
 import numpy
+import os
 import Pyro4
 import sys
-
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-
-log = logging.getLogger("slycat.analysis.client")
-log.setLevel(logging.INFO)
-log.addHandler(handler)
 
 Pyro4.config.SERIALIZER = "pickle"
 
@@ -208,9 +201,9 @@ def get_connection():
 connection.remote_array = remote_array
 connection.remote_file_array = remote_file_array
 
-def load_plugins(root):
+def load_plugins(plugin_directory):
+  from slycat.analysis.client import log
   import imp
-  import os
 
   operators = []
 
@@ -238,28 +231,28 @@ def load_plugins(root):
       log.debug("Registered operator %s", name)
   context = plugin_context()
 
-  plugin_dirs = [os.path.join(os.path.dirname(os.path.realpath(root)), "plugins")]
-  for plugin_dir in plugin_dirs:
-    try:
-      log.debug("Loading plugins from %s", plugin_dir)
-      plugin_names = [x[:-3] for x in os.listdir(plugin_dir) if x.endswith(".py")]
-      for plugin_name in plugin_names:
-        try:
-          module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_dir])
-          plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
-          if hasattr(plugin, "register_client_plugin"):
-            plugin.register_client_plugin(context)
-        except Exception as e:
-          import traceback
-          log.error(traceback.format_exc())
-        finally:
-          if module_fp:
-            module_fp.close()
-    except Exception as e:
-      import traceback
-      log.error(traceback.format_exc())
+  try:
+    log.debug("Loading plugins from %s", plugin_directory)
+    plugin_names = [x[:-3] for x in os.listdir(plugin_directory) if x.endswith(".py")]
+    for plugin_name in plugin_names:
+      try:
+        module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_directory])
+        plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
+        if hasattr(plugin, "register_client_plugin"):
+          plugin.register_client_plugin(context)
+      except Exception as e:
+        import traceback
+        log.error(traceback.format_exc())
+      finally:
+        if module_fp:
+          module_fp.close()
+  except Exception as e:
+    import traceback
+    log.error(traceback.format_exc())
 
 import __main__
 if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
-  load_plugins(__file__)
+  load_plugins(os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins"))
+  for plugin_directory in __main__.__dict__.get("slycat_analysis_extra_client_plugins", []):
+    load_plugins(plugin_directory)
 
