@@ -255,7 +255,9 @@ def load_plugins(plugin_directory):
 
 import __main__
 if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
-  load_plugins(os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins"))
   for plugin_directory in __main__.__dict__.get("slycat_analysis_extra_client_plugins", []):
     load_plugins(plugin_directory)
+  for plugin_directory in [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]:
+    load_plugins(plugin_directory)
+  load_plugins(os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins"))
 

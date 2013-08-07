@@ -121,7 +121,9 @@ class plugin_context(object):
     slycat.analysis.coordinator.log.debug("Registered operator %s", name)
 context = plugin_context(factory)
 
-plugin_directories = [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")] + options.plugins
+plugin_directories = [path for path in options.plugins]
+plugin_directories += [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]
+plugin_directories += [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")]
 for plugin_directory in plugin_directories:
   try:
     slycat.analysis.coordinator.log.debug("Loading plugins from %s", plugin_directory)
