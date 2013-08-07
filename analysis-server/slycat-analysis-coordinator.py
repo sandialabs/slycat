@@ -7,6 +7,7 @@ import slycat.analysis
 
 import imp
 import logging
+import multiprocessing
 import optparse
 import os
 import Pyro4
@@ -17,10 +18,15 @@ import threading
 ######################################################################################################
 ## Handle command-line arguments.
 
+try:
+  local_workers = multiprocessing.cpu_count()
+except:
+  local_workers = 4
+
 parser = optparse.OptionParser()
 parser.add_option("--hmac-key", default="slycat1", help="Unique communication key.  Default: %default")
 parser.add_option("--host", default="127.0.0.1", help="Network interface to bind.  Default: %default")
-parser.add_option("--local-workers", type="int", default=4, help="Number of local workers to start.  Default: %default")
+parser.add_option("--local-workers", type="int", default=local_workers, help="Number of local workers to start.  Default: %default")
 parser.add_option("--log-level", default=None, help="Set the default log level to one of: debug, info, warning, error, critical")
 parser.add_option("--nameserver-host", default="127.0.0.1", help="Nameserver host.  Default: %default")
 parser.add_option("--nameserver-port", type="int", default=9090, help="Nameserver port.  Default: %default")
