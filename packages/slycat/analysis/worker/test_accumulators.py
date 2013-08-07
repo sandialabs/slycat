@@ -75,6 +75,14 @@ def test_summation_basic_string():
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), None)
 
+def test_histogram_nan():
+  a = numpy.arange(100, dtype="float64")
+  a[3] = numpy.nan
+  a[55] = numpy.nan
+  h = histogram(bins=numpy.array([0, 25, 50, 75, 100]))
+  h.accumulate(a)
+  numpy.testing.assert_array_equal(h.result(), numpy.array([24, 25, 24, 25]))
+
 def test_histogram_reduce():
   h1 = histogram(bins=numpy.linspace(0, 1, 10))
   h1.accumulate(numpy.random.random(100))
