@@ -2,7 +2,7 @@ def register_client_plugin(context):
   import slycat.analysis.client
   def test(connection, message="test"):
     slycat.analysis.client.log.debug(message)
-    connection.proxy.call_operator("test", message)
+    connection.proxy.call_plugin_function("test", message)
   context.register_plugin_function("test", test)
 
 def register_coordinator_plugin(context):
@@ -10,7 +10,7 @@ def register_coordinator_plugin(context):
   def test(factory, message):
     slycat.analysis.coordinator.log.debug(message)
     for worker in factory.workers():
-      worker.call_operator("test", message)
+      worker.call_plugin_function("test", message)
   context.register_plugin_function("test", test)
 
 def register_worker_plugin(context):
