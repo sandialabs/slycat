@@ -3,76 +3,77 @@ import sys
 
 from slycat.analysis.worker.accumulator import *
 
-def test_average_basic_string():
+def test_average_basic_nan():
   a = average()
-  a.accumulate(numpy.array(["a", "b", "c"]))
-  numpy.testing.assert_equal(a.result(), None)
+  a.accumulate(numpy.array([1, 2, 3]))
+  a.accumulate(numpy.array([4, numpy.nan, 5]))
+  numpy.testing.assert_equal(a.result(), 3)
 
-def test_average_reduce_string():
+def test_average_basic_string():
   a = average()
   a.accumulate(numpy.array(["b", "c", "d"]))
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), None)
 
-def test_count_basic_string():
+def test_count_basic_nan():
   a = count()
-  a.accumulate(numpy.array(["a", "b", "c"]))
-  numpy.testing.assert_equal(a.result(), 3)
+  a.accumulate(numpy.array([1, 2, 3]))
+  a.accumulate(numpy.array([4, numpy.nan, 5]))
+  numpy.testing.assert_equal(a.result(), 5)
 
-def test_count_reduce_string():
+def test_count_basic_string():
   a = count()
   a.accumulate(numpy.array(["b", "c", "d"]))
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), 6)
 
-def test_distinct_basic_string():
+def test_distinct_basic_nan():
   a = distinct()
-  a.accumulate(numpy.array(["a", "b", "c"]))
+  a.accumulate(numpy.array([1, 2, 2]))
+  a.accumulate(numpy.array([numpy.nan, numpy.nan, 5]))
   numpy.testing.assert_equal(a.result(), 3)
 
-def test_distinct_reduce_string():
+def test_distinct_basic_string():
   a = distinct()
   a.accumulate(numpy.array(["b", "c", "d"]))
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), 4)
 
-def test_maximum_basic_string():
+def test_maximum_basic_nan():
   a = maximum()
-  a.accumulate(numpy.array(["a", "b", "c"]))
-  numpy.testing.assert_equal(a.result(), "c")
+  a.accumulate(numpy.array([1, 2, 3]))
+  a.accumulate(numpy.array([4, numpy.nan, 6]))
+  numpy.testing.assert_equal(a.result(), 6)
 
-def test_maximum_reduce_string():
+def test_maximum_basic_string():
   a = maximum()
   a.accumulate(numpy.array(["b", "c", "d"]))
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), "d")
 
-def test_minimum_basic_string():
+def test_minimum_basic_nan():
   a = minimum()
-  a.accumulate(numpy.array(["a", "b", "c"]))
-  numpy.testing.assert_equal(a.result(), "a")
+  a.accumulate(numpy.array([1, numpy.nan, 3]))
+  a.accumulate(numpy.array([4, 5, 6]))
+  numpy.testing.assert_equal(a.result(), 1)
 
-def test_minimum_reduce_string():
+def test_minimum_basic_string():
   a = minimum()
   a.accumulate(numpy.array(["b", "c", "d"]))
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), "a")
+
+def test_summation_basic_nan():
+  a = summation()
+  a.accumulate(numpy.array([1, numpy.nan, 3]))
+  a.accumulate(numpy.array([4, 5, 6]))
+  numpy.testing.assert_equal(a.result(), 19)
 
 def test_summation_basic_string():
   a = summation()
-  a.accumulate(numpy.array(["a", "b", "c"]))
-  numpy.testing.assert_equal(a.result(), None)
-
-def test_summation_reduce_string():
-  a = summation()
   a.accumulate(numpy.array(["b", "c", "d"]))
   a.accumulate(numpy.array(["a", "b", "c"]))
   numpy.testing.assert_equal(a.result(), None)
-
-def test_histogram_basic():
-  h = histogram(10)
-  h.accumulate(numpy.random.random(100))
-  numpy.testing.assert_equal(len(h.result()), 10)
 
 def test_histogram_reduce():
   h1 = histogram(bins=numpy.linspace(0, 1, 10))

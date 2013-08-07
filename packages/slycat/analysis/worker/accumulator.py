@@ -38,8 +38,8 @@ class average(accumulator):
     self.sum = 0.0
   def accumulate(self, observations):
     if observations.dtype.char != "S":
-      self.count += observations.size
-      self.sum += observations.sum()
+      self.count += numpy.sum(~numpy.isnan(observations))
+      self.sum += numpy.nansum(observations)
   def reduce(self, other):
     self.count += other.count
     self.sum += other.sum
@@ -50,7 +50,10 @@ class count(accumulator):
   def __init__(self):
     self.count = 0
   def accumulate(self, observations):
-    self.count += observations.size
+    if observations.dtype.char == "S":
+      self.count += observations.size
+    else:
+      self.count += numpy.sum(~numpy.isnan(observations))
   def reduce(self, other):
     self.count += other.count
   def result(self):
@@ -59,11 +62,17 @@ class count(accumulator):
 class distinct(accumulator):
   def __init__(self):
     self.unique = None
+  @staticmethod
+  def flexible_unique(observations):
+    results = numpy.unique(observations)
+    if results.dtype.char != "S":
+      results = results[~numpy.isnan(results)]
+    return results
   def accumulate(self, observations):
     if self.unique is None:
-      self.unique = numpy.unique(observations)
+      self.unique = distinct.flexible_unique(observations)
     else:
-      self.unique = numpy.union1d(self.unique, observations)
+      self.unique = numpy.union1d(self.unique, distinct.flexible_unique(observations))
   def reduce(self, other):
     self.unique = other.unique if self.unique is None else self.unique if other.unique is None else numpy.union1d(self.unique, other.unique)
   def result(self):
@@ -77,7 +86,7 @@ class maximum(accumulator):
     if observations.dtype.char == "S":
       return max(observations)
     else:
-      return observations.max()
+      return numpy.nanmax(observations)
   def accumulate(self, observations):
     self.max = maximum.flexible_max(observations) if self.max is None else max(self.max, maximum.flexible_max(observations))
   def reduce(self, other):
@@ -93,7 +102,7 @@ class minimum(accumulator):
     if observations.dtype.char == "S":
       return min(observations)
     else:
-      return observations.min()
+      return numpy.nanmin(observations)
   def accumulate(self, observations):
     self.min = minimum.flexible_min(observations) if self.min is None else min(self.min, minimum.flexible_min(observations))
   def reduce(self, other):
@@ -107,8 +116,8 @@ class summation(accumulator):
     self.sum = 0.0
   def accumulate(self, observations):
     if observations.dtype.char != "S":
-      self.count += observations.size
-      self.sum += observations.sum()
+      self.count += numpy.sum(~numpy.isnan(observations))
+      self.sum += numpy.nansum(observations)
   def reduce(self, other):
     self.count += other.count
     self.sum += other.sum
