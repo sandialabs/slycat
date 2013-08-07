@@ -100,3 +100,18 @@ class summation(accumulator):
     self.sum += other.sum
   def result(self):
     return self.sum if self.count else None
+
+class histogram(accumulator):
+  def __init__(self, bins):
+    self.bins = bins
+    self.histogram = None
+  def accumulate(self, observations):
+    if self.histogram is None:
+      self.histogram = numpy.histogram(observations, self.bins)[0]
+    else:
+      self.histogram += numpy.histogram(observations, self.bins)[0]
+  def reduce(self, other):
+    self.histogram = other.histogram if self.histogram is None else self.histogram if other.histogram is None else self.histogram + other.histogram
+  def result(self):
+    return self.histogram
+
