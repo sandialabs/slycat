@@ -75,7 +75,7 @@ def register_client_plugin(context):
     attributes = slycat.analysis.client.require_attributes(attributes)
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("zeros() requires at least one attribute.")
-    return connection.remote_array(connection.proxy.standard_call("zeros", [], shape, chunk_sizes, attributes))
+    return connection.create_remote_array("zeros", [], shape, chunk_sizes, attributes)
   context.register_plugin_function("zeros", zeros)
 
 def register_worker_plugin(context):

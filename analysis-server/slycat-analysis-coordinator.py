@@ -74,6 +74,7 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
     self.nameserver = nameserver
     self.plugin_functions = {}
   def shutdown(self):
+    """Perform a clean shutdown."""
     slycat.analysis.coordinator.log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
   def workers(self):
@@ -83,12 +84,15 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
   def register_plugin_function(self, name, function):
+    """Register a plugin function that can be called from the client by name."""
     if name in self.plugin_functions:
       raise Exception("Cannot add plugin function with duplicate name: %s" % name)
     self.plugin_functions[name] = function
   def call_plugin_function(self, name, *arguments, **keywords):
+    """Call a plugin function by name."""
     return self.plugin_functions[name](self, *arguments, **keywords)
-  def standard_call(self, name, sources, *arguments, **keywords):
+  def create_remote_array(self, name, sources, *arguments, **keywords):
+    """Creates a remote array using plugin functions on the workers."""
     sources = [self.require_object(source) for source in sources]
     array_workers = []
     for worker_index, worker in enumerate(self.workers()):

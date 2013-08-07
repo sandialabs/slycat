@@ -24,7 +24,7 @@ def register_client_plugin(context):
         {7} MPG, string
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.standard_call("attributes", [connection.require_object(source)]))
+    return connection.create_remote_array("attributes", [source])
   context.register_plugin_function("attributes", attributes)
 
 def register_worker_plugin(context):

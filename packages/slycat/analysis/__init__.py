@@ -29,6 +29,9 @@ class connection(object):
   def require_object(self, object):
     """Lookup the Pyro URI for a Python object."""
     return object.proxy._pyroUri
+  def create_remote_array(self, name, sources, *arguments, **keywords):
+    """Creates a remote array using plugin functions on the workers."""
+    return remote_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.

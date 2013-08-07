@@ -21,7 +21,7 @@ def register_client_plugin(context):
       # Now, use array2 in place of array1, to avoid recomputing.
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.standard_call("materialize", [connection.require_object(source)]))
+    return connection.create_remote_array("materialize", [source])
   context.register_plugin_function("materialize", materialize)
 
 def register_worker_plugin(context):

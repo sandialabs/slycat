@@ -49,7 +49,7 @@ def register_client_plugin(context):
         {1, 2} 6.0
     """
     attribute = slycat.analysis.client.require_attribute(attribute)
-    return connection.remote_array(connection.proxy.standard_call("client_array", [], initializer, attribute))
+    return connection.create_remote_array("client_array", [], initializer, attribute)
   context.register_plugin_function("array", array)
 
 def register_worker_plugin(context):

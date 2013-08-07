@@ -8,7 +8,7 @@ def register_client_plugin(context):
     source = slycat.analysis.client.require_array(source)
     dimensions = slycat.analysis.client.require_dimension_names(dimensions)
     attributes = slycat.analysis.client.require_attribute_names(attributes)
-    return connection.remote_array(connection.proxy.standard_call("redimension", [connection.require_object(source)], dimensions, attributes))
+    return connection.create_remote_array("redimension", [source], dimensions, attributes)
   context.register_plugin_function("redimension", redimension)
 
 def register_worker_plugin(context):

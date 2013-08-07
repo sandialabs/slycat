@@ -57,7 +57,7 @@ def register_client_plugin(context):
       expressions = [expressions]
     elif isinstance(expressions, list):
       expressions = [(expression, None) if isinstance(expression, basestring) else expression for expression in expressions]
-    return connection.remote_array(connection.proxy.standard_call("aggregate", [connection.require_object(source)], expressions))
+    return connection.create_remote_array("aggregate", [source], expressions)
   context.register_plugin_function("aggregate", aggregate)
 
 def register_worker_plugin(context):

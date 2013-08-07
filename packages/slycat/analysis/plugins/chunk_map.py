@@ -33,7 +33,7 @@ def register_client_plugin(context):
         {8} 3, 1, 80, 80, 20, 20
     """
     source = slycat.analysis.client.require_array(source)
-    return connection.remote_array(connection.proxy.standard_call("chunk_map", [connection.require_object(source)]))
+    return connection.create_remote_array("chunk_map", [source])
   context.register_plugin_function("chunk_map", chunk_map)
 
 def register_worker_plugin(context):

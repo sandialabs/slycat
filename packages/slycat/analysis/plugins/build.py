@@ -106,7 +106,7 @@ def register_client_plugin(context):
     if len(attributes) < 1:
       raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
     attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
-    return connection.remote_array(connection.proxy.standard_call("build", [], shape, chunk_sizes, attributes))
+    return connection.create_remote_array("build", [], shape, chunk_sizes, attributes)
   context.register_plugin_function("build", build)
 
 def register_worker_plugin(context):
