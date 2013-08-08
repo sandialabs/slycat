@@ -73,7 +73,7 @@ def register_worker_plugin(context):
       global_accumulator = distinct()
       for accumulator in accumulators:
         global_accumulator.reduce(accumulator)
-      return global_accumulator.result()
+      return global_accumulator.result()[0]
 
     def compute_dimensions(self):
       """Ensures that all dimension bounds are up-to-date."""
@@ -99,13 +99,13 @@ def register_worker_plugin(context):
       chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
       all_chunks = list(slycat.analysis.worker.worker_chunks(shape, chunk_sizes, len(self.siblings)))
       if self.worker_index == 0:
-        context.log.info("dimensions: %s", self.target_dimension_sources)
-        context.log.info("attributes: %s", self.target_attribute_sources)
+        slycat.analysis.worker.log.debug("dimensions: %s", self.target_dimension_sources)
+        slycat.analysis.worker.log.debug("attributes: %s", self.target_attribute_sources)
       self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in all_chunks if worker_index == self.worker_index]
       with self.source.iterator() as iterator:
         for ignored in iterator:
           for source_coordinates, target_coordinates in remap(iterator, self.target_dimension_sources):
-            context.log.info("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
+            slycat.analysis.worker.log.debug("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
 
   class redimension_array_iterator(slycat.analysis.worker.array_iterator):
     def __init__(self, owner):
@@ -128,7 +128,7 @@ def register_worker_plugin(context):
     def __init__(self, coordinates, shape, attributes):
       self._coordinates = coordinates
       self._shape = shape
-      self._values = [numpy.empty(shape, dtype=attribute["type"]) for attribute in attributes]
+      self._values = [numpy.ma.empty(shape, dtype=attribute["type"]) for attribute in attributes]
     def coordinates(self):
       return self._coordinates
     def shape(self):

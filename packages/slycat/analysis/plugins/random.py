@@ -115,7 +115,7 @@ def register_worker_plugin(context):
         if worker_index == self.owner.worker_index:
           self._coordinates = begin
           self._shape = end - begin
-          self._values = [self.generator.uniform(size=self._shape).astype(attribute["type"]) for attribute in self.owner._attributes]
+          self._values = [numpy.ma.asarray(self.generator.uniform(size=self._shape).astype(attribute["type"])) for attribute in self.owner._attributes]
           break
     def coordinates(self):
       return self._coordinates

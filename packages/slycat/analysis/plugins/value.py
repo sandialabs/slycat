@@ -22,6 +22,8 @@ def value(connection, source, attributes=None):
   If the attributes parameter is a sequence of integers / strings, a tuple of
   first values will be returned.
 
+  Null attribute values will be returned as None in the results.
+
   Note that extracting first values from an array means moving attribute data
   to the client, which may be impractically slow or exceed available client
   memory for large arrays.
@@ -45,7 +47,11 @@ def value(connection, source, attributes=None):
     else:
       raise InvalidArgument("Attribute must be an integer index or a name: {}".format(attribute))
 
-    return numpy.nditer(iterator.values(attribute)).next().item()
+    values = iterator.values(attribute)
+    for coordinates, value in numpy.ndenumerate(values):
+      if not values.mask[coordinates]:
+        return value
+    return None
 
   iterator = source.proxy.iterator()
   source_attributes = source.attributes

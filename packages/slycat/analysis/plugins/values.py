@@ -63,7 +63,7 @@ def values(connection, source, attributes=None):
     result_type = numpy.result_type(*[values.dtype for values in chunk_values])
 
     # Create the result array and populate it ...
-    result = numpy.empty(source.shape, dtype=result_type)
+    result = numpy.ma.empty(source.shape, dtype=result_type)
     for coordinates, values in zip(chunk_coordinates, chunk_values):
       hyperslice = [slice(coordinate, coordinate + values.shape[index]) for index, coordinate in enumerate(coordinates)]
       result[hyperslice] = values

@@ -107,5 +107,5 @@ def register_worker_plugin(context):
     def shape(self):
       return numpy.array([len(self.lines)], dtype="int64")
     def values(self, attribute):
-      return numpy.array([line[attribute].strip() for line in self.lines], dtype=self.owner.format[attribute])
+      return numpy.ma.array([line[attribute].strip() for line in self.lines], dtype=self.owner.format[attribute])
   context.register_plugin_function("csv_file", csv_file)

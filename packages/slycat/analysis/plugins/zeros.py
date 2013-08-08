@@ -114,7 +114,7 @@ def register_worker_plugin(context):
     def shape(self):
       return self._shape
     def values(self, index):
-      return numpy.zeros(self._shape, dtype=self.owner._attributes[index]["type"])
+      return numpy.ma.zeros(self._shape, dtype=self.owner._attributes[index]["type"])
   context.register_plugin_function("zeros", zeros)
 
 

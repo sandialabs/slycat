@@ -90,11 +90,11 @@ def register_worker_plugin(context):
       return numpy.array([len(self.owner.chunk_map)], dtype="int64")
     def values(self, attribute):
       if attribute == 0: # worker
-        return numpy.array([chunk[0] for chunk in self.owner.chunk_map], dtype="int64")
+        return numpy.ma.array([chunk[0] for chunk in self.owner.chunk_map], dtype="int64")
       elif attribute == 1: # index
-        return numpy.array([chunk[1] for chunk in self.owner.chunk_map], dtype="int64")
+        return numpy.ma.array([chunk[1] for chunk in self.owner.chunk_map], dtype="int64")
       elif attribute >= 2 and attribute < 2 + len(self.owner.source_dimensions): # coordinates
-        return numpy.array([chunk[2][attribute - 2] for chunk in self.owner.chunk_map], dtype="int64")
+        return numpy.ma.array([chunk[2][attribute - 2] for chunk in self.owner.chunk_map], dtype="int64")
       else:
-        return numpy.array([chunk[3][attribute - 2 - len(self.owner.source_dimensions)] for chunk in self.owner.chunk_map], dtype="int64")
+        return numpy.ma.array([chunk[3][attribute - 2 - len(self.owner.source_dimensions)] for chunk in self.owner.chunk_map], dtype="int64")
   context.register_plugin_function("chunk_map", chunk_map)

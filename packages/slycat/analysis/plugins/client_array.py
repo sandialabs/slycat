@@ -62,7 +62,7 @@ def register_worker_plugin(context):
   class client_array_array(slycat.analysis.worker.array):
     def __init__(self, worker_index, initializer, attribute):
       slycat.analysis.worker.array.__init__(self, worker_index)
-      self.chunk = numpy.array(initializer, dtype=attribute["type"])
+      self.chunk = numpy.ma.array(initializer, dtype=attribute["type"])
       self.attribute = attribute
     def dimensions(self):
       return [{"name":"d%s" % index, "type":"int64", "begin":0, "end":size, "chunk-size":size} for index, size in enumerate(self.chunk.shape)]
@@ -83,9 +83,9 @@ def register_worker_plugin(context):
         raise StopIteration()
       self.iterations += 1
     def coordinates(self):
-      return numpy.array([0], dtype="int64")
+      return numpy.zeros(len(self.owner.chunk.shape), dtype="int64")
     def shape(self):
-      return self.owner.chunk.shape
+      return numpy.array(self.owner.chunk.shape, dtype="int64")
     def values(self, attribute):
       return self.owner.chunk
   context.register_plugin_function("client_array", client_array)

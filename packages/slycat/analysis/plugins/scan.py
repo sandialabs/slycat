@@ -10,6 +10,8 @@ import time
 def scan(connection, source, format="dcsv", separator=", ", stream=sys.stdout):
   """Format the contents of an array, writing them to a stream.
 
+  Signature: scan(source, format="dcsv", separator=", ", stream=sys.stdout)
+
   Scanning an array is the easiest way to see its contents formatted for
   human-consumption.  Use the stream parameter to control where the formatted
   output is written, whether to stdout (the default), a file, or any other

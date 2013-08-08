@@ -112,8 +112,7 @@ def register_worker_plugin(context):
         return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
 
     def calculate_local_minimaxes(self):
-      source_attributes = self.source.attributes()
-      minimaxes = [(slycat.analysis.worker.accumulator.minimum(), slycat.analysis.worker.accumulator.maximum()) for source_attribute in source_attributes]
+      minimaxes = [(slycat.analysis.worker.accumulator.create("min", attribute["type"]), slycat.analysis.worker.accumulator.create("max", attribute["type"])) for attribute in self.source.attributes()]
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           for index, (minimum, maximum) in enumerate(minimaxes):
@@ -130,7 +129,7 @@ def register_worker_plugin(context):
       minimaxes = [Pyro4.async(sibling).calculate_local_minimaxes() for sibling in self.siblings]
       minimaxes = [minimax.value for minimax in minimaxes]
       minimaxes = zip(*minimaxes)
-      global_minimaxes = [(slycat.analysis.worker.accumulator.minimum(), slycat.analysis.worker.accumulator.maximum()) for minimax in minimaxes]
+      global_minimaxes = [(slycat.analysis.worker.accumulator.create("min", attribute["type"]), slycat.analysis.worker.accumulator.create("max", attribute["type"])) for attribute in self.source.attributes()]
       for (global_minimum, global_maximum), remote_minimaxes in zip(global_minimaxes, minimaxes):
         for remote_minimum, remote_maximum in remote_minimaxes:
           global_minimum.reduce(remote_minimum)
@@ -138,7 +137,7 @@ def register_worker_plugin(context):
 
       bins_list = []
       for global_minimum, global_maximum in global_minimaxes:
-        if isinstance(global_minimum.result(), basestring):
+        if global_minimum.result().dtype.char == "S":
           bins_list.append(numpy.linspace(0, 1, self.bins + 1))
         else:
           bins_list.append(numpy.linspace(global_minimum.result(), global_maximum.result(), self.bins + 1))

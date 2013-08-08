@@ -63,7 +63,7 @@ def register_worker_plugin(context):
       return numpy.array([len(self.owner.source_attributes)], dtype="int64")
     def values(self, attribute):
       if attribute == 0:
-        return numpy.array([attribute["name"] for attribute in self.owner.source_attributes], dtype="string")
+        return numpy.ma.array([attribute["name"] for attribute in self.owner.source_attributes], dtype="string")
       elif attribute == 1:
-        return numpy.array([attribute["type"] for attribute in self.owner.source_attributes], dtype="string")
+        return numpy.ma.array([attribute["type"] for attribute in self.owner.source_attributes], dtype="string")
   context.register_plugin_function("attributes", attributes)

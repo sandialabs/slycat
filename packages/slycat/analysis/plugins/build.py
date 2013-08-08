@@ -146,7 +146,7 @@ def register_worker_plugin(context):
           offset = self.iterator.coordinates()[dimension]
           shape = tuple(self.iterator.shape())
           slices = [slice(end) for end in shape]
-          return offset + numpy.mgrid[slices][dimension]
+          return numpy.ma.asarray(offset + numpy.mgrid[slices][dimension])
       except Exception as e:
         log.error("symbol_lookup exception: %s", e)
 
@@ -171,7 +171,7 @@ def register_worker_plugin(context):
       #log.debug("Evaluating %s." % ast.dump(expression))
       result = slycat.analysis.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
       if isinstance(result, int) or isinstance(result, float):
-        temp = numpy.empty(self._shape)
+        temp = numpy.ma.empty(self._shape)
         temp.fill(result)
         result = temp
       return result.astype(attribute["type"])

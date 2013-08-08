@@ -33,7 +33,7 @@ class pyro_object(object):
     return thing
 
 class array(pyro_object):
-  """Abstract interface for a multi-attribute, multi-dimensional array."""
+  """Abstract interface for a sparse, multi-attribute, multi-dimensional array."""
   def __init__(self, worker_index):
     pyro_object.__init__(self)
     self.worker_index = worker_index
@@ -62,16 +62,16 @@ class array_iterator(pyro_object):
   def __iter__(self):
     return self
   def next(self):
-    """Advances the iterator to the next chunk.  Raises StopIteration if there are no more chunks."""
+    """Advance the iterator to the next chunk.  Raises StopIteration if there are no more chunks."""
     raise NotImplementedError()
   def coordinates(self):
-    """Returns the lowest-numbered coordinates along each dimension of the current chunk."""
+    """Return the lowest-numbered coordinates along each dimension of the current chunk as a 1D Numpy array of int64s."""
     raise NotImplementedError()
   def shape(self):
-    """Returns the shape (size along each dimension) of the current chunk."""
+    """Return the shape (size along each dimension) of the current chunk as a 1D Numpy array of int64s."""
     raise NotImplementedError()
   def values(self, attribute):
-    """Returns the array values for the given attribute index as a dense NumPy array."""
+    """Return the array values for the given attribute index as a Numpy masked array."""
     raise NotImplementedError()
 
 class null_array_iterator(array_iterator):

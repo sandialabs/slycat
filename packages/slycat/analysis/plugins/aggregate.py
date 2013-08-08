@@ -87,14 +87,14 @@ def register_worker_plugin(context):
     def dimensions(self):
       return [{"name":"i", "type":"int64", "begin":0, "end":1, "chunk-size":1}]
     def attributes(self):
-      return [{"name":"%s_%s" % (operator, attribute["name"]), "type":attribute["type"]} for operator, attribute, index in self.expressions]
+      return [{"name":"%s_%s" % (operator, attribute["name"]), "type":slycat.analysis.worker.accumulator.create(operator, attribute["type"]).dtype()} for operator, attribute, index in self.expressions]
     def iterator(self):
       if self.worker_index == 0:
         return self.pyro_register(aggregate_array_iterator(self))
       else:
         return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
     def calculate_local(self):
-      accumulators = [slycat.analysis.worker.accumulator.create(operator) for operator, attribute, index in self.expressions]
+      accumulators = [slycat.analysis.worker.accumulator.create(operator, attribute["type"]) for operator, attribute, index in self.expressions]
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           for accumulator, (operator, attribute, index) in zip(accumulators, self.expressions):
@@ -104,7 +104,7 @@ def register_worker_plugin(context):
       accumulators = [Pyro4.async(sibling).calculate_local() for sibling in self.siblings]
       accumulators = [accumulator.value for accumulator in accumulators]
       accumulators = zip(*accumulators)
-      global_accumulators = [slycat.analysis.worker.accumulator.create(operator) for operator, attribute, index in self.expressions]
+      global_accumulators = [slycat.analysis.worker.accumulator.create(operator, attribute["type"]) for operator, attribute, index in self.expressions]
       for local_accumulator, remote_accumulators in zip(global_accumulators, accumulators):
         for remote_accumulator in remote_accumulators:
           local_accumulator.reduce(remote_accumulator)
@@ -124,5 +124,5 @@ def register_worker_plugin(context):
     def shape(self):
       return numpy.array([1], dtype="int64")
     def values(self, attribute):
-      return numpy.array([self.accumulators[attribute].result()])
+      return self.accumulators[attribute].result()
   context.register_plugin_function("aggregate", aggregate)

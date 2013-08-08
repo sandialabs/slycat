@@ -96,7 +96,7 @@ def register_worker_plugin(context):
       return numpy.array([len(self.lines)], dtype="int64")
     def values(self, attribute):
       if attribute == 0: # Index
-        return numpy.array([int(line[attribute]) for line in self.lines], dtype="int64")
+        return numpy.ma.array([int(line[attribute]) for line in self.lines], dtype="int64")
       else:
-        return numpy.array([float(line[attribute]) for line in self.lines], dtype="float64")
+        return numpy.ma.array([float(line[attribute]) for line in self.lines], dtype="float64")
   context.register_plugin_function("prn_file", prn_file)

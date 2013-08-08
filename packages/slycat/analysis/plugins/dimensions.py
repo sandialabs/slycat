@@ -57,14 +57,14 @@ def register_worker_plugin(context):
       return numpy.array([len(self.owner.source_dimensions)], dtype="int64")
     def values(self, attribute):
       if attribute == 0:
-        return numpy.array([dimension["name"] for dimension in self.owner.source_dimensions], dtype="string")
+        return numpy.ma.array([dimension["name"] for dimension in self.owner.source_dimensions], dtype="string")
       elif attribute == 1:
-        return numpy.array([dimension["type"] for dimension in self.owner.source_dimensions], dtype="string")
+        return numpy.ma.array([dimension["type"] for dimension in self.owner.source_dimensions], dtype="string")
       elif attribute == 2:
-        return numpy.array([dimension["begin"] for dimension in self.owner.source_dimensions], dtype="int64")
+        return numpy.ma.array([dimension["begin"] for dimension in self.owner.source_dimensions], dtype="int64")
       elif attribute == 3:
-        return numpy.array([dimension["end"] for dimension in self.owner.source_dimensions], dtype="int64")
+        return numpy.ma.array([dimension["end"] for dimension in self.owner.source_dimensions], dtype="int64")
       elif attribute == 4:
-        return numpy.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
+        return numpy.ma.array([dimension["chunk-size"] for dimension in self.owner.source_dimensions], dtype="int64")
 
   context.register_plugin_function("dimensions", dimensions)
