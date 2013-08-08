@@ -6,7 +6,74 @@ def register_client_plugin(context):
   import slycat.analysis.client
 
   def histogram(connection, source, bins=10):
-    """Return an array containing one-or-more histograms from a source array.
+    """Compute histograms for each attribute of a source array.
+
+    Signature: histogram(source, bins=10)
+
+    Returns a new 1D array with length N (number of bins) and the same number
+    of attributes as the source array.  Each output attribute will contain a
+    histogram (count of input values that fell within the range of a given bin)
+    computed from the corresponding attribute in the source array.
+
+    If the "bins" parameter is an integer (the default), it specifies that each
+    output histogram will be computed using N equal-width bins sized to include
+    the full range of the corresponding input attribute values.  If the "bins"
+    parameter is an array-like object (a list or a numpy array), it should
+    contain N+1 values which designate the edges of N bins, allowing you to
+    specify varying-width bins.
+
+    Note that if you specify a bin count, the algorithm must make two passes
+    over the source data - one to compute the bin edges for the data, and a
+    second to compute the histograms.  When working with large data, you may
+    wish to supply the bin edges explicitly, to save time.
+
+    Also consider that if you specify bin edges, they will apply to every
+    attribute in the soure array.  This may-or-may-not make sense, depending on
+    the domain of the source attributes.
+
+    String attributes will produce empty (all zero count) histograms.
+
+      >>> autos = load("../data/automobiles.csv", format=["string"]*2 + ["float64"]*6)
+
+      >>> scan(attributes(autos))
+        {i} name, type
+      * {0} Model, string
+        {1} Origin, string
+        {2} Year, float64
+        {3} Cylinders, float64
+        {4} Acceleration, float64
+        {5} Displacement, float64
+        {6} Horsepower, float64
+        {7} MPG, float64
+
+      >>> scan(histogram(autos, bins=10))
+        {bin} hist_Model, hist_Origin, hist_Year, hist_Cylinders, hist_Acceleration, hist_Displacement, hist_Horsepower, hist_MPG
+      * {0} 0, 0, 64, 4, 7, 108, 28, 13
+        {1} 0, 0, 28, 0, 18, 91, 95, 78
+        {2} 0, 0, 40, 207, 51, 31, 120, 73
+        {3} 0, 0, 27, 0, 86, 13, 46, 61
+        {4} 0, 0, 30, 3, 93, 57, 19, 54
+        {5} 0, 0, 62, 0, 81, 3, 49, 48
+        {6} 0, 0, 36, 84, 45, 43, 14, 38
+        {7} 0, 0, 29, 0, 14, 34, 16, 22
+        {8} 0, 0, 29, 0, 7, 17, 5, 5
+        {9} 0, 0, 61, 108, 4, 9, 8, 6
+
+      # Find the range of values for miles-per-gallon:
+      >>> mpg = project(autos, "MPG")
+
+      >>> scan(aggregate(mpg, ["min", "max"]))
+        {i} min_MPG, max_MPG
+      * {0} 9.0, 46.6
+
+      # Create custom bins that divide the data into "low", "medium", and "high" fuel economy:
+      bins = [0, 20, 35, 100]
+
+      >>> scan(histogram(mpg, bins))
+       {bin} hist_MPG
+      * {0} 214
+        {1} 148
+        {2} 36
     """
     source = slycat.analysis.client.require_array(source)
     if isinstance(bins, int):
