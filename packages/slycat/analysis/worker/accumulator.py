@@ -36,6 +36,8 @@ class average(accumulator):
   def __init__(self):
     self.count = 0
     self.sum = 0.0
+  def __repr__(self):
+    return "<slycat.analysis.worker.accumulator.average count: %s sum: %s result: %s>" % (self.count, self.sum, self.result())
   def accumulate(self, observations):
     if observations.dtype.char != "S":
       self.count += numpy.sum(~numpy.isnan(observations))
@@ -49,6 +51,8 @@ class average(accumulator):
 class count(accumulator):
   def __init__(self):
     self.count = 0
+  def __repr__(self):
+    return "<slycat.analysis.worker.accumulator.count result: %s>" % (self.result())
   def accumulate(self, observations):
     if observations.dtype.char == "S":
       self.count += observations.size
@@ -62,6 +66,8 @@ class count(accumulator):
 class distinct(accumulator):
   def __init__(self):
     self.unique = None
+  def __repr__(self):
+    return "<slycat.analysis.worker.accumulator.distinct result: %s>" % (self.result())
   @staticmethod
   def flexible_unique(observations):
     results = numpy.unique(observations)
@@ -81,6 +87,8 @@ class distinct(accumulator):
 class maximum(accumulator):
   def __init__(self):
     self.max = None
+  def __repr__(self):
+    return "<slycat.analysis.worker.accumulator.maximum result: %s>" % (self.result())
   @staticmethod
   def flexible_max(observations):
     if observations.dtype.char == "S":
@@ -97,6 +105,8 @@ class maximum(accumulator):
 class minimum(accumulator):
   def __init__(self):
     self.min = None
+  def __repr__(self):
+    return "<slycat.analysis.worker.accumulator.minimum result: %s>" % (self.result())
   @staticmethod
   def flexible_min(observations):
     if observations.dtype.char == "S":
@@ -114,6 +124,8 @@ class summation(accumulator):
   def __init__(self):
     self.count = 0
     self.sum = 0.0
+  def __repr__(self):
+    return "<slycat.analysis.worker.accumulator.summation result: %s>" % (self.result())
   def accumulate(self, observations):
     if observations.dtype.char != "S":
       self.count += numpy.sum(~numpy.isnan(observations))
@@ -129,7 +141,7 @@ class histogram(accumulator):
     self.bins = bins
     self.histogram = None
   def __repr__(self):
-    return "<histogram %s %s>" % (self.bins, self.histogram)
+    return "<slycat.analysis.worker.accumulator.summation bins: %s histogram: %s>" % (self.bins, self.histogram)
   def flexible_histogram(self, observations):
     if observations.dtype.char == "S":
       return numpy.zeros(len(self.bins) - 1, dtype="int64")
