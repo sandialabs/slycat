@@ -448,6 +448,16 @@ def test_dimensions_2d():
   numpy.testing.assert_array_almost_equal(values(array2, 2), numpy.array([0, 0], dtype="int64"))
   numpy.testing.assert_array_almost_equal(values(array2, 3), numpy.array([5, 4], dtype="int64"))
 
+def test_histogram_bins():
+  array1 = random(1000, 100, attributes=["a", "b"])
+  array2 = histogram(array1, bins=10)
+  require_array_schema(array2, [("bin", "int64", 0, 10, 10)], [("hist_a", "int64"), ("hist_b", "int64")])
+
+def test_histogram_bin_edges():
+  array1 = random(1000, 100, attributes=["a", "b"])
+  array2 = histogram(array1, bins=[0, 0.1, 0.5, 0.9, 1.0])
+  require_array_schema(array2, [("bin", "int64", 0, 4, 4)], [("hist_a", "int64"), ("hist_b", "int64")])
+
 def test_join():
   array1 = random((5, 4))
   array2 = zeros((5, 4))

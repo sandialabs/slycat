@@ -146,7 +146,7 @@ class histogram(accumulator):
     if observations.dtype.char == "S":
       return numpy.zeros(len(self.bins) - 1, dtype="int64")
     else:
-      return numpy.histogram(observations, self.bins)[0]
+      return numpy.histogram(observations, self.bins)[0].astype("int64", copy=False)
   def accumulate(self, observations):
     if self.histogram is None:
       self.histogram = self.flexible_histogram(observations)

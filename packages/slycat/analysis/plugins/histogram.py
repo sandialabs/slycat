@@ -104,7 +104,7 @@ def register_worker_plugin(context):
     def dimensions(self):
       return [{"name":"bin", "type":"int64", "begin":0, "end":self.bin_count, "chunk-size":self.bin_count}]
     def attributes(self):
-      return [{"name":"hist_%s" % (attribute["name"]), "type":attribute["type"]} for attribute in self.source.attributes()]
+      return [{"name":"hist_%s" % (attribute["name"]), "type":"int64"} for attribute in self.source.attributes()]
     def iterator(self):
       if self.worker_index == 0:
         return self.pyro_register(histogram_array_iterator(self))
