@@ -78,13 +78,11 @@ def register_worker_plugin(context):
       return bins_list
 
     def calculate_local_histograms(self, bins_list):
-      slycat.analysis.worker.log.debug("calculate_local_histograms: %s", bins_list)
       histograms = [slycat.analysis.worker.accumulator.histogram(bins) for bins in bins_list]
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           for index, histogram in enumerate(histograms):
             histogram.accumulate(source_iterator.values(index))
-      slycat.analysis.worker.log.debug("histograms: %s", histograms)
       return histograms
 
     def calculate_global_histograms(self):
