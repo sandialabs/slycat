@@ -32,6 +32,27 @@ def register_client_plugin(context):
       a given field will appear in every document, or even that it will have a
       consistent type, so you should be prepared to encounter null and NaN
       values in the output array attributes.
+
+      >>> zips = mongodb("test", "zips")
+
+      >>> zips
+      <29467 element remote array with dimension: i and attributes: city, state, _id, pop>
+
+      >>> scan(attributes(zips))
+        {i} name, type
+      * {0} city, string
+        {1} state, string
+        {2} _id, string
+        {3} pop, int64
+
+      >>> states = mongodb("test", "zips", ("state","string"))
+
+      >>> states
+      <29467 element remote array with dimension: i and attribute: state>
+
+      >>> scan(aggregate(states, ["min", "max", "distinct"]))
+        {i} min_state, max_state, distinct_state
+      * {0} AK, WY, 51
       """
       if not isinstance(database, basestring):
         raise slycat.analysis.client.InvalidArgument("Database name must be a string.")
@@ -132,10 +153,35 @@ def register_worker_plugin(context):
         if self.chunk_count:
           raise StopIteration()
 
-        self.output_values = [[] for attribute in self.owner.output_attributes]
+        output_values = [[] for attribute in self.owner.output_attributes]
         for document in self.cursor:
           for index, attribute in enumerate(self.owner.output_attributes):
-            self.output_values[index].append(document.get(attribute["name"], ""))
+            output_values[index].append(document.get(attribute["name"], None))
+
+        self.output_values = []
+        for attribute, raw_values in zip(self.owner.output_attributes, output_values):
+          if attribute["type"] == "string":
+            self.output_values.append(numpy.ma.array(["" if value is None else value for value in raw_values], mask=[value is None for value in raw_values], dtype="string"))
+          elif attribute["type"] == "float64":
+            values = numpy.ma.empty(len(raw_values), dtype="float64")
+            for index, value in enumerate(raw_values):
+              try:
+                values[index] = float(value)
+              except:
+                values[index] = numpy.ma.masked
+            self.output_values.append(values)
+          elif attribute["type"] == "int64":
+            values = numpy.ma.empty(len(raw_values), dtype="int64")
+            for index, value in enumerate(raw_values):
+              try:
+                values[index] = int(value)
+              except:
+                values[index] = numpy.ma.masked
+            self.output_values.append(values)
+          elif attribute["type"] == "bool":
+            self.output_values.append(numpy.ma.array(raw_values, dtype="bool"))
+          else:
+            raise Exception("Unsupported attribute type: %s" % attribute["type"])
 
         self.chunk_count += 1
 
@@ -144,7 +190,7 @@ def register_worker_plugin(context):
       def shape(self):
         return numpy.array([len(self.output_values[0])], dtype="int64")
       def values(self, index):
-        return numpy.ma.array(self.output_values[index], dtype=self.owner.output_attributes[index]["type"])
+        return self.output_values[index]
     context.register_plugin_function("mongodb", mongodb)
   except:
     pass
