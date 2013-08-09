@@ -7,10 +7,10 @@ import numpy
 import sys
 import time
 
-def scan(connection, source, format="dcsv", separator=", ", stream=sys.stdout):
+def scan(connection, source, format="dcsv", null_marker="--", separator=", ", stream=sys.stdout):
   """Format the contents of an array, writing them to a stream.
 
-  Signature: scan(source, format="dcsv", separator=", ", stream=sys.stdout)
+  Signature: scan(source, format="dcsv", null_marker="--", separator=", ", stream=sys.stdout)
 
   Scanning an array is the easiest way to see its contents formatted for
   human-consumption.  Use the stream parameter to control where the formatted
@@ -75,46 +75,38 @@ def scan(connection, source, format="dcsv", separator=", ", stream=sys.stdout):
     stream.write(separator.join([attribute["name"] for attribute in source.attributes]))
     stream.write("\n")
     for chunk in source.chunks():
-      iterators = [attribute.values().flat for attribute in chunk.attributes()]
-      try:
-        while True:
-          stream.write(separator.join([str(iterator.next()) for iterator in iterators]))
-          stream.write("\n")
-      except StopIteration:
-        pass
+      chunk_coordinates = numpy.ndindex(*chunk.shape())
+      chunk_values = [attribute.values() for attribute in chunk.attributes()]
+      for local_coordinates in chunk_coordinates:
+        stream.write(separator.join([null_marker if values.mask[local_coordinates] else str(values[local_coordinates]) for values in chunk_values]))
+        stream.write("\n")
   elif format == "csv+":
     stream.write(separator.join([dimension["name"] for dimension in source.dimensions] + [attribute["name"] for attribute in source.attributes]))
     stream.write("\n")
     for chunk in source.chunks():
-      chunk_coordinates = chunk.coordinates()
-      iterators = [numpy.ndenumerate(attribute.values()) for attribute in chunk.attributes()]
-      try:
-        while True:
-          values = [iterator.next() for iterator in iterators]
-          coordinates = chunk_coordinates + values[0][0]
-          stream.write(separator.join([str(coordinate) for coordinate in coordinates] + [str(value[1]) for value in values]))
-          stream.write("\n")
-      except StopIteration:
-        pass
+      chunk_offset = chunk.coordinates()
+      chunk_coordinates = numpy.ndindex(*chunk.shape())
+      chunk_values = [attribute.values() for attribute in chunk.attributes()]
+      for local_coordinates in chunk_coordinates:
+        global_coordinates = chunk_offset + local_coordinates
+        stream.write(separator.join([str(coordinate) for coordinate in global_coordinates] + [null_marker if values.mask[local_coordinates] else str(values[local_coordinates]) for values in chunk_values]))
+        stream.write("\n")
   elif format == "dcsv":
     stream.write("  {%s} " % separator.join([dimension["name"] for dimension in source.dimensions]))
     stream.write(separator.join([attribute["name"] for attribute in source.attributes]))
     stream.write("\n")
-    for chunk_index, chunk in enumerate(source.chunks()):
-      chunk_coordinates = chunk.coordinates()
-      iterators = [numpy.ndenumerate(attribute.values()) for attribute in chunk.attributes()]
-      try:
-        chunk_marker = "* "
-        while True:
-          values = [iterator.next() for iterator in iterators]
-          coordinates = chunk_coordinates + values[0][0]
-          stream.write(chunk_marker)
-          stream.write("{%s} " % separator.join([str(coordinate) for coordinate in coordinates]))
-          stream.write(separator.join([str(value[1]) for value in values]))
-          stream.write("\n")
-          chunk_marker = "  "
-      except StopIteration:
-        pass
+    for chunk in source.chunks():
+      chunk_offset = chunk.coordinates()
+      chunk_coordinates = numpy.ndindex(*chunk.shape())
+      chunk_values = [attribute.values() for attribute in chunk.attributes()]
+      chunk_marker = "* "
+      for local_coordinates in chunk_coordinates:
+        global_coordinates = chunk_offset + local_coordinates
+        stream.write(chunk_marker)
+        stream.write("{%s} " % separator.join([str(coordinate) for coordinate in global_coordinates]))
+        stream.write(separator.join([null_marker if values.mask[local_coordinates] else str(values[local_coordinates]) for values in chunk_values]))
+        stream.write("\n")
+        chunk_marker = "  "
   else:
     raise Exception("Allowed formats: {}".format(", ".join(["null", "csv", "csv+", "dcsv (default)"])))
 
