@@ -55,14 +55,21 @@ def require_attribute_names(names):
     return [require_attribute_name(names)]
   return [require_attribute_name(name) for name in names]
 
+def require_chunk_size(chunk_size):
+  if not isinstance(chunk_size, int):
+    raise slycat.analysis.client.InvalidArgument("Chunk size must be an integer.")
+  if chunk_size < 1:
+    raise slycat.analysis.client.InvalidArgument("Chunk size must be greater-than zero.")
+  return chunk_size
+
 def require_chunk_sizes(shape, chunk_sizes):
   """Return array chunk sizes (tuple of dimension lengths), treating a single integer as a 1-tuple and sanity-checking the results against an array shape."""
   if chunk_sizes is None:
     chunk_sizes = shape
   elif isinstance(chunk_sizes, int):
-    chunk_sizes = tuple([chunk_sizes])
+    chunk_sizes = tuple([require_chunk_size(chunk_sizes)])
   else:
-    chunk_sizes = tuple(chunk_sizes)
+    chunk_sizes = tuple([require_chunk_size(chunk_size) for chunk_size in chunk_sizes])
   if len(shape) != len(chunk_sizes):
     raise InvalidArgument("Array shape and chunk sizes must contain the same number of dimensions.")
   return chunk_sizes
