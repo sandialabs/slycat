@@ -83,26 +83,25 @@ class serial_remote_array_iterator(array_iterator):
   def __init__(self, workers):
     array_iterator.__init__(self)
     self.iterators = [proxy.iterator() for proxy in workers]
-    self.index = 0
+    self.available = [iterator for iterator in self.iterators]
   def __del__(self):
     for proxy in self.iterators:
       proxy.release()
     array_iterator.__del__(self)
   def next(self):
-    while self.index != len(self.iterators):
+    while len(self.available):
       try:
-        self.iterator = self.iterators[self.index]
+        self.iterator = self.available[0]
         self.iterator.next()
         return
       except StopIteration:
-        self.index += 1
+        self.available.pop(0)
     raise StopIteration()
   def coordinates(self):
     return self.iterator.coordinates()
   def shape(self):
     return self.iterator.shape()
   def values(self, attribute):
-    log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
     return self.iterator.values(attribute)
 
 class parallel_remote_array_iterator(array_iterator):
@@ -125,7 +124,7 @@ class parallel_remote_array_iterator(array_iterator):
     self.available = []
 
     # If we don't have any complete iterators, wait until we get some ...
-    if not len(self.complete) and len(self.running):
+    while not len(self.complete) and len(self.running):
       iterator, result = self.running.pop(0)
       try:
         ignored = result.value
@@ -146,6 +145,5 @@ class parallel_remote_array_iterator(array_iterator):
   def shape(self):
     return self.iterator.shape()
   def values(self, attribute):
-    log.debug("Retrieving chunk from remote iterator %s.", self.iterator._pyroUri)
     return self.iterator.values(attribute)
 
