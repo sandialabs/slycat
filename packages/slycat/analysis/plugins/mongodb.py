@@ -9,10 +9,10 @@ def register_client_plugin(context):
     import pymongo
     import slycat.analysis.client
 
-    def mongodb(connection, database, collection, attributes=None, samples=(0, 1000), host="localhost", port=27017):
+    def mongodb(connection, database, collection, attributes=None, chunk_size=None, samples=(0, 1000), host="localhost", port=27017):
       """Load an array from a MongoDB database.
 
-      Signature: mongodb(database, collection, attributes=None, samples=(0, 1000), host="localhost", port=27017)
+      Signature: mongodb(database, collection, attributes=None, chunk_size=None, samples=(0, 1000), host="localhost", port=27017)
 
       Returns a 1D array containing one-or-more attributes from every record in
       a collection.  Use the required "database" and "collection" parameters to
@@ -60,6 +60,8 @@ def register_client_plugin(context):
         raise slycat.analysis.client.InvalidArgument("Collection name must be a string.")
       if attributes is not None:
         attributes = slycat.analysis.client.require_attributes(attributes)
+      if chunk_size is not None:
+        chunk_size = slycat.analysis.client.require_chunk_size(chunk_size)
       if samples is not None:
         if not isinstance(samples, tuple) or len(samples) != 2:
           raise slycat.analysis.client.InvalidArgument("Samples must be a 2-tuple.")
@@ -67,7 +69,7 @@ def register_client_plugin(context):
         raise slycat.analysis.client.InvalidArgument("Host name must be a string.")
       if not isinstance(port, int):
         raise slycat.analysis.client.InvalidArgument("Port must be an integer.")
-      return connection.create_remote_array("mongodb", [], host, port, database, collection, attributes, samples)
+      return connection.create_remote_array("mongodb", [], host, port, database, collection, attributes, chunk_size, samples)
     context.register_plugin_function("mongodb", mongodb)
   except:
     pass
@@ -79,20 +81,20 @@ def register_worker_plugin(context):
     import pymongo
     import slycat.analysis.worker
 
-    def mongodb(factory, worker_index, host, port, database, collection, attributes, samples):
-      return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection, attributes, samples))
+    def mongodb(factory, worker_index, host, port, database, collection, attributes, chunk_size, samples):
+      return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection, attributes, chunk_size, samples))
 
     class mongodb_array(slycat.analysis.worker.array):
-      def __init__(self, worker_index, host, port, database, collection, attributes, samples):
+      def __init__(self, worker_index, host, port, database, collection, attributes, chunk_size, samples):
         slycat.analysis.worker.array.__init__(self, worker_index)
         self.host = host
         self.port = port
         self.database = database
         self.collection = collection
+        self.chunk_size = chunk_size
         self.samples = samples
 
         self.record_count = None
-        self.chunk_size = None
         self.output_attributes = attributes
 
       def update_dimensions(self):
@@ -113,7 +115,6 @@ def register_worker_plugin(context):
             for key in document:
               if key not in keys:
                 value = document[key]
-                slycat.analysis.worker.log.debug("%s %s %s", key, type(value), value)
                 if isinstance(value, basestring):
                   keys.add(key)
                   self.output_attributes.append({"name":key,"type":"string"})
@@ -147,16 +148,23 @@ def register_worker_plugin(context):
     class mongodb_array_iterator(slycat.analysis.worker.array_iterator):
       def __init__(self, owner):
         slycat.analysis.worker.array_iterator.__init__(self, owner)
-        self.chunk_count = 0
         self.cursor = pymongo.MongoClient(self.owner.host, self.owner.port)[self.owner.database][self.owner.collection].find()
+        self.chunk_index = -1
       def next(self):
-        if self.chunk_count:
-          raise StopIteration()
+        slycat.analysis.worker.log.debug("mongodb_array_iterator.next()")
+        self.chunk_index += 1
 
         output_values = [[] for attribute in self.owner.output_attributes]
+        document_count = 0
         for document in self.cursor:
+          document_count += 1
           for index, attribute in enumerate(self.owner.output_attributes):
             output_values[index].append(document.get(attribute["name"], None))
+          if document_count >= self.owner.chunk_size:
+            break
+
+        if document_count == 0:
+          raise StopIteration()
 
         self.output_values = []
         for attribute, raw_values in zip(self.owner.output_attributes, output_values):
@@ -183,12 +191,10 @@ def register_worker_plugin(context):
           else:
             raise Exception("Unsupported attribute type: %s" % attribute["type"])
 
-        self.chunk_count += 1
-
       def coordinates(self):
-        return numpy.array([(self.chunk_count - 1) * self.owner.chunk_size], dtype="int64")
+        return numpy.array([self.chunk_index * self.owner.chunk_size], dtype="int64")
       def shape(self):
-        return numpy.array([len(self.output_values[0])], dtype="int64")
+        return numpy.array([self.output_values[0].shape[0]], dtype="int64")
       def values(self, index):
         return self.output_values[index]
     context.register_plugin_function("mongodb", mongodb)
