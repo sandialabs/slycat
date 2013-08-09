@@ -20,39 +20,43 @@ def register_worker_plugin(context):
     import pymongo
     import slycat.analysis.worker
 
-    def mongodb(factory, worker_index, host, port, database, collection):
-      return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection))
+    def mongodb(factory, worker_index, host, port, database, collection, samples=(0, 1000)):
+      return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection, samples))
 
     class mongodb_array(slycat.analysis.worker.array):
-      def __init__(self, worker_index, host, port, database, collection):
+      def __init__(self, worker_index, host, port, database, collection, samples):
         slycat.analysis.worker.array.__init__(self, worker_index)
         self.host = host
         self.port = port
         self.database = database
         self.collection = collection
+        self.samples = samples
 
         self.record_count = None
         self.chunk_size = None
+        self._attributes = None
 
-      def update_metrics(self):
+      def update_dimensions(self):
         if self.record_count is None:
-          connection = pymongo.MongoClient(self.host, self.port)
-          database = connection[self.database]
-          collection = database[self.collection]
-          self.record_count = collection.find().count()
+          self.record_count = pymongo.MongoClient(self.host, self.port)[self.database][self.collection].count()
 
-        # If the caller didn't specify a chunk size, split the file evenly among workers.
         if self.chunk_size is None:
           self.chunk_size = int(numpy.ceil(self.record_count / self.worker_count))
 
+      def update_attributes(self):
+        if self._attributes is None:
+          cursor = pymongo.MongoClient(self.host, self.port)[self.database][self.collection].find()
+          self._attributes = sorted(set(["_id"] + [key for document in cursor for key in document]))
+
       def dimensions(self):
-        self.update_metrics()
+        self.update_dimensions()
         return [{"name":"i", "type":"int64", "begin":0, "end":self.record_count, "chunk-size":self.chunk_size}]
       def attributes(self):
-        self.update_metrics()
-        return [{"name":"_id", "type":"string"}]
+        self.update_attributes()
+        return [{"name":key, "type":"string"} for key in self._attributes]
       def iterator(self):
-        self.update_metrics()
+        self.update_attributes()
+        self.update_dimensions()
         if self.worker_index == 0:
           return self.pyro_register(mongodb_array_iterator(self))
         else:
@@ -62,17 +66,15 @@ def register_worker_plugin(context):
       def __init__(self, owner):
         slycat.analysis.worker.array_iterator.__init__(self, owner)
         self.chunk_count = 0
-        connection = pymongo.MongoClient(self.owner.host, self.owner.port)
-        database = connection[self.owner.database]
-        collection = database[self.owner.collection]
-        self.cursor = collection.find()
+        self.cursor = pymongo.MongoClient(self.owner.host, self.owner.port)[self.owner.database][self.owner.collection].find()
       def next(self):
         if self.chunk_count:
           raise StopIteration()
 
-        self._values = [[]]
+        self._values = [[] for attribute in self.owner._attributes]
         for document in self.cursor:
-          self._values[0].append(document["_id"])
+          for index, attribute in enumerate(self.owner._attributes):
+            self._values[index].append(document.get(attribute, ""))
 
         self.chunk_count += 1
 
@@ -81,7 +83,7 @@ def register_worker_plugin(context):
       def shape(self):
         return numpy.array([len(self._values[0])], dtype="int64")
       def values(self, attribute):
-        return self._values[attribute]
+        return numpy.ma.array(self._values[attribute])
     context.register_plugin_function("mongodb", mongodb)
   except:
     pass
