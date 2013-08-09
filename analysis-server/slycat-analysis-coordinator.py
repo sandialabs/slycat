@@ -11,6 +11,7 @@ import multiprocessing
 import optparse
 import os
 import Pyro4
+import signal
 import slycat.analysis.coordinator
 import subprocess
 import threading
@@ -165,6 +166,12 @@ workers = [subprocess.Popen(command) for i in range(options.local_workers)]
 daemon = Pyro4.Daemon(host=options.host)
 nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(factory, "slycat.coordinator"))
 slycat.analysis.coordinator.log.info("Listening on %s, nameserver listening on %s:%s", options.host, options.nameserver_host, options.nameserver_port)
+
+def signal_handler(signal, frame):
+  slycat.analysis.coordinator.log.info("Ctrl-C")
+  threading.Thread(target=daemon.shutdown).start()
+signal.signal(signal.SIGINT, signal_handler)
+
 daemon.requestLoop()
 
 ######################################################################################################

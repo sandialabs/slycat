@@ -10,7 +10,9 @@ import logging
 import optparse
 import os
 import Pyro4
+import signal
 import slycat.analysis.worker
+import threading
 import uuid
 
 ######################################################################################################
@@ -110,6 +112,12 @@ nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_p
 daemon = Pyro4.Daemon(host=options.host)
 nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory, "slycat.worker"))
 slycat.analysis.worker.log.info("Listening on %s", options.host)
+
+def signal_handler(signal, frame):
+  slycat.analysis.worker.log.info("Ctrl-C")
+  threading.Thread(target=daemon.shutdown).start()
+signal.signal(signal.SIGINT, signal_handler)
+
 daemon.requestLoop()
 
 ######################################################################################################
