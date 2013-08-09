@@ -7,8 +7,46 @@ from __future__ import division
 def register_client_plugin(context):
   try:
     import pymongo
-    def mongodb(connection, database, collection, samples=(0, 1000), host="localhost", port=27017):
-      return connection.create_remote_array("mongodb", [], host, port, database, collection, samples)
+    import slycat.analysis.client
+
+    def mongodb(connection, database, collection, attributes=None, samples=(0, 1000), host="localhost", port=27017):
+      """Load an array from a MongoDB database.
+
+      Signature: mongodb(database, collection, attributes=None, samples=(0, 1000), host="localhost", port=27017)
+
+      Returns a 1D array containing one-or-more attributes from every record in
+      a collection.  Use the required "database" and "collection" parameters to
+      specify the collection to load.
+
+      If the "attributes" parameter is None (the default), the collection is
+      sampled to determine the names and types of attributes in the output
+      array.  Use the "samples" parameter to specify a range of collection
+      documents to sample, or "None" to sample from the entire collection.
+
+      Otherwise, the "attributes" parameter defines a set of attributes to be loaded
+      from each document in the collection, and may be a single string attribute name,
+      a single tuple containing attribute name and type, a sequence of attribute names,
+      or a sequence of name/type tuples.
+
+      Note that MongoDB is a "schema-less" database: there is no guarantee that
+      a given field will appear in every document, or even that it will have a
+      consistent type, so you should be prepared to encounter null and NaN
+      values in the output array attributes.
+      """
+      if not isinstance(database, basestring):
+        raise slycat.analysis.client.InvalidArgument("Database name must be a string.")
+      if not isinstance(collection, basestring):
+        raise slycat.analysis.client.InvalidArgument("Collection name must be a string.")
+      if attributes is not None:
+        attributes = slycat.analysis.client.require_attributes(attributes)
+      if samples is not None:
+        if not isinstance(samples, tuple) or len(samples) != 2:
+          raise slycat.analysis.client.InvalidArgument("Samples must be a 2-tuple.")
+      if not isinstance(host, basestring):
+        raise slycat.analysis.client.InvalidArgument("Host name must be a string.")
+      if not isinstance(port, int):
+        raise slycat.analysis.client.InvalidArgument("Port must be an integer.")
+      return connection.create_remote_array("mongodb", [], host, port, database, collection, attributes, samples)
     context.register_plugin_function("mongodb", mongodb)
   except:
     pass
@@ -20,11 +58,11 @@ def register_worker_plugin(context):
     import pymongo
     import slycat.analysis.worker
 
-    def mongodb(factory, worker_index, host, port, database, collection, samples):
-      return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection, samples))
+    def mongodb(factory, worker_index, host, port, database, collection, attributes, samples):
+      return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection, attributes, samples))
 
     class mongodb_array(slycat.analysis.worker.array):
-      def __init__(self, worker_index, host, port, database, collection, samples):
+      def __init__(self, worker_index, host, port, database, collection, attributes, samples):
         slycat.analysis.worker.array.__init__(self, worker_index)
         self.host = host
         self.port = port
@@ -34,7 +72,7 @@ def register_worker_plugin(context):
 
         self.record_count = None
         self.chunk_size = None
-        self.output_attributes = None
+        self.output_attributes = attributes
 
       def update_dimensions(self):
         if self.record_count is None:
@@ -47,7 +85,10 @@ def register_worker_plugin(context):
         if self.output_attributes is None:
           keys = set()
           self.output_attributes = []
-          for document in pymongo.MongoClient(self.host, self.port)[self.database][self.collection].find()[self.samples[0]:self.samples[1]]:
+          cursor = pymongo.MongoClient(self.host, self.port)[self.database][self.collection].find()
+          if self.samples is not None:
+            cursor = cursor[self.samples[0]:self.samples[1]]
+          for document in cursor:
             for key in document:
               if key not in keys:
                 value = document[key]
