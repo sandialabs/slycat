@@ -140,31 +140,29 @@ def register_worker_plugin(context):
       def iterator(self):
         self.update_attributes()
         self.update_dimensions()
-        if self.worker_index == 0:
-          return self.pyro_register(mongodb_array_iterator(self))
-        else:
-          return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
+        return self.pyro_register(mongodb_array_iterator(self))
 
     class mongodb_array_iterator(slycat.analysis.worker.array_iterator):
       def __init__(self, owner):
         slycat.analysis.worker.array_iterator.__init__(self, owner)
-        self.cursor = pymongo.MongoClient(self.owner.host, self.owner.port)[self.owner.database][self.owner.collection].find()
         self.chunk_index = -1
       def next(self):
-        slycat.analysis.worker.log.debug("mongodb_array_iterator.next()")
         self.chunk_index += 1
+        while (self.chunk_index % self.owner.worker_count) != self.owner.worker_index:
+          self.chunk_index += 1
+
+        begin = self.chunk_index * self.owner.chunk_size
+        if begin > self.owner.record_count:
+          raise StopIteration()
+        end = (self.chunk_index + 1) * self.owner.chunk_size
 
         output_values = [[] for attribute in self.owner.output_attributes]
         document_count = 0
-        for document in self.cursor:
+        cursor = pymongo.MongoClient(self.owner.host, self.owner.port)[self.owner.database][self.owner.collection].find()[begin:end]
+        for document in cursor:
           document_count += 1
           for index, attribute in enumerate(self.owner.output_attributes):
             output_values[index].append(document.get(attribute["name"], None))
-          if document_count >= self.owner.chunk_size:
-            break
-
-        if document_count == 0:
-          raise StopIteration()
 
         self.output_values = []
         for attribute, raw_values in zip(self.owner.output_attributes, output_values):
