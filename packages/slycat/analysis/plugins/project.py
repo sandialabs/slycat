@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def project(connection, source, *attributes):
     """Return an array with fewer attributes.
 
+    Signature: project(source, *attributes)
+
     Creates an array that contains a subset of a source array's attributes.
     Specify the attributes to be retained by passing one-or-more attribute
     indices / names as parameters to project().  Attributes may be specified in

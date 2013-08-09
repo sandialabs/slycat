@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def apply(connection, source, attributes):
     """Add attributes based on mathmatical expressions to a source array.
 
+    Signature: apply(source, attributes)
+
     Creates a copy of a source array with one-or-more
     additional attributes computed using mathematical expressions.
 

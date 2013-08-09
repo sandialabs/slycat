@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def load(connection, path, schema="csv-file", **keywords):
     """Load an array from a filesystem.
 
+    Signature: load(path, schema="csv-file", **keywords)
+
     Use the required parameter path to specify the location of the data to be
     loaded.  Note that the data is loaded remotely by the connected Slycat Analysis
     workers, from the workers' filesystems, not the client's, and that you will have

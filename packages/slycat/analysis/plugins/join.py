@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def join(connection, array1, array2):
     """Return an array combining the attributes of two arrays.
 
+    Signature: join(array1, array2)
+
     The shape (number of dimensions, size, and chunk size of each dimension) of
     the two inputs must be identical.  The result array will have the same
     shape as the inputs, with the union of their attributes and dimension names

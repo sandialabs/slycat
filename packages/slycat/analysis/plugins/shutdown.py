@@ -5,6 +5,8 @@
 def shutdown(connection):
   """Request that the connected coordinator and all workers shut-down.
 
+  Signature: shutdown()
+
   Note that this is currently an experimental feature, which does not enforce
   any access controls.  Shutting down while other clients are working will
   make you very unpopular!

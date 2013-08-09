@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def attributes(connection, source):
     """Return an array that describes some other array's attributes.
 
+    Signature: attributes(source)
+
     Creates a 1D array with attributes "name" and "type" and one cell for each
     of another array's attributes.  It is particularly useful when working with
     an array with a large number of attributes.

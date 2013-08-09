@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def zeros(connection, shape, chunk_sizes=None, attributes="val"):
     """Return an array of all zeros.
 
+    Signature: zeros(shape, chunk_sizes=None, attributes="val")
+
     Creates an array with the given shape and chunk sizes, with one-or-more
     attributes filled with zeros.
 

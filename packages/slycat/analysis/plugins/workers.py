@@ -5,7 +5,10 @@
 import Pyro4
 
 def workers(connection):
-  """Return the current set of available slycat analysis workers."""
+  """Return the current set of available slycat analysis workers.
+
+  Signature: workers()
+  """
   for worker in connection.nameserver.list(prefix="slycat.worker").keys():
     proxy = Pyro4.Proxy(connection.nameserver.lookup(worker))
     proxy._pyroOneway.add("shutdown")

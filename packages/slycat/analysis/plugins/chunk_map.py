@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def chunk_map(connection, source):
     """Return an array that describes how another array's data chunks are distributed.
 
+    Signature: chunk_map(source)
+
     Creates a 1D array containing a cell for each chunk in the source array.
     Useful to understand how data is load balanced and to look for hot spots in
     workers.  A "worker" attribute contains the zero-based index of the worker

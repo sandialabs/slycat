@@ -9,6 +9,8 @@ import time
 def values(connection, source, attributes=None):
   """Convert array attributes into numpy arrays.
 
+  Signature: values(source, attributes=None)
+
   Attributes can be specified by-index or by-name, or any mixture of the two.
 
   If the attributes parameter is None (the default), values() will return

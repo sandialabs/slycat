@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def array(connection, initializer, attribute="val"):
     """Return an array containing client-supplied data.
 
+    Signature: array(initializer, attribute="val")
+
     Creates an array with a single attribute, populated from a client-supplied
     initializer.  The initializer may be any numpy array, or any (arbitrarily
     nested) sequence.  Use the attribute parameter to specify the name of the

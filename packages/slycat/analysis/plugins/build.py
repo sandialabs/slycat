@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def build(connection, shape, attributes, chunk_sizes=None):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
 
+    Signature: build(shape, attributes, chunk_sizes=None)
+
     Creates an array with the given shape and chunk sizes, with one-or-more
     attributes computed using mathematical expressions.
 

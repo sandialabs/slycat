@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def dimensions(connection, source):
     """Return an array that describe's another array's dimensions.
 
+    Signature: dimensions(source)
+
     Creates a 1D array with attributes "name", "type", "begin", "end", and
     "chunk-size" and one cell for each of the source array's dimensions.  It is
     particularly useful when working with an array with a large number of

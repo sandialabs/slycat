@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def aggregate(connection, source, expressions):
     """Return an array containing one-or-more aggregates of a source array.
 
+    Signature: aggregate(source, expressions)
+
     The result is a one-dimensional array with a single cell containing
     aggregate attributes specified via one-or-more aggregate expressions by the
     caller.  An aggregate expression can take one of three forms:

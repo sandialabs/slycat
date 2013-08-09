@@ -7,6 +7,8 @@ def register_client_plugin(context):
   def materialize(connection, source):
     """Return a materialized (loaded into memory) version of an array.
 
+    Signature: materialize(source)
+
     Normally, array data is divided into chunks that are loaded and streamed
     through the system only when needed, allowing you to work with arrays that
     will not fit into memory.  The down-side to this approach is that the

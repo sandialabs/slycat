@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def rename(connection, source, attributes=[], dimensions=[]):
     """Copy a source array, with renamed attributes and dimensions.
 
+    Signature: rename(source, attributes=[], dimensions=[])
+
     The caller specifies attributes and dimensions to be renamed by their
     string name or integer index.
 

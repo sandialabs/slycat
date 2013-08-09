@@ -9,6 +9,8 @@ import numpy
 def value(connection, source, attributes=None):
   """Returns first values (values at the lowest-numbered set of coordinates) from array attributes.
 
+  Signature: value(source, attributes=None)
+
   Attributes can be specified by-index or by-name, or any mixture of the two.
 
   If the attributes parameter is None (the default), value() will return the

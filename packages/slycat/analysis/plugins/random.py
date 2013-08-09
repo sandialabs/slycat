@@ -8,6 +8,8 @@ def register_client_plugin(context):
   def random(connection, shape, chunk_sizes=None, seed=12345, attributes="val"):
     """Return an array of random values.
 
+    Signature: random(shape, chunk_sizes=None, seed=12345, attributes="val")
+
     Creates an array with the given shape and chunk sizes, with one-or-more
     attributes containing samples drawn from a uniform distribution in the
     range [0, 1).
