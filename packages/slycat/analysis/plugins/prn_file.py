@@ -3,14 +3,13 @@
 # rights in this software.
 
 def register_coordinator_plugin(context):
-  from slycat.analysis.client import InvalidArgument
+  from slycat.analysis.client import require_chunk_size
   import slycat.analysis.coordinator
 
   def prn_file(factory, path, **keywords):
     chunk_size = keywords.get("chunk_size", None)
     if chunk_size is not None:
-      if not isinstance(chunk_size, int):
-        raise connection.InvalidArgument("chunk_size must be an integer.")
+      chunk_size = require_chunk_size(chunk_size)
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
       array_workers.append(worker.call_plugin_function("prn_file", worker_index, path, chunk_size))

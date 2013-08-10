@@ -43,6 +43,6 @@ def register_client_plugin(context):
     elif schema == "prn-file":
       return connection.remote_file_array(connection.proxy.call_plugin_function("prn_file", path, **keywords))
     else:
-      raise connection.InvalidArgument("Unknown load schema: %s" % schema)
+      raise InvalidArgument("Unknown schema: %s" % schema)
   context.register_plugin_function("load", load)
 
