@@ -13,17 +13,9 @@ are streamed through the system, so you can manipulate arrays that are larger
 than the available system memory.
 """
 
-import numpy
-import os
-import Pyro4
-import sys
-
-Pyro4.config.SERIALIZER = "pickle"
-
-sys.excepthook = Pyro4.util.excepthook
-
 class connection(object):
   def __init__(self, nameserver):
+    import Pyro4
     self.nameserver = nameserver
     self.proxy = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
   def require_object(self, object):
@@ -63,6 +55,7 @@ class remote_array(object):
     elif name == "shape":
       return tuple([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
     elif name == "size":
+      import numpy
       return numpy.prod([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
   def __setattr__(self, name, value):
     if name in ["attributes", "dimensions", "ndim", "shape", "size"]:
@@ -190,6 +183,7 @@ def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
   than one Slycat Analysis Coordinator.
   """
   global current_connection
+  import Pyro4
   Pyro4.config.HMAC_KEY = hmac_key
   nameserver = Pyro4.locateNS(host, port)
   current_connection = connection(nameserver)
@@ -204,60 +198,52 @@ def get_connection():
 connection.remote_array = remote_array
 connection.remote_file_array = remote_file_array
 
-def load_plugins(plugin_directory):
-  from slycat.analysis.client import log
-  import imp
+def __setup_module():
+  # Configure Pyro4 ...
+  import Pyro4
+  Pyro4.config.SERIALIZER = "pickle"
 
-  def make_connection_method(function):
-    def implementation(self, *arguments, **keywords):
-      return function(self, *arguments, **keywords)
-    implementation.__name__ = function.__name__
-    implementation.__doc__ = function.__doc__
-    return implementation
+  # Enable remote exception handling ...
+  import sys
+  sys.excepthook = Pyro4.util.excepthook
 
-  def make_standalone_method(function):
-    def implementation(*arguments, **keywords):
-      return function(get_connection(), *arguments, **keywords)
-    implementation.__name__ = function.__name__
-    implementation.__doc__ = function.__doc__
-    return implementation
+  # Load plugins ...
+  import __main__
+  if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
+    import os
+    import client
+    import common
+    __plugins = common.plugin_manager(client.log)
+    for plugin_directory in __main__.__dict__.get("slycat_analysis_extra_client_plugins", []):
+      __plugins.load(plugin_directory)
+    for plugin_directory in [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]:
+      __plugins.load(plugin_directory)
+    __plugins.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins"))
 
-  class plugin_context(object):
-    def __init__(self):
-      self.plugin_functions = []
-    def register_plugin_function(self, name, function):
-      if name in self.plugin_functions:
-        raise Exception("Cannot load plugin function with duplicate name: %s" % name)
-      self.plugin_functions.append(name)
-      setattr(connection, name, make_connection_method(function))
-      globals()[name] = make_standalone_method(function)
-      log.debug("Registered operator %s", name)
-  context = plugin_context()
+    for module in __plugins.modules:
+      if hasattr(module, "register_client_plugin"):
+        module.register_client_plugin(__plugins)
 
-  try:
-    log.debug("Loading plugins from %s", plugin_directory)
-    plugin_names = [x[:-3] for x in os.listdir(plugin_directory) if x.endswith(".py")]
-    for plugin_name in plugin_names:
-      try:
-        module_fp, module_pathname, module_description = imp.find_module(plugin_name, [plugin_directory])
-        plugin = imp.load_module(plugin_name, module_fp, module_pathname, module_description)
-        if hasattr(plugin, "register_client_plugin"):
-          plugin.register_client_plugin(context)
-      except Exception as e:
-        import traceback
-        log.error(traceback.format_exc())
-      finally:
-        if module_fp:
-          module_fp.close()
-  except Exception as e:
-    import traceback
-    log.error(traceback.format_exc())
+    for module in __plugins.modules:
+      if hasattr(module, "finalize_plugins"):
+        modules.finalize_plugins(__plugins)
 
-import __main__
-if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
-  for plugin_directory in __main__.__dict__.get("slycat_analysis_extra_client_plugins", []):
-    load_plugins(plugin_directory)
-  for plugin_directory in [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]:
-    load_plugins(plugin_directory)
-  load_plugins(os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins"))
+    def __make_connection_method(function):
+      def implementation(self, *arguments, **keywords):
+        return function(self, *arguments, **keywords)
+      implementation.__name__ = function.__name__
+      implementation.__doc__ = function.__doc__
+      return implementation
+
+    def __make_standalone_method(function):
+      def implementation(*arguments, **keywords):
+        return function(get_connection(), *arguments, **keywords)
+      implementation.__name__ = function.__name__
+      implementation.__doc__ = function.__doc__
+      return implementation
+
+    for name, function in __plugins.functions.items():
+      setattr(connection, name, __make_connection_method(function))
+      globals()[name] = __make_standalone_method(function)
+__setup_module()
 
