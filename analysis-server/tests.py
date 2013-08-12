@@ -6,6 +6,7 @@ from slycat.analysis import *
 from slycat.analysis.client import log
 import logging
 import numpy
+import numpy.ma.testutils
 import subprocess
 import time
 
@@ -79,6 +80,24 @@ def test_aggregate_avg():
   array2 = check_sanity(aggregate(array1, "avg"))
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("avg_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).mean())
+
+def test_aggregate_avg_nan():
+  array1 = check_sanity(array([1, 2, numpy.nan]))
+  array2 = check_sanity(aggregate(array1, "avg"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("avg_val", "float64")])
+  numpy.testing.assert_array_equal(value(array2), 1.5)
+
+def test_aggregate_avg_null():
+  array1 = check_sanity(array(numpy.ma.array([1, 2, 3], mask=[False, False, True])))
+  array2 = check_sanity(aggregate(array1, "avg"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("avg_val", "float64")])
+  numpy.testing.assert_array_equal(value(array2), 1.5)
+
+def test_aggregate_avg_string():
+  array1 = check_sanity(array(["a", "b", "c"], attribute=("val", "string")))
+  array2 = check_sanity(aggregate(array1, "avg"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("avg_val", "float64")])
+  numpy.ma.testutils.assert_array_equal(values(array2), numpy.ma.array([1], mask=True))
 
 def test_aggregate_count():
   array1 = check_sanity(random(5, 3))
