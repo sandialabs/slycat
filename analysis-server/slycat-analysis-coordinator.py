@@ -15,6 +15,7 @@ import signal
 import slycat.analysis.coordinator
 import subprocess
 import threading
+import time
 
 ######################################################################################################
 ## Handle command-line arguments.
@@ -173,6 +174,8 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 daemon.requestLoop()
+
+time.sleep(5.0)
 
 ######################################################################################################
 ## Cleanup.

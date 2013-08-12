@@ -13,6 +13,7 @@ import Pyro4
 import signal
 import slycat.analysis.worker
 import threading
+import time
 import uuid
 
 ######################################################################################################
@@ -119,6 +120,8 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 daemon.requestLoop()
+
+time.sleep(5)
 
 ######################################################################################################
 ## Cleanup.
