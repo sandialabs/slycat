@@ -27,6 +27,12 @@ def test_distinct_basic_nan():
   a.accumulate(numpy.ma.array([numpy.nan, numpy.nan, 5]))
   numpy.testing.assert_equal(a.result(), 3)
 
+def test_distinct_basic_null():
+  a = distinct()
+  a.accumulate(numpy.ma.array([1, 2, 2], mask=[False, False, False]))
+  a.accumulate(numpy.ma.array([3, 4, 5], mask=[True, True, False]))
+  numpy.testing.assert_equal(a.result(), 3)
+
 def test_distinct_basic_string():
   a = string_distinct()
   a.accumulate(numpy.ma.array(["b", "c", "d"]))

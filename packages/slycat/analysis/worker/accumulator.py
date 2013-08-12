@@ -104,8 +104,7 @@ class distinct(accumulator):
     return "int64"
   @staticmethod
   def nan_unique(observations):
-    results = numpy.unique(observations)
-    return results[~numpy.isnan(results)]
+    return numpy.unique(numpy.ma.compressed(observations[~numpy.isnan(observations)]))
   def accumulate(self, observations):
     if self.unique is None:
       self.unique = distinct.nan_unique(observations)
