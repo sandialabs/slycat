@@ -192,7 +192,16 @@ function timeseries_simulation_table(parameters, server_root, workerId)
     });
   }
 
-  setUpColorMapsForAllColumns("nightcolormap");
+  // Set the default color map based on parameters during init, or use night if not initialized
+  var default_color_map = "nightcolormap";
+  if (parameters.colormap != null) {
+    default_color_map = parameters.colormap;
+    // Set up the background class for the waveform viewer
+    parameters.waveform_viewer.container.attr("class", colorMaps[default_color_map].className);
+
+  }
+
+  setUpColorMapsForAllColumns(default_color_map);
 
   function setUpColorMapsForAllColumns(colorMapName) {
     for(var j = 0; j != columns.length; ++j) {

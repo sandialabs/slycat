@@ -361,13 +361,14 @@ rights in this software.
           $("#rerun-timeseries-form").dialog("open");
         });
 
-        // Setting up color scale switcher
+        // Setting up color scale switcher interaction
         $("#color-switcher .color").click(function(){
           var colorMap = this.getAttribute("data-colormap");
           if(table_viewer_instance != null && colorMap != null && !$(this).hasClass("selected")) {
             $("#color-switcher .color").removeClass("selected");
             $(this).addClass("selected");
             table_viewer_instance.updateColorMap(colorMap);
+            bookmarker.updateState( {"colormap" : colorMap} );
           }
 
         });
@@ -491,6 +492,11 @@ rights in this software.
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         // Retrieve bookmark
         var bookmark = bookmarker.getState();
+        // Set selected color scale according to what's in the bookmark
+        if( bookmark["colormap"] != null) {
+          $("#color-switcher .selected").removeClass("selected");
+          $("#color-switcher .color[data-colormap='" + bookmark["colormap"] + "']").addClass("selected");
+        }
 
         // First just a short list of the clusters
         $.ajax(
@@ -1407,6 +1413,7 @@ rights in this software.
                 selected_row_simulations: bookmark[cluster_index + "-selected-row-simulations"],
                 cluster_name: cluster_name,
                 cluster_index: cluster_index,
+                colormap: bookmark["colormap"],
               }, 
               "{{server-root}}", 
               workerId
