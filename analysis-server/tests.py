@@ -103,7 +103,25 @@ def test_aggregate_count():
   array1 = check_sanity(random(5, 3))
   array2 = check_sanity(aggregate(array1, "count"))
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("count_val", "int64")])
-  numpy.testing.assert_array_almost_equal(value(array2), values(array1).size)
+  numpy.testing.assert_array_equal(value(array2), 5)
+
+def test_aggregate_count_nan():
+  array1 = check_sanity(array([1, numpy.nan, 3]))
+  array2 = check_sanity(aggregate(array1, "count"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("count_val", "int64")])
+  numpy.testing.assert_array_equal(value(array2), 2)
+
+def test_aggregate_count_null():
+  array1 = check_sanity(array(numpy.ma.array([1, 2, 3], mask=[False, True, False])))
+  array2 = check_sanity(aggregate(array1, "count"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("count_val", "int64")])
+  numpy.testing.assert_array_equal(value(array2), 2)
+
+def test_aggregate_count_string():
+  array1 = check_sanity(array(["a", "b", "c"], attribute=("val", "string")))
+  array2 = check_sanity(aggregate(array1, "count"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("count_val", "int64")])
+  numpy.testing.assert_array_equal(value(array2), 3)
 
 def test_aggregate_distinct():
   array1 = check_sanity(array(numpy.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 14]).reshape((4, 4))))
