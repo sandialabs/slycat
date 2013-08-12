@@ -10,21 +10,25 @@ import numpy.ma.testutils
 import subprocess
 import time
 
+coordinator_process = None
+worker_processes = None
 def setup():
-  subprocess.Popen(["python", "slycat-analysis-coordinator.py", "--nameserver-port", "9092", "--log-level", "info", "--local-workers", "0"])
+  global coordinator_process, worker_processes
+  coordinator_process = subprocess.Popen(["python", "slycat-analysis-coordinator.py", "--nameserver-port", "9092", "--log-level", "info", "--local-workers", "0"])
   time.sleep(2.0)
-  for i in range(4):
-    subprocess.Popen(["python", "slycat-analysis-worker.py", "--nameserver-port", "9092", "--log-level", "info"])
+  worker_processes = [subprocess.Popen(["python", "slycat-analysis-worker.py", "--nameserver-port", "9092", "--log-level", "info"]) for i in range(4)]
   time.sleep(2.0)
   log.setLevel(logging.WARNING)
   connect("127.0.0.1", 9092)
 
 def teardown():
+  global coordinator_process, worker_processes
   for worker in workers():
     worker.shutdown()
-  time.sleep(2.0)
+  for worker_process in worker_processes:
+    worker_process.wait()
   shutdown()
-  time.sleep(2.0)
+  coordinator_process.wait()
 
 def require_array_schema(array, dimensions, attributes):
   """Verify that an array matches a specific schema (set of dimensions and attributes)."""
