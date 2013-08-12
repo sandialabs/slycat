@@ -242,7 +242,7 @@ def __setup_module():
       implementation.__doc__ = function.__doc__
       return implementation
 
-    for name, function in __plugins.functions.items():
+    for name, (function, metadata) in __plugins.functions.items():
       setattr(connection, name, __make_connection_method(function))
       globals()[name] = __make_standalone_method(function)
 __setup_module()

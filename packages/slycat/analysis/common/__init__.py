@@ -27,9 +27,9 @@ class plugin_manager(object):
             module_fp.close()
     except Exception as e:
       self.log.error(traceback.format_exc())
-  def register_plugin_function(self, name, function):
+  def register_plugin_function(self, name, function, metadata = {}):
     if name in self.functions:
       raise Exception("Cannot register plugin function with duplicate name: %s" % name)
-    self.functions[name] = function
+    self.functions[name] = (function, metadata)
     self.log.debug("Registered plugin function %s", name)
 

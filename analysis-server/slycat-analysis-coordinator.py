@@ -123,7 +123,7 @@ plugins.load(os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__fil
 for module in plugins.modules:
   if hasattr(module, "register_coordinator_plugin"):
     module.register_coordinator_plugin(plugins)
-factory.plugin_functions = plugins.functions
+factory.plugin_functions = {name:function for name, (function, metadata) in plugins.functions.items()}
 
 ######################################################################################################
 ## Optionally start local workers.
