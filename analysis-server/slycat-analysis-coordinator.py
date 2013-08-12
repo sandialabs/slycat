@@ -12,7 +12,7 @@ import optparse
 import os
 import Pyro4
 import signal
-import slycat.analysis.common
+import slycat.analysis.plugin
 import slycat.analysis.coordinator
 import subprocess
 import threading
@@ -112,7 +112,7 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
 
 factory = coordinator_factory(nameserver_thread.nameserver)
 
-plugins = slycat.analysis.common.plugin_manager(slycat.analysis.coordinator.log)
+plugins = slycat.analysis.plugin.manager(slycat.analysis.coordinator.log)
 for path in options.plugins:
   plugins.load(path)
 for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":"):

@@ -212,8 +212,8 @@ def __setup_module():
   if not __main__.__dict__.get("slycat_analysis_disable_client_plugins", False):
     import os
     import client
-    import common
-    __plugins = common.plugin_manager(client.log)
+    import plugin
+    __plugins = plugin.manager(client.log)
     for plugin_directory in __main__.__dict__.get("slycat_analysis_extra_client_plugins", []):
       __plugins.load(plugin_directory)
     for plugin_directory in [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]:

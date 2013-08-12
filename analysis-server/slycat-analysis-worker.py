@@ -11,7 +11,7 @@ import optparse
 import os
 import Pyro4
 import signal
-import slycat.analysis.common
+import slycat.analysis.plugin
 import slycat.analysis.worker
 import threading
 import time
@@ -76,7 +76,7 @@ class plugin_context(object):
     slycat.analysis.worker.log.debug("Registered operator %s", name)
 context = plugin_context(factory)
 
-plugins = slycat.analysis.common.plugin_manager(slycat.analysis.worker.log)
+plugins = slycat.analysis.plugin.manager(slycat.analysis.worker.log)
 for path in options.plugins:
   plugins.load(path)
 for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":"):

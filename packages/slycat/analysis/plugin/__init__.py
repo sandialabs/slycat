@@ -6,7 +6,7 @@ import imp
 import os
 import traceback
 
-class plugin_manager(object):
+class manager(object):
   """Manages loading and registering plugins."""
   def __init__(self, log):
     self.log = log
