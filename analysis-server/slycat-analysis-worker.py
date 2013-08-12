@@ -121,7 +121,7 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 daemon.requestLoop()
-
+daemon.close()
 time.sleep(5)
 
 ######################################################################################################
