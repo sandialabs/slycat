@@ -129,6 +129,24 @@ def test_aggregate_distinct():
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("distinct_val", "int64")])
   numpy.testing.assert_equal(value(array2), 15)
 
+def test_aggregate_distinct_nan():
+  array1 = check_sanity(array([0, 1, 2, 3, numpy.nan, 5, numpy.nan, 7]))
+  array2 = check_sanity(aggregate(array1, "distinct"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("distinct_val", "int64")])
+  numpy.testing.assert_equal(value(array2), 6)
+
+def test_aggregate_distinct_null():
+  array1 = check_sanity(array(numpy.ma.array([0, 1, 2, 3, 4, 5, 6, 7], mask=[False, False, False, False, True, False, True, False])))
+  array2 = check_sanity(aggregate(array1, "distinct"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("distinct_val", "int64")])
+  numpy.testing.assert_equal(value(array2), 6)
+
+def test_aggregate_distinct_string():
+  array1 = check_sanity(array(["a", "b", "c", "c"], attribute=("val", "string")))
+  array2 = check_sanity(aggregate(array1, "distinct"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("distinct_val", "int64")])
+  numpy.testing.assert_equal(value(array2), 3)
+
 def test_aggregate_max():
   array1 = check_sanity(random(5, 3))
   array2 = check_sanity(aggregate(array1, "max"))
