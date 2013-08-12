@@ -115,10 +115,30 @@ rights in this software.
   fill-opacity: 0.5;
 }
 /* Use these colors for the white day mode */
-.dayMode #waveform-viewer.dayMode,
+#waveform-viewer.dayMode,
 .dayMode rect.selectionMask
 {
   background-color: white;
   fill: white;
   fill-opacity: 0.7;
+}
+
+#color-switcher {
+  float: right;
+  font-weight: bold;
+  margin: 9px;
+}
+#color-switcher .color {
+  background-color: #DBD9EB;
+  padding: 4px;
+}
+#color-switcher .color:hover {
+  cursor: pointer;
+}
+#color-switcher .selected:hover {
+  cursor: default;
+}
+#color-switcher .selected {
+  background-color: #7767B0;
+  color: white;
 }
