@@ -12,6 +12,7 @@ import optparse
 import os
 import Pyro4
 import signal
+import slycat.analysis.common
 import slycat.analysis.coordinator
 import subprocess
 import threading
@@ -92,11 +93,6 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
-  def register_plugin_function(self, name, function):
-    """Register a plugin function that can be called from the client by name."""
-    if name in self.plugin_functions:
-      raise Exception("Cannot add plugin function with duplicate name: %s" % name)
-    self.plugin_functions[name] = function
   def call_plugin_function(self, name, *arguments, **keywords):
     """Call a plugin function by name."""
     return self.plugin_functions[name](self, *arguments, **keywords)
@@ -116,36 +112,18 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
 
 factory = coordinator_factory(nameserver_thread.nameserver)
 
-class plugin_context(object):
-  def __init__(self, factory):
-    self.factory = factory
-  def register_plugin_function(self, name, function):
-    self.factory.register_plugin_function(name, function)
-    slycat.analysis.coordinator.log.debug("Registered operator %s", name)
-context = plugin_context(factory)
+plugins = slycat.analysis.common.plugin_manager(slycat.analysis.coordinator.log)
+for path in options.plugins:
+  plugins.load(path)
+for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":"):
+  if path:
+    plugins.load(path)
+plugins.load(os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins"))
 
-plugin_directories = [path for path in options.plugins]
-plugin_directories += [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]
-plugin_directories += [os.path.join(os.path.dirname(os.path.realpath(slycat.analysis.__file__)), "plugins")]
-for plugin_directory in plugin_directories:
-  try:
-    slycat.analysis.coordinator.log.debug("Loading plugins from %s", plugin_directory)
-    plugin_names = [x[:-3] for x in os.listdir(plugin_directory) if x.endswith(".py")]
-    for plugin_name in plugin_names:
-      try:
-        module_fp, module_path, module_description = imp.find_module(plugin_name, [plugin_directory])
-        plugin = imp.load_module(plugin_name, module_fp, module_path, module_description)
-        if hasattr(plugin, "register_coordinator_plugin"):
-          plugin.register_coordinator_plugin(context)
-      except Exception as e:
-        import traceback
-        slycat.analysis.coordinator.log.error(traceback.format_exc())
-      finally:
-        if module_fp:
-          module_fp.close()
-  except Exception as e:
-    import traceback
-    slycat.analysis.coordinator.log.error(traceback.format_exc())
+for module in plugins.modules:
+  if hasattr(module, "register_coordinator_plugin"):
+    module.register_coordinator_plugin(plugins)
+factory.plugin_functions = {name:function for name, (function, metadata) in plugins.functions.items()}
 
 ######################################################################################################
 ## Optionally start local workers.
