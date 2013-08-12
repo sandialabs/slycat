@@ -157,6 +157,24 @@ def test_aggregate_max():
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("max_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).max())
 
+def test_aggregate_max_nan():
+  array1 = check_sanity(array([1, 2, 3, numpy.nan]))
+  array2 = check_sanity(aggregate(array1, "max"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("max_val", "float64")])
+  numpy.testing.assert_array_equal(value(array2), 3)
+
+def test_aggregate_max_null():
+  array1 = check_sanity(array(numpy.ma.array([1, 2, 3, 4], mask=[False, False, False, True])))
+  array2 = check_sanity(aggregate(array1, "max"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("max_val", "float64")])
+  numpy.testing.assert_array_equal(value(array2), 3)
+
+def test_aggregate_max_string():
+  array1 = check_sanity(array(["c", "a", "b", "d"], attribute=("val", "string")))
+  array2 = check_sanity(aggregate(array1, "max"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("max_val", "string")])
+  numpy.testing.assert_array_equal(value(array2), "d")
+
 def test_aggregate_max_2():
   array1 = check_sanity(random(50, 10))
   array2 = check_sanity(aggregate(array1, "max"))
@@ -169,11 +187,47 @@ def test_aggregate_min():
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).min())
 
+def test_aggregate_min_nan():
+  array1 = check_sanity(array([1, 2, 3, numpy.nan]))
+  array2 = check_sanity(aggregate(array1, "min"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_val", "float64")])
+  numpy.testing.assert_array_equal(value(array2), 1)
+
+def test_aggregate_min_null():
+  array1 = check_sanity(array(numpy.ma.array([1, 2, 3, 4], mask=[True, False, False, False])))
+  array2 = check_sanity(aggregate(array1, "min"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_val", "float64")])
+  numpy.testing.assert_array_equal(value(array2), 2)
+
+def test_aggregate_min_string():
+  array1 = check_sanity(array(["c", "a", "b", "d"], attribute=("val", "string")))
+  array2 = check_sanity(aggregate(array1, "min"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("min_val", "string")])
+  numpy.testing.assert_array_equal(value(array2), "a")
+
 def test_aggregate_sum():
   array1 = check_sanity(random(5, 3))
   array2 = check_sanity(aggregate(array1, "sum"))
   require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("sum_val", "float64")])
   numpy.testing.assert_array_almost_equal(value(array2), values(array1).sum())
+
+def test_aggregate_sum_nan():
+  array1 = check_sanity(array([1, 2, numpy.nan, 4]))
+  array2 = check_sanity(aggregate(array1, "sum"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("sum_val", "float64")])
+  numpy.testing.assert_equal(value(array2), 7)
+
+def test_aggregate_sum_null():
+  array1 = check_sanity(array(numpy.ma.array([1, 2, 3, 4], mask=[False, False, True, False])))
+  array2 = check_sanity(aggregate(array1, "sum"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("sum_val", "float64")])
+  numpy.testing.assert_equal(value(array2), 7)
+
+def test_aggregate_sum_string():
+  array1 = check_sanity(array(["a", "b", "c", "d"], attribute=("val", "string")))
+  array2 = check_sanity(aggregate(array1, "sum"))
+  require_array_schema(array2, [("i", "int64", 0, 1, 1)], [("sum_val", "string")])
+  numpy.testing.assert_equal(value(array2), None)
 
 def test_aggregate_multiple():
   array1 = check_sanity(random(5, 3))
