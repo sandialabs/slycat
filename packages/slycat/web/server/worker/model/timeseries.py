@@ -28,12 +28,14 @@ class implementation(slycat.web.server.worker.model.prototype):
     cluster_bin_type = self.load_json_artifact("cluster-bin-type")
     timeseries_artifacts = [self.load_timeseries_artifact("output-%s" % index) for index in range(output_count)]
 
+    # Store a collection of cluster (name, artifact) tuples ...
+    cluster_artifacts = [(value.getString(), artifact) for artifact in timeseries_artifacts for chunk in self.scidb.query("aql", "select name from %s" % artifact["column-names"]).chunks() for attribute in chunk.attributes() for value in attribute]
+
     # Store an alphabetized collection of cluster names ...
-    cluster_names = [self.scidb.query_value("aql", "select name from %s" % artifact["column-names"]).getString() for artifact in timeseries_artifacts]
-    self.store_json_file_artifact("clusters", sorted(cluster_names), input=False)
+    self.store_json_file_artifact("clusters", sorted([name for name, artifact in cluster_artifacts]), input=False)
 
     # For each cluster (timeseries set) ...
-    for name, artifact in zip(cluster_names, timeseries_artifacts):
+    for name, artifact in cluster_artifacts:
       # Rebin the timeseries within this cluster so they share common start / stop times and samples ...
       self.set_message("Rebinning data for %s" % name)
       time_min = self.scidb.query_value("aql", "select min(time) from %s" % artifact["columns"]).getDouble()
