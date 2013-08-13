@@ -13,7 +13,7 @@ A Slycat Timeseries Model requires the following artifacts, which you will have
 to provide in your own scripts:
 
    inputs                     An M x N table containing M input observations with N features each.
-   output-0 ... output-(S-1)  One or more timeseries sets, each containing M timeseries for each of one-or-more output variables.
+   output-0 ... output-(S-1)  One or more timeseries sets, each containing all M timeseries for each of one-or-more output variables.
    output-count               The number of timeseries sets S in the model
    cluster-bin-count          The number of bins for downsampling each timeseries.
    cluster-bin-type           The algorithm used for downsampling.  Currently "naive" is the only allowed value.
@@ -21,7 +21,7 @@ to provide in your own scripts:
 
 Note that for V output variables, you could upload a single timeseries set
 containing V variables, or V timeseries sets each containing 1 variable, or
-anything in-between.
+something in-between.
 
 This script uses the latter approach to minimize its memory footprint: we
 create a timeseries set with one variable for each of our outputs, allowing us
