@@ -7,9 +7,9 @@ def register_client_plugin(context):
 
   def prn_file(connection, path, chunk_size=None):
     """Load an array from a PRN file.
-   
+
     Signature: prn_file(path, chunk_size=None)
-    
+
     Loads data from a single PRN file, partitioned in round-robin order
     among workers.  Use the "chunk_size" parameter to specify the maximum chunk
     size of the output array.  Otherwise, the file will be evenly split into N

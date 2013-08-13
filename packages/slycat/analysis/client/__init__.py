@@ -30,7 +30,7 @@ class connection(object):
     return remote_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
   def create_remote_file_array(self, name, sources, *arguments, **keywords):
     """Creates a remote array using plugin functions on the workers."""
-    return remote_file_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
+    return remote_file_array(self.proxy.create_remote_file_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.
@@ -64,6 +64,7 @@ class remote_array(object):
     elif name == "size":
       import numpy
       return numpy.prod([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
+    return object.__getattr__(self, name)
   def __setattr__(self, name, value):
     if name in ["attributes", "dimensions", "ndim", "shape", "size"]:
       raise Exception("{} attribute is read-only.".format(name))
@@ -112,15 +113,33 @@ class remote_array(object):
       raise
 
 class remote_file_array(remote_array):
-  """Proxy for a remote, multi-dimension, multi-attribute array that was loaded from a single file."""
+  """Proxy for a remote, multi-dimension, multi-attribute array loaded from a single file.
+
+  Attributes:
+    file          Path to the loaded file.  Note that this is the file path on
+                  the workers' filesystems, which may differ from the client.
+    file_size     Size of the loaded file in bytes on the filesystem.  Note
+                  that this may be only loosely related to the size of the array in memory.
+
+  Attributes inherited from remote_array:
+    attributes    A sequence of dicts that describe the name and type of each array attribute.
+    dimensions    A sequence of dicts that describe the name, type, size, and chunk-size of each array dimension.
+    ndim          The number of dimensions in the array.
+    shape         The size of the array along each dimension.
+    size          The number of cells in the array.
+  """
   def __init__(self, proxy):
     remote_array.__init__(self, proxy)
-  def file_path(self):
-    """Return the path to the loaded file."""
-    return self.proxy.file_path()
-  def file_size(self):
-    """Return the size in bytes of the loaded file."""
-    return self.proxy.file_size()
+  def __getattr__(self, name):
+    if name == "file":
+      return self.proxy.file_path()
+    elif name == "file_size":
+      return self.proxy.file_size()
+    return remote_array.__getattr__(self, name)
+  def __setattr__(self, name, value):
+    if name in ["file", "file_size"]:
+      raise Exception("{} attribute is read-only.".format(name))
+    remote_array.__setattr__(self, name, value)
 
 class array_chunk(object):
   """Proxy for a chunk from a remote, multi-dimension, multi-attribute array."""

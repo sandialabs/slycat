@@ -108,6 +108,19 @@ class coordinator_factory(slycat.analysis.plugin.coordinator.pyro_object):
       else:
         array_workers.append(worker.call_plugin_function(name, worker_index, *arguments, **keywords))
     return self.pyro_register(slycat.analysis.plugin.coordinator.array(array_workers, sources))
+  def create_remote_file_array(self, name, sources, *arguments, **keywords):
+    """Creates a remote file array using plugin functions on the workers."""
+    sources = [self.require_object(source) for source in sources]
+    array_workers = []
+    for worker_index, worker in enumerate(self.workers()):
+      source_workers = [source.workers[worker_index]._pyroUri for source in sources]
+      if len(source_workers) > 1:
+        array_workers.append(worker.call_plugin_function(name, worker_index, source_workers, *arguments, **keywords))
+      elif len(source_workers) == 1:
+        array_workers.append(worker.call_plugin_function(name, worker_index, source_workers[0], *arguments, **keywords))
+      else:
+        array_workers.append(worker.call_plugin_function(name, worker_index, *arguments, **keywords))
+    return self.pyro_register(slycat.analysis.plugin.coordinator.file_array(array_workers, sources))
 
 factory = coordinator_factory(nameserver_thread.nameserver)
 

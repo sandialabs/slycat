@@ -616,8 +616,8 @@ def test_join():
 def test_load_csv_unformatted():
   array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100))
   array2 = check_sanity(chunk_map(array1))
-  assert(array1.file_path() == "../data/automobiles.csv")
-  assert(array1.file_size() == 17314)
+  assert(array1.file == "../data/automobiles.csv")
+  assert(array1.file_size == 17314)
   require_array_schema(array1, [("i", "int64", 0, 406, 100)], [("Model", "string"), ("Origin", "string"), ("Year", "string"), ("Cylinders", "string"), ("Acceleration", "string"), ("Displacement", "string"), ("Horsepower", "string"), ("MPG", "string")])
   require_array_schema(array2, [("i", "int64", 0, 5, 5)], [("worker", "int64"), ("index", "int64"), ("c0", "int64"), ("s0", "int64")])
   numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 1, 2, 3], dtype="int64"))
@@ -636,8 +636,8 @@ def test_load_csv_unformatted():
 def test_load_csv_formatted():
   array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format=["string", "string", "int64", "int64", "float64", "float64", "float64", "float64"]))
   array2 = check_sanity(chunk_map(array1))
-  assert(array1.file_path() == "../data/automobiles.csv")
-  assert(array1.file_size() == 17314)
+  assert(array1.file == "../data/automobiles.csv")
+  assert(array1.file_size == 17314)
   require_array_schema(array1, [("i", "int64", 0, 406, 100)], [("Model", "string"), ("Origin", "string"), ("Year", "int64"), ("Cylinders", "int64"), ("Acceleration", "float64"), ("Displacement", "float64"), ("Horsepower", "float64"), ("MPG", "float64")])
   require_array_schema(array2, [("i", "int64", 0, 5, 5)], [("worker", "int64"), ("index", "int64"), ("c0", "int64"), ("s0", "int64")])
   numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 1, 2, 3], dtype="int64"))
