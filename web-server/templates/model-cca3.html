@@ -56,6 +56,12 @@ rights in this software.
           </div>
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
+          <div id="status-messages" style="display: none;">
+            <div class='error-heading'>Oops, this model is not ready yet.</div>
+            <div class='error-description'>We are probabably building it for your right now. We'll load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
+            <div><a href="#" onClick="$('#status-messages .technical-details').show(); return false;">Show Technical Information</a></div>
+            <div class="technical-details" style="display: none;"></div>
+          </div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
               <button id="delete-model-link">Delete Model</button>
@@ -475,7 +481,7 @@ rights in this software.
               },
               error : function(request, status, reason_phrase)
               {
-                window.alert("Error creating " + modelArtifactName + " array-chunker worker: " + reason_phrase);
+                //window.alert("Error creating " + modelArtifactName + " array-chunker worker: " + reason_phrase);
               },
             }
           );
@@ -484,59 +490,69 @@ rights in this software.
 
         function getChunkerMetadata(workerId, chunkerType){
           var metadata = null;
-          $.ajax({
-            url : "{{server-root}}" + "workers/" + workerId + "/" + chunkerType + "/metadata",
-            contentType : "application/json",
-            async: false, // Much of the rest of the script relies on this metadata, so dong this synchronously
-            success: function(resp){
-              metadata = resp;
-            },
-            error: function(request, status, reason_phrase){
-              window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
-            }
-          });
+          if (workerId != null) {
+            $.ajax({
+              url : "{{server-root}}" + "workers/" + workerId + "/" + chunkerType + "/metadata",
+              contentType : "application/json",
+              async: false, // Much of the rest of the script relies on this metadata, so dong this synchronously
+              success: function(resp){
+                metadata = resp;
+              },
+              error: function(request, status, reason_phrase){
+                window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
+              }
+            });
+          }
           return metadata;
         }
 
         function getArrayChunkerData(workerId){
-          var metadata = getChunkerMetadata(workerId, "array-chunker");
-          var allAttributes = [];
-          for(var i = 0; i < metadata.attributes.length; i++) {
-            allAttributes.push(i);
-          }
-
-          var dimensions = metadata.dimensions;
-          var allRanges = [];
-          for(var i = 0; i < dimensions.length; i++) {
-            allRanges.push( dimensions[i].begin );
-            allRanges.push( dimensions[i].end );
-          }
-
-          var queryParams = {
-            "attributes" : allAttributes.join(","),
-            "ranges" : allRanges.join(","),
-          }
-
-          var arrayChunkerData = null;
-          req = $.ajax({
-            url : "{{server-root}}" + "workers/" + workerId + "/array-chunker/chunk",
-            contentType : "application/json",
-            data: queryParams,
-            processData : true,
-            dataType: 'json',
-            async: false, // Much of the rest of the script relies on this data, so dong this synchronously
-            success: function(resp){
-              arrayChunkerData = resp;
-            },
-            error: function(xhr, ajaxOptions, thrownError){
-                //onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
+          if (workerId != null) {
+            var metadata = getChunkerMetadata(workerId, "array-chunker");
+            var allAttributes = [];
+            for(var i = 0; i < metadata.attributes.length; i++) {
+              allAttributes.push(i);
             }
-          });
-          return arrayChunkerData;
+
+            var dimensions = metadata.dimensions;
+            var allRanges = [];
+            for(var i = 0; i < dimensions.length; i++) {
+              allRanges.push( dimensions[i].begin );
+              allRanges.push( dimensions[i].end );
+            }
+
+            var queryParams = {
+              "attributes" : allAttributes.join(","),
+              "ranges" : allRanges.join(","),
+            }
+
+            var arrayChunkerData = null;
+            req = $.ajax({
+              url : "{{server-root}}" + "workers/" + workerId + "/array-chunker/chunk",
+              contentType : "application/json",
+              data: queryParams,
+              processData : true,
+              dataType: 'json',
+              async: false, // Much of the rest of the script relies on this data, so dong this synchronously
+              success: function(resp){
+                arrayChunkerData = resp;
+              },
+              error: function(xhr, ajaxOptions, thrownError){
+                  //onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
+              }
+            });
+            return arrayChunkerData;
+          } else {
+            return null;
+          }
         }
 
-        if(input_columns === null || output_columns === null || scale_inputs === null || statistics === null || canonical_variables === null || x_structure_correlation === null || y_structure_correlation === null)
+        if(input_columns === null || output_columns === null || scale_inputs === null || statistics === null || canonical_variables === null || x_structure_correlation === null || y_structure_correlation === null) {
+          $("#status-messages").show();
+          $("#status-messages .technical-details").append("<pre>Required inputs are not present.</pre>");
+          setTimeout("location.reload(true);", 15000);
           return;
+        }
 
         // OK, setup the visualization ...
         function deleteWorker(worker)
