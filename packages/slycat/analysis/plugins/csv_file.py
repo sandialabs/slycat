@@ -5,14 +5,24 @@
 def register_client_plugin(context):
   import slycat.analysis.plugin.client
 
-  def csv_file(connection, path, **keywords):
-    format = keywords.get("format", None)
-    delimiter = keywords.get("delimiter", ",")
-    chunk_size = keywords.get("chunk_size", None)
+  def csv_file(connection, path, format=None, delimiter=",", chunk_size=None):
+    """Load an array from a single CSV file.
+
+    Signature: csv_file(path, format=None, delimiter=",", chunk_size=None
+
+    Loads data from a single CSV file, partitioned in round-robin order among
+    workers.  Use the "delimiter" parameter to specify the field delimiter,
+    which defaults to ",".  If the "format" parameter is None (the default),
+    every attribute in the output array will be of type "string".  Pass a list
+    of types to "format" to specify alternate attribute types in the output
+    array.  Use the "chunk_size" parameter to specify the maximum chunk size of
+    the output array.  Otherwise, the file will be evenly split into N chunks,
+    one on each of N workers.
+    """
     if chunk_size is not None:
       chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
     return connection.create_remote_file_array("csv_file", [], path, format, delimiter, chunk_size)
-  context.register_plugin_function("csv_file", csv_file, metadata={"load-schema":"csv-file"})
+  context.register_plugin_function("csv_file", csv_file, metadata={"load-schema":"csv-file", "load-schema-doc":csv_file.__doc__})
 
 def register_worker_plugin(context):
   import numpy
