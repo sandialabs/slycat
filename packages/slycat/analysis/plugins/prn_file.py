@@ -4,6 +4,7 @@
 
 def register_client_plugin(context):
   import slycat.analysis.plugin.client
+  import StringIO
 
   def prn_file(connection, path, chunk_size=None):
     """Load an array from a PRN file.
@@ -13,12 +14,13 @@ def register_client_plugin(context):
     Loads data from a single PRN file, partitioned in round-robin order
     among workers.  Use the "chunk_size" parameter to specify the maximum chunk
     size of the output array.  Otherwise, the file will be evenly split into N
-    chunks, one on each of N workers.
-    """
+    chunks, one on each of N workers."""
     if chunk_size is not None:
       chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
     return connection.create_remote_file_array("prn_file", [], path, chunk_size)
-  context.register_plugin_function("prn_file", prn_file, metadata={"load-schema":"prn-file", "load-schema-doc":prn_file.__doc__})
+
+  schema_doc = "\n".join([line.strip() for line in StringIO.StringIO(prn_file.__doc__).readlines()][4:])
+  context.register_plugin_function("prn_file", prn_file, metadata={"load-schema":"prn-file", "load-schema-doc":schema_doc})
 
 def register_worker_plugin(context):
   import numpy

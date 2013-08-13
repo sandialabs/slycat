@@ -3,6 +3,7 @@
 # rights in this software.
 
 from slycat.analysis.plugin.client import InvalidArgument
+import StringIO
 
 schema_plugin_map = {}
 
@@ -23,9 +24,7 @@ def load(connection, path, schema="csv-file", **keywords):
   and its layout on disk (one file, multiple partitioned files, etc).
   Depending on the schema, you may need to provide additional schema-specific
   keyword parameters when calling load().  The currently-supported schemas
-  are:
-
-  """
+  are:\n\n"""
 
   if schema not in schema_plugin_map:
     raise InvalidArgument("Unknown schema: %s" % schema)
@@ -41,4 +40,7 @@ def finalize_plugins(context):
       schema_plugin_map[metadata["load-schema"]] = name
 
       if "load-schema-doc" in metadata:
-        load.__doc__ += "{}:\n\n{}\n\n".format(metadata["load-schema"], metadata["load-schema-doc"])
+        load.__doc__ += "  {}:\n\n".format(metadata["load-schema"])
+        for line in StringIO.StringIO(metadata["load-schema-doc"]).readlines():
+          load.__doc__ += "    {}\n".format(line.strip())
+        load.__doc__ += "\n"

@@ -4,6 +4,7 @@
 
 def register_client_plugin(context):
   import slycat.analysis.plugin.client
+  import StringIO
 
   def csv_file(connection, path, format=None, delimiter=",", chunk_size=None):
     """Load an array from a single CSV file.
@@ -17,12 +18,13 @@ def register_client_plugin(context):
     of types to "format" to specify alternate attribute types in the output
     array.  Use the "chunk_size" parameter to specify the maximum chunk size of
     the output array.  Otherwise, the file will be evenly split into N chunks,
-    one on each of N workers.
-    """
+    one on each of N workers."""
     if chunk_size is not None:
       chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
     return connection.create_remote_file_array("csv_file", [], path, format, delimiter, chunk_size)
-  context.register_plugin_function("csv_file", csv_file, metadata={"load-schema":"csv-file", "load-schema-doc":csv_file.__doc__})
+
+  schema_doc = "\n".join([line.strip() for line in StringIO.StringIO(csv_file.__doc__).readlines()][4:])
+  context.register_plugin_function("csv_file", csv_file, metadata={"load-schema":"csv-file", "load-schema-doc":schema_doc})
 
 def register_worker_plugin(context):
   import numpy
