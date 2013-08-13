@@ -48,6 +48,12 @@ rights in this software.
           </div>
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
+          <div id="status-messages" style="display: none;">
+            <div class='error-heading'>Oops, this model is not ready yet.</div>
+            <div class='error-description'>We are probabably building it for your right now. Look up at the status bar for progress information and more details. We'll load it for you automatically once it's ready.</div>
+            <div><a href="#" onClick="$('#status-messages .technical-details').show(); return false;">Show Technical Information</a></div>
+            <div class="technical-details" style="display: none;"></div>
+          </div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
               <button id="delete-model-link">Delete Model</button>
@@ -378,11 +384,16 @@ rights in this software.
         var cluster_bin_type = "{{cluster-bin-type}}";
         var cluster_bin_count = {{cluster-bin-count}};
 
-        if(cluster_type === null || cluster_bin_type === null || cluster_bin_count === null)
+        // We stop rendering the UI if inputs are missing. We should probably provide a useful message instead.
+        if(cluster_type === null || cluster_bin_type === null || cluster_bin_count === null) {
+          $("#status-messages").show();
+          $("#status-messages .technical-details").append("<pre>Required inputs are not present.</pre>");
+          setTimeout("location.reload(true);", 15000);
           return;
+        }
 
         // Setup the resizing layout ...
-        $("body").layout({
+        var bodyLayout = $("body").layout({
           north:
             {
               initClosed : true
@@ -393,7 +404,7 @@ rights in this software.
             }
         });
 
-        $("#content-pane").layout({
+        var contentPaneLayout = $("#content-pane").layout({
           north :
           {
             size: 45,
@@ -408,15 +419,15 @@ rights in this software.
             size: $("#content-pane").height() / 3,
             resizeWhileDragging : true
           }
-        })
+        });
 
-        $("#model-pane").layout({
+        var modelPaneLayout = $("#model-pane").layout({
           west :
           {
             size : $("#model-pane").width() / 2,
             resizeWhileDragging : true
           }
-        })
+        });
 
         var last_selected_node = null;
 
@@ -509,9 +520,14 @@ rights in this software.
           },
           error : function(request, status, reason_phrase)
           {
-            window.alert("Error retrieving cluster data: " + reason_phrase);
+            //window.alert("Error retrieving cluster data: " + reason_phrase);
+            $("#status-messages").show();
+            $("#status-messages .technical-details").append("<pre>Error retrieving list of clusters. " + reason_phrase + "</pre>");
+            setTimeout("location.reload(true);", 15000);
           }
         });
+
+
 
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -568,7 +584,14 @@ rights in this software.
                     },
                     error : function(request, status, reason_phrase)
                     {
-                      window.alert("Error retrieving cluster data: " + reason_phrase);
+                      //window.alert("Error retrieving cluster data: " + reason_phrase);
+                      $("#status-messages").show();
+                      $("#status-messages .technical-details").append("<pre>Error retrieving cluster data. " + reason_phrase + "</pre>");
+                      // Show top and bottom panes while hiding the center one.
+                      bodyLayout.toggle("north");
+                      bodyLayout.toggle("south");
+                      $("#content-pane").hide();
+                      setTimeout("location.reload(true);", 15000);
                     }
                   });
                 })
