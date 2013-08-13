@@ -14,6 +14,7 @@ than the available system memory.
 """
 
 class connection(object):
+  plugin_functions = {}
   def __init__(self, nameserver):
     import Pyro4
     self.nameserver = nameserver
@@ -21,9 +22,15 @@ class connection(object):
   def require_object(self, object):
     """Lookup the Pyro URI for a Python object."""
     return object.proxy._pyroUri
+  def call_plugin_function(self, name, *arguments, **keywords):
+    """Call a plugin function by name."""
+    return connection.plugin_functions[name](self, *arguments, **keywords)
   def create_remote_array(self, name, sources, *arguments, **keywords):
     """Creates a remote array using plugin functions on the workers."""
     return remote_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
+  def create_remote_file_array(self, name, sources, *arguments, **keywords):
+    """Creates a remote array using plugin functions on the workers."""
+    return remote_file_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.
@@ -222,7 +229,7 @@ def __setup_module():
 
   for module in __plugins.modules:
     if hasattr(module, "finalize_plugins"):
-      modules.finalize_plugins(__plugins)
+      module.finalize_plugins(__plugins)
 
   def __make_connection_method(function):
     def implementation(self, *arguments, **keywords):
@@ -241,5 +248,7 @@ def __setup_module():
   for name, (function, metadata) in __plugins.functions.items():
     setattr(connection, name, __make_connection_method(function))
     globals()[name] = __make_standalone_method(function)
+
+  connection.plugin_functions = {name:function for name, (function, metadata) in __plugins.functions.items()}
 __setup_module()
 

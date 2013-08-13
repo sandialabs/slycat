@@ -2,19 +2,15 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-def register_coordinator_plugin(context):
-  from slycat.analysis.plugin.client import require_chunk_size
-  import slycat.analysis.plugin.coordinator
+def register_client_plugin(context):
+  import slycat.analysis.plugin.client
 
-  def prn_file(factory, path, **keywords):
+  def prn_file(connection, path, **keywords):
     chunk_size = keywords.get("chunk_size", None)
     if chunk_size is not None:
-      chunk_size = require_chunk_size(chunk_size)
-    array_workers = []
-    for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_plugin_function("prn_file", worker_index, path, chunk_size))
-    return factory.pyro_register(slycat.analysis.plugin.coordinator.file_array(array_workers, []))
-  context.register_plugin_function("prn_file", prn_file)
+      chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
+    return connection.create_remote_file_array("prn_file", [], path, chunk_size)
+  context.register_plugin_function("prn_file", prn_file, metadata={"load-schema":"prn-file"})
 
 def register_worker_plugin(context):
   import numpy

@@ -2,23 +2,17 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-from __future__ import division
+def register_client_plugin(context):
+  import slycat.analysis.plugin.client
 
-def register_coordinator_plugin(context):
-  from slycat.analysis.plugin.client import require_chunk_size, InvalidArgument
-  import slycat.analysis.plugin.coordinator
-
-  def csv_file(factory, path, **keywords):
+  def csv_file(connection, path, **keywords):
     format = keywords.get("format", None)
     delimiter = keywords.get("delimiter", ",")
     chunk_size = keywords.get("chunk_size", None)
     if chunk_size is not None:
-      chunk_size = require_chunk_size(chunk_size)
-    array_workers = []
-    for worker_index, worker in enumerate(factory.workers()):
-      array_workers.append(worker.call_plugin_function("csv_file", worker_index, path, format, delimiter, chunk_size))
-    return factory.pyro_register(slycat.analysis.plugin.coordinator.file_array(array_workers, []))
-  context.register_plugin_function("csv_file", csv_file)
+      chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
+    return connection.create_remote_file_array("csv_file", [], path, format, delimiter, chunk_size)
+  context.register_plugin_function("csv_file", csv_file, metadata={"load-schema":"csv-file"})
 
 def register_worker_plugin(context):
   import numpy
