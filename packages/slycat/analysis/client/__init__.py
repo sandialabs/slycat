@@ -1,109 +1,245 @@
-import logging
+# Copyright 2013, Sandia Corporation. Under the terms of Contract
+# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+# rights in this software.
 
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+"""Parallel streaming data analysis.
 
-log = logging.getLogger("slycat.analysis.client")
-log.setLevel(logging.INFO)
-log.addHandler(handler)
+Slycat Analysis provides a Pythonic API for interactive exploratory analysis of
+remote, multi-dimension, multi-attribute arrays.  Using Slycat Analysis, you
+connect to a running Slycat Analysis Coordinator to create, load, and
+manipulate arrays that are distributed across one-to-many Slycat Analysis
+Workers for parallel computation.  Further, arrays are split into chunks that
+are streamed through the system, so you can manipulate arrays that are larger
+than the available system memory.
+"""
 
-class InvalidArgument(Exception):
-  """Exception thrown when the public API is called with invalid arguments."""
-  def __init__(self, message):
-    Exception.__init__(self, message)
+class connection(object):
+  def __init__(self, nameserver):
+    import Pyro4
+    self.nameserver = nameserver
+    self.proxy = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
+  def require_object(self, object):
+    """Lookup the Pyro URI for a Python object."""
+    return object.proxy._pyroUri
+  def create_remote_array(self, name, sources, *arguments, **keywords):
+    """Creates a remote array using plugin functions on the workers."""
+    return remote_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
 
-def require_attribute_name(name):
-  if not isinstance(name, basestring):
-    raise InvalidArgument("Attribute name must be a string.")
-  return name
+class remote_array(object):
+  """Proxy for a remote, multi-dimension, multi-attribute array.
 
-def require_attribute_type(type):
-  allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
-  if type not in allowed_types:
-    raise InvalidArgument("Attribute type must be one of %s" % ",".join(allowed_types))
-  return type
+  Attributes:
+    attributes    A sequence of dicts that describe the name and type of each array attribute.
+    dimensions    A sequence of dicts that describe the name, type, size, and chunk-size of each array dimension.
+    ndim          The number of dimensions in the array.
+    shape         The size of the array along each dimension.
+    size          The number of cells in the array.
+  """
+  def __init__(self, proxy):
+    self.proxy = proxy
+    self._dimensions = None
+    self._attributes = None
+  def __del__(self):
+    self.proxy.release()
+  def __getattr__(self, name):
+    if name == "attributes":
+      if self._attributes is None:
+        self._attributes = self.proxy.attributes()
+      return self._attributes
+    elif name == "dimensions":
+      if self._dimensions is None:
+        self._dimensions = self.proxy.dimensions()
+      return self._dimensions
+    elif name == "ndim":
+      return len(self.dimensions)
+    elif name == "shape":
+      return tuple([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
+    elif name == "size":
+      import numpy
+      return numpy.prod([dimension["end"] - dimension["begin"] for dimension in self.dimensions])
+  def __setattr__(self, name, value):
+    if name in ["attributes", "dimensions", "ndim", "shape", "size"]:
+      raise Exception("{} attribute is read-only.".format(name))
+    object.__setattr__(self, name, value)
+  def __repr__(self):
+    if len(self.dimensions) > 1:
+      shape_repr = "x".join([str(dimension["end"] - dimension["begin"]) for dimension in self.dimensions])
+    else:
+      dimension = self.dimensions[0]
+      shape_repr = "{} element".format(dimension["end"] - dimension["begin"])
 
-def require_attribute(attribute):
-  if isinstance(attribute, basestring):
-    attribute = {"name":attribute, "type":"float64"}
-  elif isinstance(attribute, tuple):
-    if len(attribute) != 2:
-      raise InvalidArgument("Attribute must have a name and a type.")
-    attribute = {"name":attribute[0], "type":attribute[1]}
-  elif isinstance(attribute, dict):
-    if "name" not in attribute:
-      raise InvalidArgument("Attribute must have a name.")
-    if "type" not in attribute:
-      raise InvalidArgument("Attribute must have a type.")
-  require_attribute_name(attribute["name"])
-  require_attribute_type(attribute["type"])
-  return attribute
+    dimensions_repr = [dimension["name"] for dimension in self.dimensions]
+    dimensions_repr = ", ".join(dimensions_repr)
+    if len(self.dimensions) > 1:
+      dimensions_repr = "dimensions: " + dimensions_repr
+    else:
+      dimensions_repr = "dimension: " + dimensions_repr
 
-def require_attributes(attributes):
-  if isinstance(attributes, basestring):
-    attributes = [require_attribute(attributes)]
-  elif isinstance(attributes, tuple):
-    attributes = [require_attribute(attributes)]
-  elif isinstance(attributes, dict):
-    attributes = [require_attribute(attributes)]
-  else:
-    attributes = [require_attribute(attribute) for attribute in attributes]
-  return attributes
+    attributes_repr = [attribute["name"] for attribute in self.attributes]
+    if len(self.attributes) > 6:
+      attributes_repr = attributes_repr[:3] + ["..."] + attributes_repr[-3:]
+    attributes_repr = ", ".join(attributes_repr)
+    if len(self.attributes) > 1:
+      attributes_repr = "attributes: " + attributes_repr
+    else:
+      attributes_repr = "attribute: " + attributes_repr
+    return "<{} remote array with {} and {}>".format(shape_repr, dimensions_repr, attributes_repr)
+  def chunks(self):
+    """Return an iterator over the array's chunks.
 
-def require_attribute_names(names):
-  if isinstance(names, basestring):
-    return [require_attribute_name(names)]
-  return [require_attribute_name(name) for name in names]
+    Iterating over an array's chunks allows you to access the contents of the
+    array on the client while limiting memory consumption.  Note that sending the
+    contents of the array to the client may still consume considerable bandwidth,
+    so you should try to perform as many remote operations as possible before
+    sending the results to the client.
+    """
+    iterator = self.proxy.iterator()
+    try:
+      while True:
+        iterator.next()
+        yield array_chunk(iterator, self.attributes)
+    except StopIteration:
+      iterator.release()
+    except:
+      iterator.release()
+      raise
 
-def require_chunk_size(chunk_size):
-  if not isinstance(chunk_size, int):
-    raise slycat.analysis.client.InvalidArgument("Chunk size must be an integer.")
-  if chunk_size < 1:
-    raise slycat.analysis.client.InvalidArgument("Chunk size must be greater-than zero.")
-  return chunk_size
+class remote_file_array(remote_array):
+  """Proxy for a remote, multi-dimension, multi-attribute array that was loaded from a single file."""
+  def __init__(self, proxy):
+    remote_array.__init__(self, proxy)
+  def file_path(self):
+    """Return the path to the loaded file."""
+    return self.proxy.file_path()
+  def file_size(self):
+    """Return the size in bytes of the loaded file."""
+    return self.proxy.file_size()
 
-def require_chunk_sizes(shape, chunk_sizes):
-  """Return array chunk sizes (tuple of dimension lengths), treating a single integer as a 1-tuple and sanity-checking the results against an array shape."""
-  if chunk_sizes is None:
-    chunk_sizes = shape
-  elif isinstance(chunk_sizes, int):
-    chunk_sizes = tuple([require_chunk_size(chunk_sizes)])
-  else:
-    chunk_sizes = tuple([require_chunk_size(chunk_size) for chunk_size in chunk_sizes])
-  if len(shape) != len(chunk_sizes):
-    raise InvalidArgument("Array shape and chunk sizes must contain the same number of dimensions.")
-  return chunk_sizes
+class array_chunk(object):
+  """Proxy for a chunk from a remote, multi-dimension, multi-attribute array."""
+  def __init__(self, proxy, attributes):
+    self._proxy = proxy
+    self._attributes = attributes
+  def __repr__(self):
+    shape = self.shape()
+    if len(shape) > 1:
+      shape_repr = "x".join([str(size) for size in shape])
+    else:
+      shape_repr = "{} element".format(shape[0])
 
-def require_dimension_name(name):
-  if not isinstance(name, basestring):
-    raise InvalidArgument("Dimension name must be a string.")
-  return name
+    coordinates = self.coordinates()
+    coordinates_repr = ", ".join([str(coordinate) for coordinate in coordinates])
+    return "<{} remote array chunk at coordinates {}>".format(shape_repr, coordinates_repr)
+  def coordinates(self):
+    """Return a numpy array containing the coordinates of this chunk.
 
-def require_dimension_names(names):
-  if isinstance(names, basestring):
-    return [require_dimension_name(names)]
-  return [require_dimension_name(name) for name in names]
+    A chunk's coordinates are the lowest-numbered coordinates along each
+    dimension for that chunk.
+    """
+    return self._proxy.coordinates()
+  def shape(self):
+    """Return a numpy array containing the shape of this chunk.
 
-def require_expression(expression):
-  import ast
-  if isinstance(expression, basestring):
-    expression = ast.parse(expression)
-  else:
-    raise InvalidArgument("Expression must be a string.")
-  return expression
+    A chunk's shape is the size of the chunk along each of its dimensions.
+    """
+    return self._proxy.shape()
+  def attributes(self):
+    """Return an iterator over the attributes within this chunk."""
+    for index, attribute in enumerate(self._attributes):
+      yield array_chunk_attribute(self._proxy, index, attribute)
+  def values(self, n):
+    """Return a numpy array containing the values of attribute n for this chunk."""
+    return self._proxy.values(n)
 
-def require_array(array):
-  return array
+class array_chunk_attribute(object):
+  """Proxy for an individual chunk-attribute from a remote, multi-dimension, multi-attribute array."""
+  def __init__(self, proxy, index, attribute):
+    self.proxy = proxy
+    self.index = index
+    self.attribute = attribute
+  def __repr__(self):
+    return "<remote array chunk attribute: {}>".format(self.name())
+  def name(self):
+    """Return the name of the attribute."""
+    return self.attribute["name"]
+  def type(self):
+    """Return the type of the attribute."""
+    return self.attribute["type"]
+  def values(self):
+    """Return a numpy array containing the values of the attribute for this chunk."""
+    return self.proxy.values(self.index)
 
-def require_shape(shape):
-  """Return an array shape (tuple of dimension lengths), treating a single integer as a 1-tuple."""
-  if isinstance(shape, int):
-    shape = tuple([shape])
-  else:
-    shape = tuple(shape)
-  if not len(shape):
-    raise InvalidArgument("Array shape must have at least one dimension.")
-  return shape
+current_connection = None
 
+def connect(host="127.0.0.1", port=9090, hmac_key = "slycat1"):
+  """Return a connection to a running Slycat Analysis Coordinator.
 
+  Note that you only need to call connect() explicitly when supplying your own
+  parameters.  Otherwise, connect() will be called automatically when you use
+  any of the other functions in this module.
+
+  You will likely never need to call connect() more than once or keep track of
+  the returned connection object, unless you need to manage connections to more
+  than one Slycat Analysis Coordinator.
+  """
+  global current_connection
+  import Pyro4
+  Pyro4.config.HMAC_KEY = hmac_key
+  nameserver = Pyro4.locateNS(host, port)
+  current_connection = connection(nameserver)
+  return current_connection
+
+def get_connection():
+  """Return the current (most recent) connection."""
+  if current_connection is None:
+    connect()
+  return current_connection
+
+connection.remote_array = remote_array
+connection.remote_file_array = remote_file_array
+
+def __setup_module():
+  # Configure Pyro4 ...
+  import Pyro4
+  Pyro4.config.SERIALIZER = "pickle"
+
+  # Enable remote exception handling ...
+  import sys
+  sys.excepthook = Pyro4.util.excepthook
+
+  # Load plugins ...
+  import os
+  import slycat.analysis.plugin
+  import slycat.analysis.plugin.client
+  __plugins = slycat.analysis.plugin.manager(slycat.analysis.plugin.client.log)
+  for plugin_directory in [path for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":") if path]:
+    __plugins.load(plugin_directory)
+  __plugins.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "plugins"))
+
+  for module in __plugins.modules:
+    if hasattr(module, "register_client_plugin"):
+      module.register_client_plugin(__plugins)
+
+  for module in __plugins.modules:
+    if hasattr(module, "finalize_plugins"):
+      modules.finalize_plugins(__plugins)
+
+  def __make_connection_method(function):
+    def implementation(self, *arguments, **keywords):
+      return function(self, *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  def __make_standalone_method(function):
+    def implementation(*arguments, **keywords):
+      return function(get_connection(), *arguments, **keywords)
+    implementation.__name__ = function.__name__
+    implementation.__doc__ = function.__doc__
+    return implementation
+
+  for name, (function, metadata) in __plugins.functions.items():
+    setattr(connection, name, __make_connection_method(function))
+    globals()[name] = __make_standalone_method(function)
+__setup_module()
 

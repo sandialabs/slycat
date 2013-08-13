@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def zeros(connection, shape, chunk_sizes=None, attributes="val"):
     """Return an array of all zeros.
@@ -72,24 +72,24 @@ def register_client_plugin(context):
         {3,2} 0.0
         {3,3} 0.0
     """
-    shape = slycat.analysis.client.require_shape(shape)
-    chunk_sizes = slycat.analysis.client.require_chunk_sizes(shape, chunk_sizes)
-    attributes = slycat.analysis.client.require_attributes(attributes)
+    shape = slycat.analysis.plugin.client.require_shape(shape)
+    chunk_sizes = slycat.analysis.plugin.client.require_chunk_sizes(shape, chunk_sizes)
+    attributes = slycat.analysis.plugin.client.require_attributes(attributes)
     if len(attributes) < 1:
-      raise slycat.analysis.client.InvalidArgument("zeros() requires at least one attribute.")
+      raise slycat.analysis.plugin.client.InvalidArgument("zeros() requires at least one attribute.")
     return connection.create_remote_array("zeros", [], shape, chunk_sizes, attributes)
   context.register_plugin_function("zeros", zeros)
 
 def register_worker_plugin(context):
   import numpy
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
 
   def zeros(factory, worker_index, shape, chunk_sizes, attributes):
     return factory.pyro_register(zeros_array(worker_index, shape, chunk_sizes, attributes))
 
-  class zeros_array(slycat.analysis.worker.array):
+  class zeros_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, shape, chunk_sizes, attributes):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.shape = shape
       self.chunk_sizes = chunk_sizes
       self._attributes = attributes
@@ -100,10 +100,10 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(zeros_array_iterator(self))
 
-  class zeros_array_iterator(slycat.analysis.worker.array_iterator):
+  class zeros_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
-      self.iterator = slycat.analysis.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
+      self.iterator = slycat.analysis.plugin.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
     def next(self):
       while True:
         chunk_index, worker_index, begin, end = self.iterator.next()

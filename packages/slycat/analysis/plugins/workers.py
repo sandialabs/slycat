@@ -5,7 +5,7 @@
 import Pyro4
 
 def workers(connection):
-  """Return the current set of available slycat analysis workers.
+  """Return the current set of available slycat.analysis.plugin.workers.
 
   Signature: workers()
   """

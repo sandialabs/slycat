@@ -3,7 +3,7 @@
 from __future__ import division
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def apply(connection, source, attributes):
     """Add attributes based on mathmatical expressions to a source array.
@@ -71,27 +71,27 @@ def register_client_plugin(context):
         {3} 0.204560278553, 0.748906637534, -0.544346358981, 0
         {4} 0.567725029082, 0.653569870852, -0.08584484177, 1
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     if isinstance(attributes, tuple):
       attributes = [attributes]
     if len(attributes) < 1:
-      raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
-    attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
+      raise slycat.analysis.plugin.client.InvalidArgument("You must specify at least one attribute.")
+    attributes = [(slycat.analysis.plugin.client.require_attribute(attribute), slycat.analysis.plugin.client.require_expression(expression)) for attribute, expression in attributes]
     return connection.create_remote_array("apply", [source], attributes)
   context.register_plugin_function("apply", apply)
 
 def register_worker_plugin(context):
   import numpy
 
-  import slycat.analysis.worker
-  import slycat.analysis.worker.expression
+  import slycat.analysis.plugin.worker
+  import slycat.analysis.plugin.worker.expression
 
   def apply(factory, worker_index, source, attributes):
     return factory.pyro_register(apply_array(worker_index, factory.require_object(source), attributes))
 
-  class apply_array(slycat.analysis.worker.array):
+  class apply_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source, attribute_expressions):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       self.attribute_expressions = attribute_expressions
     def dimensions(self):
@@ -124,9 +124,9 @@ def register_worker_plugin(context):
       except Exception as e:
         log.error("symbol_lookup exception: %s", e)
 
-  class apply_array_iterator(slycat.analysis.worker.array_iterator):
+  class apply_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.iterator = owner.source.iterator()
       self.source_attributes = owner.source.attributes()
       self.symbol_lookup = symbol_lookup(self.iterator, self.source_attributes, owner.source.dimensions())
@@ -144,7 +144,7 @@ def register_worker_plugin(context):
 
       attribute, expression = self.owner.attribute_expressions[attribute - len(self.source_attributes)]
       #log.debug("Evaluating %s." % ast.dump(expression))
-      result = slycat.analysis.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
+      result = slycat.analysis.plugin.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
       if isinstance(result, int) or isinstance(result, float):
         temp = numpy.ma.empty(self.iterator.shape())
         temp.fill(result)

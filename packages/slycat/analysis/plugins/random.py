@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def random(connection, shape, chunk_sizes=None, seed=12345, attributes="val"):
     """Return an array of random values.
@@ -76,24 +76,24 @@ def register_client_plugin(context):
         {3,2} 0.229158970052
         {3,3} 0.486744328559
     """
-    shape = slycat.analysis.client.require_shape(shape)
-    chunk_sizes = slycat.analysis.client.require_chunk_sizes(shape, chunk_sizes)
-    attributes = slycat.analysis.client.require_attributes(attributes)
+    shape = slycat.analysis.plugin.client.require_shape(shape)
+    chunk_sizes = slycat.analysis.plugin.client.require_chunk_sizes(shape, chunk_sizes)
+    attributes = slycat.analysis.plugin.client.require_attributes(attributes)
     if len(attributes) < 1:
-      raise slycat.analysis.client.InvalidArgument("random() requires at least one attribute.")
+      raise slycat.analysis.plugin.client.InvalidArgument("random() requires at least one attribute.")
     return connection.create_remote_array("random", [], shape, chunk_sizes, seed, attributes)
   context.register_plugin_function("random", random)
 
 def register_worker_plugin(context):
   import numpy
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
 
   def random(factory, worker_index, shape, chunk_sizes, seed, attributes):
     return factory.pyro_register(random_array(worker_index, shape, chunk_sizes, seed, attributes))
 
-  class random_array(slycat.analysis.worker.array):
+  class random_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, shape, chunk_sizes, seed, attributes):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.shape = shape
       self.chunk_sizes = chunk_sizes
       self.seed = seed
@@ -105,10 +105,10 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(random_array_iterator(self))
 
-  class random_array_iterator(slycat.analysis.worker.array_iterator):
+  class random_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
-      self.iterator = slycat.analysis.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
+      self.iterator = slycat.analysis.plugin.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
       self.generator = numpy.random.RandomState()
       self.generator.seed(owner.seed + owner.worker_index)
     def next(self):

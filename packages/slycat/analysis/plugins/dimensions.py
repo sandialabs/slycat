@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def dimensions(connection, source):
     """Return an array that describe's another array's dimensions.
@@ -21,19 +21,19 @@ def register_client_plugin(context):
         {1} d1, int64, 0, 2000, 100
         {2} d2, int64, 0, 3000, 100
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     return connection.create_remote_array("dimensions", [source])
   context.register_plugin_function("dimensions", dimensions)
 
 def register_worker_plugin(context):
   import numpy
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
   def dimensions(factory, worker_index, source):
     return factory.pyro_register(dimensions_array(worker_index, factory.require_object(source)))
 
-  class dimensions_array(slycat.analysis.worker.array):
+  class dimensions_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source_dimensions = source.dimensions()
     def dimensions(self):
       return [{"name":"i", "type":"int64", "begin":0, "end":len(self.source_dimensions), "chunk-size":len(self.source_dimensions)}]
@@ -43,11 +43,11 @@ def register_worker_plugin(context):
       if self.worker_index == 0:
         return self.pyro_register(dimensions_array_iterator(self))
       else:
-        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.plugin.worker.null_array_iterator(self))
 
-  class dimensions_array_iterator(slycat.analysis.worker.array_iterator):
+  class dimensions_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:

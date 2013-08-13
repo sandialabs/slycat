@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def aggregate(connection, source, expressions):
     """Return an array containing one-or-more aggregates of a source array.
@@ -52,7 +52,7 @@ def register_client_plugin(context):
         {i} min_b, min_c, max_b, max_c, count_b, sum_c
       * {0} 0.183918811677, 0.595544702979, 0.929616092817, 0.964514519736, 5, 3.61571282797
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     if isinstance(expressions, basestring):
       expressions = [(expressions, None)]
     elif isinstance(expressions, tuple):
@@ -66,15 +66,15 @@ def register_worker_plugin(context):
   import numpy
   import Pyro4
 
-  import slycat.analysis.worker
-  import slycat.analysis.worker.accumulator
+  import slycat.analysis.plugin.worker
+  import slycat.analysis.plugin.worker.accumulator
 
   def aggregate(factory, worker_index, source, expressions):
     return factory.pyro_register(aggregate_array(worker_index, factory.require_object(source), expressions))
 
-  class aggregate_array(slycat.analysis.worker.array):
+  class aggregate_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source, expressions):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       self.expressions = []
 
@@ -89,14 +89,14 @@ def register_worker_plugin(context):
     def dimensions(self):
       return [{"name":"i", "type":"int64", "begin":0, "end":1, "chunk-size":1}]
     def attributes(self):
-      return [{"name":"%s_%s" % (operator, attribute["name"]), "type":slycat.analysis.worker.accumulator.create(operator, attribute["type"]).dtype()} for operator, attribute, index in self.expressions]
+      return [{"name":"%s_%s" % (operator, attribute["name"]), "type":slycat.analysis.plugin.worker.accumulator.create(operator, attribute["type"]).dtype()} for operator, attribute, index in self.expressions]
     def iterator(self):
       if self.worker_index == 0:
         return self.pyro_register(aggregate_array_iterator(self))
       else:
-        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.plugin.worker.null_array_iterator(self))
     def calculate_local(self):
-      accumulators = [slycat.analysis.worker.accumulator.create(operator, attribute["type"]) for operator, attribute, index in self.expressions]
+      accumulators = [slycat.analysis.plugin.worker.accumulator.create(operator, attribute["type"]) for operator, attribute, index in self.expressions]
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           for accumulator, (operator, attribute, index) in zip(accumulators, self.expressions):
@@ -106,15 +106,15 @@ def register_worker_plugin(context):
       accumulators = [Pyro4.async(sibling).calculate_local() for sibling in self.siblings]
       accumulators = [accumulator.value for accumulator in accumulators]
       accumulators = zip(*accumulators)
-      global_accumulators = [slycat.analysis.worker.accumulator.create(operator, attribute["type"]) for operator, attribute, index in self.expressions]
+      global_accumulators = [slycat.analysis.plugin.worker.accumulator.create(operator, attribute["type"]) for operator, attribute, index in self.expressions]
       for local_accumulator, remote_accumulators in zip(global_accumulators, accumulators):
         for remote_accumulator in remote_accumulators:
           local_accumulator.reduce(remote_accumulator)
       return global_accumulators
 
-  class aggregate_array_iterator(slycat.analysis.worker.array_iterator):
+  class aggregate_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:

@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def materialize(connection, source):
     """Return a materialized (loaded into memory) version of an array.
@@ -22,20 +22,20 @@ def register_client_plugin(context):
       >>> array2 = materialize(array1)
       # Now, use array2 in place of array1, to avoid recomputing.
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     return connection.create_remote_array("materialize", [source])
   context.register_plugin_function("materialize", materialize)
 
 def register_worker_plugin(context):
   import numpy
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
 
   def materialize(factory, worker_index, source):
     return factory.pyro_register(materialize_array(worker_index, factory.require_object(source)))
 
-  class materialize_array(slycat.analysis.worker.array):
+  class materialize_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       self.chunks = None
     def dimensions(self):
@@ -62,9 +62,9 @@ def register_worker_plugin(context):
     def values(self, attribute):
       return self._values[attribute]
 
-  class materialize_array_iterator(slycat.analysis.worker.array_iterator):
+  class materialize_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.index = -1
     def next(self):
       self.owner.materialize()

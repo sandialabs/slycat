@@ -2,9 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-from slycat.analysis import *
-from slycat.analysis.client import log
-import logging
+from slycat.analysis.client import *
 import numpy
 import numpy.ma.testutils
 import subprocess
@@ -18,7 +16,6 @@ def setup():
   time.sleep(2.0)
   worker_processes = [subprocess.Popen(["python", "slycat-analysis-worker.py", "--nameserver-port", "9092", "--log-level", "info"]) for i in range(4)]
   time.sleep(2.0)
-  log.setLevel(logging.WARNING)
   connect("127.0.0.1", 9092)
 
 def teardown():

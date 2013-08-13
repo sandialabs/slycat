@@ -3,8 +3,8 @@
 # rights in this software.
 
 def register_coordinator_plugin(context):
-  from slycat.analysis.client import require_chunk_size
-  import slycat.analysis.coordinator
+  from slycat.analysis.plugin.client import require_chunk_size
+  import slycat.analysis.plugin.coordinator
 
   def prn_file(factory, path, **keywords):
     chunk_size = keywords.get("chunk_size", None)
@@ -13,21 +13,21 @@ def register_coordinator_plugin(context):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
       array_workers.append(worker.call_plugin_function("prn_file", worker_index, path, chunk_size))
-    return factory.pyro_register(slycat.analysis.coordinator.file_array(array_workers, []))
+    return factory.pyro_register(slycat.analysis.plugin.coordinator.file_array(array_workers, []))
   context.register_plugin_function("prn_file", prn_file)
 
 def register_worker_plugin(context):
   import numpy
   import os
 
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
 
   def prn_file(factory, worker_index, path, chunk_size):
     return factory.pyro_register(prn_file_array(worker_index, path, chunk_size))
 
-  class prn_file_array(slycat.analysis.worker.array):
+  class prn_file_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, path, chunk_size):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.path = path
       self.chunk_size = chunk_size
       self.line_count = None
@@ -60,9 +60,9 @@ def register_worker_plugin(context):
     def file_size(self):
       return os.stat(self.path).st_size
 
-  class prn_file_array_iterator(slycat.analysis.worker.array_iterator):
+  class prn_file_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.stream = open(owner.path, "r")
       self.stream.next() # Skip the header
       self.chunk_id = -1

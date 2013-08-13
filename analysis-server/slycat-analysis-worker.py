@@ -2,9 +2,6 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-slycat_analysis_disable_client_plugins = True # Prevent client plugins from being loaded when we import from slycat.analysis
-import slycat.analysis
-
 import imp
 import logging
 import optparse
@@ -12,10 +9,12 @@ import os
 import Pyro4
 import signal
 import slycat.analysis.plugin
-import slycat.analysis.worker
+import slycat.analysis.plugin.worker
 import threading
 import time
 import uuid
+
+from slycat.analysis.plugin.worker import log
 
 ######################################################################################################
 ## Handle command-line arguments.
@@ -34,15 +33,15 @@ Pyro4.config.SERIALIZER = "pickle"
 Pyro4.config.SOCK_REUSE = True
 
 if options.log_level == "debug":
-  slycat.analysis.worker.log.setLevel(logging.DEBUG)
+  log.setLevel(logging.DEBUG)
 elif options.log_level == "info":
-  slycat.analysis.worker.log.setLevel(logging.INFO)
+  log.setLevel(logging.INFO)
 elif options.log_level == "warning":
-  slycat.analysis.worker.log.setLevel(logging.WARNING)
+  log.setLevel(logging.WARNING)
 elif options.log_level == "error":
-  slycat.analysis.worker.log.setLevel(logging.ERROR)
+  log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
-  slycat.analysis.worker.log.setLevel(logging.CRITICAL)
+  log.setLevel(logging.CRITICAL)
 elif options.log_level is None:
   pass
 else:
@@ -51,13 +50,13 @@ else:
 ######################################################################################################
 ## Load worker plugins.
 
-class worker_factory(slycat.analysis.worker.pyro_object):
+class worker_factory(slycat.analysis.plugin.worker.pyro_object):
   """Top-level factory for worker objects."""
   def __init__(self):
-    slycat.analysis.worker.pyro_object.__init__(self)
+    slycat.analysis.plugin.worker.pyro_object.__init__(self)
     self.plugin_functions = {}
   def shutdown(self):
-    slycat.analysis.worker.log.info("Client requested shutdown.")
+    log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
   def require_object(self, uri):
     """Lookup a Pyro URI, returning the corresponding Python object."""
@@ -73,10 +72,10 @@ class plugin_context(object):
 
   def register_plugin_function(self, name, function):
     self.factory.register_plugin_function(name, function)
-    slycat.analysis.worker.log.debug("Registered operator %s", name)
+    log.debug("Registered operator %s", name)
 context = plugin_context(factory)
 
-plugins = slycat.analysis.plugin.manager(slycat.analysis.worker.log)
+plugins = slycat.analysis.plugin.manager(log)
 for path in options.plugins:
   plugins.load(path)
 for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":"):
@@ -93,7 +92,7 @@ factory.plugin_functions = {name:function for name, (function, metadata) in plug
 ######################################################################################################
 ## Locate a nameserver to coordinate remote objects.
 
-slycat.analysis.worker.log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
+log.info("Locating nameserver at %s:%s", options.nameserver_host, options.nameserver_port)
 nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_port)
 
 ######################################################################################################
@@ -101,10 +100,10 @@ nameserver = Pyro4.naming.locateNS(options.nameserver_host, options.nameserver_p
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver.register("slycat.worker.%s" % uuid.uuid4().hex, daemon.register(factory, "slycat.worker"))
-slycat.analysis.worker.log.info("Listening on %s", options.host)
+log.info("Listening on %s", options.host)
 
 def signal_handler(signal, frame):
-  slycat.analysis.worker.log.info("Ctrl-C")
+  log.info("Ctrl-C")
   threading.Thread(target=daemon.shutdown).start()
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -117,6 +116,6 @@ time.sleep(5)
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.worker", "Pyro.Daemon"]:
-    slycat.analysis.worker.log.debug("Leaked object %s: %s", key, value)
+    log.debug("Leaked object %s: %s", key, value)
 
-slycat.analysis.worker.log.info("Shutdown complete.")
+log.info("Shutdown complete.")

@@ -2,9 +2,6 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-slycat_analysis_disable_client_plugins = True # Prevent client plugins from being loaded when we import from slycat.analysis
-import slycat.analysis
-
 import imp
 import logging
 import multiprocessing
@@ -13,10 +10,12 @@ import os
 import Pyro4
 import signal
 import slycat.analysis.plugin
-import slycat.analysis.coordinator
+import slycat.analysis.plugin.coordinator
 import subprocess
 import threading
 import time
+
+from slycat.analysis.plugin.coordinator import log
 
 ######################################################################################################
 ## Handle command-line arguments.
@@ -41,15 +40,15 @@ Pyro4.config.SERIALIZER = "pickle"
 Pyro4.config.SOCK_REUSE = True
 
 if options.log_level == "debug":
-  slycat.analysis.coordinator.log.setLevel(logging.DEBUG)
+  log.setLevel(logging.DEBUG)
 elif options.log_level == "info":
-  slycat.analysis.coordinator.log.setLevel(logging.INFO)
+  log.setLevel(logging.INFO)
 elif options.log_level == "warning":
-  slycat.analysis.coordinator.log.setLevel(logging.WARNING)
+  log.setLevel(logging.WARNING)
 elif options.log_level == "error":
-  slycat.analysis.coordinator.log.setLevel(logging.ERROR)
+  log.setLevel(logging.ERROR)
 elif options.log_level == "critical":
-  slycat.analysis.coordinator.log.setLevel(logging.CRITICAL)
+  log.setLevel(logging.CRITICAL)
 elif options.log_level is None:
   pass
 else:
@@ -77,15 +76,15 @@ nameserver_thread.started.wait()
 ######################################################################################################
 ## Load coordinator plugins.
 
-class coordinator_factory(slycat.analysis.coordinator.pyro_object):
+class coordinator_factory(slycat.analysis.plugin.coordinator.pyro_object):
   """Top-level factory for coordinator objects."""
   def __init__(self, nameserver):
-    slycat.analysis.coordinator.pyro_object.__init__(self)
+    slycat.analysis.plugin.coordinator.pyro_object.__init__(self)
     self.nameserver = nameserver
     self.plugin_functions = {}
   def shutdown(self):
     """Perform a clean shutdown."""
-    slycat.analysis.coordinator.log.info("Client requested shutdown.")
+    log.info("Client requested shutdown.")
     self._pyroDaemon.shutdown()
   def workers(self):
     """Returns the set of available slycat analysis workers."""
@@ -108,11 +107,11 @@ class coordinator_factory(slycat.analysis.coordinator.pyro_object):
         array_workers.append(worker.call_plugin_function(name, worker_index, source_workers[0], *arguments, **keywords))
       else:
         array_workers.append(worker.call_plugin_function(name, worker_index, *arguments, **keywords))
-    return self.pyro_register(slycat.analysis.coordinator.array(array_workers, sources))
+    return self.pyro_register(slycat.analysis.plugin.coordinator.array(array_workers, sources))
 
 factory = coordinator_factory(nameserver_thread.nameserver)
 
-plugins = slycat.analysis.plugin.manager(slycat.analysis.coordinator.log)
+plugins = slycat.analysis.plugin.manager(log)
 for path in options.plugins:
   plugins.load(path)
 for path in os.environ.get("SLYCAT_ANALYSIS_EXTRA_PLUGINS", "").split(":"):
@@ -145,10 +144,10 @@ workers = [subprocess.Popen(command) for i in range(options.local_workers)]
 
 daemon = Pyro4.Daemon(host=options.host)
 nameserver_thread.nameserver.register("slycat.coordinator", daemon.register(factory, "slycat.coordinator"))
-slycat.analysis.coordinator.log.info("Listening on %s, nameserver listening on %s:%s", options.host, options.nameserver_host, options.nameserver_port)
+log.info("Listening on %s, nameserver listening on %s:%s", options.host, options.nameserver_host, options.nameserver_port)
 
 def signal_handler(signal, frame):
-  slycat.analysis.coordinator.log.info("Ctrl-C")
+  log.info("Ctrl-C")
   threading.Thread(target=daemon.shutdown).start()
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -161,6 +160,6 @@ time.sleep(5.0)
 
 for key, value in daemon.objectsById.items():
   if key not in ["slycat.coordinator", "Pyro.Daemon"]:
-    slycat.analysis.coordinator.log.debug("Leaked object %s: %s", key, value)
+    log.debug("Leaked object %s: %s", key, value)
 
-slycat.analysis.coordinator.log.info("Shutdown complete.")
+log.info("Shutdown complete.")

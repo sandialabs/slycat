@@ -7,7 +7,7 @@ from __future__ import division
 def register_client_plugin(context):
   try:
     import pymongo
-    import slycat.analysis.client
+    import slycat.analysis.plugin.client
 
     def mongodb(connection, database, collection, attributes=None, chunk_size=None, samples=(0, 1000), host="localhost", port=27017):
       """Load an array from a MongoDB database.
@@ -55,20 +55,20 @@ def register_client_plugin(context):
       * {0} AK, WY, 51
       """
       if not isinstance(database, basestring):
-        raise slycat.analysis.client.InvalidArgument("Database name must be a string.")
+        raise slycat.analysis.plugin.client.InvalidArgument("Database name must be a string.")
       if not isinstance(collection, basestring):
-        raise slycat.analysis.client.InvalidArgument("Collection name must be a string.")
+        raise slycat.analysis.plugin.client.InvalidArgument("Collection name must be a string.")
       if attributes is not None:
-        attributes = slycat.analysis.client.require_attributes(attributes)
+        attributes = slycat.analysis.plugin.client.require_attributes(attributes)
       if chunk_size is not None:
-        chunk_size = slycat.analysis.client.require_chunk_size(chunk_size)
+        chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
       if samples is not None:
         if not isinstance(samples, tuple) or len(samples) != 2:
-          raise slycat.analysis.client.InvalidArgument("Samples must be a 2-tuple.")
+          raise slycat.analysis.plugin.client.InvalidArgument("Samples must be a 2-tuple.")
       if not isinstance(host, basestring):
-        raise slycat.analysis.client.InvalidArgument("Host name must be a string.")
+        raise slycat.analysis.plugin.client.InvalidArgument("Host name must be a string.")
       if not isinstance(port, int):
-        raise slycat.analysis.client.InvalidArgument("Port must be an integer.")
+        raise slycat.analysis.plugin.client.InvalidArgument("Port must be an integer.")
       return connection.create_remote_array("mongodb", [], host, port, database, collection, attributes, chunk_size, samples)
     context.register_plugin_function("mongodb", mongodb)
   except:
@@ -79,14 +79,14 @@ def register_worker_plugin(context):
     import numpy
     import os
     import pymongo
-    import slycat.analysis.worker
+    import slycat.analysis.plugin.worker
 
     def mongodb(factory, worker_index, host, port, database, collection, attributes, chunk_size, samples):
       return factory.pyro_register(mongodb_array(worker_index, host, port, database, collection, attributes, chunk_size, samples))
 
-    class mongodb_array(slycat.analysis.worker.array):
+    class mongodb_array(slycat.analysis.plugin.worker.array):
       def __init__(self, worker_index, host, port, database, collection, attributes, chunk_size, samples):
-        slycat.analysis.worker.array.__init__(self, worker_index)
+        slycat.analysis.plugin.worker.array.__init__(self, worker_index)
         self.host = host
         self.port = port
         self.database = database
@@ -142,9 +142,9 @@ def register_worker_plugin(context):
         self.update_dimensions()
         return self.pyro_register(mongodb_array_iterator(self))
 
-    class mongodb_array_iterator(slycat.analysis.worker.array_iterator):
+    class mongodb_array_iterator(slycat.analysis.plugin.worker.array_iterator):
       def __init__(self, owner):
-        slycat.analysis.worker.array_iterator.__init__(self, owner)
+        slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
         self.chunk_index = -1
       def next(self):
         self.chunk_index += 1

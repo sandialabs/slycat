@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def rename(connection, source, attributes=[], dimensions=[]):
     """Copy a source array, with renamed attributes and dimensions.
@@ -39,7 +39,7 @@ def register_client_plugin(context):
       >>> rename(a, dimensions={0:"i",1:"j"}, attributes={0:"d","c":"e"})
       <5x5 remote array with dimensions: i, j and attributes: d, b, e>
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     if isinstance(attributes, tuple):
       attributes = {attributes[0]: attributes[1]}
     elif isinstance(attributes, list):
@@ -47,7 +47,7 @@ def register_client_plugin(context):
     elif isinstance(attributes, dict):
       pass
     else:
-      raise slycat.analysis.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+      raise slycat.analysis.plugin.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
 
     if isinstance(dimensions, tuple):
       dimensions = {dimensions[0]: dimensions[1]}
@@ -56,20 +56,20 @@ def register_client_plugin(context):
     elif isinstance(dimensions, dict):
       pass
     else:
-      raise slycat.analysis.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
+      raise slycat.analysis.plugin.client.InvalidArgument("Attributes to be renamed should be a tuple, list of tuples, or dict.")
     return connection.create_remote_array("rename", [source], attributes, dimensions)
   context.register_plugin_function("rename", rename)
 
 def register_worker_plugin(context):
   import numpy
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
 
   def rename(factory, worker_index, source, attributes, dimensions):
     return factory.pyro_register(rename_array(worker_index, factory.require_object(source), attributes, dimensions))
 
-  class rename_array(slycat.analysis.worker.array):
+  class rename_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source, attribute_map, dimension_map):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       self.attribute_map = attribute_map
       self.dimension_map = dimension_map

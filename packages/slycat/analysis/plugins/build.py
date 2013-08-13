@@ -3,7 +3,7 @@
 from __future__ import division
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def build(connection, shape, attributes, chunk_sizes=None):
     """Create an array with one-or-more attributes, each defined by an arbitrary expression.
@@ -101,28 +101,28 @@ def register_client_plugin(context):
       {3} 3.0, 9.0
       {4} 4.0, 16.0
     """
-    shape = slycat.analysis.client.require_shape(shape)
-    chunk_sizes = slycat.analysis.client.require_chunk_sizes(shape, chunk_sizes)
+    shape = slycat.analysis.plugin.client.require_shape(shape)
+    chunk_sizes = slycat.analysis.plugin.client.require_chunk_sizes(shape, chunk_sizes)
     if isinstance(attributes, tuple):
       attributes = [attributes]
     if len(attributes) < 1:
-      raise slycat.analysis.client.InvalidArgument("You must specify at least one attribute.")
-    attributes = [(slycat.analysis.client.require_attribute(attribute), slycat.analysis.client.require_expression(expression)) for attribute, expression in attributes]
+      raise slycat.analysis.plugin.client.InvalidArgument("You must specify at least one attribute.")
+    attributes = [(slycat.analysis.plugin.client.require_attribute(attribute), slycat.analysis.plugin.client.require_expression(expression)) for attribute, expression in attributes]
     return connection.create_remote_array("build", [], shape, chunk_sizes, attributes)
   context.register_plugin_function("build", build)
 
 def register_worker_plugin(context):
   import numpy
 
-  import slycat.analysis.worker
-  import slycat.analysis.worker.expression
+  import slycat.analysis.plugin.worker
+  import slycat.analysis.plugin.worker.expression
 
   def build(factory, worker_index, shape, chunk_sizes, attributes):
     return factory.pyro_register(build_array(worker_index, shape, chunk_sizes, attributes))
 
-  class build_array(slycat.analysis.worker.array):
+  class build_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, shape, chunk_sizes, attribute_expressions):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.shape = shape
       self.chunk_sizes = chunk_sizes
       self.attribute_expressions = attribute_expressions
@@ -152,11 +152,11 @@ def register_worker_plugin(context):
       except Exception as e:
         log.error("symbol_lookup exception: %s", e)
 
-  class build_array_iterator(slycat.analysis.worker.array_iterator):
+  class build_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.symbol_lookup = symbol_lookup(self, self.owner.dimensions())
-      self.iterator = slycat.analysis.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
+      self.iterator = slycat.analysis.plugin.worker.worker_chunks(owner.shape, owner.chunk_sizes, len(owner.siblings))
     def next(self):
       while True:
         chunk_index, worker_index, begin, end = self.iterator.next()
@@ -171,7 +171,7 @@ def register_worker_plugin(context):
     def values(self, attribute):
       attribute, expression = self.owner.attribute_expressions[attribute]
       #log.debug("Evaluating %s." % ast.dump(expression))
-      result = slycat.analysis.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
+      result = slycat.analysis.plugin.worker.expression.evaluator(self.symbol_lookup).evaluate(expression)
       if isinstance(result, int) or isinstance(result, float):
         temp = numpy.ma.empty(self._shape)
         temp.fill(result)

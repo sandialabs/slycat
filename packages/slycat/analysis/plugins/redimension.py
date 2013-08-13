@@ -3,26 +3,26 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
   def redimension(connection, source, dimensions, attributes):
-    source = slycat.analysis.client.require_array(source)
-    dimensions = slycat.analysis.client.require_dimension_names(dimensions)
-    attributes = slycat.analysis.client.require_attribute_names(attributes)
+    source = slycat.analysis.plugin.client.require_array(source)
+    dimensions = slycat.analysis.plugin.client.require_dimension_names(dimensions)
+    attributes = slycat.analysis.plugin.client.require_attribute_names(attributes)
     return connection.create_remote_array("redimension", [source], dimensions, attributes)
   context.register_plugin_function("redimension", redimension)
 
 def register_worker_plugin(context):
-  import slycat.analysis.worker
-  from slycat.analysis.worker.accumulator import distinct
+  import slycat.analysis.plugin.worker
+  from slycat.analysis.plugin.worker.accumulator import distinct
   import numpy
   import Pyro4
 
   def redimension(factory, worker_index, source, dimensions, attributes):
     return factory.pyro_register(redimension_array(worker_index, factory.require_object(source), dimensions, attributes))
 
-  class redimension_array(slycat.analysis.worker.array):
+  class redimension_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source, dimensions, attributes):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       self.chunks = None
       source_dimensions = source.dimensions()
@@ -97,19 +97,19 @@ def register_worker_plugin(context):
       self.compute_dimensions()
       shape = [dimension["end"] - dimension["begin"] for dimension in self.target_dimensions]
       chunk_sizes = [dimension["chunk-size"] for dimension in self.target_dimensions]
-      all_chunks = list(slycat.analysis.worker.worker_chunks(shape, chunk_sizes, len(self.siblings)))
+      all_chunks = list(slycat.analysis.plugin.worker.worker_chunks(shape, chunk_sizes, len(self.siblings)))
       if self.worker_index == 0:
-        slycat.analysis.worker.log.debug("dimensions: %s", self.target_dimension_sources)
-        slycat.analysis.worker.log.debug("attributes: %s", self.target_attribute_sources)
+        slycat.analysis.plugin.worker.log.debug("dimensions: %s", self.target_dimension_sources)
+        slycat.analysis.plugin.worker.log.debug("attributes: %s", self.target_attribute_sources)
       self.chunks = [redimension_array_chunk(begin, end - begin, self.target_attributes) for chunk_index, worker_index, begin, end in all_chunks if worker_index == self.worker_index]
       with self.source.iterator() as iterator:
         for ignored in iterator:
           for source_coordinates, target_coordinates in remap(iterator, self.target_dimension_sources):
-            slycat.analysis.worker.log.debug("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
+            slycat.analysis.plugin.worker.log.debug("%s %s %s", self.worker_index, source_coordinates, target_coordinates)
 
-  class redimension_array_iterator(slycat.analysis.worker.array_iterator):
+  class redimension_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.index = -1
     def next(self):
       self.owner.create_chunks()

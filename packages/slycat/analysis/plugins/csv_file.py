@@ -5,8 +5,8 @@
 from __future__ import division
 
 def register_coordinator_plugin(context):
-  from slycat.analysis.client import require_chunk_size, InvalidArgument
-  import slycat.analysis.coordinator
+  from slycat.analysis.plugin.client import require_chunk_size, InvalidArgument
+  import slycat.analysis.plugin.coordinator
 
   def csv_file(factory, path, **keywords):
     format = keywords.get("format", None)
@@ -17,21 +17,21 @@ def register_coordinator_plugin(context):
     array_workers = []
     for worker_index, worker in enumerate(factory.workers()):
       array_workers.append(worker.call_plugin_function("csv_file", worker_index, path, format, delimiter, chunk_size))
-    return factory.pyro_register(slycat.analysis.coordinator.file_array(array_workers, []))
+    return factory.pyro_register(slycat.analysis.plugin.coordinator.file_array(array_workers, []))
   context.register_plugin_function("csv_file", csv_file)
 
 def register_worker_plugin(context):
   import numpy
   import os
 
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
 
   def csv_file(factory, worker_index, path, format, delimiter, chunk_size):
     return factory.pyro_register(csv_file_array(worker_index, path, format, delimiter, chunk_size))
 
-  class csv_file_array(slycat.analysis.worker.array):
+  class csv_file_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, path, format, delimiter, chunk_size):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.path = path
       self.delimiter = delimiter
       self.chunk_size = chunk_size
@@ -72,24 +72,24 @@ def register_worker_plugin(context):
     def file_size(self):
       return os.stat(self.path).st_size
 
-  class csv_file_array_iterator(slycat.analysis.worker.array_iterator):
+  class csv_file_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.stream = open(owner.path, "r")
       self.stream.next() # Skip the header
       self.chunk_count = 0
     def next(self):
       while self.chunk_count % self.owner.worker_count != self.owner.worker_index:
-        slycat.analysis.worker.log.debug("worker %s skipping chunk %s", self.owner.worker_index, self.chunk_count)
+        slycat.analysis.plugin.worker.log.debug("worker %s skipping chunk %s", self.owner.worker_index, self.chunk_count)
         for index, line in enumerate(self.stream):
           if index + 1 == self.owner.chunk_size:
             self.chunk_count += 1
             break
         else:
-          slycat.analysis.worker.log.debug("worker %s stopping iteration while skipping", self.owner.worker_index)
+          slycat.analysis.plugin.worker.log.debug("worker %s stopping iteration while skipping", self.owner.worker_index)
           raise StopIteration()
 
-      slycat.analysis.worker.log.debug("worker %s loading chunk %s", self.owner.worker_index, self.chunk_count)
+      slycat.analysis.plugin.worker.log.debug("worker %s loading chunk %s", self.owner.worker_index, self.chunk_count)
       self.lines = []
       for index, line in enumerate(self.stream):
         self.lines.append(line.split(self.owner.delimiter))
@@ -99,7 +99,7 @@ def register_worker_plugin(context):
       self.chunk_count += 1
 
       if not len(self.lines):
-        slycat.analysis.worker.log.debug("worker %s stopping iteration after loading", self.owner.worker_index)
+        slycat.analysis.plugin.worker.log.debug("worker %s stopping iteration after loading", self.owner.worker_index)
         raise StopIteration()
     def coordinates(self):
       return numpy.array([(self.chunk_count - 1) * self.owner.chunk_size], dtype="int64")

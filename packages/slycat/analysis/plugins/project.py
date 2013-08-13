@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def project(connection, source, *attributes):
     """Return an array with fewer attributes.
@@ -38,20 +38,20 @@ def register_client_plugin(context):
       >>> project(autos, 1, 3, 2)
       <406 element remote array with dimension: i and attributes: Origin, Cylinders, Year>
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     if not len(attributes):
-      raise slycat.analysis.client.InvalidArgument("project() operator requires at least one attribute.")
+      raise slycat.analysis.plugin.client.InvalidArgument("project() operator requires at least one attribute.")
     return connection.create_remote_array("project", [source], attributes)
   context.register_plugin_function("project", project)
 
 def register_worker_plugin(context):
-  import slycat.analysis.worker
+  import slycat.analysis.plugin.worker
   def project(factory, worker_index, source, attributes):
     return factory.pyro_register(project_array(worker_index, factory.require_object(source), attributes))
 
-  class project_array(slycat.analysis.worker.array):
+  class project_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source, attributes):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       source_attributes = self.source.attributes()
       source_map = dict([(i, i) for i in range(len(source_attributes))] + [(attribute["name"], index) for index, attribute in enumerate(source_attributes)])
@@ -64,9 +64,9 @@ def register_worker_plugin(context):
     def iterator(self):
       return self.pyro_register(project_array_iterator(self, self.source, self.indices))
 
-  class project_array_iterator(slycat.analysis.worker.array_iterator):
+  class project_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner, source, indices):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.iterator = source.iterator()
       self.indices = indices
     def __del__(self):

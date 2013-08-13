@@ -3,7 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
-  import slycat.analysis.client
+  import slycat.analysis.plugin.client
 
   def histogram(connection, source, bins=10):
     """Compute histograms for each attribute of a source array.
@@ -75,13 +75,13 @@ def register_client_plugin(context):
         {1} 148
         {2} 36
     """
-    source = slycat.analysis.client.require_array(source)
+    source = slycat.analysis.plugin.client.require_array(source)
     if isinstance(bins, int):
       if bins < 1:
-        raise slycat.analysis.client.InvalidArgument("At least one bin is required.")
+        raise slycat.analysis.plugin.client.InvalidArgument("At least one bin is required.")
     elif isinstance(bins, list):
       if len(bins) < 2:
-        raise slycat.analysis.client.InvalidArgument("At least two bin edges are required.")
+        raise slycat.analysis.plugin.client.InvalidArgument("At least two bin edges are required.")
     return connection.create_remote_array("histogram", [source], bins)
   context.register_plugin_function("histogram", histogram)
 
@@ -89,15 +89,15 @@ def register_worker_plugin(context):
   import numpy
   import Pyro4
 
-  import slycat.analysis.worker
-  import slycat.analysis.worker.accumulator
+  import slycat.analysis.plugin.worker
+  import slycat.analysis.plugin.worker.accumulator
 
   def histogram(factory, worker_index, source, bins):
     return factory.pyro_register(histogram_array(worker_index, factory.require_object(source), bins))
 
-  class histogram_array(slycat.analysis.worker.array):
+  class histogram_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source, bins):
-      slycat.analysis.worker.array.__init__(self, worker_index)
+      slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.source = source
       self.bins = bins
       self.bin_count = bins if isinstance(bins, int) else len(bins) - 1
@@ -109,10 +109,10 @@ def register_worker_plugin(context):
       if self.worker_index == 0:
         return self.pyro_register(histogram_array_iterator(self))
       else:
-        return self.pyro_register(slycat.analysis.worker.null_array_iterator(self))
+        return self.pyro_register(slycat.analysis.plugin.worker.null_array_iterator(self))
 
     def calculate_local_minimaxes(self):
-      minimaxes = [(slycat.analysis.worker.accumulator.create("min", attribute["type"]), slycat.analysis.worker.accumulator.create("max", attribute["type"])) for attribute in self.source.attributes()]
+      minimaxes = [(slycat.analysis.plugin.worker.accumulator.create("min", attribute["type"]), slycat.analysis.plugin.worker.accumulator.create("max", attribute["type"])) for attribute in self.source.attributes()]
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           for index, (minimum, maximum) in enumerate(minimaxes):
@@ -129,7 +129,7 @@ def register_worker_plugin(context):
       minimaxes = [Pyro4.async(sibling).calculate_local_minimaxes() for sibling in self.siblings]
       minimaxes = [minimax.value for minimax in minimaxes]
       minimaxes = zip(*minimaxes)
-      global_minimaxes = [(slycat.analysis.worker.accumulator.create("min", attribute["type"]), slycat.analysis.worker.accumulator.create("max", attribute["type"])) for attribute in self.source.attributes()]
+      global_minimaxes = [(slycat.analysis.plugin.worker.accumulator.create("min", attribute["type"]), slycat.analysis.plugin.worker.accumulator.create("max", attribute["type"])) for attribute in self.source.attributes()]
       for (global_minimum, global_maximum), remote_minimaxes in zip(global_minimaxes, minimaxes):
         for remote_minimum, remote_maximum in remote_minimaxes:
           global_minimum.reduce(remote_minimum)
@@ -144,7 +144,7 @@ def register_worker_plugin(context):
       return bins_list
 
     def calculate_local_histograms(self, bins_list):
-      histograms = [slycat.analysis.worker.accumulator.histogram(bins) for bins in bins_list]
+      histograms = [slycat.analysis.plugin.worker.accumulator.histogram(bins) for bins in bins_list]
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           for index, histogram in enumerate(histograms):
@@ -157,15 +157,15 @@ def register_worker_plugin(context):
       histograms = [Pyro4.async(sibling).calculate_local_histograms(bins_list) for sibling in self.siblings]
       histograms = [histogram.value for histogram in histograms]
       histograms = zip(*histograms)
-      global_histograms = [slycat.analysis.worker.accumulator.histogram(bins) for bins in bins_list]
+      global_histograms = [slycat.analysis.plugin.worker.accumulator.histogram(bins) for bins in bins_list]
       for global_histogram, remote_histograms in zip(global_histograms, histograms):
         for remote_histogram in remote_histograms:
           global_histogram.reduce(remote_histogram)
       return global_histograms
 
-  class histogram_array_iterator(slycat.analysis.worker.array_iterator):
+  class histogram_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
-      slycat.analysis.worker.array_iterator.__init__(self, owner)
+      slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       self.iterations = 0
     def next(self):
       if self.iterations:
