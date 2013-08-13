@@ -25,7 +25,7 @@ def register_client_plugin(context):
 def register_worker_plugin(context):
   import numpy
   import os
-
+  import re
   import slycat.analysis.plugin.worker
 
   def prn_file(factory, worker_index, path, chunk_size):
@@ -35,25 +35,25 @@ def register_worker_plugin(context):
     def __init__(self, worker_index, path, chunk_size):
       slycat.analysis.plugin.worker.array.__init__(self, worker_index)
       self.path = path
+      self.record_count = None
       self.chunk_size = chunk_size
-      self.line_count = None
     def update_metrics(self):
       # Count the number of lines in the file.
-      if self.line_count is None:
+      if self.record_count is None:
         with open(self.path, "r") as stream:
-          self.line_count = 0
+          self.record_count = 0
           for line in stream:
-            self.line_count += 1
-          if line.strip() == "End of Xyce(TM) Simulation":
-            self.line_count -= 1
-          self.line_count -= 1 # Skip the header
+            self.record_count += 1
+          if re.search("End\sof\sXyce(TM)\sSimulation", line) is not None:
+            self.record_count -= 1
+          self.record_count -= 1 # Skip the header
       # If the caller didn't specify a chunk size, split the file evenly among workers.
       if self.chunk_size is None:
-        self.chunk_size = int(numpy.ceil(self.line_count / self.worker_count))
+        self.chunk_size = int(numpy.ceil(self.record_count / self.worker_count))
 
     def dimensions(self):
       self.update_metrics()
-      return [{"name":"i", "type":"int64", "begin":0, "end":self.line_count, "chunk-size":self.chunk_size}]
+      return [{"name":"i", "type":"int64", "begin":0, "end":self.record_count, "chunk-size":self.chunk_size}]
     def attributes(self):
       with open(self.path, "r") as stream:
         line = stream.next()

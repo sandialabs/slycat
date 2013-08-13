@@ -41,7 +41,7 @@ def register_worker_plugin(context):
       self.path = path
       self.delimiter = delimiter
       self.chunk_size = chunk_size
-      self.line_count = None
+      self.record_count = None
       if format is None:
         with open(path, "r") as stream:
           line = stream.next()
@@ -55,19 +55,20 @@ def register_worker_plugin(context):
 
     def update_metrics(self):
       # Count the number of lines in the file.
-      if self.line_count is None:
+      if self.record_count is None:
         with open(self.path, "r") as stream:
-          self.line_count = 0
+          self.record_count = 0
           for line in stream:
-            self.line_count += 1
-          self.line_count -= 1 # Skip the header
+            self.record_count += 1
+          self.record_count -= 1 # Skip the header
+
       # If the caller didn't specify a chunk size, split the file evenly among workers.
       if self.chunk_size is None:
-        self.chunk_size = int(numpy.ceil(self.line_count / self.worker_count))
+        self.chunk_size = int(numpy.ceil(self.record_count / self.worker_count))
 
     def dimensions(self):
       self.update_metrics()
-      return [{"name":"i", "type":"int64", "begin":0, "end":self.line_count, "chunk-size":self.chunk_size}]
+      return [{"name":"i", "type":"int64", "begin":0, "end":self.record_count, "chunk-size":self.chunk_size}]
     def attributes(self):
       return self._attributes
     def iterator(self):
@@ -86,16 +87,13 @@ def register_worker_plugin(context):
       self.chunk_count = 0
     def next(self):
       while self.chunk_count % self.owner.worker_count != self.owner.worker_index:
-        slycat.analysis.plugin.worker.log.debug("worker %s skipping chunk %s", self.owner.worker_index, self.chunk_count)
         for index, line in enumerate(self.stream):
           if index + 1 == self.owner.chunk_size:
             self.chunk_count += 1
             break
         else:
-          slycat.analysis.plugin.worker.log.debug("worker %s stopping iteration while skipping", self.owner.worker_index)
           raise StopIteration()
 
-      slycat.analysis.plugin.worker.log.debug("worker %s loading chunk %s", self.owner.worker_index, self.chunk_count)
       self.lines = []
       for index, line in enumerate(self.stream):
         self.lines.append(line.split(self.owner.delimiter))
@@ -105,7 +103,6 @@ def register_worker_plugin(context):
       self.chunk_count += 1
 
       if not len(self.lines):
-        slycat.analysis.plugin.worker.log.debug("worker %s stopping iteration after loading", self.owner.worker_index)
         raise StopIteration()
     def coordinates(self):
       return numpy.array([(self.chunk_count - 1) * self.owner.chunk_size], dtype="int64")
