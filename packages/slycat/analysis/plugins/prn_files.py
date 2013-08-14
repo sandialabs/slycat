@@ -87,8 +87,11 @@ def register_worker_plugin(context):
       for index, path in enumerate(self.paths):
         if (index % self.worker_count) == self.worker_index:
           with open(path, "r") as stream:
-            names = stream.next().split()
-            common_names = set(names) if common_names is None else common_names & set(names)
+            names = collections.OrderedDict([(name, None) for name in stream.next().split()])
+            if common_names is None:
+              common_names = names
+            else:
+              common_names = collections.OrderedDict([(name, None) for name in common_names if name in names])
       return common_names
 
     def update_attributes(self):
@@ -99,9 +102,8 @@ def register_worker_plugin(context):
         for names in local_names_list:
           if common_names is None:
             common_names = names
-          else:
-            if names is not None:
-              common_names = common_names & names
+          elif names is not None:
+            common_names = collections.OrderedDict([(name, None) for name in common_names if name in names])
 
         self.output_attributes = [{"name":"file", "type":"int64"}] + [{"name":name, "type":"int64" if name == "Index" else "float64"} for name in common_names]
 
