@@ -138,3 +138,16 @@ def worker_chunks(shape, chunk_sizes, worker_count):
       end_coordinates = numpy.minimum(shape, numpy.multiply(coordinates + 1, chunk_sizes))
       yield global_chunk_index, worker_index, begin_coordinates, end_coordinates
 
+def worker_lines(stream, worker_index, worker_count, chunk_size):
+  """Iterate over the lines in a stream, divided among workers.
+
+  Given a stream, worker index, number of available workers, and a chunk size,
+  returns a five-tuple containing the following for each line in the file:
+  global chunk index, global line index, chunk-start marker, chunk-end marker,
+  and the line contents.
+  """
+  for record, line in enumerate(stream):
+    if ((record // chunk_size) % worker_count) != worker_index:
+      continue
+    yield record // chunk_size, record, (record % chunk_size) == 0, ((record + 1) % chunk_size) == 0, line
+

@@ -31,6 +31,7 @@ def register_worker_plugin(context):
   import os
 
   import slycat.analysis.plugin.worker
+  from slycat.analysis.plugin.worker import log, worker_lines
 
   def csv_file(factory, worker_index, path, format, delimiter, chunk_size):
     return factory.pyro_register(csv_file_array(worker_index, path, format, delimiter, chunk_size))
@@ -82,30 +83,20 @@ def register_worker_plugin(context):
   class csv_file_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
       slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
-      self.stream = open(owner.path, "r")
-      self.stream.next() # Skip the header
-      self.chunk_count = 0
+      stream = open(owner.path, "r")
+      stream.next() # Skip the header
+      self.iterator = worker_lines(stream, self.owner.worker_index, self.owner.worker_count, self.owner.chunk_size)
     def next(self):
-      while self.chunk_count % self.owner.worker_count != self.owner.worker_index:
-        for index, line in enumerate(self.stream):
-          if index + 1 == self.owner.chunk_size:
-            self.chunk_count += 1
-            break
-        else:
-          raise StopIteration()
-
       self.lines = []
-      for index, line in enumerate(self.stream):
+      for chunk, record, chunk_start, chunk_end, line in self.iterator:
         self.lines.append(line.split(self.owner.delimiter))
-        if index + 1 == self.owner.chunk_size:
+        if chunk_end:
           break
-
-      self.chunk_count += 1
-
-      if not len(self.lines):
+      if not self.lines:
         raise StopIteration()
+      self.chunk = chunk
     def coordinates(self):
-      return numpy.array([(self.chunk_count - 1) * self.owner.chunk_size], dtype="int64")
+      return numpy.array([self.chunk * self.owner.chunk_size], dtype="int64")
     def shape(self):
       return numpy.array([len(self.lines)], dtype="int64")
     def values(self, attribute):
