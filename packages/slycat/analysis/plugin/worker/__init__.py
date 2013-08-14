@@ -151,3 +151,16 @@ def worker_lines(stream, worker_index, worker_count, chunk_size):
       continue
     yield record // chunk_size, record, (record % chunk_size) == 0, ((record + 1) % chunk_size) == 0, line
 
+def partition_files(paths, slices, worker_index, worker_count, chunk_size):
+  """Iterate over the lines in a collection of files, divided round-robin among workers.
+  """
+  offset = 0
+  for file, (path, (begin, end)) in enumerate(zip(paths, slices)):
+    if (file % worker_count) == worker_index:
+      stream = open(path, "r")
+      for record, line in enumerate(stream):
+        if record < begin or record >= end:
+          continue
+        yield file, offset + record - begin, ((record - begin) % chunk_size) == 0, (record + 1 == end) or ((record - begin + 1) % chunk_size) == 0, line
+    offset += end - begin
+
