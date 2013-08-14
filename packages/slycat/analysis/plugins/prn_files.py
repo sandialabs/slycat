@@ -30,6 +30,7 @@ def register_client_plugin(context):
   context.register_plugin_function("prn_files", prn_files, metadata={"load-schema":"prn-files", "load-schema-doc":schema_doc})
 
 def register_worker_plugin(context):
+  import collections
   import numpy
   import os
   import Pyro4
@@ -53,7 +54,7 @@ def register_worker_plugin(context):
     def local_slices(self):
       slices = []
       for index, path in enumerate(self.paths):
-        if (index // self.worker_count) == self.worker_index:
+        if (index % self.worker_count) == self.worker_index:
           with open(path, "r") as stream:
             begin = 1 # Skip the header
             end = 0
@@ -61,7 +62,7 @@ def register_worker_plugin(context):
               end += 1
             if re.search("End\sof\sXyce\(TM\)\sSimulation", line) is not None:
               end -= 1
-            slices.append((begin, end))
+            slices.append((index, (begin, end)))
       return slices
 
     def set_slices(self, slices):
@@ -76,33 +77,33 @@ def register_worker_plugin(context):
       if self.record_count is None:
         local_slice_lists = [Pyro4.async(sibling).local_slices() for sibling in self.siblings]
         local_slice_lists = [local_slices.value for local_slices in local_slice_lists]
-        slices = [slice for local_slices in local_slice_lists for slice in local_slices]
+        slices = sorted([slice for local_slices in local_slice_lists for slice in local_slices])
+        slices = [slice[1] for slice in slices]
         for sibling in self.siblings:
           sibling.set_slices(slices)
 
     def local_names(self):
       common_names = None
-      ordered_names = []
       for index, path in enumerate(self.paths):
-        if (index // self.worker_count) == self.worker_index:
+        if (index % self.worker_count) == self.worker_index:
           with open(path, "r") as stream:
             names = stream.next().split()
             common_names = set(names) if common_names is None else common_names & set(names)
-            ordered_names += names
-      result = [attribute for attribute in ordered_names if attribute in common_names]
-      log.info("local_names: %s", result)
-      return result
+      return common_names
 
     def update_attributes(self):
       if self.output_attributes is None:
         local_names_list = [Pyro4.async(sibling).local_names() for sibling in self.siblings]
         local_names_list = [local_names.value for local_names in local_names_list]
         common_names = None
-        ordered_names = []
         for names in local_names_list:
-          common_names = set(names) if common_names is None else common_names & set(names)
-          ordered_names += names
-        self.output_attributes = [{"name":"file", "type":"int64"}] + [{"name":name, "type":"int64" if name == "Index" else "float64"} for name in ordered_names if name in common_names]
+          if common_names is None:
+            common_names = names
+          else:
+            if names is not None:
+              common_names = common_names & names
+
+        self.output_attributes = [{"name":"file", "type":"int64"}] + [{"name":name, "type":"int64" if name == "Index" else "float64"} for name in common_names]
 
     def dimensions(self):
       self.update_dimensions()
