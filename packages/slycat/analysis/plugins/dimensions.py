@@ -34,8 +34,13 @@ def register_worker_plugin(context):
   class dimensions_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source):
       slycat.analysis.plugin.worker.array.__init__(self, worker_index)
-      self.source_dimensions = source.dimensions()
+      self.source = source
+      self.source_dimensions = None
+    def update_dimensions(self):
+      if self.source_dimensions is None:
+        self.source_dimensions = self.source.dimensions()
     def dimensions(self):
+      self.update_dimensions()
       return [{"name":"i", "type":"int64", "begin":0, "end":len(self.source_dimensions), "chunk-size":len(self.source_dimensions)}]
     def attributes(self):
       return [{"name":"name", "type":"string"}, {"name":"type", "type":"string"}, {"name":"begin", "type":"int64"}, {"name":"end", "type":"int64"}, {"name":"chunk-size", "type":"int64"}]
@@ -56,8 +61,10 @@ def register_worker_plugin(context):
     def coordinates(self):
       return numpy.array([0], dtype="int64")
     def shape(self):
+      self.owner.update_dimensions()
       return numpy.array([len(self.owner.source_dimensions)], dtype="int64")
     def values(self, attribute):
+      self.owner.update_dimensions()
       if attribute == 0:
         return numpy.ma.array([dimension["name"] for dimension in self.owner.source_dimensions], dtype="string")
       elif attribute == 1:

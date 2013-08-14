@@ -40,8 +40,13 @@ def register_worker_plugin(context):
   class attributes_array(slycat.analysis.plugin.worker.array):
     def __init__(self, worker_index, source):
       slycat.analysis.plugin.worker.array.__init__(self, worker_index)
-      self.source_attributes = source.attributes()
+      self.source = source
+      self.source_attributes = None
+    def update_attributes(self):
+      if self.source_attributes is None:
+        self.source_attributes = self.source.attributes()
     def dimensions(self):
+      self.update_attributes()
       return [{"name":"i", "type":"int64", "begin":0, "end":len(self.source_attributes), "chunk-size":len(self.source_attributes)}]
     def attributes(self):
       return [{"name":"name", "type":"string"}, {"name":"type", "type":"string"}]
@@ -62,8 +67,10 @@ def register_worker_plugin(context):
     def coordinates(self):
       return numpy.array([0], dtype="int64")
     def shape(self):
+      self.owner.update_attributes()
       return numpy.array([len(self.owner.source_attributes)], dtype="int64")
     def values(self, attribute):
+      self.owner.update_attributes()
       if attribute == 0:
         return numpy.ma.array([attribute["name"] for attribute in self.owner.source_attributes], dtype="string")
       elif attribute == 1:
