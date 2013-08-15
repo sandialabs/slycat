@@ -18,7 +18,7 @@ def require_attribute_name(name):
   return name
 
 def require_attribute_type(type):
-  allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
+  allowed_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "bool"]
   if type not in allowed_types:
     raise InvalidArgument("Attribute type must be one of %s" % ",".join(allowed_types))
   return type
