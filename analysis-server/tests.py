@@ -605,6 +605,12 @@ def test_histogram_bin_edges():
   array2 = check_sanity(histogram(array1, bins=[0, 0.1, 0.5, 0.9, 1.0]))
   require_array_schema(array2, [("bin", "int64", 0, 4, 4)], [("hist_a", "int64"), ("hist_b", "int64")])
 
+def test_invert():
+  array1 = check_sanity(array([True, False, False, False], attribute=("val", "bool")))
+  array2 = check_sanity(invert(array1))
+  require_array_schema(array2, [("d0", "int64", 0, 4, 4)], [("val", "bool")])
+  numpy.testing.assert_array_equal(values(array2), [False, True, True, True])
+
 def test_isnan():
   array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format=["string", "string", "int64", "int64", "float64", "float64", "float64", "float64"]))
   array2 = check_sanity(isnan(array1))
