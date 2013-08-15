@@ -605,6 +605,11 @@ def test_histogram_bin_edges():
   array2 = check_sanity(histogram(array1, bins=[0, 0.1, 0.5, 0.9, 1.0]))
   require_array_schema(array2, [("bin", "int64", 0, 4, 4)], [("hist_a", "int64"), ("hist_b", "int64")])
 
+def test_isnan():
+  array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format=["string", "string", "int64", "int64", "float64", "float64", "float64", "float64"]))
+  array2 = check_sanity(isnan(array1))
+  require_array_schema(array2, [("i", "int64", 0, 406, 100)], [("Model", "bool"), ("Origin", "bool"), ("Year", "bool"), ("Cylinders", "bool"), ("Acceleration", "bool"), ("Displacement", "bool"), ("Horsepower", "bool"), ("MPG", "bool")])
+
 def test_join():
   array1 = check_sanity(random((5, 4)))
   array2 = check_sanity(zeros((5, 4)))
