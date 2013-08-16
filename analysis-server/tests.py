@@ -242,6 +242,14 @@ def test_aggregate_individual():
   numpy.testing.assert_array_almost_equal(value(array2, 1), values(array1, "b").mean())
   numpy.testing.assert_array_almost_equal(value(array2, 2), values(array1, "c").max())
 
+def test_any():
+  array1 = check_sanity(array([True, True, False, False], attribute=("val1", "bool")))
+  array2 = check_sanity(array([True, False, True, False], attribute=("val2", "bool")))
+  array3 = check_sanity(join(array1, array2))
+  array4 = check_sanity(any(array3))
+  require_array_schema(array4, [("d0", "int64", 0, 4, 4)], [("any", "bool")])
+  numpy.testing.assert_array_equal(values(array4, "any"), [True, True, True, False])
+
 def test_apply_constant():
   array1 = check_sanity(random(5))
   array2 = check_sanity(apply(array1, ("val2", "1")))

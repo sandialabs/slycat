@@ -50,6 +50,6 @@ def register_worker_plugin(context):
     def shape(self):
       return self.iterator.shape()
     def values(self, index):
-      source_values = [numpy.expand_dims(self.iterator.values(i), -1) for attribute in self.owner.source_attributes()]
-      return numpy.any(numpy.concatenate(source_values, axis=-1), axis=-1)
+      source_values = [numpy.ma.expand_dims(self.iterator.values(index), -1) for index, attribute in enumerate(self.owner.source_attributes)]
+      return numpy.ma.any(numpy.ma.concatenate(source_values, axis=-1), axis=-1)
   context.register_plugin_function("any", any)
