@@ -15,6 +15,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/sort-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/d3.v2.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/color-mapper.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -103,9 +104,7 @@ rights in this software.
     <div id="content-pane" class="ui-layout-center">
       <div id="cluster-pane" class="ui-layout-north">
 
-        <div id="color-switcher">
-          <span class="label">Colors:</span>
-          <span class="day color" data-colormap="daycolormap">Day</span><span class="night color selected" data-colormap="nightcolormap">Night</span>
+        <div id="color-switcher-container">
         </div>
 
         <table id="cluster-viewer">
@@ -367,18 +366,6 @@ rights in this software.
           $("#rerun-timeseries-form").dialog("open");
         });
 
-        // Setting up color scale switcher interaction
-        $("#color-switcher .color").click(function(){
-          var colorMap = this.getAttribute("data-colormap");
-          if(table_viewer_instance != null && colorMap != null && !$(this).hasClass("selected")) {
-            $("#color-switcher .color").removeClass("selected");
-            $(this).addClass("selected");
-            table_viewer_instance.updateColorMap(colorMap);
-            bookmarker.updateState( {"colormap" : colorMap} );
-          }
-
-        });
-
         // Verify that we have the required inputs before setting-up the rest of the visualization ...
         var cluster_type = "{{cluster-type}}";
         var cluster_bin_type = "{{cluster-bin-type}}";
@@ -503,10 +490,17 @@ rights in this software.
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         // Retrieve bookmark
         var bookmark = bookmarker.getState();
-        // Set selected color scale according to what's in the bookmark
-        if( bookmark["colormap"] != null) {
-          $("#color-switcher .selected").removeClass("selected");
-          $("#color-switcher .color[data-colormap='" + bookmark["colormap"] + "']").addClass("selected");
+
+        // Start up a color mapper
+        var colorMapper = new color_mapper();
+        // Add controls for switching between different color maps
+        colorMapper.addSwitcher($('#color-switcher-container'), bookmark, updateColorMap);
+        // Callback function called by colorMapper when user clicks on a different color map choice
+        function updateColorMap(colorMapName){
+          if(table_viewer_instance != null && colorMapName != null) {
+            table_viewer_instance.updateColorMap(colorMapName);
+            bookmarker.updateState( {"colormap" : colorMapName} );
+          }
         }
 
         // First just a short list of the clusters
@@ -1437,6 +1431,7 @@ rights in this software.
                 cluster_name: cluster_name,
                 cluster_index: cluster_index,
                 colormap: bookmark["colormap"],
+                colorMapper: colorMapper,
               }, 
               "{{server-root}}", 
               workerId
