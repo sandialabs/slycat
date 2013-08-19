@@ -51,11 +51,29 @@ def scan(connection, source, format="dcsv", null_marker="--", separator=", ", st
     * {1,0} 0.92899722191
       {1,1} 0.449165754101
 
+  Use format "kv" to write each attribute of each array cell to a separate line
+  in the output as a key-value pair.  This is particularly useful when
+  displaying results from operators that produce a single output cell, such as
+  aggregate(), and when attribute names and values don't align well:
+
+    >>> scan(aggregate(random((10, 10), attributes=["a", "b"]), ["min", "avg", "max"]))
+      {i} min_a, min_b, avg_a, avg_b, max_a, max_b
+    * {0} 0.00838829794155, 0.000107256519737, 0.554804081192, 0.499030432518, 0.9940145859, 0.995316174593
+
+    >>> scan(aggregate(random((10, 10), attributes=["a", "b"]), ["min", "avg", "max"]), format="kv")
+    * {i} = {0}
+      min_a = 0.00838829794155
+      min_b = 0.000107256519737
+      avg_a = 0.554804081192
+      avg_b = 0.499030432518
+      max_a = 0.9940145859
+      max_b = 0.995316174593
+
   Format "null" produces no written output, but is useful to force
   computation for timing studies without cluttering the screen or interfering
   with timing results:
 
-  >>> scan(random((2, 2), (1, 2)), format="null")
+    >>> scan(random((2, 2), (1, 2)), format="null")
 
   The separator parameter contains a string which is used as the separator
   between values.  It defaults to ", " to provide better legibility for
@@ -106,6 +124,23 @@ def scan(connection, source, format="dcsv", null_marker="--", separator=", ", st
         stream.write("{%s} " % separator.join([str(coordinate) for coordinate in global_coordinates]))
         stream.write(separator.join([null_marker if values.mask[local_coordinates] else str(values[local_coordinates]) for values in chunk_values]))
         stream.write("\n")
+        chunk_marker = "  "
+  elif format == "kv":
+    attributes = source.attributes
+    for chunk in source.chunks():
+      chunk_offset = chunk.coordinates()
+      chunk_coordinates = numpy.ndindex(*chunk.shape())
+      chunk_values = [attribute.values() for attribute in chunk.attributes()]
+      chunk_marker = "* "
+      for local_coordinates in chunk_coordinates:
+        global_coordinates = chunk_offset + local_coordinates
+        stream.write(chunk_marker)
+        stream.write("{%s} = " % separator.join([dimension["name"] for dimension in source.dimensions]))
+        stream.write("{%s}\n" % separator.join([str(coordinate) for coordinate in global_coordinates]))
+        for attribute, values in zip(attributes, chunk_values):
+          stream.write("    %s = " % attribute["name"])
+          stream.write(null_marker if values.mask[local_coordinates] else str(values[local_coordinates]))
+          stream.write("\n")
         chunk_marker = "  "
   else:
     raise Exception("Allowed formats: {}".format(", ".join(["null", "csv", "csv+", "dcsv (default)"])))

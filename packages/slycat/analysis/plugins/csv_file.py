@@ -3,6 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import numpy
   import slycat.analysis.plugin.client
   import StringIO
 
@@ -16,9 +17,16 @@ def register_client_plugin(context):
     which defaults to ",".  If the "format" parameter is None (the default),
     every attribute in the output array will be of type "string".  Pass a list
     of types to "format" to specify alternate attribute types in the output
-    array.  Use the "chunk_size" parameter to specify the maximum chunk size of
-    the output array.  Otherwise, the file will be evenly split into N chunks,
-    one on each of N workers."""
+    array.  Pass a string containing numpy data type codes to "format" to
+    specify alternate attribute types more compactly.  Use the "chunk_size"
+    parameter to specify the maximum chunk size of the output array.
+    Otherwise, the file will be evenly split into N chunks, one on each of N
+    workers."""
+    if format is not None:
+      if isinstance(format, basestring):
+        format = [numpy.dtype(char).name for char in format]
+    if not isinstance(delimiter, basestring):
+      raise slycat.analysis.plugin.client.InvalidArgument("Delimiter must be a string.")
     if chunk_size is not None:
       chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
     return connection.create_remote_file_array("csv_file", [], path, format, delimiter, chunk_size)
@@ -31,6 +39,7 @@ def register_worker_plugin(context):
   import os
 
   import slycat.analysis.plugin.worker
+  from slycat.analysis.plugin.worker import log, worker_lines
 
   def csv_file(factory, worker_index, path, format, delimiter, chunk_size):
     return factory.pyro_register(csv_file_array(worker_index, path, format, delimiter, chunk_size))
@@ -82,30 +91,20 @@ def register_worker_plugin(context):
   class csv_file_array_iterator(slycat.analysis.plugin.worker.array_iterator):
     def __init__(self, owner):
       slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
-      self.stream = open(owner.path, "r")
-      self.stream.next() # Skip the header
-      self.chunk_count = 0
+      stream = open(owner.path, "r")
+      stream.next() # Skip the header
+      self.iterator = worker_lines(stream, self.owner.worker_index, self.owner.worker_count, self.owner.chunk_size)
     def next(self):
-      while self.chunk_count % self.owner.worker_count != self.owner.worker_index:
-        for index, line in enumerate(self.stream):
-          if index + 1 == self.owner.chunk_size:
-            self.chunk_count += 1
-            break
-        else:
-          raise StopIteration()
-
       self.lines = []
-      for index, line in enumerate(self.stream):
+      for chunk, record, chunk_start, chunk_end, line in self.iterator:
         self.lines.append(line.split(self.owner.delimiter))
-        if index + 1 == self.owner.chunk_size:
+        if chunk_end:
           break
-
-      self.chunk_count += 1
-
-      if not len(self.lines):
+      if not self.lines:
         raise StopIteration()
+      self.chunk = chunk
     def coordinates(self):
-      return numpy.array([(self.chunk_count - 1) * self.owner.chunk_size], dtype="int64")
+      return numpy.array([self.chunk * self.owner.chunk_size], dtype="int64")
     def shape(self):
       return numpy.array([len(self.lines)], dtype="int64")
     def values(self, attribute):

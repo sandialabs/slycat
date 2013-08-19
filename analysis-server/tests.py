@@ -242,6 +242,14 @@ def test_aggregate_individual():
   numpy.testing.assert_array_almost_equal(value(array2, 1), values(array1, "b").mean())
   numpy.testing.assert_array_almost_equal(value(array2, 2), values(array1, "c").max())
 
+def test_any():
+  array1 = check_sanity(array([True, True, False, False], attribute=("val1", "bool")))
+  array2 = check_sanity(array([True, False, True, False], attribute=("val2", "bool")))
+  array3 = check_sanity(join(array1, array2))
+  array4 = check_sanity(any(array3))
+  require_array_schema(array4, [("d0", "int64", 0, 4, 4)], [("any", "bool")])
+  numpy.testing.assert_array_equal(values(array4, "any"), [True, True, True, False])
+
 def test_apply_constant():
   array1 = check_sanity(random(5))
   array2 = check_sanity(apply(array1, ("val2", "1")))
@@ -605,6 +613,17 @@ def test_histogram_bin_edges():
   array2 = check_sanity(histogram(array1, bins=[0, 0.1, 0.5, 0.9, 1.0]))
   require_array_schema(array2, [("bin", "int64", 0, 4, 4)], [("hist_a", "int64"), ("hist_b", "int64")])
 
+def test_invert():
+  array1 = check_sanity(array([True, False, False, False], attribute=("val", "bool")))
+  array2 = check_sanity(invert(array1))
+  require_array_schema(array2, [("d0", "int64", 0, 4, 4)], [("val", "bool")])
+  numpy.testing.assert_array_equal(values(array2), [False, True, True, True])
+
+def test_isnan():
+  array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format=["string", "string", "int64", "int64", "float64", "float64", "float64", "float64"]))
+  array2 = check_sanity(isnan(array1))
+  require_array_schema(array2, [("i", "int64", 0, 406, 100)], [("Model", "bool"), ("Origin", "bool"), ("Year", "bool"), ("Cylinders", "bool"), ("Acceleration", "bool"), ("Displacement", "bool"), ("Horsepower", "bool"), ("MPG", "bool")])
+
 def test_join():
   array1 = check_sanity(random((5, 4)))
   array2 = check_sanity(zeros((5, 4)))
@@ -613,7 +632,7 @@ def test_join():
   numpy.testing.assert_array_equal(values(array3, 0), values(array1, 0))
   numpy.testing.assert_array_equal(values(array3, 1), values(array2, 0))
 
-def test_load_csv_unformatted():
+def test_load_csv_file_unformatted():
   array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100))
   array2 = check_sanity(chunk_map(array1))
   assert(array1.file == "../data/automobiles.csv")
@@ -633,7 +652,7 @@ def test_load_csv_unformatted():
   numpy.testing.assert_array_equal(values(array1, 6)[:2], numpy.array(["130", "165"]))
   numpy.testing.assert_array_equal(values(array1, 7)[:2], numpy.array(["18", "15"]))
 
-def test_load_csv_formatted():
+def test_load_csv_file_formatted():
   array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format=["string", "string", "int64", "int64", "float64", "float64", "float64", "float64"]))
   array2 = check_sanity(chunk_map(array1))
   assert(array1.file == "../data/automobiles.csv")
@@ -652,6 +671,46 @@ def test_load_csv_formatted():
   numpy.testing.assert_array_equal(values(array1, 5)[:2], numpy.array([307, 350], dtype="float64"))
   numpy.testing.assert_array_equal(values(array1, 6)[:2], numpy.array([130, 165], dtype="float64"))
   numpy.testing.assert_array_equal(values(array1, 7)[:2], numpy.array([18, 15], dtype="float64"))
+
+def test_load_csv_file_compact_format():
+  array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format="SSiidddd"))
+  require_array_schema(array1, [("i", "int64", 0, 406, 100)], [("Model", "string"), ("Origin", "string"), ("Year", "int32"), ("Cylinders", "int32"), ("Acceleration", "float64"), ("Displacement", "float64"), ("Horsepower", "float64"), ("MPG", "float64")])
+
+def test_load_prn_file_unterminated():
+  array1 = check_sanity(load("../data/waves3.prn", schema="prn-file", chunk_size=100))
+  array2 = check_sanity(chunk_map(array1))
+  numpy.testing.assert_equal(array1.file, "../data/waves3.prn")
+  numpy.testing.assert_equal(array1.file_size, 59360)
+  require_array_schema(array1, [("i", "int64", 0, 750, 100)], [("Index", "int64"), ("TIME", "float64"), ("V(0)", "float64"), ("V(1)", "float64"), ("V(2)", "float64"), ("V(3)", "float64")])
+  require_array_schema(array2, [("i", "int64", 0, 8, 8)], [("worker", "int64"), ("index", "int64"), ("c0", "int64"), ("s0", "int64")])
+  numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 1, 1, 2, 2, 3, 3], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 0, 1, 0, 1, 0, 1], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 2), numpy.array([0, 400, 100, 500, 200, 600, 300, 700], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 3), numpy.array([100, 100, 100, 100, 100, 100, 100, 50], dtype="int64"))
+
+def test_load_prn_file_terminated():
+  array1 = check_sanity(load("../data/waves2.prn", schema="prn-file", chunk_size=100))
+  array2 = check_sanity(chunk_map(array1))
+  numpy.testing.assert_equal(array1.file, "../data/waves2.prn")
+  numpy.testing.assert_equal(array1.file_size, 32535)
+  require_array_schema(array1, [("i", "int64", 0, 500, 100)], [("Index", "int64"), ("TIME", "float64"), ("V(0)", "float64"), ("V(1)", "float64"), ("V(2)", "float64")])
+  require_array_schema(array2, [("i", "int64", 0, 5, 5)], [("worker", "int64"), ("index", "int64"), ("c0", "int64"), ("s0", "int64")])
+  numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 1, 2, 3], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 0, 0, 0], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 2), numpy.array([0, 400, 100, 200, 300], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 3), numpy.array([100, 100, 100, 100, 100], dtype="int64"))
+
+def test_load_prn_files():
+  array1 = check_sanity(load(["../data/waves1.prn", "../data/waves2.prn", "../data/waves3.prn"], schema="prn-files", chunk_size=200))
+  array2 = check_sanity(chunk_map(array1))
+  numpy.testing.assert_array_equal(array1.file, ["../data/waves1.prn", "../data/waves2.prn", "../data/waves3.prn"])
+  numpy.testing.assert_array_equal(array1.file_size, [58679, 32535, 59360])
+  require_array_schema(array1, [("i", "int64", 0, 2250, 200)], [("file", "int64"), ("Index", "int64"), ("TIME", "float64"), ("V(0)", "float64"), ("V(1)", "float64"), ("V(2)", "float64")])
+  require_array_schema(array2, [("i", "int64", 0, 12, 12)], [("worker", "int64"), ("index", "int64"), ("c0", "int64"), ("s0", "int64")])
+  numpy.testing.assert_array_equal(values(array2, 0), numpy.array([0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 1), numpy.array([0, 1, 2, 3, 4, 0, 1, 2, 0, 1, 2, 3], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 2), numpy.array([0, 200, 400, 600, 800, 1000, 1200, 1400, 1500, 1700, 1900, 2100], dtype="int64"))
+  numpy.testing.assert_array_equal(values(array2, 3), numpy.array([200, 200, 200, 200, 200, 200, 200, 100, 200, 200, 200, 150], dtype="int64"))
 
 def test_materialize():
   array1 = check_sanity(random((5, 5)))
@@ -759,6 +818,10 @@ def test_scan_csvp():
 def test_scan_dcsv():
   array1 = check_sanity(random(5))
   scan(array1, format="dcsv")
+
+def test_scan_kv():
+  array1 = check_sanity(random(5, attributes=["a", "b"]))
+  scan(array1, format="kv")
 
 def test_scan_null():
   array1 = check_sanity(random(5))
