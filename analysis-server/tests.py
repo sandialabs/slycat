@@ -672,6 +672,10 @@ def test_load_csv_file_formatted():
   numpy.testing.assert_array_equal(values(array1, 6)[:2], numpy.array([130, 165], dtype="float64"))
   numpy.testing.assert_array_equal(values(array1, 7)[:2], numpy.array([18, 15], dtype="float64"))
 
+def test_load_csv_file_compact_format():
+  array1 = check_sanity(load("../data/automobiles.csv", schema="csv-file", chunk_size=100, format="SSiidddd"))
+  require_array_schema(array1, [("i", "int64", 0, 406, 100)], [("Model", "string"), ("Origin", "string"), ("Year", "int32"), ("Cylinders", "int32"), ("Acceleration", "float64"), ("Displacement", "float64"), ("Horsepower", "float64"), ("MPG", "float64")])
+
 def test_load_prn_file_unterminated():
   array1 = check_sanity(load("../data/waves3.prn", schema="prn-file", chunk_size=100))
   array2 = check_sanity(chunk_map(array1))

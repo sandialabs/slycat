@@ -3,6 +3,7 @@
 # rights in this software.
 
 def register_client_plugin(context):
+  import numpy
   import slycat.analysis.plugin.client
   import StringIO
 
@@ -16,9 +17,16 @@ def register_client_plugin(context):
     which defaults to ",".  If the "format" parameter is None (the default),
     every attribute in the output array will be of type "string".  Pass a list
     of types to "format" to specify alternate attribute types in the output
-    array.  Use the "chunk_size" parameter to specify the maximum chunk size of
-    the output array.  Otherwise, the file will be evenly split into N chunks,
-    one on each of N workers."""
+    array.  Pass a string containing numpy data type codes to "format" to
+    specify alternate attribute types more compactly.  Use the "chunk_size"
+    parameter to specify the maximum chunk size of the output array.
+    Otherwise, the file will be evenly split into N chunks, one on each of N
+    workers."""
+    if format is not None:
+      if isinstance(format, basestring):
+        format = [numpy.dtype(char).name for char in format]
+    if not isinstance(delimiter, basestring):
+      raise slycat.analysis.plugin.client.InvalidArgument("Delimiter must be a string.")
     if chunk_size is not None:
       chunk_size = slycat.analysis.plugin.client.require_chunk_size(chunk_size)
     return connection.create_remote_file_array("csv_file", [], path, format, delimiter, chunk_size)
