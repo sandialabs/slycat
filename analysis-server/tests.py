@@ -819,6 +819,10 @@ def test_scan_dcsv():
   array1 = check_sanity(random(5))
   scan(array1, format="dcsv")
 
+def test_scan_kv():
+  array1 = check_sanity(random(5, attributes=["a", "b"]))
+  scan(array1, format="kv")
+
 def test_scan_null():
   array1 = check_sanity(random(5))
   scan(array1, format="null")
