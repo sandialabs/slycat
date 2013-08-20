@@ -35,9 +35,13 @@ class implementation(slycat.web.server.worker.model.prototype):
     self.store_json_file_artifact("clusters", sorted([name for name, artifact in cluster_artifacts]), input=False)
 
     # For each cluster (timeseries set) ...
-    for name, artifact in cluster_artifacts:
-      # Rebin the timeseries within this cluster so they share common start / stop times and samples ...
+    for index, (name, artifact) in enumerate(cluster_artifacts):
+      progress_begin = float(index) / float(len(cluster_artifacts))
+      progress_end = float(index + 1) / float(len(cluster_artifacts))
+      self.set_progress(progress_begin)
+
       self.set_message("Rebinning data for %s" % name)
+      # Rebin the timeseries within this cluster so they share common start / stop times and samples ...
       time_min = self.scidb.query_value("aql", "select min(time) from %s" % artifact["columns"]).getDouble()
       time_max = self.scidb.query_value("aql", "select max(time) from %s" % artifact["columns"]).getDouble()
 
@@ -73,6 +77,7 @@ class implementation(slycat.web.server.worker.model.prototype):
       observation_count = len(cluster)
       distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
       for i in range(0, observation_count):
+        self.set_progress(self.mix(progress_begin, progress_end, float(i) / float(observation_count)))
         self.set_message("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
         for j in range(i + 1, observation_count):
           distance = math.sqrt(math.fsum([math.pow(b - a, 2.0) for a, b in zip(cluster[i]["values"], cluster[j]["values"])]))

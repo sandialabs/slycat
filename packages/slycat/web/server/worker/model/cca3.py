@@ -16,6 +16,9 @@ class implementation(slycat.web.server.worker.model.prototype):
     slycat.web.server.worker.model.prototype.__init__(self, security, "CCA model", pid, mid, "cca3", name, marking, description, incremental=True)
 
   def compute_model(self):
+    self.set_progress(0.0)
+    self.set_message("Transforming data.")
+
     # Get required inputs ...
     data_table = self.load_table_artifact("data-table")
     input_columns = self.load_json_artifact("input-columns")
@@ -45,6 +48,7 @@ class implementation(slycat.web.server.worker.model.prototype):
 #    cherrypy.log.error("%s" % X)
 #    cherrypy.log.error("%s" % Y)
 #    cherrypy.log.error("%s" % scale_inputs)
+    self.set_message("Computing CCA.")
     x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=scale_inputs)
 #    cherrypy.log.error("%s" % x)
 #    cherrypy.log.error("%s" % y)
@@ -53,6 +57,7 @@ class implementation(slycat.web.server.worker.model.prototype):
 #    cherrypy.log.error("%s" % r)
 #    cherrypy.log.error("%s" % wilks)
 
+    self.set_message("Storing results.")
     component_count = x.shape[1]
     sample_count = x.shape[0]
 
@@ -79,3 +84,4 @@ class implementation(slycat.web.server.worker.model.prototype):
       self.send_array_artifact_data("cca-statistics", [r[component], wilks[component]])
     self.finish_array_artifact("cca-statistics", input=False)
 
+    self.set_progress(1.0)

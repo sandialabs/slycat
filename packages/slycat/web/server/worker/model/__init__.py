@@ -228,7 +228,6 @@ class prototype(slycat.web.server.worker.prototype):
       name = arguments["name"]
       rows = arguments["rows"]
       self.send_timeseries_artifact_binary_rows(name, rows)
-      self.set_message("Timeseries %s stored %s rows." % (name, self.artifacts[name].row_count))
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
@@ -365,7 +364,6 @@ class table_artifact:
     self.named_pipe = None
     self.stream = None
     self.thread = None
-    self.row_count = 0
 
   def get_stream(self):
     def load_data(database, array, named_pipe, column_types):
@@ -393,7 +391,6 @@ class table_artifact:
           stream.write("\0")
         elif type == "double":
           stream.write(struct.pack("<d", value))
-      self.row_count += 1
 
   def store_columns(self, row_count, columns):
     stream = self.get_stream()
@@ -407,7 +404,6 @@ class table_artifact:
           stream.write("\0")
         elif self.column_types[column] == "double":
           stream.write(struct.pack("<d", value))
-      self.row_count += 1
 
   def finish(self):
     if self.stream is not None:
@@ -436,7 +432,6 @@ class timeseries_artifact:
     self.named_pipe = None
     self.stream = None
     self.thread = None
-    self.row_count = 0
 
   def get_stream(self):
     def load_data(database, array, named_pipe, column_types):
@@ -465,7 +460,6 @@ class timeseries_artifact:
           stream.write("\0")
         elif type == "double":
           stream.write(struct.pack("<d", value))
-      self.row_count += 1
 
   def finish(self):
     if self.stream is not None:
@@ -501,7 +495,6 @@ class array_artifact:
     self.named_pipe = None
     self.stream = None
     self.thread = None
-    self.row_count = 0
 
   def get_stream(self):
     def load_data(database, array, named_pipe, attribute_types):
