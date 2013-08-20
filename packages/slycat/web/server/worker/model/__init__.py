@@ -251,6 +251,11 @@ class prototype(slycat.web.server.worker.prototype):
     self.couchdb = slycat.web.server.database.couchdb.connect()
     self.scidb = slycat.web.server.database.scidb.connect()
 
+    # Store the worker ID in the model ...
+    with self.model_lock:
+      self.model["worker"] =  self.status["_id"]
+      slycat.web.server.database.couchdb.connect().save(self.model)
+
     # Optionally, wait for clients to add input artifacts to the model ...
     if self.incremental:
       self.set_message("Waiting for requests.")

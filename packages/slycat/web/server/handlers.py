@@ -276,6 +276,7 @@ def get_model(mid, **kwargs):
     context.update(model)
     context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
     context["new-model-name"] = "Model-%s" % (model_count + 1)
+    context["worker"] = model.get("worker", "null")
 
     marking = cherrypy.request.app.config["slycat"]["marking"]
     context["marking-html"] = marking.html(model["marking"])
