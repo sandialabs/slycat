@@ -941,3 +941,32 @@ select
 #status-messages .technical-details {
 
 }
+
+
+#color-switcher {
+  float: right;
+  font-weight: bold;
+  margin: 9px;
+}
+.cca #color-switcher {
+  position: absolute;
+  right: 0px;
+  bottom: 5px;
+}
+#color-switcher .color {
+  background-color: #DBD9EB;
+  padding: 4px;
+}
+.cca #color-switcher .color {
+  background-color: white;
+}
+#color-switcher .color:hover {
+  cursor: pointer;
+}
+#color-switcher .selected:hover {
+  cursor: default;
+}
+#color-switcher .selected {
+  background-color: #7767B0 !important;
+  color: white;
+}

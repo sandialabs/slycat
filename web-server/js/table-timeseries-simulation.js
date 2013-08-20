@@ -76,9 +76,9 @@ function timeseries_simulation_table(parameters, server_root, workerId)
   var default_color_map = "nightcolormap";
   if (parameters.colormap != null) {
     default_color_map = parameters.colormap;
-    // Set up the background class for the waveform viewer
-    parameters.waveform_viewer.container.attr("class", colorMapper.getClassName(default_color_map));
   }
+  // Set up the background class for the waveform viewer
+  parameters.waveform_viewer.container.attr("class", colorMapper.getClassName(default_color_map));
 
   colorMapper.setUpColorMapsForAllColumns(default_color_map, columns);
 

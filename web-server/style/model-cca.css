@@ -216,3 +216,15 @@ rights in this software.
   color: white;
 }
 
+#scatterplot-pane.nightMode {
+  background-color: #333333;
+}
+#scatterplot-pane.nightMode text {
+  fill: white;
+}
+#scatterplot-pane.dayMode {
+  background-color: white;
+}
+#scatterplot-pane.dayMode text {
+  fill: black;
+}

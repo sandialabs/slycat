@@ -6,6 +6,7 @@ rights in this software.
 
 function color_mapper() {
 
+  var selectedColorMapName = "nightcolormap";
   // Definition of our color maps
   var colorMaps = {
     // This is meant to be used against a black background
@@ -98,6 +99,10 @@ this.setUpColorMapsForAllColumns = function(colorMapName, columns) {
   }
 }
 
+this.createSelectedColorMap = function(min, max) {
+  return createColorMap(min, max, colorMaps[selectedColorMapName].scalar, colorMaps[selectedColorMapName].RGBs);
+}
+
 function createColorMap(min, max, scalar, rgb) {
   var range = max - min;
   var domain = [];
@@ -110,6 +115,14 @@ function createColorMap(min, max, scalar, rgb) {
 
 this.getClassName = function(color_map_name) {
   return colorMaps[color_map_name].className;
+}
+
+this.getAllClassNames = function() {
+  var allClassNames = '';
+  $.each(colorMaps, function(k,v){
+    allClassNames += (v.className + ' ');
+  });
+  return allClassNames;
 }
 
 this.addSwitcher = function(container, bookmark, callback) {
@@ -129,6 +142,7 @@ this.addSwitcher = function(container, bookmark, callback) {
     var selected;
     if( bookmark["colormap"] != null) {
       selected = colors.filter("[data-colormap='" + bookmark["colormap"] + "']");
+      selectedColorMapName = bookmark["colormap"];
     } else {
       selected = colors.first();
     }
@@ -136,13 +150,14 @@ this.addSwitcher = function(container, bookmark, callback) {
 
     // Setting up color scale switcher interaction
     colors.click(function(){
-      var colorMapName = this.getAttribute("data-colormap");
+      // Do nothing if click was on already selected item
       if(!$(this).hasClass("selected")) {
+        selectedColorMapName = this.getAttribute("data-colormap");
         colors.removeClass("selected");
         $(this).addClass("selected");
-      }
-      if(callback) {
-        callback(colorMapName);
+        if(callback) {
+          callback(this.getAttribute("data-colormap"));
+        }
       }
     });
 

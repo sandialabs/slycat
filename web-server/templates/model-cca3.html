@@ -19,6 +19,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/sort-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/modernizr.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/color-mapper.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -41,7 +42,7 @@ rights in this software.
 
   </head>
 
-  <body>
+  <body class="cca">
     <div class="ui-layout-north">
 {{> header}}
 
@@ -56,6 +57,7 @@ rights in this software.
           </div>
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
+          <div id="color-switcher-container"></div>
           <div id="status-messages" style="display: none;">
             <div class='error-heading'>Oops, this model is not ready yet.</div>
             <div class='error-description'>We are probabably building it for your right now. We'll load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
@@ -146,6 +148,21 @@ rights in this software.
       {
         // Start up a bookmark manager
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+        var bookmark = bookmarker.getState();
+
+        // Start up a color mapper
+        var colorMapper = new color_mapper();
+        // Add controls for switching between different color maps
+        colorMapper.addSwitcher($('#color-switcher-container'), bookmark, updateColorMap);
+        // Callback function called by colorMapper when user clicks on a different color map choice
+        function updateColorMap(colorMapName){
+          if(cca_simulation_table_instance != null && colorMapName != null) {
+            cca_simulation_table_instance.updateColorMap(colorMapName);
+            cca_scatterplot.update_color();
+            bookmarker.updateState( {"colormap" : colorMapName} );
+          }
+        }
+
         // Setup the model edit form ...
         $("#edit-model-form").dialog(
         {
@@ -868,7 +885,8 @@ rights in this software.
           width: $("#scatterplot-pane").width(),
           height: $("#scatterplot-pane").height(),
           render: true,
-          add_simulation_callback: selected_simulations_changed
+          add_simulation_callback: selected_simulations_changed,
+          colorMapper: colorMapper,
           });
 
         var cca_simulation_table_instance = null;
@@ -893,6 +911,8 @@ rights in this software.
             other_columns: other_columns,
             add_simulation_callback: selected_simulations_changed,
             add_sort_order_callback: variable_sort_order_changed,
+            colormap: bookmark["colormap"],
+            colorMapper: colorMapper,
             }, "{{server-root}}", workerId);
           cca_simulation_table_instance.update({highlight: ["simulation", 0]});
         }
@@ -923,7 +943,7 @@ rights in this software.
         // Other state contained in the URL query string is restored in the 
         // window.initial_update_scatterplot_value function, since it needs to wait
         // until we have access to a table chunker and an initialized grid with data.
-        bookmark = bookmarker.getState();
+        
         // Updates selected cca component in the table and scatterplot, or selects the first one
         // if none have been selected.
         if("cca-component" in bookmark)
@@ -1246,7 +1266,8 @@ rights in this software.
         this.color = d3.scale.linear();
         this.simulation_callbacks = [];
         this.value_label = null;
-        this.data = []
+        this.data = [];
+        this.colorMapper = parameters.colorMapper;
 
         this.panel = d3.select(parameters.container).append("svg:svg")
           .attr("width", parameters.width)
@@ -1309,6 +1330,20 @@ rights in this software.
           }
         }
 
+        this.update_color = function(){
+          var self = this;
+          var v_min = d3.min(this.data, function(d) { return d[2]; });
+          var v_max = d3.max(this.data, function(d) { return d[2]; });
+          this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
+          var color = this.color;
+
+          var dots = this.panel.select("#data-points").selectAll("circle");
+          dots.style("fill", function(d) { return color(self.data[d][2]); });
+
+          var data_selection = this.panel.select("#data-selection").selectAll("circle");
+          data_selection.style("fill", function(d) { return color(self.data[d][2]); });
+        }
+
         this.update = function(parameters)
         {
           function title_callback(context)
@@ -1357,7 +1392,8 @@ rights in this software.
 
             this.x.domain([x_min, x_max]).range([this.padding, this.panel.attr("width") - this.padding]);
             this.y.domain([y_min, y_max]).range([this.panel.attr("height") - this.padding, this.padding]);
-            this.color.domain([v_min, v_max]).range(["blue", "red"]);
+
+            this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
 
             var x = this.x;
             var y = this.y;

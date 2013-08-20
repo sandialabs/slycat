@@ -11,33 +11,7 @@ function cca2_simulation_table(parameters, server_root, workerId)
   this.variable_callbacks = [];
   this.sort_order_callbacks = [];
   this.index_column = parameters.index_column;
-
-  // Setup color maps ...
-  this.colors = {};
-  this.colors["simulation"] = [];
-  this.colors["simulation"].push(d3.scale.linear().domain([ parameters.min[parameters.index_column], parameters.max[parameters.index_column] ]).range(["blue", "red"]));
-
-  this.colors["input"] = [];
-  for(var j = 0; j != parameters.input_columns.length; ++j)
-    this.colors["input"].push(
-                              d3.scale.linear().domain(
-                                                       [
-                                                        parameters.min[ parameters.input_columns[j] ],
-                                                        parameters.max[ parameters.input_columns[j] ]
-                                                       ]
-                                                      ).range(["blue", "red"])
-                             );
-
-  this.colors["output"] = [];
-  for(var j = 0; j != parameters.output_columns.length; ++j)
-    this.colors["output"].push(
-                               d3.scale.linear().domain(
-                                                        [
-                                                         parameters.min[ parameters.output_columns[j] ],
-                                                         parameters.max[ parameters.output_columns[j] ]
-                                                        ]
-                                                       ).range(["blue", "red"])
-                              );
+  var colorMapper = parameters.colorMapper;
 
   // Setup SlickGrid columns
   var columns = [];
@@ -50,7 +24,8 @@ function cca2_simulation_table(parameters, server_root, workerId)
     sortable: false,
     headerCssClass: "headerSimId",
     cssClass: "rowSimId",
-    colorMap: d3.scale.linear().domain([ parameters.min[parameters.index_column], parameters.max[parameters.index_column] ]).range(["blue", "red"]),
+    columnMin: parameters.min[parameters.index_column],
+    columnMax: parameters.max[parameters.index_column],
   });
 
   // Now add the input variables.
@@ -67,7 +42,8 @@ function cca2_simulation_table(parameters, server_root, workerId)
       sortable: false,
       headerCssClass: "headerInput",
       cssClass: "rowInput",
-      colorMap: d3.scale.linear().domain([ parameters.min[ parameters.input_columns[j] ], parameters.max[ parameters.input_columns[j] ] ]).range(["blue", "red"]),
+      columnMin: parameters.min[ parameters.input_columns[j] ],
+      columnMax: parameters.max[ parameters.input_columns[j] ],
     });
   }
 
@@ -85,7 +61,8 @@ function cca2_simulation_table(parameters, server_root, workerId)
       sortable: false,
       headerCssClass: "headerOutput",
       cssClass: "rowOutput",
-      colorMap: d3.scale.linear().domain([ parameters.min[ parameters.output_columns[j] ], parameters.max[ parameters.output_columns[j] ] ]).range(["blue", "red"]),
+      columnMin: parameters.min[ parameters.output_columns[j] ],
+      columnMax: parameters.max[ parameters.output_columns[j] ],
     });
   }
 
@@ -103,9 +80,20 @@ function cca2_simulation_table(parameters, server_root, workerId)
       sortable: false,
       headerCssClass: "headerOther",
       cssClass: "rowOther",
-      colorMap: d3.scale.linear().domain([ parameters.min[ parameters.other_columns[j] ], parameters.max[ parameters.other_columns[j] ] ]).range(["blue", "red"]),
+      columnMin: parameters.min[ parameters.other_columns[j] ],
+      columnMax: parameters.max[ parameters.other_columns[j] ],
     });
   }
+
+  // Set the default color map based on parameters during init, or use night if not initialized
+  var default_color_map = "nightcolormap";
+  if (parameters.colormap != null) {
+    default_color_map = parameters.colormap;
+  }
+  // Set up the background class for the scatterplot viewer
+  $('#scatterplot-pane').removeClass(colorMapper.getAllClassNames()).addClass(colorMapper.getClassName(default_color_map));
+
+  colorMapper.setUpColorMapsForAllColumns(default_color_map, columns);
 
   // Add sort button to each column
   for(var j = 0; j < columns.length; ++j)
@@ -378,6 +366,34 @@ function cca2_simulation_table(parameters, server_root, workerId)
       grid.render();
     }
 
+  }
+
+  this.updateColorMap = function(colorMapName) {
+    // Swap in the new color map
+    colorMapper.setUpColorMapsForAllColumns(colorMapName, columns);
+    // Update grid with new color map and make it show the new colors
+    if( grid ) {
+      grid.setColumns(columns);
+      // Calling .setData() forces the grid to re-render everything, including currently visible rows. Other methods are more efficient but don't update the currently visible rows.
+      grid.setData(loader.data);
+      grid.render();
+    }
+    // Set up the background class for the scatterplot viewer
+    $('#scatterplot-pane').removeClass(colorMapper.getAllClassNames()).addClass(colorMapper.getClassName(colorMapName));
+    // // Change the colors of waveforms in the viewer and dendrogram
+    // self.setWaveformColorsPerSelectedColumn();
+  }
+
+  this.getSelectedColumn = function() {
+    // get the currently selected column
+    var currentlySelectedColumn = -1;
+    for(var i = 0, len = columns.length; i < len; i++) {
+      if (columns[i].headerCssClass.indexOf(" selected") > -1) {
+          currentlySelectedColumn = columns[i];
+          break;
+      }
+    }
+    return currentlySelectedColumn;
   }
 
   this.update = function(parameters)
