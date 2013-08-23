@@ -93,8 +93,13 @@ class coordinator_factory(slycat.analysis.plugin.coordinator.pyro_object):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
   def call_plugin_function(self, name, *arguments, **keywords):
-    """Call a plugin function by name."""
+    """Call a coordinator plugin function by name."""
     return self.plugin_functions[name](self, *arguments, **keywords)
+  def call_worker_plugin_function(self, name, *arguments, **keywords):
+    """Call a worker plugin function by name on every worker."""
+    results = [Pyro4.async(worker).call_plugin_function(name, worker_index, *arguments, **keywords) for worker_index, worker in enumerate(self.workers())]
+    results = [result.value for result in results]
+    return results
   def create_remote_array(self, name, sources, *arguments, **keywords):
     """Creates a remote array using plugin functions on the workers."""
     sources = [self.require_object(source) for source in sources]

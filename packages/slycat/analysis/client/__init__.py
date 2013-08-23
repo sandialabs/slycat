@@ -23,8 +23,14 @@ class connection(object):
     """Lookup the Pyro URI for a Python object."""
     return object.proxy._pyroUri
   def call_plugin_function(self, name, *arguments, **keywords):
-    """Call a plugin function by name."""
+    """Call a client plugin function by name."""
     return connection.plugin_functions[name](self, *arguments, **keywords)
+  def call_coordinator_plugin_function(self, name, *arguments, **keywords):
+    """Call a coordinator plugin function by name."""
+    return self.coordinator.call_plugin_function(name, *arguments, **keywords)
+  def call_worker_plugin_function(self, name, *arguments, **keywords):
+    """Call a worker plugin function by name on every worker."""
+    return self.coordinator.call_worker_plugin_function(name, *arguments, **keywords)
   def create_remote_array(self, name, sources, *arguments, **keywords):
     """Creates a remote array using plugin functions on the workers."""
     return remote_array(self.coordinator.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))

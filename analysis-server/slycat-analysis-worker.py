@@ -62,6 +62,7 @@ class worker_factory(slycat.analysis.plugin.worker.pyro_object):
     """Lookup a Pyro URI, returning the corresponding Python object."""
     return self._pyroDaemon.objectsById[uri.asString().split(":")[1].split("@")[0]]
   def call_plugin_function(self, name, *arguments, **keywords):
+    """Call a worker plugin function by name."""
     return self.plugin_functions[name](self, *arguments, **keywords)
 
 factory = worker_factory()
