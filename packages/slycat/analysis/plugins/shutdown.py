@@ -11,8 +11,8 @@ def shutdown(connection):
   any access controls.  Shutting down while other clients are working will
   make you very unpopular!
   """
-  connection.proxy._pyroOneway.add("shutdown")
-  connection.proxy.shutdown()
+  connection.coordinator._pyroOneway.add("shutdown")
+  connection.coordinator.shutdown()
 
 def register_client_plugin(context):
   context.register_plugin_function("shutdown", shutdown)

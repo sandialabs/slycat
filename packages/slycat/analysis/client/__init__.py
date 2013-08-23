@@ -18,7 +18,7 @@ class connection(object):
   def __init__(self, nameserver):
     import Pyro4
     self.nameserver = nameserver
-    self.proxy = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
+    self.coordinator = Pyro4.Proxy(nameserver.lookup("slycat.coordinator"))
   def require_object(self, object):
     """Lookup the Pyro URI for a Python object."""
     return object.proxy._pyroUri
@@ -27,10 +27,10 @@ class connection(object):
     return connection.plugin_functions[name](self, *arguments, **keywords)
   def create_remote_array(self, name, sources, *arguments, **keywords):
     """Creates a remote array using plugin functions on the workers."""
-    return remote_array(self.proxy.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
+    return remote_array(self.coordinator.create_remote_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
   def create_remote_file_array(self, name, sources, *arguments, **keywords):
     """Creates a remote array using plugin functions on the workers."""
-    return remote_file_array(self.proxy.create_remote_file_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
+    return remote_file_array(self.coordinator.create_remote_file_array(name, [self.require_object(source) for source in sources], *arguments, **keywords))
 
 class remote_array(object):
   """Proxy for a remote, multi-dimension, multi-attribute array.
