@@ -27,7 +27,6 @@ def register_worker_plugin(context):
   import os
   import re
   import slycat.analysis.plugin.worker
-  from slycat.analysis.plugin.worker import log, worker_lines
 
   def prn_file(factory, worker_index, path, chunk_size):
     return factory.pyro_register(prn_file_array(worker_index, path, chunk_size))
@@ -77,7 +76,7 @@ def register_worker_plugin(context):
       slycat.analysis.plugin.worker.array_iterator.__init__(self, owner)
       stream = open(owner.path, "r")
       stream.next() # Skip the header
-      self.iterator = worker_lines(stream, self.owner.worker_index, self.owner.worker_count, self.owner.chunk_size)
+      self.iterator = slycat.analysis.plugin.worker.worker_lines(stream, self.owner.worker_index, self.owner.worker_count, self.owner.chunk_size)
 
     def next(self):
       self.lines = []

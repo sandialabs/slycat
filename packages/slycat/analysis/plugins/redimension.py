@@ -13,7 +13,7 @@ def register_client_plugin(context):
 
 def register_worker_plugin(context):
   import slycat.analysis.plugin.worker
-  from slycat.analysis.plugin.worker.accumulator import distinct
+  import slycat.analysis.plugin.worker.accumulator
   import numpy
   import Pyro4
 
@@ -61,7 +61,7 @@ def register_worker_plugin(context):
           self.target_attribute_sources.append(("dimension", dimension_index))
 
     def local_attribute_distinct_count(self, attribute):
-      accumulator = distinct()
+      accumulator = slycat.analysis.plugin.worker.accumulator.distinct()
       with self.source.iterator() as source_iterator:
         for ignored in source_iterator:
           accumulator.accumulate(source_iterator.values(attribute))
@@ -70,7 +70,7 @@ def register_worker_plugin(context):
     def attribute_distinct_count(self, attribute):
       accumulators = [Pyro4.async(sibling).local_attribute_distinct_count(attribute) for sibling in self.siblings]
       accumulators = [accumulator.value for accumulator in accumulators]
-      global_accumulator = distinct()
+      global_accumulator = slycat.analysis.plugin.worker.accumulator.distinct()
       for accumulator in accumulators:
         global_accumulator.reduce(accumulator)
       return global_accumulator.result()[0]

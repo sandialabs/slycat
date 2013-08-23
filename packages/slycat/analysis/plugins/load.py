@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-from slycat.analysis.plugin.client import InvalidArgument
+import slycat.analysis.plugin.client
 import StringIO
 
 schema_plugin_map = {}
@@ -35,7 +35,7 @@ def load(connection, path, schema="csv-file", **keywords):
   See the per-schema documention below for details:\n\n"""
 
   if schema not in schema_plugin_map:
-    raise InvalidArgument("Unknown schema: %s" % schema)
+    raise slycat.analysis.plugin.client.InvalidArgument("Unknown schema: %s" % schema)
   return connection.call_plugin_function(schema_plugin_map[schema], path, **keywords)
 
 def register_client_plugin(context):

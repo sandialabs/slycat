@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-from slycat.analysis.plugin.client import log
+import slycat.analysis.plugin.client
 import numpy
 import sys
 import time
@@ -145,7 +145,7 @@ def scan(connection, source, format="dcsv", null_marker="--", separator=", ", st
   else:
     raise Exception("Allowed formats: {}".format(", ".join(["null", "csv", "csv+", "dcsv (default)"])))
 
-  log.info("elapsed time: %s seconds" % (time.time() - start_time))
+  slycat.analysis.plugin.client.log.info("elapsed time: %s seconds" % (time.time() - start_time))
 
 def register_client_plugin(context):
   context.register_plugin_function("scan", scan)

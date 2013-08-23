@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-from slycat.analysis.plugin.client import InvalidArgument
+import slycat.analysis.plugin.client
 
 import numpy
 
@@ -42,12 +42,12 @@ def value(connection, source, attributes=None):
           attribute = index
           break
       else:
-        raise InvalidArgument("Unknown attribute name: {}".format(attribute))
+        raise slycat.analysis.plugin.client.InvalidArgument("Unknown attribute name: {}".format(attribute))
     elif isinstance(attribute, int):
       if attribute >= len(source_attributes):
-        raise InvalidArgument("Attribute index out-of-bounds: {}".format(attribute))
+        raise slycat.analysis.plugin.client.InvalidArgument("Attribute index out-of-bounds: {}".format(attribute))
     else:
-      raise InvalidArgument("Attribute must be an integer index or a name: {}".format(attribute))
+      raise slycat.analysis.plugin.client.InvalidArgument("Attribute must be an integer index or a name: {}".format(attribute))
 
     values = iterator.values(attribute)
     for coordinates, value in numpy.ndenumerate(values):

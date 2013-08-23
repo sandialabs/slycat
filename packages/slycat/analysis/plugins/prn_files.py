@@ -37,7 +37,6 @@ def register_worker_plugin(context):
   import re
 
   import slycat.analysis.plugin.worker
-  from slycat.analysis.plugin.worker import log
 
   def prn_files(factory, worker_index, paths, chunk_size):
     return factory.pyro_register(prn_files_array(worker_index, paths, chunk_size))
