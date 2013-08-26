@@ -27,9 +27,13 @@
     <script type="text/javascript">
       $(document).ready(function()
       {
-        // Warn IE users they need a better browser
-        if ($.browser.msie) {
-          alert("Your browser doesn't provide the features needed to use this application.  We suggest switching to Firefox, Chrome, or Safari.");
+        // Warn IE8- users they need a better browser
+        if ($.browser.msie && parseInt($.browser.version,10)<9) {
+          alert("Your browser doesn't provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+        }
+        // Warn IE9+ users they might need to upgrade
+        else if ($.browser.msie) {
+          alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
         }
         // Check the "show chunkers" control according to what's in localStorage
         update_showChunkers();
