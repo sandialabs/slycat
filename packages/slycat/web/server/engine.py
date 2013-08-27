@@ -118,6 +118,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
 
   dispatcher.connect("get-test", "/test", slycat.web.server.handlers.get_test, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-test-canvas", "/test/canvas", slycat.web.server.handlers.get_test_canvas, conditions={"method" : ["GET"]})
   dispatcher.connect("get-test-exception-404", "/test/exception/404", slycat.web.server.handlers.get_test_exception(404), conditions={"method" : ["GET"]})
   dispatcher.connect("get-test-exception-500", "/test/exception/500", slycat.web.server.handlers.get_test_exception(500), conditions={"method" : ["GET"]})
   dispatcher.connect("get-test-array-json", "/test/array/json", slycat.web.server.handlers.get_test_array_json, conditions={"method" : ["GET"]})
