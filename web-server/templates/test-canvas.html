@@ -12,72 +12,74 @@ rights in this software.
   </head>
 
   <body>
-    <p id="time"></p>
+    <p id="load-time"></p>
+    <p id="draw-time"></p>
     <canvas id="tutorial" width="600" height="600"></canvas>
 
     <script type="text/javascript">
-      function draw()
+      var count = 1000000;
+      var width = 100;
+      var height = 100;
+      var cx = 300;
+      var cy = 300;
+      var radius = 1;
+
+      var x = null;
+      var y = null;
+
+      function load()
       {
         var start_time = new Date().getTime();
-
-        var count = 1000000;
-        var width = 100;
-        var height = 100;
-        var cx = 300;
-        var cy = 300;
-        var radius = 1;
 
         request = new XMLHttpRequest();
         request.open("GET", "{{server-root}}test/array/arraybuffer?length=" + count);
         request.responseType = "arraybuffer";
         request.onload = function(e)
         {
-          var x = new Float64Array(this.response);
+          x = new Float64Array(this.response);
 
           request = new XMLHttpRequest();
           request.open("GET", "{{server-root}}test/array/arraybuffer?length=" + count);
           request.responseType = "arraybuffer";
           request.onload = function(e)
           {
-            var y = new Float64Array(this.response);
+            y = new Float64Array(this.response);
 
             var load_time = new Date().getTime();
 
-            var canvas = document.getElementById("tutorial");
-            var context = canvas.getContext("2d");
-
-            context.fillStyle = "rgba(0, 0, 0, 0.1)";
-            context.strokeStyle = "rgba(0, 0, 0, 0.1)";
-            twopi = Math.PI * 2;
-            for(var i = 0; i != x.length; ++i)
-            {
-              /*
-              context.beginPath();
-              context.arc(width * x[i] + cx, height * y[i] + cy, radius, 0, twopi, false);
-              context.fill();
-              */
-              context.fillRect(width * x[i] + cx, height * y[i] + cy, 1, 1);
-            }
-
-            var draw_time = new Date().getTime();
-
-            document.getElementById("time").innerHTML = "Count: " + count + " datums Load: " + (load_time - start_time) + "ms Draw: " + (draw_time - load_time) + "ms Total: " + (draw_time - start_time) + "ms";
+            document.getElementById("load-time").innerHTML = "Count: " + count + " datums Load: " + (load_time - start_time) + "ms";
+            draw();
           }
           request.send();
         }
         request.send();
-
-
-/*
-        context.fillStyle = "rgb(200, 0, 0)";
-        context.fillRect(10, 10, 100, 100);
-        context.fillStyle = "rgba(0, 0, 200, 0.5)";
-        context.fillRect(50, 50, 150, 150);
-*/
-
       }
 
-      draw();
+      function draw()
+      {
+        var start_time = new Date().getTime();
+
+        var canvas = document.getElementById("tutorial");
+        var context = canvas.getContext("2d");
+
+        context.fillStyle = "rgba(0, 0, 0, 0.1)";
+        context.strokeStyle = "rgba(0, 0, 0, 0.1)";
+        twopi = Math.PI * 2;
+        for(var i = 0; i != x.length; ++i)
+        {
+          /*
+          context.beginPath();
+          context.arc(width * x[i] + cx, height * y[i] + cy, radius, 0, twopi, false);
+          context.fill();
+          */
+          context.fillRect(width * x[i] + cx, height * y[i] + cy, 1, 1);
+        }
+
+        var draw_time = new Date().getTime();
+        document.getElementById("draw-time").innerHTML = "Draw: " + (draw_time - start_time) + "ms";
+      }
+
+      load();
     </script>
   </body>
 </html>
