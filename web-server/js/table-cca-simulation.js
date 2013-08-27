@@ -259,39 +259,47 @@ function cca2_simulation_table(parameters, server_root, workerId)
   }
 
   this.select_simulations = function(indices, asyncFlag) {
-    var queryPrep = [];
-    for(var i = 0; i < indices.length; i++) {
-      queryPrep.push(self.index_column + ":" + indices[i]);
-    }
+    // If we have indices, select the appropriate rows
+    if(indices.length > 0){
+      var queryPrep = [];
+      for(var i = 0; i < indices.length; i++) {
+        queryPrep.push(self.index_column + ":" + indices[i]);
+      }
 
-    var queryParams = { 
-        "query" : queryPrep.join(","), 
-      };
-    $.ajax({
-      contentType : "application/json",
-      url : server_root + "workers/" + workerId + "/table-chunker/search",
-      type : "GET",
-      cache : false,
-      data: queryParams,
-      processData : true,
-      dataType: 'json',
-      async: asyncFlag,
-      success: function(resp){
-        var matches = [];
-        for(var i=0; i<resp.matches.length; i++){
-          if(resp.matches[i][0] != null){
-            matches.push(resp.matches[i][0]);
+      var queryParams = { 
+          "query" : queryPrep.join(","), 
+        };
+      $.ajax({
+        contentType : "application/json",
+        url : server_root + "workers/" + workerId + "/table-chunker/search",
+        type : "GET",
+        cache : false,
+        data: queryParams,
+        processData : true,
+        dataType: 'json',
+        async: asyncFlag,
+        success: function(resp){
+          var matches = [];
+          for(var i=0; i<resp.matches.length; i++){
+            if(resp.matches[i][0] != null){
+              matches.push(resp.matches[i][0]);
+            }
+          }
+          if(matches.length > 0) {
+            grid.scrollRowIntoView(matches[0]);
+            grid.setSelectedRows(matches);
+            var vp = grid.getViewport();
+            // For now just loading all columns. In future limit the 3rd and 4th parameters to just be the columns that are visible in the viewport.
+            loader.ensureData(vp.top, vp.bottom, 0, columns.length);
           }
         }
-        if(matches.length > 0) {
-          grid.scrollRowIntoView(matches[0]);
-          grid.setSelectedRows(matches);
-          var vp = grid.getViewport();
-          // For now just loading all columns. In future limit the 3rd and 4th parameters to just be the columns that are visible in the viewport.
-          loader.ensureData(vp.top, vp.bottom, 0, columns.length);
-        }
-      }
-    });
+      });
+    } 
+    // Otherwise, unselect all rows
+    else {
+      grid.setSelectedRows([]);
+    }
+    
   }
 
   this.set_sort_order = function(sort_field, sort_direction) {

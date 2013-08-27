@@ -228,3 +228,11 @@ rights in this software.
 #scatterplot-pane.dayMode text {
   fill: black;
 }
+
+#data-points circle.data {
+  stroke: black;
+}
+#data-selection circle {
+  stroke: black;
+  stroke-width: 1.0px;
+}
