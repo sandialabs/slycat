@@ -52,6 +52,12 @@ rights in this software.
           <li><button id="record-event">Record Event</button></li>
         </ul>
 
+        <h3>I/O</h3>
+        <ul>
+          <li><button id="array-json">Retrieve JSON array</button></li>
+          <li><button id="array-arraybuffer">Retrieve array buffer array</button></li>
+        </ul>
+
 <!--
         <h3>Files</h3>
         <input id="file-upload" type="file" name="files[]" multiple>
@@ -146,6 +152,50 @@ rights in this software.
             }
           });
         });
+
+        $("#array-json").button().click(function()
+        {
+          $.ajax(
+          {
+            type : "GET",
+            url : "{{server-root}}test/array/json?length=1000000",
+            success : function(worker)
+            {
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error retrieving JSON array: " + reason_phrase);
+            }
+          });
+        });
+
+        $("#array-arraybuffer").button().click(function()
+        {
+          request = new XMLHttpRequest();
+          request.open("GET", "{{server-root}}test/array/arraybuffer?length=1000000");
+          request.responseType = "arraybuffer";
+          request.onload = function(e)
+          {
+            var array = new Float64Array(this.response);
+            console.log(array[0]);
+          }
+          request.send();
+/*
+          $.ajax(
+          {
+            type : "GET",
+            url : "{{server-root}}test/array/arraybuffer?length=1000000",
+            success : function(worker)
+            {
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error retrieving arraybuffer array: " + reason_phrase);
+            }
+          });
+*/
+        });
+
       });
 
 /*
