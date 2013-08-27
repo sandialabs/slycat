@@ -1136,8 +1136,23 @@ rights in this software.
             .attr("height", this.diagram_height)
             .attr("pointer-events", "all")
             .style("fill", "transparent")
+            .on("click", panel_selection_callback(self)) // unselect all the waveforms when someone clicks in the panel but not on a waveform
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
             ;
+
+          function panel_selection_callback(context)
+          {
+            return function()
+            {
+              var selection = [];
+
+              context.select(selection);
+
+              if(table_viewer_instance != null) {
+                table_viewer_instance.select_simulations(selection);
+              }
+            }
+          }
 
 /*
           function redraw_waveforms()
@@ -1239,14 +1254,31 @@ rights in this software.
               .attr("d", self.make_sax_line())
               //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
               .style("display", "none")
-              .style("fill", "none")
               .style("stroke", function(d, i) { 
                 if(self.color_scale != null)
                   return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] ); 
                 else
                   return "white";
               })
-              .style("stroke-width", 1);
+              .attr("class", "unselected")
+              .on("click", waveform_selection_callback(self))
+              ;
+          }
+
+          function waveform_selection_callback(context)
+          {
+            return function(d)
+            {
+              var selection = [d['data-table-index']];
+
+              context.select(selection);
+
+              if(table_viewer_instance != null) {
+                table_viewer_instance.select_simulations(selection);
+              }
+
+              d3.event.stopPropagation();
+            }
           }
 
           function finishedProcessingWaveforms(){
@@ -1350,7 +1382,7 @@ rights in this software.
             this.visualization.append("svg:rect")
               .attr("width", this.diagram_width)
               .attr("height", this.diagram_height)
-              .attr("pointer-events", "all")
+              .attr("pointer-events", "none")
               //.style("fill", "#333333")
               //.style("fill-opacity", 0.5)
               .attr("class", "selectionMask")
@@ -1372,16 +1404,13 @@ rights in this software.
 
           waveforms.append("svg:path")
             .attr("d", this.make_sax_line())
-            .style("fill", "none")
             .style("stroke", function(d, i) { 
               if (self.color_scale != null && self.color_array != null && self.data_table_index_array != null)
                 return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
               else
                 return "white";
             })
-            .style("stroke-width", 4.0)
-            .style("stroke-linecap", "round").
-            attr("class", "highlight")
+            .attr("class", "highlight")
             ;
         }
 
