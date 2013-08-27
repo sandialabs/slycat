@@ -12,6 +12,7 @@ import hashlib
 import json
 import logging.handlers
 import multiprocessing
+import numpy
 import optparse
 import os
 import pprint
@@ -588,6 +589,18 @@ def get_test_exception(code):
   def implementation():
     raise cherrypy.HTTPError("%s Intentional server exception." % code)
   return implementation
+
+@cherrypy.tools.json_out(on = True)
+def get_test_array_json(length):
+  accept = cherrypy.lib.cptools.accept(media=["application/json"])
+  result = numpy.random.random(int(length))
+  cherrypy.log.error("%s" % result[0:4])
+  return result.tolist()
+
+def get_test_array_arraybuffer(length):
+  result = numpy.random.random(int(length))
+  cherrypy.log.error("%s" % result[0:4])
+  return result.tostring()
 
 #def post_test_uploads(**arguments):
 #  for key, value in arguments.items():
