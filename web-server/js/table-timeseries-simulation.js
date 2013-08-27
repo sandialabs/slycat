@@ -225,26 +225,13 @@ function timeseries_simulation_table(parameters, server_root, workerId)
   }
 
   this.select_simulations = function(indices, asyncFlag) {
-    var index = indices[0];
+    var row_indices = [];
+    for(var i = 0; i < indices.length; i++){
+      row_indices.push( this.waveform_indexes.indexOf(indices[i]) );
+    }
 
-    var queryParams = { 
-        "query" : self.index_column + ":" + index, 
-      };
-    $.ajax({
-      contentType : "application/json",
-      url : server_root + "workers/" + workerId + "/table-chunker/search",
-      type : "GET",
-      cache : false,
-      data: queryParams,
-      processData : true,
-      dataType: 'json',
-      async: asyncFlag,
-      success: function(resp){
-        var match = resp.matches[0][0];
-        grid.scrollRowIntoView(match);
-        grid.setSelectedRows([match]);
-      }
-    });
+    grid.scrollRowIntoView(row_indices[0]);
+    grid.setSelectedRows(row_indices);
   }
 
   this.set_sort_order = function(sort_field, sort_direction) {

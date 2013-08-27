@@ -123,3 +123,16 @@ rights in this software.
   fill-opacity: 0.7;
 }
 
+#waveform-viewer .waveform path.unselected {
+  stroke-width: 1;
+  fill: none;
+  stroke-linecap: round;
+}
+#waveform-viewer .waveform path.unselected:hover {
+  stroke-width: 4;
+}
+#waveform-viewer .selection path.highlight {
+  stroke-width: 4.0;
+  fill: none;
+  stroke-linecap: round;
+}
