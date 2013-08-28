@@ -601,12 +601,10 @@ def get_test_exception(code):
 def get_test_array_json(length):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
   result = numpy.random.randn(int(length))
-  cherrypy.log.error("%s" % result[0:4])
   return result.tolist()
 
 def get_test_array_arraybuffer(length):
   result = numpy.random.randn(int(length))
-  cherrypy.log.error("%s" % result[0:4])
   return result.tostring()
 
 #def post_test_uploads(**arguments):
