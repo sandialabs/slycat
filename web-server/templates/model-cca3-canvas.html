@@ -123,6 +123,7 @@ rights in this software.
           </div>
         </div>
         <div id="scatterplot-pane" class="ui-layout-east">
+          <canvas id="scatterplot-canvas"></canvas>
         </div>
       </div>
       <div id="simulation-pane" class="ui-layout-center">
@@ -425,7 +426,7 @@ rights in this software.
             }
           }
         });
-        
+
         $("#rerun-cca-all-inputs-on").button().click(function()
         {
           $(".rerun-cca-input-variable").attr("checked", "checked");
@@ -444,7 +445,7 @@ rights in this software.
         {
           $(".rerun-cca-output-variable").removeAttr("checked");
         });
-        
+
         $("#rerun-cca-button").button().click(function()
         {
           $("#rerun-cca-form").dialog("open");
@@ -872,18 +873,11 @@ rights in this software.
             add_variable_callback: selected_variable_changed,
             bookmarker: bookmarker,
             });
-
-/*
-          window.setTimeout(function()
-          {
-            cca_table.update({component: 0});
-          }, 2000);
-*/
         }
 
         // Setup the simulation scatterplot ...
         var cca_scatterplot = new cca_scatterplot_component({
-          container: "#scatterplot-pane",
+          container: "#scatterplot-canvas",
           data: scatterplot_data,
           width: $("#scatterplot-pane").width(),
           height: $("#scatterplot-pane").height(),
@@ -946,7 +940,7 @@ rights in this software.
         // Other state contained in the URL query string is restored in the 
         // window.initial_update_scatterplot_value function, since it needs to wait
         // until we have access to a table chunker and an initialized grid with data.
-        
+
         // Updates selected cca component in the table and scatterplot, or selects the first one
         // if none have been selected.
         if("cca-component" in bookmark)
@@ -1262,7 +1256,18 @@ rights in this software.
       // cca_scatterplot_component
 
       function cca_scatterplot_component(parameters)
-      { 
+      {
+        this.canvas = $(parameters.container)
+          .width(parameters.width)
+          .height(parameters.height)
+          ;
+      /*
+        this.canvas = d3.select(parameters.container).append("canvas")
+          .attr("width", parameters.width)
+          .attr("height", parameters.height)
+          ;
+*/
+/*
         this.padding = 30;
         this.x = d3.scale.linear();
         this.y = d3.scale.linear();
@@ -1296,11 +1301,6 @@ rights in this software.
         this.panel.append("svg:g")
           .attr("id", "data-points")
           ;
-
-        // Per Pat's request, Alex disabling yellow outline on selected points.
-        // this.panel.append("svg:g")
-        //   .attr("id", "data-selection-outline")
-        //   ;
 
         this.panel.append("svg:g")
           .attr("id", "data-selection")
@@ -1349,8 +1349,10 @@ rights in this software.
             this.setAttribute("r", size);
           }
         }
-
-        this.update_color = function(){
+*/
+        this.update_color = function()
+        {
+/*
           var self = this;
           var v_min = d3.min(this.data, function(d) { return d[2]; });
           var v_max = d3.max(this.data, function(d) { return d[2]; });
@@ -1362,10 +1364,12 @@ rights in this software.
 
           var data_selection = this.panel.select("#data-selection").selectAll("circle");
           data_selection.style("fill", function(d) { return color(self.data[d][2]); });
+*/
         }
 
         this.update = function(parameters)
         {
+/*
           function title_callback(context)
           {
             return function(d)
@@ -1428,11 +1432,6 @@ rights in this software.
 
             dots.enter().append("svg:circle")
               .classed("data", true)
-      //        .attr("cx", function(d) { return x(data[d][0]); })
-      //        .attr("cy", function(d) { return y(data[d][1]); })
-      //        .style("fill", function(d) { return color(data[d][2]); })
-      //        .style("stroke", "black")
-      //        .attr("title", title_callback(this))
               .attr("r", 2)
               .on("click", point_selection_callback(this))
               .on("mouseenter", point_mouseenter_callback(6))
@@ -1460,25 +1459,15 @@ rights in this software.
               .style("fill", function(d) { return color(data[d][2]); })
               .attr("title", title_callback(this))
               ;
-
-            // Per Pat's request, Alex disabling yellow outline on selected points.
-            // var data_selection_outline = this.panel.select("#data-selection-outline").selectAll("circle");
-            // if(enable_animation)
-            //   data_selection_outline = data_selection_outline.transition().duration(1000);
-
-            // data_selection_outline
-            //   .attr("cx", function(d) { return x(data[d][0]); })
-            //   .attr("cy", function(d) { return y(data[d][1]); })
-            //   .attr("title", title_callback(this))
-            //   ;
           }
+*/
 
           if(parameters.width)
           {
-            this.panel
-              .attr("width", parameters.width)
+            this.canvas
+              .width(parameters.width)
               ;
-
+/*
             this.x.range([this.padding, this.panel.attr("width") - this.padding]);
 
             var x = this.x;
@@ -1487,14 +1476,16 @@ rights in this software.
             this.panel.selectAll("circle")
               .attr("cx", function(d) { return x(data[d][0]); })
               ;
+*/
           }
 
           if(parameters.height)
           {
-            this.panel
-              .attr("height", parameters.height)
+            this.canvas
+              .height(parameters.height)
               ;
 
+/*
             this.y.range([this.panel.attr("height") - this.padding, this.padding]);
 
             var y = this.y;
@@ -1503,8 +1494,10 @@ rights in this software.
             this.panel.selectAll("circle")
               .attr("cy", function(d) { return y(data[d][1]); })
               ;
+*/
           }
 
+/*
           if(parameters.width || parameters.height)
           {
             this.panel.select("#input-metavariable-label")
@@ -1538,9 +1531,6 @@ rights in this software.
               .attr("title", title_callback(this))
               .attr("r", 6)
               .style("fill", function(d) { return color(data[d][2]); })
-              // Per Pat's request, Alex disabling yellow outline on selected points.
-              // .style("stroke", "yellow")
-              // .style("stroke-width", "1.5px")
               ;
 
             dots
@@ -1551,27 +1541,16 @@ rights in this software.
               ;
 
             dots.exit().remove();
+          }
+*/
 
-            // Per Pat's request, Alex disabling yellow outline on selected points.
-            // var dots = this.panel.select("#data-selection-outline").selectAll("circle")
-            //   .data(parameters.simulation_selection)
-            //   ;
-
-            // dots.enter().append("svg:circle")
-            //   .attr("cx", function(d) { return x(data[d][0]); })
-            //   .attr("cy", function(d) { return y(data[d][1]); })
-            //   .style("fill", "black")
-            //   .attr("title", title_callback(this))
-            //   .attr("r", 8)
-            //   ;
-
-            // dots
-            //   .attr("cx", function(d) { return x(data[d][0]); })
-            //   .attr("cy", function(d) { return y(data[d][1]); })
-            //   .attr("title", title_callback(this))
-            //   ;
-
-            // dots.exit().remove();
+          if(parameters.render)
+          {
+            var context = this.canvas.get(0).getContext("2d");
+            context.fillStyle = "rgb(255, 0, 0)";
+            context.fillRect(0, 0, 100, 100);
+            context.fillStyle = "rgba(0, 0, 255, 0.5)";
+            context.fillRect(50, 50, 100, 100);
           }
         }
 
