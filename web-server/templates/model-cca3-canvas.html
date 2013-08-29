@@ -1257,24 +1257,19 @@ rights in this software.
 
       function cca_scatterplot_component(parameters)
       {
+        this.padding = 30;
+        this.x = d3.scale.linear();
+        this.y = d3.scale.linear();
+        this.data = [];
+
         this.canvas = $(parameters.container)
           .width(parameters.width)
           .height(parameters.height)
           ;
-      /*
-        this.canvas = d3.select(parameters.container).append("canvas")
-          .attr("width", parameters.width)
-          .attr("height", parameters.height)
-          ;
-*/
 /*
-        this.padding = 30;
-        this.x = d3.scale.linear();
-        this.y = d3.scale.linear();
         this.color = d3.scale.linear();
         this.simulation_callbacks = [];
         this.value_label = null;
-        this.data = [];
         this.colorMapper = parameters.colorMapper;
 
         this.panel = d3.select(parameters.container).append("svg:svg")
@@ -1389,6 +1384,7 @@ rights in this software.
               .attr("title", title_callback(parameters.value_label))
               ;
           }
+*/
 
           if(parameters.data)
           {
@@ -1414,9 +1410,10 @@ rights in this software.
               x_max += ((y_size - x_size) * 0.5)
             }
 
-            this.x.domain([x_min, x_max]).range([this.padding, this.panel.attr("width") - this.padding]);
-            this.y.domain([y_min, y_max]).range([this.panel.attr("height") - this.padding, this.padding]);
+            this.x.domain([x_min, x_max]).range([this.padding, this.canvas.width() - this.padding]);
+            this.y.domain([y_min, y_max]).range([this.canvas.height() - this.padding, this.padding]);
 
+/*
             this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
 
             var x = this.x;
@@ -1459,24 +1456,15 @@ rights in this software.
               .style("fill", function(d) { return color(data[d][2]); })
               .attr("title", title_callback(this))
               ;
-          }
 */
+          }
 
           if(parameters.width)
           {
             this.canvas
               .width(parameters.width)
               ;
-/*
-            this.x.range([this.padding, this.panel.attr("width") - this.padding]);
-
-            var x = this.x;
-            var data = this.data;
-
-            this.panel.selectAll("circle")
-              .attr("cx", function(d) { return x(data[d][0]); })
-              ;
-*/
+            this.x.range([this.padding, this.canvas.width() - this.padding]);
           }
 
           if(parameters.height)
@@ -1484,17 +1472,7 @@ rights in this software.
             this.canvas
               .height(parameters.height)
               ;
-
-/*
-            this.y.range([this.panel.attr("height") - this.padding, this.padding]);
-
-            var y = this.y;
-            var data = this.data;
-
-            this.panel.selectAll("circle")
-              .attr("cy", function(d) { return y(data[d][1]); })
-              ;
-*/
+            this.y.range([this.canvas.height() - this.padding, this.padding]);
           }
 
 /*
@@ -1547,10 +1525,19 @@ rights in this software.
           if(parameters.render)
           {
             var context = this.canvas.get(0).getContext("2d");
-            context.fillStyle = "rgb(255, 0, 0)";
-            context.fillRect(0, 0, 100, 100);
-            context.fillStyle = "rgba(0, 0, 255, 0.5)";
-            context.fillRect(50, 50, 100, 100);
+            context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
+            context.setTransform(1, 0, 0, 1, 0, 0);
+
+            if(this.data)
+            {
+              console.log([this.data[0][0], this.data[0][1], this.x(this.data[0][0]), this.y(this.data[0][1])]);
+
+              context.fillStyle = "rgb(255, 255, 255)";
+              for(var i = 0; i != this.data.length; ++i)
+              {
+                context.fillRect(this.x(this.data[i][0]), this.y(this.data[i][1]), 1, 1);
+              }
+            }
           }
         }
 
