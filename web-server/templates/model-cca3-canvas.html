@@ -745,6 +745,13 @@ rights in this software.
 
         function selected_simulations_changed(indices)
         {
+          // Logging every selected simulation gets slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + indices.length
+          });
+/*
           $.each(indices, function(index, value)
           {
             $.ajax(
@@ -753,6 +760,7 @@ rights in this software.
               url : "{{server-root}}events/models/{{_id}}/select/simulation/" + value
             });
           });
+*/
 
           bookmarker.updateState( {"simulations" : indices} );
         }
@@ -1257,7 +1265,6 @@ rights in this software.
 
       function cca_scatterplot_component(parameters)
       {
-        this.padding = 30;
         this.data = [];
         this.selection = [];
         this.start_drag = null;
@@ -1265,17 +1272,14 @@ rights in this software.
         this.colorMapper = parameters.colorMapper;
         this.simulation_callbacks = [];
 
-        this.canvas = $(parameters.container)
-          .width(parameters.width)
-          .height(parameters.height)
-          ;
+        this.canvas = $(parameters.container);
         this.context = this.canvas.get(0).getContext("2d");
 
-        this.data_canvas = $("<canvas>")
-          .width(parameters.width)
-          .height(parameters.height)
-          ;
+        this.data_canvas = $("<canvas>");
         this.data_context = this.data_canvas.get(0).getContext("2d");
+
+        this.selection_canvas = $("<canvas>");
+        this.selection_context = this.selection_canvas.get(0).getContext("2d");
 
         var self = this;
 
@@ -1295,6 +1299,7 @@ rights in this software.
 
               self.context.clearRect(0, 0, self.canvas.width(), self.canvas.height());
               self.context.drawImage(self.data_canvas.get(0), 0, 0);
+              self.context.drawImage(self.selection_canvas.get(0), 0, 0);
               self.context.fillStyle = "rgba(255, 255, 0, 0.3)";
               self.context.fillRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
               self.context.strokeStyle = "rgb(255, 255, 0)";
@@ -1378,12 +1383,14 @@ rights in this software.
           {
             this.canvas.attr("width", parameters.width).css("width", parameters.width);
             this.data_canvas.attr("width", parameters.width);
+            this.selection_canvas.attr("width", parameters.width);
           }
 
           if(parameters.height)
           {
             this.canvas.attr("height", parameters.height).css("height", parameters.height);
             this.data_canvas.attr("height", parameters.height);
+            this.selection_canvas.attr("height", parameters.height);
           }
 
           if(parameters.data || parameters.width || parameters.height)
@@ -1406,7 +1413,6 @@ rights in this software.
           if(parameters.data || parameters.width || parameters.height || parameters.simulation_selection)
           {
             this.data_context.setTransform(1, 0, 0, 1, 0, 0);
-            this.data_context.globalCompositeOperation = "source-over";
             this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
             // Draw labels ...
@@ -1432,18 +1438,6 @@ rights in this software.
               this.data_context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
               this.data_context.scale(this.scale, -this.scale);
               this.data_context.translate(-this.x_center, -this.y_center);
-
-/*
-              // Draw the origin
-              this.data_context.strokeStyle = "rgba(128, 128, 128, 0.5)";
-              this.data_context.lineWidth = 1 / this.scale;
-              this.data_context.beginPath();
-              this.data_context.moveTo(0, this.y_min);
-              this.data_context.lineTo(0, this.y_max);
-              this.data_context.moveTo(this.x_min, 0);
-              this.data_context.lineTo(this.x_max, 0);
-              this.data_context.stroke();
-*/
 
               // Draw points using circles ...
               if(this.data.length < 100000)
@@ -1490,8 +1484,10 @@ rights in this software.
 
           if(parameters.render)
           {
+            console.log("render");
             this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
             this.context.drawImage(this.data_canvas.get(0), 0, 0);
+            this.context.drawImage(this.selection_canvas.get(0), 0, 0);
           }
         }
 
