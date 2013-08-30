@@ -930,7 +930,7 @@ rights in this software.
         if(cca_simulation_table_instance && cca_scatterplot)
         {
           // Selects scatterplot point when row in simulation table is clicked
-          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({simulation_selection: indices, render_selection: true}); }});
+          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({simulation_selection: indices, render: true}); }});
           // Selects row in simulation table when point in scatterplot is clicked
           cca_scatterplot.update({add_simulation_callback: function(indices) { cca_simulation_table_instance.update({simulation_selection: indices}); }});
         }
@@ -959,7 +959,7 @@ rights in this software.
         {
           // Updates the selected point(s) in the scatterplot
           if(cca_scatterplot) {
-            cca_scatterplot.update({simulation_selection: bookmark["simulations"], render_selection: true});
+            cca_scatterplot.update({simulation_selection: bookmark["simulations"], render: true});
           }
         }
 
@@ -1259,6 +1259,7 @@ rights in this software.
       {
         this.padding = 30;
         this.data = [];
+        this.selection = [];
         this.colorMapper = parameters.colorMapper;
 
         this.canvas = $(parameters.container)
@@ -1274,14 +1275,6 @@ rights in this software.
           .attr("width", parameters.width)
           .attr("height", parameters.height)
           .on("click", panel_selection_callback(this))
-          ;
-
-        this.panel.append("svg:g")
-          .attr("id", "data-points")
-          ;
-
-        this.panel.append("svg:g")
-          .attr("id", "data-selection")
           ;
 
         function panel_selection_callback(context)
@@ -1439,9 +1432,12 @@ rights in this software.
 /*
           if(parameters.add_simulation_callback)
             this.simulation_callbacks.push(parameters.add_simulation_callback);
+*/
 
           if(parameters.simulation_selection)
           {
+            this.selection = parameters.simulation_selection;
+/*
             var x = this.x;
             var y = this.y;
             var color = this.color;
@@ -1468,8 +1464,8 @@ rights in this software.
               ;
 
             dots.exit().remove();
-          }
 */
+          }
 
           if(parameters.render)
           {
@@ -1537,6 +1533,20 @@ rights in this software.
                   this.context.fillStyle = this.color(this.data[i][2]);
                   this.context.fillRect(this.data[i][0], this.data[i][1], size, size);
                 }
+              }
+
+              // Draw selected points ...
+              var radius = 5 / this.scale;
+              var twopi = Math.PI * 2;
+              this.context.strokeStyle = "black";
+              for(var i in this.selection)
+              {
+                var index = this.selection[i];
+                this.context.fillStyle = this.color(this.data[index][2]);
+                this.context.beginPath();
+                this.context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
+                this.context.fill();
+                this.context.stroke();
               }
             }
           }
