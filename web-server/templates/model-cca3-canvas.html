@@ -1412,6 +1412,36 @@ rights in this software.
 
           if(parameters.data || parameters.width || parameters.height || parameters.simulation_selection)
           {
+            var width = this.selection_canvas.attr("width");
+            var height = this.selection_canvas.attr("height");
+
+            this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
+            this.selection_context.clearRect(0, 0, width, height);
+            if(this.data)
+            {
+              this.selection_context.translate(width / 2, height / 2);
+              this.selection_context.scale(this.scale, -this.scale);
+              this.selection_context.translate(-this.x_center, -this.y_center);
+
+              // Draw selected points ...
+              var radius = 5 / this.scale;
+              var twopi = Math.PI * 2;
+              this.selection_context.strokeStyle = "black";
+              this.selection_context.lineWidth = 1 / this.scale;
+              for(var i in this.selection)
+              {
+                var index = this.selection[i];
+                this.selection_context.fillStyle = this.color(this.data[index][2]);
+                this.selection_context.beginPath();
+                this.selection_context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
+                this.selection_context.fill();
+                this.selection_context.stroke();
+              }
+            }
+          }
+
+          if(parameters.data || parameters.width || parameters.height)
+          {
             this.data_context.setTransform(1, 0, 0, 1, 0, 0);
             this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
@@ -1464,20 +1494,6 @@ rights in this software.
                   this.data_context.fillStyle = this.color(this.data[i][2]);
                   this.data_context.fillRect(this.data[i][0], this.data[i][1], size, size);
                 }
-              }
-
-              // Draw selected points ...
-              var radius = 5 / this.scale;
-              var twopi = Math.PI * 2;
-              this.data_context.strokeStyle = "black";
-              for(var i in this.selection)
-              {
-                var index = this.selection[i];
-                this.data_context.fillStyle = this.color(this.data[index][2]);
-                this.data_context.beginPath();
-                this.data_context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
-                this.data_context.fill();
-                this.data_context.stroke();
               }
             }
           }
