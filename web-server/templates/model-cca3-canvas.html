@@ -159,7 +159,7 @@ rights in this software.
         function updateColorMap(colorMapName){
           if(cca_simulation_table_instance != null && colorMapName != null) {
             cca_simulation_table_instance.updateColorMap(colorMapName);
-            cca_scatterplot.update_color();
+            cca_scatterplot.update({color:true});
             bookmarker.updateState( {"colormap" : colorMapName} );
           }
         }
@@ -705,7 +705,7 @@ rights in this software.
           east : {
             size : ($("#content-pane").height() / 2) + 40,
             resizeWhileDragging : false,
-            onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height(), render: true}); }
+            onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
             }
           });
 
@@ -785,10 +785,7 @@ rights in this software.
             scatterplot_data[i][1] = canonical_variables.data[1][component][i];
           }
 
-          cca_scatterplot.update({
-            data: scatterplot_data,
-            render: true
-            });
+          cca_scatterplot.update({data: scatterplot_data});
         }
 
         // Updates the scatterplot when user selects a new input or output variable in the cca table
@@ -828,8 +825,7 @@ rights in this software.
               value_label = resp["column-names"][columns.indexOf(data_column)];
               cca_scatterplot.update({
                 value_label: value_label,
-                data: scatterplot_data,
-                render: true
+                data: scatterplot_data
                 });
             },
             error: function(xhr, ajaxOptions, thrownError){
@@ -889,7 +885,6 @@ rights in this software.
           data: scatterplot_data,
           width: $("#scatterplot-pane").width(),
           height: $("#scatterplot-pane").height(),
-          render: true,
           add_simulation_callback: selected_simulations_changed,
           colorMapper: colorMapper,
           });
@@ -938,7 +933,7 @@ rights in this software.
         if(cca_simulation_table_instance && cca_scatterplot)
         {
           // Selects scatterplot point when row in simulation table is clicked
-          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({simulation_selection: indices, render: true}); }});
+          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({selection: indices}); }});
           // Selects row in simulation table when point in scatterplot is clicked
           cca_scatterplot.update({add_simulation_callback: function(indices) { cca_simulation_table_instance.update({simulation_selection: indices}); }});
         }
@@ -967,7 +962,7 @@ rights in this software.
         {
           // Updates the selected point(s) in the scatterplot
           if(cca_scatterplot) {
-            cca_scatterplot.update({simulation_selection: bookmark["simulations"], render: true});
+            cca_scatterplot.update({selection: bookmark["simulations"]});
           }
         }
 
@@ -1269,7 +1264,7 @@ rights in this software.
         this.selection = [];
         this.start_drag = null;
         this.end_drag = null;
-        this.colorMapper = parameters.colorMapper;
+        this.color_mapper = parameters.colorMapper;
         this.simulation_callbacks = [];
 
         this.canvas = $(parameters.container);
@@ -1318,7 +1313,7 @@ rights in this software.
 
         this.canvas.mouseup(function(e)
         {
-          self.selection = [];
+          var selection = [];
 
           if(self.start_drag && self.end_drag) // Rubber-band selection ...
           {
@@ -1343,25 +1338,20 @@ rights in this software.
           {
             if(x1 <= self.data[i][0] && self.data[i][0] <= x2 && y1 <= self.data[i][1] && self.data[i][1] <= y2)
             {
-              self.selection.push(i);
+              selection.push(i);
             }
           }
 
+          self.update({selection:selection});
+
           for(var i in self.simulation_callbacks)
-            self.simulation_callbacks[i](self.selection);
-
-          self.update({render:true});
+            self.simulation_callbacks[i](selection);
         });
-
-        this.update_color = function()
-        {
-          var v_min = d3.min(this.data, function(d) { return d[2]; });
-          var v_max = d3.max(this.data, function(d) { return d[2]; });
-          this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
-        }
 
         this.update = function(parameters)
         {
+          console.log(parameters);
+
           if(parameters.data)
           {
             this.data = parameters.data;
@@ -1376,7 +1366,14 @@ rights in this software.
 
             var v_min = d3.min(this.data, function(d) { return d[2]; });
             var v_max = d3.max(this.data, function(d) { return d[2]; });
-            this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
+            this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
+          }
+
+          if(parameters.color)
+          {
+            var v_min = d3.min(this.data, function(d) { return d[2]; });
+            var v_max = d3.max(this.data, function(d) { return d[2]; });
+            this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
           }
 
           if(parameters.width)
@@ -1405,12 +1402,12 @@ rights in this software.
             this.simulation_callbacks.push(parameters.add_simulation_callback);
           }
 
-          if(parameters.simulation_selection)
+          if(parameters.selection)
           {
-            this.selection = parameters.simulation_selection;
+            this.selection = parameters.selection;
           }
 
-          if(parameters.data || parameters.width || parameters.height || parameters.simulation_selection)
+          if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
             var width = this.selection_canvas.attr("width");
             var height = this.selection_canvas.attr("height");
@@ -1440,7 +1437,7 @@ rights in this software.
             }
           }
 
-          if(parameters.data || parameters.width || parameters.height)
+          if(parameters.color || parameters.data || parameters.width || parameters.height)
           {
             this.data_context.setTransform(1, 0, 0, 1, 0, 0);
             this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
@@ -1498,7 +1495,7 @@ rights in this software.
             }
           }
 
-          if(parameters.render)
+          if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
             console.log("render");
             this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
