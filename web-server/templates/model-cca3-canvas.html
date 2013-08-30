@@ -1350,7 +1350,7 @@ rights in this software.
 
         this.update = function(parameters)
         {
-          console.log(parameters);
+          console.info(parameters);
 
           if(parameters.data)
           {
@@ -1409,6 +1409,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
+            console.info("render selection");
             var width = this.selection_canvas.attr("width");
             var height = this.selection_canvas.attr("height");
 
@@ -1439,6 +1440,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height)
           {
+            console.info("render data");
             this.data_context.setTransform(1, 0, 0, 1, 0, 0);
             this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
@@ -1497,7 +1499,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
-            console.log("render");
+            console.info("render");
             this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
             this.context.drawImage(this.data_canvas.get(0), 0, 0);
             this.context.drawImage(this.selection_canvas.get(0), 0, 0);
