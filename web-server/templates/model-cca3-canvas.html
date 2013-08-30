@@ -123,7 +123,7 @@ rights in this software.
           </div>
         </div>
         <div id="scatterplot-pane" class="ui-layout-east">
-          <canvas id="scatterplot-canvas"></canvas>
+          <canvas id="scatterplot-canvas" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
         </div>
       </div>
       <div id="simulation-pane" class="ui-layout-center">
@@ -1258,14 +1258,20 @@ rights in this software.
       function cca_scatterplot_component(parameters)
       {
         this.padding = 30;
-        this.x = d3.scale.linear();
-        this.y = d3.scale.linear();
         this.data = [];
+        this.x_min = null;
+        this.x_max = null;
+        this.y_min = null;
+        this.y_max = null;
+        this.x_center = null;
+        this.y_center = null;
+        this.scale = null;
 
         this.canvas = $(parameters.container)
           .width(parameters.width)
           .height(parameters.height)
           ;
+        this.context = this.canvas.get(0).getContext("2d");
 /*
         this.color = d3.scale.linear();
         this.simulation_callbacks = [];
@@ -1390,30 +1396,20 @@ rights in this software.
           {
             this.data = parameters.data;
 
-            var x_min = d3.min(this.data, function(d) { return d[0]; });
-            var x_max = d3.max(this.data, function(d) { return d[0]; });
-            var y_min = d3.min(this.data, function(d) { return d[1]; });
-            var y_max = d3.max(this.data, function(d) { return d[1]; });
+            this.x_min = d3.min(this.data, function(d) { return d[0]; });
+            this.x_max = d3.max(this.data, function(d) { return d[0]; });
+            this.y_min = d3.min(this.data, function(d) { return d[1]; });
+            this.y_max = d3.max(this.data, function(d) { return d[1]; });
+
+            this.x_center = (this.x_min + this.x_max) / 2;
+            this.y_center = (this.y_min + this.y_max) / 2;
+
+            console.log([this.x_min, this.x_center, this.x_max]);
+            console.log([this.y_min, this.y_center, this.y_max]);
+/*
             var v_min = d3.min(this.data, function(d) { return d[2]; });
             var v_max = d3.max(this.data, function(d) { return d[2]; });
 
-            var x_size = x_max - x_min;
-            var y_size = y_max - y_min;
-            if(x_size > y_size)
-            {
-              y_min -= ((x_size - y_size) * 0.5)
-              y_max += ((x_size - y_size) * 0.5)
-            }
-            else
-            {
-              x_min -= ((y_size - x_size) * 0.5)
-              x_max += ((y_size - x_size) * 0.5)
-            }
-
-            this.x.domain([x_min, x_max]).range([this.padding, this.canvas.width() - this.padding]);
-            this.y.domain([y_min, y_max]).range([this.canvas.height() - this.padding, this.padding]);
-
-/*
             this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
 
             var x = this.x;
@@ -1461,23 +1457,21 @@ rights in this software.
 
           if(parameters.width)
           {
-            this.canvas
-              .width(parameters.width)
-              ;
-            this.x.range([this.padding, this.canvas.width() - this.padding]);
+            this.canvas.attr("width", parameters.width).css("width", parameters.width);
           }
 
           if(parameters.height)
           {
-            this.canvas
-              .height(parameters.height)
-              ;
-            this.y.range([this.canvas.height() - this.padding, this.padding]);
+            this.canvas.attr("height", parameters.height).css("height", parameters.height);
           }
 
-/*
           if(parameters.width || parameters.height)
           {
+            var width = this.canvas.attr("width");
+            var height = this.canvas.attr("height");
+            this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
+            console.log("scale: " + this.scale);
+/*
             this.panel.select("#input-metavariable-label")
               .attr("x", this.panel.attr("width") / 2)
               .attr("y", this.panel.attr("height") - 10)
@@ -1486,8 +1480,10 @@ rights in this software.
             this.panel.select("#output-metavariable-label")
               .attr("transform", "translate(15, " + this.panel.attr("height") / 2 + ")")
               ;
+*/
           }
 
+/*
           if(parameters.add_simulation_callback)
             this.simulation_callbacks.push(parameters.add_simulation_callback);
 
@@ -1524,18 +1520,19 @@ rights in this software.
 
           if(parameters.render)
           {
-            var context = this.canvas.get(0).getContext("2d");
-            context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
-            context.setTransform(1, 0, 0, 1, 0, 0);
+            this.context.setTransform(1, 0, 0, 1, 0, 0);
+            this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
             if(this.data)
             {
-              console.log([this.data[0][0], this.data[0][1], this.x(this.data[0][0]), this.y(this.data[0][1])]);
-
-              context.fillStyle = "rgb(255, 255, 255)";
+              this.context.fillStyle = "rgb(255, 0, 0)";
+              this.context.translate(-this.x_center, -this.y_center);
+              this.context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
+              this.context.scale(this.scale, -this.scale);
+              var size = 2 / this.scale;
               for(var i = 0; i != this.data.length; ++i)
               {
-                context.fillRect(this.x(this.data[i][0]), this.y(this.data[i][1]), 1, 1);
+                this.context.fillRect(this.data[i][0], this.data[i][1], size, size);
               }
             }
           }

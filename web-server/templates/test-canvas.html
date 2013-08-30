@@ -18,8 +18,7 @@ rights in this software.
 
     <script type="text/javascript">
       var count = 1000000;
-      var width = 100;
-      var height = 100;
+      var scale = 100;
       var cx = 300;
       var cy = 300;
       var radius = 1;
@@ -64,15 +63,18 @@ rights in this software.
 
         context.fillStyle = "rgba(0, 0, 0, 0.1)";
         context.strokeStyle = "rgba(0, 0, 0, 0.1)";
-        twopi = Math.PI * 2;
+        context.translate(cx, cy);
+        context.scale(scale, scale);
+        var twopi = Math.PI * 2;
+        var size = radius/scale;
         for(var i = 0; i != x.length; ++i)
         {
           /*
           context.beginPath();
-          context.arc(width * x[i] + cx, height * y[i] + cy, radius, 0, twopi, false);
+          context.arc(x[i], y[i], radius, 0, twopi, false);
           context.fill();
           */
-          context.fillRect(width * x[i] + cx, height * y[i] + cy, 1, 1);
+          context.fillRect(x[i], y[i], size, size);
         }
 
         var draw_time = new Date().getTime();
