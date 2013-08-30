@@ -694,7 +694,7 @@ rights in this software.
         $("#content-pane").layout({
           north : {
             size : $("#content-pane").height() / 2,
-            resizeWhileDragging : true
+            resizeWhileDragging : false
             }
           });
 
@@ -704,7 +704,7 @@ rights in this software.
             },
           east : {
             size : ($("#content-pane").height() / 2) + 40,
-            resizeWhileDragging : true,
+            resizeWhileDragging : false,
             onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height(), render: true}); }
             }
           });
@@ -1259,13 +1259,7 @@ rights in this software.
       {
         this.padding = 30;
         this.data = [];
-        this.x_min = null;
-        this.x_max = null;
-        this.y_min = null;
-        this.y_max = null;
-        this.x_center = null;
-        this.y_center = null;
-        this.scale = null;
+        this.colorMapper = parameters.colorMapper;
 
         this.canvas = $(parameters.container)
           .width(parameters.width)
@@ -1273,30 +1267,13 @@ rights in this software.
           ;
         this.context = this.canvas.get(0).getContext("2d");
 /*
-        this.color = d3.scale.linear();
         this.simulation_callbacks = [];
         this.value_label = null;
-        this.colorMapper = parameters.colorMapper;
 
         this.panel = d3.select(parameters.container).append("svg:svg")
           .attr("width", parameters.width)
           .attr("height", parameters.height)
           .on("click", panel_selection_callback(this))
-          ;
-
-        this.panel.append("svg:text")
-          .attr("id", "input-metavariable-label")
-          .attr("text-anchor", "middle")
-          .text("Input Metavariable")
-          ;
-
-        this.panel
-        .append("svg:g")
-          .attr("id", "output-metavariable-label")
-        .append("svg:text")
-          .attr("transform", "rotate(270)")
-          .attr("text-anchor", "middle")
-          .text("Output Metavariable")
           ;
 
         this.panel.append("svg:g")
@@ -1353,19 +1330,9 @@ rights in this software.
 */
         this.update_color = function()
         {
-/*
-          var self = this;
           var v_min = d3.min(this.data, function(d) { return d[2]; });
           var v_max = d3.max(this.data, function(d) { return d[2]; });
           this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
-          var color = this.color;
-
-          var dots = this.panel.select("#data-points").selectAll("circle");
-          dots.style("fill", function(d) { return color(self.data[d][2]); });
-
-          var data_selection = this.panel.select("#data-selection").selectAll("circle");
-          data_selection.style("fill", function(d) { return color(self.data[d][2]); });
-*/
         }
 
         this.update = function(parameters)
@@ -1404,14 +1371,11 @@ rights in this software.
             this.x_center = (this.x_min + this.x_max) / 2;
             this.y_center = (this.y_min + this.y_max) / 2;
 
-            console.log([this.x_min, this.x_center, this.x_max]);
-            console.log([this.y_min, this.y_center, this.y_max]);
-/*
             var v_min = d3.min(this.data, function(d) { return d[2]; });
             var v_max = d3.max(this.data, function(d) { return d[2]; });
-
             this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
 
+/*
             var x = this.x;
             var y = this.y;
             var color = this.color;
@@ -1465,22 +1429,11 @@ rights in this software.
             this.canvas.attr("height", parameters.height).css("height", parameters.height);
           }
 
-          if(parameters.width || parameters.height)
+          if(parameters.width || parameters.height || parameters.data)
           {
             var width = this.canvas.attr("width");
             var height = this.canvas.attr("height");
             this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
-            console.log("scale: " + this.scale);
-/*
-            this.panel.select("#input-metavariable-label")
-              .attr("x", this.panel.attr("width") / 2)
-              .attr("y", this.panel.attr("height") - 10)
-              ;
-
-            this.panel.select("#output-metavariable-label")
-              .attr("transform", "translate(15, " + this.panel.attr("height") / 2 + ")")
-              ;
-*/
           }
 
 /*
@@ -1523,16 +1476,67 @@ rights in this software.
             this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
+            // Draw labels ...
+            this.context.font = "10pt Arial";
+            this.context.textAlign = "center";
+            this.context.fillStyle = "gray";
+
+            this.context.save();
+            this.context.textBaseline = "alphabetic";
+            this.context.translate(this.canvas.width() / 2, this.canvas.height() - 5);
+            this.context.fillText("Input Metavariable", 0, 0);
+            this.context.restore();
+
+            this.context.save();
+            this.context.textBaseline = "top";
+            this.context.translate(5, this.canvas.height() / 2);
+            this.context.rotate(-Math.PI / 2);
+            this.context.fillText("Output Metavariable", 0, 0);
+            this.context.restore();
+
             if(this.data)
             {
-              this.context.fillStyle = "rgb(255, 0, 0)";
-              this.context.translate(-this.x_center, -this.y_center);
               this.context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
               this.context.scale(this.scale, -this.scale);
-              var size = 2 / this.scale;
-              for(var i = 0; i != this.data.length; ++i)
+              this.context.translate(-this.x_center, -this.y_center);
+
+/*
+              // Draw the origin
+              this.context.strokeStyle = "rgba(128, 128, 128, 0.5)";
+              this.context.lineWidth = 1 / this.scale;
+              this.context.beginPath();
+              this.context.moveTo(0, this.y_min);
+              this.context.lineTo(0, this.y_max);
+              this.context.moveTo(this.x_min, 0);
+              this.context.lineTo(this.x_max, 0);
+              this.context.stroke();
+*/
+
+              // Draw points using circles ...
+              if(this.data.length < 100000)
               {
-                this.context.fillRect(this.data[i][0], this.data[i][1], size, size);
+                var radius = 2 / this.scale;
+                var twopi = Math.PI * 2;
+                this.context.stokeStyle = "black";
+                this.context.lineWidth = 1 / this.scale;
+                for(var i = 0; i != this.data.length; ++i)
+                {
+                  this.context.fillStyle = this.color(this.data[i][2]);
+                  this.context.beginPath();
+                  this.context.arc(this.data[i][0], this.data[i][1], radius, 0, twopi);
+                  this.context.fill();
+                  this.context.stroke();
+                }
+              }
+              // Draw points using rectangles ...
+              else
+              {
+                var size = 2 / this.scale;
+                for(var i = 0; i != this.data.length; ++i)
+                {
+                  this.context.fillStyle = this.color(this.data[i][2]);
+                  this.context.fillRect(this.data[i][0], this.data[i][1], size, size);
+                }
               }
             }
           }
