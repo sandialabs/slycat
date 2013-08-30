@@ -1271,6 +1271,12 @@ rights in this software.
           ;
         this.context = this.canvas.get(0).getContext("2d");
 
+        this.data_canvas = $("<canvas>")
+          .width(parameters.width)
+          .height(parameters.height)
+          ;
+        this.data_context = this.data_canvas.get(0).getContext("2d");
+
         var self = this;
 
         this.canvas.mousedown(function(e)
@@ -1285,20 +1291,21 @@ rights in this software.
           {
             if(self.end_drag) // Already dragging ...
             {
-              self.context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
               self.end_drag = [e.layerX, e.layerY];
+
+              self.context.clearRect(0, 0, self.canvas.width(), self.canvas.height());
+              self.context.drawImage(self.data_canvas.get(0), 0, 0);
+              self.context.fillStyle = "rgba(255, 255, 0, 0.3)";
+              self.context.fillRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
+              self.context.strokeStyle = "rgb(255, 255, 0)";
+              self.context.lineWidth = 2.0;
               self.context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
             }
             else
             {
               if(Math.abs(e.layerX - self.start_drag[0]) > 3 || Math.abs(e.layerY - self.start_drag[1]) > 3) // Start dragging ...
               {
-                self.context.setTransform(1, 0, 0, 1, 0, 0);
-                self.context.globalCompositeOperation = "xor";
-                self.context.strokeStyle="yellow";
-                self.context.lineWidth = 2;
                 self.end_drag = [e.layerX, e.layerY];
-                self.context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
               }
             }
           }
@@ -1340,9 +1347,6 @@ rights in this software.
 
           self.update({render:true});
         });
-/*
-        this.value_label = null;
-*/
 
         this.update_color = function()
         {
@@ -1353,28 +1357,6 @@ rights in this software.
 
         this.update = function(parameters)
         {
-/*
-          function title_callback(context)
-          {
-            return function(d)
-            {
-              if(context.value_label)
-                return "Simulation ID: " + d + " " + context.value_label + ": " + context.data[d][2];
-              else
-                return "Simulation ID: " + d;
-            }
-          }
-
-          if(parameters.value_label)
-          {
-            this.value_label = parameters.value_label;
-
-            this.panel.selectAll("circle")
-              .attr("title", title_callback(parameters.value_label))
-              ;
-          }
-*/
-
           if(parameters.data)
           {
             this.data = parameters.data;
@@ -1395,14 +1377,16 @@ rights in this software.
           if(parameters.width)
           {
             this.canvas.attr("width", parameters.width).css("width", parameters.width);
+            this.data_canvas.attr("width", parameters.width);
           }
 
           if(parameters.height)
           {
             this.canvas.attr("height", parameters.height).css("height", parameters.height);
+            this.data_canvas.attr("height", parameters.height);
           }
 
-          if(parameters.width || parameters.height || parameters.data)
+          if(parameters.data || parameters.width || parameters.height)
           {
             var width = this.canvas.attr("width");
             var height = this.canvas.attr("height");
@@ -1419,46 +1403,46 @@ rights in this software.
             this.selection = parameters.simulation_selection;
           }
 
-          if(parameters.render)
+          if(parameters.data || parameters.width || parameters.height || parameters.simulation_selection)
           {
-            this.context.setTransform(1, 0, 0, 1, 0, 0);
-            this.context.globalCompositeOperation = "source-over";
-            this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
+            this.data_context.setTransform(1, 0, 0, 1, 0, 0);
+            this.data_context.globalCompositeOperation = "source-over";
+            this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
             // Draw labels ...
-            this.context.font = "10pt Arial";
-            this.context.textAlign = "center";
-            this.context.fillStyle = "gray";
+            this.data_context.font = "10pt Arial";
+            this.data_context.textAlign = "center";
+            this.data_context.fillStyle = "gray";
 
-            this.context.save();
-            this.context.textBaseline = "alphabetic";
-            this.context.translate(this.canvas.width() / 2, this.canvas.height() - 5);
-            this.context.fillText("Input Metavariable", 0, 0);
-            this.context.restore();
+            this.data_context.save();
+            this.data_context.textBaseline = "alphabetic";
+            this.data_context.translate(this.canvas.width() / 2, this.canvas.height() - 5);
+            this.data_context.fillText("Input Metavariable", 0, 0);
+            this.data_context.restore();
 
-            this.context.save();
-            this.context.textBaseline = "top";
-            this.context.translate(5, this.canvas.height() / 2);
-            this.context.rotate(-Math.PI / 2);
-            this.context.fillText("Output Metavariable", 0, 0);
-            this.context.restore();
+            this.data_context.save();
+            this.data_context.textBaseline = "top";
+            this.data_context.translate(5, this.canvas.height() / 2);
+            this.data_context.rotate(-Math.PI / 2);
+            this.data_context.fillText("Output Metavariable", 0, 0);
+            this.data_context.restore();
 
             if(this.data)
             {
-              this.context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
-              this.context.scale(this.scale, -this.scale);
-              this.context.translate(-this.x_center, -this.y_center);
+              this.data_context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
+              this.data_context.scale(this.scale, -this.scale);
+              this.data_context.translate(-this.x_center, -this.y_center);
 
 /*
               // Draw the origin
-              this.context.strokeStyle = "rgba(128, 128, 128, 0.5)";
-              this.context.lineWidth = 1 / this.scale;
-              this.context.beginPath();
-              this.context.moveTo(0, this.y_min);
-              this.context.lineTo(0, this.y_max);
-              this.context.moveTo(this.x_min, 0);
-              this.context.lineTo(this.x_max, 0);
-              this.context.stroke();
+              this.data_context.strokeStyle = "rgba(128, 128, 128, 0.5)";
+              this.data_context.lineWidth = 1 / this.scale;
+              this.data_context.beginPath();
+              this.data_context.moveTo(0, this.y_min);
+              this.data_context.lineTo(0, this.y_max);
+              this.data_context.moveTo(this.x_min, 0);
+              this.data_context.lineTo(this.x_max, 0);
+              this.data_context.stroke();
 */
 
               // Draw points using circles ...
@@ -1466,15 +1450,15 @@ rights in this software.
               {
                 var radius = 2 / this.scale;
                 var twopi = Math.PI * 2;
-                this.context.stokeStyle = "black";
-                this.context.lineWidth = 1 / this.scale;
+                this.data_context.stokeStyle = "black";
+                this.data_context.lineWidth = 1 / this.scale;
                 for(var i in this.data)
                 {
-                  this.context.fillStyle = this.color(this.data[i][2]);
-                  this.context.beginPath();
-                  this.context.arc(this.data[i][0], this.data[i][1], radius, 0, twopi);
-                  this.context.fill();
-                  this.context.stroke();
+                  this.data_context.fillStyle = this.color(this.data[i][2]);
+                  this.data_context.beginPath();
+                  this.data_context.arc(this.data[i][0], this.data[i][1], radius, 0, twopi);
+                  this.data_context.fill();
+                  this.data_context.stroke();
                 }
               }
               // Draw points using rectangles ...
@@ -1483,25 +1467,31 @@ rights in this software.
                 var size = 2 / this.scale;
                 for(var i in this.data)
                 {
-                  this.context.fillStyle = this.color(this.data[i][2]);
-                  this.context.fillRect(this.data[i][0], this.data[i][1], size, size);
+                  this.data_context.fillStyle = this.color(this.data[i][2]);
+                  this.data_context.fillRect(this.data[i][0], this.data[i][1], size, size);
                 }
               }
 
               // Draw selected points ...
               var radius = 5 / this.scale;
               var twopi = Math.PI * 2;
-              this.context.strokeStyle = "black";
+              this.data_context.strokeStyle = "black";
               for(var i in this.selection)
               {
                 var index = this.selection[i];
-                this.context.fillStyle = this.color(this.data[index][2]);
-                this.context.beginPath();
-                this.context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
-                this.context.fill();
-                this.context.stroke();
+                this.data_context.fillStyle = this.color(this.data[index][2]);
+                this.data_context.beginPath();
+                this.data_context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
+                this.data_context.fill();
+                this.data_context.stroke();
               }
             }
+          }
+
+          if(parameters.render)
+          {
+            this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
+            this.context.drawImage(this.data_canvas.get(0), 0, 0);
           }
         }
 
