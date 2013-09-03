@@ -465,6 +465,8 @@ rights in this software.
 
         // Creating a cca-statistics array chunker worker and getting the cca-statistics from it
         statistics = getAllArrayChunkerData("cca-statistics");
+        getBinaryArray("cca-statistics", 0);
+        getBinaryArray("cca-statistics", 1);
 
         // Creating a input-structure-correlation array chunker worker and getting the input-structure-correlation from it
         x_structure_correlation = getAllArrayChunkerData("input-structure-correlation");
@@ -504,6 +506,29 @@ rights in this software.
             }
           );
           return workerId;
+        }
+
+        function getBinaryArray(artifact, attribute)
+        {
+          var worker_id = createArrayChunker(artifact);
+          var metadata = getChunkerMetadata(worker_id, "array-chunker");
+          var ranges = [];
+          for(var dimension in metadata.dimensions)
+          {
+            ranges.push(metadata.dimensions[dimension].begin);
+            ranges.push(metadata.dimensions[dimension].end);
+          }
+          ranges = ranges.join(",");
+
+          var request = new XMLHttpRequest();
+          request.open("GET", "{{server-root}}" + "workers/" + worker_id + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
+          request.responseType = "arraybuffer";
+          request.onload = function(e)
+          {
+            result = new Float64Array(this.response);
+            console.info(result);
+          }
+          request.send();
         }
 
         function getChunkerMetadata(workerId, chunkerType){
