@@ -131,6 +131,7 @@ class test(prototype):
 
     # Constrain ranges to the dimensions of our data ...
     ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.shape)]
+
     data = self.data[[slice(begin, end) for begin, end in ranges]]
 
     # Handle byte ordering issues ...
@@ -204,6 +205,26 @@ class artifact(prototype):
       }
     return response
 
+  def get_binary_chunk(self, attribute, ranges, byteorder):
+    if attribute < 0 or attribute >= len(self.attribute_names):
+      return ""
+
+    if len(ranges) != len(self.data[0].shape):
+      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
+
+    # Constrain ranges to the dimensions of our data ...
+    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
+
+    data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
+
+    # Handle byte ordering issues ...
+    if sys.byteorder != byteorder:
+      result = data.byteswap().tostring(order="C")
+    else:
+      result = data.tostring(order="C")
+
+    return result
+
   def get_chunk(self, attributes, ranges):
     attributes = [attribute for attribute in attributes if attribute >= 0 and attribute < len(self.attribute_names)]
 
@@ -218,5 +239,6 @@ class artifact(prototype):
       "ranges" : ranges,
       "data" : [self.data[attribute][[slice(begin, end) for begin, end in ranges]].tolist() for attribute in attributes]
       }
-    return response
+
+    return json.dumps(response)
 
