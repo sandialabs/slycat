@@ -170,6 +170,10 @@ class connection(object):
     """Creates a new timeseries  model worker, returning the worker ID."""
     return self.create_model_worker(pid, "timeseries", name, marking, description)
 
+  def create_test_array_chunker(self, shape):
+    """Creates a new test array chunker, returning the worker ID."""
+    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"array-chunker", "shape":shape}))["id"]
+
   def create_array_chunker(self, mid, artifact):
     """Creates a new array chunker, returning the worker ID."""
     return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"array-chunker", "mid":mid, "artifact":artifact}))["id"]

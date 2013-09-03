@@ -40,12 +40,14 @@ def start(config_file="config.ini"):
     parser.read(config_file)
     configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
 
-  if configuration["slycat"]["access-log"]:
+  if configuration["slycat"]["access-log"] != "-":
     cherrypy.log.access_log.handlers = []
-    cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(configuration["slycat"]["uid"], configuration["slycat"]["gid"], configuration["slycat"]["access-log"], "a", configuration["slycat"]["access-log-size"], configuration["slycat"]["access-log-count"]))
-  if configuration["slycat"]["error-log"]:
+    if configuration["slycat"]["access-log"] is not None:
+      cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(configuration["slycat"]["uid"], configuration["slycat"]["gid"], configuration["slycat"]["access-log"], "a", configuration["slycat"]["access-log-size"], configuration["slycat"]["access-log-count"]))
+  if configuration["slycat"]["error-log"] != "-":
     cherrypy.log.error_log.handlers = []
-    cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(configuration["slycat"]["uid"], configuration["slycat"]["gid"], configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
+    if configuration["slycat"]["error-log"] is not None:
+      cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(configuration["slycat"]["uid"], configuration["slycat"]["gid"], configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
 
   if os.path.exists(config_file):
     cherrypy.log("Loaded configuration from %s" % config_file)
