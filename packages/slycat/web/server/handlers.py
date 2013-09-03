@@ -299,9 +299,6 @@ def get_model(mid, **kwargs):
       context["x-structure-correlation"] = database.get_attachment(model, model["artifact:x-structure-correlation"]).read() if "artifact:x-structure-correlation" in model else "null"
       context["y-canonical-variables"] = database.get_attachment(model, model["artifact:y-canonical-variables"]).read() if "artifact:y-canonical-variables" in model else "null"
       context["y-structure-correlation"] = database.get_attachment(model, model["artifact:y-structure-correlation"]).read() if "artifact:y-structure-correlation" in model else "null"
-      #if "canvas" in kwargs:
-      if True:
-        return slycat.web.server.template.render("model-cca3-canvas.html", context)
       return slycat.web.server.template.render("model-cca3.html", context)
 
     return slycat.web.server.template.render("model-generic.html", context)

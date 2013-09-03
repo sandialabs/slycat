@@ -9,7 +9,7 @@ rights in this software.
 <html>
   <head>
 {{> head}}
-    <title>{{name}} - Slycat CCA Model</title>
+    <title>{{name}} - Slycat CCA Model (canvas)</title>
     <script type="text/javascript" src="{{server-root}}js/jquery-layout.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.ba-dotimeout.js"></script>
@@ -123,6 +123,7 @@ rights in this software.
           </div>
         </div>
         <div id="scatterplot-pane" class="ui-layout-east">
+          <canvas id="scatterplot-canvas" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
         </div>
       </div>
       <div id="simulation-pane" class="ui-layout-center">
@@ -158,7 +159,7 @@ rights in this software.
         function updateColorMap(colorMapName){
           if(cca_simulation_table_instance != null && colorMapName != null) {
             cca_simulation_table_instance.updateColorMap(colorMapName);
-            cca_scatterplot.update_color();
+            cca_scatterplot.update({color:true});
             bookmarker.updateState( {"colormap" : colorMapName} );
           }
         }
@@ -425,7 +426,7 @@ rights in this software.
             }
           }
         });
-        
+
         $("#rerun-cca-all-inputs-on").button().click(function()
         {
           $(".rerun-cca-input-variable").attr("checked", "checked");
@@ -444,7 +445,7 @@ rights in this software.
         {
           $(".rerun-cca-output-variable").removeAttr("checked");
         });
-        
+
         $("#rerun-cca-button").button().click(function()
         {
           $("#rerun-cca-form").dialog("open");
@@ -693,7 +694,7 @@ rights in this software.
         $("#content-pane").layout({
           north : {
             size : $("#content-pane").height() / 2,
-            resizeWhileDragging : true
+            resizeWhileDragging : false
             }
           });
 
@@ -703,8 +704,8 @@ rights in this software.
             },
           east : {
             size : ($("#content-pane").height() / 2) + 40,
-            resizeWhileDragging : true,
-            onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height(), render: true}); }
+            resizeWhileDragging : false,
+            onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
             }
           });
 
@@ -744,6 +745,13 @@ rights in this software.
 
         function selected_simulations_changed(indices)
         {
+          // Logging every selected simulation gets slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + indices.length
+          });
+/*
           $.each(indices, function(index, value)
           {
             $.ajax(
@@ -752,6 +760,7 @@ rights in this software.
               url : "{{server-root}}events/models/{{_id}}/select/simulation/" + value
             });
           });
+*/
 
           bookmarker.updateState( {"simulations" : indices} );
         }
@@ -776,10 +785,7 @@ rights in this software.
             scatterplot_data[i][1] = canonical_variables.data[1][component][i];
           }
 
-          cca_scatterplot.update({
-            data: scatterplot_data,
-            render: true
-            });
+          cca_scatterplot.update({data: scatterplot_data});
         }
 
         // Updates the scatterplot when user selects a new input or output variable in the cca table
@@ -819,8 +825,7 @@ rights in this software.
               value_label = resp["column-names"][columns.indexOf(data_column)];
               cca_scatterplot.update({
                 value_label: value_label,
-                data: scatterplot_data,
-                render: true
+                data: scatterplot_data
                 });
             },
             error: function(xhr, ajaxOptions, thrownError){
@@ -872,22 +877,14 @@ rights in this software.
             add_variable_callback: selected_variable_changed,
             bookmarker: bookmarker,
             });
-
-/*
-          window.setTimeout(function()
-          {
-            cca_table.update({component: 0});
-          }, 2000);
-*/
         }
 
         // Setup the simulation scatterplot ...
         var cca_scatterplot = new cca_scatterplot_component({
-          container: "#scatterplot-pane",
+          container: "#scatterplot-canvas",
           data: scatterplot_data,
           width: $("#scatterplot-pane").width(),
           height: $("#scatterplot-pane").height(),
-          render: true,
           add_simulation_callback: selected_simulations_changed,
           colorMapper: colorMapper,
           });
@@ -936,7 +933,7 @@ rights in this software.
         if(cca_simulation_table_instance && cca_scatterplot)
         {
           // Selects scatterplot point when row in simulation table is clicked
-          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({simulation_selection: indices, render_selection: true}); }});
+          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({selection: indices}); }});
           // Selects row in simulation table when point in scatterplot is clicked
           cca_scatterplot.update({add_simulation_callback: function(indices) { cca_simulation_table_instance.update({simulation_selection: indices}); }});
         }
@@ -946,7 +943,7 @@ rights in this software.
         // Other state contained in the URL query string is restored in the 
         // window.initial_update_scatterplot_value function, since it needs to wait
         // until we have access to a table chunker and an initialized grid with data.
-        
+
         // Updates selected cca component in the table and scatterplot, or selects the first one
         // if none have been selected.
         if("cca-component" in bookmark)
@@ -965,7 +962,7 @@ rights in this software.
         {
           // Updates the selected point(s) in the scatterplot
           if(cca_scatterplot) {
-            cca_scatterplot.update({simulation_selection: bookmark["simulations"], render_selection: true});
+            cca_scatterplot.update({selection: bookmark["simulations"]});
           }
         }
 
@@ -1262,316 +1259,250 @@ rights in this software.
       // cca_scatterplot_component
 
       function cca_scatterplot_component(parameters)
-      { 
-        this.padding = 30;
-        this.x = d3.scale.linear();
-        this.y = d3.scale.linear();
-        this.color = d3.scale.linear();
-        this.simulation_callbacks = [];
-        this.value_label = null;
+      {
         this.data = [];
-        this.colorMapper = parameters.colorMapper;
+        this.selection = [];
+        this.start_drag = null;
+        this.end_drag = null;
+        this.color_mapper = parameters.colorMapper;
+        this.simulation_callbacks = [];
 
-        this.panel = d3.select(parameters.container).append("svg:svg")
-          .attr("width", parameters.width)
-          .attr("height", parameters.height)
-          .on("click", panel_selection_callback(this))
-          ;
+        this.canvas = $(parameters.container);
+        this.context = this.canvas.get(0).getContext("2d");
 
-        this.panel.append("svg:text")
-          .attr("id", "input-metavariable-label")
-          .attr("text-anchor", "middle")
-          .text("Input Metavariable")
-          ;
+        this.data_canvas = $("<canvas>");
+        this.data_context = this.data_canvas.get(0).getContext("2d");
 
-        this.panel
-        .append("svg:g")
-          .attr("id", "output-metavariable-label")
-        .append("svg:text")
-          .attr("transform", "rotate(270)")
-          .attr("text-anchor", "middle")
-          .text("Output Metavariable")
-          ;
+        this.selection_canvas = $("<canvas>");
+        this.selection_context = this.selection_canvas.get(0).getContext("2d");
 
-        this.panel.append("svg:g")
-          .attr("id", "data-points")
-          ;
+        var self = this;
 
-        // Per Pat's request, Alex disabling yellow outline on selected points.
-        // this.panel.append("svg:g")
-        //   .attr("id", "data-selection-outline")
-        //   ;
-
-        this.panel.append("svg:g")
-          .attr("id", "data-selection")
-          ;
-
-        function panel_selection_callback(context)
+        this.canvas.mousedown(function(e)
         {
-          return function()
-          {
-            var selection = [];
+          self.start_drag = [e.layerX, e.layerY];
+          self.end_drag = null;
+        });
 
-            context.update({simulation_selection: selection});
-
-            for(var i = 0; i != context.simulation_callbacks.length; ++i)
-              context.simulation_callbacks[i](selection);
-          }
-        }
-
-        function point_selection_callback(context)
+        this.canvas.mousemove(function(e)
         {
-          return function(d)
+          if(self.start_drag) // Mouse is down ...
           {
-            var selection = [d];
-
-            context.update({simulation_selection: selection});
-
-            for(var i = 0; i != context.simulation_callbacks.length; ++i)
-              context.simulation_callbacks[i](selection);
-
-            d3.event.stopPropagation();
-          }
-        }
-
-        function point_mouseenter_callback(size)
-        {
-          return function(d)
-          {
-            this.setAttribute("r", size);
-          }
-        }
-
-        function point_mouseleave_callback(size)
-        {
-          return function(d)
-          {
-            this.setAttribute("r", size);
-          }
-        }
-
-        this.update_color = function(){
-          var self = this;
-          var v_min = d3.min(this.data, function(d) { return d[2]; });
-          var v_max = d3.max(this.data, function(d) { return d[2]; });
-          this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
-          var color = this.color;
-
-          var dots = this.panel.select("#data-points").selectAll("circle");
-          dots.style("fill", function(d) { return color(self.data[d][2]); });
-
-          var data_selection = this.panel.select("#data-selection").selectAll("circle");
-          data_selection.style("fill", function(d) { return color(self.data[d][2]); });
-        }
-
-        this.update = function(parameters)
-        {
-          function title_callback(context)
-          {
-            return function(d)
+            if(self.end_drag) // Already dragging ...
             {
-              if(context.value_label)
-                return "Simulation ID: " + d + " " + context.value_label + ": " + context.data[d][2];
-              else
-                return "Simulation ID: " + d;
+              self.end_drag = [e.layerX, e.layerY];
+
+              self.context.clearRect(0, 0, self.canvas.width(), self.canvas.height());
+              self.context.drawImage(self.data_canvas.get(0), 0, 0);
+              self.context.drawImage(self.selection_canvas.get(0), 0, 0);
+              self.context.fillStyle = "rgba(255, 255, 0, 0.3)";
+              self.context.fillRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
+              self.context.strokeStyle = "rgb(255, 255, 0)";
+              self.context.lineWidth = 2.0;
+              self.context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
+            }
+            else
+            {
+              if(Math.abs(e.layerX - self.start_drag[0]) > 3 || Math.abs(e.layerY - self.start_drag[1]) > 3) // Start dragging ...
+              {
+                self.end_drag = [e.layerX, e.layerY];
+              }
+            }
+          }
+        });
+
+        this.canvas.mouseup(function(e)
+        {
+          var selection = [];
+
+          if(self.start_drag && self.end_drag) // Rubber-band selection ...
+          {
+            var x1 = ((Math.min(self.start_drag[0], self.end_drag[0]) - self.canvas.width() / 2) / self.scale) + self.x_center;
+            var y1 = ((Math.max(self.start_drag[1], self.end_drag[1]) - self.canvas.height() / 2) / -self.scale) + self.y_center;
+            var x2 = ((Math.max(self.start_drag[0], self.end_drag[0]) - self.canvas.width() / 2) / self.scale) + self.x_center;
+            var y2 = ((Math.min(self.start_drag[1], self.end_drag[1]) - self.canvas.height() / 2) / -self.scale) + self.y_center;
+          }
+          else // Pick selection ...
+          {
+            var range = 3;
+            var x1 = (((e.layerX - range) - self.canvas.width() / 2) / self.scale) + self.x_center;
+            var y1 = (((e.layerY + range) - self.canvas.height() / 2) / -self.scale) + self.y_center;
+            var x2 = (((e.layerX + range) - self.canvas.width() / 2) / self.scale) + self.x_center;
+            var y2 = (((e.layerY - range) - self.canvas.height() / 2) / -self.scale) + self.y_center;
+          }
+
+          self.start_drag = null;
+          self.end_drag = null;
+
+          for(var i in self.data)
+          {
+            if(x1 <= self.data[i][0] && self.data[i][0] <= x2 && y1 <= self.data[i][1] && self.data[i][1] <= y2)
+            {
+              selection.push(i);
             }
           }
 
-          if(parameters.value_label)
-          {
-            this.value_label = parameters.value_label;
+          self.update({selection:selection});
 
-            this.panel.selectAll("circle")
-              .attr("title", title_callback(parameters.value_label))
-              ;
-          }
+          for(var i in self.simulation_callbacks)
+            self.simulation_callbacks[i](selection);
+        });
+
+        this.update = function(parameters)
+        {
+          console.info(parameters);
 
           if(parameters.data)
           {
             this.data = parameters.data;
 
-            var x_min = d3.min(this.data, function(d) { return d[0]; });
-            var x_max = d3.max(this.data, function(d) { return d[0]; });
-            var y_min = d3.min(this.data, function(d) { return d[1]; });
-            var y_max = d3.max(this.data, function(d) { return d[1]; });
+            this.x_min = d3.min(this.data, function(d) { return d[0]; });
+            this.x_max = d3.max(this.data, function(d) { return d[0]; });
+            this.y_min = d3.min(this.data, function(d) { return d[1]; });
+            this.y_max = d3.max(this.data, function(d) { return d[1]; });
+
+            this.x_center = (this.x_min + this.x_max) / 2;
+            this.y_center = (this.y_min + this.y_max) / 2;
+
             var v_min = d3.min(this.data, function(d) { return d[2]; });
             var v_max = d3.max(this.data, function(d) { return d[2]; });
+            this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
+          }
 
-            var x_size = x_max - x_min;
-            var y_size = y_max - y_min;
-            if(x_size > y_size)
-            {
-              y_min -= ((x_size - y_size) * 0.5)
-              y_max += ((x_size - y_size) * 0.5)
-            }
-            else
-            {
-              x_min -= ((y_size - x_size) * 0.5)
-              x_max += ((y_size - x_size) * 0.5)
-            }
-
-            this.x.domain([x_min, x_max]).range([this.padding, this.panel.attr("width") - this.padding]);
-            this.y.domain([y_min, y_max]).range([this.panel.attr("height") - this.padding, this.padding]);
-
-            this.color = this.colorMapper.createSelectedColorMap(v_min, v_max);
-
-            var x = this.x;
-            var y = this.y;
-            var color = this.color;
-            var value_label = this.value_label;
-            var data = this.data;
-            var enable_animation = data.length < 5000 ? true : false;
-
-            var dots = this.panel.select("#data-points").selectAll("circle")
-              .data(d3.range(data.length))
-              ;
-
-            dots.enter().append("svg:circle")
-              .classed("data", true)
-      //        .attr("cx", function(d) { return x(data[d][0]); })
-      //        .attr("cy", function(d) { return y(data[d][1]); })
-      //        .style("fill", function(d) { return color(data[d][2]); })
-      //        .style("stroke", "black")
-      //        .attr("title", title_callback(this))
-              .attr("r", 2)
-              .on("click", point_selection_callback(this))
-              .on("mouseenter", point_mouseenter_callback(6))
-              .on("mouseleave", point_mouseleave_callback(2))
-              ;
-
-            dots.exit().remove();
-
-            if(enable_animation)
-              dots = dots.transition().duration(1000);
-            dots
-              .attr("cx", function(d) { return x(data[d][0]); })
-              .attr("cy", function(d) { return y(data[d][1]); })
-              .style("fill", function(d) { return color(data[d][2]); })
-              .attr("title", title_callback(this))
-              ;
-
-            var data_selection = this.panel.select("#data-selection").selectAll("circle");
-            if(enable_animation)
-              data_selection = data_selection.transition().duration(1000);
-
-            data_selection
-              .attr("cx", function(d) { return x(data[d][0]); })
-              .attr("cy", function(d) { return y(data[d][1]); })
-              .style("fill", function(d) { return color(data[d][2]); })
-              .attr("title", title_callback(this))
-              ;
-
-            // Per Pat's request, Alex disabling yellow outline on selected points.
-            // var data_selection_outline = this.panel.select("#data-selection-outline").selectAll("circle");
-            // if(enable_animation)
-            //   data_selection_outline = data_selection_outline.transition().duration(1000);
-
-            // data_selection_outline
-            //   .attr("cx", function(d) { return x(data[d][0]); })
-            //   .attr("cy", function(d) { return y(data[d][1]); })
-            //   .attr("title", title_callback(this))
-            //   ;
+          if(parameters.color)
+          {
+            var v_min = d3.min(this.data, function(d) { return d[2]; });
+            var v_max = d3.max(this.data, function(d) { return d[2]; });
+            this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
           }
 
           if(parameters.width)
           {
-            this.panel
-              .attr("width", parameters.width)
-              ;
-
-            this.x.range([this.padding, this.panel.attr("width") - this.padding]);
-
-            var x = this.x;
-            var data = this.data;
-
-            this.panel.selectAll("circle")
-              .attr("cx", function(d) { return x(data[d][0]); })
-              ;
+            this.canvas.attr("width", parameters.width).css("width", parameters.width);
+            this.data_canvas.attr("width", parameters.width);
+            this.selection_canvas.attr("width", parameters.width);
           }
 
           if(parameters.height)
           {
-            this.panel
-              .attr("height", parameters.height)
-              ;
-
-            this.y.range([this.panel.attr("height") - this.padding, this.padding]);
-
-            var y = this.y;
-            var data = this.data;
-
-            this.panel.selectAll("circle")
-              .attr("cy", function(d) { return y(data[d][1]); })
-              ;
+            this.canvas.attr("height", parameters.height).css("height", parameters.height);
+            this.data_canvas.attr("height", parameters.height);
+            this.selection_canvas.attr("height", parameters.height);
           }
 
-          if(parameters.width || parameters.height)
+          if(parameters.data || parameters.width || parameters.height)
           {
-            this.panel.select("#input-metavariable-label")
-              .attr("x", this.panel.attr("width") / 2)
-              .attr("y", this.panel.attr("height") - 10)
-              ;
-
-            this.panel.select("#output-metavariable-label")
-              .attr("transform", "translate(15, " + this.panel.attr("height") / 2 + ")")
-              ;
+            var width = this.canvas.attr("width");
+            var height = this.canvas.attr("height");
+            this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
           }
 
           if(parameters.add_simulation_callback)
-            this.simulation_callbacks.push(parameters.add_simulation_callback);
-
-          if(parameters.simulation_selection)
           {
-            var x = this.x;
-            var y = this.y;
-            var color = this.color;
-            var value_label = this.value_label;
-            var data = this.data;
+            this.simulation_callbacks.push(parameters.add_simulation_callback);
+          }
 
-            var dots = this.panel.select("#data-selection").selectAll("circle")
-              .data(parameters.simulation_selection)
-              ;
+          if(parameters.selection)
+          {
+            this.selection = parameters.selection;
+          }
 
-            dots.enter().append("svg:circle")
-              .attr("cx", function(d) { return x(data[d][0]); })
-              .attr("cy", function(d) { return y(data[d][1]); })
-              .attr("title", title_callback(this))
-              .attr("r", 6)
-              .style("fill", function(d) { return color(data[d][2]); })
-              // Per Pat's request, Alex disabling yellow outline on selected points.
-              // .style("stroke", "yellow")
-              // .style("stroke-width", "1.5px")
-              ;
+          if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
+          {
+            console.info("render selection");
+            var width = this.selection_canvas.attr("width");
+            var height = this.selection_canvas.attr("height");
 
-            dots
-              .attr("cx", function(d) { return x(data[d][0]); })
-              .attr("cy", function(d) { return y(data[d][1]); })
-              .style("fill", function(d) { return color(data[d][2]); })
-              .attr("title", title_callback(this))
-              ;
+            this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
+            this.selection_context.clearRect(0, 0, width, height);
+            if(this.data)
+            {
+              this.selection_context.translate(width / 2, height / 2);
+              this.selection_context.scale(this.scale, -this.scale);
+              this.selection_context.translate(-this.x_center, -this.y_center);
 
-            dots.exit().remove();
+              // Draw selected points ...
+              var radius = 5 / this.scale;
+              var twopi = Math.PI * 2;
+              this.selection_context.strokeStyle = "black";
+              this.selection_context.lineWidth = 1 / this.scale;
+              for(var i in this.selection)
+              {
+                var index = this.selection[i];
+                this.selection_context.fillStyle = this.color(this.data[index][2]);
+                this.selection_context.beginPath();
+                this.selection_context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
+                this.selection_context.fill();
+                this.selection_context.stroke();
+              }
+            }
+          }
 
-            // Per Pat's request, Alex disabling yellow outline on selected points.
-            // var dots = this.panel.select("#data-selection-outline").selectAll("circle")
-            //   .data(parameters.simulation_selection)
-            //   ;
+          if(parameters.color || parameters.data || parameters.width || parameters.height)
+          {
+            console.info("render data");
+            this.data_context.setTransform(1, 0, 0, 1, 0, 0);
+            this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
-            // dots.enter().append("svg:circle")
-            //   .attr("cx", function(d) { return x(data[d][0]); })
-            //   .attr("cy", function(d) { return y(data[d][1]); })
-            //   .style("fill", "black")
-            //   .attr("title", title_callback(this))
-            //   .attr("r", 8)
-            //   ;
+            // Draw labels ...
+            this.data_context.font = "10pt Arial";
+            this.data_context.textAlign = "center";
+            this.data_context.fillStyle = "gray";
 
-            // dots
-            //   .attr("cx", function(d) { return x(data[d][0]); })
-            //   .attr("cy", function(d) { return y(data[d][1]); })
-            //   .attr("title", title_callback(this))
-            //   ;
+            this.data_context.save();
+            this.data_context.textBaseline = "alphabetic";
+            this.data_context.translate(this.canvas.width() / 2, this.canvas.height() - 5);
+            this.data_context.fillText("Input Metavariable", 0, 0);
+            this.data_context.restore();
 
-            // dots.exit().remove();
+            this.data_context.save();
+            this.data_context.textBaseline = "top";
+            this.data_context.translate(5, this.canvas.height() / 2);
+            this.data_context.rotate(-Math.PI / 2);
+            this.data_context.fillText("Output Metavariable", 0, 0);
+            this.data_context.restore();
+
+            if(this.data)
+            {
+              this.data_context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
+              this.data_context.scale(this.scale, -this.scale);
+              this.data_context.translate(-this.x_center, -this.y_center);
+
+              // Draw points using circles ...
+              if(this.data.length < 100000)
+              {
+                var radius = 2 / this.scale;
+                var twopi = Math.PI * 2;
+                this.data_context.stokeStyle = "black";
+                this.data_context.lineWidth = 1 / this.scale;
+                for(var i in this.data)
+                {
+                  this.data_context.fillStyle = this.color(this.data[i][2]);
+                  this.data_context.beginPath();
+                  this.data_context.arc(this.data[i][0], this.data[i][1], radius, 0, twopi);
+                  this.data_context.fill();
+                  this.data_context.stroke();
+                }
+              }
+              // Draw points using rectangles ...
+              else
+              {
+                var size = 2 / this.scale;
+                for(var i in this.data)
+                {
+                  this.data_context.fillStyle = this.color(this.data[i][2]);
+                  this.data_context.fillRect(this.data[i][0], this.data[i][1], size, size);
+                }
+              }
+            }
+          }
+
+          if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
+          {
+            console.info("render");
+            this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
+            this.context.drawImage(this.data_canvas.get(0), 0, 0);
+            this.context.drawImage(this.selection_canvas.get(0), 0, 0);
           }
         }
 
