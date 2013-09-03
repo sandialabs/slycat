@@ -56,6 +56,8 @@ class pool_implementation:
         self.changed.wait(1.0)
       if time.time() - start_time > timeout:
         return None
+      if cherrypy.engine.state != cherrypy.engine.states.STARTED:
+        return None
     return self.revision, self.collection.values()
 
   def worker(self, id):
