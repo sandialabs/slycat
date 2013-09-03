@@ -81,21 +81,19 @@ class prototype(slycat.web.server.worker.prototype):
     raise NotImplementedError()
 
 class test(prototype):
-  """Array chunker that creates an arbitrary-size array containing random data for testing."""
-  def __init__(self, security, shape, seed=12345):
+  """Array chunker that creates an arbitrary-size array containing a range of integer values for testing."""
+  def __init__(self, security, shape):
     prototype.__init__(self, security, "chunker.array.test")
     self.shape = shape
-    self.seed = seed
 
   def preload(self):
-    numpy.random.seed(self.seed)
-    self.data = numpy.arange(reduce(operator.mul, self.shape, 1)).reshape(self.shape)
+    self.data = numpy.arange(reduce(operator.mul, self.shape, 1)).reshape(self.shape).astype("float64")
     self.set_message("Using %s test data." % (" x ".join([str(size) for size in self.shape])))
 
   def get_metadata(self):
     response = {
       "dimensions" : [{"name" : "d%s" % index, "type" : "int64", "begin" : 0, "end" : size} for index, size in enumerate(self.shape)],
-      "attributes" : [{"name" : "a0", "type" : "double"}]
+      "attributes" : [{"name" : "a0", "type" : "float64"}]
       }
     return response
 
