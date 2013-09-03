@@ -96,7 +96,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-worker", "/workers/:wid", slycat.web.server.handlers.get_worker, conditions={"method" : ["GET"]})
   dispatcher.connect("put-worker", "/workers/:wid", slycat.web.server.handlers.put_worker, conditions={"method" : ["PUT"]})
   dispatcher.connect("get-worker-array-chunker-metadata", "/workers/:wid/array-chunker/metadata", slycat.web.server.handlers.get_worker_endpoint("get_array_chunker_metadata"), conditions={"method" : ["GET"]})
-  dispatcher.connect("get-worker-array-chunker-chunk", "/workers/:wid/array-chunker/chunk", slycat.web.server.handlers.get_worker_endpoint("get_array_chunker_chunk"), conditions={"method" : ["GET"]})
+  dispatcher.connect("get-worker-array-chunker-chunk", "/workers/:wid/array-chunker/chunk", slycat.web.server.handlers.get_worker_endpoint("get_array_chunker_chunk", force_json_output=False), conditions={"method" : ["GET"]})
   dispatcher.connect("get-worker-table-chunker-metadata", "/workers/:wid/table-chunker/metadata", slycat.web.server.handlers.get_worker_endpoint("get_table_chunker_metadata"), conditions={"method" : ["GET"]})
   dispatcher.connect("get-worker-table-chunker-search", "/workers/:wid/table-chunker/search", slycat.web.server.handlers.get_worker_endpoint("get_table_chunker_search"), conditions={"method" : ["GET"]})
   dispatcher.connect("get-worker-table-chunker-chunk", "/workers/:wid/table-chunker/chunk", slycat.web.server.handlers.get_worker_endpoint("get_table_chunker_chunk"), conditions={"method" : ["GET"]})

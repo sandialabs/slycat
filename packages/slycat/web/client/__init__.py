@@ -103,6 +103,8 @@ class connection(object):
       body = None
       if response.headers["content-type"].startswith("application/json"):
         body = response.json()
+      else:
+        body = response.content
 
 #      if response.headers["content-type"].startswith("text/html"):
 #        self.log.write(" => <html>...</html>")
@@ -185,6 +187,10 @@ class connection(object):
     attributes = ",".join([str(attribute) for attribute in attributes])
     ranges = ",".join([str(range) for range in ranges])
     return self.request("GET", "/workers/%s/array-chunker/chunk?attributes=%s&ranges=%s" % (wid, attributes, ranges), headers={"accept":"application/json"})
+
+  def get_array_chunker_binary_chunk(self, wid, attribute, ranges, byteorder):
+    ranges = ",".join([str(range) for range in ranges])
+    return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s&byteorder=%s" % (wid, attribute, ranges, byteorder), headers={"accept":"application/octet-stream"})
 
   def create_bookmark(self, pid, bookmark):
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]

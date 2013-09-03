@@ -496,8 +496,8 @@ def put_worker(wid):
 
   cherrypy.response.status = 204
 
-def get_worker_endpoint(name):
-  @cherrypy.tools.json_out(on = True)
+def get_worker_endpoint(name, force_json_output=True):
+  @cherrypy.tools.json_out(on = force_json_output)
   def implementation(wid, **arguments):
     worker = pool.worker(wid)
     if worker is None:
