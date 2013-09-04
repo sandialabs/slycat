@@ -4,12 +4,16 @@ from titan.Web import vtkJSONArrayWriter
 from vtk import vtkDenseArray, vtkArrayData
 import matplotlib.pyplot as pyplot
 import numpy
+import sys
+
+input_columns = ["Cylinders", "Displacement", "Weight", "Year"]
+output_columns = ["Acceleration", "Horsepower", "MPG"]
 
 autos = load("../data/cars.csv", "csv-file", chunk_size=100)
-inputs = project(autos, "Year", "Cylinders", "Displacement")
-outputs = project(autos, "Acceleration", "Horsepower", "MPG")
-X = numpy.array([values(inputs, 0), values(inputs, 1), values(inputs, 2)]).T.astype("double")
-Y = numpy.array([values(outputs, 0), values(outputs, 1), values(outputs, 2)]).T.astype("double")
+inputs = project(autos, *input_columns)
+outputs = project(autos, *output_columns)
+X = numpy.array([values(inputs, column) for column in input_columns]).T.astype("double")
+Y = numpy.array([values(outputs, column) for column in output_columns]).T.astype("double")
 good = ~numpy.isnan(Y).any(axis=1)
 X = X[good]
 Y = Y[good]
@@ -34,8 +38,7 @@ cca = vtkTrilinosCCA()
 cca.SetInputData(cca_array_data)
 cca.SetSigDigits(16)
 cca.ForcePositiveYCorrelation(1)
-if True:
-  cca.ScaleInputToUnitVarianceOn()
+cca.ScaleInputToUnitVarianceOn()
 cca.Update()
 
 x_titan = cca.GetOutput().GetArray(2)
@@ -64,16 +67,14 @@ for i in range(y_loadings_titan.GetExtent(0).GetSize()):
   for j in range(y_loadings_titan.GetExtent(1).GetSize()):
     y_loadings[i,j] = y_loadings_titan.GetValue(i, j)
 
-print r
-print wilks
 print x_loadings
 print y_loadings
 
 pyplot.figure()
 pyplot.scatter(x.T[0], y.T[0], color="red")
-pyplot.figure()
-pyplot.scatter(x.T[1], y.T[1], color="green")
-pyplot.figure()
-pyplot.scatter(x.T[2], y.T[2], color="blue")
+#pyplot.figure()
+#pyplot.scatter(x.T[1], y.T[1], color="green")
+#pyplot.figure()
+#pyplot.scatter(x.T[2], y.T[2], color="blue")
 pyplot.show(True)
 
