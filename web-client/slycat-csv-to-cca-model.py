@@ -48,9 +48,9 @@ for index, type in enumerate(column_types):
 inputs = [column_names.index(input) for input in options.input]
 outputs = [column_names.index(output) for output in options.output]
 if len(inputs) < 1:
-  raise Exception("You must specify at least one input column.")
+  raise Exception("You must specify at least one input column.  Available columns: %s" % ", ".join(column_names))
 if len(outputs) < 1:
-  raise Exception("You must specify at least one output column.")
+  raise Exception("You must specify at least one output column.  Available columns: %s" % ", ".join(column_names))
 for input in inputs:
   if not (0 <= input and input < column_count):
     raise Exception("Input column out of range: %s" % input)
