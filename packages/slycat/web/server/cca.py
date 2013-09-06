@@ -11,6 +11,17 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
 
   Returns: x, y, x_loadings, y_loadings, r, wilks
   """
+
+  # Validate our inputs ...
+  if X.ndim != 2 or Y.ndim != 2:
+    raise Exception("X and Y must have two dimensions.")
+  if X.shape[0] != Y.shape[0]:
+    raise Exception("X and Y must contain the same number of rows.")
+  if X.shape[0] < 2:
+    raise Exception("X and Y must contain two-or-more rows.")
+  if force_positive is not None and (force_positive < 0 or force_positive >= Y.shape[1]):
+    raise Exception("force_positive out-of-range.")
+
   def qr(A):
     """Custom implementation of QR for use with our CCA."""
     return scipy.linalg.qr(A, mode="economic", pivoting=True)
