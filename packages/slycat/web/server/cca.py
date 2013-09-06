@@ -14,25 +14,6 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   def qr(A):
     """Custom implementation of QR for use with our CCA."""
     return scipy.linalg.qr(A, mode="economic", pivoting=True)
-#    a1 = numpy.asarray_chkfinite(A)
-#    geqp3, = scipy.linalg.lapack.get_lapack_funcs(("geqp3",), (a1,))
-#    qr, P, tau, work, info = geqp3(A)
-#
-#    m, n = A.shape
-#    k = min(m, n)
-#    R = numpy.triu(qr[:k,:k])
-#
-#    orgqr, = scipy.linalg.lapack.get_lapack_funcs(("orgqr",), (qr,))
-#    if m >= n: # Tall-skinny case
-#      Q, work, info = orgqr(qr[:m,:n], tau)
-#      Q = Q[:m, :n]
-#    else: # Short-wide case
-#      Q, work, info = orgqr(qr[:m,:m], tau)
-#      Q = Q[:m, :m]
-#
-#    P -= 1 # geqp3 returns a 1-based index array, so subtract 1
-#
-#    return Q, R, P
 
   eps = numpy.finfo("double").eps
   if significant_digits is None or significant_digits > numpy.abs(numpy.log10(eps)):
