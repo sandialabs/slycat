@@ -59,9 +59,9 @@ x_loadings_titan = cca.GetOutput().GetArray(4)
 y_loadings_titan = cca.GetOutput().GetArray(5)
 statistics_titan = cca.GetOutput().GetArray(6)
 
-r = numpy.empty((statistics_titan.GetExtent(0).GetSize()))
-for i in range(statistics_titan.GetExtent(0).GetSize()):
-  r[i] = statistics_titan.GetValue(i, 0)
+r = numpy.empty((statistics_titan.GetExtent(1).GetSize()))
+for i in range(statistics_titan.GetExtent(1).GetSize()):
+  r[i] = statistics_titan.GetValue(0, i)
 
 x = numpy.empty((x_titan.GetExtent(0).GetSize(), x_titan.GetExtent(1).GetSize()))
 for i in range(x_titan.GetExtent(0).GetSize()):
