@@ -66,8 +66,8 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   B *= numpy.sqrt(n - 1)
 
   # TODO: Restore low-rank columns
-  A = A[P1]
-  B = B[P2]
+  A[P1] = numpy.copy(A)
+  B[P2] = numpy.copy(B)
 
   x = numpy.dot(X, A)
   y = numpy.dot(Y, B)
