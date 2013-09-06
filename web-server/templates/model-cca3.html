@@ -455,24 +455,41 @@ rights in this software.
         var input_columns = {{input-columns}};
         var output_columns = {{output-columns}};
         var scale_inputs = {{scale-inputs}};
-        var statistics = null;
+        var r2_statistics = null;
+        var wilks_statistics = null;
         var canonical_variables = null;
-        var x_structure_correlation = null;
-        var y_structure_correlation = null;
+        var x_loadings = null;
+        var y_loadings = null;
 
         // Creating a canonical-variables array chunker worker and getting the canonical-variables from it
         canonical_variables = getAllArrayChunkerData("canonical-variables");
 
         // Creating a cca-statistics array chunker worker and getting the cca-statistics from it
-        statistics = getAllArrayChunkerData("cca-statistics");
-        getBinaryArray("cca-statistics", 0);
-        getBinaryArray("cca-statistics", 1);
+        var statistics_chunker = createArrayChunker("cca-statistics");
+        getBinaryArray(statistics_chunker, 0, function(result)
+        {
+          r2_statistics = result;
+          wait_for_data();
+        });
+        getBinaryArray(statistics_chunker, 1, function(result)
+        {
+          wilks_statistics = result;
+          wait_for_data();
+        });
 
         // Creating a input-structure-correlation array chunker worker and getting the input-structure-correlation from it
-        x_structure_correlation = getAllArrayChunkerData("input-structure-correlation");
+        getBinaryArray(createArrayChunker("input-structure-correlation"), 0, function(result)
+        {
+          x_loadings = result;
+          wait_for_data();
+        });
 
         // Creating a output-structure-correlation array chunker worker and getting the output-structure-correlation from it
-        y_structure_correlation = getAllArrayChunkerData("output-structure-correlation");
+        getBinaryArray(createArrayChunker("output-structure-correlation"), 0, function(result)
+        {
+          y_loadings = result;
+          wait_for_data();
+        });
 
         function getAllArrayChunkerData(modelArtifactName){
           return getArrayChunkerData( createArrayChunker(modelArtifactName) );
@@ -508,10 +525,10 @@ rights in this software.
           return workerId;
         }
 
-        function getBinaryArray(artifact, attribute)
+        function getBinaryArray(chunker, attribute, callback)
         {
-          var worker_id = createArrayChunker(artifact);
-          var metadata = getChunkerMetadata(worker_id, "array-chunker");
+          var metadata = getChunkerMetadata(chunker, "array-chunker");
+
           var ranges = [];
           for(var dimension in metadata.dimensions)
           {
@@ -521,12 +538,30 @@ rights in this software.
           ranges = ranges.join(",");
 
           var request = new XMLHttpRequest();
-          request.open("GET", "{{server-root}}" + "workers/" + worker_id + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
+          request.open("GET", "{{server-root}}" + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
           request.responseType = "arraybuffer";
+          request.metadata = metadata;
           request.onload = function(e)
           {
-            result = new Float64Array(this.response);
-            console.info(result);
+            var buffer = this.response;
+            var metadata = this.metadata;
+
+            console.log(metadata);
+
+            if(metadata.dimensions.length == 1)
+            {
+              var result = new Float64Array(buffer);
+            }
+            else if(metadata.dimensions.length == 2)
+            {
+              var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
+              var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
+              var result = [];
+              for(var i = 0; i != row_count; ++i)
+                result.push(new Float64Array(buffer, i * column_count * 8, column_count))
+            }
+            console.log(result);
+            callback(result);
           }
           request.send();
         }
@@ -590,429 +625,434 @@ rights in this software.
           }
         }
 
-        if(input_columns === null || output_columns === null || scale_inputs === null || statistics === null || canonical_variables === null || x_structure_correlation === null || y_structure_correlation === null) {
-          $("#status-messages").show();
-          $("#status-messages .technical-details").append("<pre>Required inputs are not present.</pre>");
-          setTimeout("location.reload(true);", 15000);
-          return;
-        }
-
-        // OK, setup the visualization ...
-        function deleteWorker(worker)
+        function wait_for_data()
         {
-          $.ajax(
+          if(input_columns === null || output_columns === null || scale_inputs === null || r2_statistics === null || wilks_statistics === null || canonical_variables === null || x_loadings === null || y_loadings === null)
           {
-            type : "DELETE",
-            url : "{{server-root}}" + "workers/" + worker.id,
-            async: false,
-            success : function()
-            {
-            },
-            error : function(request, status, reason_phrase)
-            {
-              //window.alert("Error deleting remote worker: " + reason_phrase);
-            }
-          });
-        }
+            /*
+            $("#status-messages").show();
+            $("#status-messages .technical-details").append("<pre>Required inputs are not present.</pre>");
+            setTimeout("location.reload(true);", 15000);
+            */
+            return;
+          }
 
-        function stopWorker(worker)
-        {
+          // OK, setup the visualization ...
+          function deleteWorker(worker)
+          {
+            $.ajax(
+            {
+              type : "DELETE",
+              url : "{{server-root}}" + "workers/" + worker.id,
+              async: false,
+              success : function()
+              {
+              },
+              error : function(request, status, reason_phrase)
+              {
+                //window.alert("Error deleting remote worker: " + reason_phrase);
+              }
+            });
+          }
+
+          function stopWorker(worker)
+          {
+            $.ajax(
+            {
+              contentType : "application/json",
+              data : $.toJSON({ result : "stopped" }),
+              processData : false,
+              type : "PUT",
+              url : "{{server-root}}" + "workers/" + worker.id,
+              async: false, // Need to do this synchonously since it's called by the beforeunload even and will not happen otherwise.
+              timeout: 3000, // Setting timeout to a few seconds so user is not waiting forever after trying to leave page if worker can't be stopped.
+              success : function(worker)
+              {
+              },
+              error : function(request, status, reason_phrase)
+              {
+                //window.alert("Error stopping worker: " + reason_phrase);
+              }
+            });
+          }
+
+          var workerId = null;
+          // Creating a table chunker worker
           $.ajax(
           {
             contentType : "application/json",
-            data : $.toJSON({ result : "stopped" }),
+            data : $.toJSON({ type : "table-chunker", "mid" : "{{_id}}", "artifact" : "data-table", "generate-index" : "Index" }),
             processData : false,
-            type : "PUT",
-            url : "{{server-root}}" + "workers/" + worker.id,
-            async: false, // Need to do this synchonously since it's called by the beforeunload even and will not happen otherwise.
-            timeout: 3000, // Setting timeout to a few seconds so user is not waiting forever after trying to leave page if worker can't be stopped.
+            type : "POST",
+            cache: false,
+            url : "{{server-root}}" + "workers",
+            async: false, // Much of the rest of the script relies on this table chunker, so doing this synchronously
             success : function(worker)
             {
+              workerId = worker.id;
+              // setup beforeunload handler to stop and delete worker when user leaves page
+              $(window).bind('beforeunload', function(){
+                stopWorker(worker); 
+                deleteWorker(worker);
+              });
             },
             error : function(request, status, reason_phrase)
             {
-              //window.alert("Error stopping worker: " + reason_phrase);
+              window.alert("Error creating table-chunker worker: " + reason_phrase);
+            },
+          });
+
+          // Grabbing metadata from the table chunker
+          var data_table = null;
+          $.ajax({
+            url : "{{server-root}}" + "workers/" + workerId + "/table-chunker/metadata",
+            contentType : "application/json",
+            async: false, // Much of the rest of the script relies on this metadata, so dong this synchronously
+            success: function(resp){
+              data_table = resp;
+            },
+            error: function(request, status, reason_phrase){
+              window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
             }
           });
-        }
 
-        var workerId = null;
-        // Creating a table chunker worker
-        $.ajax(
-        {
-          contentType : "application/json",
-          data : $.toJSON({ type : "table-chunker", "mid" : "{{_id}}", "artifact" : "data-table", "generate-index" : "Index" }),
-          processData : false,
-          type : "POST",
-          cache: false,
-          url : "{{server-root}}" + "workers",
-          async: false, // Much of the rest of the script relies on this table chunker, so doing this synchronously
-          success : function(worker)
-          {
-            workerId = worker.id;
-            // setup beforeunload handler to stop and delete worker when user leaves page
-            $(window).bind('beforeunload', function(){
-              stopWorker(worker); 
-              deleteWorker(worker);
+          var index_column = data_table["column-count"] - 1;
+
+          var simulation_count = canonical_variables ? canonical_variables.ranges[1][1] - canonical_variables.ranges[1][0] : 0;
+          var cca_component = 0;
+
+          var inputs = [];
+          for(var i = 0; i != input_columns.length; ++i)
+            inputs.push(data_table["column-names"][input_columns[i]]);
+
+          var outputs = [];
+          for(var i = 0; i != output_columns.length; ++i)
+            outputs.push(data_table["column-names"][output_columns[i]]);
+
+          var index = data_table["column-names"][index_column];
+
+          var other_columns = [];
+          var others = [];
+          var column_count = data_table["column-count"];
+          var all_column_indexes = [index_column].concat(input_columns).concat(output_columns);
+          for(var i = 0; i != column_count; ++i) {
+            if(all_column_indexes.indexOf(i) == -1) {
+              other_columns.push(i);
+              others.push(data_table["column-names"][i]);
+            }
+          }
+          all_column_indexes = all_column_indexes.concat(other_columns);
+
+
+          var scatterplot_data = [];
+          for(var i = 0; i != simulation_count; ++i) {
+            scatterplot_data.push([ canonical_variables.data[0][cca_component][i], canonical_variables.data[1][cca_component][i], i ]);
+          }
+
+          // Layout our resizable panels ...
+          $("body").layout({
+            south : {
+              initClosed : true
+              }
             });
-          },
-          error : function(request, status, reason_phrase)
-          {
-            window.alert("Error creating table-chunker worker: " + reason_phrase);
-          },
-        });
 
-        // Grabbing metadata from the table chunker
-        var data_table = null;
-        $.ajax({
-          url : "{{server-root}}" + "workers/" + workerId + "/table-chunker/metadata",
-          contentType : "application/json",
-          async: false, // Much of the rest of the script relies on this metadata, so dong this synchronously
-          success: function(resp){
-            data_table = resp;
-          },
-          error: function(request, status, reason_phrase){
-            window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
-          }
-        });
+          $("#content-pane").layout({
+            north : {
+              size : $("#content-pane").height() / 2,
+              resizeWhileDragging : false
+              }
+            });
 
-        var index_column = data_table["column-count"] - 1;
+          $("#cca-pane").layout({
+            center: {
+              resizeWhileDragging : true
+              },
+            east : {
+              size : ($("#content-pane").height() / 2) + 40,
+              resizeWhileDragging : false,
+              onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
+              }
+            });
 
-        var simulation_count = canonical_variables ? canonical_variables.ranges[1][1] - canonical_variables.ranges[1][0] : 0;
-        var cca_component = 0;
+          var simulation_pane_layout = $("#simulation-pane").layout({
+            west : {
+              size : $("#content-pane").height() / 2,
+              resizeWhileDragging : true,
+              initClosed : true
+              },
+            center: {
+              resizeWhileDragging : true,
+              onresize : function() { cca_simulation_table_instance.resizeGridCanvas(); }
+              }
+            });
 
-        var inputs = [];
-        for(var i = 0; i != input_columns.length; ++i)
-          inputs.push(data_table["column-names"][input_columns[i]]);
-
-        var outputs = [];
-        for(var i = 0; i != output_columns.length; ++i)
-          outputs.push(data_table["column-names"][output_columns[i]]);
-
-        var index = data_table["column-names"][index_column];
-
-        var other_columns = [];
-        var others = [];
-        var column_count = data_table["column-count"];
-        var all_column_indexes = [index_column].concat(input_columns).concat(output_columns);
-        for(var i = 0; i != column_count; ++i) {
-          if(all_column_indexes.indexOf(i) == -1) {
-            other_columns.push(i);
-            others.push(data_table["column-names"][i]);
-          }
-        }
-        all_column_indexes = all_column_indexes.concat(other_columns);
-
-
-        var scatterplot_data = [];
-        for(var i = 0; i != simulation_count; ++i) {
-          scatterplot_data.push([ canonical_variables.data[0][cca_component][i], canonical_variables.data[1][cca_component][i], i ]);
-        }
-
-        // Layout our resizable panels ...
-        $("body").layout({
-          south : {
-            initClosed : true
-            }
-          });
-
-        $("#content-pane").layout({
-          north : {
-            size : $("#content-pane").height() / 2,
-            resizeWhileDragging : false
-            }
-          });
-
-        $("#cca-pane").layout({
-          center: {
-            resizeWhileDragging : true
-            },
-          east : {
-            size : ($("#content-pane").height() / 2) + 40,
-            resizeWhileDragging : false,
-            onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
-            }
-          });
-
-        var simulation_pane_layout = $("#simulation-pane").layout({
-          west : {
-            size : $("#content-pane").height() / 2,
-            resizeWhileDragging : true,
-            initClosed : true
-            },
-          center: {
-            resizeWhileDragging : true,
-            onresize : function() { cca_simulation_table_instance.resizeGridCanvas(); }
-            }
-          });
-
-        function selected_cca_component_changed(component)
-        {
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/component/" + component
-          });
-
-          bookmarker.updateState( {"cca-component" : component} );
-        }
-
-        function selected_variable_changed(type, index)
-        {
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/variable/" + type + "/" + index
-          });
-
-          bookmarker.updateState( {"variable-type" : type, "variable-index" : index} );
-        }
-
-        function selected_simulations_changed(indices)
-        {
-          // Logging every selected simulation gets slow, so just log the count instead.
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + indices.length
-          });
-/*
-          $.each(indices, function(index, value)
+          function selected_cca_component_changed(component)
           {
             $.ajax(
             {
               type : "POST",
-              url : "{{server-root}}events/models/{{_id}}/select/simulation/" + value
+              url : "{{server-root}}events/models/{{_id}}/select/component/" + component
             });
-          });
-*/
 
-          bookmarker.updateState( {"simulations" : indices} );
-        }
+            bookmarker.updateState( {"cca-component" : component} );
+          }
 
-        function variable_sort_order_changed(fieldIndex, direction, fieldName)
-        {
-          $.ajax(
+          function selected_variable_changed(type, index)
           {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + fieldIndex + "/" + direction
-          });
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/variable/" + type + "/" + index
+            });
 
-          bookmarker.updateState( {"sort-field" : fieldName, "sort-direction" : direction} );
-        }
+            bookmarker.updateState( {"variable-type" : type, "variable-index" : index} );
+          }
 
-        // Updates the scatterplot when user selects a new cca component in the cca table
-        function update_scatterplot_component(component)
-        {
-          for(var i = 0; i != simulation_count; ++i)
+          function selected_simulations_changed(indices)
           {
-            scatterplot_data[i][0] = canonical_variables.data[0][component][i];
-            scatterplot_data[i][1] = canonical_variables.data[1][component][i];
+            // Logging every selected simulation gets slow, so just log the count instead.
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + indices.length
+            });
+  /*
+            $.each(indices, function(index, value)
+            {
+              $.ajax(
+              {
+                type : "POST",
+                url : "{{server-root}}events/models/{{_id}}/select/simulation/" + value
+              });
+            });
+  */
+
+            bookmarker.updateState( {"simulations" : indices} );
           }
 
-          cca_scatterplot.update({data: scatterplot_data});
-        }
+          function variable_sort_order_changed(fieldIndex, direction, fieldName)
+          {
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + fieldIndex + "/" + direction
+            });
 
-        // Updates the scatterplot when user selects a new input or output variable in the cca table
-        function update_scatterplot_value(type, index)
-        {
-          var data_column;
-          var value_label = null;
-
-          if(type == "simulation") {
-            data_column = index_column;
-          }
-          else if(type == "input") {
-            data_column = input_columns[index];
-          }
-          else if(type == "output") {
-            data_column = output_columns[index];
+            bookmarker.updateState( {"sort-field" : fieldName, "sort-direction" : direction} );
           }
 
-          var queryParams = {
-            "rows" : "0-" + data_table["row-count"],
-            "columns" : index_column + "," + data_column,
+          // Updates the scatterplot when user selects a new cca component in the cca table
+          function update_scatterplot_component(component)
+          {
+            for(var i = 0; i != simulation_count; ++i)
+            {
+              scatterplot_data[i][0] = canonical_variables.data[0][component][i];
+              scatterplot_data[i][1] = canonical_variables.data[1][component][i];
+            }
+
+            cca_scatterplot.update({data: scatterplot_data});
           }
 
-          req = $.ajax({
-            url : "{{server-root}}" + "workers/" + workerId + "/table-chunker/chunk",
-            contentType : "application/json",
-            data: queryParams,
-            processData : true,
-            dataType: 'json',
-            success: function(resp){
-              var columns = resp["columns"];
-              var row_indexes = resp["data"][columns.indexOf(index_column)];
-              var row_data = resp["data"][columns.indexOf(data_column)];
-              for (var i = 0; i < row_indexes.length; i++) {
-                scatterplot_data[ row_indexes[i] ][2] = row_data[i];
+          // Updates the scatterplot when user selects a new input or output variable in the cca table
+          function update_scatterplot_value(type, index)
+          {
+            var data_column;
+            var value_label = null;
+
+            if(type == "simulation") {
+              data_column = index_column;
+            }
+            else if(type == "input") {
+              data_column = input_columns[index];
+            }
+            else if(type == "output") {
+              data_column = output_columns[index];
+            }
+
+            var queryParams = {
+              "rows" : "0-" + data_table["row-count"],
+              "columns" : index_column + "," + data_column,
+            }
+
+            req = $.ajax({
+              url : "{{server-root}}" + "workers/" + workerId + "/table-chunker/chunk",
+              contentType : "application/json",
+              data: queryParams,
+              processData : true,
+              dataType: 'json',
+              success: function(resp){
+                var columns = resp["columns"];
+                var row_indexes = resp["data"][columns.indexOf(index_column)];
+                var row_data = resp["data"][columns.indexOf(data_column)];
+                for (var i = 0; i < row_indexes.length; i++) {
+                  scatterplot_data[ row_indexes[i] ][2] = row_data[i];
+                }
+                value_label = resp["column-names"][columns.indexOf(data_column)];
+                cca_scatterplot.update({
+                  value_label: value_label,
+                  data: scatterplot_data
+                  });
+              },
+              error: function(xhr, ajaxOptions, thrownError){
+                  //onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
               }
-              value_label = resp["column-names"][columns.indexOf(data_column)];
-              cca_scatterplot.update({
-                value_label: value_label,
-                data: scatterplot_data
-                });
-            },
-            error: function(xhr, ajaxOptions, thrownError){
-                //onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
+            });
+
+          }
+
+          // Called when the grid initialized since now we can access data and restore state contained in the bookmark
+          window.initial_update_scatterplot_value = function() {
+            // Update the color coding of the scatterplot based on selected variable
+            if("variable-type" in bookmark && "variable-index" in bookmark)
+            {
+              if(cca_scatterplot) {
+                update_scatterplot_value(bookmark["variable-type"], bookmark["variable-index"]);
+              }
             }
-          });
-
-        }
-
-        // Called when the grid initialized since now we can access data and restore state contained in the bookmark
-        window.initial_update_scatterplot_value = function() {
-          // Update the color coding of the scatterplot based on selected variable
-          if("variable-type" in bookmark && "variable-index" in bookmark)
-          {
-            if(cca_scatterplot) {
-              update_scatterplot_value(bookmark["variable-type"], bookmark["variable-index"]);
+            // Updates the selected row(s) in the simulation table
+            if("simulations" in bookmark)
+            {
+              if(cca_simulation_table_instance) {
+                //cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
+                cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
+              }
+            }
+            // Updates the sort order of columns in the simulation table
+            if("sort-field" in bookmark && "sort-direction" in bookmark)
+            {
+              if(cca_simulation_table_instance) {
+                cca_simulation_table_instance.update({
+                  sort_field: bookmark["sort-field"],
+                  sort_direction: bookmark["sort-direction"]});
+              }
             }
           }
-          // Updates the selected row(s) in the simulation table
+
+          // Setup the cca table ...
+          if(inputs && outputs && r2_statistics && wilks_statistics && x_loadings && y_loadings)
+          {
+            var cca_table = new cca_table_component({
+              table: $("#cca-table"),
+              inputs: inputs,
+              outputs: outputs,
+              statistics: [r2_statistics, wilks_statistics],
+              x_loadings: x_loadings,
+              y_loadings: y_loadings,
+              add_component_callback: selected_cca_component_changed,
+              add_variable_callback: selected_variable_changed,
+              bookmarker: bookmarker,
+              });
+          }
+
+          // Setup the simulation scatterplot ...
+          var cca_scatterplot = new cca_scatterplot_component({
+            container: "#scatterplot-canvas",
+            data: scatterplot_data,
+            width: $("#scatterplot-pane").width(),
+            height: $("#scatterplot-pane").height(),
+            add_simulation_callback: selected_simulations_changed,
+            colorMapper: colorMapper,
+            });
+
+          var cca_simulation_table_instance = null;
+
+          // Setup the simulation table ...
+          if(inputs && outputs && data_table)
+          {
+            var cca_simulation_table_instance = new cca2_simulation_table({
+              container: "#simulation-table-pane",
+              index: index,
+              inputs: inputs,
+              outputs: outputs,
+              others: others,
+              variable_names: [index].concat(inputs).concat(outputs).concat(others),
+              all_column_indexes: all_column_indexes,
+              row_count: data_table["row-count"],
+              max: data_table["column-max"],
+              min: data_table["column-min"],
+              index_column: index_column,
+              input_columns: input_columns,
+              output_columns: output_columns,
+              other_columns: other_columns,
+              add_simulation_callback: selected_simulations_changed,
+              add_sort_order_callback: variable_sort_order_changed,
+              colormap: bookmark["colormap"],
+              colorMapper: colorMapper,
+              }, "{{server-root}}", workerId);
+            cca_simulation_table_instance.update({highlight: ["simulation", 0]});
+          }
+
+          // Setup linked selections ...
+          if(cca_table && cca_scatterplot)
+          {
+            cca_table.update({add_variable_callback: update_scatterplot_value});
+            cca_table.update({add_component_callback: update_scatterplot_component});
+          }
+
+          if(cca_table && cca_simulation_table_instance)
+          {
+            cca_table.update({add_variable_callback: function(type, index) { cca_simulation_table_instance.update({highlight: [type, index]}); }});
+            cca_simulation_table_instance.update({add_variable_callback: function(type, index) { cca_table.update({highlight: [type, index]}); }});
+          }
+
+          if(cca_simulation_table_instance && cca_scatterplot)
+          {
+            // Selects scatterplot point when row in simulation table is clicked
+            cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({selection: indices}); }});
+            // Selects row in simulation table when point in scatterplot is clicked
+            cca_scatterplot.update({add_simulation_callback: function(indices) { cca_simulation_table_instance.update({simulation_selection: indices}); }});
+          }
+
+          /////////////////////////////////////////////////////////////////////////////////////
+          // Restore some of the state contained in the URL query string.
+          // Other state contained in the URL query string is restored in the 
+          // window.initial_update_scatterplot_value function, since it needs to wait
+          // until we have access to a table chunker and an initialized grid with data.
+
+          // Updates selected cca component in the table and scatterplot, or selects the first one
+          // if none have been selected.
+          if("cca-component" in bookmark)
+          {
+            if(cca_table)
+              cca_table.update({component: bookmark["cca-component"]});
+            if(cca_scatterplot)
+              update_scatterplot_component(bookmark["cca-component"]);
+          }
+          else
+          {
+            window.setTimeout(function() { cca_table.update({component: 0}); }, 2000);
+          }
+
           if("simulations" in bookmark)
           {
-            if(cca_simulation_table_instance) {
-              //cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
-              cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
+            // Updates the selected point(s) in the scatterplot
+            if(cca_scatterplot) {
+              cca_scatterplot.update({selection: bookmark["simulations"]});
             }
           }
-          // Updates the sort order of columns in the simulation table
-          if("sort-field" in bookmark && "sort-direction" in bookmark)
+
+          if("variable-type" in bookmark && "variable-index" in bookmark)
           {
+            // Update the selected variable in the cca table
+            if(cca_table) {
+              cca_table.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
+            }
+            // Update the selected variable (i.e., colored column) in the simulation table
             if(cca_simulation_table_instance) {
-              cca_simulation_table_instance.update({
-                sort_field: bookmark["sort-field"],
-                sort_direction: bookmark["sort-direction"]});
+              cca_simulation_table_instance.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
             }
           }
-        }
 
-        // Setup the cca table ...
-        if(inputs && outputs && statistics && x_structure_correlation && y_structure_correlation)
-        {
-          var cca_table = new cca_table_component({
-            table: $("#cca-table"),
-            inputs: inputs,
-            outputs: outputs,
-            statistics: statistics,
-            x_structure_correlation: x_structure_correlation,
-            y_structure_correlation: y_structure_correlation,
-            add_component_callback: selected_cca_component_changed,
-            add_variable_callback: selected_variable_changed,
-            bookmarker: bookmarker,
-            });
-        }
-
-        // Setup the simulation scatterplot ...
-        var cca_scatterplot = new cca_scatterplot_component({
-          container: "#scatterplot-canvas",
-          data: scatterplot_data,
-          width: $("#scatterplot-pane").width(),
-          height: $("#scatterplot-pane").height(),
-          add_simulation_callback: selected_simulations_changed,
-          colorMapper: colorMapper,
-          });
-
-        var cca_simulation_table_instance = null;
-
-        // Setup the simulation table ...
-        if(inputs && outputs && data_table)
-        {
-          var cca_simulation_table_instance = new cca2_simulation_table({
-            container: "#simulation-table-pane",
-            index: index,
-            inputs: inputs,
-            outputs: outputs,
-            others: others,
-            variable_names: [index].concat(inputs).concat(outputs).concat(others),
-            all_column_indexes: all_column_indexes,
-            row_count: data_table["row-count"],
-            max: data_table["column-max"],
-            min: data_table["column-min"],
-            index_column: index_column,
-            input_columns: input_columns,
-            output_columns: output_columns,
-            other_columns: other_columns,
-            add_simulation_callback: selected_simulations_changed,
-            add_sort_order_callback: variable_sort_order_changed,
-            colormap: bookmark["colormap"],
-            colorMapper: colorMapper,
-            }, "{{server-root}}", workerId);
-          cca_simulation_table_instance.update({highlight: ["simulation", 0]});
-        }
-
-        // Setup linked selections ...
-        if(cca_table && cca_scatterplot)
-        {
-          cca_table.update({add_variable_callback: update_scatterplot_value});
-          cca_table.update({add_component_callback: update_scatterplot_component});
-        }
-
-        if(cca_table && cca_simulation_table_instance)
-        {
-          cca_table.update({add_variable_callback: function(type, index) { cca_simulation_table_instance.update({highlight: [type, index]}); }});
-          cca_simulation_table_instance.update({add_variable_callback: function(type, index) { cca_table.update({highlight: [type, index]}); }});
-        }
-
-        if(cca_simulation_table_instance && cca_scatterplot)
-        {
-          // Selects scatterplot point when row in simulation table is clicked
-          cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({selection: indices}); }});
-          // Selects row in simulation table when point in scatterplot is clicked
-          cca_scatterplot.update({add_simulation_callback: function(indices) { cca_simulation_table_instance.update({simulation_selection: indices}); }});
-        }
-
-        /////////////////////////////////////////////////////////////////////////////////////
-        // Restore some of the state contained in the URL query string.
-        // Other state contained in the URL query string is restored in the 
-        // window.initial_update_scatterplot_value function, since it needs to wait
-        // until we have access to a table chunker and an initialized grid with data.
-
-        // Updates selected cca component in the table and scatterplot, or selects the first one
-        // if none have been selected.
-        if("cca-component" in bookmark)
-        {
-          if(cca_table)
-            cca_table.update({component: bookmark["cca-component"]});
-          if(cca_scatterplot)
-            update_scatterplot_component(bookmark["cca-component"]);
-        }
-        else
-        {
-          window.setTimeout(function() { cca_table.update({component: 0}); }, 2000);
-        }
-
-        if("simulations" in bookmark)
-        {
-          // Updates the selected point(s) in the scatterplot
-          if(cca_scatterplot) {
-            cca_scatterplot.update({selection: bookmark["simulations"]});
+          if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
+          {
+            // Update the sort order of the variables in the bookmarked cca component
+            if(cca_table)
+              cca_table.update({
+                sort_component: bookmark["sort-cca-component"],
+                sort_component_direction: bookmark["sort-direction-cca-component"],
+              });
           }
         }
-
-        if("variable-type" in bookmark && "variable-index" in bookmark)
-        {
-          // Update the selected variable in the cca table
-          if(cca_table) {
-            cca_table.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
-          }
-          // Update the selected variable (i.e., colored column) in the simulation table
-          if(cca_simulation_table_instance) {
-            cca_simulation_table_instance.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
-          }
-        }
-
-        if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
-        {
-          // Update the sort order of the variables in the bookmarked cca component
-          if(cca_table)
-            cca_table.update({
-              sort_component: bookmark["sort-cca-component"],
-              sort_component_direction: bookmark["sort-direction-cca-component"],
-            });
-        }
-
       });
 
       ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1063,7 +1103,7 @@ rights in this software.
             return function(d, i)
             {
               var index = $(this).parent().parent().data("index");
-              return data["data"][0][component][index] < 0 ? -100 * data["data"][0][component][index] + "px" : "0px";
+              return data[component][index] < 0 ? -100 * data[component][index] + "px" : "0px";
             }
           }
 
@@ -1072,32 +1112,32 @@ rights in this software.
             return function(d, i)
             {
               var index = $(this).parent().parent().data("index");
-              return data["data"][0][component][index] > 0 ? 100 * data["data"][0][component][index] + "px" : "0px";
+              return data[component][index] > 0 ? 100 * data[component][index] + "px" : "0px";
             }
           }
 
           d3.select(this.table.get(0)).selectAll("td.input.bar.negative." + component_class(component) + " div")
             .transition()
               .duration(500)
-              .style("width", negative_bar_width(this.x_structure_correlation, component))
+              .style("width", negative_bar_width(this.x_loadings, component))
             ;
 
           d3.select(this.table.get(0)).selectAll("td.input.bar.positive." + component_class(component) + " div")
             .transition()
               .duration(500)
-              .style("width", positive_bar_width(this.x_structure_correlation, component))
+              .style("width", positive_bar_width(this.x_loadings, component))
             ;
 
           d3.select(this.table.get(0)).selectAll("td.output.bar.negative." + component_class(component) + " div")
             .transition()
               .duration(500)
-              .style("width", negative_bar_width(this.y_structure_correlation, component))
+              .style("width", negative_bar_width(this.y_loadings, component))
             ;
 
           d3.select(this.table.get(0)).selectAll("td.output.bar.positive." + component_class(component) + " div")
             .transition()
               .duration(500)
-              .style("width", positive_bar_width(this.y_structure_correlation, component))
+              .style("width", positive_bar_width(this.y_loadings, component))
             ;
         }
 
@@ -1169,9 +1209,9 @@ rights in this software.
         var inputs = parameters.inputs;
         var outputs = parameters.outputs;
         var statistics = parameters.statistics;
-        this.x_structure_correlation = parameters.x_structure_correlation;
-        this.y_structure_correlation = parameters.y_structure_correlation;
-        var cca_count = this.x_structure_correlation.ranges[0][1] - this.x_structure_correlation.ranges[0][0];
+        this.x_loadings = parameters.x_loadings;
+        this.y_loadings = parameters.y_loadings;
+        var cca_count = this.x_loadings.length;
 
         var row = $("<tr>").appendTo(this.table);
         $("<th>").appendTo(row);
@@ -1193,7 +1233,7 @@ rights in this software.
         for(var j = 0; j != cca_count; ++j)
         {
           $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
-          $("<td class='value'>").html(Number(statistics.data[0][j]).toFixed(3)).addClass(component_class(j)).appendTo(row);
+          $("<td class='value'>").html(Number(statistics[0][j]).toFixed(3)).addClass(component_class(j)).appendTo(row);
           $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
         }
 
@@ -1203,7 +1243,7 @@ rights in this software.
         for(var j = 0; j != cca_count; ++j)
         {
           $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
-          $("<td class='value'>").html(Number(statistics.data[1][j]).toFixed(3)).addClass(component_class(j)).appendTo(row);
+          $("<td class='value'>").html(Number(statistics[1][j]).toFixed(3)).addClass(component_class(j)).appendTo(row);
           $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
         }
 
@@ -1218,7 +1258,7 @@ rights in this software.
           for(var j = 0; j != cca_count; ++j)
           {
             $("<td class='input bar negative'><div></div></td>").addClass(component_class(j)).appendTo(row);
-            $("<td class='input value'>").html(Number(this.x_structure_correlation.data[0][j][i]).toFixed(3)).addClass(component_class(j)).appendTo(row);
+            $("<td class='input value'>").html(Number(this.x_loadings[j][i]).toFixed(3)).addClass(component_class(j)).appendTo(row);
             $("<td class='input bar positive'><div></div></td>").addClass(component_class(j)).appendTo(row);
           }
         }
@@ -1234,7 +1274,7 @@ rights in this software.
           for(var j = 0; j != cca_count; ++j)
           {
             $("<td class='output bar negative'><div></div></td>").addClass(component_class(j)).appendTo(row);
-            $("<td class='output value'>").html(Number(this.y_structure_correlation.data[0][j][i]).toFixed(3)).addClass(component_class(j)).appendTo(row);
+            $("<td class='output value'>").html(Number(this.y_loadings[j][i]).toFixed(3)).addClass(component_class(j)).appendTo(row);
             $("<td class='output bar positive'><div></div></td>").addClass(component_class(j)).appendTo(row);
           }
         }
