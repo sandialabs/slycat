@@ -6,7 +6,7 @@ import numpy
 import scipy.linalg
 import scipy.stats
 
-def cca(X, Y, scale_inputs=True, positive_output=None, significant_digits=None):
+def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   """Compute Canonical Correlation Analysis (CCA).
 
   Returns: x, y, x_loadings, y_loadings, r, wilks
@@ -83,9 +83,9 @@ def cca(X, Y, scale_inputs=True, positive_output=None, significant_digits=None):
   x_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in X.T] for i in x.T]).T
   y_loadings = numpy.array([[scipy.stats.pearsonr(i, j)[0] for j in Y.T] for i in y.T]).T
 
-  if positive_output is not None:
+  if force_positive is not None:
     for j in range(y_loadings.shape[1]):
-      if y_loadings[positive_output, j] < 0:
+      if y_loadings[force_positive, j] < 0:
         x_loadings[:,j] = -x_loadings[:,j]
         y_loadings[:,j] = -y_loadings[:,j]
         x[:,j] = -x[:,j]

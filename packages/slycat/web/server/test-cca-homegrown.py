@@ -6,10 +6,14 @@ import optparse
 import sys
 
 parser = optparse.OptionParser()
+parser.add_option("--force-positive", default=None, help="Output variable to force positive.  Default: %default")
 parser.add_option("--inputs", default="Cylinders Displacement Weight Year", help="Input variables.  Default: %default")
 parser.add_option("--outputs", default="Acceleration Horsepower MPG", help="Output variables.  Default: %default")
 parser.add_option("--scale", default=False, action="store_true", help="Scale inputs to unit variance.")
 options, arguments = parser.parse_args()
+
+if options.force_positive is not None:
+  options.force_positive = options.outputs.split().index(options.force_positive)
 
 autos = load("../data/cars.csv", "csv-file", chunk_size=100)
 inputs = project(autos, *options.inputs.split())
@@ -20,7 +24,7 @@ good = ~numpy.isnan(Y).any(axis=1)
 X = X[good]
 Y = Y[good]
 
-x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=options.scale)
+x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=options.scale, force_positive=options.force_positive)
 
 sys.stderr.write("r^2:\n%s\n" % r)
 sys.stderr.write("x loadings:\n%s\n" % x_loadings)

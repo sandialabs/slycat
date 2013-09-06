@@ -8,10 +8,14 @@ import optparse
 import sys
 
 parser = optparse.OptionParser()
+parser.add_option("--force-positive", default=None, help="Output variable to force positive.  Default: %default")
 parser.add_option("--inputs", default="Cylinders Displacement Weight Year", help="Input variables.  Default: %default")
 parser.add_option("--outputs", default="Acceleration Horsepower MPG", help="Output variables.  Default: %default")
 parser.add_option("--scale", default=False, action="store_true", help="Scale inputs to unit variance.")
 options, arguments = parser.parse_args()
+
+if options.force_positive is not None:
+  options.force_positive = options.outputs.split().index(options.force_positive)
 
 autos = load("../data/cars.csv", "csv-file", chunk_size=100)
 inputs = project(autos, *options.inputs.split())
@@ -41,7 +45,8 @@ cca_array_data.AddArray(Y_titan)
 cca = vtkTrilinosCCA()
 cca.SetInputData(cca_array_data)
 cca.SetSigDigits(16)
-cca.ForcePositiveYCorrelation(1)
+if options.force_positive is not None:
+  cca.ForcePositiveYCorrelation(options.force_positive)
 if options.scale:
   cca.ScaleInputToUnitVarianceOn()
 else:
