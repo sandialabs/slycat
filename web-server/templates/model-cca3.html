@@ -151,6 +151,9 @@ rights in this software.
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = bookmarker.getState();
 
+        var cca_simulation_table_instance = null;
+        var cca_scatterplot = null;
+
         // Start up a color mapper
         var colorMapper = new color_mapper();
         // Add controls for switching between different color maps
@@ -534,58 +537,53 @@ rights in this software.
 
         function getBinaryArray(chunker, attribute, callback)
         {
-          var metadata = getChunkerMetadata(chunker, "array-chunker");
-
-          var ranges = [];
-          for(var dimension in metadata.dimensions)
-          {
-            ranges.push(metadata.dimensions[dimension].begin);
-            ranges.push(metadata.dimensions[dimension].end);
-          }
-          ranges = ranges.join(",");
-
-          var request = new XMLHttpRequest();
-          request.open("GET", "{{server-root}}" + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
-          request.responseType = "arraybuffer";
-          request.metadata = metadata;
-          request.onload = function(e)
-          {
-            var buffer = this.response;
-            var metadata = this.metadata;
-
-            if(metadata.dimensions.length == 1)
+          $.ajax({
+            url : "{{server-root}}" + "workers/" + chunker + "/array-chunker/metadata",
+            contentType : "application/json",
+            success: function(metadata)
             {
-              var result = new Float64Array(buffer);
-            }
-            else if(metadata.dimensions.length == 2)
-            {
-              var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
-              var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
-              var result = [];
-              for(var i = 0; i != row_count; ++i)
-                result.push(new Float64Array(buffer, i * column_count * 8, column_count))
-            }
-            callback(result);
-          }
-          request.send();
-        }
-
-        function getChunkerMetadata(workerId, chunkerType){
-          var metadata = null;
-          if (workerId != null) {
-            $.ajax({
-              url : "{{server-root}}" + "workers/" + workerId + "/" + chunkerType + "/metadata",
-              contentType : "application/json",
-              async: false, // Much of the rest of the script relies on this metadata, so dong this synchronously
-              success: function(resp){
-                metadata = resp;
-              },
-              error: function(request, status, reason_phrase){
-                window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
+              var ranges = [];
+              for(var dimension in metadata.dimensions)
+              {
+                ranges.push(metadata.dimensions[dimension].begin);
+                ranges.push(metadata.dimensions[dimension].end);
               }
-            });
-          }
-          return metadata;
+              ranges = ranges.join(",");
+
+              var request = new XMLHttpRequest();
+              request.open("GET", "{{server-root}}" + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
+              request.responseType = "arraybuffer";
+              request.metadata = metadata;
+              request.onload = function(e)
+              {
+                var buffer = this.response;
+                var metadata = this.metadata;
+
+                if(metadata.dimensions.length == 1)
+                {
+                  var result = new Float64Array(buffer);
+                }
+                else if(metadata.dimensions.length == 2)
+                {
+                  var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
+                  var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
+                  var result = [];
+                  for(var i = 0; i != row_count; ++i)
+                    result.push(new Float64Array(buffer, i * column_count * 8, column_count))
+                }
+                else
+                {
+                  window.alert("Can't handle array with " + metadata.dimensions.length + " dimensions.");
+                }
+                callback(result);
+              }
+              request.send();
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error getting metadata from array-chunker worker: " + reason_phrase);
+            }
+          });
         }
 
         function wait_for_data()
@@ -903,7 +901,7 @@ rights in this software.
           }
 
           // Setup the simulation scatterplot ...
-          var cca_scatterplot = new cca_scatterplot_component({
+          cca_scatterplot = new cca_scatterplot_component({
             container: "#scatterplot-canvas",
             data: scatterplot_data,
             width: $("#scatterplot-pane").width(),
@@ -912,12 +910,10 @@ rights in this software.
             colorMapper: colorMapper,
             });
 
-          var cca_simulation_table_instance = null;
-
           // Setup the simulation table ...
           if(inputs && outputs && data_table)
           {
-            var cca_simulation_table_instance = new cca2_simulation_table({
+            cca_simulation_table_instance = new cca2_simulation_table({
               container: "#simulation-table-pane",
               index: index,
               inputs: inputs,
