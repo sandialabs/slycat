@@ -457,12 +457,23 @@ rights in this software.
         var scale_inputs = {{scale-inputs}};
         var r2_statistics = null;
         var wilks_statistics = null;
-        var canonical_variables = null;
+        var x = null;
+        var y = null;
         var x_loadings = null;
         var y_loadings = null;
 
         // Creating a canonical-variables array chunker worker and getting the canonical-variables from it
-        canonical_variables = getAllArrayChunkerData("canonical-variables");
+        var xy_chunker = createArrayChunker("canonical-variables");
+        getBinaryArray(xy_chunker, 0, function(result)
+        {
+          x = result;
+          wait_for_data();
+        });
+        getBinaryArray(xy_chunker, 1, function(result)
+        {
+          y = result;
+          wait_for_data();
+        });
 
         // Creating a cca-statistics array chunker worker and getting the cca-statistics from it
         var statistics_chunker = createArrayChunker("cca-statistics");
@@ -490,10 +501,6 @@ rights in this software.
           y_loadings = result;
           wait_for_data();
         });
-
-        function getAllArrayChunkerData(modelArtifactName){
-          return getArrayChunkerData( createArrayChunker(modelArtifactName) );
-        }
 
         function createArrayChunker(modelArtifactName) {
           var workerId = null;
@@ -546,8 +553,6 @@ rights in this software.
             var buffer = this.response;
             var metadata = this.metadata;
 
-            console.log(metadata);
-
             if(metadata.dimensions.length == 1)
             {
               var result = new Float64Array(buffer);
@@ -560,7 +565,6 @@ rights in this software.
               for(var i = 0; i != row_count; ++i)
                 result.push(new Float64Array(buffer, i * column_count * 8, column_count))
             }
-            console.log(result);
             callback(result);
           }
           request.send();
@@ -584,50 +588,9 @@ rights in this software.
           return metadata;
         }
 
-        function getArrayChunkerData(workerId){
-          if (workerId != null) {
-            var metadata = getChunkerMetadata(workerId, "array-chunker");
-            var allAttributes = [];
-            for(var i = 0; i < metadata.attributes.length; i++) {
-              allAttributes.push(i);
-            }
-
-            var dimensions = metadata.dimensions;
-            var allRanges = [];
-            for(var i = 0; i < dimensions.length; i++) {
-              allRanges.push( dimensions[i].begin );
-              allRanges.push( dimensions[i].end );
-            }
-
-            var queryParams = {
-              "attributes" : allAttributes.join(","),
-              "ranges" : allRanges.join(","),
-            }
-
-            var arrayChunkerData = null;
-            req = $.ajax({
-              url : "{{server-root}}" + "workers/" + workerId + "/array-chunker/chunk",
-              contentType : "application/json",
-              data: queryParams,
-              processData : true,
-              dataType: 'json',
-              async: false, // Much of the rest of the script relies on this data, so dong this synchronously
-              success: function(resp){
-                arrayChunkerData = resp;
-              },
-              error: function(xhr, ajaxOptions, thrownError){
-                  //onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
-              }
-            });
-            return arrayChunkerData;
-          } else {
-            return null;
-          }
-        }
-
         function wait_for_data()
         {
-          if(input_columns === null || output_columns === null || scale_inputs === null || r2_statistics === null || wilks_statistics === null || canonical_variables === null || x_loadings === null || y_loadings === null)
+          if(input_columns === null || output_columns === null || scale_inputs === null || r2_statistics === null || wilks_statistics === null || x === null || y === null|| x_loadings === null || y_loadings === null)
           {
             /*
             $("#status-messages").show();
@@ -718,7 +681,7 @@ rights in this software.
 
           var index_column = data_table["column-count"] - 1;
 
-          var simulation_count = canonical_variables ? canonical_variables.ranges[1][1] - canonical_variables.ranges[1][0] : 0;
+          var simulation_count = data_table["row-count"];
           var cca_component = 0;
 
           var inputs = [];
@@ -744,10 +707,7 @@ rights in this software.
           all_column_indexes = all_column_indexes.concat(other_columns);
 
 
-          var scatterplot_data = [];
-          for(var i = 0; i != simulation_count; ++i) {
-            scatterplot_data.push([ canonical_variables.data[0][cca_component][i], canonical_variables.data[1][cca_component][i], i ]);
-          }
+          var scatterplot_data = [x[cca_component], y[cca_component], new Float64Array(x[cca_component].length)];
 
           // Layout our resizable panels ...
           $("body").layout({
@@ -844,11 +804,8 @@ rights in this software.
           // Updates the scatterplot when user selects a new cca component in the cca table
           function update_scatterplot_component(component)
           {
-            for(var i = 0; i != simulation_count; ++i)
-            {
-              scatterplot_data[i][0] = canonical_variables.data[0][component][i];
-              scatterplot_data[i][1] = canonical_variables.data[1][component][i];
-            }
+            scatterplot_data[0] = x[component];
+            scatterplot_data[1] = y[component];
 
             cca_scatterplot.update({data: scatterplot_data});
           }
@@ -884,8 +841,9 @@ rights in this software.
                 var columns = resp["columns"];
                 var row_indexes = resp["data"][columns.indexOf(index_column)];
                 var row_data = resp["data"][columns.indexOf(data_column)];
-                for (var i = 0; i < row_indexes.length; i++) {
-                  scatterplot_data[ row_indexes[i] ][2] = row_data[i];
+                for(var i in row_indexes)
+                {
+                  scatterplot_data[2][row_indexes[i]] = row_data[i];
                 }
                 value_label = resp["column-names"][columns.indexOf(data_column)];
                 cca_scatterplot.update({
@@ -1399,9 +1357,9 @@ rights in this software.
           self.start_drag = null;
           self.end_drag = null;
 
-          for(var i in self.data)
+          for(var i in self.data[0])
           {
-            if(x1 <= self.data[i][0] && self.data[i][0] <= x2 && y1 <= self.data[i][1] && self.data[i][1] <= y2)
+            if(x1 <= self.data[0][i] && self.data[0][i] <= x2 && y1 <= self.data[1][i] && self.data[1][i] <= y2)
             {
               selection.push(i);
             }
@@ -1421,23 +1379,23 @@ rights in this software.
           {
             this.data = parameters.data;
 
-            this.x_min = d3.min(this.data, function(d) { return d[0]; });
-            this.x_max = d3.max(this.data, function(d) { return d[0]; });
-            this.y_min = d3.min(this.data, function(d) { return d[1]; });
-            this.y_max = d3.max(this.data, function(d) { return d[1]; });
+            this.x_min = d3.min(this.data[0]);
+            this.x_max = d3.max(this.data[0]);
+            this.y_min = d3.min(this.data[1]);
+            this.y_max = d3.max(this.data[1]);
 
             this.x_center = (this.x_min + this.x_max) / 2;
             this.y_center = (this.y_min + this.y_max) / 2;
 
-            var v_min = d3.min(this.data, function(d) { return d[2]; });
-            var v_max = d3.max(this.data, function(d) { return d[2]; });
+            var v_min = d3.min(this.data[2]);
+            var v_max = d3.max(this.data[2]);
             this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
           }
 
           if(parameters.color)
           {
-            var v_min = d3.min(this.data, function(d) { return d[2]; });
-            var v_max = d3.max(this.data, function(d) { return d[2]; });
+            var v_min = d3.min(this.data[2]);
+            var v_max = d3.max(this.data[2]);
             this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
           }
 
@@ -1494,9 +1452,9 @@ rights in this software.
               for(var i in this.selection)
               {
                 var index = this.selection[i];
-                this.selection_context.fillStyle = this.color(this.data[index][2]);
+                this.selection_context.fillStyle = this.color(this.data[2][index]);
                 this.selection_context.beginPath();
-                this.selection_context.arc(this.data[index][0], this.data[index][1], radius, 0, twopi);
+                this.selection_context.arc(this.data[0][index], this.data[1][index], radius, 0, twopi);
                 this.selection_context.fill();
                 this.selection_context.stroke();
               }
@@ -1534,17 +1492,17 @@ rights in this software.
               this.data_context.translate(-this.x_center, -this.y_center);
 
               // Draw points using circles ...
-              if(this.data.length < 100000)
+              if(this.data[0].length < 100000)
               {
                 var radius = 2 / this.scale;
                 var twopi = Math.PI * 2;
                 this.data_context.stokeStyle = "black";
                 this.data_context.lineWidth = 1 / this.scale;
-                for(var i in this.data)
+                for(var i in this.data[0])
                 {
-                  this.data_context.fillStyle = this.color(this.data[i][2]);
+                  this.data_context.fillStyle = this.color(this.data[2][i]);
                   this.data_context.beginPath();
-                  this.data_context.arc(this.data[i][0], this.data[i][1], radius, 0, twopi);
+                  this.data_context.arc(this.data[0][i], this.data[1][i], radius, 0, twopi);
                   this.data_context.fill();
                   this.data_context.stroke();
                 }
@@ -1553,10 +1511,10 @@ rights in this software.
               else
               {
                 var size = 2 / this.scale;
-                for(var i in this.data)
+                for(var i in this.data[0])
                 {
-                  this.data_context.fillStyle = this.color(this.data[i][2]);
-                  this.data_context.fillRect(this.data[i][0], this.data[i][1], size, size);
+                  this.data_context.fillStyle = this.color(this.data[2][i]);
+                  this.data_context.fillRect(this.data[0][i], this.data[1][i], size, size);
                 }
               }
             }
