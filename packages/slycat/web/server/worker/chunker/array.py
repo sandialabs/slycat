@@ -7,24 +7,22 @@ import slycat.web.server.database.scidb
 import slycat.web.server.worker
 
 import cherrypy
-import json
 import itertools
+import json
 import numpy
 import operator
-import Queue
 import sys
+import threading
+import time
 
 class prototype(slycat.web.server.worker.prototype):
   """Worker that provides interactive browsing of giant multidimensional arrays."""
   def __init__(self, security, name):
     slycat.web.server.worker.prototype.__init__(self, security, name)
-    self.request = Queue.Queue()
-    self.response = Queue.Queue()
 
   def get_array_chunker_metadata(self, arguments):
     """Called to retrieve metadata describing the underlying array."""
-    self.request.put(("metadata", None))
-    response = self.response.get()
+    response = self.get_metadata()
     if isinstance(response, cherrypy.HTTPError):
       raise response
     return response
@@ -53,18 +51,17 @@ class prototype(slycat.web.server.worker.prototype):
       if byteorder not in ["little", "big"]:
         raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
 
-      self.request.put(("binary-chunk", (attribute, ranges, byteorder)))
+      response = self.get_binary_chunk(attribute, ranges, byteorder)
     elif "attributes" in arguments:
       accept = cherrypy.lib.cptools.accept(["application/json"])
       try:
         attributes = [int(spec) for spec in arguments["attributes"].split(",")]
       except:
         raise cherrypy.HTTPError("400 Malformed attributes argument must be a comma separated collection of attribute indices.")
-      self.request.put(("chunk", (attributes, ranges)))
+      response = self.get_chunk(attributes, ranges)
     else:
       raise cherrypy.HTTPError("400 Chunk request must contain attribute or attributes arguments.")
 
-    response = self.response.get()
     if isinstance(response, cherrypy.HTTPError):
       raise response
     cherrypy.response.headers["content-type"] = accept
@@ -72,22 +69,8 @@ class prototype(slycat.web.server.worker.prototype):
 
   def work(self):
     self.preload()
-
     while not self.stopped:
-      try:
-        # Process the next request ...
-        request, parameters = self.request.get(timeout=1)
-        if request == "binary-chunk":
-          attribute, ranges, byteorder = parameters
-          response = self.get_binary_chunk(attribute, ranges, byteorder)
-        elif request == "chunk":
-          attributes, ranges = parameters
-          response = self.get_chunk(attributes, ranges)
-        elif request == "metadata":
-          response = self.get_metadata()
-        self.response.put(response)
-      except Queue.Empty:
-        pass
+      time.sleep(1.0)
 
   def preload(self):
     """Implement this in derivatives to do any pre-loading of data before entering the main chunk-retrieval loop."""
@@ -110,12 +93,15 @@ class test(prototype):
   def __init__(self, security, shape):
     prototype.__init__(self, security, "chunker.array.test")
     self.shape = shape
+    self.ready = threading.Event()
 
   def preload(self):
     self.data = numpy.arange(reduce(operator.mul, self.shape, 1)).reshape(self.shape).astype("float64")
     self.set_message("Using %s test data." % (" x ".join([str(size) for size in self.shape])))
+    self.ready.set()
 
   def get_metadata(self):
+    self.ready.wait()
     response = {
       "dimensions" : [{"name" : "d%s" % index, "type" : "int64", "begin" : 0, "end" : size} for index, size in enumerate(self.shape)],
       "attributes" : [{"name" : "a0", "type" : "float64"}]
@@ -123,6 +109,7 @@ class test(prototype):
     return response
 
   def get_binary_chunk(self, attribute, ranges, byteorder):
+    self.ready.wait()
     if attribute != 0:
       return ""
 
@@ -143,6 +130,7 @@ class test(prototype):
     return result
 
   def get_chunk(self, attributes, ranges):
+    self.ready.wait()
     attributes = [attribute for attribute in attributes if attribute == 0]
 
     if len(ranges) != len(self.shape):
@@ -165,6 +153,7 @@ class artifact(prototype):
     prototype.__init__(self, security, "chunker.array.artifact")
     self.model = model
     self.artifact = model["artifact:%s" % artifact]
+    self.ready = threading.Event()
 
   def preload(self):
     database = slycat.web.server.database.scidb.connect()
@@ -197,8 +186,10 @@ class artifact(prototype):
             iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
 
     self.set_message("Loaded %s %s attributes." % (len(self.data), " x ".join([str(end - begin) for begin, end in zip(self.dimension_begin, self.dimension_end)])))
+    self.ready.set()
 
   def get_metadata(self):
+    self.ready.wait()
     response = {
       "attributes" : [{"name" : name, "type" : type} for name, type in zip(self.attribute_names, self.attribute_types)],
       "dimensions" : [{"name" : name, "type" : type, "begin" : begin, "end" : end} for name, type, begin, end in zip(self.dimension_names, self.dimension_types, self.dimension_begin, self.dimension_end)]
@@ -206,6 +197,7 @@ class artifact(prototype):
     return response
 
   def get_binary_chunk(self, attribute, ranges, byteorder):
+    self.ready.wait()
     if attribute < 0 or attribute >= len(self.attribute_names):
       return ""
 
@@ -226,6 +218,7 @@ class artifact(prototype):
     return result
 
   def get_chunk(self, attributes, ranges):
+    self.ready.wait()
     attributes = [attribute for attribute in attributes if attribute >= 0 and attribute < len(self.attribute_names)]
 
     if len(ranges) != len(self.data[0].shape):
