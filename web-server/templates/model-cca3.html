@@ -1353,7 +1353,8 @@ rights in this software.
           self.start_drag = null;
           self.end_drag = null;
 
-          for(var i in self.data[0])
+          var length = self.data[0].length;
+          for(var i = 0; i != length; ++i)
           {
             if(x1 <= self.data[0][i] && self.data[0][i] <= x2 && y1 <= self.data[1][i] && self.data[1][i] <= y2)
             {
@@ -1369,7 +1370,7 @@ rights in this software.
 
         this.update = function(parameters)
         {
-          console.info(parameters);
+          console.info("Update:", parameters);
 
           if(parameters.data)
           {
@@ -1428,7 +1429,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
-            console.info("render selection");
+            console.info("Render " + this.selection.length + " selected data points");
             var width = this.selection_canvas.attr("width");
             var height = this.selection_canvas.attr("height");
 
@@ -1459,7 +1460,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height)
           {
-            console.info("render data");
+            console.info("Render " + this.data[0].length + " data points");
             this.data_context.setTransform(1, 0, 0, 1, 0, 0);
             this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 
@@ -1494,7 +1495,8 @@ rights in this software.
                 var twopi = Math.PI * 2;
                 this.data_context.stokeStyle = "black";
                 this.data_context.lineWidth = 1 / this.scale;
-                for(var i in this.data[0])
+                var length = this.data[0].length;
+                for(var i = 0; i != length; ++i)
                 {
                   this.data_context.fillStyle = this.color(this.data[2][i]);
                   this.data_context.beginPath();
@@ -1507,7 +1509,8 @@ rights in this software.
               else
               {
                 var size = 2 / this.scale;
-                for(var i in this.data[0])
+                var length = this.data[0].length;
+                for(var i = 0; i != length; ++i)
                 {
                   this.data_context.fillStyle = this.color(this.data[2][i]);
                   this.data_context.fillRect(this.data[0][i], this.data[1][i], size, size);
@@ -1518,7 +1521,6 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
-            console.info("render");
             this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
             this.context.drawImage(this.data_canvas.get(0), 0, 0);
             this.context.drawImage(this.selection_canvas.get(0), 0, 0);
