@@ -31,36 +31,28 @@ class prototype(slycat.web.server.worker.prototype):
     """Called to retrieve the given chunk (hypercube).  Note that the returned chunk may
     contain a subset of the requested data, or no data at all."""
     try:
+      attribute = int(arguments["attribute"])
+    except:
+      raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
+
+    try:
       ranges = [int(spec) for spec in arguments["ranges"].split(",")]
       i = iter(ranges)
       ranges = list(itertools.izip(i, i))
     except:
       raise cherrypy.HTTPError("400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
 
-    if "attribute" in arguments:
+    if "byteorder" in arguments:
       accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
-      try:
-        attribute = int(arguments["attribute"])
-      except:
-        raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
-
-      if "byteorder" not in arguments:
-        raise cherrypy.HTTPError("400 Missing required byteorder argument.")
 
       byteorder = arguments["byteorder"]
       if byteorder not in ["little", "big"]:
         raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
 
-      response = self.get_binary_chunk(attribute, ranges, byteorder)
-    elif "attributes" in arguments:
-      accept = cherrypy.lib.cptools.accept(["application/json"])
-      try:
-        attributes = [int(spec) for spec in arguments["attributes"].split(",")]
-      except:
-        raise cherrypy.HTTPError("400 Malformed attributes argument must be a comma separated collection of attribute indices.")
-      response = self.get_chunk(attributes, ranges)
+      response = self.get_chunk(attribute, ranges, byteorder)
     else:
-      raise cherrypy.HTTPError("400 Chunk request must contain attribute or attributes arguments.")
+      accept = cherrypy.lib.cptools.accept(["application/json"])
+      response = self.get_string_chunk(attribute, ranges)
 
     if isinstance(response, cherrypy.HTTPError):
       raise response
@@ -80,11 +72,11 @@ class prototype(slycat.web.server.worker.prototype):
     """Implement this in derivatives to return metadata describing the underlying data."""
     raise NotImplementedError()
 
-  def get_binary_chunk(self, attribute, ranges, byteorder):
+  def get_chunk(self, attribute, ranges, byteorder):
     """Implement this in derivatives to fetch the given chunk."""
     raise NotImplementedError()
 
-  def get_chunk(self, attributes, ranges):
+  def get_string_chunk(self, attribute, ranges):
     """Implement this in derivatives to fetch the given chunk."""
     raise NotImplementedError()
 
@@ -93,10 +85,12 @@ class test(prototype):
   def __init__(self, security, shape):
     prototype.__init__(self, security, "chunker.array.test")
     self.shape = shape
+    self.types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
     self.ready = threading.Event()
 
   def preload(self):
-    self.data = numpy.arange(reduce(operator.mul, self.shape, 1)).reshape(self.shape).astype("float64")
+    count = numpy.array(self.shape).prod()
+    self.data = [numpy.arange(count).reshape(self.shape).astype(type) for type in self.types]
     self.set_message("Using %s test data." % (" x ".join([str(size) for size in self.shape])))
     self.ready.set()
 
@@ -104,14 +98,14 @@ class test(prototype):
     self.ready.wait()
     response = {
       "dimensions" : [{"name" : "d%s" % index, "type" : "int64", "begin" : 0, "end" : size} for index, size in enumerate(self.shape)],
-      "attributes" : [{"name" : "a0", "type" : "float64"}]
+      "attributes" : [{"name" : type, "type" : type} for index, type in enumerate(self.types)]
       }
     return response
 
-  def get_binary_chunk(self, attribute, ranges, byteorder):
+  def get_chunk(self, attribute, ranges, byteorder):
     self.ready.wait()
-    if attribute != 0:
-      return ""
+    if attribute < 0 or attribute >= len(self.data):
+      return cherrypy.HTTPError("400 Attribute out-of-range.")
 
     if len(ranges) != len(self.shape):
       return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
@@ -119,7 +113,7 @@ class test(prototype):
     # Constrain ranges to the dimensions of our data ...
     ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.shape)]
 
-    data = self.data[[slice(begin, end) for begin, end in ranges]]
+    data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
 
     # Handle byte ordering issues ...
     if sys.byteorder != byteorder:
@@ -129,23 +123,19 @@ class test(prototype):
 
     return result
 
-  def get_chunk(self, attributes, ranges):
+  def get_string_chunk(self, attribute, ranges):
     self.ready.wait()
-    attributes = [attribute for attribute in attributes if attribute == 0]
+    if attribute < 0 or attribute >= len(self.data):
+      return cherrypy.HTTPError("400 Attribute out-of-range.")
 
     if len(ranges) != len(self.shape):
       return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
 
     # Constrain ranges to the dimensions of our data ...
     ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.shape)]
-    data = self.data[[slice(begin, end) for begin, end in ranges]]
+    data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
 
-    response = {
-      "attributes" : attributes,
-      "ranges" : ranges,
-      "data" : [data.tolist()]
-      }
-    return json.dumps(response)
+    return json.dumps(data.tolist())
 
 class artifact(prototype):
   """Array chunker that returns data from a model artifact."""
@@ -196,10 +186,10 @@ class artifact(prototype):
       }
     return response
 
-  def get_binary_chunk(self, attribute, ranges, byteorder):
+  def get_chunk(self, attribute, ranges, byteorder):
     self.ready.wait()
-    if attribute < 0 or attribute >= len(self.attribute_names):
-      return ""
+    if attribute < 0 or attribute >= len(self.data):
+      return cherrypy.HTTPError("400 Attribute out-of-range.")
 
     if len(ranges) != len(self.data[0].shape):
       return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
@@ -217,9 +207,10 @@ class artifact(prototype):
 
     return result
 
-  def get_chunk(self, attributes, ranges):
+  def get_string_chunk(self, attribute, ranges):
     self.ready.wait()
-    attributes = [attribute for attribute in attributes if attribute >= 0 and attribute < len(self.attribute_names)]
+    if attribute < 0 or attribute >= len(self.data):
+      return cherrypy.HTTPError("400 Attribute out-of-range.")
 
     if len(ranges) != len(self.data[0].shape):
       return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
@@ -227,11 +218,6 @@ class artifact(prototype):
     # Constrain ranges to the dimensions of our data ...
     ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
 
-    response = {
-      "attributes" : attributes,
-      "ranges" : ranges,
-      "data" : [self.data[attribute][[slice(begin, end) for begin, end in ranges]].tolist() for attribute in attributes]
-      }
-
-    return json.dumps(response)
+    data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
+    return json.dumps(data.tolist())
 

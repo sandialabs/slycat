@@ -183,14 +183,12 @@ class connection(object):
   def get_array_chunker_metadata(self, wid):
     return self.request("GET", "/workers/%s/array-chunker/metadata" % (wid), headers={"accept":"application/json"})
 
-  def get_array_chunker_chunk(self, wid, attributes, ranges):
-    attributes = ",".join([str(attribute) for attribute in attributes])
+  def get_array_chunker_chunk(self, wid, attribute, ranges, byteorder=None):
     ranges = ",".join([str(range) for range in ranges])
-    return self.request("GET", "/workers/%s/array-chunker/chunk?attributes=%s&ranges=%s" % (wid, attributes, ranges), headers={"accept":"application/json"})
-
-  def get_array_chunker_binary_chunk(self, wid, attribute, ranges, byteorder):
-    ranges = ",".join([str(range) for range in ranges])
-    return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s&byteorder=%s" % (wid, attribute, ranges, byteorder), headers={"accept":"application/octet-stream"})
+    if byteorder is None:
+      return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s" % (wid, attribute, ranges), headers={"accept":"application/json"})
+    else:
+      return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s&byteorder=%s" % (wid, attribute, ranges, byteorder), headers={"accept":"application/octet-stream"})
 
   def create_bookmark(self, pid, bookmark):
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
