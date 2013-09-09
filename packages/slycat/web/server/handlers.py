@@ -505,9 +505,7 @@ def get_worker_endpoint(name, force_json_output=True):
     slycat.web.server.authentication.require_worker_creator(worker)
 
     if not worker.is_alive():
-      raise cherrypy.HTTPError("400 Model not running.")
-#    if not worker.incremental:
-#      raise cherrypy.HTTPError("400 Model doesn't support incremental requests.""")
+      raise cherrypy.HTTPError("400 Worker not running.")
 
     try:
       handler = getattr(worker, name)
@@ -527,9 +525,7 @@ def put_worker_endpoint(name):
     slycat.web.server.authentication.require_worker_creator(worker)
 
     if not worker.is_alive():
-      raise cherrypy.HTTPError("400 Model not running.")
-#    if not worker.incremental:
-#      raise cherrypy.HTTPError("400 Model doesn't support incremental requests.""")
+      raise cherrypy.HTTPError("400 Worker not running.")
 
     try:
       handler = getattr(worker, name)
@@ -549,7 +545,7 @@ def post_worker_endpoint(name):
     slycat.web.server.authentication.require_worker_creator(worker)
 
     if not worker.is_alive():
-      raise cherrypy.HTTPError("400 Model not running.")
+      raise cherrypy.HTTPError("400 Worker not running.")
 #    if not worker.incremental:
 #      raise cherrypy.HTTPError("400 Model doesn't support incremental requests.""")
 
