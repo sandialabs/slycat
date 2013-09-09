@@ -423,14 +423,6 @@ def post_workers():
       if model["artifact-types"][artifact] != "table":
         raise cherrypy.HTTPError("400 Artifact %s is not a table." % artifact)
       wid = pool.start_worker(slycat.web.server.worker.chunker.table.artifact(cherrypy.request.security, model, artifact, generate_index))
-    elif "mid" in cherrypy.request.json and "fid" in cherrypy.request.json:
-      mid = cherrypy.request.json["mid"]
-      fid = cherrypy.request.json["fid"]
-      database = slycat.web.server.database.couchdb.connect()
-      model = database.get("model", mid)
-      project = database.get("project", model["project"])
-      slycat.web.server.authentication.require_project_reader(project)
-      wid = pool.start_worker(slycat.web.server.worker.chunker.table.file(cherrypy.request.security, mid, fid, generate_index))
     elif "row-count" in cherrypy.request.json and "column-count" in cherrypy.request.json:
       wid = pool.start_worker(slycat.web.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], cherrypy.request.json["column-count"], generate_index))
     else:
