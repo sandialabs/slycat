@@ -462,10 +462,11 @@ rights in this software.
         var wilks_statistics = null;
         var x = null;
         var y = null;
+        var v = null;
         var x_loadings = null;
         var y_loadings = null;
 
-        // Creating a canonical-variables array chunker worker and getting the canonical-variables from it
+        // Create a canonical-variables array chunker worker and get the canonical-variables from it
         var xy_chunker = createArrayChunker("canonical-variables");
         getBinaryArray(xy_chunker, 0, function(result)
         {
@@ -478,7 +479,15 @@ rights in this software.
           wait_for_data();
         });
 
-        // Creating a cca-statistics array chunker worker and getting the cca-statistics from it
+        // Create a data table array chunker and get the index column from it ...
+        var v_chunker = createArrayChunker("data-table");
+        getBinaryArray(v_chunker, 0, function(result)
+        {
+          console.info("v:");
+          console.info(result);
+        });
+
+        // Create a cca-statistics array chunker worker and get the cca-statistics from it
         var statistics_chunker = createArrayChunker("cca-statistics");
         getBinaryArray(statistics_chunker, 0, function(result)
         {
@@ -491,14 +500,14 @@ rights in this software.
           wait_for_data();
         });
 
-        // Creating a input-structure-correlation array chunker worker and getting the input-structure-correlation from it
+        // Create an x_loadings array chunker worker and get the x_loadings from it
         getBinaryArray(createArrayChunker("input-structure-correlation"), 0, function(result)
         {
           x_loadings = result;
           wait_for_data();
         });
 
-        // Creating a output-structure-correlation array chunker worker and getting the output-structure-correlation from it
+        // Create a y_loadings array chunker worker and get the y_loadings from it
         getBinaryArray(createArrayChunker("output-structure-correlation"), 0, function(result)
         {
           y_loadings = result;

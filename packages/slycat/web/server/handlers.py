@@ -437,9 +437,12 @@ def post_workers():
       slycat.web.server.authentication.require_project_reader(project)
       if artifact not in model["artifact-types"]:
         raise cherrypy.HTTPError("400 Artifact %s not in model." % artifact)
-      if model["artifact-types"][artifact] != "array":
-        raise cherrypy.HTTPError("400 Artifact %s is not an array." % artifact)
-      wid = pool.start_worker(slycat.web.server.worker.chunker.array.artifact(cherrypy.request.security, model, artifact))
+      if model["artifact-types"][artifact] == "array":
+        wid = pool.start_worker(slycat.web.server.worker.chunker.array.artifact(cherrypy.request.security, model, artifact))
+      elif model["artifact-types"][artifact] == "table":
+        wid = pool.start_worker(slycat.web.server.worker.chunker.array.table_artifact(cherrypy.request.security, model, artifact))
+      else:
+        raise cherrypy.HTTPError("400 Artifact %s can't be loaded as an array." % artifact)
     elif "shape" in cherrypy.request.json:
       wid = pool.start_worker(slycat.web.server.worker.chunker.array.test(cherrypy.request.security, cherrypy.request.json["shape"]))
     else:

@@ -221,3 +221,89 @@ class artifact(prototype):
     data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
     return json.dumps(data.tolist())
 
+class table_artifact(prototype):
+  """Array chunker that returns data from a model artifact."""
+  def __init__(self, security, model, artifact):
+    prototype.__init__(self, security, "chunker.array.artifact")
+    self.model = model
+    self.artifact = model["artifact:%s" % artifact]
+    self.ready = threading.Event()
+
+  def preload(self):
+    database = slycat.web.server.database.scidb.connect()
+
+    column_names = self.artifact["column-names"]
+    columns = self.artifact["columns"]
+
+    with database.query("aql", "select name from %s" % column_names) as results:
+      self.attribute_names = [value.getString() for attribute in results for value in attribute]
+
+    with database.query("aql", "select type_id from attributes(%s)" % columns) as results:
+      self.attribute_types = [value.getString() for attribute in results for value in attribute]
+
+    with database.query("aql", "select name, type, low as begin, high + 1 as end from dimensions(%s)" % columns) as results:
+      attribute = iter(results)
+      self.dimension_names = [value.getString() for value in attribute.next()]
+      self.dimension_types = [value.getString() for value in attribute.next()]
+      self.dimension_begin = [value.getInt64() for value in attribute.next()]
+      self.dimension_end = [value.getInt64() for value in attribute.next()]
+
+    self.data = [None for name in self.attribute_names]
+#    self.data = [numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)]) for name in self.attribute_names]
+#    iterators = [numpy.nditer(attribute, order="C", op_flags=["readwrite"]) for attribute in self.data]
+#    with database.query("aql", "select * from %s" % columns) as result:
+#      for chunk in result.chunks():
+#        for iterator, attribute in zip(iterators, chunk.attributes()):
+#          for value in attribute:
+#            iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
+
+    self.set_message("Loaded %s %s attributes." % (len(self.data), " x ".join([str(end - begin) for begin, end in zip(self.dimension_begin, self.dimension_end)])))
+    self.ready.set()
+
+  def get_metadata(self):
+    self.ready.wait()
+    response = {
+      "attributes" : [{"name" : name, "type" : type} for name, type in zip(self.attribute_names, self.attribute_types)],
+      "dimensions" : [{"name" : name, "type" : type, "begin" : begin, "end" : end} for name, type, begin, end in zip(self.dimension_names, self.dimension_types, self.dimension_begin, self.dimension_end)]
+      }
+    return response
+
+  def get_chunk(self, attribute, ranges, byteorder):
+    self.ready.wait()
+    if attribute < 0 or attribute >= len(self.data):
+      return cherrypy.HTTPError("400 Attribute out-of-range.")
+
+    if len(ranges) != len(self.data[0].shape):
+      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
+
+    return ""
+
+    # Constrain ranges to the dimensions of our data ...
+    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
+
+    data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
+
+    # Handle byte ordering issues ...
+    if sys.byteorder != byteorder:
+      result = data.byteswap().tostring(order="C")
+    else:
+      result = data.tostring(order="C")
+
+    return result
+
+  def get_string_chunk(self, attribute, ranges):
+    self.ready.wait()
+    if attribute < 0 or attribute >= len(self.data):
+      return cherrypy.HTTPError("400 Attribute out-of-range.")
+
+    if len(ranges) != len(self.data[0].shape):
+      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
+
+    return ""
+
+    # Constrain ranges to the dimensions of our data ...
+    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
+
+    data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
+    return json.dumps(data.tolist())
+
