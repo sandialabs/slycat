@@ -505,8 +505,9 @@ rights in this software.
           wait_for_data();
         });
 
-        function createArrayChunker(modelArtifactName) {
-          var workerId = null;
+        function createArrayChunker(modelArtifactName)
+        {
+          var result = null;
           $.ajax(
             {
               contentType : "application/json",
@@ -518,13 +519,22 @@ rights in this software.
               async: false, // Much of the rest of the script relies on this array chunker, so doing this synchronously
               success : function(worker)
               {
-                // setup beforeunload handler to stop and delete worker when user leaves page
-                $(window).bind('beforeunload', function(){
-                  stopWorker(worker); 
-                  deleteWorker(worker);
-                });
+                result = worker.id;
 
-                workerId = worker.id;
+                // setup beforeunload handler to stop and delete worker when user leaves page
+                $(window).unload({"worker":worker}, function(e)
+                {
+                  $.ajax(
+                  {
+                    type : "DELETE",
+                    url : "{{server-root}}" + "workers/" + e.data.worker.id,
+                    async: false,
+                    error : function(request, status, reason_phrase)
+                    {
+                      //window.alert("Error deleting remote worker: " + reason_phrase);
+                    }
+                  });
+                });
               },
               error : function(request, status, reason_phrase)
               {
@@ -532,7 +542,7 @@ rights in this software.
               },
             }
           );
-          return workerId;
+          return result;
         }
 
         function getBinaryArray(chunker, attribute, callback)
@@ -599,44 +609,6 @@ rights in this software.
           }
 
           // OK, setup the visualization ...
-          function deleteWorker(worker)
-          {
-            $.ajax(
-            {
-              type : "DELETE",
-              url : "{{server-root}}" + "workers/" + worker.id,
-              async: false,
-              success : function()
-              {
-              },
-              error : function(request, status, reason_phrase)
-              {
-                //window.alert("Error deleting remote worker: " + reason_phrase);
-              }
-            });
-          }
-
-          function stopWorker(worker)
-          {
-            $.ajax(
-            {
-              contentType : "application/json",
-              data : $.toJSON({ result : "stopped" }),
-              processData : false,
-              type : "PUT",
-              url : "{{server-root}}" + "workers/" + worker.id,
-              async: false, // Need to do this synchonously since it's called by the beforeunload even and will not happen otherwise.
-              timeout: 3000, // Setting timeout to a few seconds so user is not waiting forever after trying to leave page if worker can't be stopped.
-              success : function(worker)
-              {
-              },
-              error : function(request, status, reason_phrase)
-              {
-                //window.alert("Error stopping worker: " + reason_phrase);
-              }
-            });
-          }
-
           var workerId = null;
           // Creating a table chunker worker
           $.ajax(
@@ -652,9 +624,18 @@ rights in this software.
             {
               workerId = worker.id;
               // setup beforeunload handler to stop and delete worker when user leaves page
-              $(window).bind('beforeunload', function(){
-                stopWorker(worker); 
-                deleteWorker(worker);
+              $(window).unload({"worker":worker}, function(e)
+              {
+                $.ajax(
+                {
+                  type : "DELETE",
+                  url : "{{server-root}}" + "workers/" + e.data.worker.id,
+                  async: false,
+                  error : function(request, status, reason_phrase)
+                  {
+                    //window.alert("Error deleting remote worker: " + reason_phrase);
+                  }
+                });
               });
             },
             error : function(request, status, reason_phrase)
