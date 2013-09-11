@@ -246,16 +246,27 @@ class connection(object):
     """Returns all workers."""
     return self.request("GET", "/workers", headers={"accept":"application/json"})["workers"]
 
-  def delete_worker(self, wid, stop=False):
-    """Waits for a worker to complete, then deletes it.  Optionally stops the worker."""
-    if stop:
-      self.request("PUT", "/workers/%s" % (wid), headers={"content-type":"application/json"}, data=json.dumps({"result" : "stopped"}))
+  def stop_worker(self, wid):
+    """Stops a running worker."""
+    self.request("PUT", "/workers/%s" % (wid), headers={"content-type":"application/json"}, data=json.dumps({"result" : "stopped"}))
+
+  def join_worker(self, wid):
+    """Waits for a worker to complete, then returns.  Note that some workers
+    (such as a model that's still waiting for inputs or a chunker) will never
+    complete on their own - you should call stop_worker() first."""
     while True:
       worker = self.request("GET", "/workers/%s" % (wid), headers={"accept":"application/json"})
       if "result" in worker and worker["result"] is not None:
-        self.request("DELETE", "/workers/%s" % (wid))
         return
       time.sleep(1.0)
+
+  def delete_worker(self, wid, stop=False):
+    """Immediately deletes a worker.  If you want to wait for the worker to
+    complete first, use stop=True."""
+    if stop:
+      self.stop_worker(wid)
+      self.join_worker(wid)
+    self.request("DELETE", "/workers/%s" % (wid))
 
 def connect(options, **keywords):
   """Factory function for client connections that takes an option parser as input."""
