@@ -9,79 +9,89 @@ rights in this software.
 <html>
   <head>
     <title>Slycat Canvas Testing</title>
+    <script type="text/javascript" src="{{server-root}}js/jquery.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery-ui-1.8.20.custom.min.js"></script>
   </head>
 
   <body>
     <p id="load-time"></p>
-    <p id="draw-time"></p>
+    <p id="render-time"></p>
     <canvas id="tutorial" width="600" height="600"></canvas>
 
     <script type="text/javascript">
-      var count = 1000000;
-      var scale = 100;
-      var cx = 300;
-      var cy = 300;
-      var radius = 1;
-
-      var x = null;
-      var y = null;
-
-      function load()
+      $.widget("slycat.canvastest",
       {
-        var start_time = new Date().getTime();
-
-        request = new XMLHttpRequest();
-        request.open("GET", "{{server-root}}test/array/arraybuffer?length=" + count);
-        request.responseType = "arraybuffer";
-        request.onload = function(e)
+        options:
         {
-          x = new Float64Array(this.response);
+          count: 1000000,
+          scale: 100,
+          cx: 300,
+          cy: 300,
+          radius: 1
+        },
+
+        _create: function()
+        {
+          this.x = null;
+          this.y = null;
+        },
+
+        load: function()
+        {
+          var start_time = new Date().getTime();
+          var self = this;
 
           request = new XMLHttpRequest();
-          request.open("GET", "{{server-root}}test/array/arraybuffer?length=" + count);
+          request.open("GET", "{{server-root}}test/array/arraybuffer?length=" + self.options.count);
           request.responseType = "arraybuffer";
           request.onload = function(e)
           {
-            y = new Float64Array(this.response);
+            self.x = new Float64Array(this.response);
 
-            var load_time = new Date().getTime();
+            request = new XMLHttpRequest();
+            request.open("GET", "{{server-root}}test/array/arraybuffer?length=" + self.options.count);
+            request.responseType = "arraybuffer";
+            request.onload = function(e)
+            {
+              self.y = new Float64Array(this.response);
 
-            document.getElementById("load-time").innerHTML = "Count: " + count + " datums Load: " + (load_time - start_time) + "ms";
-            draw();
+              var load_time = new Date().getTime();
+
+              self.element.trigger("load-time", load_time - start_time);
+              self._render();
+            }
+            request.send();
           }
           request.send();
-        }
-        request.send();
-      }
+        },
 
-      function draw()
-      {
-        var start_time = new Date().getTime();
-
-        var canvas = document.getElementById("tutorial");
-        var context = canvas.getContext("2d");
-
-        context.fillStyle = "rgba(0, 0, 0, 0.1)";
-        context.strokeStyle = "rgba(0, 0, 0, 0.1)";
-        context.translate(cx, cy);
-        context.scale(scale, scale);
-        var twopi = Math.PI * 2;
-        var size = radius/scale;
-        for(var i = 0; i != x.length; ++i)
+        _render: function()
         {
-          /*
-          context.beginPath();
-          context.arc(x[i], y[i], radius, 0, twopi, false);
-          context.fill();
-          */
-          context.fillRect(x[i], y[i], size, size);
+          var start_time = new Date().getTime();
+
+          var context = this.element.get(0).getContext("2d");
+
+          context.fillStyle = "rgba(0, 0, 0, 0.1)";
+          context.strokeStyle = "rgba(0, 0, 0, 0.1)";
+          context.translate(this.options.cx, this.options.cy);
+          context.scale(this.options.scale, this.options.scale);
+          var twopi = Math.PI * 2;
+          var size = this.options.radius / this.options.scale;
+          for(var i = 0; i != this.x.length; ++i)
+          {
+            context.fillRect(this.x[i], this.y[i], size, size);
+          }
+
+          var render_time = new Date().getTime();
+
+          this.element.trigger("render-time", render_time - start_time);
         }
+      });
 
-        var draw_time = new Date().getTime();
-        document.getElementById("draw-time").innerHTML = "Draw: " + (draw_time - start_time) + "ms";
-      }
-
-      load();
+      var test = $("#tutorial").canvastest();
+      test.bind("load-time", function(event, time) { $("#load-time").html("Load: " + time + "ms"); });
+      test.bind("render-time", function(event, time) { $("#render-time").html("Render: " + time + "ms"); });
+      test.canvastest("load");
     </script>
   </body>
 </html>
