@@ -481,11 +481,13 @@ rights in this software.
 
         // Create a data table array chunker and get the index column from it ...
         var v_chunker = createArrayChunker("data-table");
+/*
         getBinaryArray(v_chunker, 1, function(result)
         {
           console.info("v:");
           console.info(result);
         });
+*/
 
         // Create a cca-statistics array chunker worker and get the cca-statistics from it
         var statistics_chunker = createArrayChunker("cca-statistics");
@@ -802,49 +804,29 @@ rights in this software.
           // Updates the scatterplot when user selects a new input or output variable in the cca table
           function update_scatterplot_value(type, index)
           {
-            var data_column;
-            var value_label = null;
-
-            if(type == "simulation") {
-              data_column = index_column;
+            if(type == "simulation")
+            {
+              var count = scatterplot_data[0].length;
+              for(var i = 0; i != count; ++i)
+                scatterplot_data[2][i] = i;
+              cca_scatterplot.update({ value_label: "Index", data: scatterplot_data});
             }
-            else if(type == "input") {
-              data_column = input_columns[index];
+            else if(type == "input")
+            {
+              getBinaryArray(v_chunker, input_columns[index], function(result)
+              {
+                scatterplot_data[2] = result;
+                cca_scatterplot.update({ value_label: "Input", data: scatterplot_data});
+              });
             }
-            else if(type == "output") {
-              data_column = output_columns[index];
+            else if(type == "output")
+            {
+              getBinaryArray(v_chunker, output_columns[index], function(result)
+              {
+                scatterplot_data[2] = result;
+                cca_scatterplot.update({ value_label: "Output", data: scatterplot_data});
+              });
             }
-
-            var queryParams = {
-              "rows" : "0-" + data_table["row-count"],
-              "columns" : index_column + "," + data_column,
-            }
-
-            req = $.ajax({
-              url : "{{server-root}}" + "workers/" + workerId + "/table-chunker/chunk",
-              contentType : "application/json",
-              data: queryParams,
-              processData : true,
-              dataType: 'json',
-              success: function(resp){
-                var columns = resp["columns"];
-                var row_indexes = resp["data"][columns.indexOf(index_column)];
-                var row_data = resp["data"][columns.indexOf(data_column)];
-                for(var i in row_indexes)
-                {
-                  scatterplot_data[2][row_indexes[i]] = row_data[i];
-                }
-                value_label = resp["column-names"][columns.indexOf(data_column)];
-                cca_scatterplot.update({
-                  value_label: value_label,
-                  data: scatterplot_data
-                  });
-              },
-              error: function(xhr, ajaxOptions, thrownError){
-                  //onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
-              }
-            });
-
           }
 
           // Called when the grid initialized since now we can access data and restore state contained in the bookmark
@@ -1361,7 +1343,7 @@ rights in this software.
 
         this.update = function(parameters)
         {
-          console.info("Update:", parameters);
+          //console.info("Update:", parameters);
 
           if(parameters.data)
           {
@@ -1420,7 +1402,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
           {
-            console.info("Render " + this.selection.length + " selected data points");
+            //console.info("Render " + this.selection.length + " selected data points");
             var width = this.selection_canvas.attr("width");
             var height = this.selection_canvas.attr("height");
 
@@ -1451,7 +1433,7 @@ rights in this software.
 
           if(parameters.color || parameters.data || parameters.width || parameters.height)
           {
-            console.info("Render " + this.data[0].length + " data points");
+            //console.info("Render " + this.data[0].length + " data points");
             this.data_context.setTransform(1, 0, 0, 1, 0, 0);
             this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 

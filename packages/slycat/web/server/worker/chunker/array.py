@@ -275,8 +275,6 @@ class table_artifact(prototype):
           for chunk_attribute in chunk.attributes():
             for value in chunk_attribute:
               iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
-    cherrypy.log.error("attribute %s" % attribute)
-    cherrypy.log.error("%s" % self.data[attribute])
 
   def get_metadata(self):
     self.ready.wait()
