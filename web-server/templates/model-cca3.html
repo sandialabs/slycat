@@ -481,7 +481,7 @@ rights in this software.
 
         // Create a data table array chunker and get the index column from it ...
         var v_chunker = createArrayChunker("data-table");
-        getBinaryArray(v_chunker, 0, function(result)
+        getBinaryArray(v_chunker, 1, function(result)
         {
           console.info("v:");
           console.info(result);
@@ -571,7 +571,7 @@ rights in this software.
 
               var request = new XMLHttpRequest();
               request.open("GET", "{{server-root}}" + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
-              request.responseType = "arraybuffer";
+              request.responseType = "arraybuffer"; // This is a hack: we're assuming an array of doubles here
               request.metadata = metadata;
               request.onload = function(e)
               {
@@ -580,6 +580,7 @@ rights in this software.
 
                 if(metadata.dimensions.length == 1)
                 {
+                  // This is a hack: we're assuming an array of doubles here
                   var result = new Float64Array(buffer);
                 }
                 else if(metadata.dimensions.length == 2)

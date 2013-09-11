@@ -222,9 +222,9 @@ class artifact(prototype):
     return json.dumps(data.tolist())
 
 class table_artifact(prototype):
-  """Array chunker that returns data from a model artifact."""
+  """Array chunker that returns data from a model table artifact."""
   def __init__(self, security, model, artifact):
-    prototype.__init__(self, security, "chunker.array.artifact")
+    prototype.__init__(self, security, "chunker.array.table_artifact")
     self.model = model
     self.artifact = model["artifact:%s" % artifact]
     self.ready = threading.Event()
@@ -248,17 +248,35 @@ class table_artifact(prototype):
       self.dimension_begin = [value.getInt64() for value in attribute.next()]
       self.dimension_end = [value.getInt64() for value in attribute.next()]
 
+    # SciDB uses "float" and "double", but we prefer "float32" and "float64"
+    type_map = {"float":"float32", "double":"float64"}
+    self.attribute_types = [type_map[type] if type in type_map else type for type in self.attribute_types]
+    self.dimension_types = [type_map[type] if type in type_map else type for type in self.dimension_types]
+
     self.data = [None for name in self.attribute_names]
-#    self.data = [numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)]) for name in self.attribute_names]
-#    iterators = [numpy.nditer(attribute, order="C", op_flags=["readwrite"]) for attribute in self.data]
-#    with database.query("aql", "select * from %s" % columns) as result:
-#      for chunk in result.chunks():
-#        for iterator, attribute in zip(iterators, chunk.attributes()):
-#          for value in attribute:
-#            iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
 
     self.set_message("Loaded %s %s attributes." % (len(self.data), " x ".join([str(end - begin) for begin, end in zip(self.dimension_begin, self.dimension_end)])))
     self.ready.set()
+
+  def load_data(self, attribute):
+    if self.data[attribute] is not None:
+      return
+
+    database = slycat.web.server.database.scidb.connect()
+
+    if self.attribute_types[attribute] == "string":
+      with database.query("aql", "select c%s from %s" % (attribute, self.artifact["columns"])) as result:
+        self.data[attribute] = [value.getString() for chunk in result.chunks() for chunk_attribute in chunk.attributes() for value in chunk_attribute]
+    else:
+      self.data[attribute] = numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)])
+      iterator = numpy.nditer(self.data[attribute], order="C", op_flags=["readwrite"])
+      with database.query("aql", "select c%s from %s" % (attribute, self.artifact["columns"])) as result:
+        for chunk in result.chunks():
+          for chunk_attribute in chunk.attributes():
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
+    cherrypy.log.error("attribute %s" % attribute)
+    cherrypy.log.error("%s" % self.data[attribute])
 
   def get_metadata(self):
     self.ready.wait()
@@ -270,16 +288,17 @@ class table_artifact(prototype):
 
   def get_chunk(self, attribute, ranges, byteorder):
     self.ready.wait()
+
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
 
-    if len(ranges) != len(self.data[0].shape):
-      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
+    if len(ranges) != 1:
+      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end).")
 
-    return ""
+    self.load_data(attribute)
 
     # Constrain ranges to the dimensions of our data ...
-    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
+    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[attribute].shape)]
 
     data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
 
@@ -293,13 +312,14 @@ class table_artifact(prototype):
 
   def get_string_chunk(self, attribute, ranges):
     self.ready.wait()
+
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
 
-    if len(ranges) != len(self.data[0].shape):
-      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
+    if len(ranges) != 1:
+      return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end).")
 
-    return ""
+    self.load_data(attribute)
 
     # Constrain ranges to the dimensions of our data ...
     ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
