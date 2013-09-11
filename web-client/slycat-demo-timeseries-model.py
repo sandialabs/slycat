@@ -58,7 +58,7 @@ connection = slycat.web.client.connect(options)
 pid = connection.create_project(options.project_name)
 
 # Create the new, empty model.
-mwid = connection.create_timeseries_model_worker(pid, options.model_name, options.marking)
+wid = connection.create_timeseries_model_worker(pid, options.model_name, options.marking)
 
 # Generate a set of random coefficients that we'll use to create our timeseries.
 inputs = numpy.hstack([numpy.sort(numpy.random.random((options.timeseries_count, options.timeseries_waves)) * 8 + 1) for output_variable in range(options.output_variable_count)])
@@ -66,17 +66,17 @@ inputs = numpy.hstack([numpy.sort(numpy.random.random((options.timeseries_count,
 # Upload our coefficients as the "inputs" artifact.
 input_column_names = ["%s%s" % (options.input_variable_prefix, column) for column in range(inputs.shape[1])]
 input_column_types = ["double" for column in range(inputs.shape[1])]
-connection.start_table(mwid, "inputs", input_column_names, input_column_types)
+connection.start_table(wid, "inputs", input_column_names, input_column_types)
 for row in inputs:
-  connection.send_table_rows(mwid, "inputs", [row])
-connection.finish_table(mwid, "inputs")
+  connection.send_table_rows(wid, "inputs", [row])
+connection.finish_table(wid, "inputs")
 
 # Start a new timeseries set artifact "output-x" for each output variable ...
 for output_variable in range(options.output_variable_count):
   artifact_name = "output-{}".format(output_variable)
   variable_name = "{}{}".format(options.output_variable_prefix, output_variable)
   sys.stderr.write("Generating output variable {}.\n".format(variable_name))
-  connection.start_timeseries(mwid, artifact_name, [variable_name], ["double"])
+  connection.start_timeseries(wid, artifact_name, [variable_name], ["double"])
 
   # Generate a collection of timeseries for the variable ...
   for timeseries in range(options.timeseries_count):
@@ -92,19 +92,23 @@ for output_variable in range(options.output_variable_count):
 
     # Upload the timeseries data, breaking it into "bundles" so our HTTP requests don't get too large.
     for i in range(0, len(ids), options.sample_bundling):
-      connection.send_timeseries_columns(mwid, artifact_name, ids[i:i+options.sample_bundling], times[i:i+options.sample_bundling], values[i:i+options.sample_bundling])
+      connection.send_timeseries_columns(wid, artifact_name, ids[i:i+options.sample_bundling], times[i:i+options.sample_bundling], values[i:i+options.sample_bundling])
 
   # Signal Slycat that we're done uploading this artifact.
-  connection.finish_timeseries(mwid, artifact_name)
+  connection.finish_timeseries(wid, artifact_name)
 
 # Store the remaining parameters ...
-connection.set_parameter(mwid, "output-count", options.output_variable_count)
-connection.set_parameter(mwid, "cluster-bin-count", options.cluster_bin_count)
-connection.set_parameter(mwid, "cluster-bin-type", options.cluster_bin_type)
-connection.set_parameter(mwid, "cluster-type", options.cluster_type)
+connection.set_parameter(wid, "output-count", options.output_variable_count)
+connection.set_parameter(wid, "cluster-bin-count", options.cluster_bin_count)
+connection.set_parameter(wid, "cluster-bin-type", options.cluster_bin_type)
+connection.set_parameter(wid, "cluster-type", options.cluster_type)
 
 # Signal that we're done uploading artifacts to the model.  This lets Slycat Web Server know that it can start computation.
-mid = connection.finish_model(mwid)
+mid = connection.finish_model(wid)
 
-# Give the user a URL where they can access their new model.  Note that the model may-or-may-not be complete yet.
-sys.stderr.write("Your new model will be at %s/models/%s when complete.\n" % (options.host, mid))
+# Wait for the model to finish computing, then delete the worker.
+connection.join_worker(wid)
+connection.delete_worker(wid)
+
+# Give the user a URL where they can access their new model.
+sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))

@@ -24,9 +24,9 @@ connection = slycat.web.client.connect(options)
 numpy.random.seed(options.seed)
 
 pid = connection.create_project(options.project_name)
-mwid = connection.create_cca_model_worker(pid, options.model_name, options.marking)
+wid = connection.create_cca_model_worker(pid, options.model_name, options.marking)
 total_columns = options.input_count + options.output_count + options.unused_count
-connection.start_table(mwid, "data-table", ["%s%s" % (options.column_prefix, column) for column in range(total_columns)],["double" for column in range(total_columns)])
+connection.start_table(wid, "data-table", ["%s%s" % (options.column_prefix, column) for column in range(total_columns)],["double" for column in range(total_columns)])
 rows = []
 for i in range(options.row_count):
   values = numpy.random.random(max(options.input_count, options.output_count))
@@ -37,15 +37,14 @@ for i in range(options.row_count):
 
   rows.append(row.tolist())
   if len(rows) >= options.bundling:
-    connection.send_table_rows(mwid, "data-table", rows)
+    connection.send_table_rows(wid, "data-table", rows)
     rows = []
-connection.send_table_rows(mwid, "data-table", rows)
-connection.finish_table(mwid, "data-table")
+connection.send_table_rows(wid, "data-table", rows)
+connection.finish_table(wid, "data-table")
 
-connection.set_parameter(mwid, "input-columns", range(0, options.input_count))
-connection.set_parameter(mwid, "output-columns", range(options.input_count + options.unused_count, options.input_count + options.unused_count + options.output_count))
-connection.set_parameter(mwid, "scale-inputs", False)
-mid = connection.finish_model(mwid)
-#connection.delete_worker(mwid)
-
-sys.stderr.write("Your new model will be at %s/models/%s when complete.\n" % (options.host, mid))
+connection.set_parameter(wid, "input-columns", range(0, options.input_count))
+connection.set_parameter(wid, "output-columns", range(options.input_count + options.unused_count, options.input_count + options.unused_count + options.output_count))
+connection.set_parameter(wid, "scale-inputs", False)
+mid = connection.finish_model(wid)
+connection.join_worker(wid)
+sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))
