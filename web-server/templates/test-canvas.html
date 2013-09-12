@@ -27,7 +27,7 @@ rights in this software.
     <p id="radius"></p>
 
     <script type="text/javascript">
-      $.widget("slycat.canvastest",
+      $.widget("slycat.scatterplot",
       {
         options:
         {
@@ -147,17 +147,17 @@ rights in this software.
         }
       });
 
-      $("#more-data").bind("click", function(event) { test.canvastest("option", "count", test.canvastest("option", "count") * 2); });
-      $("#less-data").bind("click", function(event) { test.canvastest("option", "count", test.canvastest("option", "count") * 0.5); });
-      $("#larger-points").bind("click", function(event) { test.canvastest("option", "radius", test.canvastest("option", "radius") + 1); });
-      $("#smaller-points").bind("click", function(event) { test.canvastest("option", "radius", test.canvastest("option", "radius") - 1); });
+      $("#more-data").bind("click", function(event) { tutorial.scatterplot("option", "count", tutorial.scatterplot("option", "count") * 2); });
+      $("#less-data").bind("click", function(event) { tutorial.scatterplot("option", "count", tutorial.scatterplot("option", "count") * 0.5); });
+      $("#larger-points").bind("click", function(event) { tutorial.scatterplot("option", "radius", tutorial.scatterplot("option", "radius") + 1); });
+      $("#smaller-points").bind("click", function(event) { tutorial.scatterplot("option", "radius", tutorial.scatterplot("option", "radius") - 1); });
 
-      var test = $("#tutorial")
+      var tutorial = $("#tutorial")
         .bind("load-time", function(event, time) { $("#load-time").html("Load: " + time + "ms"); })
         .bind("render-time", function(event, time) { $("#render-time").html("Render: " + time + "ms"); })
         .bind("count-changed", function(event, value) { $("#count").html("Count: " + value); })
         .bind("radius-changed", function(event, value) { $("#radius").html("Radius: " + value + "px"); })
-        .canvastest({count:100000, radius:2})
+        .scatterplot({count:100000, radius:2})
         ;
     </script>
   </body>
