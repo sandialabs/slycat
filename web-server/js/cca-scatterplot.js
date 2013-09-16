@@ -18,14 +18,14 @@ $.widget("cca.scatterplot",
     x : [],
     y : [],
     v : [],
-    selection : []
+    selection : [],
+    color : d3.scale.linear().range(["blue", "white", "red"])
   },
 
   _create: function()
   {
     this.start_drag = null;
     this.end_drag = null;
-    this.color_mapper = parameters.colorMapper;
 
     this.main_context = this.element.get(0).getContext("2d");
 
@@ -56,7 +56,10 @@ $.widget("cca.scatterplot",
         {
           self.end_drag = [e.layerX, e.layerY];
 
-          self.main_context.clearRect(0, 0, self.canvas.width(), self.canvas.height());
+          var width = self.element.width();
+          var height = self.element.height();
+
+          self.main_context.clearRect(0, 0, width, height);
           self.main_context.drawImage(self.data_canvas.get(0), 0, 0);
           self.main_context.drawImage(self.selection_canvas.get(0), 0, 0);
           self.main_context.fillStyle = "rgba(255, 255, 0, 0.3)";
@@ -81,38 +84,47 @@ $.widget("cca.scatterplot",
 
       if(self.start_drag && self.end_drag) // Rubber-band selection ...
       {
-        var x1 = ((Math.min(self.start_drag[0], self.end_drag[0]) - self.canvas.width() / 2) / self.scale) + self.x_center;
-        var y1 = ((Math.max(self.start_drag[1], self.end_drag[1]) - self.canvas.height() / 2) / -self.scale) + self.y_center;
-        var x2 = ((Math.max(self.start_drag[0], self.end_drag[0]) - self.canvas.width() / 2) / self.scale) + self.x_center;
-        var y2 = ((Math.min(self.start_drag[1], self.end_drag[1]) - self.canvas.height() / 2) / -self.scale) + self.y_center;
+        var width = self.element.width();
+        var height = self.element.height();
+
+        var x1 = ((Math.min(self.start_drag[0], self.end_drag[0]) - width / 2) / self.scale) + self.x_center;
+        var y1 = ((Math.max(self.start_drag[1], self.end_drag[1]) - height / 2) / -self.scale) + self.y_center;
+        var x2 = ((Math.max(self.start_drag[0], self.end_drag[0]) - width / 2) / self.scale) + self.x_center;
+        var y2 = ((Math.min(self.start_drag[1], self.end_drag[1]) - height / 2) / -self.scale) + self.y_center;
       }
       else // Pick selection ...
       {
-        var x1 = (((e.layerX - self.options.pick_distance) - self.canvas.width() / 2) / self.scale) + self.x_center;
-        var y1 = (((e.layerY + self.options.pick_distance) - self.canvas.height() / 2) / -self.scale) + self.y_center;
-        var x2 = (((e.layerX + self.options.pick_distance) - self.canvas.width() / 2) / self.scale) + self.x_center;
-        var y2 = (((e.layerY - self.options.pick_distance) - self.canvas.height() / 2) / -self.scale) + self.y_center;
+        var width = self.element.width();
+        var height = self.element.height();
+
+        var x1 = (((e.layerX - self.options.pick_distance) - width / 2) / self.scale) + self.x_center;
+        var y1 = (((e.layerY + self.options.pick_distance) - height / 2) / -self.scale) + self.y_center;
+        var x2 = (((e.layerX + self.options.pick_distance) - width / 2) / self.scale) + self.x_center;
+        var y2 = (((e.layerY - self.options.pick_distance) - height / 2) / -self.scale) + self.y_center;
       }
 
       self.start_drag = null;
       self.end_drag = null;
 
-      var length = self.data[0].length;
-      for(var i = 0; i != length; ++i)
+      var x = self.options.x;
+      var y = self.options.y;
+      var count = x.length;
+      for(var i = 0; i != count; ++i)
       {
-        if(x1 <= self.data[0][i] && self.data[0][i] <= x2 && y1 <= self.data[1][i] && self.data[1][i] <= y2)
+        if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
         {
           self.options.selection.push(i);
         }
       }
 
       self._schedule_update(false, true);
-      self.element.trigger("selection-changed", self.options.selection);
+      self.element.trigger("selection-changed", [self.options.selection]);
     });
   },
 
   _setOption: function(key, value)
   {
+    console.log("_setOption()", key, value);
     this.options[key] = value;
 
     if(key == "x")
@@ -124,7 +136,7 @@ $.widget("cca.scatterplot",
       this._schedule_update(true, true);
     }
 
-    if(key == "y")
+    else if(key == "y")
     {
       this.y_min = d3.min(this.options.y);
       this.y_max = d3.max(this.options.y);
@@ -133,18 +145,20 @@ $.widget("cca.scatterplot",
       this._schedule_update(true, true);
     }
 
-    if(key == "v")
+    else if(key == "v")
     {
       this.v_min = d3.min(this.options.v);
       this.v_max = d3.max(this.options.v);
+      this.v_center = (this.v_min + this.v_max) / 2;
+      this.options.color.domain([this.v_min, this.v_center, this.v_max]);
       //this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
 
       this._schedule_update(true, true);
     }
 
-    if(key == "selection")
+    else if(key == "selection")
     {
-      this._schedule_update(true, false);
+      this._schedule_update(false, true);
     }
 
 /*
@@ -156,20 +170,20 @@ $.widget("cca.scatterplot",
     }
 */
 
-    if(key == "width")
+    else if(key == "width")
     {
-      this.element.attr("width", parameters.width).css("width", parameters.width);
-      this.data_canvas.attr("width", parameters.width);
-      this.selection_canvas.attr("width", parameters.width);
+      this.element.attr("width", this.options.width).css("width", this.options.width);
+      this.data_canvas.attr("width", this.options.width);
+      this.selection_canvas.attr("width", this.options.width);
 
       this._schedule_update(true, true);
     }
 
-    if(key == "height")
+    else if(key == "height")
     {
-      this.element.attr("height", parameters.height).css("height", parameters.height);
-      this.data_canvas.attr("height", parameters.height);
-      this.selection_canvas.attr("height", parameters.height);
+      this.element.attr("height", this.options.height).css("height", this.options.height);
+      this.data_canvas.attr("height", this.options.height);
+      this.selection_canvas.attr("height", this.options.height);
 
       this._schedule_update(true, true);
     }
@@ -239,7 +253,7 @@ $.widget("cca.scatterplot",
         this.data_context.lineWidth = 1 / this.scale;
         for(var i = 0; i != count; ++i)
         {
-          this.data_context.fillStyle = this.color(v[i]);
+          this.data_context.fillStyle = this.options.color(v[i]);
           this.data_context.beginPath();
           this.data_context.arc(x[i], y[i], radius, 0, twopi);
           this.data_context.fill();
@@ -252,7 +266,7 @@ $.widget("cca.scatterplot",
         var size = 2 / this.scale;
         for(var i = 0; i != count; ++i)
         {
-          this.data_context.fillStyle = this.color(v[i]);
+          this.data_context.fillStyle = this.options.color(v[i]);
           this.data_context.fillRect(x[i], y[i], size, size);
         }
       }
@@ -278,7 +292,7 @@ $.widget("cca.scatterplot",
       for(var i in this.options.selection)
       {
         var index = this.options.selection[i];
-        this.selection_context.fillStyle = this.color(v[index]);
+        this.selection_context.fillStyle = this.options.color(v[index]);
         this.selection_context.beginPath();
         this.selection_context.arc(x[index], y[index], radius, 0, twopi);
         this.selection_context.fill();
