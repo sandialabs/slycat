@@ -7,7 +7,7 @@ rights in this software.
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM barplot visualization, for use with the cca model.
 
-function cca_table_component(parameters)
+function cca_barplot(parameters)
 {
   this.table = parameters.table.empty();
 

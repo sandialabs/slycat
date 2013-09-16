@@ -125,7 +125,7 @@ rights in this software.
           </div>
         </div>
         <div id="scatterplot-pane" class="ui-layout-east">
-          <canvas id="cca-scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
+          <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
         </div>
       </div>
       <div id="simulation-pane" class="ui-layout-center">
@@ -712,7 +712,7 @@ rights in this software.
             east : {
               size : ($("#content-pane").height() / 2) + 40,
               resizeWhileDragging : false,
-              onresize : function() { $("#cca-scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
+              onresize : function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
               }
             });
 
@@ -791,14 +791,14 @@ rights in this software.
               var count = x[0].length;
               for(var i = 0; i != count; ++i)
                 v[i] = i;
-              $("#cca-scatterplot").scatterplot("option", {v : v});
+              $("#scatterplot").scatterplot("option", {v : v});
             }
             else if(type == "input")
             {
               getBinaryArray(v_chunker, input_columns[index], function(result)
               {
                 v = result;
-                $("#cca-scatterplot").scatterplot("option", {v : v});
+                $("#scatterplot").scatterplot("option", {v : v});
               });
             }
             else if(type == "output")
@@ -806,7 +806,7 @@ rights in this software.
               getBinaryArray(v_chunker, output_columns[index], function(result)
               {
                 v = result;
-                $("#cca-scatterplot").scatterplot("option", {v : v});
+                $("#scatterplot").scatterplot("option", {v : v});
               });
             }
           }
@@ -840,7 +840,7 @@ rights in this software.
           // Setup the cca table ...
           if(inputs && outputs && r2_statistics && wilks_statistics && x_loadings && y_loadings)
           {
-            var cca_table = new cca_table_component({
+            var barplot = new cca_barplot({
               table: $("#barplot"),
               inputs: inputs,
               outputs: outputs,
@@ -861,7 +861,7 @@ rights in this software.
           }
 
           // Setup the simulation scatterplot ...
-          $("#cca-scatterplot").scatterplot({
+          $("#scatterplot").scatterplot({
             x: x,
             y: y,
             v: v,
@@ -898,11 +898,11 @@ rights in this software.
           }
 
           // Setup linked selections ...
-          if(cca_table)
+          if(barplot)
           {
             $("#barplot").bind("component-changed", function(event, component)
             {
-              $("#cca-scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+              $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
             });
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
@@ -910,13 +910,13 @@ rights in this software.
             });
           }
 
-          if(cca_table && cca_simulation_table_instance)
+          if(barplot && cca_simulation_table_instance)
           {
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
               cca_simulation_table_instance.update({highlight: [type, index]});
             });
-            cca_simulation_table_instance.update({add_variable_callback: function(type, index) { cca_table.update({highlight: [type, index]}); }});
+            cca_simulation_table_instance.update({add_variable_callback: function(type, index) { barplot.update({highlight: [type, index]}); }});
           }
 
           if(cca_simulation_table_instance)
@@ -925,11 +925,11 @@ rights in this software.
             cca_simulation_table_instance.update({
               add_simulation_callback: function(selection)
               {
-                $("#cca-scatterplot").scatterplot("option", {selection: selection});
+                $("#scatterplot").scatterplot("option", {selection: selection});
               }
             });
             // Selects row in simulation table when point in scatterplot is selected
-            $("#cca-scatterplot").bind("selection-changed", function(event, selection)
+            $("#scatterplot").bind("selection-changed", function(event, selection)
             {
               cca_simulation_table_instance.update({simulation_selection: selection});
             });
@@ -947,26 +947,26 @@ rights in this software.
           {
             var component = bookmark["cca-component"];
 
-            if(cca_table)
-              cca_table.update({component: component});
+            if(barplot)
+              barplot.update({component: component});
 
-            $("#cca-scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
           }
           else
           {
-            window.setTimeout(function() { cca_table.update({component: 0}); }, 2000);
+            window.setTimeout(function() { barplot.update({component: 0}); }, 2000);
           }
 
           if("simulations" in bookmark)
           {
-            $("#cca-scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
+            $("#scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
           }
 
           if("variable-type" in bookmark && "variable-index" in bookmark)
           {
             // Update the selected variable in the cca table
-            if(cca_table) {
-              cca_table.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
+            if(barplot) {
+              barplot.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
             }
             // Update the selected variable (i.e., colored column) in the simulation table
             if(cca_simulation_table_instance) {
@@ -977,8 +977,8 @@ rights in this software.
           if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
           {
             // Update the sort order of the variables in the bookmarked cca component
-            if(cca_table)
-              cca_table.update({
+            if(barplot)
+              barplot.update({
                 sort_component: bookmark["sort-cca-component"],
                 sort_component_direction: bookmark["sort-direction-cca-component"],
               });
