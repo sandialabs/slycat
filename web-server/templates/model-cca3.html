@@ -28,7 +28,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/table-cca-simulation.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.ccaloader.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.headerbuttons.js"></script>
@@ -874,7 +874,7 @@ rights in this software.
           // Setup the simulation table ...
           if(inputs && outputs && data_table)
           {
-            cca_simulation_table_instance = new cca2_simulation_table({
+            cca_simulation_table_instance = new cca_table({
               container: "#simulation-table-pane",
               index: index,
               inputs: inputs,

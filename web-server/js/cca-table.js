@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-function cca2_simulation_table(parameters, server_root, workerId)
+function cca_table(parameters, server_root, workerId)
 {
 
   this.simulation_callbacks = [];
