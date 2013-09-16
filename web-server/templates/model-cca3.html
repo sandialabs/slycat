@@ -840,24 +840,24 @@ rights in this software.
           // Setup the cca table ...
           if(inputs && outputs && r2_statistics && wilks_statistics && x_loadings && y_loadings)
           {
-            var barplot = new cca_barplot({
-              table: $("#barplot"),
+            $("#barplot").barplot({
               inputs: inputs,
               outputs: outputs,
-              statistics: [r2_statistics, wilks_statistics],
+              r2: r2_statistics,
+              wilks: wilks_statistics,
               x_loadings: x_loadings,
               y_loadings: y_loadings,
-              bookmarker: bookmarker,
-              });
-
-            $("#barplot").bind("component-changed", function(event, component)
-            {
-              selected_cca_component_changed(component);
-            });
-            $("#barplot").bind("variable-changed", function(event, type, index)
-            {
-              selected_variable_changed(type, index);
-            });
+              bookmarker: bookmarker
+              })
+              .bind("component-changed", function(event, component)
+              {
+                selected_cca_component_changed(component);
+              })
+              .bind("variable-changed", function(event, type, index)
+              {
+                selected_variable_changed(type, index);
+              })
+              ;
           }
 
           // Setup the simulation scatterplot ...
@@ -898,25 +898,29 @@ rights in this software.
           }
 
           // Setup linked selections ...
-          if(barplot)
-          {
-            $("#barplot").bind("component-changed", function(event, component)
-            {
-              $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
-            });
-            $("#barplot").bind("variable-changed", function(event, type, index)
-            {
-              update_scatterplot_value(type, index);
-            });
-          }
+            $("#barplot")
+              .bind("component-changed", function(event, component)
+              {
+                $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+              })
+              .bind("variable-changed", function(event, type, index)
+              {
+                update_scatterplot_value(type, index);
+              })
+              ;
 
-          if(barplot && cca_simulation_table_instance)
+          if(cca_simulation_table_instance)
           {
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
               cca_simulation_table_instance.update({highlight: [type, index]});
             });
-            cca_simulation_table_instance.update({add_variable_callback: function(type, index) { barplot.update({highlight: [type, index]}); }});
+
+            cca_simulation_table_instance.update({add_variable_callback: function(type, index)
+              {
+                $("#barplot").barplot("option", {variable: [type, index]});
+              }
+            });
           }
 
           if(cca_simulation_table_instance)
@@ -946,15 +950,15 @@ rights in this software.
           if("cca-component" in bookmark)
           {
             var component = bookmark["cca-component"];
-
-            if(barplot)
-              barplot.update({component: component});
-
+            $("#barplot").barplot("option", {component:component});
             $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
           }
           else
           {
-            window.setTimeout(function() { barplot.update({component: 0}); }, 2000);
+            window.setTimeout(function()
+            {
+              $("#barplot").barplot("option", {component: 0});
+            }, 2000);
           }
 
           if("simulations" in bookmark)
@@ -965,9 +969,10 @@ rights in this software.
           if("variable-type" in bookmark && "variable-index" in bookmark)
           {
             // Update the selected variable in the cca table
-            if(barplot) {
-              barplot.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
-            }
+            $("#barplot").barplot("option",
+            {
+              variable: [bookmark["variable-type"], bookmark["variable-index"]]
+            });
             // Update the selected variable (i.e., colored column) in the simulation table
             if(cca_simulation_table_instance) {
               cca_simulation_table_instance.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
@@ -977,10 +982,10 @@ rights in this software.
           if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
           {
             // Update the sort order of the variables in the bookmarked cca component
-            if(barplot)
-              barplot.update({
-                sort_component: bookmark["sort-cca-component"],
-                sort_component_direction: bookmark["sort-direction-cca-component"],
+              $("#barplot").barplot("option",
+              {
+                "sort-component": bookmark["sort-cca-component"],
+                "sort-component-direction": bookmark["sort-direction-cca-component"],
               });
           }
         }
