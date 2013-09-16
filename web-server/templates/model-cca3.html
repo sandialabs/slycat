@@ -847,10 +847,17 @@ rights in this software.
               statistics: [r2_statistics, wilks_statistics],
               x_loadings: x_loadings,
               y_loadings: y_loadings,
-              add_component_callback: selected_cca_component_changed,
-              add_variable_callback: selected_variable_changed,
               bookmarker: bookmarker,
               });
+
+            $("#cca-table").bind("component-changed", function(event, component)
+            {
+              selected_cca_component_changed(component);
+            });
+            $("#cca-table").bind("variable-changed", function(event, type, index)
+            {
+              selected_variable_changed(type, index);
+            });
           }
 
           // Setup the simulation scatterplot ...
@@ -893,18 +900,22 @@ rights in this software.
           // Setup linked selections ...
           if(cca_table)
           {
-            cca_table.update({add_variable_callback: update_scatterplot_value});
-            cca_table.update({
-              add_component_callback: function(component)
-              {
-                $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
-              }
+            $("#cca-table").bind("component-changed", function(event, component)
+            {
+              $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+            });
+            $("#cca-table").bind("variable-changed", function(event, type, index)
+            {
+              update_scatterplot_value(type, index);
             });
           }
 
           if(cca_table && cca_simulation_table_instance)
           {
-            cca_table.update({add_variable_callback: function(type, index) { cca_simulation_table_instance.update({highlight: [type, index]}); }});
+            $("#cca-table").bind("variable-changed", function(event, type, index)
+            {
+              cca_simulation_table_instance.update({highlight: [type, index]});
+            });
             cca_simulation_table_instance.update({add_variable_callback: function(type, index) { cca_table.update({highlight: [type, index]}); }});
           }
 

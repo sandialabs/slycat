@@ -10,8 +10,6 @@ rights in this software.
 function cca_table_component(parameters)
 {
   this.table = parameters.table.empty();
-  this.component_callbacks = [];
-  this.variable_callbacks = [];
 
   function component_class(component)
   {
@@ -95,9 +93,7 @@ function cca_table_component(parameters)
     return function()
     {
       context.select_component(component);
-
-      for(var i = 0; i != context.component_callbacks.length; ++i)
-        context.component_callbacks[i](component);
+      context.table.trigger("component-changed", component);
     }
   }
 
@@ -150,8 +146,7 @@ function cca_table_component(parameters)
       context.table.find("tr").removeClass("selected-variable");
       row.addClass("selected-variable");
 
-      for(var i = 0; i != context.variable_callbacks.length; ++i)
-        context.variable_callbacks[i](variable_type, variable_index);
+      context.table.trigger("variable-changed", [variable_type, variable_index]);
     }
   }
 
@@ -242,12 +237,6 @@ function cca_table_component(parameters)
       this.select_component(parameters.component);
     }
 
-    if(parameters.add_component_callback)
-      this.component_callbacks.push(parameters.add_component_callback);
-
-    if(parameters.add_variable_callback)
-      this.variable_callbacks.push(parameters.add_variable_callback);
-
     if(parameters.highlight)
     {
       this.table.find("tr").removeClass("selected-variable");
@@ -256,8 +245,10 @@ function cca_table_component(parameters)
       if(parameters.highlight[0] != 'simulation')
         this.table.find("tr." + parameters.highlight[0] + ".index-" + parameters.highlight[1]).addClass("selected-variable");
 
+/*
       for(var i = 0; i != this.variable_callbacks.length; ++i)
         this.variable_callbacks[i](parameters.highlight[0], parameters.highlight[1]);
+*/
     }
 
     if(parameters.sort_component != null && parameters.sort_component_direction != null)
