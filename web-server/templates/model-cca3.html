@@ -20,6 +20,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/modernizr.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-mapper.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -123,7 +124,7 @@ rights in this software.
           </div>
         </div>
         <div id="scatterplot-pane" class="ui-layout-east">
-          <canvas id="scatterplot-canvas" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
+          <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
         </div>
       </div>
       <div id="simulation-pane" class="ui-layout-center">
@@ -152,7 +153,6 @@ rights in this software.
         var bookmark = bookmarker.getState();
 
         var cca_simulation_table_instance = null;
-        var cca_scatterplot = null;
 
         // Start up a color mapper
         var colorMapper = new color_mapper();
@@ -460,9 +460,9 @@ rights in this software.
         var scale_inputs = {{scale-inputs}};
         var r2_statistics = null;
         var wilks_statistics = null;
-        var x = null;
-        var y = null;
-        var v = null;
+        var x = [];
+        var y = [];
+        var v = [];
         var x_loadings = null;
         var y_loadings = null;
 
@@ -481,13 +481,6 @@ rights in this software.
 
         // Create a data table array chunker and get the index column from it ...
         var v_chunker = createArrayChunker("data-table");
-/*
-        getBinaryArray(v_chunker, 1, function(result)
-        {
-          console.info("v:");
-          console.info(result);
-        });
-*/
 
         // Create a cca-statistics array chunker worker and get the cca-statistics from it
         var statistics_chunker = createArrayChunker("cca-statistics");
@@ -697,9 +690,6 @@ rights in this software.
           }
           all_column_indexes = all_column_indexes.concat(other_columns);
 
-
-          var scatterplot_data = [x[cca_component], y[cca_component], new Float64Array(x[cca_component].length)];
-
           // Layout our resizable panels ...
           $("body").layout({
             south : {
@@ -721,7 +711,7 @@ rights in this software.
             east : {
               size : ($("#content-pane").height() / 2) + 40,
               resizeWhileDragging : false,
-              onresize : function() { cca_scatterplot.update({width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
+              onresize : function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
               }
             });
 
@@ -792,39 +782,30 @@ rights in this software.
             bookmarker.updateState( {"sort-field" : fieldName, "sort-direction" : direction} );
           }
 
-          // Updates the scatterplot when user selects a new cca component in the cca table
-          function update_scatterplot_component(component)
-          {
-            scatterplot_data[0] = x[component];
-            scatterplot_data[1] = y[component];
-
-            cca_scatterplot.update({data: scatterplot_data});
-          }
-
           // Updates the scatterplot when user selects a new input or output variable in the cca table
           function update_scatterplot_value(type, index)
           {
             if(type == "simulation")
             {
-              var count = scatterplot_data[0].length;
+              var count = x[0].length;
               for(var i = 0; i != count; ++i)
-                scatterplot_data[2][i] = i;
-              cca_scatterplot.update({ value_label: "Index", data: scatterplot_data});
+                v[i] = i;
+              $("#scatterplot").scatterplot("option", {v : v});
             }
             else if(type == "input")
             {
               getBinaryArray(v_chunker, input_columns[index], function(result)
               {
-                scatterplot_data[2] = result;
-                cca_scatterplot.update({ value_label: "Input", data: scatterplot_data});
+                v = result;
+                $("#scatterplot").scatterplot("option", {v : v});
               });
             }
             else if(type == "output")
             {
               getBinaryArray(v_chunker, output_columns[index], function(result)
               {
-                scatterplot_data[2] = result;
-                cca_scatterplot.update({ value_label: "Output", data: scatterplot_data});
+                v = result;
+                $("#scatterplot").scatterplot("option", {v : v});
               });
             }
           }
@@ -834,9 +815,7 @@ rights in this software.
             // Update the color coding of the scatterplot based on selected variable
             if("variable-type" in bookmark && "variable-index" in bookmark)
             {
-              if(cca_scatterplot) {
-                update_scatterplot_value(bookmark["variable-type"], bookmark["variable-index"]);
-              }
+              update_scatterplot_value(bookmark["variable-type"], bookmark["variable-index"]);
             }
             // Updates the selected row(s) in the simulation table
             if("simulations" in bookmark)
@@ -874,13 +853,14 @@ rights in this software.
           }
 
           // Setup the simulation scatterplot ...
-          cca_scatterplot = new cca_scatterplot_component({
-            container: "#scatterplot-canvas",
-            data: scatterplot_data,
+          $("#scatterplot").scatterplot({
+            x: x,
+            y: y,
+            v: v,
             width: $("#scatterplot-pane").width(),
-            height: $("#scatterplot-pane").height(),
-            add_simulation_callback: selected_simulations_changed,
-            colorMapper: colorMapper,
+            height: $("#scatterplot-pane").height()
+            //add_simulation_callback: selected_simulations_changed,
+            //colorMapper: colorMapper,
             });
 
           // Setup the simulation table ...
@@ -910,10 +890,15 @@ rights in this software.
           }
 
           // Setup linked selections ...
-          if(cca_table && cca_scatterplot)
+          if(cca_table)
           {
             cca_table.update({add_variable_callback: update_scatterplot_value});
-            cca_table.update({add_component_callback: update_scatterplot_component});
+            cca_table.update({
+              add_component_callback: function(component)
+              {
+                $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+              }
+            });
           }
 
           if(cca_table && cca_simulation_table_instance)
@@ -922,12 +907,20 @@ rights in this software.
             cca_simulation_table_instance.update({add_variable_callback: function(type, index) { cca_table.update({highlight: [type, index]}); }});
           }
 
-          if(cca_simulation_table_instance && cca_scatterplot)
+          if(cca_simulation_table_instance)
           {
             // Selects scatterplot point when row in simulation table is clicked
-            cca_simulation_table_instance.update({add_simulation_callback: function(indices) { cca_scatterplot.update({selection: indices}); }});
-            // Selects row in simulation table when point in scatterplot is clicked
-            cca_scatterplot.update({add_simulation_callback: function(indices) { cca_simulation_table_instance.update({simulation_selection: indices}); }});
+            cca_simulation_table_instance.update({
+              add_simulation_callback: function(selection)
+              {
+                $("#scatterplot").scatterplot("option", {selection: selection});
+              }
+            });
+            // Selects row in simulation table when point in scatterplot is selected
+            $("#scatterplot").bind("selection-changed", function(event, selection)
+            {
+              cca_simulation_table_instance.update({simulation_selection: selection});
+            });
           }
 
           /////////////////////////////////////////////////////////////////////////////////////
@@ -940,10 +933,12 @@ rights in this software.
           // if none have been selected.
           if("cca-component" in bookmark)
           {
+            var component = bookmark["cca-component"];
+
             if(cca_table)
-              cca_table.update({component: bookmark["cca-component"]});
-            if(cca_scatterplot)
-              update_scatterplot_component(bookmark["cca-component"]);
+              cca_table.update({component: component});
+
+            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
           }
           else
           {
@@ -952,10 +947,7 @@ rights in this software.
 
           if("simulations" in bookmark)
           {
-            // Updates the selected point(s) in the scatterplot
-            if(cca_scatterplot) {
-              cca_scatterplot.update({selection: bookmark["simulations"]});
-            }
+            $("#scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
           }
 
           if("variable-type" in bookmark && "variable-index" in bookmark)
@@ -1246,263 +1238,6 @@ rights in this software.
 
         this.update(parameters);
       }
-
-      //////////////////////////////////////////////////////////////////////////////////
-      // cca_scatterplot_component
-
-      function cca_scatterplot_component(parameters)
-      {
-        this.data = [];
-        this.selection = [];
-        this.start_drag = null;
-        this.end_drag = null;
-        this.color_mapper = parameters.colorMapper;
-        this.simulation_callbacks = [];
-
-        this.canvas = $(parameters.container);
-        this.context = this.canvas.get(0).getContext("2d");
-
-        this.data_canvas = $("<canvas>");
-        this.data_context = this.data_canvas.get(0).getContext("2d");
-
-        this.selection_canvas = $("<canvas>");
-        this.selection_context = this.selection_canvas.get(0).getContext("2d");
-
-        var self = this;
-
-        this.canvas.mousedown(function(e)
-        {
-          self.start_drag = [e.layerX, e.layerY];
-          self.end_drag = null;
-        });
-
-        this.canvas.mousemove(function(e)
-        {
-          if(self.start_drag) // Mouse is down ...
-          {
-            if(self.end_drag) // Already dragging ...
-            {
-              self.end_drag = [e.layerX, e.layerY];
-
-              self.context.clearRect(0, 0, self.canvas.width(), self.canvas.height());
-              self.context.drawImage(self.data_canvas.get(0), 0, 0);
-              self.context.drawImage(self.selection_canvas.get(0), 0, 0);
-              self.context.fillStyle = "rgba(255, 255, 0, 0.3)";
-              self.context.fillRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
-              self.context.strokeStyle = "rgb(255, 255, 0)";
-              self.context.lineWidth = 2.0;
-              self.context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
-            }
-            else
-            {
-              if(Math.abs(e.layerX - self.start_drag[0]) > 3 || Math.abs(e.layerY - self.start_drag[1]) > 3) // Start dragging ...
-              {
-                self.end_drag = [e.layerX, e.layerY];
-              }
-            }
-          }
-        });
-
-        this.canvas.mouseup(function(e)
-        {
-          var selection = [];
-
-          if(self.start_drag && self.end_drag) // Rubber-band selection ...
-          {
-            var x1 = ((Math.min(self.start_drag[0], self.end_drag[0]) - self.canvas.width() / 2) / self.scale) + self.x_center;
-            var y1 = ((Math.max(self.start_drag[1], self.end_drag[1]) - self.canvas.height() / 2) / -self.scale) + self.y_center;
-            var x2 = ((Math.max(self.start_drag[0], self.end_drag[0]) - self.canvas.width() / 2) / self.scale) + self.x_center;
-            var y2 = ((Math.min(self.start_drag[1], self.end_drag[1]) - self.canvas.height() / 2) / -self.scale) + self.y_center;
-          }
-          else // Pick selection ...
-          {
-            var range = 3;
-            var x1 = (((e.layerX - range) - self.canvas.width() / 2) / self.scale) + self.x_center;
-            var y1 = (((e.layerY + range) - self.canvas.height() / 2) / -self.scale) + self.y_center;
-            var x2 = (((e.layerX + range) - self.canvas.width() / 2) / self.scale) + self.x_center;
-            var y2 = (((e.layerY - range) - self.canvas.height() / 2) / -self.scale) + self.y_center;
-          }
-
-          self.start_drag = null;
-          self.end_drag = null;
-
-          var length = self.data[0].length;
-          for(var i = 0; i != length; ++i)
-          {
-            if(x1 <= self.data[0][i] && self.data[0][i] <= x2 && y1 <= self.data[1][i] && self.data[1][i] <= y2)
-            {
-              selection.push(i);
-            }
-          }
-
-          self.update({selection:selection});
-
-          for(var i in self.simulation_callbacks)
-            self.simulation_callbacks[i](selection);
-        });
-
-        this.update = function(parameters)
-        {
-          //console.info("Update:", parameters);
-
-          if(parameters.data)
-          {
-            this.data = parameters.data;
-
-            this.x_min = d3.min(this.data[0]);
-            this.x_max = d3.max(this.data[0]);
-            this.y_min = d3.min(this.data[1]);
-            this.y_max = d3.max(this.data[1]);
-
-            this.x_center = (this.x_min + this.x_max) / 2;
-            this.y_center = (this.y_min + this.y_max) / 2;
-
-            var v_min = d3.min(this.data[2]);
-            var v_max = d3.max(this.data[2]);
-            this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
-          }
-
-          if(parameters.color)
-          {
-            var v_min = d3.min(this.data[2]);
-            var v_max = d3.max(this.data[2]);
-            this.color = this.color_mapper.createSelectedColorMap(v_min, v_max);
-          }
-
-          if(parameters.width)
-          {
-            this.canvas.attr("width", parameters.width).css("width", parameters.width);
-            this.data_canvas.attr("width", parameters.width);
-            this.selection_canvas.attr("width", parameters.width);
-          }
-
-          if(parameters.height)
-          {
-            this.canvas.attr("height", parameters.height).css("height", parameters.height);
-            this.data_canvas.attr("height", parameters.height);
-            this.selection_canvas.attr("height", parameters.height);
-          }
-
-          if(parameters.data || parameters.width || parameters.height)
-          {
-            var width = this.canvas.attr("width");
-            var height = this.canvas.attr("height");
-            this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
-          }
-
-          if(parameters.add_simulation_callback)
-          {
-            this.simulation_callbacks.push(parameters.add_simulation_callback);
-          }
-
-          if(parameters.selection)
-          {
-            this.selection = parameters.selection;
-          }
-
-          if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
-          {
-            //console.info("Render " + this.selection.length + " selected data points");
-            var width = this.selection_canvas.attr("width");
-            var height = this.selection_canvas.attr("height");
-
-            this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
-            this.selection_context.clearRect(0, 0, width, height);
-            if(this.data)
-            {
-              this.selection_context.translate(width / 2, height / 2);
-              this.selection_context.scale(this.scale, -this.scale);
-              this.selection_context.translate(-this.x_center, -this.y_center);
-
-              // Draw selected points ...
-              var radius = 5 / this.scale;
-              var twopi = Math.PI * 2;
-              this.selection_context.strokeStyle = "black";
-              this.selection_context.lineWidth = 1 / this.scale;
-              for(var i in this.selection)
-              {
-                var index = this.selection[i];
-                this.selection_context.fillStyle = this.color(this.data[2][index]);
-                this.selection_context.beginPath();
-                this.selection_context.arc(this.data[0][index], this.data[1][index], radius, 0, twopi);
-                this.selection_context.fill();
-                this.selection_context.stroke();
-              }
-            }
-          }
-
-          if(parameters.color || parameters.data || parameters.width || parameters.height)
-          {
-            //console.info("Render " + this.data[0].length + " data points");
-            this.data_context.setTransform(1, 0, 0, 1, 0, 0);
-            this.data_context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
-
-            // Draw labels ...
-            this.data_context.font = "10pt Arial";
-            this.data_context.textAlign = "center";
-            this.data_context.fillStyle = "gray";
-
-            this.data_context.save();
-            this.data_context.textBaseline = "alphabetic";
-            this.data_context.translate(this.canvas.width() / 2, this.canvas.height() - 5);
-            this.data_context.fillText("Input Metavariable", 0, 0);
-            this.data_context.restore();
-
-            this.data_context.save();
-            this.data_context.textBaseline = "top";
-            this.data_context.translate(5, this.canvas.height() / 2);
-            this.data_context.rotate(-Math.PI / 2);
-            this.data_context.fillText("Output Metavariable", 0, 0);
-            this.data_context.restore();
-
-            if(this.data)
-            {
-              this.data_context.translate(this.canvas.width() / 2, this.canvas.height() / 2);
-              this.data_context.scale(this.scale, -this.scale);
-              this.data_context.translate(-this.x_center, -this.y_center);
-
-              // Draw points using circles ...
-              if(this.data[0].length < 100000)
-              {
-                var radius = 2 / this.scale;
-                var twopi = Math.PI * 2;
-                this.data_context.stokeStyle = "black";
-                this.data_context.lineWidth = 1 / this.scale;
-                var length = this.data[0].length;
-                for(var i = 0; i != length; ++i)
-                {
-                  this.data_context.fillStyle = this.color(this.data[2][i]);
-                  this.data_context.beginPath();
-                  this.data_context.arc(this.data[0][i], this.data[1][i], radius, 0, twopi);
-                  this.data_context.fill();
-                  this.data_context.stroke();
-                }
-              }
-              // Draw points using rectangles ...
-              else
-              {
-                var size = 2 / this.scale;
-                var length = this.data[0].length;
-                for(var i = 0; i != length; ++i)
-                {
-                  this.data_context.fillStyle = this.color(this.data[2][i]);
-                  this.data_context.fillRect(this.data[0][i], this.data[1][i], size, size);
-                }
-              }
-            }
-          }
-
-          if(parameters.color || parameters.data || parameters.width || parameters.height || parameters.selection)
-          {
-            this.context.clearRect(0, 0, this.canvas.width(), this.canvas.height());
-            this.context.drawImage(this.data_canvas.get(0), 0, 0);
-            this.context.drawImage(this.selection_canvas.get(0), 0, 0);
-          }
-        }
-
-        this.update(parameters);
-      }
-
     </script>
   </body>
 </html>
