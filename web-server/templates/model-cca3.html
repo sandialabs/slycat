@@ -120,12 +120,12 @@ rights in this software.
                 <tbody id="error-table"></tbody>
               </table>
             </div>
-            <table id="cca-table">
+            <table id="barplot">
             </table>
           </div>
         </div>
         <div id="scatterplot-pane" class="ui-layout-east">
-          <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
+          <canvas id="cca-scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
         </div>
       </div>
       <div id="simulation-pane" class="ui-layout-center">
@@ -712,7 +712,7 @@ rights in this software.
             east : {
               size : ($("#content-pane").height() / 2) + 40,
               resizeWhileDragging : false,
-              onresize : function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
+              onresize : function() { $("#cca-scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
               }
             });
 
@@ -791,14 +791,14 @@ rights in this software.
               var count = x[0].length;
               for(var i = 0; i != count; ++i)
                 v[i] = i;
-              $("#scatterplot").scatterplot("option", {v : v});
+              $("#cca-scatterplot").scatterplot("option", {v : v});
             }
             else if(type == "input")
             {
               getBinaryArray(v_chunker, input_columns[index], function(result)
               {
                 v = result;
-                $("#scatterplot").scatterplot("option", {v : v});
+                $("#cca-scatterplot").scatterplot("option", {v : v});
               });
             }
             else if(type == "output")
@@ -806,7 +806,7 @@ rights in this software.
               getBinaryArray(v_chunker, output_columns[index], function(result)
               {
                 v = result;
-                $("#scatterplot").scatterplot("option", {v : v});
+                $("#cca-scatterplot").scatterplot("option", {v : v});
               });
             }
           }
@@ -841,7 +841,7 @@ rights in this software.
           if(inputs && outputs && r2_statistics && wilks_statistics && x_loadings && y_loadings)
           {
             var cca_table = new cca_table_component({
-              table: $("#cca-table"),
+              table: $("#barplot"),
               inputs: inputs,
               outputs: outputs,
               statistics: [r2_statistics, wilks_statistics],
@@ -850,18 +850,18 @@ rights in this software.
               bookmarker: bookmarker,
               });
 
-            $("#cca-table").bind("component-changed", function(event, component)
+            $("#barplot").bind("component-changed", function(event, component)
             {
               selected_cca_component_changed(component);
             });
-            $("#cca-table").bind("variable-changed", function(event, type, index)
+            $("#barplot").bind("variable-changed", function(event, type, index)
             {
               selected_variable_changed(type, index);
             });
           }
 
           // Setup the simulation scatterplot ...
-          $("#scatterplot").scatterplot({
+          $("#cca-scatterplot").scatterplot({
             x: x,
             y: y,
             v: v,
@@ -900,11 +900,11 @@ rights in this software.
           // Setup linked selections ...
           if(cca_table)
           {
-            $("#cca-table").bind("component-changed", function(event, component)
+            $("#barplot").bind("component-changed", function(event, component)
             {
-              $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+              $("#cca-scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
             });
-            $("#cca-table").bind("variable-changed", function(event, type, index)
+            $("#barplot").bind("variable-changed", function(event, type, index)
             {
               update_scatterplot_value(type, index);
             });
@@ -912,7 +912,7 @@ rights in this software.
 
           if(cca_table && cca_simulation_table_instance)
           {
-            $("#cca-table").bind("variable-changed", function(event, type, index)
+            $("#barplot").bind("variable-changed", function(event, type, index)
             {
               cca_simulation_table_instance.update({highlight: [type, index]});
             });
@@ -925,11 +925,11 @@ rights in this software.
             cca_simulation_table_instance.update({
               add_simulation_callback: function(selection)
               {
-                $("#scatterplot").scatterplot("option", {selection: selection});
+                $("#cca-scatterplot").scatterplot("option", {selection: selection});
               }
             });
             // Selects row in simulation table when point in scatterplot is selected
-            $("#scatterplot").bind("selection-changed", function(event, selection)
+            $("#cca-scatterplot").bind("selection-changed", function(event, selection)
             {
               cca_simulation_table_instance.update({simulation_selection: selection});
             });
@@ -950,7 +950,7 @@ rights in this software.
             if(cca_table)
               cca_table.update({component: component});
 
-            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+            $("#cca-scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
           }
           else
           {
@@ -959,7 +959,7 @@ rights in this software.
 
           if("simulations" in bookmark)
           {
-            $("#scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
+            $("#cca-scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
           }
 
           if("variable-type" in bookmark && "variable-index" in bookmark)

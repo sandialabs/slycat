@@ -25,59 +25,59 @@ rights in this software.
   overflow: auto;
 }
 
-#cca-table
+#barplot
 {
   margin: 2em;
   border-collapse: collapse;
 }
 
-#cca-table td
+#barplot td
 {
   text-align: right;
 }
 
-#cca-table td.value
+#barplot td.value
 {
   padding-right: 29px;
   padding-left: 23px;
 }
 
-#cca-table .input th
+#barplot .input th
 {
   background: #eeffe0;
 }
 
-#cca-table .input td
+#barplot .input td
 {
   background: #c7e9c0;
 }
 
-#cca-table .output th
+#barplot .output th
 {
   background: #eeeeff;
 }
 
-#cca-table .output td
+#barplot .output td
 {
   background: #dbd9eb;
 }
 
-#cca-table .bar
+#barplot .bar
 {
   padding: 0;
   margin: 0;
 }
 
-#cca-table td.bar:last-child 
+#barplot td.bar:last-child 
 {
   padding-right: 20px;
 }
-#cca-table td.bar:nth-child(2) 
+#barplot td.bar:nth-child(2) 
 {
   padding-left: 20px;
 }
 
-#cca-table .negative div
+#barplot .negative div
 {
   float: right;
   background-color: blue;
@@ -88,7 +88,7 @@ rights in this software.
   margin: 0;
 }
 
-#cca-table .positive div
+#barplot .positive div
 {
   float: left;
   background-color: red;
@@ -99,31 +99,31 @@ rights in this software.
   margin: 0;
 }
 
-#cca-table th.label
+#barplot th.label
 {
   border: 1px solid transparent;
   padding-left: 23px;
 }
 
-#cca-table th.label:hover
+#barplot th.label:hover
 {
   background: #ddd;
   border: 1px solid gray;
 }
 
-#cca-table tr.input.selected-variable th, #cca-table tr.input.selected-variable td
+#barplot tr.input.selected-variable th, #barplot tr.input.selected-variable td
 {
   background: #3ca654;
   color: white;
 }
 
-#cca-table tr.output.selected-variable th, #cca-table tr.output.selected-variable td
+#barplot tr.output.selected-variable th, #barplot tr.output.selected-variable td
 {
   background: #7767b0;
   color: white;
 }
 
-#cca-table th.label.selected-component, #cca-table th.label.selected-component:hover
+#barplot th.label.selected-component, #barplot th.label.selected-component:hover
 {
   background: #ddd;
   border-top: 1px solid gray;
@@ -131,7 +131,7 @@ rights in this software.
   border-right: 1px solid gray;
   border-bottom: 1px solid transparent;
 }
-#cca-table th.label span.sortCCAComponent {
+#barplot th.label span.sortCCAComponent {
   width: 15px;
   height: 15px;
   display: inline-block;
@@ -141,7 +141,7 @@ rights in this software.
   top: 3px;
   margin-left: 3px;
 }
-#cca-table th.label:hover .icon-sort-off,
+#barplot th.label:hover .icon-sort-off,
 .icon-sort-off:hover {
   background: transparent url(sort-desc-light.png) no-repeat center center;
 }
@@ -154,7 +154,7 @@ rights in this software.
   border: 1px solid #878787 !important;
 }
 
-#cca-table td.value.selected-component
+#barplot td.value.selected-component
 {
   background: #ddd;
   border-left: 1px solid gray;
