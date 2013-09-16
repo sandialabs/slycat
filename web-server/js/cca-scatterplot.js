@@ -124,7 +124,7 @@ $.widget("cca.scatterplot",
 
   _setOption: function(key, value)
   {
-    console.log("_setOption()", key, value);
+    console.log("cca.scatterplot._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "x")
@@ -191,7 +191,7 @@ $.widget("cca.scatterplot",
 
   _schedule_update: function(render_data, render_selection)
   {
-    console.log("_schedule_update()");
+    console.log("cca.scatterplot._schedule_update()");
     if(render_data)
       this.render_data = true;
     if(render_selection)
@@ -205,7 +205,7 @@ $.widget("cca.scatterplot",
 
   _update: function()
   {
-    console.log("_update()");
+    console.log("cca.scatterplot._update()");
     this.update = null;
 
     var width = this.element.attr("width");
