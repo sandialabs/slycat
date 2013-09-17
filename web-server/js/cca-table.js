@@ -7,8 +7,6 @@ rights in this software.
 function cca_table(parameters, server_root, workerId)
 {
   this.container = $(parameters.container);
-  this.simulation_callbacks = [];
-  this.variable_callbacks = [];
   this.sort_order_callbacks = [];
   this.index_column = parameters.index_column;
   var colorMapper = parameters.colorMapper;
@@ -191,9 +189,7 @@ function cca_table(parameters, server_root, workerId)
         index = input > -1 ? input : output;
       }
 
-      for(var j = 0; j != self.variable_callbacks.length; ++j) {
-        self.variable_callbacks[j]( type, index );
-      }
+      self.container.trigger("variable-changed", [type, index]);
     });
 
     grid.onSelectedRowsChanged.subscribe(function (e, args) {
@@ -210,16 +206,19 @@ function cca_table(parameters, server_root, workerId)
       }
     });
 
-    function fireOffSimulationCallbacks(){
+    function fireOffSimulationCallbacks()
+    {
+      console.log("cca.table trigger row-selection-changed");
       var selected_rows = grid.getSelectedRows();
-      if( grid ) {
+      if( grid )
+      {
         var indices = [];
-        for(var i=0; i<selected_rows.length; i++){
+        for(var i=0; i<selected_rows.length; i++)
+        {
           indices.push( grid.getDataItem(selected_rows[i]).Index );
         }
-        for(var j = 0; j != self.simulation_callbacks.length; ++j){
-          self.simulation_callbacks[j](indices);
-        }
+
+        self.container.trigger("row-selection-changed", [indices]);
       }
     }
 
@@ -405,20 +404,15 @@ function cca_table(parameters, server_root, workerId)
     if(parameters.highlight)
       this.highlight_variable(parameters.highlight[0], parameters.highlight[1]);
 
-    if(parameters.add_simulation_callback)
-      this.simulation_callbacks.push(parameters.add_simulation_callback);
-
-    if(parameters.add_variable_callback)
-      this.variable_callbacks.push(parameters.add_variable_callback);
-
     if(parameters.add_sort_order_callback)
       this.sort_order_callbacks.push(parameters.add_sort_order_callback);
 
     // Used to select row in simulation table when point in scatterplot is clicked
-    if(parameters.simulation_selection) {
+    if(parameters.simulation_selection)
+    {
       this.select_simulations(parameters.simulation_selection, false);
     }
-    
+
     // Used to restore selected row from bookmark
     if(parameters.unsorted_simulation_selection) {
       grid.setSelectedRows(parameters.unsorted_simulation_selection);
@@ -436,7 +430,7 @@ function cca_table(parameters, server_root, workerId)
         button.command = 'sort-descending';
         button.tooltip = 'Sort descending'
         doSort(parameters.sort_field, true);
-      } 
+      }
       else {
         button.cssClass = 'icon-sort-descending';
         button.command = 'sort-ascending';

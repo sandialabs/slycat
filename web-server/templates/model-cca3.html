@@ -869,7 +869,6 @@ rights in this software.
             v: v,
             width: $("#scatterplot-pane").width(),
             height: $("#scatterplot-pane").height()
-            //add_simulation_callback: selected_simulations_changed,
             //colorMapper: colorMapper,
             });
 
@@ -891,7 +890,6 @@ rights in this software.
               input_columns: input_columns,
               output_columns: output_columns,
               other_columns: other_columns,
-              add_simulation_callback: selected_simulations_changed,
               add_sort_order_callback: variable_sort_order_changed,
               colormap: bookmark["colormap"],
               colorMapper: colorMapper,
@@ -899,47 +897,70 @@ rights in this software.
             cca_simulation_table_instance.update({highlight: ["simulation", 0]});
           }
 
-          // Setup linked selections ...
-            $("#barplot")
-              .bind("component-changed", function(event, component)
-              {
-                $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
-              })
-              .bind("variable-changed", function(event, type, index)
-              {
-                update_scatterplot_value(type, index);
-              })
-              ;
+          ///////////////////////////////////////////////////////////////////////////////////////////////
+          // Setup linked selections.
 
+          // Changing the barplot component updates the scatterplot ...
+          $("#barplot").bind("component-changed", function(event, component)
+          {
+            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+          });
+
+          // Changing the barplot variable updates the scatterplot ...
+          $("#barplot").bind("variable-changed", function(event, type, index)
+          {
+            update_scatterplot_value(type, index);
+          });
+
+          // Changing the barplot variable updates the table ...
           if(cca_simulation_table_instance)
           {
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
               cca_simulation_table_instance.update({highlight: [type, index]});
             });
-
-            cca_simulation_table_instance.update({add_variable_callback: function(type, index)
-              {
-                $("#barplot").barplot("option", {variable: [type, index]});
-              }
-            });
           }
 
+          // Changing the table variable updates the barplot ...
+          $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
+          {
+            $("#barplot").barplot("option", {variable: [type, index]});
+          });
+
+          // Changing the table variable updates the scatterplot ...
+          $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
+          {
+            update_scatterplot_value(type, index);
+          });
+
+          // Changing the table row selection updates the scatterplot ...
+          $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
+          {
+            $("#scatterplot").scatterplot("option", {selection: selection});
+          });
+
+          // Changing the scatterplot selection updates the table row selection ..
           if(cca_simulation_table_instance)
           {
-            // Selects scatterplot point when row in simulation table is clicked
-            cca_simulation_table_instance.update({
-              add_simulation_callback: function(selection)
-              {
-                $("#scatterplot").scatterplot("option", {selection: selection});
-              }
-            });
-            // Selects row in simulation table when point in scatterplot is selected
             $("#scatterplot").bind("selection-changed", function(event, selection)
             {
               cca_simulation_table_instance.update({simulation_selection: selection});
             });
           }
+
+          ////////////////////////////////////////////////////////////////////////////////////
+          // Setup logging of user events.
+
+          // Log simulation selections ...
+          $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
+          {
+            selected_simulations_changed(selection);
+          });
+
+          $("#scatterplot").bind("selection-changed", function(event, selection)
+          {
+            selected_simulations_changed(selection);
+          });
 
           /////////////////////////////////////////////////////////////////////////////////////
           // Restore some of the state contained in the URL query string.
