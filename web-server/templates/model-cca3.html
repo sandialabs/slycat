@@ -130,6 +130,8 @@ rights in this software.
       </div>
       <div id="simulation-pane" class="ui-layout-center">
         <div id="simulation-table-pane" class="ui-layout-center">
+          <div id="cca-simulation-table-slickgrid">
+          </div>
         </div>
       </div>
     </div>
@@ -875,7 +877,7 @@ rights in this software.
           if(inputs && outputs && data_table)
           {
             cca_simulation_table_instance = new cca_table({
-              container: "#simulation-table-pane",
+              container: "#cca-simulation-table-slickgrid",
               index: index,
               inputs: inputs,
               outputs: outputs,

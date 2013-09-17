@@ -6,7 +6,7 @@ rights in this software.
 
 function cca_table(parameters, server_root, workerId)
 {
-
+  this.container = $(parameters.container);
   this.simulation_callbacks = [];
   this.variable_callbacks = [];
   this.sort_order_callbacks = [];
@@ -130,10 +130,7 @@ function cca_table(parameters, server_root, workerId)
       autoHeight: false // true just makes the grid full height with no scroll bars
     };
 
-    d3.select(parameters.container).append("div")
-      .attr("id", "cca-simulation-table-slickgrid")
-      ;
-    grid = new Slick.Grid("#cca-simulation-table-slickgrid", loader.data, columns, options);
+    grid = new Slick.Grid(parameters.container, loader.data, columns, options);
 
     // Enabling header buttons plugin
     var headerButtonsPlugin = new Slick.Plugins.HeaderButtons();
@@ -225,12 +222,11 @@ function cca_table(parameters, server_root, workerId)
         }
       }
     }
-    
 
     loader.onDataLoading.subscribe(function () {
       if (!loadingIndicator) {
         loadingIndicator = $("<span class='loading-indicator'><label>Buffering...</label></span>").appendTo(document.body);
-        var $g = $("#cca-simulation-table-slickgrid");
+        var $g = self.container;
 
         loadingIndicator
             .css("position", "absolute")
