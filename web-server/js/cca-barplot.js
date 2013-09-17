@@ -17,7 +17,6 @@ $.widget("cca.barplot",
     wilks:[],
     x_loadings:[],
     y_loadings:[],
-    bookmarker: null,
     component : null,
     variable : null,
     sort : [null, null],
@@ -25,6 +24,8 @@ $.widget("cca.barplot",
 
   _create: function ()
   {
+    var self = this;
+
     function component_class(component)
     {
       return "cca" + (component + 1);
@@ -134,7 +135,7 @@ $.widget("cca.barplot",
       $("tbody tr.input", table).sort(sortFunction).appendTo(table);
       $("tbody tr.output", table).sort(sortFunction).appendTo(table);
 
-      this.options.bookmarker.updateState( {"sort-cca-component" : component, "sort-direction-cca-component" : sort_order} );
+      self.element.trigger("sort-changed", [component, sort_order]);
 
       function sortFunction(a,b){
         var selector = "td.value:eq(" + component + ")";

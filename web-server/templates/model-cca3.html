@@ -666,7 +666,6 @@ rights in this software.
               wilks: wilks,
               x_loadings: x_loadings,
               y_loadings: y_loadings,
-              //bookmarker: bookmarker
             });
 
             if("variable-type" in bookmark && "variable-index" in bookmark)
@@ -686,6 +685,25 @@ rights in this software.
             {
               selected_variable_changed(type, index);
             });
+
+            $("#barplot").bind("sort-changed", function(event, component, order)
+            {
+              $.ajax(
+              {
+                type : "POST",
+                url : "{{server-root}}events/models/{{_id}}/sort/component/" + component + "/" + order
+              });
+              bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
+            });
+
+            if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
+            {
+              $("#barplot").barplot("option",
+              {
+                "sort-component": bookmark["sort-cca-component"],
+                "sort-component-direction": bookmark["sort-direction-cca-component"],
+              });
+            }
 
             window.setTimeout(function() { $("#barplot").barplot("option", {component: component}); }, 2000);
           }
@@ -959,32 +977,6 @@ rights in this software.
             });
           }
 
-          ////////////////////////////////////////////////////////////////////////////////////
-          // Setup logging of user events.
-
-          /////////////////////////////////////////////////////////////////////////////////////
-          // Restore some of the state contained in the URL query string.
-          // Other state contained in the URL query string is restored in the
-          // window.initial_update_scatterplot_value function, since it needs to wait
-          // until we have access to a table chunker and an initialized grid with data.
-
-          // Updates selected cca component in the table and scatterplot, or selects the first one
-          // if none have been selected.
-          if("cca-component" in bookmark)
-          {
-            var component = bookmark["cca-component"];
-            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
-          }
-
-          if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
-          {
-            // Update the sort order of the variables in the bookmarked cca component
-              $("#barplot").barplot("option",
-              {
-                "sort-component": bookmark["sort-cca-component"],
-                "sort-component-direction": bookmark["sort-direction-cca-component"],
-              });
-          }
         }
 */
       });
