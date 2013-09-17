@@ -99,6 +99,15 @@ this.setUpColorMapsForAllColumns = function(colorMapName, columns) {
   }
 }
 
+// Return a d3 linear color scale with the current color map for the domain [0, 1].
+// Callers should modify the domain to suit their own needs.  Note that a color
+// map may be polylinear, i.e. require more than two values for the domain.
+this.get_current_color_map = function()
+{
+  var color_map = d3.scale.linear().domain(colorMaps[selectedColorMapName].scalar).range(colorMaps[selectedColorMapName].RGBs);
+  return color_map;
+}
+
 this.createSelectedColorMap = function(min, max) {
   return createColorMap(min, max, colorMaps[selectedColorMapName].scalar, colorMaps[selectedColorMapName].RGBs);
 }

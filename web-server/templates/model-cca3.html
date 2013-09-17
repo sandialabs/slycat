@@ -165,7 +165,7 @@ rights in this software.
         function updateColorMap(colorMapName){
           if(cca_simulation_table_instance != null && colorMapName != null) {
             cca_simulation_table_instance.updateColorMap(colorMapName);
-            cca_scatterplot.update({color:true});
+            $("#scatterplot").scatterplot("option", {color: colorMapper.get_current_color_map()});
             bookmarker.updateState( {"colormap" : colorMapName} );
           }
         }
@@ -903,7 +903,7 @@ rights in this software.
           // Changing the barplot component updates the scatterplot ...
           $("#barplot").bind("component-changed", function(event, component)
           {
-            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
+            $("#scatterplot").scatterplot("option", {x : x[component], y : y[component]});
           });
 
           // Changing the barplot variable updates the scatterplot ...
