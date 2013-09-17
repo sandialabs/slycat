@@ -709,7 +709,7 @@ rights in this software.
           }
 
           // Setup the table ...
-          if(!cca_simulation_table_instance && table_metadata)
+          if(!cca_simulation_table_instance && bookmark && table_metadata)
           {
             var index_column = table_metadata["column-count"] - 1;
             var index = table_metadata["column-names"][index_column];
@@ -752,9 +752,16 @@ rights in this software.
               colormap: bookmark["colormap"],
               colorMapper: colorMapper,
               }, "{{server-root}}", table_chunker);
-            //cca_simulation_table_instance.update({highlight: ["simulation", 0]});
-          }
 
+            if("variable-type" in bookmark && "variable-index" in bookmark)
+            {
+              cca_simulation_table_instance.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
+            }
+            else
+            {
+              cca_simulation_table_instance.update({highlight: ["simulation", 0]});
+            }
+          }
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -967,14 +974,6 @@ rights in this software.
           if("simulations" in bookmark)
           {
             $("#scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
-          }
-
-          if("variable-type" in bookmark && "variable-index" in bookmark)
-          {
-            // Update the selected variable (i.e., colored column) in the simulation table
-            if(cca_simulation_table_instance) {
-              cca_simulation_table_instance.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
-            }
           }
 
           if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
