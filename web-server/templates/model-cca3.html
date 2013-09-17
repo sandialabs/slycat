@@ -760,16 +760,6 @@ rights in this software.
               type : "POST",
               url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + indices.length
             });
-  /*
-            $.each(indices, function(index, value)
-            {
-              $.ajax(
-              {
-                type : "POST",
-                url : "{{server-root}}events/models/{{_id}}/select/simulation/" + value
-              });
-            });
-  */
 
             bookmarker.updateState( {"simulations" : indices} );
           }
