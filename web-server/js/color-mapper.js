@@ -104,8 +104,12 @@ this.setUpColorMapsForAllColumns = function(colorMapName, columns) {
 // map may be polylinear, i.e. require more than two values for the domain.
 this.get_current_color_map = function()
 {
-  var color_map = d3.scale.linear().domain(colorMaps[selectedColorMapName].scalar).range(colorMaps[selectedColorMapName].RGBs);
-  return color_map;
+  return this.get_color_map(selectedColorMapName);
+}
+
+this.get_color_map = function(name)
+{
+  return d3.scale.linear().domain(colorMaps[name].scalar).range(colorMaps[name].RGBs);
 }
 
 this.createSelectedColorMap = function(min, max) {

@@ -37,7 +37,7 @@ $.widget("cca.scatterplot",
 
     this.updates = {};
     this.update_timer = null;
-    this._schedule_update({update_color_domain:true, render_data:true, render_selection:true});
+    this._schedule_update({update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true});
 
     var self = this;
 
@@ -128,20 +128,12 @@ $.widget("cca.scatterplot",
 
     if(key == "x")
     {
-      this.x_min = d3.min(this.options.x);
-      this.x_max = d3.max(this.options.x);
-      this.x_center = (this.x_min + this.x_max) / 2;
-
-      this._schedule_update({render_data:true, render_selection:true});
+      this._schedule_update({update_x:true, render_data:true, render_selection:true});
     }
 
     else if(key == "y")
     {
-      this.y_min = d3.min(this.options.y);
-      this.y_max = d3.max(this.options.y);
-      this.y_center = (this.y_min + this.y_max) / 2;
-
-      this._schedule_update({render_data:true, render_selection:true});
+      this._schedule_update({update_y:true, render_data:true, render_selection:true});
     }
 
     else if(key == "v")
@@ -161,20 +153,12 @@ $.widget("cca.scatterplot",
 
     else if(key == "width")
     {
-      this.element.attr("width", this.options.width).css("width", this.options.width);
-      this.data_canvas.attr("width", this.options.width);
-      this.selection_canvas.attr("width", this.options.width);
-
-      this._schedule_update({render_data:true, render_selection:true});
+      this._schedule_update({update_width:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      this.element.attr("height", this.options.height).css("height", this.options.height);
-      this.data_canvas.attr("height", this.options.height);
-      this.selection_canvas.attr("height", this.options.height);
-
-      this._schedule_update({render_data:true, render_selection:true});
+      this._schedule_update({update_height:true, render_data:true, render_selection:true});
     }
   },
 
@@ -198,9 +182,33 @@ $.widget("cca.scatterplot",
     console.log("cca.scatterplot._update()");
     this.update_timer = null;
 
-    var width = this.element.attr("width");
-    var height = this.element.attr("height");
-    this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
+    if(this.updates["update_width"])
+    {
+      this.element.attr("width", this.options.width).css("width", this.options.width);
+      this.data_canvas.attr("width", this.options.width);
+      this.selection_canvas.attr("width", this.options.width);
+    }
+
+    if(this.updates["update_height"])
+    {
+      this.element.attr("height", this.options.height).css("height", this.options.height);
+      this.data_canvas.attr("height", this.options.height);
+      this.selection_canvas.attr("height", this.options.height);
+    }
+
+    if(this.updates["update_x"])
+    {
+      this.x_min = d3.min(this.options.x);
+      this.x_max = d3.max(this.options.x);
+      this.x_center = (this.x_min + this.x_max) / 2;
+    }
+
+    if(this.updates["update_y"])
+    {
+      this.y_min = d3.min(this.options.y);
+      this.y_max = d3.max(this.options.y);
+      this.y_center = (this.y_min + this.y_max) / 2;
+    }
 
     if(this.updates["update_color_domain"])
     {
@@ -212,6 +220,10 @@ $.widget("cca.scatterplot",
         domain.push(domain_scale(i));
       this.options.color.domain(domain);
     }
+
+    var width = this.element.attr("width");
+    var height = this.element.attr("height");
+    this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
 
     if(this.updates["render_data"])
     {
