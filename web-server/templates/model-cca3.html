@@ -697,6 +697,7 @@ rights in this software.
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
             var colormap = colorMapper.get_color_map(bookmark["colormap"] !== undefined ? bookmark["colormap"] : "nightcolormap");
+            var selection = bookmark["simulations"] !== undefined ? bookmark["simulations"] : [];
 
             $("#scatterplot").scatterplot({
               x: x[component],
@@ -705,7 +706,13 @@ rights in this software.
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
               color: colormap,
+              selection: selection,
               });
+
+            $("#scatterplot").bind("selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
+            });
           }
 
           // Setup the table ...
@@ -761,6 +768,23 @@ rights in this software.
             {
               cca_simulation_table_instance.update({highlight: ["simulation", 0]});
             }
+
+            if("simulations" in bookmark)
+            {
+              //cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
+              cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
+            }
+
+            $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
+            {
+              selected_variable_changed(type, index);
+            });
+
+            $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
+            });
+
           }
         }
 
@@ -790,12 +814,23 @@ rights in this software.
           bookmarker.updateState({"variable-type" : type, "variable-index" : index});
         }
 
+        function selected_simulations_changed(selection)
+        {
+          // Logging every selected item is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+          });
+
+          bookmarker.updateState( {"simulations" : selection} );
+        }
+
         //////////////////////////////////////////////////////////////////////////////////////////
         // Legacy stuff.
         //////////////////////////////////////////////////////////////////////////////////////////
 
 /*
-        // Start up a color mapper
         // Add controls for switching between different color maps
         colorMapper.addSwitcher($('#color-switcher-container'), bookmark, updateColorMap);
         // Callback function called by colorMapper when user clicks on a different color map choice
@@ -817,18 +852,6 @@ rights in this software.
             return;
           }
 
-
-          function selected_simulations_changed(indices)
-          {
-            // Logging every selected simulation gets slow, so just log the count instead.
-            $.ajax(
-            {
-              type : "POST",
-              url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + indices.length
-            });
-
-            bookmarker.updateState( {"simulations" : indices} );
-          }
 
           function variable_sort_order_changed(fieldIndex, direction, fieldName)
           {
@@ -873,13 +896,6 @@ rights in this software.
           window.initial_update_scatterplot_value = function() {
             // Update the color coding of the scatterplot based on selected variable
             // Updates the selected row(s) in the simulation table
-            if("simulations" in bookmark)
-            {
-              if(cca_simulation_table_instance) {
-                //cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
-                cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
-              }
-            }
             // Updates the sort order of columns in the simulation table
             if("sort-field" in bookmark && "sort-direction" in bookmark)
             {
@@ -946,17 +962,6 @@ rights in this software.
           ////////////////////////////////////////////////////////////////////////////////////
           // Setup logging of user events.
 
-          // Log simulation selections ...
-          $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
-          {
-            selected_simulations_changed(selection);
-          });
-
-          $("#scatterplot").bind("selection-changed", function(event, selection)
-          {
-            selected_simulations_changed(selection);
-          });
-
           /////////////////////////////////////////////////////////////////////////////////////
           // Restore some of the state contained in the URL query string.
           // Other state contained in the URL query string is restored in the
@@ -969,11 +974,6 @@ rights in this software.
           {
             var component = bookmark["cca-component"];
             $("#scatterplot").scatterplot("option", {x : x[component], y : y[component], v : v});
-          }
-
-          if("simulations" in bookmark)
-          {
-            $("#scatterplot").scatterplot("option", {selection: bookmark["simulations"]});
           }
 
           if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
