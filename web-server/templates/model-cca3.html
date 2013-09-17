@@ -151,26 +151,180 @@ rights in this software.
     <script type="text/javascript">
       $(document).ready(function()
       {
-        // Start up a bookmark manager
-        var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
-        var bookmark = bookmarker.getState();
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup global variables.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        var input_columns = {{input-columns}};
+        var output_columns = {{output-columns}};
+        var scale_inputs = {{scale-inputs}};
+        var x_loadings = null;
+        var y_loadings = null;
+        var x = [];
+        var y = [];
+        var v = [];
+        var r2 = null;
+        var wilks = null;
+
+        var v_chunker = null;
 
         var cca_simulation_table_instance = null;
 
-        // Start up a color mapper
-        var colorMapper = new color_mapper();
-        // Add controls for switching between different color maps
-        colorMapper.addSwitcher($('#color-switcher-container'), bookmark, updateColorMap);
-        // Callback function called by colorMapper when user clicks on a different color map choice
-        function updateColorMap(colorMapName){
-          if(cca_simulation_table_instance != null && colorMapName != null) {
-            cca_simulation_table_instance.updateColorMap(colorMapName);
-            $("#scatterplot").scatterplot("option", {color: colorMapper.get_current_color_map()});
-            bookmarker.updateState( {"colormap" : colorMapName} );
-          }
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Start retrieving data, including bookmarked state.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        // Create an array chunker asynchronously, calling a callback when it's ready ...
+        function create_array_chunker(artifact, callback)
+        {
+          $.ajax({
+            contentType : "application/json",
+            data : $.toJSON({ type : "array-chunker", "mid" : "{{_id}}", "artifact" : artifact, }),
+            processData : false,
+            type : "POST",
+            cache: false,
+            url : "{{server-root}}" + "workers",
+            async: true,
+            success : function(worker)
+            {
+              // Setup unload handler to stop and delete worker when user leaves page
+              $(window).unload({"worker":worker}, function(e)
+              {
+                $.ajax(
+                {
+                  type : "DELETE",
+                  url : "{{server-root}}" + "workers/" + e.data.worker.id,
+                  async: false,
+                  error : function(request, status, reason_phrase)
+                  {
+                    //window.alert("Error deleting remote worker: " + reason_phrase);
+                  }
+                });
+              });
+
+              callback(worker.id);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              //window.alert("Error creating " + modelArtifactName + " array-chunker worker: " + reason_phrase);
+            },
+          });
         }
 
-        // Setup the model edit form ...
+        // Retrieve an array chunker attribute asynchronously, calling a callback when it's ready ...
+        function get_array_attribute(chunker, attribute, callback)
+        {
+          $.ajax({
+            url : "{{server-root}}" + "workers/" + chunker + "/array-chunker/metadata",
+            contentType : "application/json",
+            success: function(metadata)
+            {
+              var ranges = [];
+              for(var dimension in metadata.dimensions)
+              {
+                ranges.push(metadata.dimensions[dimension].begin);
+                ranges.push(metadata.dimensions[dimension].end);
+              }
+              ranges = ranges.join(",");
+
+              var request = new XMLHttpRequest();
+              request.open("GET", "{{server-root}}" + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
+              request.responseType = "arraybuffer"; // This is a hack: we're assuming an array of doubles here
+              request.metadata = metadata;
+              request.onload = function(e)
+              {
+                var buffer = this.response;
+                var metadata = this.metadata;
+
+                if(metadata.dimensions.length == 1)
+                {
+                  // This is a hack: we're assuming an array of doubles here
+                  var result = new Float64Array(buffer);
+                }
+                else if(metadata.dimensions.length == 2)
+                {
+                  var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
+                  var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
+                  var result = [];
+                  for(var i = 0; i != row_count; ++i)
+                    result.push(new Float64Array(buffer, i * column_count * 8, column_count))
+                }
+                else
+                {
+                  window.alert("Can't handle array with " + metadata.dimensions.length + " dimensions.");
+                }
+                callback(result);
+              }
+              request.send();
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error getting metadata from array-chunker worker: " + reason_phrase);
+            }
+          });
+        }
+
+        // Create an x_loadings array chunker worker and get the x_loadings from it
+        create_array_chunker("input-structure-correlation", function(chunker)
+        {
+          get_array_attribute(chunker, 0, function(result)
+          {
+            x_loadings = result;
+            wait_for_data();
+          });
+        });
+
+        // Create a y_loadings array chunker worker and get the y_loadings from it
+        create_array_chunker("output-structure-correlation", function(chunker)
+        {
+          get_array_attribute(chunker, 0, function(result)
+          {
+            y_loadings = result;
+            wait_for_data();
+          });
+        });
+
+        // Create a cca-statistics array chunker worker and get the cca-statistics from it
+        create_array_chunker("cca-statistics", function(chunker)
+        {
+          get_array_attribute(chunker, 0, function(result)
+          {
+            r2 = result;
+            wait_for_data();
+          });
+          get_array_attribute(chunker, 1, function(result)
+          {
+            wilks = result;
+            wait_for_data();
+          });
+        });
+
+        // Create a canonical-variables array chunker worker and get the canonical-variables from it
+        create_array_chunker("canonical-variables", function(chunker)
+        {
+          get_array_attribute(chunker, 0, function(result)
+          {
+            x = result;
+            wait_for_data();
+          });
+          get_array_attribute(chunker, 1, function(result)
+          {
+            y = result;
+            wait_for_data();
+          });
+        });
+
+        // Create a data table array chunker for later ...
+        create_array_chunker("data-table", function(chunker)
+        {
+          v_chunker = chunker;
+        });
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup page layout and forms.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        // Setup the edit model form ...
         $("#edit-model-form").dialog(
         {
           autoOpen: false,
@@ -457,156 +611,36 @@ rights in this software.
           $("#rerun-cca-form").dialog("open");
         });
 
-        // Verify that we have all required inputs before setting-up the rest of the visualization ...
-        var input_columns = {{input-columns}};
-        var output_columns = {{output-columns}};
-        var scale_inputs = {{scale-inputs}};
-        var r2_statistics = null;
-        var wilks_statistics = null;
-        var x = [];
-        var y = [];
-        var v = [];
-        var x_loadings = null;
-        var y_loadings = null;
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup widgets as data is received.
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-        // Create a canonical-variables array chunker worker and get the canonical-variables from it
-        var xy_chunker = createArrayChunker("canonical-variables");
-        getBinaryArray(xy_chunker, 0, function(result)
-        {
-          x = result;
-          wait_for_data();
-        });
-        getBinaryArray(xy_chunker, 1, function(result)
-        {
-          y = result;
-          wait_for_data();
-        });
 
-        // Create a data table array chunker and get the index column from it ...
-        var v_chunker = createArrayChunker("data-table");
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Legacy stuff.
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-        // Create a cca-statistics array chunker worker and get the cca-statistics from it
-        var statistics_chunker = createArrayChunker("cca-statistics");
-        getBinaryArray(statistics_chunker, 0, function(result)
-        {
-          r2_statistics = result;
-          wait_for_data();
-        });
-        getBinaryArray(statistics_chunker, 1, function(result)
-        {
-          wilks_statistics = result;
-          wait_for_data();
-        });
 
-        // Create an x_loadings array chunker worker and get the x_loadings from it
-        getBinaryArray(createArrayChunker("input-structure-correlation"), 0, function(result)
-        {
-          x_loadings = result;
-          wait_for_data();
-        });
+        // Start up a bookmark manager
+        var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+        var bookmark = bookmarker.getState();
 
-        // Create a y_loadings array chunker worker and get the y_loadings from it
-        getBinaryArray(createArrayChunker("output-structure-correlation"), 0, function(result)
-        {
-          y_loadings = result;
-          wait_for_data();
-        });
-
-        function createArrayChunker(modelArtifactName)
-        {
-          var result = null;
-          $.ajax(
-            {
-              contentType : "application/json",
-              data : $.toJSON({ type : "array-chunker", "mid" : "{{_id}}", "artifact" : modelArtifactName, }),
-              processData : false,
-              type : "POST",
-              cache: false,
-              url : "{{server-root}}" + "workers",
-              async: false, // Much of the rest of the script relies on this array chunker, so doing this synchronously
-              success : function(worker)
-              {
-                result = worker.id;
-
-                // setup beforeunload handler to stop and delete worker when user leaves page
-                $(window).unload({"worker":worker}, function(e)
-                {
-                  $.ajax(
-                  {
-                    type : "DELETE",
-                    url : "{{server-root}}" + "workers/" + e.data.worker.id,
-                    async: false,
-                    error : function(request, status, reason_phrase)
-                    {
-                      //window.alert("Error deleting remote worker: " + reason_phrase);
-                    }
-                  });
-                });
-              },
-              error : function(request, status, reason_phrase)
-              {
-                //window.alert("Error creating " + modelArtifactName + " array-chunker worker: " + reason_phrase);
-              },
-            }
-          );
-          return result;
-        }
-
-        function getBinaryArray(chunker, attribute, callback)
-        {
-          $.ajax({
-            url : "{{server-root}}" + "workers/" + chunker + "/array-chunker/metadata",
-            contentType : "application/json",
-            success: function(metadata)
-            {
-              var ranges = [];
-              for(var dimension in metadata.dimensions)
-              {
-                ranges.push(metadata.dimensions[dimension].begin);
-                ranges.push(metadata.dimensions[dimension].end);
-              }
-              ranges = ranges.join(",");
-
-              var request = new XMLHttpRequest();
-              request.open("GET", "{{server-root}}" + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
-              request.responseType = "arraybuffer"; // This is a hack: we're assuming an array of doubles here
-              request.metadata = metadata;
-              request.onload = function(e)
-              {
-                var buffer = this.response;
-                var metadata = this.metadata;
-
-                if(metadata.dimensions.length == 1)
-                {
-                  // This is a hack: we're assuming an array of doubles here
-                  var result = new Float64Array(buffer);
-                }
-                else if(metadata.dimensions.length == 2)
-                {
-                  var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
-                  var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
-                  var result = [];
-                  for(var i = 0; i != row_count; ++i)
-                    result.push(new Float64Array(buffer, i * column_count * 8, column_count))
-                }
-                else
-                {
-                  window.alert("Can't handle array with " + metadata.dimensions.length + " dimensions.");
-                }
-                callback(result);
-              }
-              request.send();
-            },
-            error: function(request, status, reason_phrase)
-            {
-              window.alert("Error getting metadata from array-chunker worker: " + reason_phrase);
-            }
-          });
+        // Start up a color mapper
+        var colorMapper = new color_mapper();
+        // Add controls for switching between different color maps
+        colorMapper.addSwitcher($('#color-switcher-container'), bookmark, updateColorMap);
+        // Callback function called by colorMapper when user clicks on a different color map choice
+        function updateColorMap(colorMapName){
+          if(cca_simulation_table_instance != null && colorMapName != null) {
+            cca_simulation_table_instance.updateColorMap(colorMapName);
+            $("#scatterplot").scatterplot("option", {color: colorMapper.get_current_color_map()});
+            bookmarker.updateState( {"colormap" : colorMapName} );
+          }
         }
 
         function wait_for_data()
         {
-          if(input_columns === null || output_columns === null || scale_inputs === null || r2_statistics === null || wilks_statistics === null || x === null || y === null|| x_loadings === null || y_loadings === null)
+          if(input_columns === null || output_columns === null || scale_inputs === null || r2 === null || wilks === null || x === null || y === null|| x_loadings === null || y_loadings === null)
           {
             /*
             $("#status-messages").show();
@@ -787,7 +821,7 @@ rights in this software.
             }
             else if(type == "input")
             {
-              getBinaryArray(v_chunker, input_columns[index], function(result)
+              get_array_attribute(v_chunker, input_columns[index], function(result)
               {
                 v = result;
                 $("#scatterplot").scatterplot("option", {v : v});
@@ -795,7 +829,7 @@ rights in this software.
             }
             else if(type == "output")
             {
-              getBinaryArray(v_chunker, output_columns[index], function(result)
+              get_array_attribute(v_chunker, output_columns[index], function(result)
               {
                 v = result;
                 $("#scatterplot").scatterplot("option", {v : v});
@@ -830,13 +864,13 @@ rights in this software.
           }
 
           // Setup the cca table ...
-          if(inputs && outputs && r2_statistics && wilks_statistics && x_loadings && y_loadings)
+          if(inputs && outputs && r2 && wilks && x_loadings && y_loadings)
           {
             $("#barplot").barplot({
               inputs: inputs,
               outputs: outputs,
-              r2: r2_statistics,
-              wilks: wilks_statistics,
+              r2: r2,
+              wilks: wilks,
               x_loadings: x_loadings,
               y_loadings: y_loadings,
               bookmarker: bookmarker
