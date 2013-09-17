@@ -208,7 +208,6 @@ function cca_table(parameters, server_root, workerId)
 
     function fireOffSimulationCallbacks()
     {
-      console.log("cca.table trigger row-selection-changed");
       var selected_rows = grid.getSelectedRows();
       if( grid )
       {

@@ -191,7 +191,6 @@ $.widget("cca.scatterplot",
 
   _schedule_update: function(render_data, render_selection)
   {
-    console.log("cca.scatterplot._schedule_update()");
     if(render_data)
       this.render_data = true;
     if(render_selection)
