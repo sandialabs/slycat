@@ -7,7 +7,6 @@ rights in this software.
 function cca_table(parameters, server_root, workerId)
 {
   this.container = $(parameters.container);
-  this.sort_order_callbacks = [];
   this.index_column = parameters.index_column;
   var colorMapper = parameters.colorMapper;
 
@@ -332,10 +331,7 @@ function cca_table(parameters, server_root, workerId)
         } 
       });
 
-      // Callbacks that post to server log and update bookmark each time a column is sorted
-      for(var j = 0; j != self.sort_order_callbacks.length; ++j)
-        self.sort_order_callbacks[j]( $.inArray(field, parameters.variable_names), sortAsc ? 1 : -1, field );
-
+      self.container.trigger("variable-sort-changed", [$.inArray(field, parameters.variable_names), sortAsc ? 1 : -1, field]);
     }
   }
 
@@ -402,9 +398,6 @@ function cca_table(parameters, server_root, workerId)
   {
     if(parameters.highlight)
       this.highlight_variable(parameters.highlight[0], parameters.highlight[1]);
-
-    if(parameters.add_sort_order_callback)
-      this.sort_order_callbacks.push(parameters.add_sort_order_callback);
 
     // Used to select row in simulation table when point in scatterplot is clicked
     if(parameters.simulation_selection)

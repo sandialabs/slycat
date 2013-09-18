@@ -681,19 +681,14 @@ rights in this software.
               selected_component_changed(component);
             });
 
+            $("#barplot").bind("component-sort-changed", function(event, component, order)
+            {
+              component_sort_changed(component, order);
+            });
+
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
               selected_variable_changed(type, index);
-            });
-
-            $("#barplot").bind("sort-changed", function(event, component, order)
-            {
-              $.ajax(
-              {
-                type : "POST",
-                url : "{{server-root}}events/models/{{_id}}/sort/component/" + component + "/" + order
-              });
-              bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
             });
 
             if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
@@ -773,7 +768,6 @@ rights in this software.
               input_columns: input_columns,
               output_columns: output_columns,
               other_columns: other_columns,
-              //add_sort_order_callback: variable_sort_order_changed,
               colormap: bookmark["colormap"],
               colorMapper: colorMapper,
               }, "{{server-root}}", table_chunker);
@@ -787,6 +781,11 @@ rights in this software.
               cca_simulation_table_instance.update({highlight: ["simulation", 0]});
             }
 
+            if("sort-field" in bookmark && "sort-direction" in bookmark)
+            {
+              cca_simulation_table_instance.update({ sort_field: bookmark["sort-field"], sort_direction: bookmark["sort-direction"]});
+            }
+
             if("simulations" in bookmark)
             {
               //cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
@@ -796,6 +795,11 @@ rights in this software.
             $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
             {
               selected_variable_changed(type, index);
+            });
+
+            $("#cca-simulation-table-slickgrid").bind("variable-sort-changed", function(event, index, direction, name)
+            {
+              variable_sort_changed(index, direction, name);
             });
 
             $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
@@ -817,8 +821,17 @@ rights in this software.
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/component/" + component
           });
-
           bookmarker.updateState({"cca-component" : component});
+        }
+
+        function component_sort_changed(component, order)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/sort/component/" + component + "/" + order
+          });
+          bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
         }
 
         function selected_variable_changed(type, index)
@@ -828,8 +841,17 @@ rights in this software.
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/variable/" + type + "/" + index
           });
-
           bookmarker.updateState({"variable-type" : type, "variable-index" : index});
+        }
+
+        function variable_sort_changed(index, direction, name)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + index + "/" + direction
+          });
+          bookmarker.updateState( {"sort-field" : name, "sort-direction" : direction} );
         }
 
         function selected_simulations_changed(selection)
@@ -840,7 +862,6 @@ rights in this software.
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
           });
-
           bookmarker.updateState( {"simulations" : selection} );
         }
 
@@ -871,17 +892,6 @@ rights in this software.
           }
 
 
-          function variable_sort_order_changed(fieldIndex, direction, fieldName)
-          {
-            $.ajax(
-            {
-              type : "POST",
-              url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + fieldIndex + "/" + direction
-            });
-
-            bookmarker.updateState( {"sort-field" : fieldName, "sort-direction" : direction} );
-          }
-
           // Updates the scatterplot when user selects a new input or output variable in the cca table
           function update_scatterplot_value(type, index)
           {
@@ -910,20 +920,6 @@ rights in this software.
             }
           }
 
-          // Called when the grid initialized since now we can access data and restore state contained in the bookmark
-          window.initial_update_scatterplot_value = function() {
-            // Update the color coding of the scatterplot based on selected variable
-            // Updates the selected row(s) in the simulation table
-            // Updates the sort order of columns in the simulation table
-            if("sort-field" in bookmark && "sort-direction" in bookmark)
-            {
-              if(cca_simulation_table_instance) {
-                cca_simulation_table_instance.update({
-                  sort_field: bookmark["sort-field"],
-                  sort_direction: bookmark["sort-direction"]});
-              }
-            }
-          }
 
 
           ///////////////////////////////////////////////////////////////////////////////////////////////
