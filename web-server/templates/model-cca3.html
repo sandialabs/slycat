@@ -819,8 +819,8 @@ rights in this software.
 
             if("simulations" in bookmark)
             {
-              //cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
-              cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
+              cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
+              //cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
             }
 
             $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)

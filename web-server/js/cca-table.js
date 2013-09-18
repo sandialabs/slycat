@@ -245,7 +245,10 @@ function cca_table(parameters, server_root, workerId)
     // load the first page
     var vp = grid.getViewport();
     // For now just loading all columns. In future limit the last 2 parameters to just be the columns that are visible in the viewport.
-    loader.ensureData(vp.top, vp.bottom, 0, columns.length, window.initial_update_scatterplot_value);
+    loader.ensureData(vp.top, vp.bottom, 0, columns.length, function()
+    {
+      console.log("table ready");
+    });
   }
 
   this.select_simulations = function(indices, asyncFlag) {
@@ -259,6 +262,7 @@ function cca_table(parameters, server_root, workerId)
       var queryParams = { 
           "query" : queryPrep.join(","), 
         };
+
       $.ajax({
         contentType : "application/json",
         url : server_root + "workers/" + workerId + "/table-chunker/search",
