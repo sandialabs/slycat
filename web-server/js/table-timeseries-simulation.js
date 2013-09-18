@@ -78,9 +78,9 @@ function timeseries_simulation_table(parameters, server_root, workerId)
     default_color_map = parameters.colormap;
   }
   // Set up the background class for the waveform viewer
-  parameters.waveform_viewer.container.attr("class", colorMapper.getClassName(default_color_map));
+  //parameters.waveform_viewer.container.css("background", colorMapper.colorswitcher("get_background", default_color_map));
 
-  colorMapper.setUpColorMapsForAllColumns(default_color_map, columns);
+  colorMapper.colorswitcher("setUpColorMapsForAllColumns", default_color_map, columns);
 
   // Initialize SlickGrid
   var grid;
@@ -280,7 +280,7 @@ function timeseries_simulation_table(parameters, server_root, workerId)
 
   this.updateColorMap = function(colorMapName) {
     // Swap in the new color map
-    colorMapper.setUpColorMapsForAllColumns(colorMapName, columns);
+    colorMapper.colorswitcher("setUpColorMapsForAllColumns", colorMapName, columns);
     // Update grid with new color map and make it show the new colors
     if( grid ) {
       grid.setColumns(columns);
@@ -289,7 +289,7 @@ function timeseries_simulation_table(parameters, server_root, workerId)
       grid.render();
     }
     // Set up the background class for the waveform viewer
-    parameters.waveform_viewer.container.attr("class", colorMapper.getClassName(colorMapName));
+    //parameters.waveform_viewer.container.css("background", colorMapper.colorswitcher("get_background", colorMapName));
     // Change the colors of waveforms in the viewer and dendrogram
     self.setWaveformColorsPerSelectedColumn();
   }
