@@ -19,7 +19,8 @@ $.widget("cca.scatterplot",
     y : [],
     v : [],
     selection : [],
-    color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"])
+    color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    border : 25,
   },
 
   _create: function()
@@ -90,10 +91,10 @@ $.widget("cca.scatterplot",
         var width = self.element.width();
         var height = self.element.height();
 
-        var x1 = ((Math.min(self.start_drag[0], self.end_drag[0]) - width / 2) / self.scale) + self.x_center;
-        var y1 = ((Math.max(self.start_drag[1], self.end_drag[1]) - height / 2) / -self.scale) + self.y_center;
-        var x2 = ((Math.max(self.start_drag[0], self.end_drag[0]) - width / 2) / self.scale) + self.x_center;
-        var y2 = ((Math.min(self.start_drag[1], self.end_drag[1]) - height / 2) / -self.scale) + self.y_center;
+        var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
+        var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
+        var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
+        var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
 
         for(var i = 0; i != count; ++i)
         {
@@ -108,10 +109,10 @@ $.widget("cca.scatterplot",
         var width = self.element.width();
         var height = self.element.height();
 
-        var x1 = (((e.layerX - self.options.pick_distance) - width / 2) / self.scale) + self.x_center;
-        var y1 = (((e.layerY + self.options.pick_distance) - height / 2) / -self.scale) + self.y_center;
-        var x2 = (((e.layerX + self.options.pick_distance) - width / 2) / self.scale) + self.x_center;
-        var y2 = (((e.layerY - self.options.pick_distance) - height / 2) / -self.scale) + self.y_center;
+        var x1 = self.x_scale.invert(e.layerX - self.options.pick_distance);
+        var y1 = self.y_scale.invert(e.layerY + self.options.pick_distance);
+        var x2 = self.x_scale.invert(e.layerX + self.options.pick_distance);
+        var y2 = self.y_scale.invert(e.layerY - self.options.pick_distance);
 
         for(var i = 0; i != count; ++i)
         {
@@ -163,12 +164,17 @@ $.widget("cca.scatterplot",
 
     else if(key == "width")
     {
-      this._schedule_update({update_width:true, render_data:true, render_selection:true});
+      this._schedule_update({update_width:true, update_x:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      this._schedule_update({update_height:true, render_data:true, render_selection:true});
+      this._schedule_update({update_height:true, update_y:true, render_data:true, render_selection:true});
+    }
+
+    else if(key == "border")
+    {
+      this._schedule_update({update_x:true, update_y:true, render_data:true, render_selection:true});
     }
   },
 
@@ -208,16 +214,12 @@ $.widget("cca.scatterplot",
 
     if(this.updates["update_x"])
     {
-      this.x_min = d3.min(this.options.x);
-      this.x_max = d3.max(this.options.x);
-      this.x_center = (this.x_min + this.x_max) / 2;
+      this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + this.options.border, this.element.attr("width") - this.options.border]);
     }
 
     if(this.updates["update_y"])
     {
-      this.y_min = d3.min(this.options.y);
-      this.y_max = d3.max(this.options.y);
-      this.y_center = (this.y_min + this.y_max) / 2;
+      this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([this.element.attr("height") - this.options.border, 0 + this.options.border]);
     }
 
     if(this.updates["update_color_domain"])
@@ -233,7 +235,6 @@ $.widget("cca.scatterplot",
 
     var width = this.element.attr("width");
     var height = this.element.attr("height");
-    this.scale = 0.4 * Math.min(width / (this.x_max - this.x_center), width / (this.x_center - this.x_min), height / (this.y_max - this.y_center), height / (this.y_center - this.y_min));
 
     if(this.updates["render_data"])
     {
@@ -258,10 +259,6 @@ $.widget("cca.scatterplot",
       this.data_context.fillText("Output Metavariable", 0, 0);
       this.data_context.restore();
 
-      this.data_context.translate(width / 2, height / 2);
-      this.data_context.scale(this.scale, -this.scale);
-      this.data_context.translate(-this.x_center, -this.y_center);
-
       var count = this.options.x.length;
       var x = this.options.x;
       var y = this.options.y;
@@ -270,15 +267,15 @@ $.widget("cca.scatterplot",
       // Draw points using circles ...
       if(count < 100000)
       {
-        var radius = 2 / this.scale;
+        var radius = 2;
         var twopi = Math.PI * 2;
         this.data_context.stokeStyle = "black";
-        this.data_context.lineWidth = 1 / this.scale;
+        this.data_context.lineWidth = 1;
         for(var i = 0; i != count; ++i)
         {
           this.data_context.fillStyle = this.options.color(v[i]);
           this.data_context.beginPath();
-          this.data_context.arc(x[i], y[i], radius, 0, twopi);
+          this.data_context.arc(this.x_scale(x[i]), this.y_scale(y[i]), radius, 0, twopi);
           this.data_context.fill();
           this.data_context.stroke();
         }
@@ -286,11 +283,11 @@ $.widget("cca.scatterplot",
       // Draw points using rectangles ...
       else
       {
-        var size = 2 / this.scale;
+        var size = 1;
         for(var i = 0; i != count; ++i)
         {
           this.data_context.fillStyle = this.options.color(v[i]);
-          this.data_context.fillRect(x[i], y[i], size, size);
+          this.data_context.fillRect(this.x_scale(x[i]) - size, this.y_scale(y[i]) - size, size, size);
         }
       }
     }
@@ -304,20 +301,16 @@ $.widget("cca.scatterplot",
       this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
       this.selection_context.clearRect(0, 0, width, height);
 
-      this.selection_context.translate(width / 2, height / 2);
-      this.selection_context.scale(this.scale, -this.scale);
-      this.selection_context.translate(-this.x_center, -this.y_center);
-
-      var radius = 5 / this.scale;
+      var radius = 5;
       var twopi = Math.PI * 2;
       this.selection_context.strokeStyle = "black";
-      this.selection_context.lineWidth = 1 / this.scale;
+      this.selection_context.lineWidth = 1;
       for(var i in this.options.selection)
       {
         var index = this.options.selection[i];
         this.selection_context.fillStyle = this.options.color(v[index]);
         this.selection_context.beginPath();
-        this.selection_context.arc(x[index], y[index], radius, 0, twopi);
+        this.selection_context.arc(this.x_scale(x[index]), this.y_scale(y[index]), radius, 0, twopi);
         this.selection_context.fill();
         this.selection_context.stroke();
       }
