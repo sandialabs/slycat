@@ -81,6 +81,10 @@ $.widget("cca.scatterplot",
     {
       self.options.selection = [];
 
+      var x = self.options.x;
+      var y = self.options.y;
+      var count = x.length;
+
       if(self.start_drag && self.end_drag) // Rubber-band selection ...
       {
         var width = self.element.width();
@@ -90,6 +94,14 @@ $.widget("cca.scatterplot",
         var y1 = ((Math.max(self.start_drag[1], self.end_drag[1]) - height / 2) / -self.scale) + self.y_center;
         var x2 = ((Math.max(self.start_drag[0], self.end_drag[0]) - width / 2) / self.scale) + self.x_center;
         var y2 = ((Math.min(self.start_drag[1], self.end_drag[1]) - height / 2) / -self.scale) + self.y_center;
+
+        for(var i = 0; i != count; ++i)
+        {
+          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          {
+            self.options.selection.push(i);
+          }
+        }
       }
       else // Pick selection ...
       {
@@ -100,21 +112,19 @@ $.widget("cca.scatterplot",
         var y1 = (((e.layerY + self.options.pick_distance) - height / 2) / -self.scale) + self.y_center;
         var x2 = (((e.layerX + self.options.pick_distance) - width / 2) / self.scale) + self.x_center;
         var y2 = (((e.layerY - self.options.pick_distance) - height / 2) / -self.scale) + self.y_center;
+
+        for(var i = 0; i != count; ++i)
+        {
+          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          {
+            self.options.selection.push(i);
+            break;
+          }
+        }
       }
 
       self.start_drag = null;
       self.end_drag = null;
-
-      var x = self.options.x;
-      var y = self.options.y;
-      var count = x.length;
-      for(var i = 0; i != count; ++i)
-      {
-        if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-        {
-          self.options.selection.push(i);
-        }
-      }
 
       self._schedule_update({render_selection:true});
       self.element.trigger("selection-changed", [self.options.selection]);
