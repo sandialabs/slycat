@@ -73,7 +73,7 @@ function timeseries_simulation_table(parameters, server_root, workerId)
   }
 
   // Set the default color map based on parameters during init, or use night if not initialized
-  var default_color_map = "nightcolormap";
+  var default_color_map = "night";
   if (parameters.colormap != null) {
     default_color_map = parameters.colormap;
   }

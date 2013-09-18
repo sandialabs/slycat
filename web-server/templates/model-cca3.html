@@ -20,7 +20,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/modernizr.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/color-mapper.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-barplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
 
@@ -60,7 +60,7 @@ rights in this software.
           </div>
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
-          <div id="color-switcher-container"></div>
+          <div id="color-switcher"></div>
           <div id="status-messages" style="display: none;">
             <div class='error-heading'>Oops, this model is not ready yet.</div>
             <div class='error-description'>We are probabably building it for your right now. We'll load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
@@ -156,8 +156,6 @@ rights in this software.
         // Setup global variables.
         //////////////////////////////////////////////////////////////////////////////////////////
 
-        var colorMapper = new color_mapper();
-
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
 
@@ -177,9 +175,12 @@ rights in this software.
         var v_chunker = null;
         var table_chunker = null;
 
+        var colorswitcher_ready = false;
         var barplot_ready = false;
         var scatterplot_ready = false;
         var cca_simulation_table_instance = null;
+
+        $("#color-switcher").colorswitcher();
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Start retrieving data, including bookmarked state.
@@ -644,6 +645,17 @@ rights in this software.
 
         function setup_widgets()
         {
+          // Setup the color switcher ...
+          if(!colorswitcher_ready && bookmark)
+          {
+            colorswitcher_ready = true;
+            $("#color-switcher").colorswitcher("option", {"colormap":bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night"});
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              selected_colormap_changed(colormap);
+            });
+          }
+
           // Setup the barplot ...
           if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings)
           {
@@ -708,8 +720,10 @@ rights in this software.
             scatterplot_ready = true;
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
-            var colormap = colorMapper.get_color_map(bookmark["colormap"] !== undefined ? bookmark["colormap"] : "nightcolormap");
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var selection = bookmark["simulations"] !== undefined ? bookmark["simulations"] : [];
+
+            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
 
             $("#scatterplot").scatterplot({
               x: x[component],
@@ -717,13 +731,20 @@ rights in this software.
               v: v,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
-              color: colormap,
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
               selection: selection,
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
             {
               selected_simulations_changed(selection);
+            });
+
+            // Changing the color map updates the scatterplot ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
+              $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
 
             // Changing the barplot component updates the scatterplot ...
@@ -780,7 +801,7 @@ rights in this software.
               output_columns: output_columns,
               other_columns: other_columns,
               colormap: bookmark["colormap"],
-              colorMapper: colorMapper,
+              colorMapper: $("#color-switcher"),
               }, "{{server-root}}", table_chunker);
 
             if("variable-type" in bookmark && "variable-index" in bookmark)
@@ -818,14 +839,17 @@ rights in this software.
               selected_simulations_changed(selection);
             });
 
-            // Changing the barplot variable updates the table ...
-            if(cca_simulation_table_instance)
+            // Changing the colormap updates the table ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              $("#barplot").bind("variable-changed", function(event, type, index)
-              {
-                cca_simulation_table_instance.update({highlight: [type, index]});
-              });
-            }
+              cca_simulation_table_instance.updateColorMap(colormap);
+            });
+
+            // Changing the barplot variable updates the table ...
+            $("#barplot").bind("variable-changed", function(event, type, index)
+            {
+              cca_simulation_table_instance.update({highlight: [type, index]});
+            });
 
             // Changing the table variable updates the barplot ...
             $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
@@ -856,6 +880,16 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
         // Event handlers.
         //////////////////////////////////////////////////////////////////////////////////////////
+
+        function selected_colormap_changed(colormap)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
+          });
+          bookmarker.updateState({"colormap" : colormap});
+        }
 
         function selected_component_changed(component)
         {
@@ -946,7 +980,6 @@ rights in this software.
         function updateColorMap(colorMapName){
           if(cca_simulation_table_instance != null && colorMapName != null) {
             cca_simulation_table_instance.updateColorMap(colorMapName);
-            $("#scatterplot").scatterplot("option", {color: colorMapper.get_current_color_map()});
             bookmarker.updateState( {"colormap" : colorMapName} );
           }
         }

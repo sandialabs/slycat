@@ -83,14 +83,12 @@ function cca_table(parameters, server_root, workerId)
   }
 
   // Set the default color map based on parameters during init, or use night if not initialized
-  var default_color_map = "nightcolormap";
+  var default_color_map = "night";
   if (parameters.colormap != null) {
     default_color_map = parameters.colormap;
   }
-  // Set up the background class for the scatterplot viewer
-  $('#scatterplot-pane').removeClass(colorMapper.getAllClassNames()).addClass(colorMapper.getClassName(default_color_map));
 
-  colorMapper.setUpColorMapsForAllColumns(default_color_map, columns);
+  colorMapper.colorswitcher("setUpColorMapsForAllColumns", default_color_map, columns);
 
   // Add sort button to each column
   for(var j = 0; j < columns.length; ++j)
@@ -199,7 +197,6 @@ function cca_table(parameters, server_root, workerId)
         var max_of_selected_rows = Math.max.apply(Math, selected_rows);
         loader.ensureData(min_of_selected_rows, max_of_selected_rows+1, 0, columns.length, fireOffSimulationCallbacks);
       }
-      // If last row has been unselected, we need to fire off the callbacks to make scatterplot unselect last point
       else if(selected_rows.length == 0) {
         fireOffSimulationCallbacks();
       }
@@ -368,7 +365,7 @@ function cca_table(parameters, server_root, workerId)
 
   this.updateColorMap = function(colorMapName) {
     // Swap in the new color map
-    colorMapper.setUpColorMapsForAllColumns(colorMapName, columns);
+    colorMapper.colorswitcher("setUpColorMapsForAllColumns", colorMapName, columns);
     // Update grid with new color map and make it show the new colors
     if( grid ) {
       grid.setColumns(columns);
@@ -376,8 +373,6 @@ function cca_table(parameters, server_root, workerId)
       grid.setData(loader.data);
       grid.render();
     }
-    // Set up the background class for the scatterplot viewer
-    $('#scatterplot-pane').removeClass(colorMapper.getAllClassNames()).addClass(colorMapper.getClassName(colorMapName));
     // // Change the colors of waveforms in the viewer and dendrogram
     // self.setWaveformColorsPerSelectedColumn();
   }
