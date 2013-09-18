@@ -695,8 +695,7 @@ rights in this software.
             {
               $("#barplot").barplot("option",
               {
-                "sort-component": bookmark["sort-cca-component"],
-                "sort-component-direction": bookmark["sort-direction-cca-component"],
+                "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
               });
             }
 

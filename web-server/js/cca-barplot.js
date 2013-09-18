@@ -103,37 +103,16 @@ $.widget("cca.barplot",
         ;
     }
 
-    function click_component(context, component)
+    this.do_component_sort = function(component, sort_order)
     {
-      return function()
-      {
-        context.select_component(component);
-        context.element.trigger("component-changed", component);
-      }
-    }
+      var sort_icon = $("th." + component_class(component) + " .sortCCAComponent", self.element)
 
-    function sort_component(context, component)
-    {
-      return function()
-      {
-        var sort_order = 'descending';
-        if( $(this).hasClass('icon-sort-descending') )
-          sort_order = 'ascending';
-
-       do_component_sort(component, sort_order);
-      }
-    }
-
-    function do_component_sort(component, sort_order) {
-      var table = $("table#cca-table");
-      var sort_icon = $("th." + component_class(component) + " .sortCCAComponent", table)
-
-      $("span.sortCCAComponent", table).removeClass("icon-sort-descending icon-sort-ascending").addClass("icon-sort-off");
+      $("span.sortCCAComponent", self.element).removeClass("icon-sort-descending icon-sort-ascending").addClass("icon-sort-off");
       $(sort_icon).removeClass("icon-sort-off").addClass("icon-sort-" + sort_order);
 
 
-      $("tbody tr.input", table).sort(sortFunction).appendTo(table);
-      $("tbody tr.output", table).sort(sortFunction).appendTo(table);
+      $("tbody tr.input", self.element).sort(sortFunction).appendTo(self.element);
+      $("tbody tr.output", self.element).sort(sortFunction).appendTo(self.element);
 
       self.element.trigger("component-sort-changed", [component, sort_order]);
 
@@ -151,6 +130,27 @@ $.widget("cca.barplot",
         else
           result = Math.abs(aa)-Math.abs(bb);
         return result;
+      }
+    }
+
+    function click_component(context, component)
+    {
+      return function()
+      {
+        context.select_component(component);
+        context.element.trigger("component-changed", component);
+      }
+    }
+
+    function sort_component(context, component)
+    {
+      return function()
+      {
+        var sort_order = 'descending';
+        if( $(this).hasClass('icon-sort-descending') )
+          sort_order = 'ascending';
+
+       context.do_component_sort(component, sort_order);
       }
     }
 
