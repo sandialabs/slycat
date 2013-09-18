@@ -175,12 +175,9 @@ rights in this software.
         var v_chunker = null;
         var table_chunker = null;
 
-        var colorswitcher_ready = false;
         var barplot_ready = false;
         var scatterplot_ready = false;
         var cca_simulation_table_instance = null;
-
-        $("#color-switcher").colorswitcher();
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Start retrieving data, including bookmarked state.
@@ -240,7 +237,7 @@ rights in this software.
         create_array_chunker("{{server-root}}", "{{_id}}", "data-table", function(chunker)
         {
           v_chunker = chunker;
-          load_v();
+          setup_v();
         });
 
         // Create a table chunker for later ...
@@ -255,7 +252,7 @@ rights in this software.
             {
               table_metadata = metadata;
 
-              load_v();
+              setup_v();
               setup_widgets();
             },
             error: function(request, status, reason_phrase)
@@ -269,7 +266,9 @@ rights in this software.
         bookmarker.get_state(function(state)
         {
           bookmark = state;
-          load_v();
+
+          setup_v();
+          setup_colorswitcher();
           setup_widgets();
         });
 
@@ -605,7 +604,7 @@ rights in this software.
         // Setup the rest of the UI as data is received.
         //////////////////////////////////////////////////////////////////////////////////////////
 
-        function load_v()
+        function setup_v()
         {
           if(bookmark && table_metadata && v_chunker)
           {
@@ -643,19 +642,19 @@ rights in this software.
           }
         }
 
+        function setup_colorswitcher()
+        {
+          var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+          $("#color-switcher").colorswitcher({colormap:colormap});
+          $("#color-switcher").bind("colormap-changed", function(event, colormap)
+          {
+            selected_colormap_changed(colormap);
+          });
+        }
+
         function setup_widgets()
         {
-          // Setup the color switcher ...
-          if(!colorswitcher_ready && bookmark)
-          {
-            colorswitcher_ready = true;
-            $("#color-switcher").colorswitcher("option", {"colormap":bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night"});
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              selected_colormap_changed(colormap);
-            });
-          }
-
           // Setup the barplot ...
           if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings)
           {
@@ -974,16 +973,6 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
 
 /*
-        // Add controls for switching between different color maps
-        colorMapper.addSwitcher($('#color-switcher-container'), bookmark, updateColorMap);
-        // Callback function called by colorMapper when user clicks on a different color map choice
-        function updateColorMap(colorMapName){
-          if(cca_simulation_table_instance != null && colorMapName != null) {
-            cca_simulation_table_instance.updateColorMap(colorMapName);
-            bookmarker.updateState( {"colormap" : colorMapName} );
-          }
-        }
-
         function setup_widgets()
         {
           if(input_columns === null || output_columns === null || scale_inputs === null || r2 === null || wilks === null || x === null || y === null|| x_loadings === null || y_loadings === null)
