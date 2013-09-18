@@ -283,11 +283,12 @@ $.widget("cca.scatterplot",
       // Draw points using rectangles ...
       else
       {
-        var size = 1;
+        var size = 2;
+        var offset = size / 2;
         for(var i = 0; i != count; ++i)
         {
           this.data_context.fillStyle = this.options.color(v[i]);
-          this.data_context.fillRect(this.x_scale(x[i]) - size, this.y_scale(y[i]) - size, size, size);
+          this.data_context.fillRect(this.x_scale(x[i]) - offset, this.y_scale(y[i]) - offset, size, size);
         }
       }
     }
