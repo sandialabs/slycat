@@ -4,6 +4,13 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
+function is_little_endian()
+{
+  if(this.result === undefined)
+    this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
+  return this.result;
+}
+
 // Create a table chunker asynchronously, calling a callback when it's ready ...
 function create_table_chunker(server_root, model, artifact, callback, error_callback)
 {
@@ -98,7 +105,7 @@ function get_array_attribute(server_root, chunker, attribute, callback)
       ranges = ranges.join(",");
 
       var request = new XMLHttpRequest();
-      request.open("GET", server_root + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=little");
+      request.open("GET", server_root + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
       request.responseType = "arraybuffer"; // This is a hack: we're assuming an array of doubles here
       request.metadata = metadata;
       request.onload = function(e)
