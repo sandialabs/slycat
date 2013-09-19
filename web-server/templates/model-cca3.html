@@ -111,41 +111,18 @@ rights in this software.
       </div>
     </div>
 
-    <div id="content-pane" class="ui-layout-center">
-      <div id="cca-pane" class="ui-layout-north">
-        <div id="cca-component-pane" class="ui-layout-center">
-          <div id="cca-component">
-            <div id="errors" style="display:none">
-              <h2>Errors</h2>
-              <table>
-                <tbody id="error-table"></tbody>
-              </table>
-            </div>
-            <table id="barplot">
-            </table>
-          </div>
-        </div>
-        <div id="scatterplot-pane" class="ui-layout-east">
-          <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
-        </div>
+    <div id="cca-pane" class="ui-layout-center">
+      <div id="barplot-pane" class="ui-layout-west">
+        <table id="barplot">
+        </table>
       </div>
-      <div id="simulation-pane" class="ui-layout-center">
-        <div id="simulation-table-pane" class="ui-layout-center">
-          <div id="cca-simulation-table-slickgrid">
-          </div>
-        </div>
+      <div id="scatterplot-pane" class="ui-layout-center">
+        <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
       </div>
     </div>
 
-    <div id="footer" class="ui-layout-south">
-      <div class="width-wrapper">
-        <ul id="footer-links">
-          {{#is-project-administrator}}
-          <li class="admin">
-            <a href="{{server-root}}models/{{_id}}/design">Design View</a>
-          </li>
-          {{/is-project-administrator}}
-        </ul>
+    <div class="ui-layout-south">
+      <div id="cca-simulation-table-slickgrid">
       </div>
     </div>
 
@@ -564,41 +541,34 @@ rights in this software.
         });
 
         // Layout resizable panels ...
-        $("body").layout({
-          south : {
-            initClosed : true
-            }
-          });
+        $("body").layout(
+        {
+          north:
+          {
+          },
+          center:
+          {
+          },
+          south:
+          {
+            size: $("body").height() / 2,
+            resizeWhileDragging: false,
+            onresize: function() { cca_simulation_table_instance.resizeGridCanvas(); }
+          },
+        });
 
-        $("#content-pane").layout({
-          north : {
-            size : $("#content-pane").height() / 2,
-            resizeWhileDragging : false
-            }
-          });
-
-        $("#cca-pane").layout({
-          center: {
-            resizeWhileDragging : true
-            },
-          east : {
-            size : ($("#content-pane").height() / 2) + 40,
-            resizeWhileDragging : false,
-            onresize : function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); }
-            }
-          });
-
-        var simulation_pane_layout = $("#simulation-pane").layout({
-          west : {
-            size : $("#content-pane").height() / 2,
-            resizeWhileDragging : true,
-            initClosed : true
-            },
-          center: {
-            resizeWhileDragging : true,
-            onresize : function() { cca_simulation_table_instance.resizeGridCanvas(); }
-            }
-          });
+        $("#cca-pane").layout(
+        {
+          west:
+          {
+            size: $("#cca-pane").width() / 2,
+          },
+          center:
+          {
+            resizeWhileDragging: false,
+            onresize: function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); },
+          }
+        });
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Setup the rest of the UI as data is received.
