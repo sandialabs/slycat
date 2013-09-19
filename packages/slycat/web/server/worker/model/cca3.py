@@ -32,6 +32,7 @@ class implementation(slycat.web.server.worker.model.prototype):
 
     X = numpy.empty((row_count, len(input_columns)))
     for j, input in enumerate(input_columns):
+      self.set_progress(self.mix(0.0, 0.25, float(j) / float(len(input_columns))))
       with self.scidb.query("aql", "select %s from %s" % ("c%s" % input, data_table["columns"])) as results:
         for artifact in results:
           for i, value in enumerate(artifact):
@@ -39,6 +40,7 @@ class implementation(slycat.web.server.worker.model.prototype):
 
     Y = numpy.empty((row_count, len(output_columns)))
     for j, output in enumerate(output_columns):
+      self.set_progress(self.mix(0.25, 0.50, float(j) / float(len(input_columns))))
       with self.scidb.query("aql", "select %s from %s" % ("c%s" % output, data_table["columns"])) as results:
         for artifact in results:
           for i, value in enumerate(artifact):
@@ -50,6 +52,7 @@ class implementation(slycat.web.server.worker.model.prototype):
 #    cherrypy.log.error("%s" % scale_inputs)
     self.set_message("Computing CCA.")
     x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=scale_inputs)
+    self.set_progress(0.75)
 #    cherrypy.log.error("%s" % x)
 #    cherrypy.log.error("%s" % y)
 #    cherrypy.log.error("%s" % x_loadings)
@@ -66,17 +69,20 @@ class implementation(slycat.web.server.worker.model.prototype):
     for component in range(component_count):
       self.send_array_artifact_data("canonical-variables", list(itertools.chain.from_iterable([(x[i, component], y[i, component]) for i in range(sample_count)])))
     self.finish_array_artifact("canonical-variables", input=False)
+    self.set_progress(0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
     self.start_array_artifact("input-structure-correlation", [("correlation", "double")], [("component", component_count, 1), ("input", len(input_columns), len(input_columns))])
     for component in range(component_count):
       self.send_array_artifact_data("input-structure-correlation", [x_loadings[i, component] for i in range(len(input_columns))])
     self.finish_array_artifact("input-structure-correlation", input=False)
+    self.set_progress(0.85)
 
     self.start_array_artifact("output-structure-correlation", [("correlation", "double")], [("component", component_count, 1), ("output", len(output_columns), len(output_columns))])
     for component in range(component_count):
       self.send_array_artifact_data("output-structure-correlation", [y_loadings[i, component] for i in range(len(output_columns))])
     self.finish_array_artifact("output-structure-correlation", input=False)
+    self.set_progress(0.90)
 
     # Store statistics as a vector of component r2/p attributes
     self.start_array_artifact("cca-statistics", [("r2", "double"), ("p", "double")], [("component", component_count, 1)])
