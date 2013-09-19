@@ -50,7 +50,7 @@
     // from and to are the rows that need to be fetched
     // colBegin and colEnd are the columns to be fetched
     function ensureData(from, to, colBegin, colEnd, callback) {
-    
+
       if (req) {
         req.abort();
         for (var i = req.fromPage; i <= req.toPage; i++)
@@ -63,7 +63,7 @@
 
       var fromPage = Math.floor(from / PAGESIZE);
       var toPage = Math.floor(to / PAGESIZE);
-      
+
       while (data[fromPage * PAGESIZE] !== undefined && fromPage < toPage)
         fromPage++;
 
@@ -76,7 +76,7 @@
           callback();
         return;
       }
-      
+
       var url = targetUrl + targetWorkerId + "/table-chunker/chunk"
 
       if (h_request != null) {
@@ -87,10 +87,10 @@
         for (var i = fromPage; i <= toPage; i++)
           data[i * PAGESIZE] = null; // null indicates a 'requested but not available yet'
 
-        onDataLoading.notify({from: from, to: to});   
-      
-      var queryParams = { 
-        "rows" : (fromPage * PAGESIZE) + "-" + ((toPage * PAGESIZE) + PAGESIZE), 
+        onDataLoading.notify({from: from, to: to});
+
+      var queryParams = {
+        "rows" : (fromPage * PAGESIZE) + "-" + ((toPage * PAGESIZE) + PAGESIZE),
         "columns" : all_column_indexes.join(","),
       }
 
