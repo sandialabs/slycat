@@ -174,7 +174,7 @@ rights in this software.
               setup_widgets();
             });
           },
-          error: artifact_missing.bind(null, "x-loadings")
+          error: status_message.bind(null, "x-loadings artifact missing.")
         });
 
         // Create a y_loadings array chunker worker and get the y_loadings from it
@@ -191,7 +191,7 @@ rights in this software.
               setup_widgets();
             });
           },
-          error: artifact_missing.bind(null, "y-loadings")
+          error: status_message.bind(null, "y-loadings artifact missing.")
         });
 
         // Create a cca-statistics array chunker worker and get the cca-statistics from it
@@ -213,7 +213,7 @@ rights in this software.
               setup_widgets();
             });
           },
-          error: artifact_missing.bind(null, "statistics")
+          error: status_message.bind(null, "statistics artifact missing.")
         });
 
         // Create a canonical-variables array chunker worker and get the canonical-variables from it
@@ -235,7 +235,7 @@ rights in this software.
               setup_widgets();
             });
           },
-          error: artifact_missing.bind(null, "canonical-variables")
+          error: status_message.bind(null, "canonical-variables artifact missing.")
         });
 
         // Create a data table array chunker for later ...
@@ -249,7 +249,7 @@ rights in this software.
             v_chunker = chunker;
             setup_v();
           },
-          error: artifact_missing.bind(null, "data-table")
+          error: status_message.bind(null, "data-table artifact missing.")
         });
 
         // Create a table chunker for later ...
@@ -272,13 +272,10 @@ rights in this software.
                 setup_v();
                 setup_widgets();
               },
-              error: function(request, status, reason_phrase)
-              {
-                window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
-              }
+              error: status_message.bind(null, "data-table metadata missing.")
             });
           },
-          error: artifact_missing.bind(null, "data-table")
+          error: status_message.bind(null, "data-table artifact missing.")
         });
 
         // Retrieve bookmarked state information ...
@@ -291,10 +288,10 @@ rights in this software.
           setup_widgets();
         });
 
-        function artifact_missing(artifact)
+        function status_message(message)
         {
           setTimeout("location.reload(true);", 15000);
-          $("#status-messages .technical-details").append("<li>" + artifact + " artifact missing.</li>");
+          $("#status-messages .technical-details").append("<li>" + message + "</li>");
           $("#status-messages").dialog(
           {
             autoOpen: true,
