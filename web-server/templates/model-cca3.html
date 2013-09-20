@@ -293,7 +293,7 @@ rights in this software.
 
         function artifact_missing(artifact)
         {
-          //setTimeout("location.reload(true);", 15000);
+          setTimeout("location.reload(true);", 15000);
           $("#status-messages .technical-details").append("<li>" + artifact + " artifact missing.</li>");
           $("#status-messages").dialog(
           {
