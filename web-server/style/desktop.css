@@ -923,23 +923,25 @@ select
 }
 
 /* Model progress and error messages */
-#status-messages {
-  margin: 3em 0;
+#status-messages
+{
+  margin: 0;
   padding: 12px;
-  background-color: #F4F4F4;
   background-color: #FCF6DD;
   border: 1px solid #BBBBBB;
 }
-#status-messages .error-heading {
+#status-messages .error-heading
+{
   font-size: 2em;
   margin-bottom: 12px;
   color: #9F6000;
 }
-#status-messages .error-description {
+#status-messages .error-description
+{
   margin-bottom: 12px;
 }
-#status-messages .technical-details {
-
+#status-messages .technical-details
+{
 }
 
 

@@ -62,10 +62,10 @@ rights in this software.
           <div id="model-desc">{{description}}</div>
           <div id="color-switcher"></div>
           <div id="status-messages" style="display: none;">
-            <div class='error-heading'>Oops, this model is not ready yet.</div>
-            <div class='error-description'>We are probabably building it for your right now. We'll load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
-            <div><a href="#" onClick="$('#status-messages .technical-details').show(); return false;">Show Technical Information</a></div>
-            <div class="technical-details" style="display: none;"></div>
+            <div class='error-heading'>Oops, this model isn't ready yet.</div>
+            <div class='error-description'>We're probabably building it for you right now, and will load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
+            <div><button>Show Technical Information</button></div>
+            <ul class="technical-details" style="display: none;"></ul>
           </div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
@@ -161,82 +161,124 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
 
         // Create an x_loadings array chunker worker and get the x_loadings from it
-        create_array_chunker("{{server-root}}", "{{_id}}", "input-structure-correlation", function(chunker)
+        create_array_chunker(
         {
-          get_array_attribute("{{server-root}}", chunker, 0, function(result)
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"input-structure-correlation",
+          success:function(chunker)
           {
-            x_loadings = result;
-            setup_widgets();
-          });
+            get_array_attribute("{{server-root}}", chunker, 0, function(result)
+            {
+              x_loadings = result;
+              setup_widgets();
+            });
+          },
+          error: artifact_missing.bind(null, "x-loadings")
         });
 
         // Create a y_loadings array chunker worker and get the y_loadings from it
-        create_array_chunker("{{server-root}}", "{{_id}}", "output-structure-correlation", function(chunker)
+        create_array_chunker(
         {
-          get_array_attribute("{{server-root}}", chunker, 0, function(result)
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"output-structure-correlation",
+          success:function(chunker)
           {
-            y_loadings = result;
-            setup_widgets();
-          });
+            get_array_attribute("{{server-root}}", chunker, 0, function(result)
+            {
+              y_loadings = result;
+              setup_widgets();
+            });
+          },
+          error: artifact_missing.bind(null, "y-loadings")
         });
 
         // Create a cca-statistics array chunker worker and get the cca-statistics from it
-        create_array_chunker("{{server-root}}", "{{_id}}", "cca-statistics", function(chunker)
+        create_array_chunker(
         {
-          get_array_attribute("{{server-root}}", chunker, 0, function(result)
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"cca-statistics",
+          success:function(chunker)
           {
-            r2 = result;
-            setup_widgets();
-          });
-          get_array_attribute("{{server-root}}", chunker, 1, function(result)
-          {
-            wilks = result;
-            setup_widgets();
-          });
+            get_array_attribute("{{server-root}}", chunker, 0, function(result)
+            {
+              r2 = result;
+              setup_widgets();
+            });
+            get_array_attribute("{{server-root}}", chunker, 1, function(result)
+            {
+              wilks = result;
+              setup_widgets();
+            });
+          },
+          error: artifact_missing.bind(null, "statistics")
         });
 
         // Create a canonical-variables array chunker worker and get the canonical-variables from it
-        create_array_chunker("{{server-root}}", "{{_id}}", "canonical-variables", function(chunker)
+        create_array_chunker(
         {
-          get_array_attribute("{{server-root}}", chunker, 0, function(result)
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"canonical-variables",
+          success:function(chunker)
           {
-            x = result;
-            setup_widgets();
-          });
-          get_array_attribute("{{server-root}}", chunker, 1, function(result)
-          {
-            y = result;
-            setup_widgets();
-          });
+            get_array_attribute("{{server-root}}", chunker, 0, function(result)
+            {
+              x = result;
+              setup_widgets();
+            });
+            get_array_attribute("{{server-root}}", chunker, 1, function(result)
+            {
+              y = result;
+              setup_widgets();
+            });
+          },
+          error: artifact_missing.bind(null, "canonical-variables")
         });
 
         // Create a data table array chunker for later ...
-        create_array_chunker("{{server-root}}", "{{_id}}", "data-table", function(chunker)
+        create_array_chunker(
         {
-          v_chunker = chunker;
-          setup_v();
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"data-table",
+          success:function(chunker)
+          {
+            v_chunker = chunker;
+            setup_v();
+          },
+          error: artifact_missing.bind(null, "data-table")
         });
 
         // Create a table chunker for later ...
-        create_table_chunker("{{server-root}}", "{{_id}}", "data-table", function(chunker)
+        create_table_chunker(
         {
-          table_chunker = chunker;
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"data-table",
+          success: function(chunker)
+          {
+            table_chunker = chunker;
 
-          $.ajax({
-            url : "{{server-root}}" + "workers/" + table_chunker + "/table-chunker/metadata",
-            contentType : "application/json",
-            success: function(metadata)
-            {
-              table_metadata = metadata;
+            $.ajax({
+              url : "{{server-root}}" + "workers/" + table_chunker + "/table-chunker/metadata",
+              contentType : "application/json",
+              success: function(metadata)
+              {
+                table_metadata = metadata;
 
-              setup_v();
-              setup_widgets();
-            },
-            error: function(request, status, reason_phrase)
-            {
-              window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
-            }
-          });
+                setup_v();
+                setup_widgets();
+              },
+              error: function(request, status, reason_phrase)
+              {
+                window.alert("Error getting metadata from table-chunker worker: " + reason_phrase);
+              }
+            });
+          },
+          error: artifact_missing.bind(null, "data-table")
         });
 
         // Retrieve bookmarked state information ...
@@ -248,6 +290,24 @@ rights in this software.
           setup_colorswitcher();
           setup_widgets();
         });
+
+        function artifact_missing(artifact)
+        {
+          //setTimeout("location.reload(true);", 15000);
+          $("#status-messages .technical-details").append("<li>" + artifact + " artifact missing.</li>");
+          $("#status-messages").dialog(
+          {
+            autoOpen: true,
+            width: 500,
+            height: 300,
+            modal: false,
+          });
+          $("#status-messages button").click(function()
+          {
+            $('#status-messages .technical-details').show();
+            $(this).hide();
+          });
+        }
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Setup page layout and forms.
@@ -937,19 +997,6 @@ rights in this software.
             });
           }
         }
-
-        //////////////////////////////////////////////////////////////////////////////////////////
-        // Legacy stuff.
-        //////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-        if(false)
-        {
-          $("#status-messages").show();
-          $("#status-messages .technical-details").append("<pre>Required inputs are not present.</pre>");
-          setTimeout("location.reload(true);", 15000);
-        }
-*/
       });
     </script>
   </body>

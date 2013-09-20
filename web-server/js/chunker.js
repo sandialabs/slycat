@@ -12,17 +12,17 @@ function is_little_endian()
 }
 
 // Create a table chunker asynchronously, calling a callback when it's ready ...
-function create_table_chunker(server_root, model, artifact, callback, error_callback)
+function create_table_chunker(parameters)
 {
   // Creating a table chunker worker
   $.ajax(
   {
     contentType : "application/json",
-    data : $.toJSON({ type : "table-chunker", "mid" : model, "artifact" : artifact, "generate-index" : "Index" }),
+    data : $.toJSON({ type : "table-chunker", "mid" : parameters.model, "artifact" : parameters.artifact, "generate-index" : "Index" }),
     processData : false,
     type : "POST",
     cache: false,
-    url : server_root + "workers",
+    url : parameters.server_root + "workers",
     success : function(worker)
     {
       // Setup unload handler to stop and delete worker when user leaves page
@@ -31,7 +31,7 @@ function create_table_chunker(server_root, model, artifact, callback, error_call
         $.ajax(
         {
           type : "DELETE",
-          url : server_root + "workers/" + e.data.worker.id,
+          url : parameters.server_root + "workers/" + e.data.worker.id,
           async: false,
           error : function(request, status, reason_phrase)
           {
@@ -40,26 +40,26 @@ function create_table_chunker(server_root, model, artifact, callback, error_call
         });
       });
 
-      callback(worker.id);
+      parameters.success(worker.id);
     },
     error : function(request, status, reason_phrase)
     {
-      if(error_callback)
-        error_callback(request, status, reason_phrase);
+      if(parameters.error)
+        parameters.error(request, status, reason_phrase);
     },
   });
 }
 
 // Create an array chunker asynchronously, calling a callback when it's ready ...
-function create_array_chunker(server_root, model, artifact, callback, error_callback)
+function create_array_chunker(parameters)
 {
   $.ajax({
     contentType : "application/json",
-    data : $.toJSON({ type : "array-chunker", "mid" : model, "artifact" : artifact, }),
+    data : $.toJSON({ type : "array-chunker", "mid" : parameters.model, "artifact" : parameters.artifact, }),
     processData : false,
     type : "POST",
     cache: false,
-    url : server_root + "workers",
+    url : parameters.server_root + "workers",
     async: true,
     success : function(worker)
     {
@@ -69,7 +69,7 @@ function create_array_chunker(server_root, model, artifact, callback, error_call
         $.ajax(
         {
           type : "DELETE",
-          url : server_root + "workers/" + e.data.worker.id,
+          url : parameters.server_root + "workers/" + e.data.worker.id,
           async: false,
           error : function(request, status, reason_phrase)
           {
@@ -78,12 +78,12 @@ function create_array_chunker(server_root, model, artifact, callback, error_call
         });
       });
 
-      callback(worker.id);
+      parameters.success(worker.id);
     },
     error : function(request, status, reason_phrase)
     {
-      if(error_callback)
-        error_callback(request, status, reason_phrase);
+      if(parameters.error)
+        parameters.error(request, status, reason_phrase);
     },
   });
 }
