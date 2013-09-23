@@ -828,6 +828,7 @@ rights in this software.
               other_columns: other_columns,
               colormap: bookmark["colormap"],
               colorMapper: $("#color-switcher"),
+              selection: bookmark["simulations"] !== undefined ? bookmark["simulations"] : [],
               }, "{{server-root}}", table_chunker);
 
             if("variable-type" in bookmark && "variable-index" in bookmark)
@@ -842,12 +843,6 @@ rights in this software.
             if("sort-field" in bookmark && "sort-direction" in bookmark)
             {
               cca_simulation_table_instance.update({ sort_field: bookmark["sort-field"], sort_direction: bookmark["sort-direction"]});
-            }
-
-            if("simulations" in bookmark)
-            {
-              cca_simulation_table_instance.update({simulation_selection: bookmark["simulations"]});
-              //cca_simulation_table_instance.update({unsorted_simulation_selection: bookmark["simulations"]});
             }
 
             $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)

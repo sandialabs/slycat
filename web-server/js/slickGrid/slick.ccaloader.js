@@ -83,33 +83,35 @@
         clearTimeout(h_request);
       }
 
-      h_request = setTimeout(function () {
+      h_request = setTimeout(function(callback)
+      {
         for (var i = fromPage; i <= toPage; i++)
           data[i * PAGESIZE] = null; // null indicates a 'requested but not available yet'
 
         onDataLoading.notify({from: from, to: to});
 
-      var queryParams = {
-        "rows" : (fromPage * PAGESIZE) + "-" + ((toPage * PAGESIZE) + PAGESIZE),
-        "columns" : all_column_indexes.join(","),
-      }
+        var queryParams =
+        {
+          "rows" : (fromPage * PAGESIZE) + "-" + ((toPage * PAGESIZE) + PAGESIZE),
+          "columns" : all_column_indexes.join(","),
+        }
 
-      req = $.ajax({
-          url: url,
-          contentType : "application/json",
-          data: queryParams,
-          processData : true,
-          dataType: 'json',
-          async: true,
-          success: [onSuccess, callback],
-          error: function(xhr, ajaxOptions, thrownError){
-              onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
-          }
+        req = $.ajax({
+            url: url,
+            contentType : "application/json",
+            data: queryParams,
+            processData : true,
+            dataType: 'json',
+            async: true,
+            success: [onSuccess, callback],
+            error: function(xhr, ajaxOptions, thrownError){
+                onError(fromPage, toPage, xhr, ajaxOptions, thrownError)
+            }
           });
-      // Setting fromPage and toPage on the req does not work for some reason
-      req.fromPage = fromPage;
-      req.toPage = toPage;
-      }, 50);
+        // Setting fromPage and toPage on the req does not work for some reason
+        req.fromPage = fromPage;
+        req.toPage = toPage;
+      }.bind(null, callback), 50);
 
     }
 

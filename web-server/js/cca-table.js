@@ -8,6 +8,8 @@ function cca_table(parameters, server_root, workerId)
 {
   this.container = $(parameters.container);
   this.index_column = parameters.index_column;
+  this.initial_selection = parameters.selection;
+
   var colorMapper = parameters.colorMapper;
 
   // Setup SlickGrid columns
@@ -247,7 +249,7 @@ function cca_table(parameters, server_root, workerId)
     // For now just loading all columns. In future limit the last 2 parameters to just be the columns that are visible in the viewport.
     loader.ensureData(vp.top, vp.bottom, 0, columns.length, function()
     {
-      console.log("table ready");
+      //self.select_simulations(self.initial_selection, false);
     });
   }
 
