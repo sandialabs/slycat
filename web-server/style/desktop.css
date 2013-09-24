@@ -775,17 +775,6 @@ select
   margin: 0;
 }
 
-/*
-.progress
-{
-  display: inline-block;
-  vertical-align: middle;
-  width: 20px;
-  height: 20px;
-  background: url(ajax-loader.gif) no-repeat center;
-}
-*/
-
 button
 {
   background-color: #ddd;
