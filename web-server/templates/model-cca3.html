@@ -57,10 +57,6 @@ rights in this software.
           <div id="model-desc">{{description}}</div>
           <div id="color-switcher"></div>
           <div id="status-messages" style="display: none;">
-            <div class='error-heading'>Oops, this model isn't ready yet.</div>
-            <div class='error-description'>We're probabably building it for you right now, and will load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
-            <div><button>Show Technical Information</button></div>
-            <ul class="technical-details" style="display: none;"></ul>
           </div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
@@ -155,6 +151,41 @@ rights in this software.
         // Start retrieving data, including bookmarked state.
         //////////////////////////////////////////////////////////////////////////////////////////
 
+        // Display progress as the load happens ...
+        setTimeout(function() 
+        {
+          $("#status-messages").empty().html(
+            "<div class='progress-heading'>Model Loading.</div>" +
+            "<div class='progress-description'>The model data is being retrieved from the server now:</div>");
+
+          $("<input type='text' id='progress-value'>").knob({min:0, max:8, width:40, height:40, displayInput:false}).appendTo($("#status-messages"));
+
+          $("#status-messages").dialog(
+          {
+            autoOpen: true,
+            width: 500,
+            height: 300,
+            modal: false,
+            buttons:
+            {
+              OK: function()
+              {
+                $("#status-messages").dialog("close");
+              }
+            }
+          });
+        }, 0);
+
+        // Increment progress when a resource is retrieved ...
+        function artifact_loaded()
+        {
+          var progress = $("#progress-value");
+          progress.val(parseInt(progress.val()) + 1);
+          progress.trigger("change");
+          if(progress.val() >= 8)
+            $("#status-messages").dialog("close");
+        }
+
         // Create an x_loadings array chunker worker and get the x_loadings from it
         create_array_chunker(
         {
@@ -166,10 +197,11 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               x_loadings = result;
+              artifact_loaded();
               setup_widgets();
             });
           },
-          error: status_message.bind(null, "x-loadings artifact missing.")
+          error: artifact_missing
         });
 
         // Create a y_loadings array chunker worker and get the y_loadings from it
@@ -183,10 +215,11 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               y_loadings = result;
+              artifact_loaded();
               setup_widgets();
             });
           },
-          error: status_message.bind(null, "y-loadings artifact missing.")
+          error: artifact_missing
         });
 
         // Create a cca-statistics array chunker worker and get the cca-statistics from it
@@ -200,15 +233,17 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               r2 = result;
+              artifact_loaded();
               setup_widgets();
             });
             get_array_attribute("{{server-root}}", chunker, 1, function(result)
             {
               wilks = result;
+              artifact_loaded();
               setup_widgets();
             });
           },
-          error: status_message.bind(null, "statistics artifact missing.")
+          error: artifact_missing
         });
 
         // Create a canonical-variables array chunker worker and get the canonical-variables from it
@@ -222,15 +257,17 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               x = result;
+              artifact_loaded();
               setup_widgets();
             });
             get_array_attribute("{{server-root}}", chunker, 1, function(result)
             {
               y = result;
+              artifact_loaded();
               setup_widgets();
             });
           },
-          error: status_message.bind(null, "canonical-variables artifact missing.")
+          error: artifact_missing
         });
 
         // Create a data table array chunker for later ...
@@ -244,7 +281,7 @@ rights in this software.
             v_chunker = chunker;
             setup_v();
           },
-          error: status_message.bind(null, "data-table artifact missing.")
+          error: artifact_missing
         });
 
         // Create a table chunker for later ...
@@ -267,37 +304,43 @@ rights in this software.
                 setup_v();
                 setup_widgets();
               },
-              error: status_message.bind(null, "data-table metadata missing.")
+              error: artifact_missing
             });
           },
-          error: status_message.bind(null, "data-table artifact missing.")
+          error: artifact_missing
         });
 
         // Retrieve bookmarked state information ...
         bookmarker.get_state(function(state)
         {
           bookmark = state;
-
+          artifact_loaded();
           setup_v();
           setup_colorswitcher();
           setup_widgets();
         });
 
-        function status_message(message)
+        function artifact_missing()
         {
-          setTimeout("location.reload(true);", 15000);
-          $("#status-messages .technical-details").append("<li>" + message + "</li>");
+          //setTimeout("location.reload(true);", 15000);
+
+          $("#status-messages").empty().html(
+            "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
+            "<div class='error-description'>We're probabably building it for you right now, and will load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>");
+
           $("#status-messages").dialog(
           {
             autoOpen: true,
             width: 500,
             height: 300,
             modal: false,
-          });
-          $("#status-messages button").click(function()
-          {
-            $('#status-messages .technical-details').show();
-            $(this).hide();
+            buttons:
+            {
+              OK: function()
+              {
+                $("#status-messages").dialog("close");
+              }
+            }
           });
         }
 
@@ -643,6 +686,7 @@ rights in this software.
               v = new Float64Array(count);
               for(var i = 0; i != count; ++i)
                 v[i] = i;
+              artifact_loaded();
               setup_widgets();
             }
             else if(type == "input")
@@ -650,6 +694,7 @@ rights in this software.
               get_array_attribute("{{server-root}}", v_chunker, input_columns[index], function(result)
               {
                 v = result;
+                artifact_loaded();
                 setup_widgets();
               });
             }
@@ -658,6 +703,7 @@ rights in this software.
               get_array_attribute("{{server-root}}", v_chunker, output_columns[index], function(result)
               {
                 v = result;
+                artifact_loaded();
                 setup_widgets();
               });
             }

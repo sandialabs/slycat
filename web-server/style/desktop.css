@@ -775,6 +775,7 @@ select
   margin: 0;
 }
 
+/*
 .progress
 {
   display: inline-block;
@@ -783,6 +784,7 @@ select
   height: 20px;
   background: url(ajax-loader.gif) no-repeat center;
 }
+*/
 
 button
 {
@@ -930,18 +932,29 @@ select
   background-color: #FCF6DD;
   border: 1px solid #BBBBBB;
 }
+
+#status-messages .progress-heading
+{
+  font-size: 2em;
+  margin-bottom: 12px;
+  color: #9F6000;
+}
+
+#status-messages .progress-description
+{
+  margin-bottom: 12px;
+}
+
 #status-messages .error-heading
 {
   font-size: 2em;
   margin-bottom: 12px;
   color: #9F6000;
 }
+
 #status-messages .error-description
 {
   margin-bottom: 12px;
-}
-#status-messages .technical-details
-{
 }
 
 
