@@ -473,6 +473,9 @@ class timeseries_artifact:
 class array_artifact:
   """Encapsulates all of the logic and state for incremental storage of a multidimensional array to SciDB."""
   def __init__(self, attributes, dimensions):
+    # We use float32 and float64, but SciDB uses float and double
+    self.type_map = {"float32":"float", "float64":"double"}
+
     self.attributes = attributes
     self.dimensions = dimensions
     self.scidb = slycat.web.server.database.scidb.connect()
@@ -489,7 +492,7 @@ class array_artifact:
     self.scidb.execute("aql", "insert into %s '[%s]'" % (self.dimension_names_array, ",".join(["(\"%s\")" % name for name, size, chunk in dimensions])))
 
     self.data_array = "a" + uuid.uuid4().hex
-    self.scidb.execute("aql", "create array %s<%s>[%s]" % (self.data_array, ",".join(["a%s:%s" % (index, type) for index, (name, type) in enumerate(attributes)]), ",".join(["d%s=0:%s,%s,0" % (index, size-1, chunk) for index, (name, size, chunk) in enumerate(dimensions)])))
+    self.scidb.execute("aql", "create array %s<%s>[%s]" % (self.data_array, ",".join(["a%s:%s" % (index, self.type_map[type] if type in self.type_map else type) for index, (name, type) in enumerate(attributes)]), ",".join(["d%s=0:%s,%s,0" % (index, size-1, chunk) for index, (name, size, chunk) in enumerate(dimensions)])))
     self.couchdb.save({"_id":self.data_array, "type":"array"})
 
     self.named_pipe = None
@@ -503,7 +506,7 @@ class array_artifact:
     if self.stream is None:
       self.named_pipe = "/tmp/%s" % self.data_array
       os.mkfifo(self.named_pipe, 0666)
-      self.thread = multiprocessing.Process(target=load_data, args=(self.scidb, self.data_array, self.named_pipe, [type for name, type in self.attributes]))
+      self.thread = multiprocessing.Process(target=load_data, args=(self.scidb, self.data_array, self.named_pipe, [self.type_map[type] if type in self.type_map else type for name, type in self.attributes]))
       self.thread.daemon = True
       self.thread.start()
       self.stream = open(self.named_pipe, "w")
@@ -514,8 +517,31 @@ class array_artifact:
 
   def store_data(self, data):
     stream = self.get_stream()
+    attributes = itertools.cycle(self.attributes)
     for datum in data:
-      stream.write(struct.pack("<d", datum))
+      name, type = attributes.next()
+      if type == "float64":
+        stream.write(struct.pack("<d", datum))
+      elif type == "float32":
+        stream.write(struct.pack("<f", datum))
+      elif type == "int64":
+        stream.write(struct.pack("<q", datum))
+      elif type == "int32":
+        stream.write(struct.pack("<i", datum))
+      elif type == "int16":
+        stream.write(struct.pack("<h", datum))
+      elif type == "int8":
+        stream.write(struct.pack("<b", datum))
+      elif type == "uint64":
+        stream.write(struct.pack("<Q", datum))
+      elif type == "uint32":
+        stream.write(struct.pack("<I", datum))
+      elif type == "uint16":
+        stream.write(struct.pack("<H", datum))
+      elif type == "uint8":
+        stream.write(struct.pack("<B", datum))
+      else:
+        raise Exception("Unsupported storage type: {}".format(type))
 
   def finish(self):
     if self.stream is not None:
