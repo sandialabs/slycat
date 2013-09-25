@@ -91,6 +91,58 @@ function create_array_chunker(parameters)
 // Retrieve an array chunker attribute asynchronously, calling a callback when it's ready ...
 function get_array_attribute(server_root, chunker, attribute, callback)
 {
+  // Cast a generic arraybuffer to a typed array, with an optional offset and
+  // count.  Note that offset and count are measured in elements, not bytes.
+  function cast_array_buffer(buffer, type, offset, count)
+  {
+    if(type == "int32")
+    {
+      if(offset !== undefined)
+        offset *= 4;
+      return new Int32Array(buffer, offset, count);
+    }
+    else if(type == "int16")
+    {
+      if(offset !== undefined)
+        offset *= 2;
+      return new Int16Array(buffer, offset, count);
+    }
+    else if(type == "int8")
+    {
+      return new Int8Array(buffer, offset, count);
+    }
+    else if(type == "uint32")
+    {
+      if(offset !== undefined)
+        offset *= 4;
+      return new Uint32Array(buffer, offset, count);
+    }
+    else if(type == "uint16")
+    {
+      if(offset !== undefined)
+        offset *= 2;
+      return new Uint16Array(buffer, offset, count);
+    }
+    else if(type == "uint8")
+    {
+      return new Uint8Array(buffer, offset, count);
+    }
+    else if(type == "float64")
+    {
+      if(offset !== undefined)
+        offset *= 8;
+      return new Float64Array(buffer, offset, count);
+    }
+    else if(type == "float32")
+    {
+      if(offset !== undefined)
+        offset *= 4;
+      return new Float32Array(buffer, offset, count);
+    }
+    else
+      console.error("Unknown array buffer type: " + type);
+  }
+
   $.ajax({
     url : server_root + "workers/" + chunker + "/array-chunker/metadata",
     contentType : "application/json",
@@ -106,17 +158,18 @@ function get_array_attribute(server_root, chunker, attribute, callback)
 
       var request = new XMLHttpRequest();
       request.open("GET", server_root + "workers/" + chunker + "/array-chunker/chunk?attribute=" + attribute + "&ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
-      request.responseType = "arraybuffer"; // This is a hack: we're assuming an array of doubles here
+      request.responseType = "arraybuffer";
+      request.attribute = attribute;
       request.metadata = metadata;
       request.onload = function(e)
       {
         var buffer = this.response;
         var metadata = this.metadata;
+        var attribute = this.metadata.attributes[this.attribute];
 
         if(metadata.dimensions.length == 1)
         {
-          // This is a hack: we're assuming an array of doubles here
-          var result = new Float64Array(buffer);
+          var result = cast_array_buffer(buffer, attribute.type);
         }
         else if(metadata.dimensions.length == 2)
         {
@@ -124,7 +177,7 @@ function get_array_attribute(server_root, chunker, attribute, callback)
           var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
           var result = [];
           for(var i = 0; i != row_count; ++i)
-            result.push(new Float64Array(buffer, i * column_count * 8, column_count))
+            result.push(cast_array_buffer(buffer, attribute.type, i * column_count, column_count))
         }
         else
         {
