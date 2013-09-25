@@ -224,8 +224,6 @@ $.widget("cca.scatterplot",
       var count = this.options.indices.length;
       for(var i = 0; i != count; ++i)
         this.inverse_indices[this.options.indices[i]] = i;
-
-      //console.log(this.options.indices, this.inverse_indices);
     }
 
     if(this.updates["update_x"])
@@ -279,6 +277,8 @@ $.widget("cca.scatterplot",
       var x = this.options.x;
       var y = this.options.y;
       var v = this.options.v;
+      var indices = this.options.indices;
+      var color = this.options.color;
 
       // Draw points using circles ...
       if(count < 100000)
@@ -289,7 +289,7 @@ $.widget("cca.scatterplot",
         this.data_context.lineWidth = 1;
         for(var i = 0; i != count; ++i)
         {
-          this.data_context.fillStyle = this.options.color(v[i]);
+          this.data_context.fillStyle = color(v[indices[i]]);
           this.data_context.beginPath();
           this.data_context.arc(this.x_scale(x[i]), this.y_scale(y[i]), radius, 0, twopi);
           this.data_context.fill();
@@ -303,7 +303,7 @@ $.widget("cca.scatterplot",
         var offset = size / 2;
         for(var i = 0; i != count; ++i)
         {
-          this.data_context.fillStyle = this.options.color(v[i]);
+          this.data_context.fillStyle = color(v[indices[i]]);
           this.data_context.fillRect(this.x_scale(x[i]) - offset, this.y_scale(y[i]) - offset, size, size);
         }
       }
@@ -314,6 +314,8 @@ $.widget("cca.scatterplot",
       var x = this.options.x;
       var y = this.options.y;
       var v = this.options.v;
+      var color = this.options.color;
+      var indices = this.options.indices;
 
       this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
       this.selection_context.clearRect(0, 0, width, height);
@@ -324,10 +326,11 @@ $.widget("cca.scatterplot",
       this.selection_context.lineWidth = 1;
       for(var i in this.options.selection)
       {
-        var index = this.inverse_indices[this.options.selection[i]];
-        this.selection_context.fillStyle = this.options.color(v[index]);
+        var global_index = this.options.selection[i];
+        var local_index = this.inverse_indices[global_index];
+        this.selection_context.fillStyle = color(v[global_index]);
         this.selection_context.beginPath();
-        this.selection_context.arc(this.x_scale(x[index]), this.y_scale(y[index]), radius, 0, twopi);
+        this.selection_context.arc(this.x_scale(x[local_index]), this.y_scale(y[local_index]), radius, 0, twopi);
         this.selection_context.fill();
         this.selection_context.stroke();
       }
