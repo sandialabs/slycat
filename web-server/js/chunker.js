@@ -98,46 +98,58 @@ function get_array_attribute(server_root, chunker, attribute, callback)
     if(type == "int32")
     {
       if(offset !== undefined)
-        offset *= 4;
-      return new Int32Array(buffer, offset, count);
+        return new Int32Array(buffer, offset*4, count);
+      else
+        return new Int32Array(buffer);
     }
     else if(type == "int16")
     {
       if(offset !== undefined)
-        offset *= 2;
-      return new Int16Array(buffer, offset, count);
+        return new Int16Array(buffer, offset*2, count);
+      else
+        return new Int16Array(buffer);
     }
     else if(type == "int8")
     {
-      return new Int8Array(buffer, offset, count);
+      if(offset !== undefined)
+        return new Int8Array(buffer, offset, count);
+      else
+        return new Int8Array(buffer);
     }
     else if(type == "uint32")
     {
       if(offset !== undefined)
-        offset *= 4;
-      return new Uint32Array(buffer, offset, count);
+        return new Uint32Array(buffer, offset*4, count);
+      else
+        return new Uint32Array(buffer);
     }
     else if(type == "uint16")
     {
       if(offset !== undefined)
-        offset *= 2;
-      return new Uint16Array(buffer, offset, count);
+        return new Uint16Array(buffer, offset*2, count);
+      else
+        return new Uint16Array(buffer);
     }
     else if(type == "uint8")
     {
-      return new Uint8Array(buffer, offset, count);
+      if(offset !== undefined)
+        return new Uint8Array(buffer, offset, count);
+      else
+        return new Uint8Array(buffer);
     }
     else if(type == "float64")
     {
       if(offset !== undefined)
-        offset *= 8;
-      return new Float64Array(buffer, offset, count);
+        return new Float64Array(buffer, offset*8, count);
+      else
+        return new Float64Array(buffer);
     }
     else if(type == "float32")
     {
       if(offset !== undefined)
-        offset *= 4;
-      return new Float32Array(buffer, offset, count);
+        return new Float32Array(buffer, offset*4, count);
+      else
+        return new Float32Array(buffer);
     }
     else
       console.error("Unknown array buffer type: " + type);
