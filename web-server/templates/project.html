@@ -445,7 +445,6 @@ rights in this software.
 
           var data = new FormData();
           data.append("name", "data-table");
-          data.append("nan-row-filtering", "true");
           data.append("file", $("#local-cca-file")[0].files[0]);
 
           $.ajax(
@@ -700,7 +699,6 @@ rights in this software.
             {
               name : "data-table",
               path : remote_cca_browser.selection()[0],
-              "nan-row-filtering" : true
             }),
             success : function(result)
             {

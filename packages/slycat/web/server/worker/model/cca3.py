@@ -48,6 +48,12 @@ class implementation(slycat.web.server.worker.model.prototype):
           for i, value in enumerate(artifact):
             Y[i, j] = value.getDouble()
 
+    # Remove rows containing NaNs ...
+    good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))
+    indices = indices[good]
+    X = X[good]
+    Y = Y[good]
+
     # Compute the CCA ...
 #    cherrypy.log.error("%s" % X)
 #    cherrypy.log.error("%s" % Y)
