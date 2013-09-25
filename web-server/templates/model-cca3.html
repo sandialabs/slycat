@@ -133,6 +133,7 @@ rights in this software.
 
         var x_loadings = null;
         var y_loadings = null;
+        var indices = null;
         var x = null;
         var y = null;
         var v = null;
@@ -143,6 +144,7 @@ rights in this software.
         var v_chunker = null;
         var table_chunker = null;
 
+        var generate_indices = false;
         var barplot_ready = false;
         var scatterplot_ready = false;
         var cca_simulation_table_instance = null;
@@ -152,7 +154,7 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
 
         // Display progress as the load happens ...
-        setTimeout(function() 
+        setTimeout(function()
         {
           $("#status-messages").empty().html(
             "<div class='progress-heading'>Model Loading.</div>" +
@@ -246,6 +248,28 @@ rights in this software.
           error: artifact_missing
         });
 
+        // Create a canonical-indices array chunker worker and get the canonical-indices from it
+        create_array_chunker(
+        {
+          server_root:"{{server-root}}",
+          model:"{{_id}}",
+          artifact:"canonical-indices",
+          success:function(chunker)
+          {
+            get_array_attribute("{{server-root}}", chunker, 0, function(result)
+            {
+              indices = result;
+              artifact_loaded();
+              setup_widgets();
+            });
+          },
+          error: function()
+          {
+            generate_indices = true;
+            setup_indices();
+          }
+        });
+
         // Create a canonical-variables array chunker worker and get the canonical-variables from it
         create_array_chunker(
         {
@@ -301,6 +325,7 @@ rights in this software.
               {
                 table_metadata = metadata;
 
+                setup_indices();
                 setup_v();
                 setup_widgets();
               },
@@ -669,6 +694,19 @@ rights in this software.
         // Setup the rest of the UI as data is received.
         //////////////////////////////////////////////////////////////////////////////////////////
 
+        function setup_indices()
+        {
+          if(generate_indices && table_metadata)
+          {
+            var count = table_metadata["row-count"];
+            indices = new Int32Array(count);
+            for(var i = 0; i != count; ++i)
+              indices[i] = i;
+            artifact_loaded();
+            setup_widgets();
+          }
+        }
+
         function setup_v()
         {
           if(bookmark && table_metadata && v_chunker)
@@ -782,7 +820,7 @@ rights in this software.
           }
 
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && x && y && v)
+          if(!scatterplot_ready && bookmark && indices && x && y && v)
           {
             scatterplot_ready = true;
 
@@ -793,6 +831,7 @@ rights in this software.
             $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
 
             $("#scatterplot").scatterplot({
+              indices: indices,
               x: x[component],
               y: y[component],
               v: v,

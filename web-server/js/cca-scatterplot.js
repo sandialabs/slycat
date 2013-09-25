@@ -15,6 +15,7 @@ $.widget("cca.scatterplot",
     height : 300,
     pick_distance : 3,
     drag_threshold : 3,
+    indices : [],
     x : [],
     y : [],
     v : [],
@@ -38,7 +39,7 @@ $.widget("cca.scatterplot",
 
     this.updates = {};
     this.update_timer = null;
-    this._schedule_update({update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true});
+    this._schedule_update({update_indices:true, update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true});
 
     var self = this;
 
@@ -100,7 +101,7 @@ $.widget("cca.scatterplot",
         {
           if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
           {
-            self.options.selection.push(i);
+            self.options.selection.push(self.options.indices[i]);
           }
         }
       }
@@ -118,7 +119,7 @@ $.widget("cca.scatterplot",
         {
           if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
           {
-            self.options.selection.push(i);
+            self.options.selection.push(self.options.indices[i]);
             break;
           }
         }
@@ -137,7 +138,12 @@ $.widget("cca.scatterplot",
     console.log("cca.scatterplot._setOption()", key, value);
     this.options[key] = value;
 
-    if(key == "x")
+    if(key == "indices")
+    {
+      this._schedule_update({update_indices:true, render_selection:true});
+    }
+
+    else if(key == "x")
     {
       this._schedule_update({update_x:true, render_data:true, render_selection:true});
     }
@@ -210,6 +216,16 @@ $.widget("cca.scatterplot",
       this.element.attr("height", this.options.height).css("height", this.options.height);
       this.data_canvas.attr("height", this.options.height);
       this.selection_canvas.attr("height", this.options.height);
+    }
+
+    if(this.updates["update_indices"])
+    {
+      this.inverse_indices = {};
+      var count = this.options.indices.length;
+      for(var i = 0; i != count; ++i)
+        this.inverse_indices[this.options.indices[i]] = i;
+
+      //console.log(this.options.indices, this.inverse_indices);
     }
 
     if(this.updates["update_x"])
@@ -308,7 +324,7 @@ $.widget("cca.scatterplot",
       this.selection_context.lineWidth = 1;
       for(var i in this.options.selection)
       {
-        var index = this.options.selection[i];
+        var index = this.inverse_indices[this.options.selection[i]];
         this.selection_context.fillStyle = this.options.color(v[index]);
         this.selection_context.beginPath();
         this.selection_context.arc(this.x_scale(x[index]), this.y_scale(y[index]), radius, 0, twopi);
