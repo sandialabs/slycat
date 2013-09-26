@@ -172,44 +172,53 @@ class artifact(prototype):
     self.attribute_types = [type_map[type] if type in type_map else type for type in self.attribute_types]
     self.dimension_types = [type_map[type] if type in type_map else type for type in self.dimension_types]
 
-    self.data = [numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)], dtype=type) for name, type in zip(self.attribute_names, self.attribute_types)]
-    iterators = [numpy.nditer(attribute, order="C", op_flags=["readwrite"]) for attribute in self.data]
-    with database.query("aql", "select * from %s" % data) as result:
-      for chunk in result.chunks():
-        for type, iterator, attribute in zip(self.attribute_types, iterators, chunk.attributes()):
-          if type == "float64":
-            for value in attribute:
-              iterator.next()[...] = value.getDouble()
-          elif type == "float32":
-            for value in attribute:
-              iterator.next()[...] = value.getFloat()
-          elif type == "int64":
-            for value in attribute:
-              iterator.next()[...] = value.getInt64()
-          elif type == "int32":
-            for value in attribute:
-              iterator.next()[...] = value.getInt32()
-          elif type == "int16":
-            for value in attribute:
-              iterator.next()[...] = value.getInt16()
-          elif type == "int8":
-            for value in attribute:
-              iterator.next()[...] = value.getInt8()
-          elif type == "uint64":
-            for value in attribute:
-              iterator.next()[...] = value.getUint64()
-          elif type == "uint32":
-            for value in attribute:
-              iterator.next()[...] = value.getUint32()
-          elif type == "uint16":
-            for value in attribute:
-              iterator.next()[...] = value.getUint16()
-          elif type == "uint8":
-            for value in attribute:
-              iterator.next()[...] = value.getUint8()
+    self.data = [None for attribute in self.attribute_names]
 
     self.set_message("Loaded %s %s attributes." % (len(self.data), " x ".join([str(end - begin) for begin, end in zip(self.dimension_begin, self.dimension_end)])))
     self.ready.set()
+
+  def load_data(self, attribute):
+    if self.data[attribute] is not None:
+      return
+
+    database = slycat.web.server.database.scidb.connect()
+
+    type = self.attribute_types[attribute]
+    self.data[attribute] = numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)], dtype=type)
+    iterator = numpy.nditer(self.data[attribute], order="C", op_flags=["readwrite"])
+    with database.query("aql", "select a%s from %s" % (attribute, self.artifact["data"])) as result:
+      for chunk in result.chunks():
+        for chunk_attribute in chunk.attributes():
+          if type == "float64":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getDouble()
+          elif type == "float32":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getFloat()
+          elif type == "int64":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt64()
+          elif type == "int32":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt32()
+          elif type == "int16":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt16()
+          elif type == "int8":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt8()
+          elif type == "uint64":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint64()
+          elif type == "uint32":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint32()
+          elif type == "uint16":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint16()
+          elif type == "uint8":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint8()
 
   def get_metadata(self):
     self.ready.wait()
@@ -224,11 +233,13 @@ class artifact(prototype):
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
 
-    if len(ranges) != len(self.data[0].shape):
+    if len(ranges) != len(self.dimension_names):
       return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
 
+    self.load_data(attribute)
+
     # Constrain ranges to the dimensions of our data ...
-    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
+    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[attribute].shape)]
 
     data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
 
@@ -245,11 +256,13 @@ class artifact(prototype):
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
 
-    if len(ranges) != len(self.data[0].shape):
+    if len(ranges) != len(self.dimension_names):
       return cherrypy.HTTPError("400 Malformed ranges argument must contain two values [begin, end) for each dimension in the array.")
 
+    self.load_data(attribute)
+
     # Constrain ranges to the dimensions of our data ...
-    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[0].shape)]
+    ranges = [(min(size, max(0, begin)), min(size, max(min(size, max(0, begin)), end))) for (begin, end), size in zip(ranges, self.data[attribute].shape)]
 
     data = self.data[attribute][[slice(begin, end) for begin, end in ranges]]
     return json.dumps(data.tolist())
