@@ -190,6 +190,18 @@ class connection(object):
     else:
       return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s&byteorder=%s" % (wid, attribute, ranges, byteorder), headers={"accept":"application/octet-stream"})
 
+  def create_test_table_chunker(self, rows, generate_index = None):
+    """Creates a new test table chunker, returning the worker ID."""
+    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"table-chunker", "row-count":rows, "generate-index":generate_index}))["id"]
+
+  def get_table_chunker_metadata(self, wid):
+    return self.request("GET", "/workers/%s/table-chunker/metadata" % (wid), headers={"accept":"application/json"})
+
+  def get_table_chunker_chunk(self, wid, rows, columns):
+    rows = ["%s-%s" % (row[0], row[1]) if isinstance(row, tuple) else str(row) for row in rows]
+    columns = ["%s-%s" % (column[0], column[1]) if isinstance(column, tuple) else str(column) for column in columns]
+    return self.request("GET", "/workers/{}/table-chunker/chunk?rows={}&columns={}".format(wid, ",".join(rows), ",".join(columns)))
+
   def create_bookmark(self, pid, bookmark):
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
