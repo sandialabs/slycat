@@ -27,18 +27,6 @@ column_types = ["double" for name in column_names]
 column_count = len(column_names)
 rows = rows[1:]
 
-skip_rows = set()
-for row_index, row in enumerate(rows):
-  for index, field in enumerate(row[:column_count]):
-    try:
-      value = float(field)
-      if math.isnan(value):
-        skip_rows.add(row_index)
-    except:
-      column_types[index] = "string"
-
-rows = [row for row_index, row in enumerate(rows) if row_index not in skip_rows]
-
 for index, type in enumerate(column_types):
   if type == "string":
     continue
