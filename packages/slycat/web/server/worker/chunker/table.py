@@ -10,7 +10,8 @@ import cherrypy
 import json
 import numpy
 import random
-import Queue
+import threading
+import time
 
 def nullmin(values):
   result = None
@@ -33,13 +34,13 @@ class prototype(slycat.web.server.worker.prototype):
   of giant tables."""
   def __init__(self, security, name):
     slycat.web.server.worker.prototype.__init__(self, security, name)
-    self.request = Queue.Queue()
-    self.response = Queue.Queue()
 
   def get_table_chunker_metadata(self, arguments):
     """Called to retrieve metadata describing the underlying table."""
-    self.request.put(("metadata", None))
-    return self.response.get()
+    response = self.get_metadata()
+    if isinstance(response, cherrypy.HTTPError):
+      raise response
+    return response
 
   def get_table_chunker_search(self, arguments):
     """Called to search for a column value."""
@@ -49,8 +50,12 @@ class prototype(slycat.web.server.worker.prototype):
     except:
       raise cherrypy.HTTPError("400 Malformed search argument must match <column>:<value>,...")
 
-    self.request.put(("search", search))
-    return self.response.get()
+    search = [(column, value) for column, value in search if column >= 0]
+
+    response = self.get_search(search)
+    if isinstance(response, cherrypy.HTTPError):
+      raise response
+    return response
 
   def get_table_chunker_chunk(self, arguments):
     """Called to retrieve the given chunk.  Note that the returned chunk may
@@ -69,8 +74,13 @@ class prototype(slycat.web.server.worker.prototype):
     except:
       raise cherrypy.HTTPError("400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
 
-    self.request.put(("chunk", (rows, columns)))
-    return self.response.get()
+    rows = [row for row in rows if row >= 0]
+    columns = [column for column in columns if column >= 0]
+
+    response = self.get_chunk(rows, columns)
+    if isinstance(response, cherrypy.HTTPError):
+      raise response
+    return response
 
   def put_table_chunker_sort(self, arguments):
     """Called to sort the underlying table.  The sorted results will be returned
@@ -84,39 +94,17 @@ class prototype(slycat.web.server.worker.prototype):
       if order != "ascending" and order != "descending":
         raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
 
-    self.request.put(("sort", sort))
-    return self.response.get()
+    sort = [(column, order) for column, order in sort if column >= 0]
+
+    response = self.put_sort(sort)
+    if isinstance(response, cherrypy.HTTPError):
+      raise response
+    return response
 
   def work(self):
     self.preload()
-
     while not self.stopped:
-      try:
-        # Process the next request ...
-        request, parameters = self.request.get(timeout=1)
-        if request == "chunk":
-          rows, columns = parameters
-
-          # Constrain the request to 0 <= index along both dimensions
-          rows = [row for row in rows if row >= 0]
-          columns = [column for column in columns if column >= 0]
-          response = self.get_chunk(rows, columns)
-
-        elif request == "metadata":
-          response = self.get_metadata()
-
-        elif request == "search":
-          search = [(column, value) for column, value in parameters if column >= 0]
-          response = self.get_search(search)
-
-        elif request == "sort":
-          sort = [(column, order) for column, order in parameters if column >= 0]
-          response = self.put_sort(sort)
-
-        self.response.put(response)
-
-      except Queue.Empty:
-        pass
+      time.sleep(1.0)
 
   def preload(self):
     """Implement this in derivatives to do any pre-loading of data before entering the main chunk-retrieval loop."""
@@ -140,42 +128,47 @@ class prototype(slycat.web.server.worker.prototype):
 
 class test(prototype):
   """Table chunker that creates an arbitrary-size table containing random data for testing."""
-  def __init__(self, security, row_count, column_count, generate_index, seed=12345):
+  def __init__(self, security, row_count, generate_index):
     prototype.__init__(self, security, "chunker.table.test")
     self.row_count = row_count
-    self.column_count = column_count
-    self.seed = seed
     self.generate_index = generate_index
+    self.types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
+    self.ready = threading.Event()
 
   def preload(self):
-    generator = random.Random()
-    generator.seed(self.seed)
-    self.column_names = ["column-%s" % column for column in range(self.column_count)]
-    self.column_types = ["double" for column in range(self.column_count)]
-    self.columns = [[generator.randint(0, self.row_count / 10) for row in range(self.row_count)] for column in range(self.column_count)]
+    try:
+      self.column_names = [type for type in self.types]
+      self.column_types = [type for type in self.types]
+      self.columns = [numpy.arange(self.row_count).astype(type) for type in self.types]
 
-    if self.generate_index is not None:
-      self.column_count += 1
-      self.column_names.append(self.generate_index)
-      self.column_types.append("int64")
-      self.columns.append(range(self.row_count))
+      if self.generate_index is not None:
+        self.column_names.append(self.generate_index)
+        self.column_types.append("int64")
+        self.columns.append(numpy.arange(self.row_count).astype("int64"))
 
-    self.sort_index = range(self.row_count)
-    self.sort_indices = {() : self.sort_index}
-    self.set_message("Using %s x %s test data." % (self.row_count, self.column_count))
+      self.sort_index = range(self.row_count)
+      self.sort_indices = {() : self.sort_index}
+      self.set_message("Using %s x %s test data." % (self.row_count, len(self.column_names)))
+      self.ready.set()
+    except Exception as e:
+      cherrypy.log.error("%s" % e)
 
   def get_metadata(self):
+    self.ready.wait()
+
     response = {
       "row-count" : self.row_count,
-      "column-count" : self.column_count,
+      "column-count" : len(self.column_names),
       "column-names" : self.column_names,
       "column-types" : self.column_types,
-      "column-min" : [min(column) if len(column) else None for column in self.columns],
-      "column-max" : [max(column) if len(column) else None for column in self.columns]
+      "column-min" : [numpy.asscalar(min(column)) for column in self.columns],
+      "column-max" : [numpy.asscalar(max(column)) for column in self.columns]
       }
     return response
 
   def get_search(self, search):
+    self.ready.wait()
+
     search = [(column, value) for column, value in search if column < self.column_count]
 
     response = {
@@ -186,19 +179,23 @@ class test(prototype):
     return response
 
   def get_chunk(self, rows, columns):
+    self.ready.wait()
+
     # Constrain end <= count along both dimensions
     rows = [row for row in rows if row < self.row_count]
-    columns = [column for column in columns if column < self.column_count]
+    columns = [column for column in columns if column < len(self.column_names)]
 
     response = {
       "rows" : rows,
       "columns" : columns,
       "column-names" : ["column-%s" % column for column in columns],
-      "data" : [[self.columns[column][self.sort_index[row]] for row in rows] for column in columns],
+      "data" : [[numpy.asscalar(self.columns[column][self.sort_index[row]]) for row in rows] for column in columns],
       }
     return response
 
   def put_sort(self, sort):
+    self.ready.wait()
+
     sort = [(column, order) for column, order in sort if column < self.column_count]
     sort_index_key = tuple(sort)
 

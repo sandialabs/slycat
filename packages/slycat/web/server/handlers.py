@@ -423,8 +423,8 @@ def post_workers():
       if model["artifact-types"][artifact] != "table":
         raise cherrypy.HTTPError("400 Artifact %s is not a table." % artifact)
       wid = pool.start_worker(slycat.web.server.worker.chunker.table.artifact(cherrypy.request.security, model, artifact, generate_index))
-    elif "row-count" in cherrypy.request.json and "column-count" in cherrypy.request.json:
-      wid = pool.start_worker(slycat.web.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], cherrypy.request.json["column-count"], generate_index))
+    elif "row-count" in cherrypy.request.json:
+      wid = pool.start_worker(slycat.web.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], generate_index))
     else:
       raise cherrypy.HTTPError("400 Table chunker data source not specified.")
   elif cherrypy.request.json["type"] == "array-chunker":
