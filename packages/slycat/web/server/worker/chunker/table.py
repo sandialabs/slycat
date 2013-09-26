@@ -12,6 +12,22 @@ import numpy
 import random
 import Queue
 
+def nullmin(values):
+  result = None
+  for value in values:
+    if value is not None:
+      if result is None or value < result:
+        result = value
+  return result
+
+def nullmax(values):
+  result = None
+  for value in values:
+    if value is not None:
+      if result is None or value > result:
+        result = value
+  return result
+
 class prototype(slycat.web.server.worker.prototype):
   """Worker that serves up rectangular table "chunks", for interactive browsing
   of giant tables."""
@@ -252,8 +268,8 @@ class artifact(prototype):
       "column-count" : self.column_count,
       "column-names" : self.column_names,
       "column-types" : self.column_types,
-      "column-min" : [min(column) if len(column) else None for column in self.columns],
-      "column-max" : [max(column) if len(column) else None for column in self.columns]
+      "column-min" : [nullmin(column) for column in self.columns],
+      "column-max" : [nullmax(column) for column in self.columns]
       }
     return response
 
