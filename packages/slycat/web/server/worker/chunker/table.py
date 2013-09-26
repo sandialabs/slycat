@@ -8,6 +8,7 @@ import slycat.web.server.worker
 
 import cherrypy
 import json
+import numpy
 import random
 import Queue
 
@@ -229,7 +230,9 @@ class artifact(prototype):
         if column_type == "string":
           self.columns.append([value.getString() for value in attributes.next()])
         elif column_type == "double":
-          self.columns.append([value.getDouble() for value in attributes.next()])
+          values = [value.getDouble() for value in attributes.next()]
+          values = [None if numpy.isnan(value) else value for value in values]
+          self.columns.append(values)
         else:
           self.columns.append([None] * self.row_count)
 
