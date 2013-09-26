@@ -23,7 +23,7 @@ def teardown():
   server_process.terminate()
   server_process.wait()
 
-def test_array_chunker():
+def test_array_chunker_number():
   for attribute, type in enumerate(["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64"]):
     for byteorder, prefix in [("little", "<"), ("big", ">")]:
       yield check_array_chunker, attribute, type, byteorder, prefix + numpy.dtype(type).str[1:]
@@ -50,5 +50,45 @@ def test_array_chunker_string():
 
   chunk = numpy.array(connection.get_array_chunker_chunk(wid, 10, [0, 3, 0, 2]))
   numpy.testing.assert_array_equal(chunk, [["0", "1"], ["4", "5"], ["8", "9"]])
+
+  connection.delete_worker(wid)
+
+def test_table_chunker():
+  wid = connection.create_test_table_chunker(10)
+
+  metadata = connection.get_table_chunker_metadata(wid)
+  nose.tools.assert_equal(metadata["row-count"], 10)
+  nose.tools.assert_equal(metadata["column-count"], 11)
+  nose.tools.assert_equal(metadata["column-names"], ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"])
+  nose.tools.assert_equal(metadata["column-types"], ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"])
+  nose.tools.assert_equal(metadata["column-min"], [0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, "0"])
+  nose.tools.assert_equal(metadata["column-max"], [9, 9, 9, 9, 9, 9, 9, 9, 9.0, 9.0, "9"])
+
+  for column in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+    chunk = connection.get_table_chunker_chunk(wid, [(0, 10)], [column])
+    nose.tools.assert_equal(chunk["data"][0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+  chunk = connection.get_table_chunker_chunk(wid, [(0, 10)], [10])
+  nose.tools.assert_equal(chunk["data"][0], ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+
+  connection.delete_worker(wid)
+
+def test_table_chunker_with_index():
+  wid = connection.create_test_table_chunker(10, generate_index="index")
+
+  metadata = connection.get_table_chunker_metadata(wid)
+  nose.tools.assert_equal(metadata["row-count"], 10)
+  nose.tools.assert_equal(metadata["column-count"], 12)
+  nose.tools.assert_equal(metadata["column-names"], ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "index"])
+  nose.tools.assert_equal(metadata["column-types"], ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "int64"])
+  nose.tools.assert_equal(metadata["column-min"], [0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, "0", 0])
+  nose.tools.assert_equal(metadata["column-max"], [9, 9, 9, 9, 9, 9, 9, 9, 9.0, 9.0, "9", 9])
+
+  for column in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11]:
+    chunk = connection.get_table_chunker_chunk(wid, [(0, 10)], [column])
+    nose.tools.assert_equal(chunk["data"][0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+  chunk = connection.get_table_chunker_chunk(wid, [(0, 10)], [10])
+  nose.tools.assert_equal(chunk["data"][0], ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
 
   connection.delete_worker(wid)
