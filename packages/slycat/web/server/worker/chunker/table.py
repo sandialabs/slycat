@@ -234,23 +234,42 @@ class artifact(prototype):
     high = database.query_value("aql", "select high from dimensions(%s)" % columns).getInt64()
     self.row_count = high + 1 if high >= low else 0
 
-    self.columns = []
-    with database.query("aql", "select * from %s" % columns) as results:
-      attributes = iter(results)
-      for column_type in self.column_types:
-        if column_type == "string":
-          self.columns.append([value.getString() for value in attributes.next()])
-        elif column_type == "double":
-          values = [value.getDouble() for value in attributes.next()]
-          values = [None if numpy.isnan(value) else value for value in values]
-          self.columns.append(values)
-        else:
-          self.columns.append([None] * self.row_count)
+    def extract_value(value, type):
+      cherrypy.log.error("%s" % type)
+      if type == "double":
+        return value.getDouble()
+      elif type == "string":
+        return value.getString()
+
+    with database.query("aql", "select {} from {}".format(",".join(["min(c{})".format(index) for index in range(self.column_count)]), columns)) as results:
+      self.column_min = []
+      index = 0
+      for attribute in results:
+        for value in attribute:
+          if self.column_types[index] == "double":
+            self.column_min.append(value.getDouble())
+          elif self.column_types[index] == "string":
+            self.column_min.append(value.getString())
+          index += 1
+    with database.query("aql", "select {} from {}".format(",".join(["max(c{})".format(index) for index in range(self.column_count)]), columns)) as results:
+      self.column_max = []
+      index = 0
+      for attribute in results:
+        for value in attribute:
+          if self.column_types[index] == "double":
+            self.column_max.append(value.getDouble())
+          elif self.column_types[index] == "string":
+            self.column_max.append(value.getString())
+          index += 1
+
+    self.columns = [None for column in self.column_names]
 
     if self.generate_index is not None:
       self.column_count += 1
       self.column_names.append(self.generate_index)
       self.column_types.append("int64")
+      self.column_min.append(0)
+      self.column_max.append(self.row_count - 1)
       self.columns.append(range(self.row_count))
 
     self.sort_index = range(self.row_count)
@@ -266,14 +285,35 @@ class artifact(prototype):
       "column-count" : self.column_count,
       "column-names" : self.column_names,
       "column-types" : self.column_types,
-      "column-min" : [nullmin(column) for column in self.columns],
-      "column-max" : [nullmax(column) for column in self.columns]
+      "column-min" : self.column_min,
+      "column-max" : self.column_max
       }
+    cherrypy.log.error("%s" % response)
     return response
+
+  def load_column(self, column):
+    if self.columns[column] is not None:
+      return
+
+    database = slycat.web.server.database.scidb.connect()
+
+    type = self.column_types[column]
+    with database.query("aql", "select c{} from {}".format(column, self.artifact["columns"])) as results:
+      if type == "string":
+        values = [value.getString() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
+      elif type == "double":
+        values = [value.getDouble() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
+        values = [None if numpy.isnan(value) else value for value in values]
+      else:
+        raise Exception("Unsupported attribute type: {}".format(type))
+      self.columns[column] = values
 
   def get_search(self, search):
     self.ready.wait()
     search = [(column, value) for column, value in search if column < self.column_count]
+
+    for column, value in search:
+      self.load_column(column)
 
     response = {
       "search" : search,
@@ -288,6 +328,9 @@ class artifact(prototype):
     rows = [row for row in rows if row < self.row_count]
     columns = [column for column in columns if column < self.column_count]
 
+    for column in columns:
+      self.load_column(column)
+
     response = {
       "rows" : rows,
       "columns" : columns,
@@ -300,8 +343,11 @@ class artifact(prototype):
   def put_sort(self, sort):
     self.ready.wait()
     sort = [(column, order) for column, order in sort if column < self.column_count]
-    sort_index_key = tuple(sort)
 
+    for column, order in sort:
+      self.load_column(column)
+
+    sort_index_key = tuple(sort)
     if sort_index_key not in self.sort_indices:
       index = range(self.row_count)
       for column, order in reversed(sort):
