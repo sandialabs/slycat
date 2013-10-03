@@ -213,9 +213,10 @@ class artifact(prototype):
   def __init__(self, security, model, artifact, generate_index):
     prototype.__init__(self, security, "chunker.table.artifact")
     self.model = model
+    self.artifact_name = artifact
     self.artifact = model["artifact:%s" % artifact]
     self.generate_index = generate_index
-    self.ready = threading.Event()
+    self.metadata_ready = threading.Event()
 
   def preload(self):
     database = slycat.web.server.database.scidb.connect()
@@ -235,7 +236,6 @@ class artifact(prototype):
     self.row_count = high + 1 if high >= low else 0
 
     def extract_value(value, type):
-      cherrypy.log.error("%s" % type)
       if type == "double":
         return value.getDouble()
       elif type == "string":
@@ -262,7 +262,8 @@ class artifact(prototype):
             self.column_max.append(value.getString())
           index += 1
 
-    self.columns = [None for column in self.column_names]
+    self.column_lock = [threading.Lock() for name in self.column_names]
+    self.columns = [None for name in self.column_names]
 
     if self.generate_index is not None:
       self.column_count += 1
@@ -270,16 +271,17 @@ class artifact(prototype):
       self.column_types.append("int64")
       self.column_min.append(0)
       self.column_max.append(self.row_count - 1)
+      self.column_lock.append(threading.Lock())
       self.columns.append(range(self.row_count))
 
     self.sort_index = range(self.row_count)
     self.sort_indices = {() : self.sort_index}
     self.set_message("Loaded %s x %s file." % (self.row_count, self.column_count))
 
-    self.ready.set()
+    self.metadata_ready.set()
 
   def get_metadata(self):
-    self.ready.wait()
+    self.metadata_ready.wait()
     response = {
       "row-count" : self.row_count,
       "column-count" : self.column_count,
@@ -288,28 +290,29 @@ class artifact(prototype):
       "column-min" : self.column_min,
       "column-max" : self.column_max
       }
-    cherrypy.log.error("%s" % response)
     return response
 
   def load_column(self, column):
-    if self.columns[column] is not None:
-      return
+    with self.column_lock[column]:
+      if self.columns[column] is None:
+        cherrypy.log.error("Loading artifact {} column {}".format(self.artifact_name, column))
 
-    database = slycat.web.server.database.scidb.connect()
+        database = slycat.web.server.database.scidb.connect()
 
-    type = self.column_types[column]
-    with database.query("aql", "select c{} from {}".format(column, self.artifact["columns"])) as results:
-      if type == "string":
-        values = [value.getString() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
-      elif type == "double":
-        values = [value.getDouble() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
-        values = [None if numpy.isnan(value) else value for value in values]
-      else:
-        raise Exception("Unsupported attribute type: {}".format(type))
-      self.columns[column] = values
+        type = self.column_types[column]
+        with database.query("aql", "select c{} from {}".format(column, self.artifact["columns"])) as results:
+          if type == "string":
+            values = [value.getString() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
+          elif type == "double":
+            values = [value.getDouble() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
+            values = [None if numpy.isnan(value) else value for value in values]
+          else:
+            raise Exception("Unsupported attribute type: {}".format(type))
+          self.columns[column] = values
 
   def get_search(self, search):
-    self.ready.wait()
+    self.metadata_ready.wait()
+
     search = [(column, value) for column, value in search if column < self.column_count]
 
     for column, value in search:
@@ -323,7 +326,8 @@ class artifact(prototype):
     return response
 
   def get_chunk(self, rows, columns):
-    self.ready.wait()
+    self.metadata_ready.wait()
+
     # Constrain end <= count along both dimensions
     rows = [row for row in rows if row < self.row_count]
     columns = [column for column in columns if column < self.column_count]
@@ -341,7 +345,8 @@ class artifact(prototype):
     return response
 
   def put_sort(self, sort):
-    self.ready.wait()
+    self.metadata_ready.wait()
+
     sort = [(column, order) for column, order in sort if column < self.column_count]
 
     for column, order in sort:

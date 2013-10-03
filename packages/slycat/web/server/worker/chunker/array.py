@@ -142,8 +142,9 @@ class artifact(prototype):
   def __init__(self, security, model, artifact):
     prototype.__init__(self, security, "chunker.array.artifact")
     self.model = model
+    self.artifact_name = artifact
     self.artifact = model["artifact:%s" % artifact]
-    self.ready = threading.Event()
+    self.metadata_ready = threading.Event()
 
   def preload(self):
     database = slycat.web.server.database.scidb.connect()
@@ -172,56 +173,57 @@ class artifact(prototype):
     self.attribute_types = [type_map[type] if type in type_map else type for type in self.attribute_types]
     self.dimension_types = [type_map[type] if type in type_map else type for type in self.dimension_types]
 
+    self.data_lock = [threading.Lock() for attribute in self.attribute_names]
     self.data = [None for attribute in self.attribute_names]
 
     self.set_message("Loaded %s %s attributes." % (len(self.data), " x ".join([str(end - begin) for begin, end in zip(self.dimension_begin, self.dimension_end)])))
-    self.ready.set()
+    self.metadata_ready.set()
 
   def load_data(self, attribute):
-    if self.data[attribute] is not None:
-      return
+    with self.data_lock[attribute]:
+      if self.data[attribute] is None:
+        cherrypy.log.error("Loading artifact {} attribute {}".format(self.artifact_name, attribute))
+        database = slycat.web.server.database.scidb.connect()
 
-    database = slycat.web.server.database.scidb.connect()
-
-    type = self.attribute_types[attribute]
-    self.data[attribute] = numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)], dtype=type)
-    iterator = numpy.nditer(self.data[attribute], order="C", op_flags=["readwrite"])
-    with database.query("aql", "select a%s from %s" % (attribute, self.artifact["data"])) as result:
-      for chunk in result.chunks():
-        for chunk_attribute in chunk.attributes():
-          if type == "float64":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getDouble()
-          elif type == "float32":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getFloat()
-          elif type == "int64":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt64()
-          elif type == "int32":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt32()
-          elif type == "int16":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt16()
-          elif type == "int8":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt8()
-          elif type == "uint64":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint64()
-          elif type == "uint32":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint32()
-          elif type == "uint16":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint16()
-          elif type == "uint8":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint8()
+        type = self.attribute_types[attribute]
+        self.data[attribute] = numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)], dtype=type)
+        iterator = numpy.nditer(self.data[attribute], order="C", op_flags=["readwrite"])
+        with database.query("aql", "select a%s from %s" % (attribute, self.artifact["data"])) as result:
+          for chunk in result.chunks():
+            for chunk_attribute in chunk.attributes():
+              if type == "float64":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getDouble()
+              elif type == "float32":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getFloat()
+              elif type == "int64":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getInt64()
+              elif type == "int32":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getInt32()
+              elif type == "int16":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getInt16()
+              elif type == "int8":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getInt8()
+              elif type == "uint64":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getUint64()
+              elif type == "uint32":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getUint32()
+              elif type == "uint16":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getUint16()
+              elif type == "uint8":
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getUint8()
 
   def get_metadata(self):
-    self.ready.wait()
+    self.metadata_ready.wait()
     response = {
       "attributes" : [{"name" : name, "type" : type} for name, type in zip(self.attribute_names, self.attribute_types)],
       "dimensions" : [{"name" : name, "type" : type, "begin" : begin, "end" : end} for name, type, begin, end in zip(self.dimension_names, self.dimension_types, self.dimension_begin, self.dimension_end)]
@@ -229,7 +231,8 @@ class artifact(prototype):
     return response
 
   def get_chunk(self, attribute, ranges, byteorder):
-    self.ready.wait()
+    self.metadata_ready.wait()
+
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
 
@@ -252,7 +255,8 @@ class artifact(prototype):
     return result
 
   def get_string_chunk(self, attribute, ranges):
-    self.ready.wait()
+    self.metadata_ready.wait()
+
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
 
@@ -272,8 +276,9 @@ class table_artifact(prototype):
   def __init__(self, security, model, artifact):
     prototype.__init__(self, security, "chunker.array.table_artifact")
     self.model = model
+    self.artifact_name = artifact
     self.artifact = model["artifact:%s" % artifact]
-    self.ready = threading.Event()
+    self.metadata_ready = threading.Event()
 
   def preload(self):
     database = slycat.web.server.database.scidb.connect()
@@ -299,31 +304,31 @@ class table_artifact(prototype):
     self.attribute_types = [type_map[type] if type in type_map else type for type in self.attribute_types]
     self.dimension_types = [type_map[type] if type in type_map else type for type in self.dimension_types]
 
+    self.data_lock = [threading.Lock() for name in self.attribute_names]
     self.data = [None for name in self.attribute_names]
 
     self.set_message("Loaded %s %s attributes." % (len(self.data), " x ".join([str(end - begin) for begin, end in zip(self.dimension_begin, self.dimension_end)])))
-    self.ready.set()
+    self.metadata_ready.set()
 
   def load_data(self, attribute):
-    if self.data[attribute] is not None:
-      return
-
-    database = slycat.web.server.database.scidb.connect()
-
-    if self.attribute_types[attribute] == "string":
-      with database.query("aql", "select c%s from %s" % (attribute, self.artifact["columns"])) as result:
-        self.data[attribute] = [value.getString() for chunk in result.chunks() for chunk_attribute in chunk.attributes() for value in chunk_attribute]
-    else:
-      self.data[attribute] = numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)])
-      iterator = numpy.nditer(self.data[attribute], order="C", op_flags=["readwrite"])
-      with database.query("aql", "select c%s from %s" % (attribute, self.artifact["columns"])) as result:
-        for chunk in result.chunks():
-          for chunk_attribute in chunk.attributes():
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
+    with self.data_lock[attribute]:
+      if self.data[attribute] is None:
+        cherrypy.log.error("Loading artifact {} attribute {}".format(self.artifact_name, attribute))
+        database = slycat.web.server.database.scidb.connect()
+        if self.attribute_types[attribute] == "string":
+          with database.query("aql", "select c%s from %s" % (attribute, self.artifact["columns"])) as result:
+            self.data[attribute] = [value.getString() for chunk in result.chunks() for chunk_attribute in chunk.attributes() for value in chunk_attribute]
+        else:
+          self.data[attribute] = numpy.zeros([end - begin for begin, end in zip(self.dimension_begin, self.dimension_end)])
+          iterator = numpy.nditer(self.data[attribute], order="C", op_flags=["readwrite"])
+          with database.query("aql", "select c%s from %s" % (attribute, self.artifact["columns"])) as result:
+            for chunk in result.chunks():
+              for chunk_attribute in chunk.attributes():
+                for value in chunk_attribute:
+                  iterator.next()[...] = value.getDouble() # Assume all doubles for now.  Yes, this is a hack.
 
   def get_metadata(self):
-    self.ready.wait()
+    self.metadata_ready.wait()
     response = {
       "attributes" : [{"name" : name, "type" : type} for name, type in zip(self.attribute_names, self.attribute_types)],
       "dimensions" : [{"name" : name, "type" : type, "begin" : begin, "end" : end} for name, type, begin, end in zip(self.dimension_names, self.dimension_types, self.dimension_begin, self.dimension_end)]
@@ -331,7 +336,7 @@ class table_artifact(prototype):
     return response
 
   def get_chunk(self, attribute, ranges, byteorder):
-    self.ready.wait()
+    self.metadata_ready.wait()
 
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
@@ -355,7 +360,7 @@ class table_artifact(prototype):
     return result
 
   def get_string_chunk(self, attribute, ranges):
-    self.ready.wait()
+    self.metadata_ready.wait()
 
     if attribute < 0 or attribute >= len(self.data):
       return cherrypy.HTTPError("400 Attribute out-of-range.")
