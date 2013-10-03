@@ -914,6 +914,35 @@ select
 }
 
 /* Model progress and error messages */
+.load-status
+{
+  width: 400px;
+  height: 100px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -50px;
+  padding: 12px;
+  background-color: #FCF6DD;
+  border: 1px solid #BBBBBB;
+}
+
+.load-status .progress-heading
+{
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 12px;
+  color: #9F6000;
+}
+
+.load-status .progress-description
+{
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+
 #status-messages
 {
   margin: 0;
