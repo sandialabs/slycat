@@ -56,8 +56,7 @@ rights in this software.
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
           <div id="color-switcher"></div>
-          <div id="status-messages" style="display: none;">
-          </div>
+          <div id="status-messages" style="display: none;"></div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
               <button id="delete-model-link">Delete Model</button>
@@ -104,15 +103,18 @@ rights in this software.
 
     <div id="cca-pane" class="ui-layout-center">
       <div id="barplot-pane" class="ui-layout-west">
+        <div class="load-status"></div>
         <table id="barplot">
         </table>
       </div>
       <div id="scatterplot-pane" class="ui-layout-center">
+        <div class="load-status"></div>
         <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
       </div>
     </div>
 
-    <div class="ui-layout-south">
+    <div id="table-pane" class="ui-layout-south">
+      <div class="load-status"></div>
       <div id="cca-simulation-table-slickgrid">
       </div>
     </div>
@@ -154,39 +156,7 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
 
         // Display progress as the load happens ...
-        setTimeout(function()
-        {
-          $("#status-messages").empty().html(
-            "<div class='progress-heading'>Model Loading.</div>" +
-            "<div class='progress-description'>The model data is being retrieved from the server now:</div>");
-
-          $("<input type='text' id='progress-value'>").knob({min:0, max:8, width:40, height:40, displayInput:false}).appendTo($("#status-messages"));
-
-          $("#status-messages").dialog(
-          {
-            autoOpen: true,
-            width: 500,
-            height: 300,
-            modal: false,
-            buttons:
-            {
-              OK: function()
-              {
-                $("#status-messages").dialog("close");
-              }
-            }
-          });
-        }, 0);
-
-        // Increment progress when a resource is retrieved ...
-        function artifact_loaded()
-        {
-          var progress = $("#progress-value");
-          progress.val(parseInt(progress.val()) + 1);
-          progress.trigger("change");
-          if(progress.val() >= 8)
-            $("#status-messages").dialog("close");
-        }
+        $(".load-status").text("Loading data.");
 
         // Create an x_loadings array chunker worker and get the x_loadings from it
         create_array_chunker(
@@ -199,7 +169,6 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               x_loadings = result;
-              artifact_loaded();
               setup_widgets();
             });
           },
@@ -217,7 +186,6 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               y_loadings = result;
-              artifact_loaded();
               setup_widgets();
             });
           },
@@ -235,13 +203,11 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               r2 = result;
-              artifact_loaded();
               setup_widgets();
             });
             get_array_attribute("{{server-root}}", chunker, 1, function(result)
             {
               wilks = result;
-              artifact_loaded();
               setup_widgets();
             });
           },
@@ -259,7 +225,6 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               indices = result;
-              artifact_loaded();
               setup_widgets();
             });
           },
@@ -281,13 +246,11 @@ rights in this software.
             get_array_attribute("{{server-root}}", chunker, 0, function(result)
             {
               x = result;
-              artifact_loaded();
               setup_widgets();
             });
             get_array_attribute("{{server-root}}", chunker, 1, function(result)
             {
               y = result;
-              artifact_loaded();
               setup_widgets();
             });
           },
@@ -339,7 +302,6 @@ rights in this software.
         bookmarker.get_state(function(state)
         {
           bookmark = state;
-          artifact_loaded();
           setup_v();
           setup_colorswitcher();
           setup_widgets();
@@ -349,9 +311,11 @@ rights in this software.
         {
           //setTimeout("location.reload(true);", 15000);
 
+          $(".load-status").css("display", "none");
+
           $("#status-messages").empty().html(
             "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-            "<div class='error-description'>We're probabably building it for you right now, and will load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>");
+            "<div class='error-description'>We're probabably building it for you right now. Look up at the status bar for progress information and more details.</div>");
 
           $("#status-messages").dialog(
           {
@@ -702,7 +666,6 @@ rights in this software.
             indices = new Int32Array(count);
             for(var i = 0; i != count; ++i)
               indices[i] = i;
-            artifact_loaded();
             setup_widgets();
           }
         }
@@ -724,7 +687,6 @@ rights in this software.
               v = new Float64Array(count);
               for(var i = 0; i != count; ++i)
                 v[i] = i;
-              artifact_loaded();
               setup_widgets();
             }
             else if(type == "input")
@@ -732,7 +694,6 @@ rights in this software.
               get_array_attribute("{{server-root}}", v_chunker, input_columns[index], function(result)
               {
                 v = result;
-                artifact_loaded();
                 setup_widgets();
               });
             }
@@ -741,7 +702,6 @@ rights in this software.
               get_array_attribute("{{server-root}}", v_chunker, output_columns[index], function(result)
               {
                 v = result;
-                artifact_loaded();
                 setup_widgets();
               });
             }
@@ -765,6 +725,8 @@ rights in this software.
           if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings)
           {
             barplot_ready = true;
+
+            $("#barplot-pane .load-status").css("display", "none");
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
@@ -824,6 +786,8 @@ rights in this software.
           {
             scatterplot_ready = true;
 
+            $("#scatterplot-pane .load-status").css("display", "none");
+
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var selection = bookmark["simulations"] !== undefined ? bookmark["simulations"] : [];
@@ -869,6 +833,8 @@ rights in this software.
           // Setup the table ...
           if(!cca_simulation_table_instance && bookmark && table_metadata)
           {
+            $("#table-pane .load-status").css("display", "none");
+
             var index_column = table_metadata["column-count"] - 1;
             var index = table_metadata["column-names"][index_column];
             var inputs = [];
