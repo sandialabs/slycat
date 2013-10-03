@@ -156,9 +156,7 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
 
         // Display progress as the load happens ...
-        $(".load-status").empty().html(
-          "<div class='progress-heading'>Model Loading.</div>" +
-          "<div class='progress-description'>The model data is being retrieved from the server now.</div>");
+        $(".load-status").text("Loading data.");
 
         // Create an x_loadings array chunker worker and get the x_loadings from it
         create_array_chunker(

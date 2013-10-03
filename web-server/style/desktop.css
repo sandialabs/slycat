@@ -914,34 +914,37 @@ select
 }
 
 /* Model progress and error messages */
+@keyframes fade_in
+{
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@-webkit-keyframes fade_in
+{
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .load-status
 {
-  width: 400px;
+  color: #9f6000;
+  opacity: 0;
+  font-size: 2em;
   height: 100px;
-  position: absolute;
   left: 50%;
-  top: 50%;
   margin-left: -200px;
   margin-top: -50px;
   padding: 12px;
-  background-color: #FCF6DD;
-  border: 1px solid #BBBBBB;
-}
-
-.load-status .progress-heading
-{
+  position: absolute;
+  top: 50%;
+  width: 400px;
   text-align: center;
-  font-size: 2em;
-  margin-bottom: 12px;
-  color: #9F6000;
+  animation: fade_in 0.25s ease-in-out 0.8s;
+  animation-fill-mode: forwards;
+  -webkit-animation: fade_in 0.25s ease-in-out 0.8s;
+  -webkit-animation-fill-mode: forwards;
 }
-
-.load-status .progress-description
-{
-  text-align: center;
-  margin-bottom: 12px;
-}
-
 
 #status-messages
 {
