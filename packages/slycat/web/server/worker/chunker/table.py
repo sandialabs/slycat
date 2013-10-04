@@ -13,22 +13,6 @@ import random
 import threading
 import time
 
-def nullmin(values):
-  result = None
-  for value in values:
-    if value is not None:
-      if result is None or value < result:
-        result = value
-  return result
-
-def nullmax(values):
-  result = None
-  for value in values:
-    if value is not None:
-      if result is None or value > result:
-        result = value
-  return result
-
 class prototype(slycat.web.server.worker.prototype):
   """Worker that serves up rectangular table "chunks", for interactive browsing
   of giant tables."""
@@ -63,19 +47,19 @@ class prototype(slycat.web.server.worker.prototype):
     try:
       rows = [spec.split("-") for spec in arguments["rows"].split(",")]
       rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
-      rows = [row for begin, end in rows for row in range(begin, end)]
+      rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
     except:
       raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
 
     try:
       columns = [spec.split("-") for spec in arguments["columns"].split(",")]
       columns = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in columns]
-      columns = [column for begin, end in columns for column in range(begin, end)]
+      columns = numpy.concatenate([numpy.arange(begin, end) for begin, end in columns])
     except:
       raise cherrypy.HTTPError("400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
 
-    rows = [row for row in rows if row >= 0]
-    columns = [column for column in columns if column >= 0]
+    rows = rows[rows >= 0]
+    columns = columns[columns >= 0]
 
     response = self.get_chunk(rows, columns)
     if isinstance(response, cherrypy.HTTPError):
@@ -262,20 +246,14 @@ class artifact(prototype):
             self.column_max.append(value.getString())
           index += 1
 
-    self.column_lock = [threading.Lock() for name in self.column_names]
-    self.columns = [None for name in self.column_names]
-
     if self.generate_index is not None:
       self.column_count += 1
       self.column_names.append(self.generate_index)
       self.column_types.append("int64")
       self.column_min.append(0)
       self.column_max.append(self.row_count - 1)
-      self.column_lock.append(threading.Lock())
-      self.columns.append(range(self.row_count))
 
-    self.sort_index = range(self.row_count)
-    self.sort_indices = {() : self.sort_index}
+    self.sort = None
     self.set_message("Loaded %s x %s file." % (self.row_count, self.column_count))
 
     self.metadata_ready.set()
@@ -292,35 +270,31 @@ class artifact(prototype):
       }
     return response
 
-  def load_column(self, column):
-    with self.column_lock[column]:
-      if self.columns[column] is None:
-        cherrypy.log.error("Loading artifact {} column {}".format(self.artifact_name, column))
-
-        database = slycat.web.server.database.scidb.connect()
-
-        type = self.column_types[column]
-        with database.query("aql", "select c{} from {}".format(column, self.artifact["columns"])) as results:
-          if type == "string":
-            values = [value.getString() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
-          elif type == "double":
-            values = [value.getDouble() for chunk in results.chunks() for attribute in chunk.attributes() for value in attribute]
-            values = [None if numpy.isnan(value) else value for value in values]
-          else:
-            raise Exception("Unsupported attribute type: {}".format(type))
-          self.columns[column] = values
-
   def get_search(self, search):
     self.metadata_ready.wait()
 
     search = [(column, value) for column, value in search if column < self.column_count]
 
-    for column, value in search:
-      self.load_column(column)
+    matches = []
+    database = slycat.web.server.database.scidb.connect()
+    for search_column, search_value in search:
+      # Generate a database query
+      query = "{array}".format(array = self.artifact["columns"])
+      if self.generate_index is not None:
+        query = "apply({array}, c{column}, row)".format(array=query, column=self.column_count - 1)
+      if self.sort is not None:
+        sort = ",".join(["c{column} {order}".format(column=sort_column, order="asc" if sort_order == "ascending" else "desc") for sort_column, sort_order in self.sort])
+        query = "sort({array}, {sort})".format(array=query, sort=sort)
+      query = "select c{column} from {array} where c{column} = {value}".format(array=query, column=search_column, value=search_value)
+      with database.query("aql", query) as results:
+        for chunk in results.chunks():
+          for attribute in chunk.attributes():
+            rows = [coordinate[0] for coordinate in attribute.coordinates()]
+      matches.append(rows)
 
     response = {
       "search" : search,
-      "matches" : [[row for row in range(self.row_count) if self.columns[column][self.sort_index[row]] == value] for column, value in search]
+      "matches" : matches
       }
 
     return response
@@ -329,17 +303,42 @@ class artifact(prototype):
     self.metadata_ready.wait()
 
     # Constrain end <= count along both dimensions
-    rows = [row for row in rows if row < self.row_count]
-    columns = [column for column in columns if column < self.column_count]
+    rows = rows[rows < self.row_count]
+    columns = columns[columns < self.column_count]
 
-    for column in columns:
-      self.load_column(column)
+    # Generate a database query
+    query = "{array}".format(array = self.artifact["columns"])
+    if self.generate_index is not None:
+      query = "apply({array}, c{column}, row)".format(array=query, column=self.column_count - 1)
+    if self.sort is not None:
+      sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in self.sort])
+      query = "sort({array}, {sort})".format(array=query, sort=sort)
+    query = "between({array}, {begin}, {end})".format(array=query, begin=rows.min(), end=rows.max())
+    query = "select * from {array}".format(array=query)
+
+    # Retrieve the data from the database ...
+    data = [[] for column in self.column_names]
+    database = slycat.web.server.database.scidb.connect()
+    with database.query("aql", query) as results:
+      for chunk in results.chunks():
+        for column, attribute in enumerate(chunk.attributes()):
+          column_type = self.column_types[column]
+          if column_type == "string":
+            values = [value.getString() for value in attribute]
+          elif column_type == "int64":
+            values = [value.getInt64() for value in attribute]
+          elif column_type == "double":
+            values = [value.getDouble() for value in attribute]
+            values = [None if numpy.isnan(value) else value for value in values]
+          else:
+            raise Exception("Unsupported attribute type: {}".format(column_type))
+          data[column] += values
 
     response = {
-      "rows" : rows,
-      "columns" : columns,
+      "rows" : rows.tolist(),
+      "columns" : columns.tolist(),
       "column-names" : [self.column_names[column] for column in columns],
-      "data" : [[self.columns[column][self.sort_index[row]] for row in rows] for column in columns]
+      "data" : [[data[column][row] for row in range(rows.shape[0])] for column in columns]
       }
 
     return response
@@ -347,21 +346,10 @@ class artifact(prototype):
   def put_sort(self, sort):
     self.metadata_ready.wait()
 
-    sort = [(column, order) for column, order in sort if column < self.column_count]
-
-    for column, order in sort:
-      self.load_column(column)
-
-    sort_index_key = tuple(sort)
-    if sort_index_key not in self.sort_indices:
-      index = range(self.row_count)
-      for column, order in reversed(sort):
-        index = sorted(index, key=lambda x: self.columns[column][x], reverse = (False if order == "ascending" else True))
-      self.sort_indices[sort_index_key] = index
-    self.sort_index = self.sort_indices[sort_index_key]
+    self.sort = [(column, order) for column, order in sort if column < self.column_count]
 
     response = {
-      "sort" : sort
+      "sort" : self.sort
       }
     return response
 

@@ -63,6 +63,11 @@ class value_wrapper:
       yield self.i.getItem()
       self.i.increment_to_next()
 
+  def coordinates(self):
+    while not self.i.end():
+      yield self.i.getPosition()
+      self.i.increment_to_next()
+
   def coordinates_values(self):
     while not self.i.end():
       yield self.i.getPosition(), self.i.getItem()
