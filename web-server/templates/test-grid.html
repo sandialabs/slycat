@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <title>Slycat Grid Testing</title>
+    <script type="text/javascript" src="{{server-root}}js/jquery.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css"/>
+    <style>
+      #grid
+      {
+        height: 500px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="grid"></div>
+    <script type="text/javascript">
+      var columns = [
+        {id: "title", name: "Title", field: "title", sortable:true},
+        {id: "duration", name: "Duration", field: "duration"},
+        {id: "%", name: "% Complete", field: "percentComplete", sortable:true},
+        {id: "start", name: "Start", field: "start"},
+        {id: "finish", name: "Finish", field: "finish"},
+        {id: "effort-driven", name: "Effort Driven", field: "effortDriven", sortable:true}
+        ];
+
+      var rows = [];
+      for(var i = 0; i < 500; i++)
+      {
+        rows[i] =
+        {
+          title: "Task " + i,
+          duration: "5 days",
+          percentComplete: Math.round(Math.random() * 100),
+          start: "01/01/2009",
+          finish: "01/05/2009",
+          effortDriven: (i % 5 == 0)
+        };
+      }
+
+      var grid = new Slick.Grid("#grid", rows, columns);
+      grid.onSort.subscribe(function(e, args)
+      {
+        var field = args.sortCol.field;
+        rows.sort(function(a, b)
+        {
+          var result =
+            a[field] > b[field] ? 1 :
+            a[field] < b[field] ? -1 :
+            0;
+          return args.sortAsc ? result : -result;
+        });
+
+        grid.invalidate();
+      });
+
+    </script>
+  </body>
+</html>

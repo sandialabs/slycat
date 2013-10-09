@@ -576,6 +576,13 @@ def get_test_canvas():
     context = get_context()
     return slycat.web.server.template.render("test-canvas.html", context)
 
+def get_test_grid():
+  accept = cherrypy.lib.cptools.accept(media=["text/html"])
+
+  if accept == "text/html":
+    context = get_context()
+    return slycat.web.server.template.render("test-grid.html", context)
+
 def get_test_exception(code):
   def implementation():
     raise cherrypy.HTTPError("%s Intentional server exception." % code)
