@@ -22,10 +22,6 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   if force_positive is not None and (force_positive < 0 or force_positive >= Y.shape[1]):
     raise Exception("force_positive out-of-range.")
 
-  def qr(A):
-    """Custom implementation of QR for use with our CCA."""
-    return scipy.linalg.qr(A, mode="economic", pivoting=True)
-
   eps = numpy.finfo("double").eps
   if significant_digits is None or significant_digits > numpy.abs(numpy.log10(eps)):
     significant_digits = numpy.abs(numpy.log10(eps))
@@ -41,23 +37,28 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
     X /= X.std(axis=0)
     Y /= Y.std(axis=0)
 
-  Q1, R1, P1 = qr(X)
-  Q2, R2, P2 = qr(Y)
+  Q1, R1, P1 = scipy.linalg.qr(X, mode="economic", pivoting=True)
+  Q2, R2, P2 = scipy.linalg.qr(Y, mode="economic", pivoting=True)
 
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
 
-  # TODO: Remove low-rank columns
   if Xrank == 0:
     raise Exception("X must contain at least one non-constant column.")
   if Xrank < p1:
-    raise Exception("X is not full rank.")
+    Q1 = Q1[:,:Xrank]
+    R1 = R1[:Xrank,:Xrank]
   if Yrank == 0:
     raise Exception("Y must contain at least one non-constant column.")
   if Yrank < p2:
-    raise Exception("Y is not full rank.")
+    Q2 = Q2[:,:Yrank]
+    R2 = R2[:Yrank,:Yrank]
 
   L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)
+
+  d = min(Xrank, Yrank)
+  L = L[:,:d]
+  M = M[:d,:]
 
   A = numpy.linalg.solve(R1, L)
   B = numpy.linalg.solve(R2, M.T)
@@ -65,7 +66,9 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   A *= numpy.sqrt(n - 1)
   B *= numpy.sqrt(n - 1)
 
-  # TODO: Restore low-rank columns
+  A = numpy.row_stack((A, numpy.zeros((p1 - Xrank, d))))
+  B = numpy.row_stack((B, numpy.zeros((p2 - Yrank, d))))
+
   A[P1] = numpy.copy(A)
   B[P2] = numpy.copy(B)
 
@@ -83,7 +86,6 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
         x[:,j] = -x[:,j]
         y[:,j] = -y[:,j]
 
-  d = min(Xrank, Yrank)
   r = numpy.minimum(numpy.maximum(D[:d], 0), 1)
 
   nondegenerate = r < 1
