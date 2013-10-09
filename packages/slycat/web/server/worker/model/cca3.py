@@ -25,6 +25,11 @@ class implementation(slycat.web.server.worker.model.prototype):
     output_columns = self.load_json_artifact("output-columns")
     scale_inputs = self.load_json_artifact("scale-inputs")
 
+    if len(input_columns) < 1:
+      raise Exception("CCA model requires at least one input column.")
+    if len(output_columns) < 1:
+      raise Exception("CCA model requires at least one output column.")
+
     # Transform the input data table to a form usable with our cca() function ...
     low = self.scidb.query_value("aql", "select low from dimensions(%s)" % data_table["columns"]).getInt64()
     high = self.scidb.query_value("aql", "select high from dimensions(%s)" % data_table["columns"]).getInt64()
