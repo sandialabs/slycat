@@ -35,6 +35,7 @@ rights in this software.
   </head>
 
   <body>
+    <button id="clear-selection">Clear Selection</button>
     <div id="grid"></div>
     <script type="text/javascript">
       var columns = [
@@ -61,10 +62,13 @@ rights in this software.
       }
 
       var grid = new Slick.Grid("#grid", rows, columns);
+      var ignore_selection_change = false;
       grid.setSelectionModel(new Slick.RowSelectionModel());
       grid.onSelectedRowsChanged.subscribe(function(e, selection)
       {
-        console.log(selection.rows);
+        if(!ignore_selection_change)
+          console.log(selection.rows);
+        ignore_selection_change = false;
       });
 
       grid.onSort.subscribe(function(e, args)
@@ -80,6 +84,13 @@ rights in this software.
         });
 
         grid.invalidate();
+        ignore_selection_change = true;
+        grid.setSelectedRows([]);
+      });
+
+      $("#clear-selection").click(function()
+      {
+        ignore_selection_change = true;
         grid.setSelectedRows([]);
       });
     </script>
