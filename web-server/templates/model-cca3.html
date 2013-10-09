@@ -565,12 +565,22 @@ rights in this software.
 
               input_columns = [];
               $(".rerun-cca-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
-              set_parameter("input-columns", input_columns);
+              if(input_columns.length < 1)
+              {
+                window.alert("You must select at least one input column.");
+                return;
+              }
 
               output_columns = [];
               $(".rerun-cca-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
-              set_parameter("output-columns", output_columns);
+              if(output_columns.length < 1)
+              {
+                window.alert("You must select at least one output column.");
+                return;
+              }
 
+              set_parameter("input-columns", input_columns);
+              set_parameter("output-columns", output_columns);
               set_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked"));
 
               $.ajax(
