@@ -289,16 +289,9 @@ def get_model(mid, **kwargs):
       return slycat.web.server.template.render("model-timeseries.html", context)
 
     if "model-type" in model and model["model-type"] == "cca3":
-      context["input-columns"] = model["artifact:input-columns"] if "artifact:input-columns" in model else "null"
-      context["output-columns"] = model["artifact:output-columns"] if "artifact:output-columns" in model else "null"
-      context["index-column"] = model["artifact:index-column"] if "artifact:index-column" in model else "null"
+      context["input-columns"] = json.dumps(model["artifact:input-columns"]) if "artifact:input-columns" in model else "null"
+      context["output-columns"] = json.dumps(model["artifact:output-columns"]) if "artifact:output-columns" in model else "null"
       context["scale-inputs"] = json.dumps(model["artifact:scale-inputs"]) if "artifact:scale-inputs" in model else "null"
-      context["input-tables"] = model["artifact:input-tables"] if "artifact:input-tables" in model else "null"
-      context["statistics"] = database.get_attachment(model, model["artifact:statistics"]).read() if "artifact:statistics" in model else "null"
-      context["x-canonical-variables"] = database.get_attachment(model, model["artifact:x-canonical-variables"]).read() if "artifact:x-canonical-variables" in model else "null"
-      context["x-structure-correlation"] = database.get_attachment(model, model["artifact:x-structure-correlation"]).read() if "artifact:x-structure-correlation" in model else "null"
-      context["y-canonical-variables"] = database.get_attachment(model, model["artifact:y-canonical-variables"]).read() if "artifact:y-canonical-variables" in model else "null"
-      context["y-structure-correlation"] = database.get_attachment(model, model["artifact:y-structure-correlation"]).read() if "artifact:y-structure-correlation" in model else "null"
       return slycat.web.server.template.render("model-cca3.html", context)
 
     return slycat.web.server.template.render("model-generic.html", context)
