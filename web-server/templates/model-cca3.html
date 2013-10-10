@@ -520,6 +520,10 @@ rights in this software.
                               $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
                             }
                           });
+                          if(scale_inputs)
+                            $("#rerun-cca-scale-inputs").attr("checked", "checked");
+                          else
+                            $("#rerun-cca-scale-inputs").removeAttr("checked");
                           $("#rerun-cca-basics").css("display", "none");
                           $("#rerun-cca-parameters").css("display", "block");
                         },
