@@ -47,6 +47,7 @@ rights in this software.
         {id: "effort-driven", name: "Effort Driven", field: "effortDriven", sortable:true, selectable:true}
         ];
 
+/*
       var rows = [];
       for(var i = 0; i < 500; i++)
       {
@@ -60,8 +61,38 @@ rights in this software.
           effortDriven: (i % 5 == 0)
         };
       }
+*/
 
-      var grid = new Slick.Grid("#grid", rows, columns);
+      function data(parameters)
+      {
+        var self = this;
+
+        self.count = parameters.count;
+
+        self.getLength = function()
+        {
+          return self.count;
+        }
+
+        self.getItem = function(index)
+        {
+          return {
+            title: "Task " + index,
+            duration: "5 days",
+            percentComplete: Math.round(Math.random() * 100),
+            start: "01/01/2009",
+            finish: "01/05/2009",
+            effortDriven: (index % 5 == 0)
+            };
+        }
+
+        self.getItemMetadata = function(index)
+        {
+          return null;
+        }
+      }
+
+      var grid = new Slick.Grid("#grid", new data({count:500}), columns);
       var ignore_selection_change = false;
       grid.setSelectionModel(new Slick.RowSelectionModel());
       grid.onSelectedRowsChanged.subscribe(function(e, selection)
