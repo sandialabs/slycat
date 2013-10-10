@@ -493,6 +493,8 @@ rights in this software.
                       $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
                     }
                   });
+
+                  $("#local-cca-scale-inputs").attr("checked", "checked");
                   $("#local-cca-browse").css("display", "none");
                   $("#local-cca-parameters").css("display", "block");
                 }
@@ -749,6 +751,7 @@ rights in this software.
                       $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
                     }
                   });
+                  $("#remote-cca-scale-inputs").attr("checked", "checked");
                   $("#remote-cca-browse").css("display", "none");
                   $("#remote-cca-parameters").css("display", "block");
                 }
