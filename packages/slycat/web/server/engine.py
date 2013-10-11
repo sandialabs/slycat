@@ -40,14 +40,23 @@ def start(config_file="config.ini"):
     parser.read(config_file)
     configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
 
+  # Allow both numeric and named uid and gid
+  uid = configuration["slycat"]["uid"]
+  if isinstance(uid, basestring):
+    uid = pwd.getpwnam(uid).pw_uid
+
+  gid = configuration["slycat"]["gid"]
+  if isinstance(gid, basestring):
+    gid = grp.getgrnam(gid).gr_gid
+
   if configuration["slycat"]["access-log"] != "-":
     cherrypy.log.access_log.handlers = []
     if configuration["slycat"]["access-log"] is not None:
-      cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(configuration["slycat"]["uid"], configuration["slycat"]["gid"], configuration["slycat"]["access-log"], "a", configuration["slycat"]["access-log-size"], configuration["slycat"]["access-log-count"]))
+      cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["access-log"], "a", configuration["slycat"]["access-log-size"], configuration["slycat"]["access-log-count"]))
   if configuration["slycat"]["error-log"] != "-":
     cherrypy.log.error_log.handlers = []
     if configuration["slycat"]["error-log"] is not None:
-      cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(configuration["slycat"]["uid"], configuration["slycat"]["gid"], configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
+      cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
 
   if os.path.exists(config_file):
     cherrypy.log("Loaded configuration from %s" % config_file)
@@ -60,8 +69,8 @@ def start(config_file="config.ini"):
     cherrypy.process.plugins.PIDFile(cherrypy.engine, configuration["slycat"]["pidfile"]).subscribe()
 
   # Optionally drop privileges so we can safely bind to low port numbers ...
-  if configuration["slycat"]["uid"] is not None and configuration["slycat"]["gid"] is not None and configuration["slycat"]["umask"] is not None:
-    cherrypy.process.plugins.DropPrivileges(cherrypy.engine, uid=configuration["slycat"]["uid"], gid=configuration["slycat"]["gid"], umask=configuration["slycat"]["umask"]).subscribe()
+  if uid is not None and gid is not None and configuration["slycat"]["umask"] is not None:
+    cherrypy.process.plugins.DropPrivileges(cherrypy.engine, uid=uid, gid=gid, umask=configuration["slycat"]["umask"]).subscribe()
 
   # Optionally daemonize our process ...
   if configuration["slycat"]["daemon"] == True:
