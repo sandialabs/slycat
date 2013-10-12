@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+import requests
+import sys
+
+def format_value(value, null=0):
+  return value if value is not None else null
+
+if sys.argv[1:2] == ["config"]:
+  print "graph_title CouchDB Database"
+  print "graph_category slycat"
+
+  print "database_reads_current.label Database Reads"
+  print "database_reads_current.info Number of times a document was read from a database in the past 5 minutes."
+
+  print "database_writes_current.label Database Writes"
+  print "database_writes_current.info Number of times a document was written to a database in the past 5 minutes."
+else:
+  try:
+    response = requests.get("http://localhost:5984/_stats/couchdb/database_reads?length=300", proxies={"http":None}).json()
+    print "database_reads_current", format_value(response["couchdb"]["database_reads"]["current"])
+  except:
+    print "database_reads_current U"
+
+  try:
+    response = requests.get("http://localhost:5984/_stats/couchdb/database_writes?length=300", proxies={"http":None}).json()
+    print "database_writes_current", format_value(response["couchdb"]["database_writes"]["current"])
+  except:
+    print "database_writes_current U"
+
