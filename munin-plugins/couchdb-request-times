@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import requests
+import sys
+
+def format_value(value, null=0):
+  return value * 0.001 if value is not None else null
+
+if sys.argv[1:2] == ["config"]:
+  print "graph_title CouchDB Request Time"
+  print "graph_info CouchDB database request handling times over the past 5 minutes."
+  print "graph_category slycat"
+
+  print "request_time_min.label Request Time (min)"
+  print "request_time_min.info Minimum request time."
+
+  print "request_time_max.label Request Time (max)"
+  print "request_time_max.info Maximum request time."
+
+  print "request_time_mean.label Request Time (mean)"
+  print "request_time_mean.info Average request time."
+
+  print "request_time_stddev.label Request Time (stddev)"
+  print "request_time_stddev.info Request time standard deviation."
+else:
+  try:
+    response = requests.get("http://localhost:5984/_stats/couchdb/request_time?range=300", proxies={"http":None}).json()
+    print "request_time_min.value", format_value(response["couchdb"]["request_time"]["min"], null="U")
+    print "request_time_max.value", format_value(response["couchdb"]["request_time"]["max"], null="U")
+    print "request_time_mean.value", format_value(response["couchdb"]["request_time"]["mean"], null="U")
+    print "request_time_stddev.value", format_value(response["couchdb"]["request_time"]["stddev"], null="U")
+  except:
+    print "request_time_min.value U"
+    print "request_time_max.value U"
+    print "request_time_mean.value U"
+    print "request_time_stddev.value U"

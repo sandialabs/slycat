@@ -3,28 +3,30 @@
 import requests
 import sys
 
-def format_value(value, null=0):
-  return value if value is not None else null
-
 if sys.argv[1:2] == ["config"]:
-  print "graph_title CouchDB Database"
-  print "graph_category slycat"
+  sys.stdout.write("graph_title CouchDB Database\n")
+  sys.stdout.write("graph_category slycat\n")
+  sys.stdout.write("graph_info CouchDB database activity over the past 5 minutes.\n")
 
-  print "database_reads_current.label Database Reads"
-  print "database_reads_current.info Number of times a document was read from a database in the past 5 minutes."
+  sys.stdout.write("database_reads_current.label Database Reads\n")
+  sys.stdout.write("database_reads_current.info Number of times a document was read.\n")
+  sys.stdout.write("database_reads_current.type COUNTER\n")
 
-  print "database_writes_current.label Database Writes"
-  print "database_writes_current.info Number of times a document was written to a database in the past 5 minutes."
+  sys.stdout.write("database_writes_current.label Database Writes\n")
+  sys.stdout.write("database_writes_current.info Number of times a document was written.\n")
+  sys.stdout.write("database_writes_current.type COUNTER\n")
 else:
   try:
-    response = requests.get("http://localhost:5984/_stats/couchdb/database_reads?length=300", proxies={"http":None}).json()
-    print "database_reads_current", format_value(response["couchdb"]["database_reads"]["current"])
+    response = requests.get("http://localhost:5984/_stats/couchdb/database_reads?range=300", proxies={"http":None}).json()
+    current = response["couchdb"]["database_reads"]["current"]
+    sys.stdout.write("database_reads_current.value %d\n" % (current if current is not None else 0))
   except:
-    print "database_reads_current U"
+    sys.stdout.write("database_reads_current.value U\n")
 
   try:
-    response = requests.get("http://localhost:5984/_stats/couchdb/database_writes?length=300", proxies={"http":None}).json()
-    print "database_writes_current", format_value(response["couchdb"]["database_writes"]["current"])
+    response = requests.get("http://localhost:5984/_stats/couchdb/database_writes?range=300", proxies={"http":None}).json()
+    current = response["couchdb"]["database_writes"]["current"]
+    sys.stdout.write("database_writes_current.value %d\n" % (current if current is not None else 0))
   except:
-    print "database_writes_current U"
+    sys.stdout.write("database_writes_current.value U\n")
 
