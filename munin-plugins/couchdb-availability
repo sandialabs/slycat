@@ -9,7 +9,7 @@ if sys.argv[1:2] == ["config"]:
   sys.stdout.write("graph_info Tests to see whether the CouchDB server is responding to requests.\n")
   sys.stdout.write("graph_vlabel Availability (%)\n")
 
-  sys.stdout.write("available.label Available\n")
+  sys.stdout.write("available.label Availability\n")
   sys.stdout.write("available.critical 100:100\n")
 else:
   try:
