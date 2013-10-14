@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import subprocess
+import sys
+
+if sys.argv[1:2] == ["config"]:
+  sys.stdout.write("graph_title SciDB Availability\n")
+  sys.stdout.write("graph_category slycat\n")
+  sys.stdout.write("graph_info Tests to see whether the SciDB server is responding to requests.\n")
+  sys.stdout.write("graph_vlabel Availability (%)\n")
+
+  sys.stdout.write("available.label Available\n")
+  sys.stdout.write("available.critical 100:100\n")
+else:
+  try:
+    subprocess.check_call(["iquery", "-aq", "list('instances')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    sys.stdout.write("available.value 100\n")
+  except Exception as e:
+    print e
+    sys.stdout.write("available.value 0\n")
+
