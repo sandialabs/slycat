@@ -56,6 +56,9 @@ for model_dir in glob.glob(os.path.join(project_dir, "model-*")):
 
   for array in model_arrays:
     if array not in project_arrays:
+      schema = open(os.path.join(model_dir, "%s.schema" % array)).read()
+      subprocess.check_call([arguments.iquery, "-aq", "create array %s" % schema])
+
       couchdb[array] = {"type":"array"}
       project_arrays.add(array)
 
