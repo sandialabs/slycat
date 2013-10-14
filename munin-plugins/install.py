@@ -17,3 +17,5 @@ for plugin in ["couchdb-availability", "couchdb-request-times", "scidb-availabil
 
 for conf in ["scidb.conf"]:
   subprocess.check_call(["cp", conf, conf_storage])
+
+subprocess.check_call(["/etc/init.d/munin-node", "restart"])
