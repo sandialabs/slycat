@@ -59,7 +59,7 @@ for row in couchdb.view("slycat/project-models", startkey=arguments.project_id, 
     for array, id in value.items():
       iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % id], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       stdout, stderr = iquery.communicate()
-      schema = StringIO.StringIO(stdout).readlines()[1].strip()[5:-1]
+      schema = StringIO.StringIO(stdout).readlines()[1].strip()[1:-1]
       open(os.path.join(model_dir, "%s.schema" % id), "w").write(schema)
 
       subprocess.check_call([arguments.iquery, "-n", "-aq", "save(%s, '%s.opaque', -2, 'OPAQUE')" % (id, id)])
