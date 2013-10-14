@@ -148,6 +148,10 @@ class connection(object):
     """Returns a single project."""
     return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
+  def get_project_models(self, pid):
+    """Returns every model in a project."""
+    return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
+
   def delete_project(self, pid):
     """Deletes an existing project."""
     self.request("DELETE", "/projects/%s" % (pid))
