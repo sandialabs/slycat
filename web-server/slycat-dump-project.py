@@ -6,11 +6,9 @@ import argparse
 import couchdb
 import json
 import os
-import pprint
 import shutil
 import StringIO
 import subprocess
-import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
