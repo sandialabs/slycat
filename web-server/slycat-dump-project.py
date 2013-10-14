@@ -2,45 +2,53 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import argparse
+import couchdb
 import json
 import os
 import pprint
 import shutil
-import slycat.web.client
+import StringIO
 import subprocess
 import sys
-import StringIO
 
-parser = slycat.web.client.option_parser()
-parser.add_option("--force", default=False, action="store_true", help="Overwrite existing data.")
-parser.add_option("--project-id", help="Project ID to dump.")
-parser.add_option("--output-dir", help="Directory for storing results.")
-options, arguments = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
+parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
+parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
+parser.add_argument("--iquery", default="/opt/scidb/13.3/bin/iquery", help="SciDB iquery executable.  Default: %(default)s")
+parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
+parser.add_argument("--project-id", help="Project ID to dump.")
+parser.add_argument("--output-dir", help="Directory for storing results.")
+arguments = parser.parse_args()
 
-if options.project_id is None:
+if arguments.project_id is None:
   raise Exception("--project-id is required.")
-if options.output_dir is None:
+if arguments.output_dir is None:
   raise Exception("--output-dir is required.")
 
-if options.force and os.path.exists(options.output_dir):
-  shutil.rmtree(options.output_dir)
-if os.path.exists(options.output_dir):
+if arguments.force and os.path.exists(arguments.output_dir):
+  shutil.rmtree(arguments.output_dir)
+if os.path.exists(arguments.output_dir):
   raise Exception("Output directory already exists.")
 
+couchdb = couchdb.Server()[arguments.couchdb_database]
+
 try:
-  coordinator_dir = StringIO.StringIO(subprocess.check_output(["iquery", "-aq", "list('instances')"])).readlines()[1].split(",")[-1].strip()[1:-1]
+  iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('instances')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout, stderr = iquery.communicate()
+  coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
 except:
   raise Exception("Couldn't query SciDB for the coordinator directory.")
 
-os.makedirs(options.output_dir)
+os.makedirs(arguments.output_dir)
 
-connection = slycat.web.client.connect(options)
-project = connection.get_project(options.project_id)
-project_dir = options.output_dir
+project = couchdb[arguments.project_id]
+project_dir = arguments.output_dir
 json.dump(project, open(os.path.join(project_dir, "project.json"), "w"))
 
-models = connection.get_project_models(options.project_id)
-for model in models:
+for row in couchdb.view("slycat/project-models", startkey=arguments.project_id, endkey=arguments.project_id):
+  model = couchdb[row["id"]]
   model_dir = os.path.join(project_dir, "model-%s" % model["_id"])
   os.mkdir(model_dir)
   json.dump(model, open(os.path.join(model_dir, "model.json"), "w"))
@@ -51,4 +59,10 @@ for model in models:
     if not isinstance(value, dict):
       continue
     for array, id in value.items():
-      print array, id
+      iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % id], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      stdout, stderr = iquery.communicate()
+      schema = StringIO.StringIO(stdout).readlines()[1].strip()[5:-1]
+      open(os.path.join(model_dir, "%s.schema" % id), "w").write(schema)
+
+      subprocess.check_call([arguments.iquery, "-n", "-aq", "save(%s, '%s.opaque', -2, 'OPAQUE')" % (id, id)])
+      subprocess.check_call(["mv", os.path.join(coordinator_dir, "%s.opaque" % id), os.path.join(model_dir, "%s.opaque" % id)])
