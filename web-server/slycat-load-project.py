@@ -36,23 +36,23 @@ iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('instance
 stdout, stderr = iquery.communicate()
 coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
 
-# Get the set of all arrays in SciDB ...
+# Get the set of all arrays already in SciDB ...
 iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('arrays')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 stdout, stderr = iquery.communicate()
 scidb_arrays = StringIO.StringIO(stdout).readlines()[1:]
 scidb_arrays = [array.split(",")[0].strip()[1:-1] for array in scidb_arrays]
 
-project_dir = arguments.input_dir
-project = json.load(open(os.path.join(project_dir, "project.json")))
-del project["_rev"]
-if arguments.force and project["_id"] in couchdb:
-  del couchdb[project["_id"]]
-couchdb.save(project)
+# Load projects ...
+for path in glob.glob(os.path.join(arguments.input_dir, "project-*.json")):
+  project = json.load(open(path))
+  del project["_rev"]
+  if arguments.force and project["_id"] in couchdb:
+    del couchdb[project["_id"]]
+  couchdb.save(project)
 
-project_arrays = set()
-
-for model_dir in glob.glob(os.path.join(project_dir, "model-*")):
-  model = json.load(open(os.path.join(model_dir, "model.json")))
+# Load models ...
+for path in glob.glob(os.path.join(arguments.input_dir, "model-*.json")):
+  model = json.load(open(path))
   del model["_rev"]
   if model["marking"] in markings:
     model["marking"] = markings[model["marking"]]
@@ -60,21 +60,47 @@ for model_dir in glob.glob(os.path.join(project_dir, "model-*")):
     del couchdb[model["_id"]]
   couchdb.save(model)
 
-  model_arrays = glob.glob(os.path.join(model_dir, "*.schema"))
-  model_arrays = [re.search(r"/([^/]*).schema", array).group(1) for array in model_arrays]
+# Create partial arrays ...
+for path in glob.glob(os.path.join(arguments.input_dir, "array-*-*.schema")):
+  schema = open(path).read()
+  partial_array = schema.split("<")[0]
+  if arguments.force and partial_array in scidb_arrays:
+    subprocess.check_call([arguments.iquery, "-aq", "remove(%s)" % partial_array])
+  subprocess.check_call([arguments.iquery, "-aq", "create array %s" % schema])
 
-  for array in model_arrays:
-    if array not in project_arrays:
-      subprocess.check_call(["cp", os.path.join(model_dir, "%s.opaque" % array), os.path.join(coordinator_dir, "%s.opaque" % array)])
+# Load partial arrays ...
+for path in glob.glob(os.path.join(arguments.input_dir, "array-*-*.opaque")):
+  match = re.search(r"array-(.*)-(.*).opaque", path)
+  array = match.group(1)
+  index = match.group(2)
+  partial_array = "%s%s" % (array, index)
+  subprocess.check_call(["cp", path, os.path.join(coordinator_dir, "temp.opaque")])
+  subprocess.check_call([arguments.iquery, "-aq", "load(%s, 'temp.opaque', -2, 'OPAQUE')" % (partial_array)])
 
-      schema = open(os.path.join(model_dir, "%s.schema" % array)).read()
-      if arguments.force and array in scidb_arrays:
-        subprocess.check_call([arguments.iquery, "-aq", "remove(%s)" % array])
-      subprocess.check_call([arguments.iquery, "-aq", "create array %s" % schema])
-      subprocess.check_call([arguments.iquery, "-aq", "load(%s, '%s.opaque', -2, 'OPAQUE')" % (array, array)])
+# Create full arrays ...
+for path in glob.glob(os.path.join(arguments.input_dir, "array-*-0.schema")):
+  schema = open(path[:-9] + ".schema").read()
+  array = schema.split("<")[0]
+  if arguments.force and array in scidb_arrays:
+    subprocess.check_call([arguments.iquery, "-aq", "remove(%s)" % array])
+  subprocess.check_call([arguments.iquery, "-aq", "create array %s" % schema])
 
-      if arguments.force and array in couchdb:
-        del couchdb[array]
-      couchdb[array] = {"type":"array"}
-      project_arrays.add(array)
+# Combine partial arrays into full arrays ...
+for path in glob.glob(os.path.join(arguments.input_dir, "array-*-0.schema")):
+  schema = open(path[:-9] + ".schema").read()
+  array = schema.split("<")[0]
+
+  partial_arrays = glob.glob(os.path.join(arguments.input_dir, "array-%s-*.schema" % array))
+  if len(partial_arrays) == 1:
+    subprocess.check_call([arguments.iquery, "-aq", "store(%s0, %s)" % (array, array)])
+  elif len(partial_arrays) == 2:
+    subprocess.check_call([arguments.iquery, "-aq", "store(join(%s0, %s1), %s)" % (array, array, array)])
+  else:
+    raise Exception("Not implemented.")
+
+# Delete partial arrays ...
+for path in glob.glob(os.path.join(arguments.input_dir, "array-*-*.schema")):
+  schema = open(path).read()
+  partial_array = schema.split("<")[0]
+  subprocess.check_call([arguments.iquery, "-aq", "remove(%s)" % partial_array])
 
