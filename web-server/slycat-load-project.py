@@ -7,7 +7,6 @@ import couchdb
 import glob
 import json
 import os
-import pprint
 import re
 import shutil
 import StringIO
@@ -17,11 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
+parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
 parser.add_argument("--marking", default=[], action="append", help="Use --marking='<source>:<target>' to transform <source> markings to <target> markings.  You may specifiy --marking multiple times.")
 parser.add_argument("--iquery", default="/opt/scidb/13.3/bin/iquery", help="SciDB iquery executable.  Default: %(default)s")
 parser.add_argument("--input-dir", help="Directory containing a project created with slycat-dump-project.py.")
 arguments = parser.parse_args()
 
+# Sanity check input arguments ...
 if arguments.input_dir is None:
   raise Exception("--input-dir is required.")
 
@@ -30,16 +31,22 @@ markings = dict([(source, target) for source, target in markings])
 
 couchdb = couchdb.Server()[arguments.couchdb_database]
 
-try:
-  iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('instances')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  stdout, stderr = iquery.communicate()
-  coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
-except:
-  raise Exception("Couldn't query SciDB for the coordinator directory.")
+# Get the directory where we'll put SciDB arrays to be loaded ...
+iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('instances')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+stdout, stderr = iquery.communicate()
+coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
+
+# Get the set of all arrays in SciDB ...
+iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('arrays')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+stdout, stderr = iquery.communicate()
+scidb_arrays = StringIO.StringIO(stdout).readlines()[1:]
+scidb_arrays = [array.split(",")[0].strip()[1:-1] for array in scidb_arrays]
 
 project_dir = arguments.input_dir
 project = json.load(open(os.path.join(project_dir, "project.json")))
 del project["_rev"]
+if arguments.force and project["_id"] in couchdb:
+  del couchdb[project["_id"]]
 couchdb.save(project)
 
 project_arrays = set()
@@ -49,6 +56,8 @@ for model_dir in glob.glob(os.path.join(project_dir, "model-*")):
   del model["_rev"]
   if model["marking"] in markings:
     model["marking"] = markings[model["marking"]]
+  if arguments.force and model["_id"] in couchdb:
+    del couchdb[model["_id"]]
   couchdb.save(model)
 
   model_arrays = glob.glob(os.path.join(model_dir, "*.schema"))
@@ -56,28 +65,16 @@ for model_dir in glob.glob(os.path.join(project_dir, "model-*")):
 
   for array in model_arrays:
     if array not in project_arrays:
-      schema = open(os.path.join(model_dir, "%s.schema" % array)).read()
-      subprocess.check_call([arguments.iquery, "-aq", "create array %s" % schema])
+      subprocess.check_call(["cp", os.path.join(model_dir, "%s.opaque" % array), os.path.join(coordinator_dir, "%s.opaque" % array)])
 
+      schema = open(os.path.join(model_dir, "%s.schema" % array)).read()
+      if arguments.force and array in scidb_arrays:
+        subprocess.check_call([arguments.iquery, "-aq", "remove(%s)" % array])
+      subprocess.check_call([arguments.iquery, "-aq", "create array %s" % schema])
+      subprocess.check_call([arguments.iquery, "-aq", "load(%s, '%s.opaque', -2, 'OPAQUE')" % (array, array)])
+
+      if arguments.force and array in couchdb:
+        del couchdb[array]
       couchdb[array] = {"type":"array"}
       project_arrays.add(array)
 
-#  for array_schema in glob.glob(os.path.join(model_dir, "*.schema")):
-#    array_schema = open(array_schema).read()
-#
-#  for array_data in glob.glob(os.path.join(model_dir, "*.opaque")):
-#    pass
-
-#  for artifact, value in model.items():
-#    if not artifact.startswith("artifact:"):
-#      continue
-#    if not isinstance(value, dict):
-#      continue
-#    for array, id in value.items():
-#      iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % id], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#      stdout, stderr = iquery.communicate()
-#      schema = StringIO.StringIO(stdout).readlines()[1].strip()[5:-1]
-#      open(os.path.join(model_dir, "%s.schema" % id), "w").write(schema)
-#
-#      subprocess.check_call([arguments.iquery, "-n", "-aq", "save(%s, '%s.opaque', -2, 'OPAQUE')" % (id, id)])
-#      subprocess.check_call(["mv", os.path.join(coordinator_dir, "%s.opaque" % id), os.path.join(model_dir, "%s.opaque" % id)])
