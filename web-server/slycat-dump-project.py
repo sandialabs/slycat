@@ -6,6 +6,7 @@ import argparse
 import couchdb
 import json
 import os
+import re
 import shutil
 import StringIO
 import subprocess
@@ -32,12 +33,9 @@ if os.path.exists(arguments.output_dir):
 
 couchdb = couchdb.Server()[arguments.couchdb_database]
 
-try:
-  iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('instances')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  stdout, stderr = iquery.communicate()
-  coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
-except:
-  raise Exception("Couldn't query SciDB for the coordinator directory.")
+iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "list('instances')"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+stdout, stderr = iquery.communicate()
+coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
 
 os.makedirs(arguments.output_dir)
 
@@ -51,16 +49,25 @@ for row in couchdb.view("slycat/project-models", startkey=arguments.project_id, 
   os.mkdir(model_dir)
   json.dump(model, open(os.path.join(model_dir, "model.json"), "w"))
 
-  for artifact, value in model.items():
-    if not artifact.startswith("artifact:"):
+  for key, value in model.items():
+    if not key.startswith("artifact:"):
       continue
     if not isinstance(value, dict):
       continue
-    for array, id in value.items():
-      iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % id], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for role, array in value.items():
+      iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % array], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       stdout, stderr = iquery.communicate()
       schema = StringIO.StringIO(stdout).readlines()[1].strip()[1:-1]
-      open(os.path.join(model_dir, "%s.schema" % id), "w").write(schema)
+      attributes = re.search(r"<(.*)>", schema).group(1).split(",")
+      dimensions = re.search(r"\[.*\]", schema).group(0)
 
-      subprocess.check_call([arguments.iquery, "-n", "-aq", "save(%s, '%s.opaque', -2, 'OPAQUE')" % (id, id)])
-      subprocess.check_call(["mv", os.path.join(coordinator_dir, "%s.opaque" % id), os.path.join(model_dir, "%s.opaque" % id)])
+      open(os.path.join(model_dir, "%s.schema" % array), "w").write(schema)
+
+      for index, offset in enumerate(range(0, len(attributes), 250)):
+        subattributes = attributes[offset : offset + 250]
+        subschema = "%s%s<%s>%s" % (array, index, ",".join(subattributes), dimensions)
+
+        open(os.path.join(model_dir, "%s-%s.schema" % (array, index)), "w").write(subschema)
+
+        subprocess.check_call([arguments.iquery, "-n", "-aq", "save(project(%s, %s), '%s-%s.opaque', -2, 'OPAQUE')" % (array, ",".join([attribute.split(":")[0] for attribute in subattributes]), array, index)])
+        subprocess.check_call(["mv", os.path.join(coordinator_dir, "%s-%s.opaque" % (array, index)), os.path.join(model_dir, "%s-%s.opaque" % (array, index))])
