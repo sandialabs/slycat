@@ -5,6 +5,7 @@
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 import argparse
 import getpass
@@ -33,7 +34,7 @@ WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Proj
 project_index = 0
 while True:
   project_links = browser.find_elements_by_class_name("project-link")
-  if project_index >= len(project_links):
+  if len(project_links) < 1:
     break
   project_link = project_links[project_index % len(project_links)]
   project_link.click()
@@ -47,7 +48,18 @@ while True:
     model_link = model_links[model_index % len(model_links)]
     model_link.click()
     WebDriverWait(browser, 10).until(expected_conditions.title_contains("Model"))
-    time.sleep(10)
+
+    try:
+      status_messages =  browser.find_element_by_id("status-messages")
+      WebDriverWait(browser, 2).until(expected_conditions.visibility_of(status_messages))
+      # This is an incomplete CCA model.
+    except TimeoutException:
+      # This is a complete CCA model.
+      time.sleep(8)
+    except NoSuchElementException:
+      # This is not a CCA model.
+      pass
+
     browser.back()
     WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
     model_index += 1
