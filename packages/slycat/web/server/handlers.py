@@ -9,6 +9,7 @@ import cherrypy
 import cStringIO as StringIO
 import datetime
 import hashlib
+import itertools
 import json
 import logging.handlers
 import multiprocessing
@@ -21,6 +22,7 @@ import subprocess
 import sys
 import slycat.web.server
 import slycat.web.server.authentication
+import slycat.web.server.cache
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.scidb
 import slycat.web.server.ssh
@@ -338,6 +340,126 @@ def get_model_design(mid):
   context["marking-html"] = marking.html(model["marking"])
 
   return slycat.web.server.template.render("model-design.html", context)
+
+@cherrypy.tools.json_out(on = True)
+def get_model_array_metadata(mid, aid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["array", "table"]:
+    raise cherrypy.HTTPError("404 %s is not an array or table artifact." % aid)
+
+  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact, artifact_type)
+  return metadata
+
+def get_model_array_chunk(mid, aid, **arguments):
+  try:
+    attribute = int(arguments["attribute"])
+  except:
+    raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
+
+  try:
+    ranges = [int(spec) for spec in arguments["ranges"].split(",")]
+    i = iter(ranges)
+    ranges = list(itertools.izip(i, i))
+  except:
+    raise cherrypy.HTTPError("400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
+
+  byteorder = arguments.get("byteorder", None)
+  if byteorder is not None:
+    if byteorder not in ["little", "big"]:
+      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["array", "table"]:
+    raise cherrypy.HTTPError("404 %s is not an array or table artifact." % aid)
+
+  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact, artifact_type)
+
+  if len(ranges) != len(metadata["dimensions"]):
+    raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
+
+  ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(metadata["dimensions"], ranges)]
+
+  attribute_type =  metadata["attributes"][attribute]["type"]
+  if artifact_type == "array":
+    # Generate a database query
+    query = "{array}".format(array = artifact["data"])
+    query = "between({array}, {ranges})".format(array=query, ranges=",".join(["%s,%s" % (begin, end-1) for begin, end in ranges]))
+    query = "select a{attribute} from {array}".format(attribute=attribute, array=query)
+
+  elif artifact_type == "table":
+    # Generate a database query
+    query = "{array}".format(array = artifact["columns"])
+    query = "between({array}, {ranges})".format(array=query, ranges=",".join(["%s,%s" % (begin, end-1) for begin, end in ranges]))
+    query = "select c{attribute} from {array}".format(attribute=attribute, array=query)
+
+  # Retrieve the data from the database ...
+  database = slycat.web.server.database.scidb.connect()
+  with database.query("aql", query) as result:
+    if attribute_type == "string":
+      data = numpy.array([value.getString() for chunk in result.chunks() for attribute in chunk.attributes() for value in attribute])
+    else:
+      data = numpy.zeros([end - begin for begin, end in ranges], dtype=attribute_type)
+      iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
+      for chunk in result.chunks():
+        for chunk_attribute in chunk.attributes():
+          if attribute_type == "float64":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getDouble()
+          elif attribute_type == "float32":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getFloat()
+          elif attribute_type == "int64":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt64()
+          elif attribute_type == "int32":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt32()
+          elif attribute_type == "int16":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt16()
+          elif attribute_type == "int8":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getInt8()
+          elif attribute_type == "uint64":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint64()
+          elif attribute_type == "uint32":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint32()
+          elif attribute_type == "uint16":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint16()
+          elif attribute_type == "uint8":
+            for value in chunk_attribute:
+              iterator.next()[...] = value.getUint8()
+
+  if byteorder is None:
+    return json.dumps(data.tolist())
+  else:
+    if sys.byteorder != byteorder:
+      return data.byteswap().tostring(order="C")
+    else:
+      return data.tostring(order="C")
 
 def get_model_file(mid, name):
   database = slycat.web.server.database.couchdb.connect()

@@ -95,6 +95,8 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("get-model-design", "/models/:mid/design", slycat.web.server.handlers.get_model_design, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-array-metadata", "/models/:mid/artifacts/:aid/array-metadata", slycat.web.server.handlers.get_model_array_metadata, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-array-chunk", "/models/:mid/artifacts/:aid/array-chunk", slycat.web.server.handlers.get_model_array_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/file/{name:.*}", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   dispatcher.connect("delete-model", "/models/:mid", slycat.web.server.handlers.delete_model, conditions={"method" : ["DELETE"]})
 
