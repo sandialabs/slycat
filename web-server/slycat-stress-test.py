@@ -23,49 +23,72 @@ scheme, netloc, path, params, query, fragment = url = urlparse.urlparse(argument
 netloc = "{}:{}@{}".format(arguments.user, getpass.getpass("{} password: ".format(arguments.user)), netloc)
 url = urlparse.urlunparse((scheme, netloc, path, params, query, fragment))
 
-try:
-  browser = webdriver.Firefox()
-except:
-  raise Exception("Error starting web browser.  This is likely due to network proxy configuration, try clearing the http_proxy environment variable if set.")
+pass_count = 0
+project_count = 0
+model_count = 0
 
-browser.get(url)
-WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
+browser = None
 
-project_index = 0
 while True:
-  project_links = browser.find_elements_by_class_name("project-link")
-  if len(project_links) < 1:
-    break
-  project_link = project_links[project_index % len(project_links)]
-  project_link.click()
-  WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
-
-  model_index = 0
-  while True:
-    model_links = browser.find_elements_by_class_name("model-link")
-    if model_index >= len(model_links):
-      break
-    model_link = model_links[model_index % len(model_links)]
-    model_link.click()
-    WebDriverWait(browser, 10).until(expected_conditions.title_contains("Model"))
-
+  if browser is None:
     try:
-      status_messages =  browser.find_element_by_id("status-messages")
-      WebDriverWait(browser, 2).until(expected_conditions.visibility_of(status_messages))
-      # This is an incomplete CCA model.
-    except TimeoutException:
-      # This is a complete CCA model.
-      time.sleep(8)
-    except NoSuchElementException:
-      # This is not a CCA model.
-      pass
+      browser = webdriver.Firefox()
+    except:
+      raise Exception("Error starting web browser.  This is likely due to network proxy configuration, try clearing the http_proxy environment variable if set.")
+    browser.get(url)
+    WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
+
+  project_index = 0
+  while True:
+    project_links = browser.find_elements_by_class_name("project-link")
+    if project_index >= len(project_links):
+      break
+    project_link = project_links[project_index % len(project_links)]
+    project_link.click()
+    WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
+
+    model_index = 0
+    while True:
+      model_links = browser.find_elements_by_class_name("model-link")
+      if model_index >= len(model_links):
+        break
+      model_link = model_links[model_index % len(model_links)]
+      model_link.click()
+      WebDriverWait(browser, 10).until(expected_conditions.title_contains("Model"))
+
+      try:
+        status_messages =  browser.find_element_by_id("status-messages")
+        WebDriverWait(browser, 2).until(expected_conditions.visibility_of(status_messages))
+        # This is an incomplete CCA model.
+      except TimeoutException:
+        # This is a complete CCA model.
+        time.sleep(4)
+      except NoSuchElementException:
+        # This is not a CCA model.
+        pass
+
+      model_count += 1
+      print "Viewed %s models" % model_count
+
+      browser.back()
+      WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
+      model_index += 1
+
+    project_count += 1
+    print "Viewed %s projects" % project_count
 
     browser.back()
-    WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
-    model_index += 1
+    WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
+    project_index += 1
 
-  browser.back()
-  WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
-  project_index += 1
-browser.quit()
+  pass_count += 1
+  print "Completed %s passes" % pass_count
+
+  # Web browsers are notorious memory leakers, so kill the browser periodically to prevent slowdowns / failures.
+  if pass_count % 50 == 0:
+    browser.quit()
+    browser = None
+
+if browser is not None:
+  browser.quit()
 
