@@ -6,6 +6,7 @@ from __future__ import absolute_import
 
 import base64
 import cherrypy
+import copy
 import cStringIO as StringIO
 import datetime
 import hashlib
@@ -459,6 +460,32 @@ def get_model_array_chunk(mid, aid, **arguments):
       return data.byteswap().tostring(order="C")
     else:
       return data.tostring(order="C")
+
+@cherrypy.tools.json_out(on = True)
+def get_model_table_metadata(mid, aid, generate_index = None):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["table"]:
+    raise cherrypy.HTTPError("404 %s is not a table artifact." % aid)
+
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type)
+
+  if generate_index is not None:
+    metadata = copy.deepcopy(metadata)
+    metadata["column-count"] += 1
+    metadata["column-names"].append(generate_index)
+    metadata["column-types"].append("int64")
+    metadata["column-min"].append(0)
+    metadata["column-max"].append(metadata["row-count"] - 1)
+
+  return metadata
 
 def get_model_file(mid, name):
   database = slycat.web.server.database.couchdb.connect()

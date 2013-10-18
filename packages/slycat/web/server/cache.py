@@ -1,3 +1,4 @@
+import cherrypy
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.scidb
 import threading
@@ -52,4 +53,61 @@ def get_array_metadata(mid, aid, artifact, artifact_type):
         }
 
     return _array_metadata[(mid, aid)]
+
+_table_metadata = {}
+_table_metadata_lock = threading.Lock()
+
+def get_table_metadata(mid, aid, artifact, artifact_type):
+  with _table_metadata_lock:
+    if (mid, aid) not in _table_metadata:
+      if artifact_type == "table":
+        database = slycat.web.server.database.scidb.connect()
+        with database.query("aql", "select name from %s" % artifact["column-names"]) as results:
+          column_names = [value.getString() for attribute in results for value in attribute]
+          column_count = len(column_names)
+
+        with database.query("aql", "select type_id from attributes(%s)" % artifact["columns"]) as results:
+          column_types = [value.getString() for attribute in results for value in attribute]
+
+        row_begin = database.query_value("aql", "select low from dimensions(%s)" % artifact["columns"]).getInt64()
+        row_end = database.query_value("aql", "select high + 1 from dimensions(%s)" % artifact["columns"]).getInt64()
+        row_count = row_end - row_begin
+
+        with database.query("aql", "select {} from {}".format(",".join(["min(c{})".format(index) for index in range(column_count)]), artifact["columns"])) as results:
+          column_min = []
+          index = 0
+          for attribute in results:
+            for value in attribute:
+              if column_types[index] == "double":
+                column_min.append(value.getDouble())
+              elif column_types[index] == "string":
+                column_min.append(value.getString())
+              index += 1
+        with database.query("aql", "select {} from {}".format(",".join(["max(c{})".format(index) for index in range(column_count)]), artifact["columns"])) as results:
+          column_max = []
+          index = 0
+          for attribute in results:
+            for value in attribute:
+              if column_types[index] == "double":
+                column_max.append(value.getDouble())
+              elif column_types[index] == "string":
+                column_max.append(value.getString())
+              index += 1
+      else:
+        raise Exception("Unsupported artifact type.")
+
+      # SciDB uses "float" and "double", but we prefer "float32" and "float64"
+      type_map = {"float":"float32", "double":"float64"}
+      column_types = [type_map[type] if type in type_map else type for type in column_types]
+
+      _table_metadata[(mid, aid)] = {
+        "row-count" : row_count,
+        "column-count" : column_count,
+        "column-names" : column_names,
+        "column-types" : column_types,
+        "column-min" : column_min,
+        "column-max" : column_max
+        }
+
+    return _table_metadata[(mid, aid)]
 
