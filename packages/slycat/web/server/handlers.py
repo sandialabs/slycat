@@ -32,7 +32,6 @@ import slycat.web.server.worker
 import slycat.web.server.worker.model.cca3
 import slycat.web.server.worker.model.timeseries
 import slycat.web.server.worker.model.generic
-import slycat.web.server.worker.chunker.array
 import slycat.web.server.worker.chunker.table
 import slycat.web.server.worker.timer
 import threading
@@ -542,26 +541,6 @@ def post_workers():
       wid = pool.start_worker(slycat.web.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], generate_index))
     else:
       raise cherrypy.HTTPError("400 Table chunker data source not specified.")
-  elif cherrypy.request.json["type"] == "array-chunker":
-    if "mid" in cherrypy.request.json and "artifact" in cherrypy.request.json:
-      mid = cherrypy.request.json["mid"]
-      artifact = cherrypy.request.json["artifact"]
-      database = slycat.web.server.database.couchdb.connect()
-      model = database.get("model", mid)
-      project = database.get("project", model["project"])
-      slycat.web.server.authentication.require_project_reader(project)
-      if artifact not in model["artifact-types"]:
-        raise cherrypy.HTTPError("400 Artifact %s not in model." % artifact)
-      if model["artifact-types"][artifact] == "array":
-        wid = pool.start_worker(slycat.web.server.worker.chunker.array.artifact(cherrypy.request.security, model, artifact))
-      elif model["artifact-types"][artifact] == "table":
-        wid = pool.start_worker(slycat.web.server.worker.chunker.array.table_artifact(cherrypy.request.security, model, artifact))
-      else:
-        raise cherrypy.HTTPError("400 Artifact %s can't be loaded as an array." % artifact)
-    elif "shape" in cherrypy.request.json:
-      wid = pool.start_worker(slycat.web.server.worker.chunker.array.test(cherrypy.request.security, cherrypy.request.json["shape"]))
-    else:
-      raise cherrypy.HTTPError("400 Array chunker data source not specified.")
   elif cherrypy.request.json["type"] == "timeout":
     wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "30-second countdown", 30, countdown_callback, cherrypy.request.app.config["slycat"]["server-root"]))
   elif cherrypy.request.json["type"] == "startup-failure":

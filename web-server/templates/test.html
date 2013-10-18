@@ -44,7 +44,6 @@ rights in this software.
           <li><button id="test-startup-failure">Startup Failure Worker</button></li>
           <li><button id="test-timeout">Timeout Worker</button></li>
           <li><button id="table-chunker">Table Chunker</button></li>
-          <li><button id="array-chunker">Array Chunker</button></li>
         </ul>
 
         <h3>Events</h3>
@@ -111,22 +110,6 @@ rights in this software.
           {
             contentType : "application/json",
             data : $.toJSON({ type : "table-chunker", "row-count" : 1000, "column-count" : 100 }),
-            processData : false,
-            type : "POST",
-            url : "{{server-root}}workers",
-            error : function(request, status, reason_phrase)
-            {
-              window.alert("Error creating worker: " + reason_phrase);
-            }
-          });
-        });
-
-        $("#array-chunker").button().click(function()
-        {
-          $.ajax(
-          {
-            contentType : "application/json",
-            data : $.toJSON({ type : "array-chunker", "shape" : [10, 20, 30] }),
             processData : false,
             type : "POST",
             url : "{{server-root}}workers",
