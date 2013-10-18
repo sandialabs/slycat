@@ -143,7 +143,6 @@ rights in this software.
         var wilks = null;
         var table_metadata = null;
 
-        var v_chunker = null;
         var table_chunker = null;
 
         var generate_indices = false;
@@ -257,20 +256,6 @@ rights in this software.
             setup_widgets();
           },
           error : artifact_missing
-        });
-
-        // Create a data table array chunker for later ...
-        create_array_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"data-table",
-          success:function(chunker)
-          {
-            v_chunker = chunker;
-            setup_v();
-          },
-          error: artifact_missing
         });
 
         // Create a table chunker for later ...
@@ -688,7 +673,7 @@ rights in this software.
 
         function setup_v()
         {
-          if(bookmark && table_metadata && v_chunker)
+          if(bookmark && table_metadata)
           {
             var type = "simulation";
             var index = 0;
@@ -707,18 +692,32 @@ rights in this software.
             }
             else if(type == "input")
             {
-              get_array_attribute("{{server-root}}", v_chunker, input_columns[index], function(result)
-              {
-                v = result;
-                setup_widgets();
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                attribute : input_columns[index],
+                success : function(result)
+                {
+                  v = result;
+                  setup_widgets();
+                },
+                error : artifact_missing
               });
             }
             else if(type == "output")
             {
-              get_array_attribute("{{server-root}}", v_chunker, output_columns[index], function(result)
-              {
-                v = result;
-                setup_widgets();
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                attribute : output_columns[index],
+                success : function(result)
+                {
+                  v = result;
+                  setup_widgets();
+                },
+                error : artifact_missing
               });
             }
           }
@@ -1036,18 +1035,32 @@ rights in this software.
           }
           else if(type == "input")
           {
-            get_array_attribute("{{server-root}}", v_chunker, input_columns[index], function(result)
-            {
-              v = result;
-              $("#scatterplot").scatterplot("option", {v : v});
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              attribute : input_columns[index],
+              success : function(result)
+              {
+                v = result;
+                $("#scatterplot").scatterplot("option", {v : v});
+              },
+              error : artifact_missing
             });
           }
           else if(type == "output")
           {
-            get_array_attribute("{{server-root}}", v_chunker, output_columns[index], function(result)
-            {
-              v = result;
-              $("#scatterplot").scatterplot("option", {v : v});
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              attribute : output_columns[index],
+              success : function(result)
+              {
+                v = result;
+                $("#scatterplot").scatterplot("option", {v : v});
+              },
+              error : artifact_missing
             });
           }
         }
