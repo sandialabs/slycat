@@ -56,7 +56,7 @@ while True:
       # This is an incomplete CCA model.
     except TimeoutException:
       # This is a complete CCA model.
-      time.sleep(8)
+      time.sleep(4)
     except NoSuchElementException:
       # This is not a CCA model.
       pass
