@@ -12,6 +12,7 @@ if sys.argv[1:2] == ["config"]:
 
   sys.stdout.write("web_server_requests.label Web server requests\n")
   sys.stdout.write("web_server_requests.type DERIVE\n")
+  sys.stdout.write("web_server_requests.min 0\n")
 else:
   try:
     requests = subprocess.Popen(["wc", "-l", "/var/log/slycat/access.log"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
