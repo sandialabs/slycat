@@ -15,6 +15,7 @@ import time
 import urlparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--max-model-count", type=int, default=500, help="The number of models a browser may view before being restarted.  Default: %(default)s")
 parser.add_argument("--url", default="https://localhost:8092", help="Root Slycat URL to test.  Default: %(default)s")
 parser.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
 arguments = parser.parse_args()
@@ -37,6 +38,7 @@ while True:
       raise Exception("Error starting web browser.  This is likely due to network proxy configuration, try clearing the http_proxy environment variable if set.")
     browser.get(url)
     WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
+    browser_model_count = 0
 
   project_index = 0
   while True:
@@ -67,25 +69,27 @@ while True:
         # This is not a CCA model.
         pass
 
+      browser_model_count += 1
       model_count += 1
-      print "Viewed %s models" % model_count
+      print "Viewed %s models." % model_count
 
       browser.back()
       WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
       model_index += 1
 
     project_count += 1
-    print "Viewed %s projects" % project_count
+    print "Viewed %s projects." % project_count
 
     browser.back()
     WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
     project_index += 1
 
   pass_count += 1
-  print "Completed %s passes" % pass_count
+  print "Completed %s passes." % pass_count
 
   # Web browsers are notorious memory leakers, so kill the browser periodically to prevent slowdowns / failures.
-  if pass_count % 50 == 0:
+  if browser_model_count >= arguments.max_model_count:
+    print "Restarting browser."
     browser.quit()
     browser = None
 
