@@ -31,6 +31,7 @@ except:
 browser.get(url)
 WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Projects"))
 
+model_count = 0
 project_index = 0
 while True:
   project_links = browser.find_elements_by_class_name("project-link")
@@ -59,6 +60,9 @@ while True:
     except NoSuchElementException:
       # This is not a CCA model.
       pass
+
+    model_count += 1
+    print "Viewed %s models" % model_count
 
     browser.back()
     WebDriverWait(browser, 10).until(expected_conditions.title_contains("Slycat Project"))
