@@ -403,13 +403,13 @@ def get_model_array_chunk(mid, aid, **arguments):
   if artifact_type == "array":
     # Generate a database query
     query = "{array}".format(array = artifact["data"])
-    query = "between({array}, {ranges})".format(array=query, ranges=",".join(["%s,%s" % (begin, end-1) for begin, end in ranges]))
+    query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
     query = "select a{attribute} from {array}".format(attribute=attribute, array=query)
 
   elif artifact_type == "table":
     # Generate a database query
     query = "{array}".format(array = artifact["columns"])
-    query = "between({array}, {ranges})".format(array=query, ranges=",".join(["%s,%s" % (begin, end-1) for begin, end in ranges]))
+    query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
     query = "select c{attribute} from {array}".format(attribute=attribute, array=query)
 
   # Retrieve the data from the database ...
