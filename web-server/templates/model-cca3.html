@@ -158,103 +158,105 @@ rights in this software.
         // Display progress as the load happens ...
         $(".load-status").text("Loading data.");
 
-        // Create an x_loadings array chunker worker and get the x_loadings from it
-        create_array_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"input-structure-correlation",
-          success:function(chunker)
+        // Load the x_loadings artifact.
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "input-structure-correlation",
+          attribute : 0,
+          success : function(result)
           {
-            get_array_attribute("{{server-root}}", chunker, 0, function(result)
-            {
-              x_loadings = result;
-              setup_widgets();
-            });
+            x_loadings = result;
+            setup_widgets();
           },
-          error: artifact_missing
+          error : artifact_missing
         });
 
-        // Create a y_loadings array chunker worker and get the y_loadings from it
-        create_array_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"output-structure-correlation",
-          success:function(chunker)
+        // Load the y_loadings artifact.
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "output-structure-correlation",
+          attribute : 0,
+          success : function(result)
           {
-            get_array_attribute("{{server-root}}", chunker, 0, function(result)
-            {
-              y_loadings = result;
-              setup_widgets();
-            });
+            y_loadings = result;
+            setup_widgets();
           },
-          error: artifact_missing
+          error : artifact_missing
         });
 
-        // Create a cca-statistics array chunker worker and get the cca-statistics from it
-        create_array_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"cca-statistics",
-          success:function(chunker)
+        // Load the r^2 statistics artifact.
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "cca-statistics",
+          attribute : 0,
+          success : function(result)
           {
-            get_array_attribute("{{server-root}}", chunker, 0, function(result)
-            {
-              r2 = result;
-              setup_widgets();
-            });
-            get_array_attribute("{{server-root}}", chunker, 1, function(result)
-            {
-              wilks = result;
-              setup_widgets();
-            });
+            r2 = result;
+            setup_widgets();
           },
-          error: artifact_missing
+          error : artifact_missing
         });
 
-        // Create a canonical-indices array chunker worker and get the canonical-indices from it
-        create_array_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"canonical-indices",
-          success:function(chunker)
+        // Load the Wilks statistics artifact.
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "cca-statistics",
+          attribute : 1,
+          success : function(result)
           {
-            get_array_attribute("{{server-root}}", chunker, 0, function(result)
-            {
-              indices = result;
-              setup_widgets();
-            });
+            wilks = result;
+            setup_widgets();
           },
-          error: function()
+          error : artifact_missing
+        });
+
+        // Load the canonical-indices artifact.
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "canonical-indices",
+          attribute : 0,
+          success : function(result)
+          {
+            indices = result;
+            setup_widgets();
+          },
+          error : function()
           {
             generate_indices = true;
             setup_indices();
           }
         });
 
-        // Create a canonical-variables array chunker worker and get the canonical-variables from it
-        create_array_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"canonical-variables",
-          success:function(chunker)
+        // Load the canonical-variables artifacts.
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "canonical-variables",
+          attribute : 0,
+          success : function(result)
           {
-            get_array_attribute("{{server-root}}", chunker, 0, function(result)
-            {
-              x = result;
-              setup_widgets();
-            });
-            get_array_attribute("{{server-root}}", chunker, 1, function(result)
-            {
-              y = result;
-              setup_widgets();
-            });
+            x = result;
+            setup_widgets();
           },
-          error: artifact_missing
+          error : artifact_missing
+        });
+
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "canonical-variables",
+          attribute : 1,
+          success : function(result)
+          {
+            y = result;
+            setup_widgets();
+          },
+          error : artifact_missing
         });
 
         // Create a data table array chunker for later ...
