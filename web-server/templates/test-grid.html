@@ -47,52 +47,53 @@ rights in this software.
         {id: "effort-driven", name: "Effort Driven", field: "effortDriven", sortable:true, selectable:true}
         ];
 
-/*
-      var rows = [];
-      for(var i = 0; i < 500; i++)
-      {
-        rows[i] =
-        {
-          title: "Task " + i,
-          duration: "5 days",
-          percentComplete: Math.round(Math.random() * 100),
-          start: "01/01/2009",
-          finish: "01/05/2009",
-          effortDriven: (i % 5 == 0)
-        };
-      }
-*/
-
-      function data(parameters)
+      function data_provider(parameters)
       {
         var self = this;
 
-        self.count = parameters.count;
-
-        self.getLength = function()
+        self.data = []
+        for(var i = 0; i != parameters.count; ++i)
         {
-          return self.count;
-        }
-
-        self.getItem = function(index)
-        {
-          return {
-            title: "Task " + index,
+          self.data.push({
+            title: "Task " + i,
             duration: "5 days",
             percentComplete: Math.round(Math.random() * 100),
             start: "01/01/2009",
             finish: "01/05/2009",
-            effortDriven: (index % 5 == 0)
-            };
+            effortDriven: (i % 5 == 0)
+            });
+        }
+
+        self.getLength = function()
+        {
+          return self.data.length;
+        }
+
+        self.getItem = function(index)
+        {
+          return self.data[index];
         }
 
         self.getItemMetadata = function(index)
         {
           return null;
         }
+
+        self.sort = function(field, ascending)
+        {
+          self.data.sort(function(a, b)
+          {
+            var result =
+              a[field] > b[field] ? 1 :
+              a[field] < b[field] ? -1 :
+              0;
+            return ascending ? result : -result;
+          });
+        }
       }
 
-      var grid = new Slick.Grid("#grid", new data({count:500}), columns);
+      var data = new data_provider({count:500});
+      var grid = new Slick.Grid("#grid", data, columns);
       var ignore_selection_change = false;
       grid.setSelectionModel(new Slick.RowSelectionModel());
       grid.onSelectedRowsChanged.subscribe(function(e, selection)
@@ -104,16 +105,7 @@ rights in this software.
 
       grid.onSort.subscribe(function(e, args)
       {
-        var field = args.sortCol.field;
-        rows.sort(function(a, b)
-        {
-          var result =
-            a[field] > b[field] ? 1 :
-            a[field] < b[field] ? -1 :
-            0;
-          return args.sortAsc ? result : -result;
-        });
-
+        data.sort(args.sortCol.field, args.sortAsc);
         grid.invalidate();
         ignore_selection_change = true;
         grid.setSelectedRows([]);
