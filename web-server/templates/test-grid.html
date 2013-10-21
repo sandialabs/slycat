@@ -38,40 +38,81 @@ rights in this software.
     <button id="clear-selection">Clear Selection</button>
     <div id="grid"></div>
     <script type="text/javascript">
-      var columns = [
-        {id: "title", name: "Title", field: "title", sortable:true, selectable:true},
-        {id: "duration", name: "Duration", field: "duration", selectable:true},
-        {id: "%", name: "% Complete", field: "percentComplete", sortable:true, selectable:true},
-        {id: "start", name: "Start", field: "start", selectable:true},
-        {id: "finish", name: "Finish", field: "finish", selectable:true},
-        {id: "effort-driven", name: "Effort Driven", field: "effortDriven", sortable:true, selectable:true}
-        ];
-
       function data_provider(parameters)
       {
         var self = this;
 
-        self.data = []
-        for(var i = 0; i != parameters.count; ++i)
+        self.mid = parameters.mid;
+        self.aid = parameters.aid;
+        self.sort_column = null;
+        self.sort_ascending = null;
+        self.pages = {};
+        self.page_size = 50;
+
+        $.ajax(
         {
-          self.data.push({
-            title: "Task " + i,
-            duration: "5 days",
-            percentComplete: Math.round(Math.random() * 100),
-            start: "01/01/2009",
-            finish: "01/05/2009",
-            effortDriven: (i % 5 == 0)
+          type : "GET",
+          url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-metadata?generate_index=Index",
+          async : false,
+          success : function(metadata)
+          {
+            self.metadata = metadata;
+          }
+        });
+
+        self.getColumns = function()
+        {
+          var columns = [];
+          for(var i in self.metadata["column-names"])
+          {
+            columns.push({
+              id : i,
+              name : self.metadata["column-names"][i],
+              field : i,
+              sortable : true,
+              selectable : true
             });
+          }
+          return columns;
         }
 
         self.getLength = function()
         {
-          return self.data.length;
+          return self.metadata["row-count"];
         }
 
         self.getItem = function(index)
         {
-          return self.data[index];
+          var column_begin = 0;
+          var column_end = self.metadata["column-count"];
+          var page = Math.floor(index / self.page_size);
+          var page_begin = page * self.page_size;
+
+          if(!(page in self.pages))
+          {
+            var row_begin = page_begin;
+            var row_end = (page + 1) * self.page_size;
+
+            var sort = "";
+            if(self.sort_column !== null && self.sort_ascending !== null)
+              sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
+
+            $.ajax(
+            {
+              type : "GET",
+              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&generate_index=Index" + sort,
+              async : false,
+              success : function(data)
+              {
+                self.pages[page] = data;
+              }
+            });
+          }
+
+          result = {};
+          for(var i = column_begin; i != column_end; ++i)
+            result[i] = self.pages[page].data[i][index - page_begin];
+          return result;
         }
 
         self.getItemMetadata = function(index)
@@ -79,22 +120,23 @@ rights in this software.
           return null;
         }
 
-        self.sort = function(field, ascending)
+        self.setSort = function(column, ascending)
         {
-          self.data.sort(function(a, b)
-          {
-            var result =
-              a[field] > b[field] ? 1 :
-              a[field] < b[field] ? -1 :
-              0;
-            return ascending ? result : -result;
-          });
+          if(column == self.sort_column && ascending == self.sort_ascending)
+            return;
+          self.sort_column = column;
+          self.sort_ascending = ascending;
+          self.pages = {};
         }
       }
 
-      var data = new data_provider({count:500});
-      var grid = new Slick.Grid("#grid", data, columns);
+      var data = new data_provider({
+        mid : "239bf4053a6641afac1e5f9d4982b6a0",
+        aid : "data-table",
+        });
+      var grid = new Slick.Grid("#grid", data, data.getColumns());
       var ignore_selection_change = false;
+
       grid.setSelectionModel(new Slick.RowSelectionModel());
       grid.onSelectedRowsChanged.subscribe(function(e, selection)
       {
@@ -102,17 +144,15 @@ rights in this software.
           console.log(selection.rows);
         ignore_selection_change = false;
       });
-
-      grid.onSort.subscribe(function(e, args)
+      $("#clear-selection").click(function()
       {
-        data.sort(args.sortCol.field, args.sortAsc);
-        grid.invalidate();
         ignore_selection_change = true;
         grid.setSelectedRows([]);
       });
-
-      $("#clear-selection").click(function()
+      grid.onSort.subscribe(function(e, args)
       {
+        data.setSort(args.sortCol.field, args.sortAsc);
+        grid.invalidate();
         ignore_selection_change = true;
         grid.setSelectedRows([]);
       });
