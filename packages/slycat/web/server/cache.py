@@ -7,6 +7,7 @@ _array_metadata = {}
 _array_metadata_lock = threading.Lock()
 
 def get_array_metadata(mid, aid, artifact, artifact_type):
+  """Return cached metadata for an array artifact, retrieving it from the database as-needed."""
   with _array_metadata_lock:
     if (mid, aid) not in _array_metadata:
       if artifact_type == "array":
@@ -58,6 +59,7 @@ _table_metadata = {}
 _table_metadata_lock = threading.Lock()
 
 def get_table_metadata(mid, aid, artifact, artifact_type):
+  """Return cached metadata for a table artifact, retrieving it from the database as-needed."""
   with _table_metadata_lock:
     if (mid, aid) not in _table_metadata:
       if artifact_type == "table":
@@ -78,20 +80,14 @@ def get_table_metadata(mid, aid, artifact, artifact_type):
           index = 0
           for attribute in results:
             for value in attribute:
-              if column_types[index] == "double":
-                column_min.append(value.getDouble())
-              elif column_types[index] == "string":
-                column_min.append(value.getString())
+              column_min.append(slycat.web.server.database.scidb.typed_value(column_types[index], value))
               index += 1
         with database.query("aql", "select {} from {}".format(",".join(["max(c{})".format(index) for index in range(column_count)]), artifact["columns"])) as results:
           column_max = []
           index = 0
           for attribute in results:
             for value in attribute:
-              if column_types[index] == "double":
-                column_max.append(value.getDouble())
-              elif column_types[index] == "string":
-                column_max.append(value.getString())
+              column_max.append(slycat.web.server.database.scidb.typed_value(column_types[index], value))
               index += 1
       else:
         raise Exception("Unsupported artifact type.")

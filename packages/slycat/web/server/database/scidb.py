@@ -5,6 +5,69 @@
 import cherrypy
 import scidbapi
 
+def typed_value(type, value):
+  """Given a SciDB type and opaque value, return the typed value."""
+  if type == "string":
+    return value.getString()
+  elif type == "double" or type == "float64":
+    return value.getDouble()
+  elif type == "float" or type == "float32":
+    return value.getFloat()
+  elif type == "int64":
+    return value.getInt64()
+  elif type == "int32":
+    return value.getInt32()
+  elif type == "int16":
+    return value.getInt16()
+  elif type == "int8":
+    return value.getInt8()
+  elif type == "uint64":
+    return value.getUint64()
+  elif type == "uint32":
+    return value.getUint32()
+  elif type == "uint16":
+    return value.getUint16()
+  elif type == "uint8":
+    return value.getUint8()
+  raise Exception("Can't convert unknown type: %s" % type)
+
+def typed_values(type, chunk_attribute):
+  if type == "string":
+    for value in chunk_attribute:
+      yield value.getString()
+  elif type == "double" or type == "float64":
+    for value in chunk_attribute:
+      yield value.getDouble()
+  elif type == "float" or type == "float32":
+    for value in chunk_attribute:
+      yield value.getFloat()
+  elif type == "int64":
+    for value in chunk_attribute:
+      yield value.getInt64()
+  elif type == "int32":
+    for value in chunk_attribute:
+      yield value.getInt32()
+  elif type == "int16":
+    for value in chunk_attribute:
+      yield value.getInt16()
+  elif type == "int8":
+    for value in chunk_attribute:
+      yield value.getInt8()
+  elif type == "uint64":
+    for value in chunk_attribute:
+      yield value.getUint64()
+  elif type == "uint32":
+    for value in chunk_attribute:
+      yield value.getUint32()
+  elif type == "uint16":
+    for value in chunk_attribute:
+      yield value.getUint16()
+  elif type == "uint8":
+    for value in chunk_attribute:
+      yield value.getUint8()
+  else:
+    raise Exception("Can't convert unknown type: %s" % type)
+
 class dimension_wrapper:
   def __init__(self, d):
     self.d = d

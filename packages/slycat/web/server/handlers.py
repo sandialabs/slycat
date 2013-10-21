@@ -421,37 +421,9 @@ def get_model_array_chunk(mid, aid, **arguments):
       data = numpy.zeros([end - begin for begin, end in ranges], dtype=attribute_type)
       iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
       for chunk in result.chunks():
-        for chunk_attribute in chunk.attributes():
-          if attribute_type == "float64":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getDouble()
-          elif attribute_type == "float32":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getFloat()
-          elif attribute_type == "int64":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt64()
-          elif attribute_type == "int32":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt32()
-          elif attribute_type == "int16":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt16()
-          elif attribute_type == "int8":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getInt8()
-          elif attribute_type == "uint64":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint64()
-          elif attribute_type == "uint32":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint32()
-          elif attribute_type == "uint16":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint16()
-          elif attribute_type == "uint8":
-            for value in chunk_attribute:
-              iterator.next()[...] = value.getUint8()
+        for attribute in chunk.attributes():
+          for value in slycat.web.server.database.scidb.typed_values(attribute_type, attribute):
+            iterator.next()[...] = value
 
   if byteorder is None:
     return json.dumps(data.tolist())
