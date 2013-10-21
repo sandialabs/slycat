@@ -197,7 +197,7 @@ rights in this software.
       grid.onSelectedRowsChanged.subscribe(function(e, selection)
       {
         if(!ignore_selection_change)
-          console.log(selection.rows);
+          console.log("row-selection-changed", selection.rows);
         ignore_selection_change = false;
       });
       $("#clear-selection").click(function()
@@ -211,6 +211,14 @@ rights in this software.
         grid.invalidate();
         ignore_selection_change = true;
         grid.setSelectedRows([]);
+      });
+      grid.onHeaderClick.subscribe(function (e, args)
+      {
+        var column = args.column.field;
+        if($.inArray(column, data.others) != -1)
+          return;
+
+        console.log("variable-changed", column);
       });
     </script>
   </body>
