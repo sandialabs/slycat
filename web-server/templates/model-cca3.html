@@ -395,6 +395,7 @@ rights in this software.
 
         // Setup the Rerun Model form ...
         rerun_cca_worker = null;
+        rerun_cca_model = null;
         $("#rerun-cca-form").dialog(
         {
           autoOpen: false,
@@ -423,6 +424,7 @@ rights in this software.
                 }
               });
               rerun_cca_worker = null;
+              rerun_cca_model = null;
             }
           },
           buttons:
@@ -454,6 +456,7 @@ rights in this software.
                 success: function(result)
                 {
                   rerun_cca_worker = result["wid"];
+                  rerun_cca_model = result["id"];
                   $.ajax(
                   {
                     type : "POST",
@@ -469,11 +472,7 @@ rights in this software.
                       $.ajax(
                       {
                         type : "GET",
-                        url : "{{server-root}}workers/" + rerun_cca_worker + "/model/table-columns",
-                        data :
-                        {
-                          name : "data-table"
-                        },
+                        url : "{{server-root}}models/" + rerun_cca_model + "/artifacts/data-table/table-metadata",
                         success : function(table)
                         {
                           function deselect_companion(companion)
@@ -489,7 +488,7 @@ rights in this software.
                             var row = $("<tr>").appendTo($("#rerun-cca-variables tbody"));
                             $("<td>").text(column).appendTo(row);
 
-                            if(table["column-types"][index] == "double")
+                            if(table["column-types"][index] != "string")
                             {
                               var input = $("<input type='checkbox' name='inputs' class='rerun-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                               var output = $("<input type='checkbox' name='outputs' class='rerun-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
@@ -586,6 +585,7 @@ rights in this software.
                 success: function(result)
                 {
                   rerun_cca_worker = null;
+                  rerun_cca_model = null;
                   window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
                   $("#rerun-cca-form").dialog("close");
                 },
