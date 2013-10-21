@@ -44,6 +44,10 @@ rights in this software.
 
         self.mid = parameters.mid;
         self.aid = parameters.aid;
+        self.inputs = parameters.inputs;
+        self.outputs = parameters.outputs;
+        self.others = parameters.others;
+
         self.sort_column = null;
         self.sort_ascending = null;
         self.pages = {};
@@ -60,15 +64,18 @@ rights in this software.
           }
         });
 
+        self.all_columns = [self.metadata["column-count"] - 1].concat(self.inputs, self.outputs, self.others);
+
         self.getColumns = function()
         {
           var columns = [];
-          for(var i in self.metadata["column-names"])
+          for(var i in self.all_columns)
           {
+            var column = self.all_columns[i];
             columns.push({
-              id : i,
-              name : self.metadata["column-names"][i],
-              field : i,
+              id : column,
+              name : self.metadata["column-names"][column],
+              field : column,
               sortable : true,
               selectable : true
             });
@@ -133,6 +140,9 @@ rights in this software.
       var data = new data_provider({
         mid : "239bf4053a6641afac1e5f9d4982b6a0",
         aid : "data-table",
+        inputs : [2, 3, 5, 7],
+        outputs : [1, 4, 6],
+        others : [0, 8]
         });
       var grid = new Slick.Grid("#grid", data, data.getColumns());
       var ignore_selection_change = false;
