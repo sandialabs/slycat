@@ -22,14 +22,19 @@ rights in this software.
         height: 500px;
       }
 
-      #grid .slick-row.active
-      {
-        background: #f8a384;
-      }
-
       #grid .slick-cell.selected
       {
         background: yellow;
+      }
+
+      #grid .headerInput, #grid .rowInput
+      {
+        background: #8f8;
+      }
+
+      #grid .headerOutput, #grid .rowOutput
+      {
+        background: #f8f;
       }
     </style>
   </head>
@@ -64,22 +69,63 @@ rights in this software.
           }
         });
 
-        self.all_columns = [self.metadata["column-count"] - 1].concat(self.inputs, self.outputs, self.others);
-
         self.getColumns = function()
         {
           var columns = [];
-          for(var i in self.all_columns)
+
+          var column = self.metadata["column-count"] - 1;
+          columns.push({
+            id : column,
+            name : self.metadata["column-names"][column],
+            field : column,
+            sortable : true,
+            selectable : true,
+            headerCssClass: "headerSimId",
+            cssClass: "rowSimId",
+          });
+
+          for(var i in self.inputs)
           {
-            var column = self.all_columns[i];
+            var column = self.inputs[i];
             columns.push({
               id : column,
               name : self.metadata["column-names"][column],
               field : column,
               sortable : true,
-              selectable : true
+              selectable : true,
+              headerCssClass: "headerInput",
+              cssClass: "rowInput",
             });
           }
+
+          for(var i in self.outputs)
+          {
+            var column = self.outputs[i];
+            columns.push({
+              id : column,
+              name : self.metadata["column-names"][column],
+              field : column,
+              sortable : true,
+              selectable : true,
+              headerCssClass: "headerOutput",
+              cssClass: "rowOutput",
+            });
+          }
+
+          for(var i in self.others)
+          {
+            var column = self.others[i];
+            columns.push({
+              id : column,
+              name : self.metadata["column-names"][column],
+              field : column,
+              sortable : true,
+              selectable : true,
+              headerCssClass: "headerOther",
+              cssClass: "rowOther",
+            });
+          }
+
           return columns;
         }
 
