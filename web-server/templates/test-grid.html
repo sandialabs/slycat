@@ -8,7 +8,7 @@ rights in this software.
 
 <html>
   <head>
-    <title>Slycat Grid Testing</title>
+    <title>Slycat Slickgrid Testing</title>
     <script type="text/javascript" src="{{server-root}}js/jquery.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -17,22 +17,22 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
     <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css"/>
     <style>
-      #grid
+      #table
       {
         height: 500px;
       }
 
-      #grid .slick-cell.selected
+      #table .slick-cell.selected
       {
         background: yellow;
       }
 
-      #grid .headerInput, #grid .rowInput
+      #table .headerInput, #table .rowInput
       {
         background: #8f8;
       }
 
-      #grid .headerOutput, #grid .rowOutput
+      #table .headerOutput, #table .rowOutput
       {
         background: #f8f;
       }
@@ -40,186 +40,250 @@ rights in this software.
   </head>
 
   <body>
+    <h1>Slycat Slickgrid Testing</h1>
     <button id="clear-selection">Clear Selection</button>
-    <div id="grid"></div>
+    <div id="table"></div>
     <script type="text/javascript">
-      function data_provider(parameters)
+      $.widget("cca.table",
       {
-        var self = this;
-
-        self.mid = parameters.mid;
-        self.aid = parameters.aid;
-        self.inputs = parameters.inputs;
-        self.outputs = parameters.outputs;
-        self.others = parameters.others;
-
-        self.sort_column = null;
-        self.sort_ascending = null;
-        self.pages = {};
-        self.page_size = 50;
-
-        $.ajax(
+        options:
         {
-          type : "GET",
-          url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-metadata?generate_index=Index",
-          async : false,
-          success : function(metadata)
-          {
-            self.metadata = metadata;
-          }
-        });
+          mid : null,
+          aid : null,
+          inputs : [],
+          outputs : [],
+          others : [],
+          selection : [],
+          variable: null,
+        },
 
-        self.getColumns = function()
+        _create: function()
         {
-          var columns = [];
+          var self = this;
 
-          var column = self.metadata["column-count"] - 1;
-          columns.push({
-            id : column,
-            name : self.metadata["column-names"][column],
-            field : column,
-            sortable : true,
-            selectable : true,
-            headerCssClass: "headerSimId",
-            cssClass: "rowSimId",
-          });
-
-          for(var i in self.inputs)
+          $.ajax(
           {
-            var column = self.inputs[i];
-            columns.push({
-              id : column,
-              name : self.metadata["column-names"][column],
-              field : column,
-              sortable : true,
-              selectable : true,
-              headerCssClass: "headerInput",
-              cssClass: "rowInput",
-            });
-          }
-
-          for(var i in self.outputs)
-          {
-            var column = self.outputs[i];
-            columns.push({
-              id : column,
-              name : self.metadata["column-names"][column],
-              field : column,
-              sortable : true,
-              selectable : true,
-              headerCssClass: "headerOutput",
-              cssClass: "rowOutput",
-            });
-          }
-
-          for(var i in self.others)
-          {
-            var column = self.others[i];
-            columns.push({
-              id : column,
-              name : self.metadata["column-names"][column],
-              field : column,
-              sortable : true,
-              selectable : true,
-              headerCssClass: "headerOther",
-              cssClass: "rowOther",
-            });
-          }
-
-          return columns;
-        }
-
-        self.getLength = function()
-        {
-          return self.metadata["row-count"];
-        }
-
-        self.getItem = function(index)
-        {
-          var column_begin = 0;
-          var column_end = self.metadata["column-count"];
-          var page = Math.floor(index / self.page_size);
-          var page_begin = page * self.page_size;
-
-          if(!(page in self.pages))
-          {
-            var row_begin = page_begin;
-            var row_end = (page + 1) * self.page_size;
-
-            var sort = "";
-            if(self.sort_column !== null && self.sort_ascending !== null)
-              sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
-
-            $.ajax(
+            type : "GET",
+            url : "{{server-root}}models/" + self.options.mid + "/artifacts/" + self.options.aid + "/table-metadata?generate_index=Index",
+            success : function(metadata)
             {
-              type : "GET",
-              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&generate_index=Index" + sort,
-              async : false,
-              success : function(data)
+              self.metadata = metadata;
+
+              self.ignore_selection_change = false;
+
+              self.data = new self._data_provider({
+                mid : self.options.mid,
+                aid : self.options.aid,
+                inputs : self.options.inputs,
+                outputs : self.options.outputs,
+                others : self.options.others,
+                metadata : self.metadata,
+                });
+
+              self.grid = new Slick.Grid(self.element, self.data, self.data.getColumns());
+              self.grid.setSelectionModel(new Slick.RowSelectionModel());
+              self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
               {
-                self.pages[page] = data;
-              }
+                // If the two arrays are not equal
+                if($(self.options.selection).not(selection.rows).length != 0 || $(selection.rows).not(self.options.selection).length != 0)
+                {
+                  self.options.selection = selection.rows;
+                  if(!self.ignore_selection_change)
+                  {
+                    self.element.trigger("selection-changed", [self.options.selection]);
+                  }
+                }
+                self.ignore_selection_change = false;
+              });
+              self.grid.onHeaderClick.subscribe(function (e, args)
+              {
+                var column = args.column.field;
+
+                if($.inArray(column, self.options.others) != -1)
+                  column = null;
+
+                if(column != self.options.column)
+                {
+                  self.options.column = column;
+
+                  if(column !== null)
+                    self.element.trigger("variable-changed", [column]);
+                }
+              });
+              self.grid.onSort.subscribe(function(e, args)
+              {
+                self.data.setSort(args.sortCol.field, args.sortAsc);
+                self.grid.invalidate();
+                self.grid.setSelectedRows([]);
+              });
+            }
+          });
+        },
+
+        _setOption: function(key, value)
+        {
+          var self = this;
+
+          if(self.options[key] == value)
+            return;
+          self.options[key] = value;
+
+          if(key == "selection")
+          {
+            self.ignore_selection_change = true;
+            self.grid.setSelectedRows(value);
+          }
+        },
+
+        _data_provider: function(parameters)
+        {
+          var self = this;
+
+          self.mid = parameters.mid;
+          self.aid = parameters.aid;
+          self.inputs = parameters.inputs;
+          self.outputs = parameters.outputs;
+          self.others = parameters.others;
+          self.metadata = parameters.metadata;
+
+          self.sort_column = null;
+          self.sort_ascending = null;
+          self.pages = {};
+          self.page_size = 50;
+
+          self.getColumns = function()
+          {
+            var columns = [];
+
+            var column = self.metadata["column-count"] - 1;
+            columns.push({
+              id : column,
+              name : self.metadata["column-names"][column],
+              field : column,
+              sortable : true,
+              selectable : true,
+              headerCssClass: "headerSimId",
+              cssClass: "rowSimId",
             });
+
+            for(var i in self.inputs)
+            {
+              var column = self.inputs[i];
+              columns.push({
+                id : column,
+                name : self.metadata["column-names"][column],
+                field : column,
+                sortable : true,
+                selectable : true,
+                headerCssClass: "headerInput",
+                cssClass: "rowInput",
+              });
+            }
+
+            for(var i in self.outputs)
+            {
+              var column = self.outputs[i];
+              columns.push({
+                id : column,
+                name : self.metadata["column-names"][column],
+                field : column,
+                sortable : true,
+                selectable : true,
+                headerCssClass: "headerOutput",
+                cssClass: "rowOutput",
+              });
+            }
+
+            for(var i in self.others)
+            {
+              var column = self.others[i];
+              columns.push({
+                id : column,
+                name : self.metadata["column-names"][column],
+                field : column,
+                sortable : true,
+                selectable : true,
+                headerCssClass: "headerOther",
+                cssClass: "rowOther",
+              });
+            }
+
+            return columns;
           }
 
-          result = {};
-          for(var i = column_begin; i != column_end; ++i)
-            result[i] = self.pages[page].data[i][index - page_begin];
-          return result;
-        }
+          self.getLength = function()
+          {
+            return self.metadata["row-count"];
+          }
 
-        self.getItemMetadata = function(index)
-        {
-          return null;
-        }
+          self.getItem = function(index)
+          {
+            var column_begin = 0;
+            var column_end = self.metadata["column-count"];
+            var page = Math.floor(index / self.page_size);
+            var page_begin = page * self.page_size;
 
-        self.setSort = function(column, ascending)
-        {
-          if(column == self.sort_column && ascending == self.sort_ascending)
-            return;
-          self.sort_column = column;
-          self.sort_ascending = ascending;
-          self.pages = {};
-        }
-      }
+            if(!(page in self.pages))
+            {
+              var row_begin = page_begin;
+              var row_end = (page + 1) * self.page_size;
 
-      var data = new data_provider({
-        mid : "239bf4053a6641afac1e5f9d4982b6a0",
-        aid : "data-table",
-        inputs : [2, 3, 5, 7],
-        outputs : [1, 4, 6],
-        others : [0, 8]
-        });
-      var grid = new Slick.Grid("#grid", data, data.getColumns());
-      var ignore_selection_change = false;
+              var sort = "";
+              if(self.sort_column !== null && self.sort_ascending !== null)
+                sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
 
-      grid.setSelectionModel(new Slick.RowSelectionModel());
-      grid.onSelectedRowsChanged.subscribe(function(e, selection)
-      {
-        if(!ignore_selection_change)
-          console.log("row-selection-changed", selection.rows);
-        ignore_selection_change = false;
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&generate_index=Index" + sort,
+                async : false,
+                success : function(data)
+                {
+                  self.pages[page] = data;
+                }
+              });
+            }
+
+            result = {};
+            for(var i = column_begin; i != column_end; ++i)
+              result[i] = self.pages[page].data[i][index - page_begin];
+            return result;
+          }
+
+          self.getItemMetadata = function(index)
+          {
+            return null;
+          }
+
+          self.setSort = function(column, ascending)
+          {
+            if(column == self.sort_column && ascending == self.sort_ascending)
+              return;
+            self.sort_column = column;
+            self.sort_ascending = ascending;
+            self.pages = {};
+          }
+        },
+
       });
+
+      $("#table")
+        .bind("selection-changed", function(event, selection) { console.log("table selection changed", selection); })
+        .bind("variable-changed", function(event, column) { console.log("table variable changed", column); })
+        .table(
+        {
+          mid : "239bf4053a6641afac1e5f9d4982b6a0",
+          aid : "data-table",
+          inputs : [2, 3, 5, 7],
+          outputs : [1, 4, 6],
+          others : [0, 8],
+        });
+
       $("#clear-selection").click(function()
       {
-        ignore_selection_change = true;
-        grid.setSelectedRows([]);
+        $("#table").table("option", "selection", []);
       });
-      grid.onSort.subscribe(function(e, args)
-      {
-        data.setSort(args.sortCol.field, args.sortAsc);
-        grid.invalidate();
-        ignore_selection_change = true;
-        grid.setSelectedRows([]);
-      });
-      grid.onHeaderClick.subscribe(function (e, args)
-      {
-        var column = args.column.field;
-        if($.inArray(column, data.others) != -1)
-          return;
 
-        console.log("variable-changed", column);
-      });
     </script>
   </body>
 </html>
