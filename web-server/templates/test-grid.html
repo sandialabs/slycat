@@ -9,6 +9,7 @@ rights in this software.
 <html>
   <head>
     <title>Slycat Slickgrid Testing</title>
+    <script type="text/javascript" src="{{server-root}}js/d3.v2.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -25,6 +26,11 @@ rights in this software.
       #table .slick-cell.selected
       {
         background: yellow;
+      }
+
+      #table .slick-cell .highlighted
+      {
+        color: white;
       }
 
       #table .headerInput, #table .rowInput
@@ -67,13 +73,26 @@ rights in this software.
             return $(a).not(b).length == 0 && $(b).not(a).length == 0;
           }
 
+          function value_formatter(value)
+          {
+            if(value == null)
+            {
+              return "";
+            }
+            else
+            {
+              return (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+            }
+          }
+
           function cell_formatter(row, cell, value, columnDef, dataContext)
           {
             //console.log(row, cell, value, columnDef, dataContext);
-            if(columnDef.selected)
-              return "<b>" + value + "</b>";
 
-            return value;
+            if(columnDef.colormap)
+              return "<div class='highlighted' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+
+            return value_formatter(value);
           }
 
           $.ajax(
@@ -205,7 +224,14 @@ rights in this software.
           for(var i in columns)
           {
             var column = columns[i];
-            column.selected = $.inArray(column.id, variables) != -1;
+            if($.inArray(column.id, variables) != -1)
+            {
+              column.colormap = d3.scale.linear().domain([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]).range(["blue", "red"]);
+            }
+            else
+            {
+              column.colormap = null;
+            }
           }
 
           self.grid.invalidate();
