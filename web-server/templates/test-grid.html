@@ -224,7 +224,7 @@ rights in this software.
           for(var i in columns)
           {
             var column = columns[i];
-            if($.inArray(column.id, variables) != -1)
+            if($.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
             {
               column.colormap = d3.scale.linear().domain([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]).range(["blue", "red"]);
             }
