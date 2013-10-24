@@ -41,7 +41,8 @@ rights in this software.
 
   <body>
     <h1>Slycat Slickgrid Testing</h1>
-    <button id="clear-selection">Clear Selection</button>
+    <button id="row-selection">Set Row Selection</button>
+    <button id="variable-selection">Set Variable Selection</button>
     <div id="table"></div>
     <script type="text/javascript">
       $.widget("cca.table",
@@ -53,13 +54,18 @@ rights in this software.
           inputs : [],
           outputs : [],
           others : [],
-          selection : [],
-          variable: null,
+          "row-selection" : [],
+          "variable-selection": [],
         },
 
         _create: function()
         {
           var self = this;
+
+          function array_equal(a, b)
+          {
+            return $(a).not(b).length == 0 && $(b).not(a).length == 0;
+          }
 
           $.ajax(
           {
@@ -68,8 +74,6 @@ rights in this software.
             success : function(metadata)
             {
               self.metadata = metadata;
-
-              self.ignore_selection_change = false;
 
               self.data = new self._data_provider({
                 mid : self.options.mid,
@@ -84,30 +88,20 @@ rights in this software.
               self.grid.setSelectionModel(new Slick.RowSelectionModel());
               self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
               {
-                // If the two arrays are not equal
-                if($(self.options.selection).not(selection.rows).length != 0 || $(selection.rows).not(self.options.selection).length != 0)
+                // If the selection was changed by an external caller, this code will not be called.
+                if(! array_equal(selection.rows, self.options["row-selection"]))
                 {
-                  self.options.selection = selection.rows;
-                  if(!self.ignore_selection_change)
-                  {
-                    self.element.trigger("selection-changed", [self.options.selection]);
-                  }
+                  self.options["row-selection"] = selection.rows;
+                  self.element.trigger("row-selection-changed", [self.options["row-selection"]]);
                 }
-                self.ignore_selection_change = false;
               });
               self.grid.onHeaderClick.subscribe(function (e, args)
               {
-                var column = args.column.field;
-
-                if($.inArray(column, self.options.others) != -1)
-                  column = null;
-
-                if(column != self.options.column)
+                // If the selection was changed by an external caller, this code will not be called.
+                if(! array_equal([args.column.field], self.options["variable-selection"]))
                 {
-                  self.options.column = column;
-
-                  if(column !== null)
-                    self.element.trigger("variable-changed", [column]);
+                  self.options["variable-selection"] = [args.column.field];
+                  self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
                 }
               });
               self.grid.onSort.subscribe(function(e, args)
@@ -128,10 +122,13 @@ rights in this software.
             return;
           self.options[key] = value;
 
-          if(key == "selection")
+          if(key == "row-selection")
           {
-            self.ignore_selection_change = true;
             self.grid.setSelectedRows(value);
+          }
+          else if(key == "variable-selection")
+          {
+            console.log("setting variable selection", value);
           }
         },
 
@@ -268,8 +265,8 @@ rights in this software.
       });
 
       $("#table")
-        .bind("selection-changed", function(event, selection) { console.log("table selection changed", selection); })
-        .bind("variable-changed", function(event, column) { console.log("table variable changed", column); })
+        .bind("row-selection-changed", function(event, selection) { console.log("row selection changed", selection); })
+        .bind("variable-selection-changed", function(event, selection) { console.log("variable selection changed", selection); })
         .table(
         {
           mid : "239bf4053a6641afac1e5f9d4982b6a0",
@@ -279,9 +276,14 @@ rights in this software.
           others : [0, 8],
         });
 
-      $("#clear-selection").click(function()
+      $("#row-selection").click(function()
       {
-        $("#table").table("option", "selection", []);
+        $("#table").table("option", "row-selection", [0, 1, 2, 5]);
+      });
+
+      $("#variable-selection").click(function()
+      {
+        $("#table").table("option", "variable-selection", [2]);
       });
 
     </script>
