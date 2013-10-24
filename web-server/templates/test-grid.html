@@ -75,16 +75,67 @@ rights in this software.
             {
               self.metadata = metadata;
 
+              var columns = [];
+              var column = self.metadata["column-count"] - 1;
+              columns.push({
+                id : column,
+                name : self.metadata["column-names"][column],
+                field : column,
+                sortable : true,
+                selectable : true,
+                headerCssClass: "headerSimId",
+                cssClass: "rowSimId",
+              });
+
+              for(var i in self.options.inputs)
+              {
+                var column = self.options.inputs[i];
+                columns.push({
+                  id : column,
+                  name : self.metadata["column-names"][column],
+                  field : column,
+                  sortable : true,
+                  selectable : true,
+                  headerCssClass: "headerInput",
+                  cssClass: "rowInput",
+                });
+              }
+
+              for(var i in self.options.outputs)
+              {
+                var column = self.options.outputs[i];
+                columns.push({
+                  id : column,
+                  name : self.metadata["column-names"][column],
+                  field : column,
+                  sortable : true,
+                  selectable : true,
+                  headerCssClass: "headerOutput",
+                  cssClass: "rowOutput",
+                });
+              }
+
+              for(var i in self.options.others)
+              {
+                var column = self.options.others[i];
+                columns.push({
+                  id : column,
+                  name : self.metadata["column-names"][column],
+                  field : column,
+                  sortable : true,
+                  selectable : true,
+                  headerCssClass: "headerOther",
+                  cssClass: "rowOther",
+                });
+              }
+
               self.data = new self._data_provider({
                 mid : self.options.mid,
                 aid : self.options.aid,
-                inputs : self.options.inputs,
-                outputs : self.options.outputs,
-                others : self.options.others,
                 metadata : self.metadata,
                 });
 
-              self.grid = new Slick.Grid(self.element, self.data, self.data.getColumns());
+              self.grid = new Slick.Grid(self.element, self.data, columns);
               self.grid.setSelectionModel(new Slick.RowSelectionModel());
               self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
               {
@@ -106,7 +157,7 @@ rights in this software.
               });
               self.grid.onSort.subscribe(function(e, args)
               {
-                self.data.setSort(args.sortCol.field, args.sortAsc);
+                self.data.set_sort(args.sortCol.field, args.sortAsc);
                 self.grid.invalidate();
                 self.grid.setSelectedRows([]);
               });
@@ -138,75 +189,12 @@ rights in this software.
 
           self.mid = parameters.mid;
           self.aid = parameters.aid;
-          self.inputs = parameters.inputs;
-          self.outputs = parameters.outputs;
-          self.others = parameters.others;
           self.metadata = parameters.metadata;
 
           self.sort_column = null;
           self.sort_ascending = null;
           self.pages = {};
           self.page_size = 50;
-
-          self.getColumns = function()
-          {
-            var columns = [];
-
-            var column = self.metadata["column-count"] - 1;
-            columns.push({
-              id : column,
-              name : self.metadata["column-names"][column],
-              field : column,
-              sortable : true,
-              selectable : true,
-              headerCssClass: "headerSimId",
-              cssClass: "rowSimId",
-            });
-
-            for(var i in self.inputs)
-            {
-              var column = self.inputs[i];
-              columns.push({
-                id : column,
-                name : self.metadata["column-names"][column],
-                field : column,
-                sortable : true,
-                selectable : true,
-                headerCssClass: "headerInput",
-                cssClass: "rowInput",
-              });
-            }
-
-            for(var i in self.outputs)
-            {
-              var column = self.outputs[i];
-              columns.push({
-                id : column,
-                name : self.metadata["column-names"][column],
-                field : column,
-                sortable : true,
-                selectable : true,
-                headerCssClass: "headerOutput",
-                cssClass: "rowOutput",
-              });
-            }
-
-            for(var i in self.others)
-            {
-              var column = self.others[i];
-              columns.push({
-                id : column,
-                name : self.metadata["column-names"][column],
-                field : column,
-                sortable : true,
-                selectable : true,
-                headerCssClass: "headerOther",
-                cssClass: "rowOther",
-              });
-            }
-
-            return columns;
-          }
 
           self.getLength = function()
           {
@@ -252,7 +240,7 @@ rights in this software.
             return null;
           }
 
-          self.setSort = function(column, ascending)
+          self.set_sort = function(column, ascending)
           {
             if(column == self.sort_column && ascending == self.sort_ascending)
               return;
