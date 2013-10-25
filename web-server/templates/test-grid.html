@@ -16,6 +16,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css"/>
     <style>
       #table
@@ -49,6 +50,7 @@ rights in this software.
     <h1>Slycat Slickgrid Testing</h1>
     <button id="row-selection">Set Row Selection</button>
     <button id="variable-selection">Set Variable Selection</button>
+    <div id="color-switcher"></div>
     <div id="table"></div>
     <script type="text/javascript">
       $.widget("cca.table",
@@ -64,6 +66,7 @@ rights in this software.
           "variable-selection": [],
           "sort-variable" : null,
           "sort-order" : null,
+          colormap : null,
         },
 
         _create: function()
@@ -235,6 +238,11 @@ rights in this software.
             self.options[key] = value;
             self._color_variables(value);
           }
+          else if(key == "colormap")
+          {
+            self.options[key] = value;
+            self._color_variables(self.options["variable-selection"])
+          }
         },
 
         _color_variables: function(variables)
@@ -245,9 +253,9 @@ rights in this software.
           for(var i in columns)
           {
             var column = columns[i];
-            if($.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
+            if(self.options.colormap !== null && $.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
             {
-              column.colormap = d3.scale.linear().domain([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]).range(["blue", "red"]);
+              column.colormap = self.options.colormap.copy().min_max_domain([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]);
             }
             else
             {
@@ -362,6 +370,11 @@ rights in this software.
 
       });
 
+      $("#color-switcher").colorswitcher({colormap : "night"});
+      $("#color-switcher").bind("colormap-changed", function(event, colormap)
+      {
+        $("#table").table("option", {colormap: $("#color-switcher").colorswitcher("get_color_map", colormap)});
+      });
       $("#table")
         .bind("row-selection-changed", function(event, selection) { console.log("row selection changed", selection); })
         .bind("variable-selection-changed", function(event, selection) { console.log("variable selection changed", selection); })
@@ -376,6 +389,7 @@ rights in this software.
           "variable-selection" : [9],
 //          "sort-variable" : 0,
 //          "sort-order" : "ascending",
+          colormap : $("#color-switcher").colorswitcher("get_color_map", "night"),
         });
 
       $("#row-selection").click(function()
@@ -387,6 +401,7 @@ rights in this software.
       {
         $("#table").table("option", "variable-selection", [2]);
       });
+
 
     </script>
   </body>
