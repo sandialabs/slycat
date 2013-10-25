@@ -160,9 +160,10 @@ rights in this software.
                 metadata : self.metadata,
                 });
 
+              self.trigger_row_selection = true;
+
               self.grid = new Slick.Grid(self.element, self.data, columns, {enableColumnReorder : false});
               self.grid.setSelectionModel(new Slick.RowSelectionModel());
-              self.trigger_row_selection = true;
               self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
               {
                 // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
@@ -178,7 +179,6 @@ rights in this software.
               });
               self.grid.onHeaderClick.subscribe(function (e, args)
               {
-                // If the selection was changed by an external caller, this code will not be called.
                 if(!self._array_equal([args.column.field], self.options["variable-selection"]))
                 {
                   self.options["variable-selection"] = [args.column.field];
@@ -197,6 +197,8 @@ rights in this software.
                 });
               });
 
+              self._color_variables(self.options["variable-selection"]);
+
               self.data.get_sorted_indices(self.options["row-selection"], function(sorted_rows)
               {
                 self.trigger_row_selection = false;
@@ -212,20 +214,21 @@ rights in this software.
 
           if(key == "row-selection")
           {
-            if(!self._array_equal(self.options[key], value))
+            if(self._array_equal(self.options[key], value))
+              return;
+
+            self.options[key] = value;
+            self.data.get_sorted_indices(value, function(sorted_rows)
             {
-              console.log("set row-selection");
-              self.options[key] = value;
-              self.data.get_sorted_indices(value, function(sorted_rows)
-              {
-                self.trigger_row_selection = false;
-                self.grid.setSelectedRows(sorted_rows);
-              });
-            }
+              self.trigger_row_selection = false;
+              self.grid.setSelectedRows(sorted_rows);
+            });
           }
           else if(key == "variable-selection")
           {
-            console.log("set variable-selection");
+            if(self._array_equal(self.options[key], value))
+              return;
+
             self.options[key] = value;
             self._color_variables(value);
           }
@@ -377,6 +380,7 @@ rights in this software.
           outputs : [1, 4, 6],
           others : [0, 8],
           "row-selection" : [7, 8, 9],
+          "variable-selection" : [9],
         });
 
       $("#row-selection").click(function()
