@@ -175,9 +175,8 @@ rights in this software.
                 // If the selection was changed by an external caller, this code will not be called.
                 if(!self.external_selection)
                 {
-                  self.data.get_unsorted_indices(selection.rows, function(result)
+                  self.data.get_unsorted_indices(selection.rows, function(unsorted_rows)
                   {
-                    var unsorted_rows = result.data[0];
                     self.options["row-selection"] = unsorted_rows;
                     self.element.trigger("row-selection-changed", [unsorted_rows]);
                   });
@@ -313,6 +312,12 @@ rights in this software.
 
           self.get_sorted_indices = function(rows, callback)
           {
+            if(rows.length == 0)
+            {
+              callback([]);
+              return;
+            }
+
             var sort = "";
             if(self.sort_column !== null && self.sort_ascending !== null)
               sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
@@ -327,6 +332,12 @@ rights in this software.
 
           self.get_unsorted_indices = function(rows, callback)
           {
+            if(rows.length == 0)
+            {
+              callback([]);
+              return;
+            }
+
             var sort = "";
             if(self.sort_column !== null && self.sort_ascending !== null)
               sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
@@ -334,7 +345,7 @@ rights in this software.
             $.ajax(
             {
               type : "GET",
-              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + rows.join(",") + "&columns=" + (self.metadata["column-count"] - 1) + "&index=Index" + sort,
+              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-unsorted-indices?rows=" + rows.join(",") + "&index=Index" + sort,
               success : callback,
             });
           }

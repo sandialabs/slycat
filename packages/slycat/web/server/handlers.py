@@ -633,6 +633,84 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None):
   result = [numpy.where(data == row)[0][0] for row in rows]
   return result
 
+@cherrypy.tools.json_out(on = True)
+def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None):
+  try:
+    rows = [spec.split("-") for spec in rows.split(",")]
+    rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
+    rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
+  except:
+    raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
+
+  if sort is not None:
+    try:
+      sort = [spec.split(":") for spec in sort.split(",")]
+      sort = [(column, order) for column, order in sort]
+    except:
+      raise cherrypy.HTTPError("400 Malformed order argument must be a comma separated collection of column:order tuples.")
+
+    try:
+      sort = [(int(column), order) for column, order in sort]
+    except:
+      raise cherrypy.HTTPError("400 Sort column must be an integer.")
+
+    for column, order in sort:
+      if order not in ["ascending", "descending"]:
+        raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
+
+  rows = rows[rows >= 0]
+  if sort is not None:
+    sort = [(column, order) for column, order in sort if column >= 0]
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["table"]:
+    raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
+
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type)
+  if index is not None:
+    metadata = copy.deepcopy(metadata)
+    metadata["column-count"] += 1
+    metadata["column-names"].append(index)
+    metadata["column-types"].append("int64")
+    metadata["column-min"].append(0)
+    metadata["column-max"].append(metadata["row-count"] - 1)
+
+  # Constrain end <= count along both dimensions
+  rows = rows[rows < metadata["row-count"]]
+  if sort is not None:
+    sort = [(column, order) for colum, order in sort if column < metadata["column-count"]]
+
+  # Generate a database query
+  query = "{array}".format(array = artifact["columns"])
+  if index is not None:
+    query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"] - 1)
+  query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"])
+  if sort is not None and sort:
+    sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in sort])
+    query = "sort({array}, {sort})".format(array=query, sort=sort)
+  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"])
+
+  # Retrieve the data from the database ...
+  data = numpy.zeros((metadata["row-count"]))
+  iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
+  database = slycat.web.server.database.scidb.connect()
+  with database.query("aql", query) as results:
+    for chunk in results.chunks():
+      for attribute in chunk.attributes():
+        for value in attribute.values():
+          iterator.next()[...] = value.getInt64()
+
+  result = data[rows].tolist()
+  return result
+
 def get_model_file(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
