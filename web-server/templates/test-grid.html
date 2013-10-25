@@ -79,7 +79,6 @@ rights in this software.
           {
             if(columnDef.colormap)
               return "<div class='highlighted' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
-
             return value_formatter(value);
           }
 
@@ -159,7 +158,7 @@ rights in this software.
 
               self.trigger_row_selection = true;
 
-              self.grid = new Slick.Grid(self.element, self.data, columns, {enableColumnReorder : false});
+              self.grid = new Slick.Grid(self.element, self.data, columns, {explicitInitialization : true, enableColumnReorder : false});
               self.grid.setSelectionModel(new Slick.RowSelectionModel());
               self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
               {
@@ -206,6 +205,8 @@ rights in this software.
                 self.trigger_row_selection = false;
                 self.grid.setSelectedRows(sorted_rows);
               });
+
+              self.grid.init();
             }
           });
         },
@@ -373,8 +374,8 @@ rights in this software.
           others : [0, 8],
           "row-selection" : [7, 8, 9],
           "variable-selection" : [9],
-          "sort-variable" : 0,
-          "sort-order" : "descending",
+//          "sort-variable" : 0,
+//          "sort-order" : "ascending",
         });
 
       $("#row-selection").click(function()
