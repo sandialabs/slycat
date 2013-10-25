@@ -62,6 +62,8 @@ rights in this software.
           others : [],
           "row-selection" : [],
           "variable-selection": [],
+          "sort-variable" : null,
+          "sort-order" : null,
         },
 
         _create: function()
@@ -70,14 +72,7 @@ rights in this software.
 
           function value_formatter(value)
           {
-            if(value == null)
-            {
-              return "";
-            }
-            else
-            {
-              return (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-            }
+            return value == null ? "" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
           }
 
           function cell_formatter(row, cell, value, columnDef, dataContext)
@@ -158,6 +153,8 @@ rights in this software.
                 mid : self.options.mid,
                 aid : self.options.aid,
                 metadata : self.metadata,
+                sort_column : self.options["sort-variable"],
+                sort_order : self.options["sort-order"],
                 });
 
               self.trigger_row_selection = true;
@@ -188,7 +185,7 @@ rights in this software.
               });
               self.grid.onSort.subscribe(function(e, args)
               {
-                self.data.set_sort(args.sortCol.field, args.sortAsc);
+                self.data.set_sort(args.sortCol.field, args.sortAsc ? "ascending" : "descending");
                 self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
                 {
                   self.grid.invalidate();
@@ -198,6 +195,11 @@ rights in this software.
               });
 
               self._color_variables(self.options["variable-selection"]);
+
+              if(self.options["sort-variable"] !== null && self.options["sort-order"] !== null)
+              {
+                self.grid.setSortColumn(self.options["sort-variable"], self.options["sort-order"] == "ascending");
+              }
 
               self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
               {
@@ -262,9 +264,9 @@ rights in this software.
           self.mid = parameters.mid;
           self.aid = parameters.aid;
           self.metadata = parameters.metadata;
+          self.sort_column = parameters.sort_column;
+          self.sort_order = parameters.sort_order;
 
-          self.sort_column = null;
-          self.sort_ascending = null;
           self.pages = {};
           self.page_size = 50;
 
@@ -286,8 +288,8 @@ rights in this software.
               var row_end = (page + 1) * self.page_size;
 
               var sort = "";
-              if(self.sort_column !== null && self.sort_ascending !== null)
-                sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
+              if(self.sort_column !== null && self.sort_order !== null)
+                sort = "&sort=" + self.sort_column + ":" + self.sort_order;
 
               $.ajax(
               {
@@ -312,12 +314,12 @@ rights in this software.
             return null;
           }
 
-          self.set_sort = function(column, ascending)
+          self.set_sort = function(column, order)
           {
-            if(column == self.sort_column && ascending == self.sort_ascending)
+            if(column == self.sort_column && order == self.sort_order)
               return;
             self.sort_column = column;
-            self.sort_ascending = ascending;
+            self.sort_order = order;
             self.pages = {};
           },
 
@@ -330,17 +332,8 @@ rights in this software.
             }
 
             var sort = "";
-            if(self.sort_column !== null && self.sort_ascending !== null)
-              sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
-
-/*
-            $.ajax(
-            {
-              type : "GET",
-              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-" + direction + "-indices?rows=" + rows.join(",") + "&index=Index" + sort,
-              success : callback,
-            });
-*/
+            if(self.sort_column !== null && self.sort_order !== null)
+              sort = "&sort=" + self.sort_column + ":" + self.sort_order;
 
             function is_little_endian()
             {
@@ -380,6 +373,8 @@ rights in this software.
           others : [0, 8],
           "row-selection" : [7, 8, 9],
           "variable-selection" : [9],
+          "sort-variable" : 0,
+          "sort-order" : "descending",
         });
 
       $("#row-selection").click(function()
