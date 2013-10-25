@@ -555,8 +555,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
 
   return result
 
-@cherrypy.tools.json_out(on = True)
-def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None):
+def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
     rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
@@ -583,6 +582,14 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None):
   rows = rows[rows >= 0]
   if sort is not None:
     sort = [(column, order) for column, order in sort if column >= 0]
+
+  if byteorder is not None:
+    if byteorder not in ["little", "big"]:
+      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -630,11 +637,17 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None):
         for value in attribute.values():
           iterator.next()[...] = value.getInt64()
 
-  result = [numpy.where(data == row)[0][0] for row in rows]
-  return result
+  result = [int(numpy.where(data == row)[0][0]) for row in rows]
 
-@cherrypy.tools.json_out(on = True)
-def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None):
+  if byteorder is None:
+    return json.dumps(result)
+  else:
+    if sys.byteorder != byteorder:
+      return numpy.array(result, dtype="int32").byteswap().tostring(order="C")
+    else:
+      return numpy.array(result, dtype="int32").tostring(order="C")
+
+def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
     rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
@@ -657,6 +670,14 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None)
     for column, order in sort:
       if order not in ["ascending", "descending"]:
         raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
+
+  if byteorder is not None:
+    if byteorder not in ["little", "big"]:
+      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
 
   rows = rows[rows >= 0]
   if sort is not None:
@@ -699,7 +720,7 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None)
   query = "select c{column} from {array}".format(array=query, column=metadata["column-count"])
 
   # Retrieve the data from the database ...
-  data = numpy.zeros((metadata["row-count"]))
+  data = numpy.zeros((metadata["row-count"]), dtype="int32")
   iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
   database = slycat.web.server.database.scidb.connect()
   with database.query("aql", query) as results:
@@ -708,8 +729,15 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None)
         for value in attribute.values():
           iterator.next()[...] = value.getInt64()
 
-  result = data[rows].tolist()
-  return result
+  data = data[rows]
+
+  if byteorder is None:
+    return json.dumps(data.tolist())
+  else:
+    if sys.byteorder != byteorder:
+      return data.byteswap().tostring(order="C")
+    else:
+      return data.tostring(order="C")
 
 def get_model_file(mid, name):
   database = slycat.web.server.database.couchdb.connect()

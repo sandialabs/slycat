@@ -169,7 +169,7 @@ rights in this software.
                 // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
                 if(self.trigger_row_selection)
                 {
-                  self.data.get_unsorted_indices(selection.rows, function(unsorted_rows)
+                  self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
                   {
                     self.options["row-selection"] = unsorted_rows;
                     self.element.trigger("row-selection-changed", [unsorted_rows]);
@@ -189,7 +189,7 @@ rights in this software.
               self.grid.onSort.subscribe(function(e, args)
               {
                 self.data.set_sort(args.sortCol.field, args.sortAsc);
-                self.data.get_sorted_indices(self.options["row-selection"], function(sorted_rows)
+                self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
                 {
                   self.grid.invalidate();
                   self.trigger_row_selection = false;
@@ -199,7 +199,7 @@ rights in this software.
 
               self._color_variables(self.options["variable-selection"]);
 
-              self.data.get_sorted_indices(self.options["row-selection"], function(sorted_rows)
+              self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
               {
                 self.trigger_row_selection = false;
                 self.grid.setSelectedRows(sorted_rows);
@@ -218,7 +218,7 @@ rights in this software.
               return;
 
             self.options[key] = value;
-            self.data.get_sorted_indices(value, function(sorted_rows)
+            self.data.get_indices("sorted", value, function(sorted_rows)
             {
               self.trigger_row_selection = false;
               self.grid.setSelectedRows(sorted_rows);
@@ -321,7 +321,7 @@ rights in this software.
             self.pages = {};
           },
 
-          self.get_sorted_indices = function(rows, callback)
+          self.get_indices = function(direction, rows, callback)
           {
             if(rows.length == 0)
             {
@@ -333,32 +333,31 @@ rights in this software.
             if(self.sort_column !== null && self.sort_ascending !== null)
               sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
 
+/*
             $.ajax(
             {
               type : "GET",
-              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-sorted-indices?rows=" + rows.join(",") + "&index=Index" + sort,
+              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-" + direction + "-indices?rows=" + rows.join(",") + "&index=Index" + sort,
               success : callback,
             });
-          }
+*/
 
-          self.get_unsorted_indices = function(rows, callback)
-          {
-            if(rows.length == 0)
+            function is_little_endian()
             {
-              callback([]);
-              return;
+              if(this.result === undefined)
+                this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
+              return this.result;
             }
 
-            var sort = "";
-            if(self.sort_column !== null && self.sort_ascending !== null)
-              sort = "&sort=" + self.sort_column + ":" + (self.sort_ascending ? "ascending" : "descending");
-
-            $.ajax(
+            var request = new XMLHttpRequest();
+            request.open("GET", "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-" + direction + "-indices?rows=" + rows.join(",") + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+            request.responseType = "arraybuffer";
+            request.callback = callback;
+            request.onload = function(e)
             {
-              type : "GET",
-              url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-unsorted-indices?rows=" + rows.join(",") + "&index=Index" + sort,
-              success : callback,
-            });
+              this.callback(new Int32Array(this.response));
+            }
+            request.send();
           }
         },
 
