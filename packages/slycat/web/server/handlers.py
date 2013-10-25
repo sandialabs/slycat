@@ -556,7 +556,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   return result
 
 @cherrypy.tools.json_out(on = True)
-def get_model_table_row_indices(mid, aid, rows=None, index=None, sort=None):
+def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
     rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
@@ -630,11 +630,7 @@ def get_model_table_row_indices(mid, aid, rows=None, index=None, sort=None):
         for value in attribute.values():
           iterator.next()[...] = value.getInt64()
 
-  result = {
-    "rows" : rows.tolist(),
-    "sorted-rows" : [numpy.where(data == row)[0][0] for row in rows],
-    }
-
+  result = [numpy.where(data == row)[0][0] for row in rows]
   return result
 
 def get_model_file(mid, name):
