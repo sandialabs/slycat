@@ -98,7 +98,7 @@ rights in this software.
           $.ajax(
           {
             type : "GET",
-            url : "{{server-root}}models/" + self.options.mid + "/artifacts/" + self.options.aid + "/table-metadata?generate_index=Index",
+            url : "{{server-root}}models/" + self.options.mid + "/artifacts/" + self.options.aid + "/table-metadata?index=Index",
             success : function(metadata)
             {
               self.metadata = metadata;
@@ -274,7 +274,7 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&generate_index=Index" + sort,
+                url : "{{server-root}}models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
                 async : false,
                 success : function(data)
                 {
