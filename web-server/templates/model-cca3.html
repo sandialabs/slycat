@@ -18,18 +18,18 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-barplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.ccaloader.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.headerbuttons.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
 
+    <!-- Page styles -->
     <link rel="stylesheet" href="{{server-root}}style/model-cca.css" type="text/css">
 
     <!-- SlickGrid styles -->
@@ -115,7 +115,7 @@ rights in this software.
 
     <div id="table-pane" class="ui-layout-south">
       <div class="load-status"></div>
-      <div id="cca-simulation-table-slickgrid">
+      <div id="table">
       </div>
     </div>
 
@@ -148,7 +148,28 @@ rights in this software.
         var generate_indices = false;
         var barplot_ready = false;
         var scatterplot_ready = false;
-        var cca_simulation_table_instance = null;
+        var table_ready = false;
+
+        function variable_index(type, index)
+        {
+          if(type == "simulation")
+            return table_metadata["column-count"]-1;
+          else if(type == "input")
+            return input_columns[index];
+          else
+            return output_columns[index];
+        }
+
+        function split_index(variable)
+        {
+          var index = $.inArray(variable, input_columns);
+          if(index != -1)
+            return ["input", index];
+          index = $.inArray(variable, output_columns);
+          if(index != -1)
+            return ["output", index];
+          return [null, null];
+        }
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Start retrieving data, including bookmarked state.
@@ -841,82 +862,72 @@ rights in this software.
             // Changing the barplot variable updates the scatterplot ...
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
-              update_scatterplot_value(type, index);
+              update_scatterplot_value(variable_index(type, index));
             });
           }
 
           // Setup the table ...
-          if(!cca_simulation_table_instance && bookmark && table_metadata)
+          if(!table_ready && bookmark && table_metadata)
           {
+            table_ready = true;
+
             $("#table-pane .load-status").css("display", "none");
 
-            var index_column = table_metadata["column-count"] - 1;
-            var index = table_metadata["column-names"][index_column];
-            var inputs = [];
-            for(var i in input_columns)
-              inputs.push(table_metadata["column-names"][input_columns[i]]);
-            var outputs = [];
-            for(var i in output_columns)
-              outputs.push(table_metadata["column-names"][output_columns[i]]);
             var other_columns = [];
-            var others = [];
-            var column_count = table_metadata["column-count"];
-            var all_column_indexes = [index_column].concat(input_columns).concat(output_columns);
-            for(var i = 0; i != column_count; ++i)
+            for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
             {
-              if(all_column_indexes.indexOf(i) == -1)
-              {
+              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1)
                 other_columns.push(i);
-                others.push(table_metadata["column-names"][i]);
-              }
             }
-            all_column_indexes = all_column_indexes.concat(other_columns);
 
-            cca_simulation_table_instance = new cca_table({
-              container: "#cca-simulation-table-slickgrid",
-              index: index,
-              inputs: inputs,
-              outputs: outputs,
-              others: others,
-              variable_names: [index].concat(inputs).concat(outputs).concat(others),
-              all_column_indexes: all_column_indexes,
-              row_count: table_metadata["row-count"],
-              max: table_metadata["column-max"],
-              min: table_metadata["column-min"],
-              index_column: index_column,
-              input_columns: input_columns,
-              output_columns: output_columns,
-              other_columns: other_columns,
-              colormap: bookmark["colormap"],
-              colorMapper: $("#color-switcher"),
-              selection: bookmark["simulations"] !== undefined ? bookmark["simulations"] : [],
-              }, "{{server-root}}", table_chunker);
+            var table_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              inputs : input_columns,
+              outputs : output_columns,
+              others : other_columns,
+            };
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+
+            if("sort-variable" in bookmark && "sort-order" in bookmark)
+            {
+              table_options["sort-variable"] = bookmark["sort-variable"];
+              table_options["sort-order"] = bookmark["sort-order"];
+            }
 
             if("variable-type" in bookmark && "variable-index" in bookmark)
             {
-              cca_simulation_table_instance.update({highlight: [bookmark["variable-type"], bookmark["variable-index"]]});
+              table_options["variable-selection"] = [variable_index(bookmark["variable-type"], bookmark["variable-index"])];
             }
             else
             {
-              cca_simulation_table_instance.update({highlight: ["simulation", 0]});
+              table_options["variable-selection"] = [table_metadata["column-count"] - 1];
             }
 
-            if("sort-field" in bookmark && "sort-direction" in bookmark)
-            {
-              cca_simulation_table_instance.update({ sort_field: bookmark["sort-field"], sort_direction: bookmark["sort-direction"]});
-            }
+            if(bookmark["simulations"] !== undefined)
+              table_options["row-selection"] = bookmark["simulations"];
 
-            $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
+            $("#table").table(table_options);
+
+            // Log changes to the table sort order ...
+            $("#table").bind("variable-sort-changed", function(event, variable, order)
             {
-              selected_variable_changed(type, index);
+              variable_sort_changed(variable, order);
             });
 
-            $("#cca-simulation-table-slickgrid").bind("variable-sort-changed", function(event, index, direction, name)
+            // Log changes to the table variable selection ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              variable_sort_changed(index, direction, name);
+              var temp = split_index(selection[0]);
+              selected_variable_changed(temp[0], temp[1]);
             });
 
-            $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
+            // Log changes to the table row selection ...
+            $("#table").bind("row-selection-changed", function(event, selection)
             {
               selected_simulations_changed(selection);
             });
@@ -924,37 +935,37 @@ rights in this software.
             // Changing the colormap updates the table ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              cca_simulation_table_instance.updateColorMap(colormap);
+              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
             });
 
             // Changing the barplot variable updates the table ...
             $("#barplot").bind("variable-changed", function(event, type, index)
             {
-              cca_simulation_table_instance.update({highlight: [type, index]});
+              $("#table").table("option", "variable-selection", [variable_index(type, index)]);
             });
 
             // Changing the table variable updates the barplot ...
-            $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
+            $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              $("#barplot").barplot("option", {variable: [type, index]});
+              $("#barplot").barplot("option", "variable", split_index(selection[0]));
             });
 
             // Changing the table variable updates the scatterplot ...
-            $("#cca-simulation-table-slickgrid").bind("variable-changed", function(event, type, index)
+            $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              update_scatterplot_value(type, index);
+              update_scatterplot_value(selection[0]);
             });
 
             // Changing the scatterplot selection updates the table row selection ..
             $("#scatterplot").bind("selection-changed", function(event, selection)
             {
-              cca_simulation_table_instance.update({simulation_selection: selection});
+              $("#table").table("option", "row-selection", selection);
             });
 
             // Changing the table row selection updates the scatterplot ...
-            $("#cca-simulation-table-slickgrid").bind("row-selection-changed", function(event, selection)
+            $("#table").bind("row-selection-changed", function(event, selection)
             {
-              $("#scatterplot").scatterplot("option", {selection: selection});
+              $("#scatterplot").scatterplot("option", "selection",  selection);
             });
           }
         }
@@ -1003,14 +1014,14 @@ rights in this software.
           bookmarker.updateState({"variable-type" : type, "variable-index" : index});
         }
 
-        function variable_sort_changed(index, direction, name)
+        function variable_sort_changed(variable, order)
         {
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + index + "/" + direction
+            url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
           });
-          bookmarker.updateState( {"sort-field" : name, "sort-direction" : direction} );
+          bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
         }
 
         function selected_simulations_changed(selection)
@@ -1024,37 +1035,22 @@ rights in this software.
           bookmarker.updateState( {"simulations" : selection} );
         }
 
-        function update_scatterplot_value(type, index)
+        function update_scatterplot_value(attribute)
         {
-          if(type == "simulation")
+          if(attribute == table_metadata["column-count"] - 1)
           {
             var count = v.length;
             for(var i = 0; i != count; ++i)
               v[i] = i;
             $("#scatterplot").scatterplot("option", {v : v});
           }
-          else if(type == "input")
+          else
           {
             get_model_array_attribute({
               server_root : "{{server-root}}",
               mid : "{{_id}}",
               aid : "data-table",
-              attribute : input_columns[index],
-              success : function(result)
-              {
-                v = result;
-                $("#scatterplot").scatterplot("option", {v : v});
-              },
-              error : artifact_missing
-            });
-          }
-          else if(type == "output")
-          {
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "data-table",
-              attribute : output_columns[index],
+              attribute : attribute,
               success : function(result)
               {
                 v = result;

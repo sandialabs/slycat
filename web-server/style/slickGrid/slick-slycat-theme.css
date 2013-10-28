@@ -4,19 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-/* Hiding non-SlickGrid table for now to keep it from interferring. Keeping it around for comparison. */
-#cca-simulation-table {
-	display: none;
-}
-
 /* Absolute positioning SlickGrid container to get it to fit the box completely */
-#cca-simulation-table-slickgrid {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-}
 #timeseries-table-slickgrid {
 	position: absolute;
 	top: 0;

@@ -161,65 +161,11 @@ rights in this software.
   border-right: 1px solid gray;
 }
 
-/* CCA simulation table styles */
-
-#simulation-table-pane
+#table
 {
-  overflow: auto;
-}
-
-#cca-simulation-table
-{
-  margin: 2em;
-  border-collapse: collapse;
-}
-
-#cca-simulation-table td
-{
-  text-align: right;
-}
-
-#cca-simulation-table th.input
-{
-  background: #eeffe0;
-}
-
-#cca-simulation-table td.input
-{
-  background: #c7e9c0;
-}
-
-#cca-simulation-table th.output
-{
-  background: #eeeeff;
-}
-
-#cca-simulation-table td.output
-{
-  background: #dbd9eb;
-}
-
-#cca-simulation-table tr.selected td.simulation
-{
-  background: #ddd;
-}
-
-#cca-simulation-table tr.selected td.input
-{
-  background: #3ca654;
-  color: white;
-}
-
-#cca-simulation-table tr.selected td.output
-{
-  background: #7767b0;
-  color: white;
-}
-
-#data-points circle.data {
-  stroke: black;
-}
-#data-selection circle {
-  stroke: black;
-  stroke-width: 1.0px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 }
