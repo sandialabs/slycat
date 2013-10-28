@@ -14,6 +14,7 @@ $.widget("cca.table",
     "server-root" : "",
     mid : null,
     aid : null,
+    metadata : null,
     inputs : [],
     outputs : [],
     others : [],
@@ -52,130 +53,120 @@ $.widget("cca.table",
       });
     }
 
-    $.ajax(
+    function make_column(column_index, header_class, cell_class)
     {
-      type : "GET",
-      url : self.options["server-root"] + "models/" + self.options.mid + "/artifacts/" + self.options.aid + "/table-metadata?index=Index",
-      success : function(metadata)
-      {
-        self.metadata = metadata;
-
-        function make_column(column_index, header_class, cell_class)
+      return {
+        id : column_index,
+        field : column_index,
+        name : self.options.metadata["column-names"][column_index],
+        sortable : false,
+        headerCssClass : header_class,
+        cssClass : cell_class,
+        formatter : cell_formatter,
+        header :
         {
-          return {
-            id : column_index,
-            field : column_index,
-            name : self.metadata["column-names"][column_index],
-            sortable : false,
-            headerCssClass : header_class,
-            cssClass : cell_class,
-            formatter : cell_formatter,
-            header :
+          buttons :
+          [
             {
-              buttons :
-              [
-                {
-                  cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-                  tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-                  command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
-                }
-              ]
+              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
             }
-          };
+          ]
         }
+      };
+    }
 
-        self.columns = [];
-        self.columns.push(make_column(self.metadata["column-count"]-1, "headerSimId", "rowSimId"));
-        for(var i in self.options.inputs)
-          self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
-        for(var i in self.options.outputs)
-          self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
-        for(var i in self.options.others)
-          self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
+    self.columns = [];
+    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
+    for(var i in self.options.inputs)
+      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
+    for(var i in self.options.outputs)
+      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
+    for(var i in self.options.others)
+      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
 
-        self.data = new self._data_provider({
-          server_root : self.options["server-root"],
-          mid : self.options.mid,
-          aid : self.options.aid,
-          metadata : self.metadata,
-          sort_column : self.options["sort-variable"],
-          sort_order : self.options["sort-order"],
-          });
+    self.data = new self._data_provider({
+      server_root : self.options["server-root"],
+      mid : self.options.mid,
+      aid : self.options.aid,
+      metadata : self.options.metadata,
+      sort_column : self.options["sort-variable"],
+      sort_order : self.options["sort-order"],
+      });
 
-        self.trigger_row_selection = true;
+    self.trigger_row_selection = true;
 
-        self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+    self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
 
-        var header_buttons = new Slick.Plugins.HeaderButtons();
-        header_buttons.onCommand.subscribe(function(e, args)
-        {
-          var column = args.column;
-          var button = args.button;
-          var command = args.command;
-          var grid = args.grid;
+    var header_buttons = new Slick.Plugins.HeaderButtons();
+    header_buttons.onCommand.subscribe(function(e, args)
+    {
+      var column = args.column;
+      var button = args.button;
+      var command = args.command;
+      var grid = args.grid;
 
-          for(var i in self.columns)
-          {
-            self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
-            self.columns[i].header.buttons[0].tooltip = "Sort ascending";
-            self.columns[i].header.buttons[0].command = "sort-ascending";
-            grid.updateColumnHeader(self.columns[i].id);
-          }
+      for(var i in self.columns)
+      {
+        self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+        self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+        self.columns[i].header.buttons[0].command = "sort-ascending";
+        grid.updateColumnHeader(self.columns[i].id);
+      }
 
-          if(command == "sort-ascending")
-          {
-            button.cssClass = 'icon-sort-ascending';
-            button.command = 'sort-descending';
-            button.tooltip = 'Sort descending';
-            set_sort(column.id, "ascending");
-          }
-          else if(command == "sort-descending")
-          {
-            button.cssClass = 'icon-sort-descending';
-            button.command = 'sort-ascending';
-            button.tooltip = 'Sort ascending';
-            set_sort(column.id, "descending");
-          }
-        });
-
-        self.grid.registerPlugin(header_buttons);
-        self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
-
-        self.grid.setSelectionModel(new Slick.RowSelectionModel());
-        self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
-        {
-          // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
-          if(self.trigger_row_selection)
-          {
-            self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
-            {
-              self.options["row-selection"] = unsorted_rows;
-              self.element.trigger("row-selection-changed", [unsorted_rows]);
-            });
-          }
-          self.trigger_row_selection = true;
-        });
-        self.grid.onHeaderClick.subscribe(function (e, args)
-        {
-          if(!self._array_equal([args.column.field], self.options["variable-selection"]))
-          {
-            self.options["variable-selection"] = [args.column.field];
-            self._color_variables(self.options["variable-selection"]);
-            self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
-          }
-        });
-
-        self._color_variables(self.options["variable-selection"]);
-
-        self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
-        {
-          self.trigger_row_selection = false;
-          self.grid.setSelectedRows(sorted_rows);
-        });
-
-        self.grid.init();
+      if(command == "sort-ascending")
+      {
+        button.cssClass = 'icon-sort-ascending';
+        button.command = 'sort-descending';
+        button.tooltip = 'Sort descending';
+        set_sort(column.id, "ascending");
+      }
+      else if(command == "sort-descending")
+      {
+        button.cssClass = 'icon-sort-descending';
+        button.command = 'sort-ascending';
+        button.tooltip = 'Sort ascending';
+        set_sort(column.id, "descending");
       }
     });
+
+    self.grid.registerPlugin(header_buttons);
+    self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+
+    self.grid.setSelectionModel(new Slick.RowSelectionModel());
+    self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
+    {
+      // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
+      if(self.trigger_row_selection)
+      {
+        self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
+        {
+          self.options["row-selection"] = unsorted_rows;
+          self.element.trigger("row-selection-changed", [unsorted_rows]);
+        });
+      }
+      self.trigger_row_selection = true;
+    });
+    self.grid.onHeaderClick.subscribe(function (e, args)
+    {
+      if(!self._array_equal([args.column.field], self.options["variable-selection"]))
+      {
+        self.options["variable-selection"] = [args.column.field];
+        self._color_variables(self.options["variable-selection"]);
+        self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+      }
+    });
+
+    self._color_variables(self.options["variable-selection"]);
+
+    self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+    {
+      self.trigger_row_selection = false;
+      self.grid.setSelectedRows(sorted_rows);
+    });
+
+    self.grid.init();
   },
 
   _setOption: function(key, value)
@@ -223,7 +214,7 @@ $.widget("cca.table",
         column.colormap = self.options.colormap.copy();
 
         var new_domain = []
-        var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]);
+        var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
         for(var i in column.colormap.range())
           new_domain.push(domain_scale(i));
         column.colormap.domain(new_domain);
