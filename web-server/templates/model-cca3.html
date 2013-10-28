@@ -638,7 +638,11 @@ rights in this software.
           {
             size: $("body").height() / 2,
             resizeWhileDragging: false,
-            onresize: function() { cca_simulation_table_instance.resizeGridCanvas(); }
+            onresize: function()
+            {
+              $("#table").css("height", $("#table-pane").height());
+              $("#table").table("resize_canvas");
+            }
           },
         });
 

@@ -169,6 +169,12 @@ $.widget("cca.table",
     self.grid.init();
   },
 
+  resize_canvas: function()
+  {
+    console.log("resize_canvas");
+    self.grid.resizeCanvas();
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
