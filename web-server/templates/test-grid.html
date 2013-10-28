@@ -16,6 +16,8 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.headerbuttons.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css"/>
     <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css"/>
@@ -74,6 +76,17 @@ rights in this software.
             return value_formatter(value);
           }
 
+          function set_sort(column, order)
+          {
+            self.data.set_sort(column, order);
+            self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+            {
+              self.grid.invalidate();
+              self.trigger_row_selection = false;
+              self.grid.setSelectedRows(sorted_rows);
+            });
+          }
+
           $.ajax(
           {
             type : "GET",
@@ -82,63 +95,38 @@ rights in this software.
             {
               self.metadata = metadata;
 
-              var columns = [];
-              var column = self.metadata["column-count"] - 1;
-              columns.push({
-                id : column,
-                name : self.metadata["column-names"][column],
-                field : column,
-                sortable : true,
-                selectable : true,
-                headerCssClass: "headerSimId",
-                cssClass: "rowSimId",
-                formatter: cell_formatter,
-              });
+              function make_column(column_index, header_class, cell_class)
+              {
+                return {
+                  id : column_index,
+                  field : column_index,
+                  name : self.metadata["column-names"][column_index],
+                  sortable : false,
+                  headerCssClass : header_class,
+                  cssClass : cell_class,
+                  formatter : cell_formatter,
+                  header :
+                  {
+                    buttons :
+                    [
+                      {
+                        cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+                        tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+                        command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
+                      }
+                    ]
+                  }
+                };
+              }
 
+              self.columns = [];
+              self.columns.push(make_column(self.metadata["column-count"]-1, "headerSimId", "rowSimId"));
               for(var i in self.options.inputs)
-              {
-                var column = self.options.inputs[i];
-                columns.push({
-                  id : column,
-                  name : self.metadata["column-names"][column],
-                  field : column,
-                  sortable : true,
-                  selectable : true,
-                  headerCssClass: "headerInput",
-                  cssClass: "rowInput",
-                  formatter: cell_formatter,
-                });
-              }
-
+                self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
               for(var i in self.options.outputs)
-              {
-                var column = self.options.outputs[i];
-                columns.push({
-                  id : column,
-                  name : self.metadata["column-names"][column],
-                  field : column,
-                  sortable : true,
-                  selectable : true,
-                  headerCssClass: "headerOutput",
-                  cssClass: "rowOutput",
-                  formatter: cell_formatter,
-                });
-              }
-
+                self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
               for(var i in self.options.others)
-              {
-                var column = self.options.others[i];
-                columns.push({
-                  id : column,
-                  name : self.metadata["column-names"][column],
-                  field : column,
-                  sortable : true,
-                  selectable : true,
-                  headerCssClass: "headerOther",
-                  cssClass: "rowOther",
-                  formatter: cell_formatter,
-                });
-              }
+                self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
 
               self.data = new self._data_provider({
                 mid : self.options.mid,
@@ -150,7 +138,43 @@ rights in this software.
 
               self.trigger_row_selection = true;
 
-              self.grid = new Slick.Grid(self.element, self.data, columns, {explicitInitialization : true, enableColumnReorder : false});
+              self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+
+              var header_buttons = new Slick.Plugins.HeaderButtons();
+              header_buttons.onCommand.subscribe(function(e, args)
+              {
+                var column = args.column;
+                var button = args.button;
+                var command = args.command;
+                var grid = args.grid;
+
+                for(var i in self.columns)
+                {
+                  self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+                  self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+                  self.columns[i].header.buttons[0].command = "sort-ascending";
+                  grid.updateColumnHeader(self.columns[i].id);
+                }
+
+                if(command == "sort-ascending")
+                {
+                  button.cssClass = 'icon-sort-ascending';
+                  button.command = 'sort-descending';
+                  button.tooltip = 'Sort descending';
+                  set_sort(column.id, "ascending");
+                }
+                else if(command == "sort-descending")
+                {
+                  button.cssClass = 'icon-sort-descending';
+                  button.command = 'sort-ascending';
+                  button.tooltip = 'Sort ascending';
+                  set_sort(column.id, "descending");
+                }
+              });
+
+              self.grid.registerPlugin(header_buttons);
+              self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+
               self.grid.setSelectionModel(new Slick.RowSelectionModel());
               self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
               {
@@ -174,23 +198,8 @@ rights in this software.
                   self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
                 }
               });
-              self.grid.onSort.subscribe(function(e, args)
-              {
-                self.data.set_sort(args.sortCol.field, args.sortAsc ? "ascending" : "descending");
-                self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
-                {
-                  self.grid.invalidate();
-                  self.trigger_row_selection = false;
-                  self.grid.setSelectedRows(sorted_rows);
-                });
-              });
 
               self._color_variables(self.options["variable-selection"]);
-
-              if(self.options["sort-variable"] !== null && self.options["sort-order"] !== null)
-              {
-                self.grid.setSortColumn(self.options["sort-variable"], self.options["sort-order"] == "ascending");
-              }
 
               self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
               {
@@ -386,8 +395,8 @@ rights in this software.
           others : [0, 8],
           "row-selection" : [7, 8, 9],
           "variable-selection" : [9],
-//          "sort-variable" : 0,
-//          "sort-order" : "ascending",
+          "sort-variable" : 0,
+          "sort-order" : "ascending",
           colormap : $("#color-switcher").colorswitcher("get_color_map", $("#color-switcher").colorswitcher("option", "colormap")),
         });
 
