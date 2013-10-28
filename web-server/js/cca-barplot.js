@@ -249,7 +249,7 @@ $.widget("cca.barplot",
 
   _setOption: function(key, value)
   {
-    console.log("cca.barplot._setOption()", key, value);
+    //console.log("cca.barplot._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "component")

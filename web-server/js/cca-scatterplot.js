@@ -135,7 +135,7 @@ $.widget("cca.scatterplot",
 
   _setOption: function(key, value)
   {
-    console.log("cca.scatterplot._setOption()", key, value);
+    //console.log("cca.scatterplot._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "indices")
@@ -201,7 +201,7 @@ $.widget("cca.scatterplot",
 
   _update: function()
   {
-    console.log("cca.scatterplot._update()");
+    console.log("cca.scatterplot._update()", this.updates);
     this.update_timer = null;
 
     if(this.updates["update_width"])

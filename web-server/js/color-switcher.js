@@ -143,7 +143,7 @@ $.widget("slycat.colorswitcher",
 
   _setOption: function(key, value)
   {
-    console.log("slycat.colorswitcher._setOption()", key, value);
+    //console.log("slycat.colorswitcher._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "colormap")
