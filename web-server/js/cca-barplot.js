@@ -11,6 +11,7 @@ $.widget("cca.barplot",
 {
   options:
   {
+    metadata: null,
     inputs:[],
     outputs:[],
     r2:[],
@@ -154,17 +155,18 @@ $.widget("cca.barplot",
       }
     }
 
-    function click_row(context, row, variable_type, variable_index)
+    function click_row(context, row, variable)
     {
       return function()
       {
         context.element.find("tr").removeClass("selected-variable");
         row.addClass("selected-variable");
 
-        context.element.trigger("variable-changed", [variable_type, variable_index]);
+        context.element.trigger("variable-changed", [variable]);
       }
     }
 
+    var metadata = this.options.metadata;
     var inputs = this.options.inputs;
     var outputs = this.options.outputs;
     var r2 = this.options.r2;
@@ -210,10 +212,10 @@ $.widget("cca.barplot",
     // Add input variables ...
     for(var i = 0; i != inputs.length; ++i)
     {
-      var row = $("<tr class='input'>").addClass("index-" + i).data("index", i).appendTo(this.element);
-      row.click(click_row(this, row, "input", i));
+      var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(this.element);
+      row.click(click_row(this, row, inputs[i]));
 
-      $("<th>").html(inputs[i]).appendTo(row);
+      $("<th>").html(metadata["column-names"][inputs[i]]).appendTo(row);
 
       for(var j = 0; j != cca_count; ++j)
       {
@@ -226,10 +228,10 @@ $.widget("cca.barplot",
     // Add output variables ...
     for(var i = 0; i != outputs.length; ++i)
     {
-      var row = $("<tr class='output'>").addClass("index-" + i).data("index", i).appendTo(this.element);
-      row.click(click_row(this, row, "output", i));
+      var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(this.element);
+      row.click(click_row(this, row, outputs[i]));
 
-      $("<th>").html(outputs[i]).appendTo(row);
+      $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
 
       for(var j = 0; j != cca_count; ++j)
       {
@@ -254,15 +256,12 @@ $.widget("cca.barplot",
 
     if(key == "component")
     {
-      this.select_component(this.options.component);
+      this.select_component(value);
     }
     else if(key == "variable")
     {
-      var type = this.options.variable[0];
-      var index = this.options.variable[1];
       this.element.find("tr").removeClass("selected-variable");
-      if(type == "input" || type == "output")
-        this.element.find("tr." + type + ".index-" + index).addClass("selected-variable");
+      this.element.find("tr." + ".index-" + value).addClass("selected-variable");
     }
     else if(key == "sort")
     {

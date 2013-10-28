@@ -150,27 +150,6 @@ rights in this software.
         var scatterplot_ready = false;
         var table_ready = false;
 
-        function variable_index(type, index)
-        {
-          if(type == "simulation")
-            return table_metadata["column-count"]-1;
-          else if(type == "input")
-            return input_columns[index];
-          else
-            return output_columns[index];
-        }
-
-        function split_index(variable)
-        {
-          var index = $.inArray(variable, input_columns);
-          if(index != -1)
-            return ["input", index];
-          index = $.inArray(variable, output_columns);
-          if(index != -1)
-            return ["output", index];
-          return [null, null];
-        }
-
         //////////////////////////////////////////////////////////////////////////////////////////
         // Start retrieving data, including bookmarked state.
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -696,14 +675,11 @@ rights in this software.
         {
           if(bookmark && table_metadata)
           {
-            var type = "simulation";
-            var index = 0;
-            if("variable-type" in bookmark && "variable-index" in bookmark)
-            {
-              type = bookmark["variable-type"];
-              index = bookmark["variable-index"];
-            }
-            if(type == "simulation")
+            var index = table_metadata["column-count"] - 1;
+            if("variable-selection" in bookmark)
+              index = bookmark["variable-selection"];
+
+            if(index == table_metadata["column-count"] - 1)
             {
               var count = table_metadata["row-count"];
               v = new Float64Array(count);
@@ -711,28 +687,13 @@ rights in this software.
                 v[i] = i;
               setup_widgets();
             }
-            else if(type == "input")
+            else
             {
               get_model_array_attribute({
                 server_root : "{{server-root}}",
                 mid : "{{_id}}",
                 aid : "data-table",
-                attribute : input_columns[index],
-                success : function(result)
-                {
-                  v = result;
-                  setup_widgets();
-                },
-                error : artifact_missing
-              });
-            }
-            else if(type == "output")
-            {
-              get_model_array_attribute({
-                server_root : "{{server-root}}",
-                mid : "{{_id}}",
-                aid : "data-table",
-                attribute : output_columns[index],
+                attribute : index,
                 success : function(result)
                 {
                   v = result;
@@ -766,29 +727,19 @@ rights in this software.
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
-            var input_column_names = [];
-            for(var i in input_columns)
-              input_column_names.push(table_metadata["column-names"][input_columns[i]]);
-
-            var output_column_names = [];
-            for(var i in output_columns)
-              output_column_names.push(table_metadata["column-names"][output_columns[i]]);
-
             $("#barplot").barplot({
-              inputs: input_column_names,
-              outputs: output_column_names,
+              metadata: table_metadata,
+              inputs: input_columns,
+              outputs: output_columns,
               r2: r2,
               wilks: wilks,
               x_loadings: x_loadings,
               y_loadings: y_loadings,
             });
 
-            if("variable-type" in bookmark && "variable-index" in bookmark)
+            if("variable-selection" in bookmark)
             {
-              $("#barplot").barplot("option",
-              {
-                variable: [bookmark["variable-type"], bookmark["variable-index"]]
-              });
+              $("#barplot").barplot("option", "variable", bookmark["variable-selection"]);
             }
 
             $("#barplot").bind("component-changed", function(event, component)
@@ -801,9 +752,9 @@ rights in this software.
               component_sort_changed(component, order);
             });
 
-            $("#barplot").bind("variable-changed", function(event, type, index)
+            $("#barplot").bind("variable-changed", function(event, variable)
             {
-              selected_variable_changed(type, index);
+              selected_variable_changed(variable);
             });
 
             if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
@@ -826,7 +777,7 @@ rights in this software.
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            var selection = bookmark["simulations"] !== undefined ? bookmark["simulations"] : [];
+            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
 
             $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
 
@@ -860,9 +811,9 @@ rights in this software.
             });
 
             // Changing the barplot variable updates the scatterplot ...
-            $("#barplot").bind("variable-changed", function(event, type, index)
+            $("#barplot").bind("variable-changed", function(event, variable)
             {
-              update_scatterplot_value(variable_index(type, index));
+              update_scatterplot_value(variable);
             });
           }
 
@@ -900,17 +851,17 @@ rights in this software.
               table_options["sort-order"] = bookmark["sort-order"];
             }
 
-            if("variable-type" in bookmark && "variable-index" in bookmark)
+            if("variable-selection" in bookmark)
             {
-              table_options["variable-selection"] = [variable_index(bookmark["variable-type"], bookmark["variable-index"])];
+              table_options["variable-selection"] = [bookmark["variable-selection"]];
             }
             else
             {
               table_options["variable-selection"] = [table_metadata["column-count"] - 1];
             }
 
-            if(bookmark["simulations"] !== undefined)
-              table_options["row-selection"] = bookmark["simulations"];
+            if(bookmark["simulation-selection"] !== undefined)
+              table_options["row-selection"] = bookmark["simulation-selection"];
 
             $("#table").table(table_options);
 
@@ -923,14 +874,18 @@ rights in this software.
             // Log changes to the table variable selection ...
             $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              var temp = split_index(selection[0]);
-              selected_variable_changed(temp[0], temp[1]);
+              selected_variable_changed(selection[0]);
             });
 
             // Log changes to the table row selection ...
             $("#table").bind("row-selection-changed", function(event, selection)
             {
-              selected_simulations_changed(selection);
+              // The table selection is an array buffer which can't be
+              // serialized as JSON, so convert it to an array.
+              var temp = [];
+              for(var i = 0; i != selection.length; ++i)
+                temp.push(selection[i]);
+              selected_simulations_changed(temp);
             });
 
             // Changing the colormap updates the table ...
@@ -940,15 +895,15 @@ rights in this software.
             });
 
             // Changing the barplot variable updates the table ...
-            $("#barplot").bind("variable-changed", function(event, type, index)
+            $("#barplot").bind("variable-changed", function(event, variable)
             {
-              $("#table").table("option", "variable-selection", [variable_index(type, index)]);
+              $("#table").table("option", "variable-selection", [variable]);
             });
 
             // Changing the table variable updates the barplot ...
             $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              $("#barplot").barplot("option", "variable", split_index(selection[0]));
+              $("#barplot").barplot("option", "variable", selection[0]);
             });
 
             // Changing the table variable updates the scatterplot ...
@@ -1005,14 +960,14 @@ rights in this software.
           bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
         }
 
-        function selected_variable_changed(type, index)
+        function selected_variable_changed(variable)
         {
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/variable/" + type + "/" + index
+            url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
           });
-          bookmarker.updateState({"variable-type" : type, "variable-index" : index});
+          bookmarker.updateState({"variable-selection" : variable});
         }
 
         function variable_sort_changed(variable, order)
@@ -1033,7 +988,7 @@ rights in this software.
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
           });
-          bookmarker.updateState( {"simulations" : selection} );
+          bookmarker.updateState( {"simulation-selection" : selection} );
         }
 
         function update_scatterplot_value(attribute)
