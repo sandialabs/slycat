@@ -173,14 +173,6 @@ $.widget("slycat.colorswitcher",
     for(var i in this.color_maps[name].colors)
       domain.push(domain_scale(i));
     result = d3.scale.linear().domain(domain).range(this.color_maps[name].colors);
-    result.min_max_domain = function(min, max)
-    {
-      var temp = []
-      var domain_scale = d3.scale.linear().domain([0, this.range().length]).range([min, max]);
-      for(var i in this.range())
-        temp.push(domain_scale(i));
-      this.domain(temp);
-    }
     return result;
   },
 

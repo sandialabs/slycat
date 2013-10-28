@@ -255,7 +255,14 @@ rights in this software.
             var column = columns[i];
             if(self.options.colormap !== null && $.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
             {
-              column.colormap = self.options.colormap.copy().min_max_domain([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]);
+              // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
+              column.colormap = self.options.colormap.copy();
+
+              var new_domain = []
+              var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.metadata["column-min"][column.id], self.metadata["column-max"][column.id]]);
+              for(var i in column.colormap.range())
+                new_domain.push(domain_scale(i));
+              column.colormap.domain(new_domain);
             }
             else
             {
@@ -370,7 +377,7 @@ rights in this software.
 
       });
 
-      $("#color-switcher").colorswitcher({colormap : "night"});
+      $("#color-switcher").colorswitcher({colormap : "rainbow"});
       $("#color-switcher").bind("colormap-changed", function(event, colormap)
       {
         $("#table").table("option", {colormap: $("#color-switcher").colorswitcher("get_color_map", colormap)});
@@ -389,7 +396,7 @@ rights in this software.
           "variable-selection" : [9],
 //          "sort-variable" : 0,
 //          "sort-order" : "ascending",
-          colormap : $("#color-switcher").colorswitcher("get_color_map", "night"),
+          colormap : $("#color-switcher").colorswitcher("get_color_map", $("#color-switcher").colorswitcher("option", "colormap")),
         });
 
       $("#row-selection").click(function()
