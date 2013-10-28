@@ -324,9 +324,12 @@ $.widget("cca.scatterplot",
       var twopi = Math.PI * 2;
       this.selection_context.strokeStyle = "black";
       this.selection_context.lineWidth = 1;
-      for(var i in this.options.selection)
+
+      var selection = this.options.selection;
+      var selection_count = selection.length;
+      for(var i = 0; i != selection_count; ++i)
       {
-        var global_index = this.options.selection[i];
+        var global_index = selection[i];
         var local_index = this.inverse_indices[global_index];
         this.selection_context.fillStyle = color(v[global_index]);
         this.selection_context.beginPath();
