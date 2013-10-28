@@ -18,31 +18,20 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css"/>
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css"/>
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css"/>
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/slickGrid/slick.headerbuttons.css"/>
     <style>
       #table
       {
         height: 500px;
+        //position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
       }
 
-      #table .slick-cell.selected
-      {
-        background: yellow;
-      }
-
-      #table .slick-cell .highlighted
-      {
-        color: white;
-      }
-
-      #table .headerInput, #table .rowInput
-      {
-        background: #8f8;
-      }
-
-      #table .headerOutput, #table .rowOutput
-      {
-        background: #f8f;
-      }
     </style>
   </head>
 
@@ -75,13 +64,13 @@ rights in this software.
 
           function value_formatter(value)
           {
-            return value == null ? "" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+            return value == null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
           }
 
           function cell_formatter(row, cell, value, columnDef, dataContext)
           {
             if(columnDef.colormap)
-              return "<div class='highlighted' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+              return "<div class='highlightWrapper' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
             return value_formatter(value);
           }
 
@@ -263,10 +252,13 @@ rights in this software.
               for(var i in column.colormap.range())
                 new_domain.push(domain_scale(i));
               column.colormap.domain(new_domain);
+
+              column.cssClass = column.cssClass.split(" ")[0] + " highlight";
             }
             else
             {
               column.colormap = null;
+              column.cssClass = column.cssClass.split(" ")[0];
             }
           }
 

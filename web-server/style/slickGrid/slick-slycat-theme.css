@@ -99,6 +99,7 @@ rights in this software.
 	height: auto !important;
 }
 .highlightWrapper {
+  color: white;
 	padding: 2px 4px 3px 4px;
 }
 
