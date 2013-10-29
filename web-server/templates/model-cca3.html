@@ -258,7 +258,7 @@ rights in this software.
 
         // Load data table metadata.
         $.ajax({
-          url : "{{server-root}}models/{{_id}}/artifacts/data-table/table-metadata",
+          url : "{{server-root}}models/{{_id}}/artifacts/data-table/table-metadata?index=Index",
           contentType : "application/json",
           success: function(metadata)
           {
