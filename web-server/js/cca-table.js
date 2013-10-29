@@ -189,6 +189,8 @@ $.widget("cca.table",
       {
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
+        if(sorted_rows.length)
+          self.grid.scrollRowToTop(sorted_rows[0]);
       });
     }
     else if(key == "variable-selection")
