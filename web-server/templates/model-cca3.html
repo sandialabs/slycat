@@ -143,8 +143,6 @@ rights in this software.
         var wilks = null;
         var table_metadata = null;
 
-        var table_chunker = null;
-
         var generate_indices = false;
         var barplot_ready = false;
         var scatterplot_ready = false;
@@ -258,29 +256,17 @@ rights in this software.
           error : artifact_missing
         });
 
-        // Create a table chunker for later ...
-        create_table_chunker(
-        {
-          server_root:"{{server-root}}",
-          model:"{{_id}}",
-          artifact:"data-table",
-          success: function(chunker)
+        // Load data table metadata.
+        $.ajax({
+          url : "{{server-root}}models/{{_id}}/artifacts/data-table/table-metadata",
+          contentType : "application/json",
+          success: function(metadata)
           {
-            table_chunker = chunker;
+            table_metadata = metadata;
 
-            $.ajax({
-              url : "{{server-root}}" + "workers/" + table_chunker + "/table-chunker/metadata",
-              contentType : "application/json",
-              success: function(metadata)
-              {
-                table_metadata = metadata;
-
-                setup_indices();
-                setup_v();
-                setup_widgets();
-              },
-              error: artifact_missing
-            });
+            setup_indices();
+            setup_v();
+            setup_widgets();
           },
           error: artifact_missing
         });

@@ -11,45 +11,6 @@ function is_little_endian()
   return this.result;
 }
 
-// Create a table chunker asynchronously, calling a callback when it's ready ...
-function create_table_chunker(parameters)
-{
-  // Creating a table chunker worker
-  $.ajax(
-  {
-    contentType : "application/json",
-    data : $.toJSON({ type : "table-chunker", "mid" : parameters.model, "artifact" : parameters.artifact, "generate-index" : "Index" }),
-    processData : false,
-    type : "POST",
-    cache: false,
-    url : parameters.server_root + "workers",
-    success : function(worker)
-    {
-      // Setup unload handler to stop and delete worker when user leaves page
-      $(window).unload({"worker":worker}, function(e)
-      {
-        $.ajax(
-        {
-          type : "DELETE",
-          url : parameters.server_root + "workers/" + e.data.worker.id,
-          async: false,
-          error : function(request, status, reason_phrase)
-          {
-            //window.alert("Error deleting remote worker: " + reason_phrase);
-          }
-        });
-      });
-
-      parameters.success(worker.id);
-    },
-    error : function(request, status, reason_phrase)
-    {
-      if(parameters.error)
-        parameters.error(request, status, reason_phrase);
-    },
-  });
-}
-
 // Retrieve an array attribute asynchronously, calling a callback when it's ready ...
 function get_model_array_attribute(parameters)
 {
