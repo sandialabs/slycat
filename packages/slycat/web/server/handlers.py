@@ -578,14 +578,9 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
     sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
 
   # Generate a database query
-  query = "{array}".format(array = artifact["columns"])
-  if index is not None:
-    query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"] - 1)
-  query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"])
-  if sort is not None and sort:
-    sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in sort])
-    query = "sort({array}, {sort})".format(array=query, sort=sort)
-  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"])
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index="index")
+  query = slycat.web.server.cache.get_sorted_table_query(mid, aid, artifact, metadata, sort, index="index")
+  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"]-1)
 
   # Retrieve the data from the database ...
   data = numpy.zeros((metadata["row-count"]))
@@ -632,14 +627,9 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
     sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
 
   # Generate a database query
-  query = "{array}".format(array = artifact["columns"])
-  if index is not None:
-    query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"] - 1)
-  query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"])
-  if sort is not None and sort:
-    sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in sort])
-    query = "sort({array}, {sort})".format(array=query, sort=sort)
-  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"])
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index="index")
+  query = slycat.web.server.cache.get_sorted_table_query(mid, aid, artifact, metadata, sort, index="index")
+  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"]-1)
 
   # Retrieve the data from the database ...
   data = numpy.zeros((metadata["row-count"]), dtype="int32")
