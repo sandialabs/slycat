@@ -1,4 +1,5 @@
 import cherrypy
+import copy
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.scidb
 import threading
@@ -58,7 +59,7 @@ def get_array_metadata(mid, aid, artifact, artifact_type):
 _table_metadata = {}
 _table_metadata_lock = threading.Lock()
 
-def get_table_metadata(mid, aid, artifact, artifact_type):
+def get_table_metadata(mid, aid, artifact, artifact_type, index):
   """Return cached metadata for a table artifact, retrieving it from the database as-needed."""
   with _table_metadata_lock:
     if (mid, aid) not in _table_metadata:
@@ -105,5 +106,29 @@ def get_table_metadata(mid, aid, artifact, artifact_type):
         "column-max" : column_max
         }
 
-    return _table_metadata[(mid, aid)]
+    metadata = _table_metadata[(mid, aid)]
 
+    if index is not None:
+      metadata = copy.deepcopy(metadata)
+      metadata["column-count"] += 1
+      metadata["column-names"].append(index)
+      metadata["column-types"].append("int64")
+      metadata["column-min"].append(0)
+      metadata["column-max"].append(metadata["row-count"] - 1)
+
+    return metadata
+
+
+def get_sorted_table_query(mid, aid, artifact, metadata, sort, index):
+  # This is a little heavy handed, but it ensures that we don't have two
+  # threads trying to sort the same table at the same time.
+
+  query = "{array}".format(array = artifact["columns"])
+  if index is not None:
+    query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"] - 1)
+  if sort is not None:
+    query_sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in sort])
+    query = "sort({array}, {sort})".format(array=query, sort=query_sort)
+  return query
+
+get_sorted_table_query.lock = threading.Lock()

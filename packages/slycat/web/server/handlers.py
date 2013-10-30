@@ -447,34 +447,30 @@ def get_model_table_metadata(mid, aid, index = None):
   if artifact_type not in ["table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type)
-
-  if index is not None:
-    metadata = copy.deepcopy(metadata)
-    metadata["column-count"] += 1
-    metadata["column-names"].append(index)
-    metadata["column-types"].append("int64")
-    metadata["column-min"].append(0)
-    metadata["column-max"].append(metadata["row-count"] - 1)
-
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
   return metadata
 
-@cherrypy.tools.json_out(on = True)
-def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=None):
+def get_model_table_rows(rows):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
     rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
     rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
+    rows = rows[rows >= 0]
+    return rows
   except:
     raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
 
+def get_model_table_columns(columns):
   try:
     columns = [spec.split("-") for spec in columns.split(",")]
     columns = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in columns]
     columns = numpy.concatenate([numpy.arange(begin, end) for begin, end in columns])
+    columns = columns[columns >= 0]
+    return columns
   except:
     raise cherrypy.HTTPError("400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
 
+def get_model_table_sort(sort):
   if sort is not None:
     try:
       sort = [spec.split(":") for spec in sort.split(",")]
@@ -491,10 +487,24 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       if order not in ["ascending", "descending"]:
         raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
 
-  rows = rows[rows >= 0]
-  columns = columns[columns >= 0]
-  if sort is not None:
     sort = [(column, order) for column, order in sort if column >= 0]
+  return sort
+
+def get_model_table_byteorder(byteorder):
+  if byteorder is not None:
+    if byteorder not in ["little", "big"]:
+      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
+  return byteorder
+
+@cherrypy.tools.json_out(on = True)
+def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=None):
+  rows = get_model_table_rows(rows)
+  columns = get_model_table_columns(columns)
+  sort = get_model_table_sort(sort)
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -508,28 +518,16 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   if artifact_type not in ["table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type)
-  if index is not None:
-    metadata = copy.deepcopy(metadata)
-    metadata["column-count"] += 1
-    metadata["column-names"].append(index)
-    metadata["column-types"].append("int64")
-    metadata["column-min"].append(0)
-    metadata["column-max"].append(metadata["row-count"] - 1)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
   columns = columns[columns < metadata["column-count"]]
   if sort is not None:
-    sort = [(column, order) for colum, order in sort if column < metadata["column-count"]]
+    sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
 
   # Generate a database query
-  query = "{array}".format(array = artifact["columns"])
-  if index is not None:
-    query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"] - 1)
-  if sort is not None:
-    sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in sort])
-    query = "sort({array}, {sort})".format(array=query, sort=sort)
+  query = slycat.web.server.cache.get_sorted_table_query(mid, aid, artifact, metadata, sort, index)
   query = "between({array}, {begin}, {end})".format(array=query, begin=rows.min(), end=rows.max())
   query = "select * from {array}".format(array=query)
 
@@ -556,40 +554,9 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   return result
 
 def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
-  try:
-    rows = [spec.split("-") for spec in rows.split(",")]
-    rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
-    rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
-  except:
-    raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
-
-  if sort is not None:
-    try:
-      sort = [spec.split(":") for spec in sort.split(",")]
-      sort = [(column, order) for column, order in sort]
-    except:
-      raise cherrypy.HTTPError("400 Malformed order argument must be a comma separated collection of column:order tuples.")
-
-    try:
-      sort = [(int(column), order) for column, order in sort]
-    except:
-      raise cherrypy.HTTPError("400 Sort column must be an integer.")
-
-    for column, order in sort:
-      if order not in ["ascending", "descending"]:
-        raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
-
-  rows = rows[rows >= 0]
-  if sort is not None:
-    sort = [(column, order) for column, order in sort if column >= 0]
-
-  if byteorder is not None:
-    if byteorder not in ["little", "big"]:
-      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
-    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
-  else:
-    accept = cherrypy.lib.cptools.accept(["application/json"])
-  cherrypy.response.headers["content-type"] = accept
+  rows = get_model_table_rows(rows)
+  sort = get_model_table_sort(sort)
+  byteorder = get_model_table_byteorder(byteorder)
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -603,19 +570,12 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   if artifact_type not in ["table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type)
-  if index is not None:
-    metadata = copy.deepcopy(metadata)
-    metadata["column-count"] += 1
-    metadata["column-names"].append(index)
-    metadata["column-types"].append("int64")
-    metadata["column-min"].append(0)
-    metadata["column-max"].append(metadata["row-count"] - 1)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
   if sort is not None:
-    sort = [(column, order) for colum, order in sort if column < metadata["column-count"]]
+    sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
 
   # Generate a database query
   query = "{array}".format(array = artifact["columns"])
@@ -648,40 +608,9 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
       return numpy.array(result, dtype="int32").tostring(order="C")
 
 def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
-  try:
-    rows = [spec.split("-") for spec in rows.split(",")]
-    rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
-    rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
-  except:
-    raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
-
-  if sort is not None:
-    try:
-      sort = [spec.split(":") for spec in sort.split(",")]
-      sort = [(column, order) for column, order in sort]
-    except:
-      raise cherrypy.HTTPError("400 Malformed order argument must be a comma separated collection of column:order tuples.")
-
-    try:
-      sort = [(int(column), order) for column, order in sort]
-    except:
-      raise cherrypy.HTTPError("400 Sort column must be an integer.")
-
-    for column, order in sort:
-      if order not in ["ascending", "descending"]:
-        raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
-
-  if byteorder is not None:
-    if byteorder not in ["little", "big"]:
-      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
-    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
-  else:
-    accept = cherrypy.lib.cptools.accept(["application/json"])
-  cherrypy.response.headers["content-type"] = accept
-
-  rows = rows[rows >= 0]
-  if sort is not None:
-    sort = [(column, order) for column, order in sort if column >= 0]
+  rows = get_model_table_rows(rows)
+  sort = get_model_table_sort(sort)
+  byteorder = get_model_table_byteorder(byteorder)
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -695,19 +624,12 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   if artifact_type not in ["table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type)
-  if index is not None:
-    metadata = copy.deepcopy(metadata)
-    metadata["column-count"] += 1
-    metadata["column-names"].append(index)
-    metadata["column-types"].append("int64")
-    metadata["column-min"].append(0)
-    metadata["column-max"].append(metadata["row-count"] - 1)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
   if sort is not None:
-    sort = [(column, order) for colum, order in sort if column < metadata["column-count"]]
+    sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
 
   # Generate a database query
   query = "{array}".format(array = artifact["columns"])
