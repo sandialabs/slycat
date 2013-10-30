@@ -4,13 +4,10 @@ import slycat.web.server.database.couchdb
 import slycat.web.server.database.scidb
 import threading
 
-_array_metadata = {}
-_array_metadata_lock = threading.Lock()
-
 def get_array_metadata(mid, aid, artifact, artifact_type):
   """Return cached metadata for an array artifact, retrieving it from the database as-needed."""
-  with _array_metadata_lock:
-    if (mid, aid) not in _array_metadata:
+  with get_array_metadata.lock:
+    if (mid, aid) not in get_array_metadata.cache:
       if artifact_type == "array":
         database = slycat.web.server.database.scidb.connect()
         with database.query("aql", "select name from %s" % artifact["attribute-names"]) as results:
@@ -49,20 +46,21 @@ def get_array_metadata(mid, aid, artifact, artifact_type):
       attribute_types = [type_map[type] if type in type_map else type for type in attribute_types]
       dimension_types = [type_map[type] if type in type_map else type for type in dimension_types]
 
-      _array_metadata[(mid, aid)] = {
+      get_array_metadata.cache[(mid, aid)] = {
         "attributes" : [{"name" : name, "type" : type} for name, type in zip(attribute_names, attribute_types)],
         "dimensions" : [{"name" : name, "type" : type, "begin" : begin, "end" : end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)]
         }
 
-    return _array_metadata[(mid, aid)]
+    return get_array_metadata.cache[(mid, aid)]
 
-_table_metadata = {}
-_table_metadata_lock = threading.Lock()
+get_array_metadata.cache = {}
+get_array_metadata.lock = threading.Lock()
+
 
 def get_table_metadata(mid, aid, artifact, artifact_type, index):
   """Return cached metadata for a table artifact, retrieving it from the database as-needed."""
-  with _table_metadata_lock:
-    if (mid, aid) not in _table_metadata:
+  with get_table_metadata.lock:
+    if (mid, aid) not in get_table_metadata.cache:
       if artifact_type == "table":
         database = slycat.web.server.database.scidb.connect()
         with database.query("aql", "select name from %s" % artifact["column-names"]) as results:
@@ -97,7 +95,7 @@ def get_table_metadata(mid, aid, artifact, artifact_type, index):
       type_map = {"float":"float32", "double":"float64"}
       column_types = [type_map[type] if type in type_map else type for type in column_types]
 
-      _table_metadata[(mid, aid)] = {
+      get_table_metadata.cache[(mid, aid)] = {
         "row-count" : row_count,
         "column-count" : column_count,
         "column-names" : column_names,
@@ -106,7 +104,7 @@ def get_table_metadata(mid, aid, artifact, artifact_type, index):
         "column-max" : column_max
         }
 
-    metadata = _table_metadata[(mid, aid)]
+    metadata = get_table_metadata.cache[(mid, aid)]
 
     if index is not None:
       metadata = copy.deepcopy(metadata)
@@ -117,6 +115,9 @@ def get_table_metadata(mid, aid, artifact, artifact_type, index):
       metadata["column-max"].append(metadata["row-count"] - 1)
 
     return metadata
+get_table_metadata.cache = {}
+get_table_metadata.lock = threading.Lock()
+
 
 
 def get_sorted_table_query(mid, aid, artifact, metadata, sort, index):
