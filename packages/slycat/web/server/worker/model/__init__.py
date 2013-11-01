@@ -4,12 +4,15 @@
 
 import cherrypy
 import datetime
+import h5py
 import itertools
 import json
 import multiprocessing
+import numpy
 import os
 import Queue
 import slycat.web.server.database.couchdb
+import slycat.web.server.database.hdf5
 import slycat.web.server.database.scidb
 import slycat.web.server.spider
 import slycat.web.server.ssh
@@ -153,8 +156,8 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % file.filename)
       table = tables[0]
-      artifact = table_artifact(table["column-names"], table["column-types"])
-      artifact.store_columns(table["row-count"], table["columns"])
+      artifact = table_artifact(table["row-count"], table["column-names"], table["column-types"])
+      artifact.store_columns(table["columns"])
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="table", input=True)
       self.set_message("Loaded table %s." % name)
@@ -175,8 +178,8 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % path)
       table = tables[0]
-      artifact = table_artifact(table["column-names"], table["column-types"])
-      artifact.store_columns(table["row-count"], table["columns"])
+      artifact = table_artifact(table["row-count"], table["column-names"], table["column-types"])
+      artifact.store_columns(table["columns"])
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="table", input=True)
       self.set_message("Loaded remote table %s." % name)
@@ -347,72 +350,45 @@ class prototype(slycat.web.server.worker.prototype):
     raise NotImplementedError()
 
 class table_artifact:
-  """Encapsulates all of the logic and state for incremental storage of a table to SciDB."""
-  def __init__(self, column_names, column_types):
-    self.scidb = slycat.web.server.database.scidb.connect()
+  """Encapsulates all of the logic and state for incremental storage of a table to hdf5."""
+  def __init__(self, row_count, column_names, column_types):
     self.couchdb = slycat.web.server.database.couchdb.connect()
 
+#    self.column_names = column_names
     self.column_types = column_types
-    self.columns = "a" + uuid.uuid4().hex
-    self.column_names = "a" + uuid.uuid4().hex
-    self.scidb.execute("aql", "create array %s<name:string>[index=0:*,100,0]" % (self.column_names))
-    self.couchdb.save({"_id":self.column_names, "type":"array"})
-    self.scidb.execute("aql", "insert into %s '[%s]'" % (self.column_names, ",".join(["(\"%s\")" % name for name in column_names])))
-    self.scidb.execute("aql", "create array %s<%s>[row=0:*,1000000,0]" % (self.columns, ",".join(["c%s:%s" % (column_index, column_type) for column_index, column_type in enumerate(column_types)])))
-    self.couchdb.save({"_id":self.columns, "type":"array"})
 
-    self.named_pipe = None
-    self.stream = None
-    self.thread = None
+    self.storage = uuid.uuid4().hex
+    self.file = slycat.web.server.database.hdf5.create(self.storage)
+    self.couchdb.save({"_id":self.storage, "type":"array"})
 
-  def get_stream(self):
-    def load_data(database, array, named_pipe, column_types):
-      database.execute("aql", "load %s from '%s' as '(%s)'" % (array, named_pipe, ",".join(column_types)))
+    self.file.attrs["row-count"] = row_count
+    self.file.attrs["column-names"] = numpy.array(column_names, dtype=h5py.special_dtype(vlen=unicode))
+    for column, type in enumerate(column_types):
+      self.file.create_dataset("c{}".format(column), (row_count,), dtype=h5py.special_dtype(vlen=unicode) if type == "string" else type)
 
-    if self.stream is None:
-      self.named_pipe = "/tmp/%s" % self.columns
-      os.mkfifo(self.named_pipe, 0666)
-      self.thread = multiprocessing.Process(target=load_data, args=(self.scidb, self.columns, self.named_pipe, self.column_types))
-      self.thread.daemon = True
-      self.thread.start()
-      self.stream = open(self.named_pipe, "w")
-    return self.stream
+#  def store_binary_rows(self, rows):
+#    self.get_stream().write(rows.file.read())
 
-  def store_binary_rows(self, rows):
-    self.get_stream().write(rows.file.read())
+#  def store_rows(self, rows):
+#    stream = self.get_stream()
+#    for row in rows:
+#      for type, value in itertools.izip(self.column_types, row):
+#        if type == "string":
+#          stream.write(struct.pack("<I", len(value) + 1))
+#          stream.write(value)
+#          stream.write("\0")
+#        elif type == "double":
+#          stream.write(struct.pack("<d", value))
 
-  def store_rows(self, rows):
-    stream = self.get_stream()
-    for row in rows:
-      for type, value in itertools.izip(self.column_types, row):
-        if type == "string":
-          stream.write(struct.pack("<I", len(value) + 1))
-          stream.write(value)
-          stream.write("\0")
-        elif type == "double":
-          stream.write(struct.pack("<d", value))
-
-  def store_columns(self, row_count, columns):
-    stream = self.get_stream()
-    column_count = len(columns)
-    for row in range(row_count):
-      for column in range(column_count):
-        value = columns[column][row]
-        if self.column_types[column] == "string":
-          stream.write(struct.pack("<I", len(value) + 1))
-          stream.write(value)
-          stream.write("\0")
-        elif self.column_types[column] == "double":
-          stream.write(struct.pack("<d", value))
+  def store_columns(self, columns):
+    if len(columns) != len(self.column_types):
+      raise Exception("Unexpected number of columns.")
+    for index, (column, type) in enumerate(zip(columns, self.column_types)):
+      self.file["c{}".format(index)][...] = numpy.array(column, dtype=h5py.special_dtype(vlen=unicode) if type == "string" else type)
 
   def finish(self):
-    if self.stream is not None:
-      self.stream.close()
-    if self.thread is not None:
-      self.thread.join()
-    if self.named_pipe is not None:
-      os.unlink(self.named_pipe)
-    return {"column-names" : self.column_names, "columns" : self.columns}
+    self.file.close()
+    return {"storage" : self.storage}
 
 class timeseries_artifact:
   """Encapsulates all of the logic and state for incremental storage of a set of related timeseries to SciDB."""
