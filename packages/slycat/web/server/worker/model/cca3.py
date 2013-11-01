@@ -5,6 +5,7 @@
 from slycat.web.server.cca import cca
 import cherrypy
 import itertools
+import slycat.web.server.database.hdf5
 import slycat.web.server.worker.model
 import StringIO
 import numpy
@@ -31,27 +32,22 @@ class implementation(slycat.web.server.worker.model.prototype):
       raise Exception("CCA model requires at least one output column.")
 
     # Transform the input data table to a form usable with our cca() function ...
-    low = self.scidb.query_value("aql", "select low from dimensions(%s)" % data_table["columns"]).getInt64()
-    high = self.scidb.query_value("aql", "select high from dimensions(%s)" % data_table["columns"]).getInt64()
-    row_count = high + 1 if high >= low else 0
+    with slycat.web.server.database.hdf5.open(data_table["storage"]) as file:
+      row_count = file.attrs["row-count"]
+      indices = numpy.arange(row_count, dtype="int32")
 
-    indices = numpy.arange(row_count, dtype="int32")
+      X = numpy.empty((row_count, len(input_columns)))
+      for j, input in enumerate(input_columns):
+        self.set_progress(self.mix(0.0, 0.25, float(j) / float(len(input_columns))))
+        X[:,j] = file["c{}".format(input)][...]
 
-    X = numpy.empty((row_count, len(input_columns)))
-    for j, input in enumerate(input_columns):
-      self.set_progress(self.mix(0.0, 0.25, float(j) / float(len(input_columns))))
-      with self.scidb.query("aql", "select %s from %s" % ("c%s" % input, data_table["columns"])) as results:
-        for artifact in results:
-          for i, value in enumerate(artifact):
-            X[i, j] = value.getDouble()
+      Y = numpy.empty((row_count, len(output_columns)))
+      for j, output in enumerate(output_columns):
+        self.set_progress(self.mix(0.25, 0.50, float(j) / float(len(output_columns))))
+        Y[:,j] = file["c{}".format(output)][...]
 
-    Y = numpy.empty((row_count, len(output_columns)))
-    for j, output in enumerate(output_columns):
-      self.set_progress(self.mix(0.25, 0.50, float(j) / float(len(input_columns))))
-      with self.scidb.query("aql", "select %s from %s" % ("c%s" % output, data_table["columns"])) as results:
-        for artifact in results:
-          for i, value in enumerate(artifact):
-            Y[i, j] = value.getDouble()
+      cherrypy.log.error("X: %s" % X)
+      cherrypy.log.error("Y: %s" % Y)
 
     # Remove rows containing NaNs ...
     good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))
