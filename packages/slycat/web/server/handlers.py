@@ -25,6 +25,7 @@ import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cache
 import slycat.web.server.database.couchdb
+import slycat.web.server.database.hdf5
 import slycat.web.server.database.scidb
 import slycat.web.server.ssh
 import slycat.web.server.template
@@ -527,27 +528,22 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
     sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
 
   # Generate a database query
-  query = slycat.web.server.cache.get_sorted_table_query(mid, aid, artifact, metadata, sort, index)
-  query = "between({array}, {begin}, {end})".format(array=query, begin=rows.min(), end=rows.max())
-  query = "select * from {array}".format(array=query)
-
-  # Retrieve the data from the database ...
-  data = [[] for column in metadata["column-names"]]
-  database = slycat.web.server.database.scidb.connect()
-  with database.query("aql", query) as results:
-    for chunk in results.chunks():
-      for index, attribute in enumerate(chunk.attributes()):
-        attribute_type = metadata["column-types"][index]
-        values = [value for value in slycat.web.server.database.scidb.typed_values(attribute_type, attribute)]
-        if attribute_type in ["float64", "float32"]:
-          values = [None if numpy.isnan(value) else value for value in values]
-        data[index] += values
+  data = []
+  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    for column in columns:
+      type = metadata["column-types"][column]
+      if index is not None and column == metadata["column-count"]-1:
+        data.append(numpy.arange(metadata["row-count"])[rows].tolist())
+        if type in ["float32", "float64"]:
+          data[-1] = [None if numpy.isnan(value) else value for value in data[-1]]
+      else:
+        data.append(file["c{}".format(column)][rows.tolist()].tolist())
 
   result = {
     "rows" : rows.tolist(),
     "columns" : columns.tolist(),
     "column-names" : [metadata["column-names"][column] for column in columns],
-    "data" : [[data[column][row] for row in range(rows.shape[0])] for column in columns],
+    "data" : data,
     "sort" : sort
     }
 

@@ -282,6 +282,10 @@ $.widget("cca.table",
           success : function(data)
           {
             self.pages[page] = data;
+          },
+          error: function(request, status, reason_phrase)
+          {
+            console.log("error", request, status, reason_phrase);
           }
         });
       }
