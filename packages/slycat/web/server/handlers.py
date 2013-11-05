@@ -407,24 +407,26 @@ def get_model_array_chunk(mid, aid, **arguments):
     query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
     query = "select a{attribute} from {array}".format(attribute=attribute, array=query)
 
-  elif artifact_type == "table":
-    # Generate a database query
-    query = "{array}".format(array = artifact["columns"])
-    query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
-    query = "select c{attribute} from {array}".format(attribute=attribute, array=query)
+    # Retrieve the data from the database ...
+    database = slycat.web.server.database.scidb.connect()
+    with database.query("aql", query) as result:
+      if attribute_type == "string":
+        data = numpy.array([value.getString() for chunk in result.chunks() for attribute in chunk.attributes() for value in attribute])
+      else:
+        data = numpy.zeros([end - begin for begin, end in ranges], dtype=attribute_type)
+        iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
+        for chunk in result.chunks():
+          for attribute in chunk.attributes():
+            for value in slycat.web.server.database.scidb.typed_values(attribute_type, attribute):
+              iterator.next()[...] = value
 
-  # Retrieve the data from the database ...
-  database = slycat.web.server.database.scidb.connect()
-  with database.query("aql", query) as result:
-    if attribute_type == "string":
-      data = numpy.array([value.getString() for chunk in result.chunks() for attribute in chunk.attributes() for value in attribute])
-    else:
-      data = numpy.zeros([end - begin for begin, end in ranges], dtype=attribute_type)
-      iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
-      for chunk in result.chunks():
-        for attribute in chunk.attributes():
-          for value in slycat.web.server.database.scidb.typed_values(attribute_type, attribute):
-            iterator.next()[...] = value
+  elif artifact_type == "table":
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      data = file["c{}".format(attribute)][[slice(range[0], range[1]) for range in ranges]].tolist()
+    # Generate a database query
+    #query = "{array}".format(array = artifact["columns"])
+   # query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
+  #  query = "select c{attribute} from {array}".format(attribute=attribute, array=query)
 
   if byteorder is None:
     return json.dumps(data.tolist())
