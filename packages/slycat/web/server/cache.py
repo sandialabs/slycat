@@ -1,10 +1,27 @@
 import cherrypy
 import copy
 import h5py
+import numpy
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.database.scidb
 import threading
+
+def dataset_min(dataset):
+  array = numpy.array(dataset)
+  if array.dtype.char not in ["O", "S"]:
+    array = array[numpy.invert(numpy.isnan(array))]
+  if len(array):
+    return numpy.min(array)
+  return None
+
+def dataset_max(dataset):
+  array = numpy.array(dataset)
+  if array.dtype.char not in ["O", "S"]:
+    array = array[numpy.invert(numpy.isnan(array))]
+  if len(array):
+    return numpy.max(array)
+  return None
 
 def get_array_metadata(mid, aid, artifact, artifact_type):
   """Return cached metadata for an array artifact, retrieving it from the database as-needed."""
@@ -69,8 +86,8 @@ def get_table_metadata(mid, aid, artifact, artifact_type, index):
           column_names = file.attrs["column-names"].tolist()
           column_count = len(column_names)
           column_types = [file["c{}".format(i)].dtype for i in range(column_count)]
-          column_min = []
-          column_max = []
+          column_min = [dataset_min(file["c{}".format(i)]) for i in range(column_count)]
+          column_max = [dataset_max(file["c{}".format(i)]) for i in range(column_count)]
       else:
         raise Exception("Unsupported artifact type.")
 
