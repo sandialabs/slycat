@@ -44,19 +44,17 @@ def get_array_metadata(mid, aid, artifact, artifact_type):
           dimension_begin = [value.getInt64() for value in attribute.next()]
           dimension_end = [value.getInt64() for value in attribute.next()]
       elif artifact_type == "table":
-        database = slycat.web.server.database.scidb.connect()
-        with database.query("aql", "select name from %s" % artifact["column-names"]) as results:
-          attribute_names = [value.getString() for attribute in results for value in attribute]
+        with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+          attribute_names = file.attrs["column-names"].tolist()
+          attribute_types = [file["c{}".format(i)].dtype for i in range(len(attribute_names))]
+          dimension_names = ["row"]
+          dimension_types = ["int64"]
+          dimension_begin = [0]
+          dimension_end = [file.attrs["row-count"]]
 
-        with database.query("aql", "select type_id from attributes(%s)" % artifact["columns"]) as results:
-          attribute_types = [value.getString() for attribute in results for value in attribute]
-
-        with database.query("aql", "select name, type, low as begin, high + 1 as end from dimensions(%s)" % artifact["columns"]) as results:
-          attribute = iter(results)
-          dimension_names = [value.getString() for value in attribute.next()]
-          dimension_types = [value.getString() for value in attribute.next()]
-          dimension_begin = [value.getInt64() for value in attribute.next()]
-          dimension_end = [value.getInt64() for value in attribute.next()]
+          # h5py uses special types for unicode strings, convert them to "string"
+          type_map = {h5py.special_dtype(vlen=unicode) : "string"}
+          attribute_types = [type_map[type] if type in type_map else type.name for type in attribute_types]
       else:
         raise Exception("Unsupported artifact type.")
 
