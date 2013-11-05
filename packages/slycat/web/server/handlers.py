@@ -534,10 +534,10 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       type = metadata["column-types"][column]
       if index is not None and column == metadata["column-count"]-1:
         data.append(numpy.arange(metadata["row-count"])[rows].tolist())
-        if type in ["float32", "float64"]:
-          data[-1] = [None if numpy.isnan(value) else value for value in data[-1]]
       else:
         data.append(file["c{}".format(column)][rows.tolist()].tolist())
+        if type in ["float32", "float64"]:
+          data[-1] = [None if numpy.isnan(value) else value for value in data[-1]]
 
   result = {
     "rows" : rows.tolist(),
