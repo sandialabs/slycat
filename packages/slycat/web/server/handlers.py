@@ -533,8 +533,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
-  if numpy.any(rows >= metadata["row-count"]):
-    raise cherrypy.HTTPError("400 Row out-of-range.")
+  rows = rows[rows < metadata["row-count"]]
   if numpy.any(columns >= metadata["column-count"]):
     raise cherrypy.HTTPError("400 Column out-of-range.")
   if sort is not None:
@@ -584,8 +583,7 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
-  if numpy.any(rows >= metadata["row-count"]):
-    raise cherrypy.HTTPError("400 Row out-of-range.")
+  rows = rows[rows < metadata["row-count"]]
   if sort is not None:
     for column, order in sort:
       if column >= metadata["column-count"]:
@@ -636,8 +634,7 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
-  if numpy.any(rows >= metadata["row-count"]):
-    raise cherrypy.HTTPError("400 Row out-of-range.")
+  rows = rows[rows < metadata["row-count"]]
   if sort is not None:
     for column, order in sort:
       if column >= metadata["column-count"]:
