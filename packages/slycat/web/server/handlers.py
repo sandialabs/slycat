@@ -454,10 +454,14 @@ def get_model_table_rows(rows):
     rows = [spec.split("-") for spec in rows.split(",")]
     rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
     rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
-    rows = rows[rows >= 0]
     return rows
   except:
     raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
+
+  if numpy.any(rows < 0):
+    raise cherrypy.HTTPError("400 Row values must be non-negative.")
+
+  return rows
 
 def get_model_table_columns(columns):
   try:
@@ -468,6 +472,11 @@ def get_model_table_columns(columns):
     return columns
   except:
     raise cherrypy.HTTPError("400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
+
+  if numpy.any(columns < 0):
+    raise cherrypy.HTTPError("400 Column values must be non-negative.")
+
+  return columns
 
 def get_model_table_sort(sort):
   if sort is not None:
@@ -483,10 +492,14 @@ def get_model_table_sort(sort):
       raise cherrypy.HTTPError("400 Sort column must be an integer.")
 
     for column, order in sort:
+      if column < 0:
+        raise cherrypy.HTTPError("400 Sort column must be non-negative.")
       if order not in ["ascending", "descending"]:
         raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
 
-    sort = [(column, order) for column, order in sort if column >= 0]
+    if len(sort) != 1:
+      raise cherrypy.HTTPError("400 Currently, only one column can be sorted.")
+
   return sort
 
 def get_model_table_byteorder(byteorder):
@@ -520,10 +533,14 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
-  rows = rows[rows < metadata["row-count"]]
-  columns = columns[columns < metadata["column-count"]]
+  if numpy.any(rows >= metadata["row-count"]):
+    raise cherrypy.HTTPError("400 Row out-of-range.")
+  if numpy.any(columns >= metadata["column-count"]):
+    raise cherrypy.HTTPError("400 Column out-of-range.")
   if sort is not None:
-    sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
+    for column, order in sort:
+      if column >= metadata["column-count"]:
+        raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
   # Generate a database query
   data = []
@@ -567,9 +584,12 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
-  rows = rows[rows < metadata["row-count"]]
+  if numpy.any(rows >= metadata["row-count"]):
+    raise cherrypy.HTTPError("400 Row out-of-range.")
   if sort is not None:
-    sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
+    for column, order in sort:
+      if column >= metadata["column-count"]:
+        raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
   # Generate a database query
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index="index")
@@ -616,9 +636,12 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
 
   # Constrain end <= count along both dimensions
-  rows = rows[rows < metadata["row-count"]]
+  if numpy.any(rows >= metadata["row-count"]):
+    raise cherrypy.HTTPError("400 Row out-of-range.")
   if sort is not None:
-    sort = [(column, order) for column, order in sort if column < metadata["column-count"]]
+    for column, order in sort:
+      if column >= metadata["column-count"]:
+        raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
   # Generate a database query
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index="index")
