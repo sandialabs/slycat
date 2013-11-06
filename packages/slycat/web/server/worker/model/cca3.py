@@ -33,18 +33,18 @@ class implementation(slycat.web.server.worker.model.prototype):
 
     # Transform the input data table to a form usable with our cca() function ...
     with slycat.web.server.database.hdf5.open(data_table["storage"]) as file:
-      row_count = file.attrs["row-count"]
+      row_count = file.attrs["shape"][0]
       indices = numpy.arange(row_count, dtype="int32")
 
       X = numpy.empty((row_count, len(input_columns)))
       for j, input in enumerate(input_columns):
         self.set_progress(self.mix(0.0, 0.25, float(j) / float(len(input_columns))))
-        X[:,j] = file["c{}".format(input)][...]
+        X[:,j] = file.attribute(input)[...]
 
       Y = numpy.empty((row_count, len(output_columns)))
       for j, output in enumerate(output_columns):
         self.set_progress(self.mix(0.25, 0.50, float(j) / float(len(output_columns))))
-        Y[:,j] = file["c{}".format(output)][...]
+        Y[:,j] = file.attribute(output)[...]
 
       cherrypy.log.error("X: %s" % X)
       cherrypy.log.error("Y: %s" % Y)

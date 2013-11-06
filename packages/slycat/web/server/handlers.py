@@ -422,11 +422,7 @@ def get_model_array_chunk(mid, aid, **arguments):
 
   elif artifact_type == "table":
     with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-      data = file["c{}".format(attribute)][[slice(range[0], range[1]) for range in ranges]].tolist()
-    # Generate a database query
-    #query = "{array}".format(array = artifact["columns"])
-   # query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
-  #  query = "select c{attribute} from {array}".format(attribute=attribute, array=query)
+      data = file.attribute(attribute)[ranges[0][0] : ranges[0][1]]
 
   if byteorder is None:
     return json.dumps(data.tolist())
@@ -537,7 +533,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       if index is not None and column == metadata["column-count"]-1:
         data.append(numpy.arange(metadata["row-count"])[rows].tolist())
       else:
-        data.append(file["c{}".format(column)][rows.tolist()].tolist())
+        data.append(file.attribute(column)[rows.tolist()].tolist())
         if type in ["float32", "float64"]:
           data[-1] = [None if numpy.isnan(value) else value for value in data[-1]]
 

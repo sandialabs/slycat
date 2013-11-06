@@ -12,7 +12,7 @@ def dataset_min(dataset):
   if array.dtype.char not in ["O", "S"]:
     array = array[numpy.invert(numpy.isnan(array))]
   if len(array):
-    return numpy.min(array)
+    return numpy.asscalar(numpy.min(array))
   return None
 
 def dataset_max(dataset):
@@ -20,7 +20,7 @@ def dataset_max(dataset):
   if array.dtype.char not in ["O", "S"]:
     array = array[numpy.invert(numpy.isnan(array))]
   if len(array):
-    return numpy.max(array)
+    return numpy.asscalar(numpy.max(array))
   return None
 
 def get_array_metadata(mid, aid, artifact, artifact_type):
@@ -45,12 +45,12 @@ def get_array_metadata(mid, aid, artifact, artifact_type):
           dimension_end = [value.getInt64() for value in attribute.next()]
       elif artifact_type == "table":
         with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-          attribute_names = file.attrs["column-names"].tolist()
-          attribute_types = [file["c{}".format(i)].dtype for i in range(len(attribute_names))]
+          attribute_names = file.attrs["attribute-names"].tolist()
+          attribute_types = [file.attribute(i).dtype for i in range(len(attribute_names))]
           dimension_names = ["row"]
           dimension_types = ["int64"]
           dimension_begin = [0]
-          dimension_end = [file.attrs["row-count"]]
+          dimension_end = [file.attrs["shape"][0]]
 
           # h5py uses special types for unicode strings, convert them to "string"
           type_map = {h5py.special_dtype(vlen=unicode) : "string"}
@@ -80,12 +80,12 @@ def get_table_metadata(mid, aid, artifact, artifact_type, index):
     if (mid, aid) not in get_table_metadata.cache:
       if artifact_type == "table":
         with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-          row_count = file.attrs["row-count"]
-          column_names = file.attrs["column-names"].tolist()
+          row_count = file.attrs["shape"][0]
+          column_names = file.attrs["attribute-names"].tolist()
           column_count = len(column_names)
-          column_types = [file["c{}".format(i)].dtype for i in range(column_count)]
-          column_min = [dataset_min(file["c{}".format(i)]) for i in range(column_count)]
-          column_max = [dataset_max(file["c{}".format(i)]) for i in range(column_count)]
+          column_types = [file.attribute(i).dtype for i in range(column_count)]
+          column_min = [dataset_min(file.attribute(i)) for i in range(column_count)]
+          column_max = [dataset_max(file.attribute(i)) for i in range(column_count)]
       else:
         raise Exception("Unsupported artifact type.")
 

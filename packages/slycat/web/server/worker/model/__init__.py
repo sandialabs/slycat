@@ -352,19 +352,17 @@ class prototype(slycat.web.server.worker.prototype):
 class table_artifact:
   """Encapsulates all of the logic and state for incremental storage of a table to hdf5."""
   def __init__(self, row_count, column_names, column_types):
-    self.couchdb = slycat.web.server.database.couchdb.connect()
-
-#    self.column_names = column_names
-    self.column_types = column_types
+    self.column_types = [slycat.web.server.database.hdf5.attribute_type(type) for type in column_types]
 
     self.storage = uuid.uuid4().hex
+    self.couchdb = slycat.web.server.database.couchdb.connect()
     self.file = slycat.web.server.database.hdf5.create(self.storage)
     self.couchdb.save({"_id":self.storage, "type":"array"})
 
-    self.file.attrs["row-count"] = row_count
-    self.file.attrs["column-names"] = numpy.array(column_names, dtype=h5py.special_dtype(vlen=unicode))
-    for column, type in enumerate(column_types):
-      self.file.create_dataset("c{}".format(column), (row_count,), dtype=h5py.special_dtype(vlen=unicode) if type == "string" else type)
+    self.file.attrs["shape"] = numpy.array([row_count], dtype="int64")
+    self.file.attrs["attribute-names"] = numpy.array(column_names, dtype=h5py.special_dtype(vlen=unicode))
+    for index, type in enumerate(self.column_types):
+      self.file.create_dataset("attributes/{}".format(index), (row_count,), dtype=type)
 
 #  def store_binary_rows(self, rows):
 #    self.get_stream().write(rows.file.read())
@@ -384,7 +382,7 @@ class table_artifact:
     if len(columns) != len(self.column_types):
       raise Exception("Unexpected number of columns.")
     for index, (column, type) in enumerate(zip(columns, self.column_types)):
-      self.file["c{}".format(index)][...] = numpy.array(column, dtype=h5py.special_dtype(vlen=unicode) if type == "string" else type)
+      self.file.attribute(index)[...] = numpy.array(column, dtype=type)
 
   def finish(self):
     self.file.close()
