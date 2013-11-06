@@ -14,6 +14,7 @@ parser.add_argument("--create-times", default="create-times.npy", help="Filepath
 parser.add_argument("--write-times", default="write-times.npy", help="Filepath to save write times.  Default: %(default)s")
 parser.add_argument("--read-times", default="read-times.npy", help="Filepath to save read times.  Default: %(default)s")
 parser.add_argument("--size", type=int, default=1000, help="Size of each test file in elements.  Default: %(default)s")
+parser.add_argument("--save-interval", type=int, default=100000, help="Interval for dumping current timings.  Default: %(default)s")
 arguments = parser.parse_args()
 
 # Generate a collection of array ids
@@ -34,6 +35,8 @@ for index, path in enumerate(paths):
   with h5py.File(path, mode="w") as file:
     pass
   creation_times[index] = time.time() - start_time
+  if index % arguments.save_interval == 0:
+    numpy.save(arguments.create_times, creation_times)
 numpy.save(arguments.create_times, creation_times)
 
 # Write arrays
@@ -44,6 +47,8 @@ for index, path in enumerate(paths):
   with h5py.File(path, mode="r+") as file:
     file["data"] = numpy.random.random(arguments.size)
   write_times[index] = time.time() - start_time
+  if index % arguments.save_interval == 0:
+    numpy.save(arguments.write_times, write_times)
 numpy.save(arguments.write_times, write_times)
 
 # Read arrays
@@ -54,6 +59,8 @@ for index, path in enumerate(paths):
   with h5py.File(path, mode="r") as file:
     data = numpy.array(file["data"][...])
   read_times[index] = time.time() - start_time
+  if index % arguments.save_interval == 0:
+    numpy.save(arguments.read_times, read_times)
 numpy.save(arguments.read_times, read_times)
 
 pyplot.plot(creation_times, label="create")
