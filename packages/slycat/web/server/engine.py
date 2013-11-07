@@ -117,7 +117,6 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-worker-table-chunker-chunk", "/workers/:wid/table-chunker/chunk", slycat.web.server.handlers.get_worker_endpoint("get_table_chunker_chunk"), conditions={"method" : ["GET"]})
   dispatcher.connect("put-worker-table-chunker-sort", "/workers/:wid/table-chunker/sort", slycat.web.server.handlers.put_worker_endpoint("put_table_chunker_sort"), conditions={"method" : ["PUT"]})
   dispatcher.connect("get-worker-model-browse", "/workers/:wid/model/browse", slycat.web.server.handlers.get_worker_endpoint("get_model_browse"), conditions={"method" : ["GET"]})
-  dispatcher.connect("get-worker-model-table-columns", "/workers/:wid/model/table-columns", slycat.web.server.handlers.get_worker_endpoint("get_model_table_columns"), conditions={"method" : ["GET"]})
   dispatcher.connect("put-worker-model-remote-connection", "/workers/:wid/model/remote-connection", slycat.web.server.handlers.put_worker_endpoint("put_model_remote_connection"), conditions={"method" : ["PUT"]})
   dispatcher.connect("post-worker-model-copy-model-inputs", "/workers/:wid/model/copy-model-inputs", slycat.web.server.handlers.post_worker_endpoint("post_model_copy_model_inputs"), conditions={"method" : ["POST"]})
   dispatcher.connect("post-worker-model-set-parameter", "/workers/:wid/model/set-parameter", slycat.web.server.handlers.post_worker_endpoint("post_model_set_parameter"), conditions={"method" : ["POST"]})

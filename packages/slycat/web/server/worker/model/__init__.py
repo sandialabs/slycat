@@ -86,22 +86,6 @@ class prototype(slycat.web.server.worker.prototype):
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
-  def get_model_table_columns(self, arguments):
-    try:
-      name = arguments["name"]
-      with self.model_lock:
-        if name not in self.artifacts:
-          raise cherrypy.HTTPError("400 No artifact: %s" % name)
-        if self.artifact_types[name] != "table":
-          raise cherrypy.HTTPError("400 Not a table: %s" % name)
-        with self.scidb.query("aql", "select name from %s" % self.artifacts[name]["column-names"]) as results:
-          column_names = [value.getString() for attribute in results for value in attribute]
-        with self.scidb.query("aql", "select type_id from attributes(%s)" % self.artifacts[name]["columns"]) as results:
-          column_types = [value.getString() for attribute in results for value in attribute]
-        return {"column-names":column_names, "column-types":column_types}
-    except KeyError as e:
-      raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
-
   def put_model_remote_connection(self, arguments):
     try:
       if self.ssh is not None:
