@@ -2,12 +2,12 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 import math
+import numpy
 import slycat.web.client
 import StringIO
 import sys
 
 parser = slycat.web.client.option_parser()
-parser.add_option("--bundling", type="int", default=10, help="Maximum number of rows to bundle into a single request.  Default: %default")
 parser.add_option("--file", default="-", help="Input CSV file.  Use - for stdin.  Default: %default")
 parser.add_option("--input", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
 parser.add_option("--marking", default="", help="Marking type.  Default: %default")
@@ -23,40 +23,45 @@ options, arguments = parser.parse_args()
 stream = sys.stdin if options.file == "-" else open(options.file, "r")
 rows = [row.split(",") for row in stream]
 column_names = [name.strip() for name in rows[0]]
-column_types = ["double" for name in column_names]
+column_types = ["string" for name in column_names]
 column_count = len(column_names)
-rows = rows[1:]
+row_count = len(rows) - 1
+columns = zip(*rows[1:])
 
-for index, type in enumerate(column_types):
-  if type == "string":
-    continue
-  for row in rows:
-    row[index] = float(row[index])
+for index in range(len(columns)):
+  try:
+    columns[index] = numpy.array(columns[index], dtype="float64")
+    column_types[index] = "float64"
+  except:
+    pass
 
-inputs = [column_names.index(input) for input in options.input]
-outputs = [column_names.index(output) for output in options.output]
+try:
+  inputs = [column_names.index(input) for input in options.input]
+except:
+  raise Exception("Unknown input column.  Available columns: %s" % ", ".join(column_names))
+try:
+  outputs = [column_names.index(output) for output in options.output]
+except:
+  raise Exception("Unknown output column.  Available columns: %s" % ", ".join(column_names))
 if len(inputs) < 1:
   raise Exception("You must specify at least one input column.  Available columns: %s" % ", ".join(column_names))
 if len(outputs) < 1:
   raise Exception("You must specify at least one output column.  Available columns: %s" % ", ".join(column_names))
 for input in inputs:
-  if not (0 <= input and input < column_count):
-    raise Exception("Input column out of range: %s" % input)
-  if column_types[input] != "double":
-    raise Exception("Cannot analyze non-numeric input: %s" % input)
+  if column_types[input] != "float64":
+    raise Exception("Cannot analyze non-numeric input: %s" % column_names[input])
 for output in outputs:
-  if not (0 <= output and output < column_count):
-    raise Exception("Output column out of range: %s" % output)
-  if column_types[output] != "double":
-    raise Exception("Cannot analyze non-numeric output: %s" % output)
+  if column_types[output] != "float64":
+    raise Exception("Cannot analyze non-numeric output: %s" % column_names[output])
 
 connection = slycat.web.client.connect(options)
 
 pid = connection.find_or_create_project(options.project, options.project_name, options.project_description)
 wid = connection.create_cca_model_worker(pid, options.model_name, options.marking, options.model_description)
-connection.start_table(wid, "data-table", column_names,column_types)
-for row_start in range(0, len(rows), options.bundling):
-  connection.send_table_rows(wid, "data-table", rows[row_start:row_start + options.bundling])
+connection.start_table(wid, "data-table", row_count, column_names, column_types)
+for index, data in enumerate(columns):
+  sys.stderr.write("Sending column {} of {} ({})\n".format(index, column_count, column_names[index]))
+  connection.send_table_column(wid, "data-table", index, data)
 connection.finish_table(wid, "data-table")
 connection.set_parameter(wid, "input-columns", inputs)
 connection.set_parameter(wid, "output-columns", outputs)

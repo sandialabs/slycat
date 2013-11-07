@@ -19,6 +19,7 @@ import slycat.web.server.ssh
 import slycat.web.server.worker
 import stat
 import struct
+import sys
 import threading
 import time
 import uuid
@@ -189,12 +190,25 @@ class prototype(slycat.web.server.worker.prototype):
   def post_model_start_table(self, arguments):
     try:
       name = arguments["name"]
+      row_count = arguments["row-count"]
       column_names = arguments["column-names"]
       column_types = arguments["column-types"]
       if len(column_names) != len(column_types):
         raise cherrypy.HTTPError("400 column-names and column-types lengths must match.")
-      self.start_table_artifact(name, column_names, column_types)
+      self.start_table_artifact(name, row_count, column_names, column_types)
       self.set_message("Started table %s." % name)
+    except KeyError as e:
+      raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
+
+  def post_model_send_table_column(self, arguments):
+    try:
+      name = arguments["name"]
+      column = int(arguments["column"])
+      begin = int(arguments["begin"])
+      end = int(arguments["end"])
+      data = arguments["data"]
+      byteorder = arguments.get("byteorder", None)
+      self.send_table_artifact_column(name, column, begin, end, data, byteorder)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
@@ -287,9 +301,12 @@ class prototype(slycat.web.server.worker.prototype):
     """Stores an artifact as JSON."""
     self.update_artifact(name=name, value=value, type="json", input=input)
 
-  def start_table_artifact(self, name, column_names, column_types):
+  def start_table_artifact(self, name, row_count, column_names, column_types):
     with self.model_lock:
-      self.artifacts[name] = table_artifact(column_names, column_types)
+      self.artifacts[name] = table_artifact(row_count, column_names, column_types)
+
+  def send_table_artifact_column(self, name, column, begin, end, data, byteorder):
+    self.artifacts[name].store_column_binary(column, begin, end, data, byteorder)
 
   def send_table_artifact_binary_rows(self, name, rows):
     self.artifacts[name].store_binary_rows(rows)
@@ -352,6 +369,7 @@ class prototype(slycat.web.server.worker.prototype):
 class table_artifact:
   """Encapsulates all of the logic and state for incremental storage of a table to hdf5."""
   def __init__(self, row_count, column_names, column_types):
+    self.row_count = row_count
     self.column_types = [slycat.web.server.database.hdf5.attribute_type(type) for type in column_types]
 
     self.storage = uuid.uuid4().hex
@@ -364,19 +382,20 @@ class table_artifact:
     for index, type in enumerate(self.column_types):
       self.file.create_dataset("attributes/{}".format(index), (row_count,), dtype=type)
 
-#  def store_binary_rows(self, rows):
-#    self.get_stream().write(rows.file.read())
+  def store_column_binary(self, column, begin, end, data, byteorder):
+    if not (0 <= column and column < len(self.column_types)):
+      raise Exception("Column index {} out-of-range.".format(column))
+    if not (0 <= begin and begin < self.row_count):
+      raise Exception("Begin index {} out-of-range.".format(begin))
+    if not (begin <= end and end <= self.row_count):
+      raise Exception("End index {} out-of-range.".format(end))
 
-#  def store_rows(self, rows):
-#    stream = self.get_stream()
-#    for row in rows:
-#      for type, value in itertools.izip(self.column_types, row):
-#        if type == "string":
-#          stream.write(struct.pack("<I", len(value) + 1))
-#          stream.write(value)
-#          stream.write("\0")
-#        elif type == "double":
-#          stream.write(struct.pack("<d", value))
+    if byteorder is None:
+      content = json.load(data.file)
+      self.file.attribute(column)[begin:end] = numpy.array(content)
+    elif byteorder == sys.byteorder:
+      content = numpy.fromfile(data.file, dtype = self.column_types[column])
+      self.file.attribute(column)[begin:end] = content
 
   def store_columns(self, columns):
     if len(columns) != len(self.column_types):

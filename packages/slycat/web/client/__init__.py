@@ -212,16 +212,19 @@ class connection(object):
   def get_bookmark(self, bid):
     return self.request("GET", "/bookmarks/%s" % (bid))
 
-  def start_table(self, mwid, name, column_names, column_types):
+  def start_table(self, mwid, name, row_count, column_names, column_types):
     """Starts uploading a new table to a model worker."""
-    self.request("POST", "/workers/%s/model/start-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "column-names":column_names, "column-types":column_types}))
+    self.request("POST", "/workers/%s/model/start-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "row-count":row_count, "column-names":column_names, "column-types":column_types}))
 
-  def send_table_rows(self, mwid, name, rows):
-    """Appends zero-to-many rows to a model worker table."""
-    buffer = cStringIO.StringIO()
-    for chunk in binary_encoder(itertools.chain(*rows)):
-      buffer.write(chunk)
-    self.request("POST", "/workers/%s/model/send-table-rows" % (mwid), data={"name":name}, files={"rows":buffer.getvalue()})
+  def send_table_column(self, mwid, name, column, data, begin=None):
+    """Appends a column (subset) to a model worker table."""
+    if begin is None:
+      begin = 0
+    end = begin + len(data)
+    if isinstance(data, numpy.ndarray):
+      self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end, "byteorder":sys.byteorder}, files={"data":data.tostring(order="C")})
+    else:
+      self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end}, files={"data":json.dumps(data)})
 
   def finish_table(self, mwid, name):
     """Completes uploading a model worker table."""

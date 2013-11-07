@@ -46,8 +46,8 @@ class implementation(slycat.web.server.worker.model.prototype):
         self.set_progress(self.mix(0.25, 0.50, float(j) / float(len(output_columns))))
         Y[:,j] = file.attribute(output)[...]
 
-      cherrypy.log.error("X: %s" % X)
-      cherrypy.log.error("Y: %s" % Y)
+      #cherrypy.log.error("X: %s" % X)
+      #cherrypy.log.error("Y: %s" % Y)
 
     # Remove rows containing NaNs ...
     good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))
