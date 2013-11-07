@@ -603,29 +603,25 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
         raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
   # Generate a database query
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index="index")
-  query = slycat.web.server.cache.get_sorted_table_query(mid, aid, artifact, metadata, sort, index="index")
-  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"]-1)
-
-  # Retrieve the data from the database ...
-  data = numpy.zeros((metadata["row-count"]))
-  iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
-  database = slycat.web.server.database.scidb.connect()
-  with database.query("aql", query) as results:
-    for chunk in results.chunks():
-      for attribute in chunk.attributes():
-        for value in attribute.values():
-          iterator.next()[...] = value.getInt64()
-
-  result = [int(numpy.where(data == row)[0][0]) for row in rows]
+  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    sort_index = numpy.arange(metadata["row-count"])
+    if sort is not None:
+      sort_column, sort_order = sort[0]
+      if index is not None and sort_column == metadata["column-count"]-1:
+        pass # At this point, the sort index is already set from above
+      else:
+        sort_index = numpy.argsort(file.attribute(sort_column)[...], kind="mergesort")
+      if sort_order == "descending":
+        sort_index = sort_index[::-1]
+    slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
 
   if byteorder is None:
-    return json.dumps(result)
+    return json.dumps(slice.tolist())
   else:
     if sys.byteorder != byteorder:
-      return numpy.array(result, dtype="int32").byteswap().tostring(order="C")
+      return slice.byteswap().tostring(order="C")
     else:
-      return numpy.array(result, dtype="int32").tostring(order="C")
+      return slice.tostring(order="C")
 
 def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
   rows = get_model_table_rows(rows)
@@ -654,29 +650,25 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
         raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
   # Generate a database query
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index="index")
-  query = slycat.web.server.cache.get_sorted_table_query(mid, aid, artifact, metadata, sort, index="index")
-  query = "select c{column} from {array}".format(array=query, column=metadata["column-count"]-1)
-
-  # Retrieve the data from the database ...
-  data = numpy.zeros((metadata["row-count"]), dtype="int32")
-  iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
-  database = slycat.web.server.database.scidb.connect()
-  with database.query("aql", query) as results:
-    for chunk in results.chunks():
-      for attribute in chunk.attributes():
-        for value in attribute.values():
-          iterator.next()[...] = value.getInt64()
-
-  data = data[rows]
+  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    sort_index = numpy.arange(metadata["row-count"])
+    if sort is not None:
+      sort_column, sort_order = sort[0]
+      if index is not None and sort_column == metadata["column-count"]-1:
+        pass # At this point, the sort index is already set from above
+      else:
+        sort_index = numpy.argsort(file.attribute(sort_column)[...], kind="mergesort")
+      if sort_order == "descending":
+        sort_index = sort_index[::-1]
+    slice = sort_index[rows].astype("int32")
 
   if byteorder is None:
-    return json.dumps(data.tolist())
+    return json.dumps(slice.tolist())
   else:
     if sys.byteorder != byteorder:
-      return data.byteswap().tostring(order="C")
+      return slice.byteswap().tostring(order="C")
     else:
-      return data.tostring(order="C")
+      return slice.tostring(order="C")
 
 def get_model_file(mid, name):
   database = slycat.web.server.database.couchdb.connect()
