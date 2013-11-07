@@ -544,14 +544,27 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   # Generate a database query
   data = []
   with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    sort_index = numpy.arange(metadata["row-count"])
+    if sort is not None:
+      sort_column, sort_order = sort[0]
+      if index is not None and sort_column == metadata["column-count"]-1:
+        pass # At this point, the sort index is already set from above
+      else:
+        sort_index = numpy.argsort(file.attribute(sort_column)[...], kind="mergesort")
+      if sort_order == "descending":
+        sort_index = sort_index[::-1]
+    slice = sort_index[rows]
+    slice_index = numpy.argsort(slice, kind="mergesort")
+    slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
     for column in columns:
       type = metadata["column-types"][column]
       if index is not None and column == metadata["column-count"]-1:
-        data.append(numpy.arange(metadata["row-count"])[rows].tolist())
+        values = slice.tolist()
       else:
-        data.append(file.attribute(column)[rows.tolist()].tolist())
+        values = file.attribute(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
         if type in ["float32", "float64"]:
-          data[-1] = [None if numpy.isnan(value) else value for value in data[-1]]
+          values = [None if numpy.isnan(value) else value for value in values]
+      data.append(values)
 
   result = {
     "rows" : rows.tolist(),
