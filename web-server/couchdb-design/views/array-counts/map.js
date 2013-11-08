@@ -17,21 +17,14 @@ function(doc)
     {
       for(var artifact in artifact_types)
       {
-        if(artifact_types[artifact] == "table")
+        if(artifact_types[artifact] == "array")
         {
-          emit(doc["artifact:" + artifact]["columns"], 1);
-          emit(doc["artifact:" + artifact]["column-names"], 1);
+          emit(doc["artifact:" + artifact]["storage"], 1);
         }
         else if(artifact_types[artifact] == "timeseries")
         {
           emit(doc["artifact:" + artifact]["columns"], 1);
           emit(doc["artifact:" + artifact]["column-names"], 1);
-        }
-        else if(artifact_types[artifact] == "array")
-        {
-          emit(doc["artifact:" + artifact]["attribute-names"], 1);
-          emit(doc["artifact:" + artifact]["dimension-names"], 1);
-          emit(doc["artifact:" + artifact]["data"], 1);
         }
       }
     }

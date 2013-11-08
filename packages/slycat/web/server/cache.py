@@ -1,10 +1,7 @@
-import cherrypy
 import copy
 import h5py
 import numpy
-import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
-import slycat.web.server.database.scidb
 import threading
 
 def dataset_min(dataset):
@@ -41,8 +38,6 @@ def get_array_metadata(mid, aid, artifact):
         }
 
     metadata = get_array_metadata.cache[(mid, aid)]
-
-    cherrypy.log.error("array metadata: %s" % metadata)
 
     return metadata
 

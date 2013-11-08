@@ -26,7 +26,6 @@ import slycat.web.server.authentication
 import slycat.web.server.cache
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
-import slycat.web.server.database.scidb
 import slycat.web.server.ssh
 import slycat.web.server.template
 import slycat.web.server.timer
@@ -153,24 +152,23 @@ def put_project(pid):
 
   database.save(project)
 
-cleanup_array_queue = Queue.Queue()
 def cleanup_array_worker():
   while True:
-    cleanup_array_queue.get()
+    cleanup_arrays.queue.get()
     cherrypy.log.error("Array cleanup started.")
     couchdb = slycat.web.server.database.couchdb.connect()
-    scidb = slycat.web.server.database.scidb.connect()
     for array in couchdb.view("slycat/array-counts", group=True):
       if array.value == 0:
-        scidb.execute("aql", "drop array %s" % array.key, ignore_errors=True)
+        slycat.web.server.database.hdf5.delete(array.key)
         couchdb.delete(couchdb[array.key])
     cherrypy.log.error("Array cleanup finished.")
-thread = threading.Thread(name="Cleanup arrays", target=cleanup_array_worker)
-thread.daemon = True
-thread.start()
 
 def cleanup_arrays():
-  cleanup_array_queue.put("cleanup")
+  cleanup_arrays.queue.put("cleanup")
+cleanup_arrays.queue = Queue.Queue()
+cleanup_arrays.thread = threading.Thread(name="Cleanup arrays", target=cleanup_array_worker)
+cleanup_arrays.thread.daemon = True
+cleanup_arrays.thread.start()
 
 def delete_project(pid):
   couchdb = slycat.web.server.database.couchdb.connect()
@@ -321,7 +319,6 @@ def delete_model(mid):
   project = couchdb.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  scidb = slycat.web.server.database.scidb.connect()
   couchdb.delete(model)
   cleanup_arrays()
 
@@ -353,8 +350,8 @@ def get_model_array_metadata(mid, aid):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array", "table"]:
-    raise cherrypy.HTTPError("400 %s is not an array or table artifact." % aid)
+  if artifact_type not in ["array"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
   return metadata
@@ -390,8 +387,8 @@ def get_model_array_chunk(mid, aid, **arguments):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array", "table"]:
-    raise cherrypy.HTTPError("400 %s is not an array or table artifact." % aid)
+  if artifact_type not in ["array"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
 
@@ -427,8 +424,8 @@ def get_model_table_metadata(mid, aid, index = None):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array", "table"]:
-    raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
+  if artifact_type not in ["array"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
   return metadata
@@ -511,8 +508,8 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array", "table"]:
-    raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
+  if artifact_type not in ["array"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
 
@@ -574,8 +571,8 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array", "table"]:
-    raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
+  if artifact_type not in ["array"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
 
@@ -621,8 +618,8 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array", "table"]:
-    raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
+  if artifact_type not in ["array"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
 

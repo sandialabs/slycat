@@ -42,3 +42,8 @@ def open(array):
   cherrypy.log.error("Opening file {}".format(array_path))
   return wrap(h5py.File(array_path, mode="r"))
 
+def delete(array):
+  """Remove an array from the data store."""
+  array_path = path(array)
+  cherrypy.log.error("Deleting file {}".format(array_path))
+  os.remove(array_path)
