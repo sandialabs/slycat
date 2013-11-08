@@ -74,20 +74,17 @@ get_array_metadata.cache = {}
 get_array_metadata.lock = threading.Lock()
 
 
-def get_table_metadata(mid, aid, artifact, artifact_type, index):
+def get_table_metadata(mid, aid, artifact, index):
   """Return cached metadata for a table artifact, retrieving it from the database as-needed."""
   with get_table_metadata.lock:
     if (mid, aid) not in get_table_metadata.cache:
-      if artifact_type == "table":
-        with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-          row_count = file.attrs["shape"][0]
-          column_names = file.attrs["attribute-names"].tolist()
-          column_count = len(column_names)
-          column_types = [file.attribute(i).dtype for i in range(column_count)]
-          column_min = [dataset_min(file.attribute(i)) for i in range(column_count)]
-          column_max = [dataset_max(file.attribute(i)) for i in range(column_count)]
-      else:
-        raise Exception("Unsupported artifact type.")
+      with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+        row_count = file.attrs["shape"][0]
+        column_names = file.attrs["attribute-names"].tolist()
+        column_count = len(column_names)
+        column_types = [file.attribute(i).dtype for i in range(column_count)]
+        column_min = [dataset_min(file.attribute(i)) for i in range(column_count)]
+        column_max = [dataset_max(file.attribute(i)) for i in range(column_count)]
 
       # h5py uses special types for unicode strings, convert them to "string"
       type_map = {h5py.special_dtype(vlen=unicode) : "string"}

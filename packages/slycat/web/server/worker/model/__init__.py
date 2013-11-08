@@ -295,7 +295,7 @@ class prototype(slycat.web.server.worker.prototype):
 
   def finish_table_artifact(self, name, input):
     value = self.artifacts[name].finish()
-    self.update_artifact(name=name, value=value, type="table", input=input)
+    self.update_artifact(name=name, value=value, type="array", input=input)
 
   def start_timeseries_artifact(self, name, column_names, column_types):
     with self.model_lock:
@@ -336,7 +336,7 @@ class prototype(slycat.web.server.worker.prototype):
     return self.artifacts[name]
 
   def load_table_artifact(self, name):
-    if self.artifact_types[name] != "table":
+    if self.artifact_types[name] not in ["array", "table"]:
       raise Exception("Not a table artifact.")
     return self.artifacts[name]
 

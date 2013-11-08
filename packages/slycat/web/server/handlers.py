@@ -443,10 +443,10 @@ def get_model_table_metadata(mid, aid, index = None):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["table"]:
+  if artifact_type not in ["array", "table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
   return metadata
 
 def get_model_table_rows(rows):
@@ -527,10 +527,10 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["table"]:
+  if artifact_type not in ["array", "table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
@@ -590,10 +590,10 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["table"]:
+  if artifact_type not in ["array", "table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
@@ -637,10 +637,10 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["table"]:
+  if artifact_type not in ["array", "table"]:
     raise cherrypy.HTTPError("400 %s is not a table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, artifact_type, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
