@@ -348,9 +348,9 @@ class hdf5_array_artifact:
     self.couchdb.save({"_id":self.storage, "type":"array"})
 
     self.file.attrs["attribute-names"] = numpy.array([name for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    self.file.attrs["attribute-types"] = numpy.array(["string" if type == h5py.special_dtype(vlen=unicode) else type for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    self.file.attrs["attribute-types"] = numpy.array(["string" if type == h5py.special_dtype(vlen=unicode) else type for name, type in self.attributes], dtype=h5py.special_dtype(vlen=unicode))
     self.file.attrs["dimension-names"] = numpy.array([name for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    self.file.attrs["dimension-types"] = numpy.array(["string" if type == h5py.special_dtype(vlen=unicode) else type for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    self.file.attrs["dimension-types"] = numpy.array(["string" if type == h5py.special_dtype(vlen=unicode) else type for name, type, begin, end in self.dimensions], dtype=h5py.special_dtype(vlen=unicode))
     self.file.attrs["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
     self.file.attrs["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
     self.file.attrs["shape"] = numpy.array(shape, dtype="int64")
