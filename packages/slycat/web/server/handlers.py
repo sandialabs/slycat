@@ -393,36 +393,20 @@ def get_model_array_chunk(mid, aid, **arguments):
   if artifact_type not in ["array", "table"]:
     raise cherrypy.HTTPError("400 %s is not an array or table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact, artifact_type)
+  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
 
+  if not(0 <= attribute and attribute < len(metadata["attributes"])):
+    raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
   if len(ranges) != len(metadata["dimensions"]):
     raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
 
   ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(metadata["dimensions"], ranges)]
 
+  index = tuple([slice(begin, end) for begin, end in ranges])
+
   attribute_type =  metadata["attributes"][attribute]["type"]
-  if artifact_type == "array":
-    # Generate a database query
-    query = "{array}".format(array = artifact["data"])
-    query = "between({array}, {ranges})".format(array=query, ranges=",".join([str(begin) for begin, end in ranges] + [str(end-1) for begin, end in ranges]))
-    query = "select a{attribute} from {array}".format(attribute=attribute, array=query)
-
-    # Retrieve the data from the database ...
-    database = slycat.web.server.database.scidb.connect()
-    with database.query("aql", query) as result:
-      if attribute_type == "string":
-        data = numpy.array([value.getString() for chunk in result.chunks() for attribute in chunk.attributes() for value in attribute])
-      else:
-        data = numpy.zeros([end - begin for begin, end in ranges], dtype=attribute_type)
-        iterator = numpy.nditer(data, order="C", op_flags=["readwrite"])
-        for chunk in result.chunks():
-          for attribute in chunk.attributes():
-            for value in slycat.web.server.database.scidb.typed_values(attribute_type, attribute):
-              iterator.next()[...] = value
-
-  elif artifact_type == "table":
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-      data = file.attribute(attribute)[ranges[0][0] : ranges[0][1]]
+  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    data = file.attribute(attribute)[index]
 
   if byteorder is None:
     return json.dumps(data.tolist())

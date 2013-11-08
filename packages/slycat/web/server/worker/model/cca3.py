@@ -62,12 +62,12 @@ class implementation(slycat.web.server.worker.model.prototype):
     self.set_message("Computing CCA.")
     x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=scale_inputs)
     self.set_progress(0.75)
-#    cherrypy.log.error("%s" % x)
-#    cherrypy.log.error("%s" % y)
-#    cherrypy.log.error("%s" % x_loadings)
-#    cherrypy.log.error("%s" % y_loadings)
-#    cherrypy.log.error("%s" % r)
-#    cherrypy.log.error("%s" % wilks)
+    cherrypy.log.error("x %s" % (x.shape,))
+    cherrypy.log.error("y %s" % (y.shape,))
+    cherrypy.log.error("x_loadings %s" % (x_loadings.shape,))
+    cherrypy.log.error("y_loadings %s" % (y_loadings.shape,))
+    cherrypy.log.error("r %s" % (r.shape,))
+    cherrypy.log.error("wilks %s" % (wilks.shape,))
 
     self.set_message("Storing results.")
     component_count = x.shape[1]
@@ -75,33 +75,31 @@ class implementation(slycat.web.server.worker.model.prototype):
 
     # Store canonical variable indices (scatterplot indices) as a |sample| vector of indices ...
     self.start_array_artifact("canonical-indices", [("index", "int32")],[("sample", "int64", 0, sample_count)])
-    #self.send_array_artifact_attribute("canonical-indices", indices.tolist())
+    self.store_array_artifact_attribute("canonical-indices", 0, [(0, sample_count)], indices)
     self.finish_array_artifact("canonical-indices", input=False)
 
     # Store canonical variables (scatterplot data) as a component x sample matrix of x/y attributes ...
     self.start_array_artifact("canonical-variables", [("input", "float64"), ("output", "float64")], [("component", "int64", 0, component_count), ("sample", "int64", 0, sample_count)])
-    #for component in range(component_count):
-    #  self.send_array_artifact_attribute("canonical-variables", list(itertools.chain.from_iterable([(x[i, component], y[i, component]) for i in range(sample_count)])))
+    self.store_array_artifact_attribute("canonical-variables", 0, [(0, component_count), (0, sample_count)], x.T)
+    self.store_array_artifact_attribute("canonical-variables", 1, [(0, component_count), (0, sample_count)], y.T)
     self.finish_array_artifact("canonical-variables", input=False)
     self.set_progress(0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
     self.start_array_artifact("input-structure-correlation", [("correlation", "float64")], [("component", "int64", 0, component_count), ("input", "int64", 0, len(input_columns))])
-    #for component in range(component_count):
-    #  self.send_array_artifact_attribute("input-structure-correlation", [x_loadings[i, component] for i in range(len(input_columns))])
+    self.store_array_artifact_attribute("input-structure-correlation", 0, [(0, component_count), (0, len(input_columns))], x_loadings.T)
     self.finish_array_artifact("input-structure-correlation", input=False)
     self.set_progress(0.85)
 
     self.start_array_artifact("output-structure-correlation", [("correlation", "float64")], [("component", "int64", 0, component_count), ("output", "int64", 0, len(output_columns))])
-    #for component in range(component_count):
-    #  self.send_array_artifact_attribute("output-structure-correlation", [y_loadings[i, component] for i in range(len(output_columns))])
+    self.store_array_artifact_attribute("output-structure-correlation", 0, [(0, component_count), (0, len(output_columns))], y_loadings.T)
     self.finish_array_artifact("output-structure-correlation", input=False)
     self.set_progress(0.90)
 
     # Store statistics as a vector of component r2/p attributes
     self.start_array_artifact("cca-statistics", [("r2", "float64"), ("p", "float64")], [("component", "int64", 0, component_count)])
-    #for component in range(component_count):
-    #  self.send_array_artifact_attribute("cca-statistics", [r[component], wilks[component]])
+    self.store_array_artifact_attribute("cca-statistics", 0, [(0, component_count)], r)
+    self.store_array_artifact_attribute("cca-statistics", 1, [(0, component_count)], wilks)
     self.finish_array_artifact("cca-statistics", input=False)
 
     self.set_progress(1.0)

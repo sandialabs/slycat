@@ -36,8 +36,8 @@ def get_array_metadata(mid, aid, artifact):
         dimension_end = file.attrs["dimension-end"]
 
       get_array_metadata.cache[(mid, aid)] = {
-        "attributes" : zip(attribute_names, attribute_types),
-        "dimensions" : zip(dimension_names, dimension_types, dimension_begin, dimension_end)
+        "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
+        "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)]
         }
 
     metadata = get_array_metadata.cache[(mid, aid)]
