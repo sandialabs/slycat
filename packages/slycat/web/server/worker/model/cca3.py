@@ -74,34 +74,34 @@ class implementation(slycat.web.server.worker.model.prototype):
     sample_count = x.shape[0]
 
     # Store canonical variable indices (scatterplot indices) as a |sample| vector of indices ...
-    self.start_array_artifact("canonical-indices", [("index", "int32")],[("sample", sample_count, sample_count)])
-    self.send_array_artifact_data("canonical-indices", indices.tolist())
+    self.start_array_artifact("canonical-indices", [("index", "int32")],[("sample", "int64", 0, sample_count)])
+    #self.send_array_artifact_attribute("canonical-indices", indices.tolist())
     self.finish_array_artifact("canonical-indices", input=False)
 
     # Store canonical variables (scatterplot data) as a component x sample matrix of x/y attributes ...
-    self.start_array_artifact("canonical-variables", [("input", "float64"), ("output", "float64")], [("component", component_count, 1), ("sample", sample_count, sample_count)])
-    for component in range(component_count):
-      self.send_array_artifact_data("canonical-variables", list(itertools.chain.from_iterable([(x[i, component], y[i, component]) for i in range(sample_count)])))
+    self.start_array_artifact("canonical-variables", [("input", "float64"), ("output", "float64")], [("component", "int64", 0, component_count), ("sample", "int64", 0, sample_count)])
+    #for component in range(component_count):
+    #  self.send_array_artifact_attribute("canonical-variables", list(itertools.chain.from_iterable([(x[i, component], y[i, component]) for i in range(sample_count)])))
     self.finish_array_artifact("canonical-variables", input=False)
     self.set_progress(0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
-    self.start_array_artifact("input-structure-correlation", [("correlation", "float64")], [("component", component_count, 1), ("input", len(input_columns), len(input_columns))])
-    for component in range(component_count):
-      self.send_array_artifact_data("input-structure-correlation", [x_loadings[i, component] for i in range(len(input_columns))])
+    self.start_array_artifact("input-structure-correlation", [("correlation", "float64")], [("component", "int64", 0, component_count), ("input", "int64", 0, len(input_columns))])
+    #for component in range(component_count):
+    #  self.send_array_artifact_attribute("input-structure-correlation", [x_loadings[i, component] for i in range(len(input_columns))])
     self.finish_array_artifact("input-structure-correlation", input=False)
     self.set_progress(0.85)
 
-    self.start_array_artifact("output-structure-correlation", [("correlation", "float64")], [("component", component_count, 1), ("output", len(output_columns), len(output_columns))])
-    for component in range(component_count):
-      self.send_array_artifact_data("output-structure-correlation", [y_loadings[i, component] for i in range(len(output_columns))])
+    self.start_array_artifact("output-structure-correlation", [("correlation", "float64")], [("component", "int64", 0, component_count), ("output", "int64", 0, len(output_columns))])
+    #for component in range(component_count):
+    #  self.send_array_artifact_attribute("output-structure-correlation", [y_loadings[i, component] for i in range(len(output_columns))])
     self.finish_array_artifact("output-structure-correlation", input=False)
     self.set_progress(0.90)
 
     # Store statistics as a vector of component r2/p attributes
-    self.start_array_artifact("cca-statistics", [("r2", "float64"), ("p", "float64")], [("component", component_count, 1)])
-    for component in range(component_count):
-      self.send_array_artifact_data("cca-statistics", [r[component], wilks[component]])
+    self.start_array_artifact("cca-statistics", [("r2", "float64"), ("p", "float64")], [("component", "int64", 0, component_count)])
+    #for component in range(component_count):
+    #  self.send_array_artifact_attribute("cca-statistics", [r[component], wilks[component]])
     self.finish_array_artifact("cca-statistics", input=False)
 
     self.set_progress(1.0)

@@ -23,52 +23,28 @@ def dataset_max(dataset):
     return numpy.asscalar(numpy.max(array))
   return None
 
-def get_array_metadata(mid, aid, artifact, artifact_type):
+def get_array_metadata(mid, aid, artifact):
   """Return cached metadata for an array artifact, retrieving it from the database as-needed."""
   with get_array_metadata.lock:
     if (mid, aid) not in get_array_metadata.cache:
-      if artifact_type == "array":
-        database = slycat.web.server.database.scidb.connect()
-        with database.query("aql", "select name from %s" % artifact["attribute-names"]) as results:
-          attribute_names = [value.getString() for attribute in results for value in attribute]
-
-        with database.query("aql", "select type_id from attributes(%s)" % artifact["data"]) as results:
-          attribute_types = [value.getString() for attribute in results for value in attribute]
-
-        with database.query("aql", "select name from %s" % artifact["dimension-names"]) as results:
-          dimension_names = [value.getString() for attribute in results for value in attribute]
-
-        with database.query("aql", "select type, low as begin, high + 1 as end from dimensions(%s)" % artifact["data"]) as results:
-          attribute = iter(results)
-          dimension_types = [value.getString() for value in attribute.next()]
-          dimension_begin = [value.getInt64() for value in attribute.next()]
-          dimension_end = [value.getInt64() for value in attribute.next()]
-      elif artifact_type == "table":
-        with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-          attribute_names = file.attrs["attribute-names"].tolist()
-          attribute_types = [file.attribute(i).dtype for i in range(len(attribute_names))]
-          dimension_names = ["row"]
-          dimension_types = ["int64"]
-          dimension_begin = [0]
-          dimension_end = [file.attrs["shape"][0]]
-
-          # h5py uses special types for unicode strings, convert them to "string"
-          type_map = {h5py.special_dtype(vlen=unicode) : "string"}
-          attribute_types = [type_map[type] if type in type_map else type.name for type in attribute_types]
-      else:
-        raise Exception("Unsupported artifact type.")
-
-      # SciDB uses "float" and "double", but we prefer "float32" and "float64"
-      type_map = {"float":"float32", "double":"float64"}
-      attribute_types = [type_map[type] if type in type_map else type for type in attribute_types]
-      dimension_types = [type_map[type] if type in type_map else type for type in dimension_types]
+      with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+        attribute_names = file.attrs["attribute-names"]
+        attribute_types = file.attrs["attribute-types"]
+        dimension_names = file.attrs["dimension-names"]
+        dimension_types = file.attrs["dimension-types"]
+        dimension_begin = file.attrs["dimension-begin"]
+        dimension_end = file.attrs["dimension-end"]
 
       get_array_metadata.cache[(mid, aid)] = {
-        "attributes" : [{"name" : name, "type" : type} for name, type in zip(attribute_names, attribute_types)],
-        "dimensions" : [{"name" : name, "type" : type, "begin" : begin, "end" : end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)]
+        "attributes" : zip(attribute_names, attribute_types),
+        "dimensions" : zip(dimension_names, dimension_types, dimension_begin, dimension_end)
         }
 
-    return get_array_metadata.cache[(mid, aid)]
+    metadata = get_array_metadata.cache[(mid, aid)]
+
+    cherrypy.log.error("array metadata: %s" % metadata)
+
+    return metadata
 
 get_array_metadata.cache = {}
 get_array_metadata.lock = threading.Lock()

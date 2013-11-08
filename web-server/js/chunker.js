@@ -83,6 +83,8 @@ function get_model_array_attribute(parameters)
     contentType : "application/json",
     success: function(metadata)
     {
+      console.log(metadata);
+
       var ranges = [];
       for(var dimension in metadata.dimensions)
       {

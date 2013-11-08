@@ -356,7 +356,7 @@ def get_model_array_metadata(mid, aid):
   if artifact_type not in ["array", "table"]:
     raise cherrypy.HTTPError("400 %s is not an array or table artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact, artifact_type)
+  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
   return metadata
 
 def get_model_array_chunk(mid, aid, **arguments):
