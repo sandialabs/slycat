@@ -7,12 +7,12 @@ import h5py
 import os
 import types
 
-def attribute_type(type):
+def dtype(type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""
-  if type not in attribute_type.type_map.keys():
+  if type not in dtype.type_map.keys():
     raise Exception("Unsupported type: {}".format(type))
-  return attribute_type.type_map[type]
-attribute_type.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uin16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=unicode), "float":"float32", "double":"float64"}
+  return dtype.type_map[type]
+dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uin16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=unicode), "float":"float32", "double":"float64"}
 
 def path(array):
   """Convert an array identifier to a data store filesystem path."""

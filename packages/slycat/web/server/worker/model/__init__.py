@@ -141,8 +141,10 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % file.filename)
       table = tables[0]
-      artifact = table_artifact(table["row-count"], table["column-names"], table["column-types"])
-      artifact.store_columns(table["columns"])
+      attributes = zip(table["column-names"], table["column-types"])
+      dimensions = [("row", "int64", 0, table["row-count"])]
+      artifact = hdf5_array_artifact(attributes, dimensions)
+      artifact.store_attributes(table["columns"])
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="table", input=True)
       self.set_message("Loaded table %s." % name)
@@ -163,8 +165,10 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % path)
       table = tables[0]
-      artifact = table_artifact(table["row-count"], table["column-names"], table["column-types"])
-      artifact.store_columns(table["columns"])
+      attributes = zip(table["column-names"], table["column-types"])
+      dimensions = [("row", "int64", 0, table["row-count"])]
+      artifact = hdf5_array_artifact(attributes, dimensions)
+      artifact.store_attributes(table["columns"])
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="table", input=True)
       self.set_message("Loaded remote table %s." % name)
@@ -193,14 +197,6 @@ class prototype(slycat.web.server.worker.prototype):
       data = arguments["data"]
       byteorder = arguments.get("byteorder", None)
       self.send_table_artifact_column(name, column, begin, end, data, byteorder)
-    except KeyError as e:
-      raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
-
-  def post_model_send_table_rows(self, arguments):
-    try:
-      name = arguments["name"]
-      rows = arguments["rows"]
-      self.send_table_artifact_binary_rows(name, rows)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
@@ -287,10 +283,12 @@ class prototype(slycat.web.server.worker.prototype):
 
   def start_table_artifact(self, name, row_count, column_names, column_types):
     with self.model_lock:
-      self.artifacts[name] = table_artifact(row_count, column_names, column_types)
+      attributes = zip(column_names, column_types)
+      dimensions = [("row", "int64", 0, row_count)]
+      self.artifacts[name] = hdf5_array_artifact(attributes, dimensions)
 
   def send_table_artifact_column(self, name, column, begin, end, data, byteorder):
-    self.artifacts[name].store_column_binary(column, begin, end, data, byteorder)
+    self.artifacts[name].store_attribute(column, [(begin, end)], data, byteorder)
 
   def send_table_artifact_binary_rows(self, name, rows):
     self.artifacts[name].store_binary_rows(rows)
@@ -350,42 +348,52 @@ class prototype(slycat.web.server.worker.prototype):
   def compute_model():
     raise NotImplementedError()
 
-class table_artifact:
+class hdf5_array_artifact:
   """Encapsulates all of the logic and state for incremental storage of a table to hdf5."""
-  def __init__(self, row_count, column_names, column_types):
-    self.row_count = row_count
-    self.column_types = [slycat.web.server.database.hdf5.attribute_type(type) for type in column_types]
+  def __init__(self, attributes, dimensions):
+    self.attributes = [(name, slycat.web.server.database.hdf5.dtype(type)) for name, type in attributes]
+    self.dimensions = [(name, slycat.web.server.database.hdf5.dtype(type), begin, end) for name, type, begin, end in dimensions]
+    shape = [end - begin for name, type, begin, end in dimensions]
 
     self.storage = uuid.uuid4().hex
     self.couchdb = slycat.web.server.database.couchdb.connect()
     self.file = slycat.web.server.database.hdf5.create(self.storage)
     self.couchdb.save({"_id":self.storage, "type":"array"})
 
-    self.file.attrs["shape"] = numpy.array([row_count], dtype="int64")
-    self.file.attrs["attribute-names"] = numpy.array(column_names, dtype=h5py.special_dtype(vlen=unicode))
-    for index, type in enumerate(self.column_types):
-      self.file.create_dataset("attributes/{}".format(index), (row_count,), dtype=type)
+    self.file.attrs["attribute-names"] = numpy.array([name for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    self.file.attrs["dimension-names"] = numpy.array([name for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    self.file.attrs["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
+    self.file.attrs["dimension-end"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
+    self.file.attrs["shape"] = numpy.array(shape, dtype="int64")
 
-  def store_column_binary(self, column, begin, end, data, byteorder):
-    if not (0 <= column and column < len(self.column_types)):
-      raise Exception("Column index {} out-of-range.".format(column))
-    if not (0 <= begin and begin < self.row_count):
-      raise Exception("Begin index {} out-of-range.".format(begin))
-    if not (begin <= end and end <= self.row_count):
-      raise Exception("End index {} out-of-range.".format(end))
+    for index, (name, type) in enumerate(self.attributes):
+      self.file.create_dataset("attributes/{}".format(index), shape, dtype=type)
+
+  def store_attribute(self, attribute, ranges, data, byteorder):
+    if not (0 <= attribute and attribute < len(self.attributes)):
+      raise Exception("Attribute index {} out-of-range.".format(attribute))
+    for (name, type, dimension_begin, dimension_end), (range_begin, range_end) in zip(self.dimensions, ranges):
+      if not (dimension_begin <= range_begin and range_begin <= dimension_end):
+        raise Exception("Begin index {} out-of-range.".format(begin))
+      if not (range_begin <= range_end and range_end <= dimension_end):
+        raise Exception("End index {} out-of-range.".format(end))
+
+    index = tuple([slice(begin, end) for begin, end in ranges])
 
     if byteorder is None:
       content = json.load(data.file)
-      self.file.attribute(column)[begin:end] = numpy.array(content)
+      self.file.attribute(attribute)[index] = numpy.array(content)
     elif byteorder == sys.byteorder:
-      content = numpy.fromfile(data.file, dtype = self.column_types[column])
-      self.file.attribute(column)[begin:end] = content
+      content = numpy.fromfile(data.file, dtype = self.attributes[attribute][1])
+      self.file.attribute(attribute)[index] = content
+    else:
+      raise NotImplementedError()
 
-  def store_columns(self, columns):
-    if len(columns) != len(self.column_types):
-      raise Exception("Unexpected number of columns.")
-    for index, (column, type) in enumerate(zip(columns, self.column_types)):
-      self.file.attribute(index)[...] = numpy.array(column, dtype=type)
+  def store_attributes(self, attributes):
+    if len(attributes) != len(self.attributes):
+      raise Exception("Unexpected number of attributes.")
+    for index, (attribute, (name, type)) in enumerate(zip(attributes, self.attributes)):
+      self.file.attribute(index)[...] = numpy.array(attribute, dtype=type)
 
   def finish(self):
     self.file.close()

@@ -124,7 +124,6 @@ def start(config_file="config.ini"):
   dispatcher.connect("post-worker-model-load-remote-table", "/workers/:wid/model/load-remote-table", slycat.web.server.handlers.post_worker_endpoint("post_model_load_remote_table"), conditions={"method" : ["POST"]})
   dispatcher.connect("post-worker-model-start-table", "/workers/:wid/model/start-table", slycat.web.server.handlers.post_worker_endpoint("post_model_start_table"), conditions={"method" : ["POST"]})
   dispatcher.connect("post-worker-model-send-table-column", "/workers/:wid/model/send-table-column", slycat.web.server.handlers.post_worker_endpoint("post_model_send_table_column"), conditions={"method" : ["POST"]})
-  dispatcher.connect("post-worker-model-send-table-rows", "/workers/:wid/model/send-table-rows", slycat.web.server.handlers.post_worker_endpoint("post_model_send_table_rows"), conditions={"method" : ["POST"]})
   dispatcher.connect("post-worker-model-finish-table", "/workers/:wid/model/finish-table", slycat.web.server.handlers.post_worker_endpoint("post_model_finish_table"), conditions={"method" : ["POST"]})
   dispatcher.connect("post-worker-model-start-timeseries", "/workers/:wid/model/start-timeseries", slycat.web.server.handlers.post_worker_endpoint("post_model_start_timeseries"), conditions={"method" : ["POST"]})
   dispatcher.connect("post-worker-model-send-timeseries-rows", "/workers/:wid/model/send-timeseries-rows", slycat.web.server.handlers.post_worker_endpoint("post_model_send_timeseries_rows"), conditions={"method" : ["POST"]})
