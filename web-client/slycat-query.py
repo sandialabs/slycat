@@ -13,7 +13,6 @@ Where <commands> is one-or-more of the following:
 bookmark <project id> <json content>
 print bookmark <bookmark id>
 print model <model id>
-print model <model id> array <artifact id>
 print project <project id>
 print project <project id> models
 print projects
@@ -58,20 +57,7 @@ def print_command(target):
       response = connection.get_project(pid)
   elif target == "model":
     mid = require_token()
-    if peek_token() == "array":
-      skip_token()
-      artifact = require_token()
-      wid = connection.create_array_chunker(mid, artifact)
-      metadata = connection.get_array_chunker_metadata(wid)
-      attribute_indices = range(len(metadata["attributes"]))
-      range_indices = []
-      for dimension in metadata["dimensions"]:
-        range_indices += [dimension["begin"], dimension["end"]]
-      chunk = connection.get_array_chunker_chunk(wid, attribute_indices, range_indices)
-      response = {"metadata" : metadata, "data" : chunk}
-      connection.delete_worker(wid, stop=True)
-    else:
-      response = connection.get_model(mid)
+    response = connection.get_model(mid)
   elif target == "user":
     uid = require_token()
     response = connection.request("GET", "/users/%s" % (uid), headers={"accept":"application/json"})

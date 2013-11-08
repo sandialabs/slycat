@@ -176,36 +176,6 @@ class connection(object):
     """Creates a new timeseries  model worker, returning the worker ID."""
     return self.create_model_worker(pid, "timeseries", name, marking, description)
 
-  def create_test_array_chunker(self, shape):
-    """Creates a new test array chunker, returning the worker ID."""
-    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"array-chunker", "shape":shape}))["id"]
-
-  def create_array_chunker(self, mid, artifact):
-    """Creates a new array chunker, returning the worker ID."""
-    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"array-chunker", "mid":mid, "artifact":artifact}))["id"]
-
-  def get_array_chunker_metadata(self, wid):
-    return self.request("GET", "/workers/%s/array-chunker/metadata" % (wid), headers={"accept":"application/json"})
-
-  def get_array_chunker_chunk(self, wid, attribute, ranges, byteorder=None):
-    ranges = ",".join([str(range) for range in ranges])
-    if byteorder is None:
-      return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s" % (wid, attribute, ranges), headers={"accept":"application/json"})
-    else:
-      return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s&byteorder=%s" % (wid, attribute, ranges, byteorder), headers={"accept":"application/octet-stream"})
-
-  def create_test_table_chunker(self, rows, generate_index = None):
-    """Creates a new test table chunker, returning the worker ID."""
-    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"table-chunker", "row-count":rows, "generate-index":generate_index}))["id"]
-
-  def get_table_chunker_metadata(self, wid):
-    return self.request("GET", "/workers/%s/table-chunker/metadata" % (wid), headers={"accept":"application/json"})
-
-  def get_table_chunker_chunk(self, wid, rows, columns):
-    rows = ["%s-%s" % (row[0], row[1]) if isinstance(row, tuple) else str(row) for row in rows]
-    columns = ["%s-%s" % (column[0], column[1]) if isinstance(column, tuple) else str(column) for column in columns]
-    return self.request("GET", "/workers/{}/table-chunker/chunk?rows={}&columns={}".format(wid, ",".join(rows), ",".join(columns)))
-
   def create_bookmark(self, pid, bookmark):
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
@@ -271,7 +241,7 @@ class connection(object):
 
   def join_worker(self, wid):
     """Waits for a worker to complete, then returns.  Note that some workers
-    (such as a model that's still waiting for inputs or a chunker) will never
+    (such as a model that's still waiting for inputs) will never
     complete on their own - you should call stop_worker() first."""
     while True:
       worker = self.request("GET", "/workers/%s" % (wid), headers={"accept":"application/json"})

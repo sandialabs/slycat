@@ -33,7 +33,6 @@ import slycat.web.server.worker
 import slycat.web.server.worker.model.cca3
 import slycat.web.server.worker.model.timeseries
 import slycat.web.server.worker.model.generic
-import slycat.web.server.worker.chunker.table
 import slycat.web.server.worker.timer
 import threading
 import traceback
@@ -714,25 +713,7 @@ def post_workers():
   if "type" not in cherrypy.request.json:
     raise cherrypy.HTTPError("400 unspecified worker type.")
 
-  if cherrypy.request.json["type"] == "table-chunker":
-    generate_index = cherrypy.request.json.get("generate-index", None)
-    if "mid" in cherrypy.request.json and "artifact" in cherrypy.request.json:
-      mid = cherrypy.request.json["mid"]
-      artifact = cherrypy.request.json["artifact"]
-      database = slycat.web.server.database.couchdb.connect()
-      model = database.get("model", mid)
-      project = database.get("project", model["project"])
-      slycat.web.server.authentication.require_project_reader(project)
-      if artifact not in model["artifact-types"]:
-        raise cherrypy.HTTPError("400 Artifact %s not in model." % artifact)
-      if model["artifact-types"][artifact] != "table":
-        raise cherrypy.HTTPError("400 Artifact %s is not a table." % artifact)
-      wid = pool.start_worker(slycat.web.server.worker.chunker.table.artifact(cherrypy.request.security, model, artifact, generate_index))
-    elif "row-count" in cherrypy.request.json:
-      wid = pool.start_worker(slycat.web.server.worker.chunker.table.test(cherrypy.request.security, cherrypy.request.json["row-count"], generate_index))
-    else:
-      raise cherrypy.HTTPError("400 Table chunker data source not specified.")
-  elif cherrypy.request.json["type"] == "timeout":
+  if cherrypy.request.json["type"] == "timeout":
     wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "30-second countdown", 30, countdown_callback, cherrypy.request.app.config["slycat"]["server-root"]))
   elif cherrypy.request.json["type"] == "startup-failure":
     wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "Startup failure", 0, failure_callback))
