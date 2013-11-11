@@ -60,3 +60,15 @@ def test_project():
   connection.delete_project(pid)
   with nose.tools.assert_raises(requests.HTTPError):
     project = connection.get_project(pid)
+
+def test_bookmarks():
+  pid = connection.create_project("test-project")
+
+  bookmark = {"foo":"bar", "baz":[1, 2, 3]}
+  bid = connection.create_bookmark(pid, bookmark)
+  nose.tools.assert_equal(connection.get_bookmark(bid), bookmark)
+
+  bid2 = connection.create_bookmark(pid, bookmark)
+  nose.tools.assert_equal(bid, bid2)
+
+  connection.delete_project(pid)

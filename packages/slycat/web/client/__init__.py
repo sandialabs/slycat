@@ -139,6 +139,12 @@ class connection(object):
     """Deletes an existing project."""
     self.request("DELETE", "/projects/%s" % (pid))
 
+  def create_bookmark(self, pid, bookmark):
+    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
+
+  def get_bookmark(self, bid):
+    return self.request("GET", "/bookmarks/%s" % (bid))
+
   ########################################
   # Currently untested from here down
 
@@ -165,12 +171,6 @@ class connection(object):
   def create_timeseries_model_worker(self, pid, name, marking, description=""):
     """Creates a new timeseries  model worker, returning the worker ID."""
     return self.create_model_worker(pid, "timeseries", name, marking, description)
-
-  def create_bookmark(self, pid, bookmark):
-    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
-
-  def get_bookmark(self, bid):
-    return self.request("GET", "/bookmarks/%s" % (bid))
 
   def start_table(self, mwid, name, row_count, column_names, column_types):
     """Starts uploading a new table to a model worker."""
