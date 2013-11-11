@@ -4,6 +4,7 @@
 
 import nose
 import numpy
+import requests
 import slycat.web.client
 import subprocess
 import sys
@@ -23,3 +24,21 @@ def teardown():
   server_process.terminate()
   server_process.wait()
 
+def test_project():
+  pid = connection.create_project("test-project", "My test project.")
+
+  project = connection.get_project(pid)
+  nose.tools.assert_equal(project["name"], "test-project")
+  nose.tools.assert_equal(project["description"], "My test project.")
+  nose.tools.assert_equal(project["creator"], "slycat")
+  nose.tools.assert_equal(project["acl"], {'administrators': [{'user': 'slycat'}], 'writers': [], 'readers': []})
+
+  connection.put_project(pid, {"name":"modified-project", "description":"My modified project.", "acl":{"administrators":[{"user":"slycat"}], "writers":[{"user":"foo"}], "readers":[{"user":"bar"}]}})
+  project = connection.get_project(pid)
+  nose.tools.assert_equal(project["name"], "modified-project")
+  nose.tools.assert_equal(project["description"], "My modified project.")
+  nose.tools.assert_equal(project["acl"], {'administrators': [{'user': 'slycat'}], 'writers': [{"user":"foo"}], 'readers': [{"user":"bar"}]})
+
+  connection.delete_project(pid)
+  with nose.tools.assert_raises(requests.HTTPError):
+    project = connection.get_project(pid)
