@@ -148,6 +148,10 @@ class connection(object):
     """Returns a single project."""
     return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
+  def put_project(self, pid, project):
+    """Modifies a project."""
+    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
