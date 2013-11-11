@@ -35,7 +35,10 @@ def test_projects():
   pid1 = connection.create_project("foo")
   pid2 = connection.create_project("bar")
   projects = connection.get_projects()
+  nose.tools.assert_is_instance(projects, list)
   nose.tools.assert_equal(len(projects), 2)
+  for project in projects:
+    nose.tools.assert_equal(project["type"], "project")
 
   connection.delete_project(pid2)
   connection.delete_project(pid1)
@@ -72,3 +75,25 @@ def test_bookmarks():
   nose.tools.assert_equal(bid, bid2)
 
   connection.delete_project(pid)
+
+def test_models():
+  pid = connection.create_project("test-project")
+
+  wid = connection.create_model_worker(pid, "generic", "test-model")
+  mid1 = connection.finish_model(wid)
+  wid = connection.create_model_worker(pid, "generic", "test-model-2")
+  mid2 = connection.finish_model(wid)
+  models = connection.get_project_models(pid)
+  nose.tools.assert_is_instance(models, list)
+  nose.tools.assert_equal(len(models), 2)
+  for model in models:
+    nose.tools.assert_equal(model["type"], "model")
+
+  connection.delete_model(mid2)
+  connection.delete_model(mid1)
+  models = connection.get_project_models(pid)
+  nose.tools.assert_equal(models, [])
+
+  connection.delete_project(pid)
+
+

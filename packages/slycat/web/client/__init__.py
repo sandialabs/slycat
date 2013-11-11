@@ -145,32 +145,28 @@ class connection(object):
   def get_bookmark(self, bid):
     return self.request("GET", "/bookmarks/%s" % (bid))
 
-  ########################################
-  # Currently untested from here down
-
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
+
+  def create_model_worker(self, pid, type, name, marking="", description=""):
+    """Creates a new model worker, returning the worker ID."""
+    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["wid"]
+
+  def finish_model(self, mwid):
+    """Completes a model, returning the new model ID."""
+    return self.request("POST", "/workers/%s/model/finish-model" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({}))["mid"]
 
   def get_model(self, mid):
     """Returns a single model."""
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def create_model_worker(self, pid, type, name, marking, description=""):
-    """Creates a new model worker, returning the worker ID."""
-    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["wid"]
+  def delete_model(self, mid):
+    """Deletes an existing model."""
+    self.request("DELETE", "/models/%s" % (mid))
 
-  def create_generic_model_worker(self, pid, name, marking, description=""):
-    """Creates a new generic model worker, returning the worker ID."""
-    return self.create_model_worker(pid, "generic", name, marking, description)
-
-  def create_cca_model_worker(self, pid, name, marking, description=""):
-    """Creates a new CCA model worker, returning the worker ID."""
-    return self.create_model_worker(pid, "cca3", name, marking, description)
-
-  def create_timeseries_model_worker(self, pid, name, marking, description=""):
-    """Creates a new timeseries  model worker, returning the worker ID."""
-    return self.create_model_worker(pid, "timeseries", name, marking, description)
+  ########################################
+  # Currently untested from here down
 
   def start_table(self, mwid, name, row_count, column_names, column_types):
     """Starts uploading a new table to a model worker."""
@@ -216,10 +212,6 @@ class connection(object):
   def set_parameter(self, mwid, name, value):
     """Sets a model worker parameter value."""
     self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
-
-  def finish_model(self, mwid):
-    """Completes a model, returning the new model ID."""
-    return self.request("POST", "/workers/%s/model/finish-model" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({}))["mid"]
 
   def get_workers(self):
     """Returns all workers."""
