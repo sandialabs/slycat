@@ -14,6 +14,38 @@ import time
 server_process = None
 connection = None
 
+def require_valid_project(project):
+  nose.tools.assert_is_instance(project, dict)
+  nose.tools.assert_in("type", project)
+  nose.tools.assert_equal(project["type"], "project")
+  nose.tools.assert_in("name", project)
+  nose.tools.assert_is_instance(project["name"], basestring)
+  nose.tools.assert_in("description", project)
+  nose.tools.assert_is_instance(project["description"], basestring)
+  nose.tools.assert_in("creator", project)
+  nose.tools.assert_is_instance(project["creator"], basestring)
+  nose.tools.assert_in("created", project)
+  nose.tools.assert_is_instance(project["created"], basestring)
+  nose.tools.assert_in("acl", project)
+  nose.tools.assert_is_instance(project["acl"], dict)
+  nose.tools.assert_in("administrators", project["acl"])
+  nose.tools.assert_is_instance(project["acl"]["administrators"], list)
+  nose.tools.assert_in("readers", project["acl"])
+  nose.tools.assert_is_instance(project["acl"]["readers"], list)
+  nose.tools.assert_in("writers", project["acl"])
+  nose.tools.assert_is_instance(project["acl"]["writers"], list)
+  return project
+
+def require_valid_model(model):
+  nose.tools.assert_is_instance(model, dict)
+  nose.tools.assert_in("type", model)
+  nose.tools.assert_equal(model["type"], "model")
+  nose.tools.assert_in("name", model)
+  nose.tools.assert_is_instance(model["name"], basestring)
+  nose.tools.assert_in("description", model)
+  nose.tools.assert_is_instance(model["description"], basestring)
+  return model
+
 def setup():
   shutil.rmtree("test-data-store", ignore_errors=True)
   subprocess.check_call(["python", "slycat-couchdb-setup.py", "--database=slycat-test", "--delete"])
@@ -38,7 +70,7 @@ def test_projects():
   nose.tools.assert_is_instance(projects, list)
   nose.tools.assert_equal(len(projects), 2)
   for project in projects:
-    nose.tools.assert_equal(project["type"], "project")
+    require_valid_project(project)
 
   connection.delete_project(pid2)
   connection.delete_project(pid1)
@@ -48,14 +80,14 @@ def test_projects():
 def test_project():
   pid = connection.create_project("test-project", "My test project.")
 
-  project = connection.get_project(pid)
+  project = require_valid_project(connection.get_project(pid))
   nose.tools.assert_equal(project["name"], "test-project")
   nose.tools.assert_equal(project["description"], "My test project.")
   nose.tools.assert_equal(project["creator"], "slycat")
   nose.tools.assert_equal(project["acl"], {'administrators': [{'user': 'slycat'}], 'writers': [], 'readers': []})
 
   connection.put_project(pid, {"name":"modified-project", "description":"My modified project.", "acl":{"administrators":[{"user":"slycat"}], "writers":[{"user":"foo"}], "readers":[{"user":"bar"}]}})
-  project = connection.get_project(pid)
+  project = require_valid_project(connection.get_project(pid))
   nose.tools.assert_equal(project["name"], "modified-project")
   nose.tools.assert_equal(project["description"], "My modified project.")
   nose.tools.assert_equal(project["acl"], {'administrators': [{'user': 'slycat'}], 'writers': [{"user":"foo"}], 'readers': [{"user":"bar"}]})
@@ -87,7 +119,7 @@ def test_models():
   nose.tools.assert_is_instance(models, list)
   nose.tools.assert_equal(len(models), 2)
   for model in models:
-    nose.tools.assert_equal(model["type"], "model")
+    require_valid_model(model)
 
   connection.delete_model(mid2)
   connection.delete_model(mid1)
