@@ -116,33 +116,16 @@ class connection(object):
       self.log.write("\n")
       raise
 
-  def create_project(self, name, description=""):
-    """Creates a new project, returning the project ID."""
-    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
-
-  def find_or_create_project(self, project, name, description):
-    """Looks-up a project by name or id, or creates a new project with the given name and description."""
-    if project is None:
-      return self.create_project(name, description)
-    projects = self.request("GET", "/projects", headers={"accept":"application/json"})
-
-    # Look for an ID match ...
-    ids = [p["_id"] for p in projects if p["_id"] == project]
-    if len(ids) == 1:
-      return ids[0]
-
-    # Look for a name match ...
-    ids = [p["_id"] for p in projects if p["name"] == project]
-    if len(ids) == 1:
-      return ids[0]
-    if len(ids) > 1:
-      raise Exception("More than one project matched the given name.  Try using a project ID instead.")
-
-    raise Exception("Project %s not found." % project)
+  ###########################################################################################################3
+  # Functions that map directly to the underlying RESTful API
 
   def get_projects(self):
     """Returns all projects."""
     return self.request("GET", "/projects", headers={"accept":"application/json"})
+
+  def create_project(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
   def get_project(self, pid):
     """Returns a single project."""
@@ -152,13 +135,16 @@ class connection(object):
     """Modifies a project."""
     return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
 
-  def get_project_models(self, pid):
-    """Returns every model in a project."""
-    return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
-
   def delete_project(self, pid):
     """Deletes an existing project."""
     self.request("DELETE", "/projects/%s" % (pid))
+
+  ########################################
+  # Currently untested from here down
+
+  def get_project_models(self, pid):
+    """Returns every model in a project."""
+    return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
 
   def get_model(self, mid):
     """Returns a single model."""
@@ -260,6 +246,29 @@ class connection(object):
       self.stop_worker(wid)
       self.join_worker(wid)
     self.request("DELETE", "/workers/%s" % (wid))
+
+  ###########################################################################################################3
+  # Convenience functions that layer additional functionality atop the RESTful API
+
+  def find_or_create_project(self, project, name, description):
+    """Looks-up a project by name or id, or creates a new project with the given name and description."""
+    if project is None:
+      return self.create_project(name, description)
+    projects = self.request("GET", "/projects", headers={"accept":"application/json"})
+
+    # Look for an ID match ...
+    ids = [p["_id"] for p in projects if p["_id"] == project]
+    if len(ids) == 1:
+      return ids[0]
+
+    # Look for a name match ...
+    ids = [p["_id"] for p in projects if p["name"] == project]
+    if len(ids) == 1:
+      return ids[0]
+    if len(ids) > 1:
+      raise Exception("More than one project matched the given name.  Try using a project ID instead.")
+
+    raise Exception("Project %s not found." % project)
 
 def connect(options, **keywords):
   """Factory function for client connections that takes an option parser as input."""

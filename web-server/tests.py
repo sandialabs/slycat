@@ -6,6 +6,7 @@ import nose
 import numpy
 import requests
 import slycat.web.client
+import shutil
 import subprocess
 import sys
 import time
@@ -14,6 +15,9 @@ server_process = None
 connection = None
 
 def setup():
+  shutil.rmtree("test-data-store", ignore_errors=True)
+  subprocess.check_call(["python", "slycat-couchdb-setup.py", "--database=slycat-test", "--delete"])
+
   global server_process, connection
   server_process = subprocess.Popen(["python", "slycat-web-server.py", "--config=test-config.ini"])
   time.sleep(2.0)
@@ -23,6 +27,20 @@ def teardown():
   global server_process
   server_process.terminate()
   server_process.wait()
+
+def test_projects():
+  projects = connection.get_projects()
+  nose.tools.assert_equal(projects, [])
+
+  pid1 = connection.create_project("foo")
+  pid2 = connection.create_project("bar")
+  projects = connection.get_projects()
+  nose.tools.assert_equal(len(projects), 2)
+
+  connection.delete_project(pid2)
+  connection.delete_project(pid1)
+  projects = connection.get_projects()
+  nose.tools.assert_equal(projects, [])
 
 def test_project():
   pid = connection.create_project("test-project", "My test project.")
