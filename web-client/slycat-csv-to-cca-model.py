@@ -55,15 +55,19 @@ for output in outputs:
   if column_types[output] != "float64":
     raise Exception("Cannot analyze non-numeric output: %s" % column_names[output])
 
+attributes = zip(column_names, column_types)
+dimensions = [("row", "int64", 0, row_count)]
+
 connection = slycat.web.client.connect(options)
 
 pid = connection.find_or_create_project(options.project, options.project_name, options.project_description)
-wid = connection.create_cca_model_worker(pid, options.model_name, options.marking, options.model_description)
-connection.start_table(wid, "data-table", row_count, column_names, column_types)
+wid = connection.create_model_worker(pid, "cca3", options.model_name, options.marking, options.model_description)
+connection.start_array_set(wid, "data-table")
+connection.create_array(wid, "data-table", 0, attributes, dimensions)
 for index, data in enumerate(columns):
   sys.stderr.write("Sending column {} of {} ({})\n".format(index, column_count, column_names[index]))
-  connection.send_table_column(wid, "data-table", index, data)
-connection.finish_table(wid, "data-table")
+  connection.store_array_attribute(wid, "data-table", 0, index, data)
+connection.finish_array_set(wid, "data-table")
 connection.set_parameter(wid, "input-columns", inputs)
 connection.set_parameter(wid, "output-columns", outputs)
 connection.set_parameter(wid, "scale-inputs", options.scale_inputs)

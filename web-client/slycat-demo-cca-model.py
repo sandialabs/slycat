@@ -7,7 +7,6 @@ import slycat.web.client
 import sys
 
 parser = slycat.web.client.option_parser()
-parser.add_option("--bundling", type="int", default=10, help="Maximum number of rows to bundle into a single request.  Default: %default")
 parser.add_option("--column-prefix", default="a", help="Column prefix.  Default: %default")
 parser.add_option("--duplicate-input-count", type="int", default=0, help="Number of input columns to duplicate.  Default: %default")
 parser.add_option("--duplicate-output-count", type="int", default=0, help="Number of output columns to duplicate.  Default: %default")
@@ -46,14 +45,19 @@ for i in range(1, 1 + options.duplicate_input_count):
 for i in range(1 + options.input_count, 1 + options.input_count + options.duplicate_output_count):
   data[:,i] = data[:, options.input_count]
 
+attributes = [("%s%s" % (options.column_prefix, column), "float64") for column in range(total_columns)]
+dimensions = [("row", "int64", 0, options.row_count)]
+
 connection = slycat.web.client.connect(options)
 pid = connection.create_project(options.project_name)
-wid = connection.create_cca_model_worker(pid, options.model_name, options.marking)
-connection.start_table(wid, "data-table", ["%s%s" % (options.column_prefix, column) for column in range(total_columns)],["double" for column in range(total_columns)])
-for row_begin in range(0, options.row_count, options.bundling):
-  row_end = min(options.row_count, row_begin + options.bundling)
-  connection.send_table_rows(wid, "data-table", data[row_begin:row_end].tolist())
-connection.finish_table(wid, "data-table")
+wid = connection.create_model_worker(pid, "cca3", options.model_name, options.marking)
+connection.start_array_set(wid, "data-table")
+connection.create_array(wid, "data-table", 0, attributes, dimensions)
+
+for i in range(total_columns):
+  connection.store_array_attribute(wid, "data-table", 0, i, data.T[i])
+
+connection.finish_array_set(wid, "data-table")
 
 connection.set_parameter(wid, "input-columns", range(0, options.input_count))
 connection.set_parameter(wid, "output-columns", range(options.input_count, options.input_count + options.output_count))
