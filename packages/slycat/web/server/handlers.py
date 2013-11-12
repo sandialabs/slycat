@@ -402,7 +402,7 @@ def get_model_array_chunk(mid, aid, **arguments):
 
   attribute_type =  metadata["attributes"][attribute]["type"]
   with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    data = file.attribute(attribute)[index]
+    data = file.array_attribute(0, attribute)[index]
 
   if byteorder is None:
     return json.dumps(data.tolist())
@@ -530,7 +530,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       if index is not None and sort_column == metadata["column-count"]-1:
         pass # At this point, the sort index is already set from above
       else:
-        sort_index = numpy.argsort(file.attribute(sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(file.array_attribute(0, sort_column)[...], kind="mergesort")
       if sort_order == "descending":
         sort_index = sort_index[::-1]
     slice = sort_index[rows]
@@ -541,7 +541,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       if index is not None and column == metadata["column-count"]-1:
         values = slice.tolist()
       else:
-        values = file.attribute(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+        values = file.array_attribute(0, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
         if type in ["float32", "float64"]:
           values = [None if numpy.isnan(value) else value for value in values]
       data.append(values)
@@ -590,7 +590,7 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
       if index is not None and sort_column == metadata["column-count"]-1:
         pass # At this point, the sort index is already set from above
       else:
-        sort_index = numpy.argsort(file.attribute(sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(file.array_attribute(0, sort_column)[...], kind="mergesort")
       if sort_order == "descending":
         sort_index = sort_index[::-1]
     slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
@@ -637,7 +637,7 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
       if index is not None and sort_column == metadata["column-count"]-1:
         pass # At this point, the sort index is already set from above
       else:
-        sort_index = numpy.argsort(file.attribute(sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(file.array_attribute(0, sort_column)[...], kind="mergesort")
       if sort_order == "descending":
         sort_index = sort_index[::-1]
     slice = sort_index[rows].astype("int32")

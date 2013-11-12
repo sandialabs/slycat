@@ -25,12 +25,13 @@ def get_array_metadata(mid, aid, artifact):
   with get_array_metadata.lock:
     if (mid, aid) not in get_array_metadata.cache:
       with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-        attribute_names = file.attrs["attribute-names"]
-        attribute_types = file.attrs["attribute-types"]
-        dimension_names = file.attrs["dimension-names"]
-        dimension_types = file.attrs["dimension-types"]
-        dimension_begin = file.attrs["dimension-begin"]
-        dimension_end = file.attrs["dimension-end"]
+        array_metadata = file.array(0).attrs
+        attribute_names = array_metadata["attribute-names"]
+        attribute_types = array_metadata["attribute-types"]
+        dimension_names = array_metadata["dimension-names"]
+        dimension_types = array_metadata["dimension-types"]
+        dimension_begin = array_metadata["dimension-begin"]
+        dimension_end = array_metadata["dimension-end"]
 
       get_array_metadata.cache[(mid, aid)] = {
         "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
@@ -50,22 +51,22 @@ def get_table_metadata(mid, aid, artifact, index):
   with get_table_metadata.lock:
     if (mid, aid) not in get_table_metadata.cache:
       with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-        row_count = file.attrs["shape"][0]
-        column_names = file.attrs["attribute-names"].tolist()
-        column_count = len(column_names)
-        column_types = [file.attribute(i).dtype for i in range(column_count)]
-        column_min = [dataset_min(file.attribute(i)) for i in range(column_count)]
-        column_max = [dataset_max(file.attribute(i)) for i in range(column_count)]
+        array_metadata = file.array(0).attrs
+        column_names = array_metadata["attribute-names"]
+        column_types = array_metadata["attribute-types"]
+        dimension_begin = array_metadata["dimension-begin"]
+        dimension_end = array_metadata["dimension-end"]
+        column_min = [dataset_min(file.array_attribute(0, i)) for i in range(len(column_names))]
+        column_max = [dataset_max(file.array_attribute(0, i)) for i in range(len(column_names))]
 
-      # h5py uses special types for unicode strings, convert them to "string"
-      type_map = {h5py.special_dtype(vlen=unicode) : "string"}
-      column_types = [type_map[type] if type in type_map else type.name for type in column_types]
+      if len(dimension_begin) != 1:
+        raise Exception("Not a table (1D array) artifact.")
 
       get_table_metadata.cache[(mid, aid)] = {
-        "row-count" : row_count,
-        "column-count" : column_count,
-        "column-names" : column_names,
-        "column-types" : column_types,
+        "row-count" : dimension_end[0] - dimension_begin[0],
+        "column-count" : len(column_names),
+        "column-names" : column_names.tolist(),
+        "column-types" : column_types.tolist(),
         "column-min" : column_min,
         "column-max" : column_max
         }

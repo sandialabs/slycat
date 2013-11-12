@@ -141,10 +141,13 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % file.filename)
       table = tables[0]
+
       attributes = zip(table["column-names"], table["column-types"])
       dimensions = [("row", "int64", 0, table["row-count"])]
-      artifact = hdf5_array_artifact(attributes, dimensions)
-      artifact.store_attributes(table["columns"])
+      artifact = hdf5_array_set()
+      artifact.create_array(0, attributes, dimensions)
+      for attribute, data in enumerate(table["columns"]):
+        artifact.store_attribute(0, attribute, [(0, len(data))], data)
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="array", input=True)
       self.set_message("Loaded table %s." % name)
@@ -167,7 +170,7 @@ class prototype(slycat.web.server.worker.prototype):
       table = tables[0]
       attributes = zip(table["column-names"], table["column-types"])
       dimensions = [("row", "int64", 0, table["row-count"])]
-      artifact = hdf5_array_artifact(attributes, dimensions)
+      artifact = hdf5_array_set(attributes, dimensions)
       artifact.store_attributes(table["columns"])
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="array", input=True)
@@ -186,7 +189,7 @@ class prototype(slycat.web.server.worker.prototype):
       with self.model_lock:
         attributes = zip(column_names, column_types)
         dimensions = [("row", "int64", 0, row_count)]
-        self.artifacts[name] = hdf5_array_artifact(attributes, dimensions)
+        self.artifacts[name] = hdf5_array_set(attributes, dimensions)
         self.set_message("Started table %s." % name)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
@@ -295,14 +298,17 @@ class prototype(slycat.web.server.worker.prototype):
     value = self.artifacts[name].finish()
     self.update_artifact(name=name, value=value, type="timeseries", input=input)
 
-  def start_array_artifact(self, name, attributes, dimensions):
+  def start_array_set(self, name):
     with self.model_lock:
-      self.artifacts[name] = hdf5_array_artifact(attributes, dimensions)
+      self.artifacts[name] = hdf5_array_set()
 
-  def store_array_artifact_attribute(self, name, attribute, ranges, data):
-    self.artifacts[name].store_attribute(attribute, ranges, data)
+  def create_array(self, name, array, attributes, dimensions):
+    self.artifacts[name].create_array(array, attributes, dimensions)
 
-  def finish_array_artifact(self, name, input):
+  def store_array_attribute(self, name, array, attribute, ranges, data):
+    self.artifacts[name].store_attribute(array, attribute, ranges, data)
+
+  def finish_array_set(self, name, input):
     value = self.artifacts[name].finish()
     self.update_artifact(name=name, value=value, type="array", input=input)
 
@@ -335,68 +341,81 @@ class prototype(slycat.web.server.worker.prototype):
   def compute_model():
     raise NotImplementedError()
 
-class hdf5_array_artifact:
-  """Encapsulates all of the logic and state for incremental storage of an array to hdf5."""
-  def __init__(self, attributes, dimensions):
-    self.attributes = [(name, slycat.web.server.database.hdf5.dtype(type)) for name, type in attributes]
-    self.dimensions = [(name, slycat.web.server.database.hdf5.dtype(type), begin, end) for name, type, begin, end in dimensions]
-    shape = [end - begin for name, type, begin, end in dimensions]
-
+class hdf5_array_set:
+  """Encapsulates all of the logic and state for incremental storage of a collection of arrays to hdf5."""
+  def __init__(self):
+    """Create the underlying file and prepare to receive data."""
     self.storage = uuid.uuid4().hex
     self.couchdb = slycat.web.server.database.couchdb.connect()
     self.file = slycat.web.server.database.hdf5.create(self.storage)
     self.couchdb.save({"_id":self.storage, "type":"array"})
 
-    self.file.attrs["attribute-names"] = numpy.array([name for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    self.file.attrs["attribute-types"] = numpy.array(["string" if type == h5py.special_dtype(vlen=unicode) else type for name, type in self.attributes], dtype=h5py.special_dtype(vlen=unicode))
-    self.file.attrs["dimension-names"] = numpy.array([name for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    self.file.attrs["dimension-types"] = numpy.array(["string" if type == h5py.special_dtype(vlen=unicode) else type for name, type, begin, end in self.dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    self.file.attrs["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
-    self.file.attrs["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
-    self.file.attrs["shape"] = numpy.array(shape, dtype="int64")
+  def create_array(self, array_index, attributes, dimensions):
+    """Allocate storage for a new array and prepare to receive data."""
+    # Sanity-check inputs ...
+    type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "float":"float32", "double":"float64", "string":"string"}
+    attributes = [(name, type_map[type]) for name, type in attributes]
+    dimensions = [(name, type_map[type], begin, end) for name, type, begin, end in dimensions]
 
-    for index, (name, type) in enumerate(self.attributes):
-      self.file.create_dataset("attributes/{}".format(index), shape, dtype=type)
+    # Allocate space for the coming data ...
+    stored_types = [slycat.web.server.database.hdf5.dtype(type) for name, type in attributes]
+    shape = [end - begin for name, type, begin, end in dimensions]
+    for attribute_index, stored_type in enumerate(stored_types):
+      self.file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
 
-  def store_attribute(self, attribute, ranges, data):
+    # Store array metadata ...
+    array_metadata = self.file.array(array_index).attrs
+    array_metadata["attribute-names"] = numpy.array([name for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-types"] = numpy.array([type for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-names"] = numpy.array([name for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-types"] = numpy.array([type for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
+    array_metadata["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
+
+  def store_attribute(self, array, attribute, ranges, data):
     """Use a numpy array or array-like object to populate an attribute hyperslice."""
-    if not (0 <= attribute and attribute < len(self.attributes)):
+    array_metadata = self.file.array(array).attrs
+    if not (0 <= attribute and attribute < len(array_metadata["attribute-names"])):
       raise Exception("Attribute index {} out-of-range.".format(attribute))
-    for (name, type, dimension_begin, dimension_end), (range_begin, range_end) in zip(self.dimensions, ranges):
+    for dimension_begin, dimension_end, (range_begin, range_end) in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"], ranges):
       if not (dimension_begin <= range_begin and range_begin <= dimension_end):
         raise Exception("Begin index {} out-of-range.".format(begin))
       if not (range_begin <= range_end and range_end <= dimension_end):
         raise Exception("End index {} out-of-range.".format(end))
 
     index = tuple([slice(begin, end) for begin, end in ranges])
-    self.file.attribute(attribute)[index] = numpy.array(data)
+    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute])
+    self.file.array_attribute(array, attribute)[index] = numpy.array(data, dtype=stored_type)
 
   def store_attribute_file(self, attribute, ranges, data, byteorder):
     """Use a file-like object containing JSON or raw bytes to populate an attribute hyperslice."""
-    if not (0 <= attribute and attribute < len(self.attributes)):
+    array_metadata = self.file.array(array).attrs
+    if not (0 <= attribute and attribute < len(array_metadata["attribute-names"])):
       raise Exception("Attribute index {} out-of-range.".format(attribute))
-    for (name, type, dimension_begin, dimension_end), (range_begin, range_end) in zip(self.dimensions, ranges):
+    for dimension_begin, dimension_end, (range_begin, range_end) in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"], ranges):
       if not (dimension_begin <= range_begin and range_begin <= dimension_end):
         raise Exception("Begin index {} out-of-range.".format(begin))
       if not (range_begin <= range_end and range_end <= dimension_end):
         raise Exception("End index {} out-of-range.".format(end))
 
     index = tuple([slice(begin, end) for begin, end in ranges])
+    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute])
 
     if byteorder is None:
       content = json.load(data.file)
-      self.file.attribute(attribute)[index] = numpy.array(content)
+      self.file.array_attribute(array, attribute)[index] = numpy.array(content, dtype=stored_type)
     elif byteorder == sys.byteorder:
-      content = numpy.fromfile(data.file, dtype = self.attributes[attribute][1])
-      self.file.attribute(attribute)[index] = content
+      content = numpy.fromfile(data.file, dtype = metadata["attribute-types"][attribute])
+      self.file.array_attribute(array, attribute)[index] = content
     else:
       raise NotImplementedError()
 
-  def store_attributes(self, attributes):
-    if len(attributes) != len(self.attributes):
-      raise Exception("Unexpected number of attributes.")
-    for index, (attribute, (name, type)) in enumerate(zip(attributes, self.attributes)):
-      self.file.attribute(index)[...] = numpy.array(attribute, dtype=type)
+#  def store_attributes(self, attributes):
+#    array_metadata = self.file.array(array).attrs
+#    if len(attributes) != len(array_metadata["attribute-names"]):
+#      raise Exception("Unexpected number of attributes.")
+#    for index, (type, content) in enumerate(zip(array_metadata["attribute-types"], attributes)):
+#      self.file.array_attribute(array, index)[...] = numpy.array(content, dtype=type)
 
   def finish(self):
     self.file.close()
