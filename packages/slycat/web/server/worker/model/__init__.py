@@ -170,8 +170,10 @@ class prototype(slycat.web.server.worker.prototype):
       table = tables[0]
       attributes = zip(table["column-names"], table["column-types"])
       dimensions = [("row", "int64", 0, table["row-count"])]
-      artifact = hdf5_array_set(attributes, dimensions)
-      artifact.store_attributes(table["columns"])
+      artifact = hdf5_array_set()
+      artifact.create_array(0, attributes, dimensions)
+      for attribute, data in enumerate(table["columns"]):
+        artifact.store_attribute(0, attribute, [(0, len(data))], data)
       value = artifact.finish()
       self.update_artifact(name=name, value=value, type="array", input=True)
       self.set_message("Loaded remote table %s." % name)
@@ -409,13 +411,6 @@ class hdf5_array_set:
       self.file.array_attribute(array, attribute)[index] = content
     else:
       raise NotImplementedError()
-
-#  def store_attributes(self, attributes):
-#    array_metadata = self.file.array(array).attrs
-#    if len(attributes) != len(array_metadata["attribute-names"]):
-#      raise Exception("Unexpected number of attributes.")
-#    for index, (type, content) in enumerate(zip(array_metadata["attribute-types"], attributes)):
-#      self.file.array_attribute(array, index)[...] = numpy.array(content, dtype=type)
 
   def finish(self):
     self.file.close()
