@@ -6,7 +6,7 @@ rights in this software.
 
 function(doc)
 {
-  if(doc["type"] == "array")
+  if(doc["type"] == "hdf5")
   {
     emit(doc["_id"], 0);
   }
@@ -17,7 +17,7 @@ function(doc)
     {
       for(var artifact in artifact_types)
       {
-        if(artifact_types[artifact] == "array")
+        if(artifact_types[artifact] == "hdf5")
         {
           emit(doc["artifact:" + artifact]["storage"], 1);
         }

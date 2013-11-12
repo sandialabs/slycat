@@ -109,7 +109,7 @@ class prototype(slycat.web.server.worker.prototype):
           cherrypy.log.error("Copying artifact %s" % name)
           original_type = original_model["artifact-types"][name]
           original_value = original_model["artifact:%s" % name]
-          if original_type in ["json", "array", "timeseries"]:
+          if original_type in ["json", "hdf5", "timeseries"]:
             self.artifact_types[name] = original_type
             self.input_artifacts.add(name)
             self.artifacts[name] = original_value
@@ -149,7 +149,7 @@ class prototype(slycat.web.server.worker.prototype):
       for attribute, data in enumerate(table["columns"]):
         artifact.store_attribute(0, attribute, [(0, len(data))], data)
       value = artifact.finish()
-      self.update_artifact(name=name, value=value, type="array", input=True)
+      self.update_artifact(name=name, value=value, type="hdf5", input=True)
       self.set_message("Loaded table %s." % name)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
@@ -175,7 +175,7 @@ class prototype(slycat.web.server.worker.prototype):
       for attribute, data in enumerate(table["columns"]):
         artifact.store_attribute(0, attribute, [(0, len(data))], data)
       value = artifact.finish()
-      self.update_artifact(name=name, value=value, type="array", input=True)
+      self.update_artifact(name=name, value=value, type="hdf5", input=True)
       self.set_message("Loaded remote table %s." % name)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
@@ -212,7 +212,7 @@ class prototype(slycat.web.server.worker.prototype):
     try:
       name = arguments["name"]
       value = self.artifacts[name].finish()
-      self.update_artifact(name=name, value=value, type="array", input=True)
+      self.update_artifact(name=name, value=value, type="hdf5", input=True)
       self.set_message("Finished table %s." % name)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
@@ -312,7 +312,7 @@ class prototype(slycat.web.server.worker.prototype):
 
   def finish_array_set(self, name, input):
     value = self.artifacts[name].finish()
-    self.update_artifact(name=name, value=value, type="array", input=input)
+    self.update_artifact(name=name, value=value, type="hdf5", input=input)
 
   def store_file_artifact(self, name, value, content_type, input):
     """Stores an artifact as a file.  Returns the fid."""
@@ -331,7 +331,7 @@ class prototype(slycat.web.server.worker.prototype):
     return self.artifacts[name]
 
   def load_table_artifact(self, name):
-    if self.artifact_types[name] not in ["array"]:
+    if self.artifact_types[name] not in ["hdf5"]:
       raise Exception("Not a table artifact.")
     return self.artifacts[name]
 
@@ -350,7 +350,7 @@ class hdf5_array_set:
     self.storage = uuid.uuid4().hex
     self.couchdb = slycat.web.server.database.couchdb.connect()
     self.file = slycat.web.server.database.hdf5.create(self.storage)
-    self.couchdb.save({"_id":self.storage, "type":"array"})
+    self.couchdb.save({"_id":self.storage, "type":"hdf5"})
 
   def create_array(self, array_index, attributes, dimensions):
     """Allocate storage for a new array and prepare to receive data."""

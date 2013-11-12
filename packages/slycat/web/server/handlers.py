@@ -156,10 +156,10 @@ def cleanup_array_worker():
     cleanup_arrays.queue.get()
     cherrypy.log.error("Array cleanup started.")
     couchdb = slycat.web.server.database.couchdb.connect()
-    for array in couchdb.view("slycat/array-counts", group=True):
-      if array.value == 0:
-        slycat.web.server.database.hdf5.delete(array.key)
-        couchdb.delete(couchdb[array.key])
+    for file in couchdb.view("slycat/hdf5-file-counts", group=True):
+      if file.value == 0:
+        slycat.web.server.database.hdf5.delete(file.key)
+        couchdb.delete(couchdb[file.key])
     cherrypy.log.error("Array cleanup finished.")
 
 def cleanup_arrays():
@@ -349,7 +349,7 @@ def get_model_array_metadata(mid, aid):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array"]:
+  if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
@@ -386,7 +386,7 @@ def get_model_array_chunk(mid, aid, **arguments):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array"]:
+  if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
@@ -423,7 +423,7 @@ def get_model_table_metadata(mid, aid, index = None):
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array"]:
+  if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
@@ -507,7 +507,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array"]:
+  if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
@@ -570,7 +570,7 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array"]:
+  if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
@@ -617,7 +617,7 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   if artifact is None:
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["array"]:
+  if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)

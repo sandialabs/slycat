@@ -6,7 +6,7 @@ rights in this software.
 
 function(doc)
 {
-  if(doc["type"] != "array")
+  if(doc["type"] != "hdf5")
     return;
 
   emit(doc._id, null);

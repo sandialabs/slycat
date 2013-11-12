@@ -54,7 +54,7 @@ function(new_document, old_document, user_context)
       require(new_document["marking"] == old_document["marking"], "Model marking cannot be modified.");
     }
   }
-  else if(new_document["type"] == "array")
+  else if(new_document["type"] == "hdf5")
   {
   }
   else if(new_document["type"] == "bookmark")
