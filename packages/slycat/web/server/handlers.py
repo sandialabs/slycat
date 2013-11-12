@@ -339,7 +339,7 @@ def get_model_design(mid):
   return slycat.web.server.template.render("model-design.html", context)
 
 @cherrypy.tools.json_out(on = True)
-def get_model_array_metadata(mid, aid):
+def get_model_array_metadata(mid, aid, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -352,10 +352,10 @@ def get_model_array_metadata(mid, aid):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
+  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, array, artifact)
   return metadata
 
-def get_model_array_chunk(mid, aid, **arguments):
+def get_model_array_chunk(mid, aid, array, **arguments):
   try:
     attribute = int(arguments["attribute"])
   except:
@@ -389,7 +389,7 @@ def get_model_array_chunk(mid, aid, **arguments):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, artifact)
+  metadata = slycat.web.server.cache.get_array_metadata(mid, aid, array, artifact)
 
   if not(0 <= attribute and attribute < len(metadata["attributes"])):
     raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
@@ -402,7 +402,7 @@ def get_model_array_chunk(mid, aid, **arguments):
 
   attribute_type =  metadata["attributes"][attribute]["type"]
   with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    data = file.array_attribute(0, attribute)[index]
+    data = file.array_attribute(array, attribute)[index]
 
   if byteorder is None:
     return json.dumps(data.tolist())

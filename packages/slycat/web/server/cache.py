@@ -20,12 +20,12 @@ def dataset_max(dataset):
     return numpy.asscalar(numpy.max(array))
   return None
 
-def get_array_metadata(mid, aid, artifact):
+def get_array_metadata(mid, aid, array, artifact):
   """Return cached metadata for an array artifact, retrieving it from the database as-needed."""
   with get_array_metadata.lock:
-    if (mid, aid) not in get_array_metadata.cache:
+    if (mid, aid, array) not in get_array_metadata.cache:
       with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-        array_metadata = file.array(0).attrs
+        array_metadata = file.array(array).attrs
         attribute_names = array_metadata["attribute-names"]
         attribute_types = array_metadata["attribute-types"]
         dimension_names = array_metadata["dimension-names"]
@@ -33,12 +33,12 @@ def get_array_metadata(mid, aid, artifact):
         dimension_begin = array_metadata["dimension-begin"]
         dimension_end = array_metadata["dimension-end"]
 
-      get_array_metadata.cache[(mid, aid)] = {
+      get_array_metadata.cache[(mid, aid, array)] = {
         "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
         "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)]
         }
 
-    metadata = get_array_metadata.cache[(mid, aid)]
+    metadata = get_array_metadata.cache[(mid, aid, array)]
 
     return metadata
 
