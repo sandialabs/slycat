@@ -223,7 +223,7 @@ def post_project_models(pid):
 
   if model_type == "generic":
     wid = pool.start_worker(slycat.web.server.worker.model.generic.implementation(cherrypy.request.security, pid, mid, name, marking, description))
-  elif model_type == "cca3":
+  elif model_type == "cca":
     wid = pool.start_worker(slycat.web.server.worker.model.cca3.implementation(cherrypy.request.security, pid, mid, name, marking, description))
   elif model_type == "timeseries":
     wid = pool.start_worker(slycat.web.server.worker.model.timeseries.implementation(cherrypy.request.security, pid, mid, name, marking, description))

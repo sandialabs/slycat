@@ -61,7 +61,7 @@ dimensions = [("row", "int64", 0, row_count)]
 connection = slycat.web.client.connect(options)
 
 pid = connection.find_or_create_project(options.project, options.project_name, options.project_description)
-wid = connection.create_model_worker(pid, "cca3", options.model_name, options.marking, options.model_description)
+wid = connection.create_model_worker(pid, "cca", options.model_name, options.marking, options.model_description)
 connection.start_array_set(wid, "data-table")
 connection.create_array(wid, "data-table", 0, attributes, dimensions)
 for index, data in enumerate(columns):
