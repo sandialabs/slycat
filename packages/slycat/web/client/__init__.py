@@ -157,26 +157,29 @@ class connection(object):
     """Sets a model worker parameter value."""
     self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
 
-  def start_table(self, mwid, name, row_count, column_names, column_types):
-    """Adds a new table artifact to a model, ready for upload."""
-    self.request("POST", "/workers/%s/model/start-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "row-count":row_count, "column-names":column_names, "column-types":column_types}))
+  def start_array_set(self, mwid, name):
+    """Starts a new model array set artifact, ready for uploading data."""
+    self.request("POST", "/workers/%s/model/start-array-set" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
 
-  def send_table_column(self, mwid, name, column, data, begin=None):
-    """Sends a table column (or a slice of a table column) to the server."""
-    if begin is None:
-      begin = 0
-    end = begin + len(data)
+  def create_array(self, mwid, name, array, attributes, dimensions):
+    """Creates a new array set array, ready to receive data."""
+    self.request("POST", "/workers/%s/model/create-array" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "array":array, "attributes":attributes, "dimensions":dimensions}))
+
+  def store_array_attribute(self, mwid, name, array, attribute, data, ranges=None):
+    """Sends an array attribute (or a slice of an array attribute) to the server."""
     if isinstance(data, numpy.ndarray):
+      if ranges is None:
+        ranges = [(0, end) for end in data.shape]
       if data.dtype.char == "S":
-        self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end}, files={"data":json.dumps(data.tolist())})
+        self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute}, files={"ranges":json.dumps(ranges), "data":json.dumps(data.tolist())})
       else:
-        self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end, "byteorder":sys.byteorder}, files={"data":data.tostring(order="C")})
+        self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute, "byteorder":sys.byteorder}, files={"ranges":json.dumps(ranges), "data":data.tostring(order="C")})
     else:
-      self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end}, files={"data":json.dumps(data)})
+      self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute}, files={"ranges":json.dumps(ranges), "data":json.dumps(data)})
 
-  def finish_table(self, mwid, name):
-    """Completes uploading a model table artifact."""
-    self.request("POST", "/workers/%s/model/finish-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
+  def finish_array_set(self, mwid, name):
+    """Completes uploading a model array set artifact."""
+    self.request("POST", "/workers/%s/model/finish-array-set" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
 
   def finish_model(self, mwid):
     """Completes a model, returning the new model ID."""
@@ -186,13 +189,13 @@ class connection(object):
     """Returns a single model."""
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def get_table_metadata(self, mid, name):
+  def get_table_metadata(self, mid, name, array):
     """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/artifacts/%s/table-metadata" % (mid, name), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/artifacts/%s/table/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
-  def get_table_chunk(self, mid, name, rows, columns):
+  def get_table_chunk(self, mid, name, array, rows, columns):
     """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/artifacts/%s/table-chunk?rows=%s&columns=%s" % (mid, name, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/artifacts/%s/table/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
 
   def delete_model(self, mid):
     """Deletes an existing model."""

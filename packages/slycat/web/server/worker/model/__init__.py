@@ -180,68 +180,47 @@ class prototype(slycat.web.server.worker.prototype):
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
-  def post_model_start_table(self, arguments):
+  def post_model_start_array_set(self, arguments):
     try:
       name = arguments["name"]
-      row_count = arguments["row-count"]
-      column_names = arguments["column-names"]
-      column_types = arguments["column-types"]
-      if len(column_names) != len(column_types):
-        raise cherrypy.HTTPError("400 column-names and column-types lengths must match.")
       with self.model_lock:
-        attributes = zip(column_names, column_types)
-        dimensions = [("row", "int64", 0, row_count)]
-        self.artifacts[name] = hdf5_array_set(attributes, dimensions)
-        self.set_message("Started table %s." % name)
+        self.artifacts[name] = hdf5_array_set()
+        self.set_message("Started array set %s." % name)
+    except KeyError as e:
+      raise cherrypy.HTTPErorr("400 Missing key: %s" % e.message)
+
+  def post_model_create_array(self, arguments):
+    try:
+      name = arguments["name"]
+      array = int(arguments["array"])
+      attributes = arguments["attributes"]
+      dimensions = arguments["dimensions"]
+      with self.model_lock:
+        self.artifacts[name].create_array(array, attributes, dimensions)
+        self.set_message("Created array %s." % array)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
+    except:
+      raise cherrypy.HTTPError("400 Invalid arguments.")
 
-  def post_model_send_table_column(self, arguments):
+  def post_model_store_array_attribute(self, arguments):
     try:
       name = arguments["name"]
-      column = int(arguments["column"])
-      begin = int(arguments["begin"])
-      end = int(arguments["end"])
+      array = int(arguments["array"])
+      attribute = int(arguments["attribute"])
+      ranges = [(int(begin), int(end)) for begin, end in arguments["ranges"]]
       data = arguments["data"]
       byteorder = arguments.get("byteorder", None)
-      self.artifacts[name].store_attribute_file(column, [(begin, end)], data, byteorder)
+      self.artifacts[name].store_attribute_file(array, attribute, ranges, data, byteorder)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
-  def post_model_finish_table(self, arguments):
+  def post_model_finish_array_set(self, arguments):
     try:
       name = arguments["name"]
       value = self.artifacts[name].finish()
       self.update_artifact(name=name, value=value, type="hdf5", input=True)
-      self.set_message("Finished table %s." % name)
-    except KeyError as e:
-      raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
-
-  def post_model_start_timeseries(self, arguments):
-    try:
-      name = arguments["name"]
-      column_names = arguments["column-names"]
-      column_types = arguments["column-types"]
-      if len(column_names) != len(column_types):
-        raise cherrypy.HTTPError("400 column-names and column-types lengths must match.")
-      self.start_timeseries_artifact(name, column_names, column_types)
-      self.set_message("Started timeseries %s." % name)
-    except KeyError as e:
-      raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
-
-  def post_model_send_timeseries_rows(self, arguments):
-    try:
-      name = arguments["name"]
-      rows = arguments["rows"]
-      self.send_timeseries_artifact_binary_rows(name, rows)
-    except KeyError as e:
-      raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
-
-  def post_model_finish_timeseries(self, arguments):
-    try:
-      name = arguments["name"]
-      self.finish_timeseries_artifact(name, input=True)
-      self.set_message("Finished timeseries %s." % name)
+      self.set_message("Finished array set %s." % name)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
@@ -289,17 +268,6 @@ class prototype(slycat.web.server.worker.prototype):
     """Stores an artifact as JSON."""
     self.update_artifact(name=name, value=value, type="json", input=input)
 
-  def start_timeseries_artifact(self, name, column_names, column_types):
-    with self.model_lock:
-      self.artifacts[name] = timeseries_artifact(column_names, column_types)
-
-  def send_timeseries_artifact_binary_rows(self, name, rows):
-    self.artifacts[name].store_binary_rows(rows)
-
-  def finish_timeseries_artifact(self, name, input):
-    value = self.artifacts[name].finish()
-    self.update_artifact(name=name, value=value, type="timeseries", input=input)
-
   def start_array_set(self, name):
     with self.model_lock:
       self.artifacts[name] = hdf5_array_set()
@@ -333,11 +301,6 @@ class prototype(slycat.web.server.worker.prototype):
   def load_hdf5_artifact(self, name):
     if self.artifact_types[name] not in ["hdf5"]:
       raise Exception("Not an hdf5 artifact.")
-    return self.artifacts[name]
-
-  def load_timeseries_artifact(self, name):
-    if self.artifact_types[name] != "timeseries":
-      raise Exception("Not a timeseries artifact.")
     return self.artifacts[name]
 
   def compute_model():
@@ -389,7 +352,7 @@ class hdf5_array_set:
     stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute])
     self.file.array_attribute(array, attribute)[index] = numpy.array(data, dtype=stored_type)
 
-  def store_attribute_file(self, attribute, ranges, data, byteorder):
+  def store_attribute_file(self, array, attribute, ranges, data, byteorder):
     """Use a file-like object containing JSON or raw bytes to populate an attribute hyperslice."""
     array_metadata = self.file.array(array).attrs
     if not (0 <= attribute and attribute < len(array_metadata["attribute-names"])):
@@ -407,7 +370,7 @@ class hdf5_array_set:
       content = json.load(data.file)
       self.file.array_attribute(array, attribute)[index] = numpy.array(content, dtype=stored_type)
     elif byteorder == sys.byteorder:
-      content = numpy.fromfile(data.file, dtype = metadata["attribute-types"][attribute])
+      content = numpy.fromfile(data.file, dtype = array_metadata["attribute-types"][attribute])
       self.file.array_attribute(array, attribute)[index] = content
     else:
       raise NotImplementedError()
@@ -415,60 +378,4 @@ class hdf5_array_set:
   def finish(self):
     self.file.close()
     return {"storage" : self.storage}
-
-class timeseries_artifact:
-  """Encapsulates all of the logic and state for incremental storage of a set of related timeseries to SciDB."""
-  def __init__(self, column_names, column_types):
-    self.scidb = slycat.web.server.database.scidb.connect()
-    self.couchdb = slycat.web.server.database.couchdb.connect()
-
-    self.column_types = column_types
-    self.columns = "a" + uuid.uuid4().hex
-    self.column_names = "a" + uuid.uuid4().hex
-    self.scidb.execute("aql", "create array %s<name:string>[index=0:*,100,0]" % (self.column_names))
-    self.couchdb.save({"_id":self.column_names, "type":"array"})
-    self.scidb.execute("aql", "insert into %s '[%s]'" % (self.column_names, ",".join(["(\"%s\")" % name for name in column_names])))
-    self.scidb.execute("aql", "create array %s<timeseries:int64, time:double,%s>[row=0:*,500000,0]" % (self.columns, ",".join(["c%s:%s" % (column_index, column_type) for column_index, column_type in enumerate(column_types)])))
-    self.couchdb.save({"_id":self.columns, "type":"array"})
-
-    self.named_pipe = None
-    self.stream = None
-    self.thread = None
-
-  def get_stream(self):
-    def load_data(database, array, named_pipe, column_types):
-      database.execute("aql", "load %s from '%s' as '(%s)'" % (array, named_pipe, ",".join(["int64", "double"] + column_types)))
-
-    if self.stream is None:
-      self.named_pipe = "/tmp/%s" % self.columns
-      os.mkfifo(self.named_pipe, 0666)
-      self.thread = multiprocessing.Process(target=load_data, args=(self.scidb, self.columns, self.named_pipe, self.column_types))
-      self.thread.daemon = True
-      self.thread.start()
-      self.stream = open(self.named_pipe, "w")
-    return self.stream
-
-  def store_binary_rows(self, rows):
-    self.get_stream().write(rows.file.read())
-
-  def store_rows(self, ids, times, rows):
-    stream = self.get_stream()
-    for id, time, row in zip(ids, times, rows):
-      stream.write(struct.pack("<qd", id, time))
-      for type, value in itertools.izip(self.column_types, row):
-        if type == "string":
-          stream.write(struct.pack("<I", len(value) + 1))
-          stream.write(value)
-          stream.write("\0")
-        elif type == "double":
-          stream.write(struct.pack("<d", value))
-
-  def finish(self):
-    if self.stream is not None:
-      self.stream.close()
-    if self.thread is not None:
-      self.thread.join()
-    if self.named_pipe is not None:
-      os.unlink(self.named_pipe)
-    return {"column-names" : self.column_names, "columns" : self.columns}
 
