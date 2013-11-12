@@ -327,12 +327,12 @@ class prototype(slycat.web.server.worker.prototype):
 
   def load_json_artifact(self, name):
     if self.artifact_types[name] != "json":
-      raise Exception("Not a JSON artifact.")
+      raise Exception("Not a json artifact.")
     return self.artifacts[name]
 
-  def load_table_artifact(self, name):
+  def load_hdf5_artifact(self, name):
     if self.artifact_types[name] not in ["hdf5"]:
-      raise Exception("Not a table artifact.")
+      raise Exception("Not an hdf5 artifact.")
     return self.artifacts[name]
 
   def load_timeseries_artifact(self, name):

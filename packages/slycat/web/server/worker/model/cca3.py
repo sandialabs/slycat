@@ -21,7 +21,7 @@ class implementation(slycat.web.server.worker.model.prototype):
     self.set_message("Transforming data.")
 
     # Get required inputs ...
-    data_table = self.load_table_artifact("data-table")
+    data_table = self.load_hdf5_artifact("data-table")
     input_columns = self.load_json_artifact("input-columns")
     output_columns = self.load_json_artifact("output-columns")
     scale_inputs = self.load_json_artifact("scale-inputs")
@@ -46,9 +46,6 @@ class implementation(slycat.web.server.worker.model.prototype):
         self.set_progress(self.mix(0.25, 0.50, float(j) / float(len(output_columns))))
         Y[:,j] = file.array_attribute(0, output)[...]
 
-#      cherrypy.log.error("X: %s" % X)
-#      cherrypy.log.error("Y: %s" % Y)
-
     # Remove rows containing NaNs ...
     good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))
     indices = indices[good]
@@ -56,18 +53,9 @@ class implementation(slycat.web.server.worker.model.prototype):
     Y = Y[good]
 
     # Compute the CCA ...
-#    cherrypy.log.error("%s" % X)
-#    cherrypy.log.error("%s" % Y)
-#    cherrypy.log.error("%s" % scale_inputs)
     self.set_message("Computing CCA.")
     x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=scale_inputs)
     self.set_progress(0.75)
-#    cherrypy.log.error("x %s" % (x.shape,))
-#    cherrypy.log.error("y %s" % (y.shape,))
-#    cherrypy.log.error("x_loadings %s" % (x_loadings.shape,))
-#    cherrypy.log.error("y_loadings %s" % (y_loadings.shape,))
-#    cherrypy.log.error("r %s" % (r.shape,))
-#    cherrypy.log.error("wilks %s" % (wilks.shape,))
 
     self.set_message("Storing results.")
     component_count = x.shape[1]
