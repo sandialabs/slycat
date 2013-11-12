@@ -140,4 +140,31 @@ def test_models():
 
   connection.delete_project(pid)
 
+def test_model_parameters():
+  pid = connection.create_project("test-project")
+  wid = connection.create_model_worker(pid, "generic", "test-model")
+  connection.set_parameter(wid, "foo", "bar")
+  connection.set_parameter(wid, "baz", [1, 2, 3])
+  connection.set_parameter(wid, "blah", {"cat":"dog"})
+  mid = connection.finish_model(wid)
+
+  model = connection.get_model(mid)
+  nose.tools.assert_in("artifact:foo", model)
+  nose.tools.assert_equal(model["artifact:foo"], "bar")
+  nose.tools.assert_in("artifact:baz", model)
+  nose.tools.assert_equal(model["artifact:baz"], [1, 2, 3])
+  nose.tools.assert_in("artifact:blah", model)
+  nose.tools.assert_equal(model["artifact:blah"], {"cat":"dog"})
+  nose.tools.assert_in("input-artifacts", model)
+  nose.tools.assert_equal(set(model["input-artifacts"]), set(["foo", "baz", "blah"]))
+  nose.tools.assert_in("artifact-types", model)
+  nose.tools.assert_equal(model["artifact-types"], {"foo":"json", "baz":"json", "blah":"json"})
+
+  with nose.tools.assert_raises(requests.HTTPError):
+    connection.set_parameter(wid, "biff", 2.5)
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
+
 

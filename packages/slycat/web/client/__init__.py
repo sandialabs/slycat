@@ -153,6 +153,10 @@ class connection(object):
     """Creates a new model worker, returning the worker ID."""
     return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["wid"]
 
+  def set_parameter(self, mwid, name, value):
+    """Sets a model worker parameter value."""
+    self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
+
   def finish_model(self, mwid):
     """Completes a model, returning the new model ID."""
     return self.request("POST", "/workers/%s/model/finish-model" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({}))["mid"]
@@ -208,10 +212,6 @@ class connection(object):
   def finish_timeseries(self, mwid, name):
     """Completes uploading a model worker timeseries."""
     self.request("POST", "/workers/%s/model/finish-timeseries" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
-
-  def set_parameter(self, mwid, name, value):
-    """Sets a model worker parameter value."""
-    self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
 
   def get_workers(self):
     """Returns all workers."""
