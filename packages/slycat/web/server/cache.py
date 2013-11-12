@@ -46,12 +46,12 @@ get_array_metadata.cache = {}
 get_array_metadata.lock = threading.Lock()
 
 
-def get_table_metadata(mid, aid, artifact, index):
+def get_table_metadata(mid, aid, array, artifact, index):
   """Return cached metadata for a table artifact, retrieving it from the database as-needed."""
   with get_table_metadata.lock:
-    if (mid, aid) not in get_table_metadata.cache:
+    if (mid, aid, array) not in get_table_metadata.cache:
       with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-        array_metadata = file.array(0).attrs
+        array_metadata = file.array(array).attrs
         column_names = array_metadata["attribute-names"]
         column_types = array_metadata["attribute-types"]
         dimension_begin = array_metadata["dimension-begin"]
@@ -62,7 +62,7 @@ def get_table_metadata(mid, aid, artifact, index):
       if len(dimension_begin) != 1:
         raise Exception("Not a table (1D array) artifact.")
 
-      get_table_metadata.cache[(mid, aid)] = {
+      get_table_metadata.cache[(mid, aid, array)] = {
         "row-count" : dimension_end[0] - dimension_begin[0],
         "column-count" : len(column_names),
         "column-names" : column_names.tolist(),
@@ -71,7 +71,7 @@ def get_table_metadata(mid, aid, artifact, index):
         "column-max" : column_max
         }
 
-    metadata = get_table_metadata.cache[(mid, aid)]
+    metadata = get_table_metadata.cache[(mid, aid, array)]
 
     if index is not None:
       metadata = copy.deepcopy(metadata)
@@ -86,17 +86,3 @@ get_table_metadata.cache = {}
 get_table_metadata.lock = threading.Lock()
 
 
-
-def get_sorted_table_query(mid, aid, artifact, metadata, sort, index):
-  # This is a little heavy handed, but it ensures that we don't have two
-  # threads trying to sort the same table at the same time.
-
-  query = "{array}".format(array = artifact["columns"])
-  if index is not None:
-    query = "apply({array}, c{column}, row)".format(array=query, column=metadata["column-count"] - 1)
-  if sort is not None:
-    query_sort = ",".join(["c{column} {order}".format(column=column, order="asc" if order == "ascending" else "desc") for column, order in sort])
-    query = "sort({array}, {sort})".format(array=query, sort=query_sort)
-  return query
-
-get_sorted_table_query.lock = threading.Lock()

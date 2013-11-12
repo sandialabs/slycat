@@ -413,7 +413,7 @@ def get_model_array_chunk(mid, aid, array, **arguments):
       return data.tostring(order="C")
 
 @cherrypy.tools.json_out(on = True)
-def get_model_table_metadata(mid, aid, index = None):
+def get_model_table_metadata(mid, aid, array, index = None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -426,7 +426,7 @@ def get_model_table_metadata(mid, aid, index = None):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, array, artifact, index)
   return metadata
 
 def get_model_table_rows(rows):
@@ -493,7 +493,7 @@ def get_model_table_byteorder(byteorder):
   return byteorder
 
 @cherrypy.tools.json_out(on = True)
-def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=None):
+def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, sort=None):
   rows = get_model_table_rows(rows)
   columns = get_model_table_columns(columns)
   sort = get_model_table_sort(sort)
@@ -510,7 +510,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, array, artifact, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
@@ -530,7 +530,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       if index is not None and sort_column == metadata["column-count"]-1:
         pass # At this point, the sort index is already set from above
       else:
-        sort_index = numpy.argsort(file.array_attribute(0, sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
       if sort_order == "descending":
         sort_index = sort_index[::-1]
     slice = sort_index[rows]
@@ -541,7 +541,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
       if index is not None and column == metadata["column-count"]-1:
         values = slice.tolist()
       else:
-        values = file.array_attribute(0, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+        values = file.array_attribute(array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
         if type in ["float32", "float64"]:
           values = [None if numpy.isnan(value) else value for value in values]
       data.append(values)
@@ -556,7 +556,7 @@ def get_model_table_chunk(mid, aid, rows=None, columns=None, index=None, sort=No
 
   return result
 
-def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
+def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
   rows = get_model_table_rows(rows)
   sort = get_model_table_sort(sort)
   byteorder = get_model_table_byteorder(byteorder)
@@ -573,7 +573,7 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, array, artifact, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
@@ -590,7 +590,7 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
       if index is not None and sort_column == metadata["column-count"]-1:
         pass # At this point, the sort index is already set from above
       else:
-        sort_index = numpy.argsort(file.array_attribute(0, sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
       if sort_order == "descending":
         sort_index = sort_index[::-1]
     slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
@@ -603,7 +603,7 @@ def get_model_table_sorted_indices(mid, aid, rows=None, index=None, sort=None, b
     else:
       return slice.tostring(order="C")
 
-def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None, byteorder=None):
+def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
   rows = get_model_table_rows(rows)
   sort = get_model_table_sort(sort)
   byteorder = get_model_table_byteorder(byteorder)
@@ -620,7 +620,7 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, artifact, index)
+  metadata = slycat.web.server.cache.get_table_metadata(mid, aid, array, artifact, index)
 
   # Constrain end <= count along both dimensions
   rows = rows[rows < metadata["row-count"]]
@@ -637,7 +637,7 @@ def get_model_table_unsorted_indices(mid, aid, rows=None, index=None, sort=None,
       if index is not None and sort_column == metadata["column-count"]-1:
         pass # At this point, the sort index is already set from above
       else:
-        sort_index = numpy.argsort(file.array_attribute(0, sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
       if sort_order == "descending":
         sort_index = sort_index[::-1]
     slice = sort_index[rows].astype("int32")

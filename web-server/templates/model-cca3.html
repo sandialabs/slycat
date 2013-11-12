@@ -265,7 +265,7 @@ rights in this software.
 
         // Load data table metadata.
         $.ajax({
-          url : "{{server-root}}models/{{_id}}/artifacts/data-table/table-metadata?index=Index",
+          url : "{{server-root}}models/{{_id}}/artifacts/data-table/table/0/metadata?index=Index",
           contentType : "application/json",
           success: function(metadata)
           {
@@ -465,7 +465,7 @@ rights in this software.
                       $.ajax(
                       {
                         type : "GET",
-                        url : "{{server-root}}models/" + rerun_cca_model + "/artifacts/data-table/table-metadata",
+                        url : "{{server-root}}models/" + rerun_cca_model + "/artifacts/data-table/table/0/metadata",
                         success : function(table)
                         {
                           function deselect_companion(companion)
