@@ -44,6 +44,18 @@ def require_valid_model(model):
   nose.tools.assert_is_instance(model["name"], basestring)
   nose.tools.assert_in("description", model)
   nose.tools.assert_is_instance(model["description"], basestring)
+  nose.tools.assert_in("creator", model)
+  nose.tools.assert_is_instance(model["creator"], basestring)
+  nose.tools.assert_in("created", model)
+  nose.tools.assert_is_instance(model["created"], basestring)
+  nose.tools.assert_in("marking", model)
+  nose.tools.assert_is_instance(model["marking"], basestring)
+  nose.tools.assert_in("model-type", model)
+  nose.tools.assert_is_instance(model["model-type"], basestring)
+  nose.tools.assert_in("project", model)
+  nose.tools.assert_is_instance(model["project"], basestring)
+  nose.tools.assert_in("worker", model)
+  nose.tools.assert_is_instance(model["worker"], basestring)
   return model
 
 def setup():
