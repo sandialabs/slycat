@@ -204,29 +204,6 @@ class connection(object):
   ########################################
   # Currently untested from here down
 
-  def start_timeseries(self, mwid, name, column_names, column_types):
-    """Starts uploading a new timeseries to a model worker."""
-    self.request("POST", "/workers/%s/model/start-timeseries" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "column-names":column_names, "column-types":column_types}))
-
-  def send_timeseries_rows(self, mwid, name, ids, times, rows):
-    """Appends zero-to-many rows to a model worker timeseries."""
-    buffer = cStringIO.StringIO()
-    for chunk in binary_encoder(zip_times(ids, times, rows)):
-      buffer.write(chunk)
-    self.request("POST", "/workers/%s/model/send-timeseries-rows" % (mwid), data={"name":name}, files={"rows":buffer.getvalue()})
-
-  def send_timeseries_columns(self, mwid, name, ids, times, *columns):
-    """Appends zero-to-many columns to a model worker timeseries set."""
-    format = "<" + "".join([format_code(array) for array in [ids, times] + list(columns)])
-    buffer = cStringIO.StringIO()
-    for row in itertools.izip(ids, times, *columns):
-      buffer.write(struct.pack(format, *row))
-    self.request("POST", "/workers/%s/model/send-timeseries-rows" % (mwid), data={"name":name}, files={"rows":buffer.getvalue()})
-
-  def finish_timeseries(self, mwid, name):
-    """Completes uploading a model worker timeseries."""
-    self.request("POST", "/workers/%s/model/finish-timeseries" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
-
   def get_workers(self):
     """Returns all workers."""
     return self.request("GET", "/workers", headers={"accept":"application/json"})["workers"]
