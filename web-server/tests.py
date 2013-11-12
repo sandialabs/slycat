@@ -4,6 +4,7 @@
 
 import nose
 import numpy
+import numpy.testing
 import requests
 import slycat.web.client
 import shutil
@@ -125,8 +126,12 @@ def test_models():
 
   wid = connection.create_model_worker(pid, "generic", "test-model")
   mid1 = connection.finish_model(wid)
+  connection.join_worker(wid)
+
   wid = connection.create_model_worker(pid, "generic", "test-model-2")
   mid2 = connection.finish_model(wid)
+  connection.join_worker(wid)
+
   models = connection.get_project_models(pid)
   nose.tools.assert_is_instance(models, list)
   nose.tools.assert_equal(len(models), 2)
@@ -147,6 +152,7 @@ def test_model_parameters():
   connection.set_parameter(wid, "baz", [1, 2, 3])
   connection.set_parameter(wid, "blah", {"cat":"dog"})
   mid = connection.finish_model(wid)
+  connection.join_worker(wid)
 
   model = connection.get_model(mid)
   nose.tools.assert_in("artifact:foo", model)
@@ -166,5 +172,36 @@ def test_model_parameters():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
+def test_model_table():
+  column_types = ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string"]
+  column_names = column_types
+  columns = [numpy.arange(10).astype(type) for type in column_types]
 
+  pid = connection.create_project("test-project")
+  wid = connection.create_model_worker(pid, "generic", "test-model")
+  connection.start_table(wid, "test-table", 10, column_names, column_types)
+  for index, column in enumerate(columns):
+    connection.send_table_column(wid, "test-table", index, column)
+  connection.finish_table(wid, "test-table")
+  mid = connection.finish_model(wid)
+  connection.join_worker(wid)
+
+  with nose.tools.assert_raises(requests.HTTPError):
+    connection.start_table(wid, "test-table-2", 10, column_names, column_types)
+
+  metadata = connection.get_table_metadata(mid, "test-table")
+  nose.tools.assert_equal(metadata["row-count"], 10)
+  nose.tools.assert_equal(metadata["column-count"], 11)
+  nose.tools.assert_equal(metadata["column-names"], column_names)
+  nose.tools.assert_equal(metadata["column-types"], column_types)
+  nose.tools.assert_equal(metadata["column-min"], [0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, "0"])
+  nose.tools.assert_equal(metadata["column-max"], [9, 9, 9, 9, 9, 9, 9, 9, 9.0, 9.0, "9"])
+
+  for index, column in enumerate(columns):
+    chunk = connection.get_table_chunk(mid, "test-table", range(10), [index])
+    nose.tools.assert_equal(chunk["column-names"][0], column_names[index])
+    numpy.testing.assert_array_equal(chunk["data"][0], column)
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
 
