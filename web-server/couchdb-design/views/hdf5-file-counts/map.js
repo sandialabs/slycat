@@ -21,11 +21,6 @@ function(doc)
         {
           emit(doc["artifact:" + artifact]["storage"], 1);
         }
-        else if(artifact_types[artifact] == "timeseries")
-        {
-          emit(doc["artifact:" + artifact]["columns"], 1);
-          emit(doc["artifact:" + artifact]["column-names"], 1);
-        }
       }
     }
   }

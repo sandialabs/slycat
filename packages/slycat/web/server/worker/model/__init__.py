@@ -109,7 +109,7 @@ class prototype(slycat.web.server.worker.prototype):
           cherrypy.log.error("Copying artifact %s" % name)
           original_type = original_model["artifact-types"][name]
           original_value = original_model["artifact:%s" % name]
-          if original_type in ["json", "hdf5", "timeseries"]:
+          if original_type in ["json", "hdf5"]:
             self.artifact_types[name] = original_type
             self.input_artifacts.add(name)
             self.artifacts[name] = original_value
