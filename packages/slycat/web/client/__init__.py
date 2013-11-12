@@ -157,6 +157,27 @@ class connection(object):
     """Sets a model worker parameter value."""
     self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
 
+  def start_table(self, mwid, name, row_count, column_names, column_types):
+    """Adds a new table artifact to a model, ready for upload."""
+    self.request("POST", "/workers/%s/model/start-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "row-count":row_count, "column-names":column_names, "column-types":column_types}))
+
+  def send_table_column(self, mwid, name, column, data, begin=None):
+    """Sends a table column (or a slice of a table column) to the server."""
+    if begin is None:
+      begin = 0
+    end = begin + len(data)
+    if isinstance(data, numpy.ndarray):
+      if data.dtype.char == "S":
+        self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end}, files={"data":json.dumps(data.tolist())})
+      else:
+        self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end, "byteorder":sys.byteorder}, files={"data":data.tostring(order="C")})
+    else:
+      self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end}, files={"data":json.dumps(data)})
+
+  def finish_table(self, mwid, name):
+    """Completes uploading a model table artifact."""
+    self.request("POST", "/workers/%s/model/finish-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
+
   def finish_model(self, mwid):
     """Completes a model, returning the new model ID."""
     return self.request("POST", "/workers/%s/model/finish-model" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({}))["mid"]
@@ -165,30 +186,20 @@ class connection(object):
     """Returns a single model."""
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
+  def get_table_metadata(self, mid, name):
+    """Returns the metadata for a table (array) artifact."""
+    return self.request("GET", "/models/%s/artifacts/%s/table-metadata" % (mid, name), headers={"accept":"application/json"})
+
+  def get_table_chunk(self, mid, name, rows, columns):
+    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
+    return self.request("GET", "/models/%s/artifacts/%s/table-chunk?rows=%s&columns=%s" % (mid, name, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
+
   def delete_model(self, mid):
     """Deletes an existing model."""
     self.request("DELETE", "/models/%s" % (mid))
 
   ########################################
   # Currently untested from here down
-
-  def start_table(self, mwid, name, row_count, column_names, column_types):
-    """Starts uploading a new table to a model worker."""
-    self.request("POST", "/workers/%s/model/start-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "row-count":row_count, "column-names":column_names, "column-types":column_types}))
-
-  def send_table_column(self, mwid, name, column, data, begin=None):
-    """Appends a column (subset) to a model worker table."""
-    if begin is None:
-      begin = 0
-    end = begin + len(data)
-    if isinstance(data, numpy.ndarray):
-      self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end, "byteorder":sys.byteorder}, files={"data":data.tostring(order="C")})
-    else:
-      self.request("POST", "/workers/%s/model/send-table-column" % (mwid), data={"name":name, "column":column, "begin":begin, "end":end}, files={"data":json.dumps(data)})
-
-  def finish_table(self, mwid, name):
-    """Completes uploading a model worker table."""
-    self.request("POST", "/workers/%s/model/finish-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
 
   def start_timeseries(self, mwid, name, column_names, column_types):
     """Starts uploading a new timeseries to a model worker."""
