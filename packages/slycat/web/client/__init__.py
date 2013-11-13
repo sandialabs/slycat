@@ -2,16 +2,13 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import cStringIO
 import getpass
-import itertools
 import json
 import numpy
 import optparse
 import os
 import requests
 import shlex
-import struct
 import sys
 import time
 
@@ -19,31 +16,6 @@ class dev_null:
   """Do-nothing stream object, for disabling logging."""
   def write(*arguments, **keywords):
     pass
-
-def binary_encoder(sequence):
-  for value in sequence:
-    if isinstance(value, basestring):
-      yield struct.pack("<I", len(value) + 1)
-      yield value
-      yield "\0"
-    elif isinstance(value, int):
-      yield struct.pack("<q", value)
-    else:
-      yield struct.pack("<d", value)
-
-def zip_times(ids, times, rows):
-  for id, time, row in itertools.izip(ids, times, rows):
-    yield id
-    yield time
-    for field in row:
-      yield field
-
-def format_code(array):
-  if array.dtype == numpy.int64:
-    return "q"
-  elif array.dtype == numpy.float64:
-    return "d"
-  raise Exception("Unknown array type: %s" % array.dtype)
 
 class option_parser(optparse.OptionParser):
   """Returns an instance of optparse.OptionParser, pre-configured with options

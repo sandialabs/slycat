@@ -13,7 +13,6 @@ import os
 import Queue
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
-import slycat.web.server.database.scidb
 import slycat.web.server.spider
 import slycat.web.server.ssh
 import slycat.web.server.worker
