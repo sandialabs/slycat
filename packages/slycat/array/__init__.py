@@ -3,6 +3,8 @@ class InvalidArgument(Exception):
   def __init__(self, message):
     Exception.__init__(self, message)
 
+attribute_type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":"string", "float":"float32", "double":"float64"}
+
 def require_attribute_name(name):
   if not isinstance(name, basestring):
     raise InvalidArgument("Attribute name must be a string.")

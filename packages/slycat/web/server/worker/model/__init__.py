@@ -142,8 +142,7 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % file.filename)
       table = tables[0]
-
-      attributes = zip(table["column-names"], table["column-types"])
+      attributes = zip(table["column-names"], [attribute_type_map[type] for type in table["column-types"]])
       dimensions = [("row", "int64", 0, table["row-count"])]
       artifact = hdf5_array_set()
       artifact.create_array(0, attributes, dimensions)
@@ -169,7 +168,7 @@ class prototype(slycat.web.server.worker.prototype):
       if len(tables) != 1:
         raise cherrypy.HTTPError("400 Remote file %s must contain exactly one table." % path)
       table = tables[0]
-      attributes = zip(table["column-names"], table["column-types"])
+      attributes = zip(table["column-names"], [attribute_type_map[type] for type in table["column-types"]])
       dimensions = [("row", "int64", 0, table["row-count"])]
       artifact = hdf5_array_set()
       artifact.create_array(0, attributes, dimensions)
