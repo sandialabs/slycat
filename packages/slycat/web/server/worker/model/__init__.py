@@ -207,10 +207,10 @@ class prototype(slycat.web.server.worker.prototype):
       name = arguments["name"]
       array = int(arguments["array"])
       attribute = int(arguments["attribute"])
-      ranges = [(int(begin), int(end)) for begin, end in arguments["ranges"]]
+      ranges = [(int(begin), int(end)) for begin, end in json.load(arguments["ranges"].file)]
       data = arguments["data"]
       byteorder = arguments.get("byteorder", None)
-      self.artifacts[name].store_attribute_file(array, attribute, ranges, data, byteorder)
+      self.artifacts[name].store_attribute(array, attribute, ranges, data, byteorder)
     except KeyError as e:
       raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
@@ -336,43 +336,40 @@ class hdf5_array_set:
     array_metadata["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
     array_metadata["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
 
-  def store_attribute(self, array, attribute, ranges, data):
-    """Use a numpy array or array-like object to populate an attribute hyperslice."""
-    array_metadata = self.file.array(array).attrs
-    if not (0 <= attribute and attribute < len(array_metadata["attribute-names"])):
-      raise Exception("Attribute index {} out-of-range.".format(attribute))
+  def store_attribute(self, array_index, attribute_index, ranges, data, byteorder=None):
+    """Use a numpy array, array-like object, or a file-like object containing JSON or raw bytes to populate an attribute hyperslice."""
+    array_metadata = self.file.array(array_index).attrs
+    if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
+      raise Exception("Attribute index {} out-of-range.".format(attribute_index))
+    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+
+    if len(ranges) != len(array_metadata["dimension-begin"]):
+      raise Exception("Expected {} dimensions, got {}.".format(len(array_metadata["dimension-begin"]), len(ranges)))
     for dimension_begin, dimension_end, (range_begin, range_end) in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"], ranges):
       if not (dimension_begin <= range_begin and range_begin <= dimension_end):
         raise Exception("Begin index {} out-of-range.".format(begin))
       if not (range_begin <= range_end and range_end <= dimension_end):
         raise Exception("End index {} out-of-range.".format(end))
 
-    index = tuple([slice(begin, end) for begin, end in ranges])
-    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute])
-    self.file.array_attribute(array, attribute)[index] = numpy.array(data, dtype=stored_type)
-
-  def store_attribute_file(self, array, attribute, ranges, data, byteorder):
-    """Use a file-like object containing JSON or raw bytes to populate an attribute hyperslice."""
-    array_metadata = self.file.array(array).attrs
-    if not (0 <= attribute and attribute < len(array_metadata["attribute-names"])):
-      raise Exception("Attribute index {} out-of-range.".format(attribute))
-    for dimension_begin, dimension_end, (range_begin, range_end) in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"], ranges):
-      if not (dimension_begin <= range_begin and range_begin <= dimension_end):
-        raise Exception("Begin index {} out-of-range.".format(begin))
-      if not (range_begin <= range_end and range_end <= dimension_end):
-        raise Exception("End index {} out-of-range.".format(end))
-
-    index = tuple([slice(begin, end) for begin, end in ranges])
-    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute])
-
-    if byteorder is None:
-      content = json.load(data.file)
-      self.file.array_attribute(array, attribute)[index] = numpy.array(content, dtype=stored_type)
-    elif byteorder == sys.byteorder:
-      content = numpy.fromfile(data.file, dtype = array_metadata["attribute-types"][attribute])
-      self.file.array_attribute(array, attribute)[index] = content
+    # Convert data to an array ...
+    if isinstance(data, numpy.ndarray):
+      pass
+    elif isinstance(data, list):
+      data = numpy.array(data, dtype=stored_type)
     else:
-      raise NotImplementedError()
+      if byteorder is None:
+        data = numpy.array(json.load(data.file), dtype=stored_type)
+      elif byteorder == sys.byteorder:
+        data = numpy.fromfile(data.file, dtype=stored_type)
+      else:
+        raise NotImplementedError()
+
+    # Check that the data and range shapes match ...
+    if data.shape != tuple([end - begin for begin, end in ranges]):
+      raise Exception("Data and range shapes don't match.")
+
+    index = tuple([slice(begin, end) for begin, end in ranges])
+    self.file.array_attribute(array_index, attribute_index)[index] = data
 
   def finish(self):
     self.file.close()
