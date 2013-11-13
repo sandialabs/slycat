@@ -30,27 +30,25 @@ class implementation(slycat.web.server.worker.model.prototype):
     cluster_bin_type = self.load_json_artifact("cluster-bin-type")
 
     # Create a mapping from unique output variable names to array attributes ...
-    cluster_attributes = collections.defaultdict(list)
+    cluster_storage = collections.defaultdict(list)
     with slycat.web.server.database.hdf5.open(outputs["storage"]) as file:
-      for array_id, array in file["array"].items():
-        array_metadata = array.attrs
-        for attribute_id, attribute in array["attribute"].items():
-          if int(attribute_id) != 0:
-            cluster_attributes[array_metadata["attribute-names"][int(attribute_id)]].append((int(array_id), int(attribute_id)))
-
-    # Store a collection of cluster (name, artifact) tuples ...
-#    cluster_artifacts = [(value.getString(), artifact) for artifact in timeseries_artifacts for chunk in self.scidb.query("aql", "select name from %s" % artifact["column-names"]).chunks() for attribute in chunk.attributes() for value in attribute]
+      arrays = [(int(array_id), array, array.attrs) for array_id, array in file["array"].items()]
+      for array_id, array, array_metadata in arrays:
+        attributes = [int(attribute_id) for attribute_id in array["attribute"]]
+        for attribute_id in attributes:
+          if attribute_id != 0:
+            cluster_storage[array_metadata["attribute-names"][attribute_id]].append((array_id, attribute_id))
 
     # Store an alphabetized collection of cluster names ...
-    self.store_json_file_artifact("clusters", sorted(cluster_attributes.keys()), input=False)
+    self.store_json_file_artifact("clusters", sorted(cluster_storage.keys()), input=False)
 
-#    # For each cluster (timeseries set) ...
-#    for index, (name, artifact) in enumerate(cluster_artifacts):
-#      progress_begin = float(index) / float(len(cluster_artifacts))
-#      progress_end = float(index + 1) / float(len(cluster_artifacts))
-#      self.set_progress(progress_begin)
-#
-#      self.set_message("Rebinning data for %s" % name)
+    # For each cluster (timeseries set) ...
+    for index, (name, storage) in enumerate(cluster_storage):
+      progress_begin = float(index) / float(len(cluster_storage))
+      progress_end = float(index + 1) / float(len(cluster_storage))
+      self.set_progress(progress_begin)
+
+      self.set_message("Rebinning data for %s" % name)
 #      # Rebin the timeseries within this cluster so they share common start / stop times and samples ...
 #      time_min = self.scidb.query_value("aql", "select min(time) from %s" % artifact["columns"]).getDouble()
 #      time_max = self.scidb.query_value("aql", "select max(time) from %s" % artifact["columns"]).getDouble()
@@ -75,7 +73,7 @@ class implementation(slycat.web.server.worker.model.prototype):
 #            values = numpy.concatenate((values, numpy.array(temp_values)))
 #      else:
 #        raise Exception("Unknown cluster-bin-type: %s" % cluster_bin_type)
-#
+
 #      # Split our cluster members (which are mashed-together at the moment) into separate arrays ...
 #      boundaries = range(cluster_bin_count, times.shape[0], cluster_bin_count)
 #      ids = numpy.split(ids, boundaries)
