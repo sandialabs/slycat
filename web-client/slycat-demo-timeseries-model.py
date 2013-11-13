@@ -39,17 +39,20 @@ parser.add_option("--cluster-type", default="average", help="Clustering type.  D
 parser.add_option("--input-variable-prefix", default="a", help="Input variable prefix.  Default: %default")
 parser.add_option("--marking", default="", help="Marking type.  Default: %default")
 parser.add_option("--model-name", default="Demo Timeseries Model", help="New model name.  Default: %default")
-parser.add_option("--output-variable-count", type="int", default=2, help="Number of output variables.  Default: %default")
+parser.add_option("--output-variable-count", type="int", default=2, help="Number of output variables in each timeseries.  Default: %default")
 parser.add_option("--output-variable-prefix", default="b", help="Output variable prefix.  Default: %default")
 parser.add_option("--project-name", default="Demo Timeseries Project", help="New project name.  Default: %default")
 parser.add_option("--seed", type="int", default=12345, help="Random seed.  Default: %default")
-parser.add_option("--sample-bundling", type="int", default=10000, help="Maximum number of timeseries samples to send in a single request.  Default: %default")
-parser.add_option("--timeseries-count", type="int", default=10, help="Number of timeseries per output variable.  Default: %default")
+#parser.add_option("--sample-bundling", type="int", default=10000, help="Maximum number of timeseries samples to send in a single request.  Default: %default")
+parser.add_option("--timeseries-count", type="int", default=10, help="Number of timeseries.  Default: %default")
 parser.add_option("--timeseries-samples", type="int", default=15000, help="Number of samples in each timeseries.  Default: %default")
 parser.add_option("--timeseries-waves", type="int", default=4, help="Number of random sine waves to sum for each timeseries.  Default: %default")
 options, arguments = parser.parse_args()
 
 numpy.random.seed(options.seed)
+
+# Generate a set of random coefficients that we'll use later to synthesize our timeseries.
+inputs = numpy.hstack([numpy.sort(numpy.random.random((options.timeseries_count, options.timeseries_waves)) * 8 + 1) for output_variable in range(options.output_variable_count)])
 
 # Setup a connection to the Slycat Web Server.
 connection = slycat.web.client.connect(options)
@@ -58,44 +61,39 @@ connection = slycat.web.client.connect(options)
 pid = connection.create_project(options.project_name)
 
 # Create the new, empty model.
-wid = connection.create_timeseries_model_worker(pid, options.model_name, options.marking)
-
-# Generate a set of random coefficients that we'll use to create our timeseries.
-inputs = numpy.hstack([numpy.sort(numpy.random.random((options.timeseries_count, options.timeseries_waves)) * 8 + 1) for output_variable in range(options.output_variable_count)])
+wid = connection.create_model_worker(pid, "timeseries", options.model_name, options.marking)
 
 # Upload our coefficients as the "inputs" artifact.
-input_column_names = ["%s%s" % (options.input_variable_prefix, column) for column in range(inputs.shape[1])]
-input_column_types = ["double" for column in range(inputs.shape[1])]
-connection.start_table(wid, "inputs", input_column_names, input_column_types)
-for row in inputs:
-  connection.send_table_rows(wid, "inputs", [row])
-connection.finish_table(wid, "inputs")
+input_attributes = [("%s%s" % (options.input_variable_prefix, attribute), "float64") for attribute in range(inputs.shape[1])]
+input_dimensions = [("row", "int64", 0, inputs.shape[0])]
 
-# Start a new timeseries set artifact "output-x" for each output variable ...
-for output_variable in range(options.output_variable_count):
-  artifact_name = "output-{}".format(output_variable)
-  variable_name = "{}{}".format(options.output_variable_prefix, output_variable)
-  sys.stderr.write("Generating output variable {}.\n".format(variable_name))
-  connection.start_timeseries(wid, artifact_name, [variable_name], ["double"])
+connection.start_array_set(wid, "inputs")
+connection.create_array(wid, "inputs", 0, input_attributes, input_dimensions)
+for attribute, data in enumerate(inputs.T):
+  connection.store_array_attribute(wid, "inputs", 0, attribute, data)
+connection.finish_array_set(wid, "inputs")
 
-  # Generate a collection of timeseries for the variable ...
-  for timeseries in range(options.timeseries_count):
-    sys.stderr.write("  Generating timeseries {}.\n".format(timeseries))
+# Upload a collection of timeseries as the "outputs" artifact.
+connection.start_array_set(wid, "outputs")
 
-    # Generate the data (ids, times and values) for one timeseries ...
-    coefficients = inputs[timeseries,output_variable*options.timeseries_waves:(output_variable+1)*options.timeseries_waves]
-    ids = numpy.ones(options.timeseries_samples, dtype=numpy.int64) * timeseries
-    times = numpy.linspace(0, 2 * numpy.pi, options.timeseries_samples)
-    values = numpy.zeros(ids.shape)
+# For each timeseries ...
+for timeseries in range(options.timeseries_count):
+  sys.stderr.write("Generating timeseries {}.\n".format(timeseries))
+  timeseries_attributes = [("time", "float64")] + [("%s%s" % (options.output_variable_prefix, attribute), "float64") for attribute in range(options.output_variable_count)]
+  timeseries_dimensions = [("row", "int64", 0, options.timeseries_samples)]
+  connection.create_array(wid, "outputs", timeseries, timeseries_attributes, timeseries_dimensions)
+
+  times = numpy.linspace(0, 2 * numpy.pi, options.timeseries_samples)
+  connection.store_array_attribute(wid, "outputs", timeseries, 0, times)
+
+  for variable in range(options.output_variable_count):
+    coefficients = inputs[timeseries, variable * options.timeseries_waves : (variable+1) * options.timeseries_waves]
+    values = numpy.zeros((options.timeseries_samples))
     for k in coefficients:
       values += numpy.sin(times * k) / k
+    connection.store_array_attribute(wid, "outputs", timeseries, variable + 1, values)
 
-    # Upload the timeseries data, breaking it into "bundles" so our HTTP requests don't get too large.
-    for i in range(0, len(ids), options.sample_bundling):
-      connection.send_timeseries_columns(wid, artifact_name, ids[i:i+options.sample_bundling], times[i:i+options.sample_bundling], values[i:i+options.sample_bundling])
-
-  # Signal Slycat that we're done uploading this artifact.
-  connection.finish_timeseries(wid, artifact_name)
+connection.finish_array_set(wid, "outputs")
 
 # Store the remaining parameters ...
 connection.set_parameter(wid, "output-count", options.output_variable_count)
@@ -107,8 +105,8 @@ connection.set_parameter(wid, "cluster-type", options.cluster_type)
 mid = connection.finish_model(wid)
 
 # Wait for the model to finish computing, then delete the worker.
-connection.join_worker(wid)
-connection.delete_worker(wid)
+#connection.join_worker(wid)
+#connection.delete_worker(wid)
 
 # Give the user a URL where they can access their new model.
 sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))
