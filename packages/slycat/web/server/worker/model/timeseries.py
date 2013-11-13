@@ -39,21 +39,27 @@ class implementation(slycat.web.server.worker.model.prototype):
           if attribute_id != 0:
             cluster_storage[array_metadata["attribute-names"][attribute_id]].append((array_id, attribute_id))
 
-    # Store an alphabetized collection of cluster names ...
-    self.store_json_file_artifact("clusters", sorted(cluster_storage.keys()), input=False)
+      # Store an alphabetized collection of cluster names ...
+      self.store_json_file_artifact("clusters", sorted(cluster_storage.keys()), input=False)
 
-    # For each cluster (timeseries set) ...
-    for index, (name, storage) in enumerate(cluster_storage):
-      progress_begin = float(index) / float(len(cluster_storage))
-      progress_end = float(index + 1) / float(len(cluster_storage))
-      self.set_progress(progress_begin)
+      # For each cluster (timeseries set) ...
+      for index, (cluster, storage) in enumerate(cluster_storage.items()):
+        progress_begin = float(index) / float(len(cluster_storage))
+        progress_end = float(index + 1) / float(len(cluster_storage))
+        self.set_progress(progress_begin)
 
-      self.set_message("Rebinning data for %s" % name)
-#      # Rebin the timeseries within this cluster so they share common start / stop times and samples ...
-#      time_min = self.scidb.query_value("aql", "select min(time) from %s" % artifact["columns"]).getDouble()
-#      time_max = self.scidb.query_value("aql", "select max(time) from %s" % artifact["columns"]).getDouble()
-#
-#      if cluster_bin_type == "naive":
+        # Get the minimum and maximum times across every series in the cluster
+        self.set_message("Collecting statistics for %s" % cluster)
+        min_times = [file.array_attribute(array_index, 0).attrs["min"] for array_index, attribute_index in storage]
+        max_times = [file.array_attribute(array_index, 0).attrs["max"] for array_index, attribute_index in storage]
+        time_min = min(min_times)
+        time_max = max(max_times)
+
+        # Rebin the timeseries within this cluster so they share common start / stop times and samples ...
+        self.set_message("Rebinning data for %s" % cluster)
+
+        if cluster_bin_type == "naive":
+          pass
 #        bin_size = (time_max - time_min) / cluster_bin_count
 #        ids = numpy.array([], dtype=numpy.int64)
 #        times = numpy.array([])
@@ -71,8 +77,8 @@ class implementation(slycat.web.server.worker.model.prototype):
 #            ids = numpy.concatenate((ids, numpy.array(temp_ids, dtype=numpy.int64)))
 #            times = numpy.concatenate((times, numpy.array(temp_times)))
 #            values = numpy.concatenate((values, numpy.array(temp_values)))
-#      else:
-#        raise Exception("Unknown cluster-bin-type: %s" % cluster_bin_type)
+        else:
+          raise Exception("Unknown cluster-bin-type: %s" % cluster_bin_type)
 
 #      # Split our cluster members (which are mashed-together at the moment) into separate arrays ...
 #      boundaries = range(cluster_bin_count, times.shape[0], cluster_bin_count)
