@@ -96,7 +96,6 @@ for timeseries in range(options.timeseries_count):
 connection.finish_array_set(wid, "outputs")
 
 # Store the remaining parameters ...
-connection.set_parameter(wid, "output-count", options.output_variable_count)
 connection.set_parameter(wid, "cluster-bin-count", options.cluster_bin_count)
 connection.set_parameter(wid, "cluster-bin-type", options.cluster_bin_type)
 connection.set_parameter(wid, "cluster-type", options.cluster_type)
