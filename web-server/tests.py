@@ -172,6 +172,29 @@ def test_model_parameters():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
+def test_empty_model_arrays():
+  size = 10
+
+  pid = connection.create_project("test-project")
+  wid = connection.create_model_worker(pid, "generic", "test-model")
+
+  connection.start_array_set(wid, "test-array-set")
+  connection.create_array(wid, "test-array-set", 0, [("integer", "int64"), ("float", "float64"), ("string", "string")], ("row", "int64", 0, size))
+  connection.finish_array_set(wid, "test-array-set")
+
+  mid = connection.finish_model(wid)
+  connection.join_worker(wid)
+
+  metadata = connection.get_array_metadata(mid, "test-array-set", 0)
+  nose.tools.assert_equal(metadata["statistics"], [{"min":None,"max":None},{"min":None,"max":None},{"min":None,"max":None}])
+
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, size), numpy.zeros(size, dtype="int64"))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="float64"))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 2, size), [""] * size)
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
 def test_model_array_ranges():
   pid = connection.create_project("test-project")
   wid = connection.create_model_worker(pid, "generic", "test-model")
@@ -185,9 +208,6 @@ def test_model_array_ranges():
 
   mid = connection.finish_model(wid)
   connection.join_worker(wid)
-
-  with nose.tools.assert_raises(Exception):
-    connection.get_array_chunk(mid, "test-array-set", 0, 0)
 
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, 10), numpy.arange(10))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, (2, 5)), numpy.arange(2, 5))
@@ -220,6 +240,9 @@ def test_model_array_1d():
   nose.tools.assert_equal(attribute_names, [attribute["name"] for attribute in metadata["attributes"]])
   nose.tools.assert_equal(attribute_types, [attribute["type"] for attribute in metadata["attributes"]])
   nose.tools.assert_equal(metadata["dimensions"], [{"name":"row", "type":"int64", "begin":0, "end":size}])
+  for statistic, data in zip(metadata["statistics"], attribute_data):
+    numpy.testing.assert_equal(statistic["min"], min(data))
+    numpy.testing.assert_equal(statistic["max"], max(data))
 
   for attribute, data in enumerate(attribute_data):
     chunk = connection.get_array_chunk(mid, "test-array-set", 0, attribute, size)

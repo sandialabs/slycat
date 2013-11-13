@@ -369,8 +369,29 @@ class hdf5_array_set:
     if data.shape != tuple([end - begin for begin, end in ranges]):
       raise Exception("Data and range shapes don't match.")
 
+    # Store the data ...
+    attribute = self.file.array_attribute(array_index, attribute_index)
     index = tuple([slice(begin, end) for begin, end in ranges])
-    self.file.array_attribute(array_index, attribute_index)[index] = data
+    attribute[index] = data
+
+    # Update attribute min/max statistics ...
+    if data.dtype.char not in ["O", "S"]:
+      data = data[numpy.invert(numpy.isnan(data))]
+    data_min = numpy.asscalar(numpy.min(data)) if len(data) else None
+    data_max = numpy.asscalar(numpy.max(data)) if len(data) else None
+
+    attribute_min = attribute.attrs.get("min", None)
+    attribute_max = attribute.attrs.get("max", None)
+
+    if data_min is not None:
+      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+    if data_max is not None:
+      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+
+    if attribute_min is not None:
+      attribute.attrs["min"] = attribute_min
+    if attribute_max is not None:
+      attribute.attrs["max"] = attribute_max
 
   def finish(self):
     self.file.close()

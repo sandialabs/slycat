@@ -1,24 +1,9 @@
 import copy
+import cherrypy
 import h5py
 import numpy
 import slycat.web.server.database.hdf5
 import threading
-
-def dataset_min(dataset):
-  array = numpy.array(dataset)
-  if array.dtype.char not in ["O", "S"]:
-    array = array[numpy.invert(numpy.isnan(array))]
-  if len(array):
-    return numpy.asscalar(numpy.min(array))
-  return None
-
-def dataset_max(dataset):
-  array = numpy.array(dataset)
-  if array.dtype.char not in ["O", "S"]:
-    array = array[numpy.invert(numpy.isnan(array))]
-  if len(array):
-    return numpy.asscalar(numpy.max(array))
-  return None
 
 def get_array_metadata(mid, aid, array, artifact):
   """Return cached metadata for an array artifact, retrieving it from the database as-needed."""
@@ -32,10 +17,13 @@ def get_array_metadata(mid, aid, array, artifact):
         dimension_types = array_metadata["dimension-types"]
         dimension_begin = array_metadata["dimension-begin"]
         dimension_end = array_metadata["dimension-end"]
+        attribute_metadata = [file.array_attribute(array, attribute).attrs for attribute in range(len(attribute_types))]
+        statistics = [{"min":metadata.get("min", None), "max":metadata.get("max", None)} for metadata in attribute_metadata]
 
       get_array_metadata.cache[(mid, aid, array)] = {
         "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
-        "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)]
+        "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
+        "statistics" : statistics
         }
 
     metadata = get_array_metadata.cache[(mid, aid, array)]
@@ -56,8 +44,9 @@ def get_table_metadata(mid, aid, array, artifact, index):
         column_types = array_metadata["attribute-types"]
         dimension_begin = array_metadata["dimension-begin"]
         dimension_end = array_metadata["dimension-end"]
-        column_min = [dataset_min(file.array_attribute(0, i)) for i in range(len(column_names))]
-        column_max = [dataset_max(file.array_attribute(0, i)) for i in range(len(column_names))]
+        attribute_metadata = [file.array_attribute(array, attribute).attrs for attribute in range(len(column_names))]
+        column_min = [metadata.get("min", None) for metadata in attribute_metadata]
+        column_max = [metadata.get("max", None) for metadata in attribute_metadata]
 
       if len(dimension_begin) != 1:
         raise Exception("Not a table (1D array) artifact.")
