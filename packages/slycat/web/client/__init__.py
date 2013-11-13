@@ -12,6 +12,19 @@ import shlex
 import sys
 import time
 
+def require_ranges(ranges):
+  """Creates a range object (hyperslice) for transmission to the server."""
+  if ranges is None:
+    return None
+  elif isinstance(ranges, int):
+    return [(0, ranges)]
+  elif isinstance(ranges, tuple):
+    return [ranges]
+  elif isinstance(ranges, list):
+    return ranges
+  else:
+    raise Exception("Not a valid ranges object.")
+
 class dev_null:
   """Do-nothing stream object, for disabling logging."""
   def write(*arguments, **keywords):
@@ -139,6 +152,7 @@ class connection(object):
 
   def store_array_attribute(self, mwid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
+    ranges = require_ranges(ranges)
     if isinstance(data, numpy.ndarray):
       if ranges is None:
         ranges = [(0, end) for end in data.shape]
@@ -160,6 +174,17 @@ class connection(object):
   def get_model(self, mid):
     """Returns a single model."""
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
+
+  def get_array_metadata(self, mid, name, array):
+    """Returns the metadata for an array artifacat."""
+    return self.request("GET", "/models/%s/artifacts/%s/array/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+
+  def get_array_chunk(self, mid, name, array, attribute, ranges):
+    """Returns a hyperslice from an array artifact attribute."""
+    ranges = require_ranges(ranges)
+    if ranges is None:
+      raise Exception("An explicit chunk range is required.")
+    return self.request("GET", "/models/%s/artifacts/%s/array/%s/chunk?attribute=%s&ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
 
   def get_table_metadata(self, mid, name, array):
     """Returns the metadata for a table (array) artifact."""
