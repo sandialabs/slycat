@@ -277,7 +277,7 @@ $.widget("cca.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/artifacts/" + self.aid + "/table/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          url : self.server_root + "models/" + self.mid + "/artifacts/" + self.aid + "/tables/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
           async : false,
           success : function(data)
           {
@@ -342,7 +342,7 @@ $.widget("cca.table",
       }
 
       var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/artifacts/" + self.aid + "/table/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+      request.open("GET", self.server_root + "models/" + self.mid + "/artifacts/" + self.aid + "/tables/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
       request.responseType = "arraybuffer";
       request.callback = callback;
       request.onload = function(e)

@@ -177,22 +177,22 @@ class connection(object):
 
   def get_array_metadata(self, mid, name, array):
     """Returns the metadata for an array artifacat."""
-    return self.request("GET", "/models/%s/artifacts/%s/array/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/artifacts/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_array_chunk(self, mid, name, array, attribute, ranges):
     """Returns a hyperslice from an array artifact attribute."""
     ranges = require_ranges(ranges)
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
-    return self.request("GET", "/models/%s/artifacts/%s/array/%s/chunk?attribute=%s&ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/artifacts/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
 
   def get_table_metadata(self, mid, name, array):
     """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/artifacts/%s/table/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/artifacts/%s/tables/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_table_chunk(self, mid, name, array, rows, columns):
     """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/artifacts/%s/table/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/artifacts/%s/tables/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
 
   def delete_model(self, mid):
     """Deletes an existing model."""

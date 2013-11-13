@@ -355,9 +355,9 @@ def get_model_array_metadata(mid, aid, array):
   metadata = slycat.web.server.cache.get_array_metadata(mid, aid, array, artifact)
   return metadata
 
-def get_model_array_chunk(mid, aid, array, **arguments):
+def get_model_array_chunk(mid, aid, array, attribute, **arguments):
   try:
-    attribute = int(arguments["attribute"])
+    attribute = int(attribute)
   except:
     raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
 

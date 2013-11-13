@@ -79,7 +79,7 @@ function get_model_array_attribute(parameters)
   }
 
   $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/artifacts/" + parameters.aid + "/array/" + parameters.array + "/metadata",
+    url : parameters.server_root + "models/" + parameters.mid + "/artifacts/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
     contentType : "application/json",
     success: function(metadata)
     {
@@ -92,7 +92,7 @@ function get_model_array_attribute(parameters)
       ranges = ranges.join(",");
 
       var request = new XMLHttpRequest();
-      request.open("GET", parameters.server_root + "models/" + parameters.mid + "/artifacts/" + parameters.aid + "/array/" + parameters.array + "/chunk?attribute=" + parameters.attribute + "&ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
+      request.open("GET", parameters.server_root + "models/" + parameters.mid + "/artifacts/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
       request.responseType = "arraybuffer";
       request.success = parameters.success;
       request.attribute = parameters.attribute;
