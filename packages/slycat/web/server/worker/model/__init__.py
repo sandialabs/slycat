@@ -23,6 +23,8 @@ import threading
 import time
 import uuid
 
+from slycat.array import *
+
 class prototype(slycat.web.server.worker.prototype):
   """Worker that computes and stores a model.  Derivatives must implement the
   compute_model() method."""
@@ -317,24 +319,23 @@ class hdf5_array_set:
   def create_array(self, array_index, attributes, dimensions):
     """Allocate storage for a new array and prepare to receive data."""
     # Sanity-check inputs ...
-    type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "float":"float32", "double":"float64", "string":"string"}
-    attributes = [(name, type_map[type]) for name, type in attributes]
-    dimensions = [(name, type_map[type], begin, end) for name, type, begin, end in dimensions]
+    attributes = require_attributes(attributes)
+    dimensions = require_dimensions(dimensions)
 
     # Allocate space for the coming data ...
-    stored_types = [slycat.web.server.database.hdf5.dtype(type) for name, type in attributes]
-    shape = [end - begin for name, type, begin, end in dimensions]
+    stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
+    shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
     for attribute_index, stored_type in enumerate(stored_types):
       self.file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
 
     # Store array metadata ...
     array_metadata = self.file.array(array_index).attrs
-    array_metadata["attribute-names"] = numpy.array([name for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["attribute-types"] = numpy.array([type for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-names"] = numpy.array([name for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-types"] = numpy.array([type for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
-    array_metadata["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
+    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in dimensions], dtype="int64")
+    array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
 
   def store_attribute(self, array_index, attribute_index, ranges, data, byteorder=None):
     """Use a numpy array, array-like object, or a file-like object containing JSON or raw bytes to populate an attribute hyperslice."""

@@ -12,8 +12,10 @@ import shlex
 import sys
 import time
 
-def require_ranges(ranges):
-  """Creates a range object (hyperslice) for transmission to the server."""
+from slycat.array import *
+
+def require_array_ranges(ranges):
+  """Validates a range object (hyperslice) for transmission to the server."""
   if ranges is None:
     return None
   elif isinstance(ranges, int):
@@ -148,11 +150,11 @@ class connection(object):
 
   def create_array(self, mwid, name, array, attributes, dimensions):
     """Creates a new array set array, ready to receive data."""
-    self.request("POST", "/workers/%s/model/create-array" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "array":array, "attributes":attributes, "dimensions":dimensions}))
+    self.request("POST", "/workers/%s/model/create-array" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "array":array, "attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
   def store_array_attribute(self, mwid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
-    ranges = require_ranges(ranges)
+    ranges = require_array_ranges(ranges)
     if isinstance(data, numpy.ndarray):
       if ranges is None:
         ranges = [(0, end) for end in data.shape]
@@ -181,7 +183,7 @@ class connection(object):
 
   def get_array_chunk(self, mid, name, array, attribute, ranges):
     """Returns a hyperslice from an array artifact attribute."""
-    ranges = require_ranges(ranges)
+    ranges = require_array_ranges(ranges)
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
     return self.request("GET", "/models/%s/artifacts/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})

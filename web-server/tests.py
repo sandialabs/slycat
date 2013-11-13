@@ -177,7 +177,7 @@ def test_model_array_ranges():
   wid = connection.create_model_worker(pid, "generic", "test-model")
 
   connection.start_array_set(wid, "test-array-set")
-  connection.create_array(wid, "test-array-set", 0, [("value", "int64")], [("row", "int64", 0, 10)])
+  connection.create_array(wid, "test-array-set", 0, ("value", "int64"), ("row", "int64", 0, 10))
   connection.store_array_attribute(wid, "test-array-set", 0, 0, numpy.arange(5))
   connection.store_array_attribute(wid, "test-array-set", 0, 0, numpy.arange(5, 8), (5, 8))
   connection.store_array_attribute(wid, "test-array-set", 0, 0, numpy.arange(8, 10), [(8, 10)])
