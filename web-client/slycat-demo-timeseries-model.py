@@ -78,15 +78,17 @@ connection.start_array_set(wid, "outputs")
 
 # For each timeseries ...
 for timeseries in range(options.timeseries_count):
-  sys.stderr.write("Generating timeseries {}.\n".format(timeseries))
+  sys.stderr.write("Timeseries {}.\n".format(timeseries))
   timeseries_attributes = [("time", "float64")] + [("%s%s" % (options.output_variable_prefix, attribute), "float64") for attribute in range(options.output_variable_count)]
   timeseries_dimensions = [("row", "int64", 0, options.timeseries_samples)]
   connection.create_array(wid, "outputs", timeseries, timeseries_attributes, timeseries_dimensions)
 
+  sys.stderr.write("  Uploading times.\n")
   times = numpy.linspace(0, 2 * numpy.pi, options.timeseries_samples)
   connection.store_array_attribute(wid, "outputs", timeseries, 0, times)
 
   for variable in range(options.output_variable_count):
+    sys.stderr.write("  Uploading variable {}.\n".format(variable))
     coefficients = inputs[timeseries, variable * options.timeseries_waves : (variable+1) * options.timeseries_waves]
     values = numpy.zeros((options.timeseries_samples))
     for k in coefficients:
