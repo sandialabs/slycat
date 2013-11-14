@@ -18,7 +18,7 @@ def path(array):
   """Convert an array identifier to a data store filesystem path."""
   if path.root is None:
     path.root = cherrypy.tree.apps[""].config["slycat"]["data-store"]
-  return os.path.join(path.root, array[0:2], array[2:4], array[4:] + ".hdf5")
+  return os.path.join(path.root, array[0:2], array[2:4], array[4:6], array + ".hdf5")
 path.root = None
 
 def wrap(file):
