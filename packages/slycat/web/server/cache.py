@@ -74,20 +74,20 @@ def get_table_metadata(mid, aid, artifact, artifact_type, index):
         row_end = database.query_value("aql", "select high + 1 from dimensions(%s)" % artifact["columns"]).getInt64()
         row_count = row_end - row_begin
 
-        with database.query("aql", "select {} from {}".format(",".join(["min(c{})".format(index) for index in range(column_count)]), artifact["columns"])) as results:
+        with database.query("aql", "select {} from {}".format(",".join(["min(c{})".format(i) for i in range(column_count)]), artifact["columns"])) as results:
           column_min = []
-          index = 0
+          i = 0
           for attribute in results:
             for value in attribute:
-              column_min.append(slycat.web.server.database.scidb.typed_value(column_types[index], value))
-              index += 1
-        with database.query("aql", "select {} from {}".format(",".join(["max(c{})".format(index) for index in range(column_count)]), artifact["columns"])) as results:
+              column_min.append(slycat.web.server.database.scidb.typed_value(column_types[i], value))
+              i += 1
+        with database.query("aql", "select {} from {}".format(",".join(["max(c{})".format(i) for i in range(column_count)]), artifact["columns"])) as results:
           column_max = []
-          index = 0
+          i = 0
           for attribute in results:
             for value in attribute:
-              column_max.append(slycat.web.server.database.scidb.typed_value(column_types[index], value))
-              index += 1
+              column_max.append(slycat.web.server.database.scidb.typed_value(column_types[i], value))
+              i += 1
       else:
         raise Exception("Unsupported artifact type.")
 
