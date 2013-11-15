@@ -1,9 +1,9 @@
 # Copyright 2013, Sandia Corporation. Under the terms of Contract
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
-import math
+
+import numpy
 import slycat.web.client
-import StringIO
 import sys
 
 parser = slycat.web.client.option_parser()
@@ -27,6 +27,16 @@ column_types = ["double" for name in column_names]
 column_count = len(column_names)
 rows = rows[1:]
 
+# Identify non-numeric columns.
+columns = zip(*rows)
+for index, column in enumerate(columns):
+  try:
+    numeric = numpy.array(column, dtype="float64")
+  except Exception as e:
+    print e
+    column_types[index] = "string"
+
+# Convert numeric columns from their string representations.
 for index, type in enumerate(column_types):
   if type == "string":
     continue
@@ -43,12 +53,12 @@ for input in inputs:
   if not (0 <= input and input < column_count):
     raise Exception("Input column out of range: %s" % input)
   if column_types[input] != "double":
-    raise Exception("Cannot analyze non-numeric input: %s" % input)
+    raise Exception("Cannot analyze non-numeric input: %s" % column_names[input])
 for output in outputs:
   if not (0 <= output and output < column_count):
     raise Exception("Output column out of range: %s" % output)
   if column_types[output] != "double":
-    raise Exception("Cannot analyze non-numeric output: %s" % output)
+    raise Exception("Cannot analyze non-numeric output: %s" % column_names[output])
 
 connection = slycat.web.client.connect(options)
 
