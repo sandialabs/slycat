@@ -13,6 +13,7 @@ import StringIO
 import subprocess
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--all", action="store_true", help="Dump all projects.")
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
@@ -36,6 +37,9 @@ stdout, stderr = iquery.communicate()
 coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip()[1:-1]
 
 os.makedirs(arguments.output_dir)
+
+if arguments.all:
+  arguments.project_id = set(arguments.project_id + [row["id"] for row in couchdb.view("slycat/projects")])
 
 for project_id in arguments.project_id:
   logging.info("Dumping project %s", project_id)
