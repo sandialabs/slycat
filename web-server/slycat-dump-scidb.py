@@ -7,6 +7,7 @@ import couchdb
 import h5py
 import json
 import logging
+import numpy
 import os
 import re
 import shutil
@@ -43,9 +44,29 @@ def dump_hdf5(attributes, dimensions, array):
   dimensions = [(name, slycat.array.require_dimension_type(type), begin, end) for name, type, begin, end in dimensions]
   logging.debug("attributes: %s", attributes)
   logging.debug("dimensions: %s", dimensions)
+  with h5py.File(os.path.join(arguments.output_dir, "array-set-%s.hdf5" % array), "w") as file:
+    stored_types = [slycat.web.server.database.hdf5.dtype(type) for name, type in attributes]
+    shape = tuple([end - begin for name, type, begin, end in dimensions])
+    for attribute_index, stored_type in enumerate(stored_types):
+      file.create_dataset("array/0/attribute/{}".format(attribute_index), shape, dtype=stored_type)
+    array_metadata = file["array/0"].attrs
+    array_metadata["attribute-names"] = numpy.array([name for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-types"] = numpy.array([type for name, type in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-names"] = numpy.array([name for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-types"] = numpy.array([type for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
+    array_metadata["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
 
-  shape = tuple([end - begin for name, type, begin, end in dimensions])
-
+    with scidb.query("aql", "select * from %s" % array) as results:
+      for chunk in results.chunks():
+        for attribute_index, attribute in enumerate(chunk.attributes()):
+          logging.info("Dumping attribute %s of %s" % (attribute_index, len(attributes)))
+          type = attribute.type()
+          storage = file["array/0/attribute/{}".format(attribute_index)]
+          #print numpy.array(list(slycat.web.server.database.scidb.typed_values(attribute.type(), attribute)))
+          for coordinates, value in attribute.coordinates_values():
+            coordinates = tuple([coordinates[i] for i in range(len(coordinates))])
+            storage[coordinates] = slycat.web.server.database.scidb.typed_value(type, value)
 
 if arguments.all:
   arguments.project_id = set(arguments.project_id + [row["id"] for row in couchdb.view("slycat/projects")])
