@@ -5,6 +5,7 @@
 import argparse
 import couchdb
 import json
+import logging
 import os
 import re
 import shutil
@@ -12,17 +13,16 @@ import StringIO
 import subprocess
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
-parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
-parser.add_argument("--iquery", default="/opt/scidb/13.3/bin/iquery", help="SciDB iquery executable.  Default: %(default)s")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
+parser.add_argument("--iquery", default="/opt/scidb/13.3/bin/iquery", help="SciDB iquery executable.  Default: %(default)s")
+parser.add_argument("--output-dir", required=True, help="Directory for storing results.")
 parser.add_argument("--project-id", default=[], action="append", help="Project ID to dump.  You may specify --project-id multiple times.")
-parser.add_argument("--output-dir", help="Directory for storing results.")
 arguments = parser.parse_args()
 
-if arguments.output_dir is None:
-  raise Exception("--output-dir is required.")
+logging.getLogger().setLevel(logging.INFO)
 
 if arguments.force and os.path.exists(arguments.output_dir):
   shutil.rmtree(arguments.output_dir)
@@ -38,12 +38,14 @@ coordinator_dir = StringIO.StringIO(stdout).readlines()[1].split(",")[-1].strip(
 os.makedirs(arguments.output_dir)
 
 for project_id in arguments.project_id:
+  logging.info("Dumping project %s", project_id)
   project = couchdb[project_id]
   json.dump(project, open(os.path.join(arguments.output_dir, "project-%s.json" % project["_id"]), "w"))
 
   project_arrays = set()
 
   for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
+    logging.info("Dumping model %s", row["id"])
     model = couchdb[row["id"]]
     json.dump(model, open(os.path.join(arguments.output_dir, "model-%s.json" % model["_id"]), "w"))
 
@@ -55,6 +57,8 @@ for project_id in arguments.project_id:
       for role, array in value.items():
         if array in project_arrays:
           continue
+
+        logging.info("Dumping array set %s", array)
         project_arrays.add(array)
 
         iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % array], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
