@@ -31,18 +31,18 @@ markings = dict([(source, target) for source, target in markings])
 couchdb = couchdb.Server()[arguments.couchdb_database]
 
 # Load projects ...
-for path in glob.glob(os.path.join(arguments.input_dir, "project-*.json")):
-  logging.info("Loading project %s", path)
-  project = json.load(open(path))
+for source in glob.glob(os.path.join(arguments.input_dir, "project-*.json")):
+  logging.info("Loading project %s", source)
+  project = json.load(open(source))
   del project["_rev"]
   if arguments.force and project["_id"] in couchdb:
     del couchdb[project["_id"]]
   couchdb.save(project)
 
 # Load models ...
-for path in glob.glob(os.path.join(arguments.input_dir, "model-*.json")):
-  logging.info("Loading model %s", path)
-  model = json.load(open(path))
+for source in glob.glob(os.path.join(arguments.input_dir, "model-*.json")):
+  logging.info("Loading model %s", source)
+  model = json.load(open(source))
   del model["_rev"]
   if model["marking"] in markings:
     model["marking"] = markings[model["marking"]]
@@ -51,7 +51,10 @@ for path in glob.glob(os.path.join(arguments.input_dir, "model-*.json")):
   couchdb.save(model)
 
 # Load array sets ...
-for path in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
-  logging.info("Loading array set %s", path)
-  array = re.match(r".*array-set-(.*)\.hdf5", path).group(1)
-  shutil.copy(path, slycat.web.server.database.hdf5.make_path(array, arguments.data_store))
+for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
+  logging.info("Loading array set %s", source)
+  array = re.match(r".*array-set-(.*)\.hdf5", source).group(1)
+  destination = slycat.web.server.database.hdf5.make_path(array, arguments.data_store)
+  if not os.path.exists(os.path.dirname(destination)):
+    os.makedirs(os.path.dirname(destination))
+  shutil.copy(source, destination)
