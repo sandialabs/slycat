@@ -17,8 +17,10 @@ def get_array_metadata(mid, aid, array, artifact):
         dimension_types = array_metadata["dimension-types"]
         dimension_begin = array_metadata["dimension-begin"]
         dimension_end = array_metadata["dimension-end"]
-        attribute_metadata = [file.array_attribute(array, attribute).attrs for attribute in range(len(attribute_types))]
-        statistics = [{"min":metadata.get("min", None), "max":metadata.get("max", None)} for metadata in attribute_metadata]
+        statistics = []
+        for attribute in range(len(attribute_types)):
+          metadata = file.array_attribute(array, attribute).attrs
+          statistics.append({"min":metadata.get("min", None), "max":metadata.get("max", None)})
 
       get_array_metadata.cache[(mid, aid, array)] = {
         "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
@@ -44,9 +46,12 @@ def get_table_metadata(mid, aid, array, artifact, index):
         column_types = array_metadata["attribute-types"]
         dimension_begin = array_metadata["dimension-begin"]
         dimension_end = array_metadata["dimension-end"]
-        attribute_metadata = [file.array_attribute(array, attribute).attrs for attribute in range(len(column_names))]
-        column_min = [metadata.get("min", None) for metadata in attribute_metadata]
-        column_max = [metadata.get("max", None) for metadata in attribute_metadata]
+        column_min = []
+        column_max = []
+        for attribute in range(len(column_names)):
+          metadata = file.array_attribute(array, attribute).attrs
+          column_min.append(metadata.get("min", None))
+          column_max.append(metadata.get("max", None))
 
       if len(dimension_begin) != 1:
         raise Exception("Not a table (1D array) artifact.")
