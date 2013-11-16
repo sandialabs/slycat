@@ -39,7 +39,7 @@ scidb = slycat.web.server.database.scidb.connect()
 
 os.makedirs(arguments.output_dir)
 
-def dump_hdf5(attributes, dimensions, array):
+def dump_hdf5(attributes, dimensions, array, attribute_prefix):
   attributes = [(name, slycat.array.attribute_type_map[type]) for name, type in attributes]
   dimensions = [(name, slycat.array.require_dimension_type(type), begin, end) for name, type, begin, end in dimensions]
   logging.debug("attributes: %s", attributes)
@@ -56,6 +56,14 @@ def dump_hdf5(attributes, dimensions, array):
     array_metadata["dimension-types"] = numpy.array([type for name, type, begin, end in dimensions], dtype=h5py.special_dtype(vlen=unicode))
     array_metadata["dimension-begin"] = numpy.array([begin for name, type, begin, end in dimensions], dtype="int64")
     array_metadata["dimension-end"] = numpy.array([end for name, type, begin, end in dimensions], dtype="int64")
+
+    for attribute_index, (name, type) in enumerate(attributes):
+      min_value = slycat.web.server.database.scidb.typed_value(type, scidb.query_value("aql", "select min(%s%s) from %s" % (attribute_prefix, attribute_index, array)))
+      max_value = slycat.web.server.database.scidb.typed_value(type, scidb.query_value("aql", "select max(%s%s) from %s" % (attribute_prefix, attribute_index, array)))
+      storage = file["array/0/attribute/{}".format(attribute_index)]
+      storage.attrs["min"] = min_value
+      storage.attrs["max"] = max_value
+      logging.info("Attribute %s min %s max %s", name, min_value, max_value)
 
     with scidb.query("aql", "select * from %s" % array) as results:
       for chunk in results.chunks():
@@ -81,7 +89,6 @@ for project_id in arguments.project_id:
   for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
     logging.info("Dumping model %s", row["id"])
     model = couchdb[row["id"]]
-    json.dump(model, open(os.path.join(arguments.output_dir, "model-%s.json" % model["_id"]), "w"))
 
     artifact_types = model["artifact-types"]
     for key, artifact in model.items():
@@ -105,7 +112,9 @@ for project_id in arguments.project_id:
             dimension_end = [value.getInt64() for value in attribute.next()]
           attributes = zip(attribute_names, attribute_types)
           dimensions = zip(dimension_names, dimension_types, dimension_begin, dimension_end)
-          dump_hdf5(attributes, dimensions, artifact["data"])
+          dump_hdf5(attributes, dimensions, artifact["data"], "a")
+        model["artifact-types"][key[9:]] = "hdf5"
+        model[key] = {"storage":artifact["data"]}
 
       if type == "table":
         if artifact["columns"] not in project_arrays:
@@ -119,25 +128,12 @@ for project_id in arguments.project_id:
           row_end = scidb.query_value("aql", "select high + 1 from dimensions(%s)" % artifact["columns"]).getInt64()
           attributes = zip(column_names, column_types)
           dimensions = [("row", "int64", row_begin, row_end)]
-          dump_hdf5(attributes, dimensions, artifact["columns"])
+          dump_hdf5(attributes, dimensions, artifact["columns"], "c")
+        model["artifact-types"][key[9:]] = "hdf5"
+        model[key] = {"storage":artifact["columns"]}
 
       if type == "timeseries":
         logging.info("Dumping timeseries %s", artifact)
         raise NotImplementedError()
 
-#        iquery = subprocess.Popen([arguments.iquery, "-o", "csv", "-aq", "show(%s)" % array], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#        stdout, stderr = iquery.communicate()
-#        schema = StringIO.StringIO(stdout).readlines()[1].strip()[1:-1]
-#        attributes = re.search(r"<(.*)>", schema).group(1).split(",")
-#        dimensions = re.search(r"\[.*\]", schema).group(0)
-#
-#        open(os.path.join(arguments.output_dir, "array-%s.schema" % array), "w").write(schema)
-#
-#        for index, offset in enumerate(range(0, len(attributes), 250)):
-#          subattributes = attributes[offset : offset + 250]
-#          subschema = "%s%s<%s>%s" % (array, index, ",".join(subattributes), dimensions)
-#
-#          open(os.path.join(arguments.output_dir, "array-%s-%s.schema" % (array, index)), "w").write(subschema)
-#
-#          subprocess.check_call([arguments.iquery, "-n", "-aq", "save(project(%s, %s), 'temp.opaque', -2, 'OPAQUE')" % (array, ",".join([attribute.split(":")[0] for attribute in subattributes]))])
-#          subprocess.check_call(["mv", os.path.join(coordinator_dir, "temp.opaque"), os.path.join(arguments.output_dir, "array-%s-%s.opaque" % (array, index))])
+    json.dump(model, open(os.path.join(arguments.output_dir, "model-%s.json" % model["_id"]), "w"))
