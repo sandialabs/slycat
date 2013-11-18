@@ -32,76 +32,23 @@ $.widget("cca.barplot",
       return "cca" + (component + 1);
     }
 
+    function negative_bar_width(value)
+    {
+      return value < 0 ? -100 * value + "px" : "0px";
+    }
+
+    function positive_bar_width(value)
+    {
+      return value > 0 ? 100 * value + "px" : "0px";
+    }
+
     this.select_component = function(component)
     {
-      d3.select(this.element.get(0)).selectAll(".selected-component")
-        .classed("selected-component", false)
-        ;
+      this.element.find("td.bar.selected-component").css("display", "none");
+      this.element.find(".selected-component").removeClass("selected-component");
 
-      d3.select(this.element.get(0)).selectAll("." + component_class(component))
-        .classed("selected-component", true)
-        ;
-
-      d3.select(this.element.get(0)).selectAll("td.bar").filter(function() { return !d3.select(this).classed(component_class(component)); })
-          .transition()
-            .duration(500)
-            .attr("width", 0)
-        ;
-
-      d3.select(this.element.get(0)).selectAll("td.bar").filter(function() { return !d3.select(this).classed(component_class(component)); })
-        .selectAll("div")
-          .transition()
-            .duration(500)
-            .style("width", "0px")
-        ;
-
-      d3.select(this.element.get(0)).selectAll("td.bar").filter(function() { return d3.select(this).classed(component_class(component)); })
-          .transition()
-            .duration(500)
-            .attr("width", 100)
-        ;
-
-      function negative_bar_width(data, component)
-      {
-        return function(d, i)
-        {
-          var index = $(this).parent().parent().data("index");
-          return data[component][index] < 0 ? -100 * data[component][index] + "px" : "0px";
-        }
-      }
-
-      function positive_bar_width(data, component)
-      {
-        return function(d, i)
-        {
-          var index = $(this).parent().parent().data("index");
-          return data[component][index] > 0 ? 100 * data[component][index] + "px" : "0px";
-        }
-      }
-
-      d3.select(this.element.get(0)).selectAll("td.input.bar.negative." + component_class(component) + " div")
-        .transition()
-          .duration(500)
-          .style("width", negative_bar_width(this.x_loadings, component))
-        ;
-
-      d3.select(this.element.get(0)).selectAll("td.input.bar.positive." + component_class(component) + " div")
-        .transition()
-          .duration(500)
-          .style("width", positive_bar_width(this.x_loadings, component))
-        ;
-
-      d3.select(this.element.get(0)).selectAll("td.output.bar.negative." + component_class(component) + " div")
-        .transition()
-          .duration(500)
-          .style("width", negative_bar_width(this.y_loadings, component))
-        ;
-
-      d3.select(this.element.get(0)).selectAll("td.output.bar.positive." + component_class(component) + " div")
-        .transition()
-          .duration(500)
-          .style("width", positive_bar_width(this.y_loadings, component))
-        ;
+      this.element.find("td.bar." + component_class(component)).css("display", "");
+      this.element.find("." + component_class(component)).addClass("selected-component");
     }
 
     this.do_component_sort = function(component, sort_order)
@@ -171,42 +118,42 @@ $.widget("cca.barplot",
     var outputs = this.options.outputs;
     var r2 = this.options.r2;
     var wilks = this.options.wilks;
-    this.x_loadings = this.options.x_loadings;
-    this.y_loadings = this.options.y_loadings;
-    var cca_count = this.x_loadings.length;
+    var x_loadings = this.options.x_loadings;
+    var y_loadings = this.options.y_loadings;
+    var component_count = x_loadings.length;
 
     var row = $("<tr>").appendTo(this.element);
     $("<th>").appendTo(row);
-    for(var j = 0; j != cca_count; ++j)
+    for(var component = 0; component != component_count; ++component)
     {
-      $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
 
-      var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (j+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(j))
+      var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (component+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(component))
       th.appendTo(row);
-      $("span.selectCCAComponent", th).click(click_component(this, j));
-      $("span.sortCCAComponent", th).click(sort_component(this, j));
+      $("span.selectCCAComponent", th).click(click_component(this, component));
+      $("span.sortCCAComponent", th).click(sort_component(this, component));
 
-      $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     // Add r-squared statistic ...
     var row = $("<tr class='r2'>").appendTo(this.element);
     $("<th>R<sup>2</sup></th>").appendTo(row);
-    for(var j = 0; j != cca_count; ++j)
+    for(var component = 0; component != component_count; ++component)
     {
-      $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
-      $("<td class='value'>").html(Number(r2[j]).toFixed(3)).addClass(component_class(j)).appendTo(row);
-      $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+      $("<td class='value'>").html(Number(r2[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     // Add p statistic ...
     var row = $("<tr class='p'>").appendTo(this.element);
     $("<th>P</th>").appendTo(row);
-    for(var j = 0; j != cca_count; ++j)
+    for(var component = 0; component != component_count; ++component)
     {
-      $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
-      $("<td class='value'>").html(Number(wilks[j]).toFixed(3)).addClass(component_class(j)).appendTo(row);
-      $("<td class='bar'>").addClass(component_class(j)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+      $("<td class='value'>").html(Number(wilks[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     // Add input variables ...
@@ -217,11 +164,19 @@ $.widget("cca.barplot",
 
       $("<th>").html(metadata["column-names"][inputs[i]]).appendTo(row);
 
-      for(var j = 0; j != cca_count; ++j)
+      for(var component = 0; component != component_count; ++component)
       {
-        $("<td class='input bar negative'><div></div></td>").addClass(component_class(j)).appendTo(row);
-        $("<td class='input value'>").html(Number(this.x_loadings[j][i]).toFixed(3)).addClass(component_class(j)).appendTo(row);
-        $("<td class='input bar positive'><div></div></td>").addClass(component_class(j)).appendTo(row);
+        $("<td class='input bar negative'/>")
+          .append($("<div/>").css("width", negative_bar_width(x_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
+
+        $("<td class='input value'>").html(Number(x_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+
+        $("<td class='input bar positive'/>")
+          .append($("<div/>").css("width", positive_bar_width(x_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
       }
     }
 
@@ -233,20 +188,24 @@ $.widget("cca.barplot",
 
       $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
 
-      for(var j = 0; j != cca_count; ++j)
+      for(var component = 0; component != component_count; ++component)
       {
-        $("<td class='output bar negative'><div></div></td>").addClass(component_class(j)).appendTo(row);
-        $("<td class='output value'>").html(Number(this.y_loadings[j][i]).toFixed(3)).addClass(component_class(j)).appendTo(row);
-        $("<td class='output bar positive'><div></div></td>").addClass(component_class(j)).appendTo(row);
+        $("<td class='output bar negative'/>")
+          .append($("<div/>").css("width", negative_bar_width(y_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
+
+        $("<td class='output value'>").html(Number(y_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+
+        $("<td class='output bar positive'/>")
+          .append($("<div/>").css("width", positive_bar_width(y_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
       }
     }
 
-    d3.select(this.element.get(0)).selectAll("td.bar")
-      .attr("width", 0)
-      ;
-    d3.select(this.element.get(0)).selectAll("td.bar div")
-      .style("width", "0px")
-      ;
+    // Hide all bars by default
+    this.element.find("td.bar").css("display", "none");
   },
 
   _setOption: function(key, value)
