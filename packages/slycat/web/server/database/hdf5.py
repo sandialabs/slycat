@@ -5,6 +5,7 @@
 import cherrypy
 import h5py
 import os
+import threading
 import types
 
 def dtype(type):
@@ -59,3 +60,5 @@ def delete(array):
   array_path = path(array)
   cherrypy.log.error("Deleting file {}".format(array_path))
   os.remove(array_path)
+
+lock = threading.Lock()

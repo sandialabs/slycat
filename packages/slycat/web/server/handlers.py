@@ -374,8 +374,9 @@ def get_model_array_metadata(mid, aid, array):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    metadata = get_array_metadata(file, array)
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      metadata = get_array_metadata(file, array)
   return metadata
 
 def get_model_array_chunk(mid, aid, array, attribute, **arguments):
@@ -412,28 +413,29 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    metadata = get_array_metadata(file, array)
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      metadata = get_array_metadata(file, array)
 
-    if not(0 <= attribute and attribute < len(metadata["attributes"])):
-      raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
-    if len(ranges) != len(metadata["dimensions"]):
-      raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
+      if not(0 <= attribute and attribute < len(metadata["attributes"])):
+        raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
+      if len(ranges) != len(metadata["dimensions"]):
+        raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
 
-    ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(metadata["dimensions"], ranges)]
+      ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(metadata["dimensions"], ranges)]
 
-    index = tuple([slice(begin, end) for begin, end in ranges])
+      index = tuple([slice(begin, end) for begin, end in ranges])
 
-    attribute_type =  metadata["attributes"][attribute]["type"]
-    data = file.array_attribute(array, attribute)[index]
+      attribute_type =  metadata["attributes"][attribute]["type"]
+      data = file.array_attribute(array, attribute)[index]
 
-    if byteorder is None:
-      return json.dumps(data.tolist())
-    else:
-      if sys.byteorder != byteorder:
-        return data.byteswap().tostring(order="C")
+      if byteorder is None:
+        return json.dumps(data.tolist())
       else:
-        return data.tostring(order="C")
+        if sys.byteorder != byteorder:
+          return data.byteswap().tostring(order="C")
+        else:
+          return data.tostring(order="C")
 
 def get_model_table_columns(columns):
   try:
@@ -547,8 +549,9 @@ def get_model_table_metadata(mid, aid, array, index = None):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    metadata = get_table_metadata(file, array, index)
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      metadata = get_table_metadata(file, array, index)
   return metadata
 
 @cherrypy.tools.json_out(on = True)
@@ -569,49 +572,50 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    metadata = get_table_metadata(file, array, index)
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      metadata = get_table_metadata(file, array, index)
 
-    # Constrain end <= count along both dimensions
-    rows = rows[rows < metadata["row-count"]]
-    if numpy.any(columns >= metadata["column-count"]):
-      raise cherrypy.HTTPError("400 Column out-of-range.")
-    if sort is not None:
-      for column, order in sort:
-        if column >= metadata["column-count"]:
-          raise cherrypy.HTTPError("400 Sort column out-of-range.")
+      # Constrain end <= count along both dimensions
+      rows = rows[rows < metadata["row-count"]]
+      if numpy.any(columns >= metadata["column-count"]):
+        raise cherrypy.HTTPError("400 Column out-of-range.")
+      if sort is not None:
+        for column, order in sort:
+          if column >= metadata["column-count"]:
+            raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-    # Generate a database query
-    data = []
-    sort_index = numpy.arange(metadata["row-count"])
-    if sort is not None:
-      sort_column, sort_order = sort[0]
-      if index is not None and sort_column == metadata["column-count"]-1:
-        pass # At this point, the sort index is already set from above
-      else:
-        sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
-      if sort_order == "descending":
-        sort_index = sort_index[::-1]
-    slice = sort_index[rows]
-    slice_index = numpy.argsort(slice, kind="mergesort")
-    slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
-    for column in columns:
-      type = metadata["column-types"][column]
-      if index is not None and column == metadata["column-count"]-1:
-        values = slice.tolist()
-      else:
-        values = file.array_attribute(array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
-        if type in ["float32", "float64"]:
-          values = [None if numpy.isnan(value) else value for value in values]
-      data.append(values)
+      # Generate a database query
+      data = []
+      sort_index = numpy.arange(metadata["row-count"])
+      if sort is not None:
+        sort_column, sort_order = sort[0]
+        if index is not None and sort_column == metadata["column-count"]-1:
+          pass # At this point, the sort index is already set from above
+        else:
+          sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
+        if sort_order == "descending":
+          sort_index = sort_index[::-1]
+      slice = sort_index[rows]
+      slice_index = numpy.argsort(slice, kind="mergesort")
+      slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
+      for column in columns:
+        type = metadata["column-types"][column]
+        if index is not None and column == metadata["column-count"]-1:
+          values = slice.tolist()
+        else:
+          values = file.array_attribute(array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+          if type in ["float32", "float64"]:
+            values = [None if numpy.isnan(value) else value for value in values]
+        data.append(values)
 
-    result = {
-      "rows" : rows.tolist(),
-      "columns" : columns.tolist(),
-      "column-names" : [metadata["column-names"][column] for column in columns],
-      "data" : data,
-      "sort" : sort
-      }
+      result = {
+        "rows" : rows.tolist(),
+        "columns" : columns.tolist(),
+        "column-names" : [metadata["column-names"][column] for column in columns],
+        "data" : data,
+        "sort" : sort
+        }
 
   return result
 
@@ -632,27 +636,28 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    metadata = get_table_metadata(file, array, index)
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      metadata = get_table_metadata(file, array, index)
 
-    # Constrain end <= count along both dimensions
-    rows = rows[rows < metadata["row-count"]]
-    if sort is not None:
-      for column, order in sort:
-        if column >= metadata["column-count"]:
-          raise cherrypy.HTTPError("400 Sort column out-of-range.")
+      # Constrain end <= count along both dimensions
+      rows = rows[rows < metadata["row-count"]]
+      if sort is not None:
+        for column, order in sort:
+          if column >= metadata["column-count"]:
+            raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-    # Generate a database query
-    sort_index = numpy.arange(metadata["row-count"])
-    if sort is not None:
-      sort_column, sort_order = sort[0]
-      if index is not None and sort_column == metadata["column-count"]-1:
-        pass # At this point, the sort index is already set from above
-      else:
-        sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
-      if sort_order == "descending":
-        sort_index = sort_index[::-1]
-    slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
+      # Generate a database query
+      sort_index = numpy.arange(metadata["row-count"])
+      if sort is not None:
+        sort_column, sort_order = sort[0]
+        if index is not None and sort_column == metadata["column-count"]-1:
+          pass # At this point, the sort index is already set from above
+        else:
+          sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
+        if sort_order == "descending":
+          sort_index = sort_index[::-1]
+      slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
 
   if byteorder is None:
     return json.dumps(slice.tolist())
@@ -679,27 +684,28 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
-    metadata = get_table_metadata(file, array, index)
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+      metadata = get_table_metadata(file, array, index)
 
-    # Constrain end <= count along both dimensions
-    rows = rows[rows < metadata["row-count"]]
-    if sort is not None:
-      for column, order in sort:
-        if column >= metadata["column-count"]:
-          raise cherrypy.HTTPError("400 Sort column out-of-range.")
+      # Constrain end <= count along both dimensions
+      rows = rows[rows < metadata["row-count"]]
+      if sort is not None:
+        for column, order in sort:
+          if column >= metadata["column-count"]:
+            raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-    # Generate a database query
-    sort_index = numpy.arange(metadata["row-count"])
-    if sort is not None:
-      sort_column, sort_order = sort[0]
-      if index is not None and sort_column == metadata["column-count"]-1:
-        pass # At this point, the sort index is already set from above
-      else:
-        sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
-      if sort_order == "descending":
-        sort_index = sort_index[::-1]
-    slice = sort_index[rows].astype("int32")
+      # Generate a database query
+      sort_index = numpy.arange(metadata["row-count"])
+      if sort is not None:
+        sort_column, sort_order = sort[0]
+        if index is not None and sort_column == metadata["column-count"]-1:
+          pass # At this point, the sort index is already set from above
+        else:
+          sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
+        if sort_order == "descending":
+          sort_index = sort_index[::-1]
+      slice = sort_index[rows].astype("int32")
 
   if byteorder is None:
     return json.dumps(slice.tolist())
