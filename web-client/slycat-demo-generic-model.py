@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import numpy
 import slycat.web.client
 import sys
 
@@ -18,5 +19,6 @@ connection.set_parameter(mid, "name", "Fred")
 connection.set_parameter(mid, "pi", 3.1416)
 connection.start_array_set(mid, "data")
 connection.start_array(mid, "data", 0, ("range", "int64"), ("i", "int64", 0, 10))
+connection.store_array_attribute(mid, "data", 0, 0, numpy.arange(10))
 connection.finish_model(mid)
 sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))

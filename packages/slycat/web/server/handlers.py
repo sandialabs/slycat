@@ -405,6 +405,75 @@ def post_model_array_set_array(mid, name, array):
     array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
 
 @cherrypy.tools.json_out(on = True)
+def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  # Sanity check inputs ...
+  storage = model["artifact:%s" % name]
+  array_index = int(array)
+  attribute_index = int(attribute)
+
+  ranges = [(int(begin), int(end)) for begin, end in json.load(ranges.file)]
+
+  with slycat.web.server.database.hdf5.open(storage, "r+") as file:
+    array_metadata = file.array(array_index).attrs
+    if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
+      raise cherrypy.HTTPError("400 Attribute index {} out-of-range.".format(attribute_index))
+    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+
+    if len(ranges) != len(array_metadata["dimension-begin"]):
+      raise cherrypy.HTTPError("400 Expected {} dimensions, got {}.".format(len(array_metadata["dimension-begin"]), len(ranges)))
+    for dimension_begin, dimension_end, (range_begin, range_end) in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"], ranges):
+      if not (dimension_begin <= range_begin and range_begin <= dimension_end):
+        raise cherrypy.HTTPError("400 Begin index {} out-of-range.".format(begin))
+      if not (range_begin <= range_end and range_end <= dimension_end):
+        raise cherrypy.HTTPError("400 End index {} out-of-range.".format(end))
+
+    # Convert data to an array ...
+    if isinstance(data, numpy.ndarray):
+      pass
+    elif isinstance(data, list):
+      data = numpy.array(data, dtype=stored_type)
+    else:
+      if byteorder is None:
+        data = numpy.array(json.load(data.file), dtype=stored_type)
+      elif byteorder == sys.byteorder:
+        data = numpy.fromfile(data.file, dtype=stored_type)
+      else:
+        raise NotImplementedError()
+
+    # Check that the data and range shapes match ...
+    if data.shape != tuple([end - begin for begin, end in ranges]):
+      raise cherrypy.HTTPError("400 Data and range shapes don't match.")
+
+    # Store the data ...
+    attribute = file.array_attribute(array_index, attribute_index)
+    index = tuple([slice(begin, end) for begin, end in ranges])
+    attribute[index] = data
+
+    # Update attribute min/max statistics ...
+    if data.dtype.char not in ["O", "S"]:
+      data = data[numpy.invert(numpy.isnan(data))]
+    data_min = numpy.asscalar(numpy.min(data)) if len(data) else None
+    data_max = numpy.asscalar(numpy.max(data)) if len(data) else None
+
+    attribute_min = attribute.attrs.get("min", None)
+    attribute_max = attribute.attrs.get("max", None)
+
+    if data_min is not None:
+      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+    if data_max is not None:
+      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+
+    if attribute_min is not None:
+      attribute.attrs["min"] = attribute_min
+    if attribute_max is not None:
+      attribute.attrs["max"] = attribute_max
+
+@cherrypy.tools.json_out(on = True)
 def post_model_finish(mid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)

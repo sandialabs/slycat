@@ -152,18 +152,18 @@ class connection(object):
     """Starts a new array set array, ready to receive data."""
     self.request("POST", "/models/%s/array-set/%s/array/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
-  def store_array_attribute(self, mwid, name, array, attribute, data, ranges=None):
+  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
     ranges = require_array_ranges(ranges)
     if isinstance(data, numpy.ndarray):
       if ranges is None:
         ranges = [(0, end) for end in data.shape]
       if data.dtype.char == "S":
-        self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute}, files={"ranges":json.dumps(ranges), "data":json.dumps(data.tolist())})
+        self.request("PUT", "/models/%s/array-set/%s/array/%s/attribute/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
       else:
-        self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute, "byteorder":sys.byteorder}, files={"ranges":json.dumps(ranges), "data":data.tostring(order="C")})
+        self.request("PUT", "/models/%s/array-set/%s/array/%s/attribute/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
     else:
-      self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute}, files={"ranges":json.dumps(ranges), "data":json.dumps(data)})
+      self.request("PUT", "/models/%s/array-set/%s/array/%s/attribute/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
   def finish_model(self, mid):
     """Completes a model."""
