@@ -26,13 +26,14 @@ import slycat.web.server.authentication
 import slycat.web.server.cache
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
+import slycat.web.server.model.generic
 import slycat.web.server.ssh
 import slycat.web.server.template
 import slycat.web.server.timer
 import slycat.web.server.worker
 import slycat.web.server.worker.model.cca3
-import slycat.web.server.worker.model.timeseries
 import slycat.web.server.worker.model.generic
+import slycat.web.server.worker.model.timeseries
 import slycat.web.server.worker.timer
 import threading
 import traceback
@@ -214,6 +215,8 @@ def post_project_models(pid):
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
   model_type = cherrypy.request.json["model-type"]
+  if model_type not in ["generic", "cca", "timeseries"]:
+    raise cherrypy.HTTPError("400 Allowed model types: generic, cca, timeseries")
   marking = cherrypy.request.json["marking"]
   if marking not in cherrypy.request.app.config["slycat"]["marking"].types():
     raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(["'%s'" % type for type in cherrypy.request.app.config["slycat"]["marking"].types()]))
@@ -221,17 +224,31 @@ def post_project_models(pid):
   description = cherrypy.request.json.get("description", "")
   mid = uuid.uuid4().hex
 
-  if model_type == "generic":
-    wid = pool.start_worker(slycat.web.server.worker.model.generic.implementation(cherrypy.request.security, pid, mid, name, marking, description))
-  elif model_type == "cca":
-    wid = pool.start_worker(slycat.web.server.worker.model.cca3.implementation(cherrypy.request.security, pid, mid, name, marking, description))
-  elif model_type == "timeseries":
-    wid = pool.start_worker(slycat.web.server.worker.model.timeseries.implementation(cherrypy.request.security, pid, mid, name, marking, description))
-  else:
-    raise cherrypy.HTTPError("400 Unknown model type: %s" % cherrypy.request.json["model-type"])
+  model = {
+    "_id" : mid,
+    "type" : "model",
+    "model-type" : model_type,
+    "marking" : marking,
+    "project" : pid,
+    "created" : datetime.datetime.utcnow().isoformat(),
+    "creator" : cherrypy.request.security["user"],
+    "name" : name,
+    "description" : description,
+    "artifact-types" : {},
+    "input-artifacts" : [],
+    "state" : "waiting",
+    "result" : None,
+    "started" : None,
+    "finished" : None,
+    "progress" : None,
+    "message" : None,
+    "uri" : None
+    }
+  database.save(model)
 
-  cherrypy.response.status = "202 Model scheduled for creation."
-  return {"id" : mid, "wid" : wid}
+  cherrypy.response.headers["location"] = "%s/models/%s" % (cherrypy.request.base, mid)
+  cherrypy.response.status = "201 Model created."
+  return {"id" : mid}
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -318,6 +335,18 @@ def put_model(mid):
     model["description"] = cherrypy.request.json["description"]
 
   database.save(model)
+
+@cherrypy.tools.json_out(on = True)
+def post_model_finish(mid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  if model["model-type"] == "generic":
+    slycat.web.server.model.generic.finish(database, model)
+  else:
+    raise Exception("500 Cannot finish unknown model type")
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()

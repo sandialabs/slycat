@@ -136,9 +136,9 @@ class connection(object):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
 
-  def create_model_worker(self, pid, type, name, marking="", description=""):
-    """Creates a new model worker, returning the worker ID."""
-    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["wid"]
+  def create_model(self, pid, type, name, marking="", description=""):
+    """Creates a new model, returning the model ID."""
+    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
 
   def set_parameter(self, mwid, name, value):
     """Sets a model worker parameter value."""
@@ -169,9 +169,9 @@ class connection(object):
     """Completes uploading a model array set artifact."""
     self.request("POST", "/workers/%s/model/finish-array-set" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
 
-  def finish_model(self, mwid):
-    """Completes a model, returning the new model ID."""
-    return self.request("POST", "/workers/%s/model/finish-model" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({}))["mid"]
+  def finish_model(self, mid):
+    """Completes a model."""
+    self.request("POST", "/models/%s/finish" % (mid), headers={"accept":"application/json"})
 
   def get_model(self, mid):
     """Returns a single model."""
