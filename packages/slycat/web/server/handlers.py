@@ -315,7 +315,7 @@ def get_model(mid, **kwargs):
       context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
       return slycat.web.server.template.render("model-timeseries.html", context)
 
-    if "model-type" in model and model["model-type"] == "cca3":
+    if "model-type" in model and model["model-type"] in ["cca", "cca3"]:
       context["input-columns"] = json.dumps(model["artifact:input-columns"]) if "artifact:input-columns" in model else "null"
       context["output-columns"] = json.dumps(model["artifact:output-columns"]) if "artifact:output-columns" in model else "null"
       context["scale-inputs"] = json.dumps(model["artifact:scale-inputs"]) if "artifact:scale-inputs" in model else "null"
@@ -356,24 +356,13 @@ def put_model_parameter(mid, name):
   except KeyError as e:
     raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
-@cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
 def post_model_array_set(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  try:
-    storage = uuid.uuid4().hex
-    with slycat.web.server.database.hdf5.create(storage):
-      database.save({"_id" : storage, "type" : "hdf5"})
-      model["artifact:%s" % name] = storage
-      model["artifact-types"][name] = "hdf5"
-      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
-      database.save(model)
-  except KeyError as e:
-    raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
+  slycat.web.server.model.start_array_set(database, model, name, input=True)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -384,26 +373,10 @@ def post_model_array_set_array(mid, name, array):
   slycat.web.server.authentication.require_project_writer(project)
 
   # Sanity-check inputs ...
-  storage = model["artifact:%s" % name]
   array_index = int(array)
-  attributes = slycat.array.require_attributes(cherrypy.request.json["attributes"])
-  dimensions = slycat.array.require_dimensions(cherrypy.request.json["dimensions"])
-  stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
-  shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
-
-  # Allocate space for the coming data ...
-  with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    for attribute_index, stored_type in enumerate(stored_types):
-      file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
-
-    # Store array metadata ...
-    array_metadata = file.array(array_index).attrs
-    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in dimensions], dtype="int64")
-    array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
+  attributes = cherrypy.request.json["attributes"]
+  dimensions = cherrypy.request.json["dimensions"]
+  slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
 @cherrypy.tools.json_out(on = True)
 def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
@@ -413,66 +386,10 @@ def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None
   slycat.web.server.authentication.require_project_writer(project)
 
   # Sanity check inputs ...
-  storage = model["artifact:%s" % name]
   array_index = int(array)
   attribute_index = int(attribute)
-
   ranges = [(int(begin), int(end)) for begin, end in json.load(ranges.file)]
-
-  with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    array_metadata = file.array(array_index).attrs
-    if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
-      raise cherrypy.HTTPError("400 Attribute index {} out-of-range.".format(attribute_index))
-    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
-
-    if len(ranges) != len(array_metadata["dimension-begin"]):
-      raise cherrypy.HTTPError("400 Expected {} dimensions, got {}.".format(len(array_metadata["dimension-begin"]), len(ranges)))
-    for dimension_begin, dimension_end, (range_begin, range_end) in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"], ranges):
-      if not (dimension_begin <= range_begin and range_begin <= dimension_end):
-        raise cherrypy.HTTPError("400 Begin index {} out-of-range.".format(begin))
-      if not (range_begin <= range_end and range_end <= dimension_end):
-        raise cherrypy.HTTPError("400 End index {} out-of-range.".format(end))
-
-    # Convert data to an array ...
-    if isinstance(data, numpy.ndarray):
-      pass
-    elif isinstance(data, list):
-      data = numpy.array(data, dtype=stored_type)
-    else:
-      if byteorder is None:
-        data = numpy.array(json.load(data.file), dtype=stored_type)
-      elif byteorder == sys.byteorder:
-        data = numpy.fromfile(data.file, dtype=stored_type)
-      else:
-        raise NotImplementedError()
-
-    # Check that the data and range shapes match ...
-    if data.shape != tuple([end - begin for begin, end in ranges]):
-      raise cherrypy.HTTPError("400 Data and range shapes don't match.")
-
-    # Store the data ...
-    attribute = file.array_attribute(array_index, attribute_index)
-    index = tuple([slice(begin, end) for begin, end in ranges])
-    attribute[index] = data
-
-    # Update attribute min/max statistics ...
-    if data.dtype.char not in ["O", "S"]:
-      data = data[numpy.invert(numpy.isnan(data))]
-    data_min = numpy.asscalar(numpy.min(data)) if len(data) else None
-    data_max = numpy.asscalar(numpy.max(data)) if len(data) else None
-
-    attribute_min = attribute.attrs["min"] if "min" in attribute.attrs else None
-    attribute_max = attribute.attrs["max"] if "max" in attribute.attrs else None
-
-    if data_min is not None:
-      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
-    if data_max is not None:
-      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
-
-    if attribute_min is not None:
-      attribute.attrs["min"] = attribute_min
-    if attribute_max is not None:
-      attribute.attrs["max"] = attribute_max
+  slycat.web.server.model.store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder)
 
 def post_model_finish(mid):
   database = slycat.web.server.database.couchdb.connect()
@@ -558,7 +475,7 @@ def get_model_array_metadata(mid, aid, array):
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
       metadata = get_array_metadata(file, array)
   return metadata
 
@@ -597,7 +514,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
       metadata = get_array_metadata(file, array)
 
       if not(0 <= attribute and attribute < len(metadata["attributes"])):
@@ -733,7 +650,7 @@ def get_model_table_metadata(mid, aid, array, index = None):
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
       metadata = get_table_metadata(file, array, index)
   return metadata
 
@@ -756,7 +673,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
       metadata = get_table_metadata(file, array, index)
 
       # Constrain end <= count along both dimensions
@@ -820,7 +737,7 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
       metadata = get_table_metadata(file, array, index)
 
       # Constrain end <= count along both dimensions
@@ -868,7 +785,7 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact["storage"]) as file:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
       metadata = get_table_metadata(file, array, index)
 
       # Constrain end <= count along both dimensions
