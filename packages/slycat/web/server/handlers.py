@@ -336,6 +336,23 @@ def put_model(mid):
 
   database.save(model)
 
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def put_model_parameter(mid, name):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  try:
+    value = cherrypy.request.json["value"]
+    model["artifact:%s" % name] = value
+    model["artifact-types"][name] = "json"
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    database.save(model)
+  except KeyError as e:
+    raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
+
 @cherrypy.tools.json_out(on = True)
 def post_model_finish(mid):
   database = slycat.web.server.database.couchdb.connect()

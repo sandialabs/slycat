@@ -140,9 +140,9 @@ class connection(object):
     """Creates a new model, returning the model ID."""
     return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
 
-  def set_parameter(self, mwid, name, value):
-    """Sets a model worker parameter value."""
-    self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
+  def set_parameter(self, mid, name, value):
+    """Sets a model parameter value."""
+    self.request("PUT", "/models/%s/parameter/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
 
   def start_array_set(self, mwid, name):
     """Starts a new model array set artifact, ready for uploading data."""
