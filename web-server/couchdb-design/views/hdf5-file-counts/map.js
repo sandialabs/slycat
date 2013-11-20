@@ -19,7 +19,7 @@ function(doc)
       {
         if(artifact_types[artifact] == "hdf5")
         {
-          emit(doc["artifact:" + artifact]["storage"], 1);
+          emit(doc["artifact:" + artifact], 1);
         }
       }
     }

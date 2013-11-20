@@ -353,6 +353,25 @@ def put_model_parameter(mid, name):
   except KeyError as e:
     raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
 
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_model_array_set(mid, name):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  try:
+    storage = uuid.uuid4().hex
+    with slycat.web.server.database.hdf5.create(storage):
+      database.save({"_id" : storage, "type" : "hdf5"})
+      model["artifact:%s" % name] = storage
+      model["artifact-types"][name] = "hdf5"
+      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+      database.save(model)
+  except KeyError as e:
+    raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
+
 @cherrypy.tools.json_out(on = True)
 def post_model_finish(mid):
   database = slycat.web.server.database.couchdb.connect()

@@ -144,9 +144,9 @@ class connection(object):
     """Sets a model parameter value."""
     self.request("PUT", "/models/%s/parameter/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
 
-  def start_array_set(self, mwid, name):
+  def start_array_set(self, mid, name):
     """Starts a new model array set artifact, ready for uploading data."""
-    self.request("POST", "/workers/%s/model/start-array-set" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
+    self.request("POST", "/models/%s/array-set/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
 
   def create_array(self, mwid, name, array, attributes, dimensions):
     """Creates a new array set array, ready to receive data."""
@@ -164,10 +164,6 @@ class connection(object):
         self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute, "byteorder":sys.byteorder}, files={"ranges":json.dumps(ranges), "data":data.tostring(order="C")})
     else:
       self.request("POST", "/workers/%s/model/store-array-attribute" % (mwid), data={"name":name, "array":array, "attribute":attribute}, files={"ranges":json.dumps(ranges), "data":json.dumps(data)})
-
-  def finish_array_set(self, mwid, name):
-    """Completes uploading a model array set artifact."""
-    self.request("POST", "/workers/%s/model/finish-array-set" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
 
   def finish_model(self, mid):
     """Completes a model."""
