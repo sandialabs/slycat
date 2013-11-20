@@ -61,4 +61,12 @@ def delete(array):
   cherrypy.log.error("Deleting file {}".format(array_path))
   os.remove(array_path)
 
+class null_lock(object):
+  """Do-nothing replacement for a thread lock, useful for debugging threading problems with h5py."""
+  def __enter__(self):
+    pass
+  def __exit__(self, exc_type, exc_value, traceback):
+    pass
+
+#lock = null_lock()
 lock = threading.Lock()
