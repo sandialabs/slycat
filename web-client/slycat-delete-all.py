@@ -14,5 +14,5 @@ connection = slycat.web.client.connect(options)
 for project in connection.get_projects():
   connection.delete_project(project["_id"])
 
-for worker in connection.get_workers():
-  connection.delete_worker(worker["_id"], stop=True)
+#for worker in connection.get_workers():
+#  connection.delete_worker(worker["_id"], stop=True)

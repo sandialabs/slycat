@@ -199,31 +199,31 @@ class connection(object):
   ########################################
   # Currently untested from here down
 
-  def get_workers(self):
-    """Returns all workers."""
-    return self.request("GET", "/workers", headers={"accept":"application/json"})["workers"]
-
-  def stop_worker(self, wid):
-    """Stops a running worker."""
-    self.request("PUT", "/workers/%s" % (wid), headers={"content-type":"application/json"}, data=json.dumps({"result" : "stopped"}))
-
-  def join_worker(self, wid):
-    """Waits for a worker to complete, then returns.  Note that some workers
-    (such as a model that's still waiting for inputs) will never
-    complete on their own - you should call stop_worker() first."""
-    while True:
-      worker = self.request("GET", "/workers/%s" % (wid), headers={"accept":"application/json"})
-      if "result" in worker and worker["result"] is not None:
-        return
-      time.sleep(1.0)
-
-  def delete_worker(self, wid, stop=False):
-    """Immediately deletes a worker.  If you want to wait for the worker to
-    complete first, use stop=True."""
-    if stop:
-      self.stop_worker(wid)
-      self.join_worker(wid)
-    self.request("DELETE", "/workers/%s" % (wid))
+#  def get_workers(self):
+#    """Returns all workers."""
+#    return self.request("GET", "/workers", headers={"accept":"application/json"})["workers"]
+#
+#  def stop_worker(self, wid):
+#    """Stops a running worker."""
+#    self.request("PUT", "/workers/%s" % (wid), headers={"content-type":"application/json"}, data=json.dumps({"result" : "stopped"}))
+#
+#  def join_worker(self, wid):
+#    """Waits for a worker to complete, then returns.  Note that some workers
+#    (such as a model that's still waiting for inputs) will never
+#    complete on their own - you should call stop_worker() first."""
+#    while True:
+#      worker = self.request("GET", "/workers/%s" % (wid), headers={"accept":"application/json"})
+#      if "result" in worker and worker["result"] is not None:
+#        return
+#      time.sleep(1.0)
+#
+#  def delete_worker(self, wid, stop=False):
+#    """Immediately deletes a worker.  If you want to wait for the worker to
+#    complete first, use stop=True."""
+#    if stop:
+#      self.stop_worker(wid)
+#      self.join_worker(wid)
+#    self.request("DELETE", "/workers/%s" % (wid))
 
   ###########################################################################################################3
   # Convenience functions that layer additional functionality atop the RESTful API

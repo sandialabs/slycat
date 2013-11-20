@@ -50,18 +50,15 @@ dimensions = [("row", "int64", 0, options.row_count)]
 
 connection = slycat.web.client.connect(options)
 pid = connection.create_project(options.project_name)
-wid = connection.create_model_worker(pid, "cca", options.model_name, options.marking)
-connection.start_array_set(wid, "data-table")
-connection.create_array(wid, "data-table", 0, attributes, dimensions)
+mid = connection.create_model(pid, "cca", options.model_name, options.marking)
+connection.start_array_set(mid, "data-table")
+connection.start_array(mid, "data-table", 0, attributes, dimensions)
 
 for i in range(total_columns):
-  connection.store_array_attribute(wid, "data-table", 0, i, data.T[i])
+  connection.store_array_attribute(mid, "data-table", 0, i, data.T[i])
 
-connection.finish_array_set(wid, "data-table")
-
-connection.set_parameter(wid, "input-columns", range(0, options.input_count))
-connection.set_parameter(wid, "output-columns", range(options.input_count, options.input_count + options.output_count))
-connection.set_parameter(wid, "scale-inputs", False)
-mid = connection.finish_model(wid)
-connection.join_worker(wid)
+connection.set_parameter(mid, "input-columns", range(0, options.input_count))
+connection.set_parameter(mid, "output-columns", range(options.input_count, options.input_count + options.output_count))
+connection.set_parameter(mid, "scale-inputs", False)
+connection.finish_model(mid)
 sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))

@@ -28,6 +28,7 @@ import slycat.web.server.authentication
 import slycat.web.server.cache
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
+import slycat.web.server.model.cca
 import slycat.web.server.model.generic
 import slycat.web.server.ssh
 import slycat.web.server.template
@@ -482,6 +483,8 @@ def post_model_finish(mid):
 
   if model["model-type"] == "generic":
     slycat.web.server.model.generic.finish(database, model)
+  elif model["model-type"] == "cca":
+    slycat.web.server.model.cca.finish(database, model)
   else:
     raise Exception("500 Cannot finish unknown model type")
 
