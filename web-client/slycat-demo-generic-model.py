@@ -17,6 +17,6 @@ mid = connection.create_model(pid, "generic", options.model_name, options.markin
 connection.set_parameter(mid, "name", "Fred")
 connection.set_parameter(mid, "pi", 3.1416)
 connection.start_array_set(mid, "data")
-#connection.create_array(mid, "data", 0, ("range", "int64"), ("i", 10))
+connection.start_array(mid, "data", 0, ("range", "int64"), ("i", "int64", 0, 10))
 connection.finish_model(mid)
 sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))

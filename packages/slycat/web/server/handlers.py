@@ -10,6 +10,7 @@ import copy
 import cStringIO as StringIO
 import datetime
 import hashlib
+import h5py
 import itertools
 import json
 import logging.handlers
@@ -21,6 +22,7 @@ import pprint
 import Queue
 import subprocess
 import sys
+import slycat.array
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cache
@@ -371,6 +373,36 @@ def post_model_array_set(mid, name):
       database.save(model)
   except KeyError as e:
     raise cherrypy.HTTPError("400 Missing key: %s" % e.message)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_model_array_set_array(mid, name, array):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  # Sanity-check inputs ...
+  storage = model["artifact:%s" % name]
+  array_index = int(array)
+  attributes = slycat.array.require_attributes(cherrypy.request.json["attributes"])
+  dimensions = slycat.array.require_dimensions(cherrypy.request.json["dimensions"])
+  stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
+  shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
+
+  # Allocate space for the coming data ...
+  with slycat.web.server.database.hdf5.open(storage, "r+") as file:
+    for attribute_index, stored_type in enumerate(stored_types):
+      file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
+
+    # Store array metadata ...
+    array_metadata = file.array(array_index).attrs
+    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in dimensions], dtype="int64")
+    array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
 
 @cherrypy.tools.json_out(on = True)
 def post_model_finish(mid):

@@ -49,11 +49,11 @@ def create(array):
   os.makedirs(os.path.dirname(array_path))
   return wrap(h5py.File(array_path, mode="w"))
 
-def open(array):
+def open(array, mode="r"):
   """Open an array from the data store for reading."""
   array_path = path(array)
   cherrypy.log.error("Opening file {}".format(array_path))
-  return wrap(h5py.File(array_path, mode="r"))
+  return wrap(h5py.File(array_path, mode=mode))
 
 def delete(array):
   """Remove an array from the data store."""

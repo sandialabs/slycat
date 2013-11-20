@@ -145,12 +145,12 @@ class connection(object):
     self.request("PUT", "/models/%s/parameter/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
 
   def start_array_set(self, mid, name):
-    """Starts a new model array set artifact, ready for uploading data."""
+    """Starts a new model array set artifact, ready to receive data."""
     self.request("POST", "/models/%s/array-set/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
 
-  def create_array(self, mwid, name, array, attributes, dimensions):
-    """Creates a new array set array, ready to receive data."""
-    self.request("POST", "/workers/%s/model/create-array" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "array":array, "attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
+  def start_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.request("POST", "/models/%s/array-set/%s/array/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
   def store_array_attribute(self, mwid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
