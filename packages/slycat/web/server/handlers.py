@@ -258,6 +258,13 @@ def post_project_bookmarks(pid):
   cherrypy.response.status = "201 Bookmark stored."
   return {"id" : bid}
 
+@cherrypy.tools.json_out(on = True)
+def get_open_models():
+  database = slycat.web.server.database.couchdb.connect()
+  models = [model for model in database.scan("slycat/open-models")]
+  projects = [database.get("project", model["project"]) for model in models]
+  return [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
+
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
