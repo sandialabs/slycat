@@ -461,8 +461,8 @@ def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None
     data_min = numpy.asscalar(numpy.min(data)) if len(data) else None
     data_max = numpy.asscalar(numpy.max(data)) if len(data) else None
 
-    attribute_min = attribute.attrs.get("min", None)
-    attribute_max = attribute.attrs.get("max", None)
+    attribute_min = attribute.attrs["min"] if "min" in attribute.attrs else None
+    attribute_max = attribute.attrs["max"] if "max" in attribute.attrs else None
 
     if data_min is not None:
       attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
@@ -474,12 +474,19 @@ def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None
     if attribute_max is not None:
       attribute.attrs["max"] = attribute_max
 
-@cherrypy.tools.json_out(on = True)
 def post_model_finish(mid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
+
+  cherrypy.response.status = "202 Finishing model."
+
+  model["state"] = "running"
+  model["started"] = datetime.datetime.utcnow().isoformat()
+  model["progress"] = 0.0
+  model["uri"] = "%s/models/%s" % (cherrypy.request.base, model["_id"])
+  database.save(model)
 
   if model["model-type"] == "generic":
     slycat.web.server.model.generic.finish(database, model)

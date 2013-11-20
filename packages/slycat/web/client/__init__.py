@@ -167,7 +167,7 @@ class connection(object):
 
   def finish_model(self, mid):
     """Completes a model."""
-    self.request("POST", "/models/%s/finish" % (mid), headers={"accept":"application/json"})
+    self.request("POST", "/models/%s/finish" % (mid))
 
   def get_model(self, mid):
     """Returns a single model."""
