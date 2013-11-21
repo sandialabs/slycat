@@ -58,8 +58,9 @@ def open(array, mode="r"):
 def delete(array):
   """Remove an array from the data store."""
   array_path = path(array)
-  cherrypy.log.error("Deleting file {}".format(array_path))
-  os.remove(array_path)
+  if os.path.exists(array_path):
+    cherrypy.log.error("Deleting file {}".format(array_path))
+    os.remove(array_path)
 
 class null_lock(object):
   """Do-nothing replacement for a thread lock, useful for debugging threading problems with h5py."""

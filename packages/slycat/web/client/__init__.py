@@ -142,15 +142,15 @@ class connection(object):
 
   def set_parameter(self, mid, name, value):
     """Sets a model parameter value."""
-    self.request("PUT", "/models/%s/parameter/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
+    self.request("POST", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
 
   def start_array_set(self, mid, name):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("POST", "/models/%s/array-set/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
+    self.request("POST", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
 
   def start_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
-    self.request("POST", "/models/%s/array-set/%s/array/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
+    self.request("POST", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
   def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
@@ -159,11 +159,11 @@ class connection(object):
       if ranges is None:
         ranges = [(0, end) for end in data.shape]
       if data.dtype.char == "S":
-        self.request("PUT", "/models/%s/array-set/%s/array/%s/attribute/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
+        self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
       else:
-        self.request("PUT", "/models/%s/array-set/%s/array/%s/attribute/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
+        self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
     else:
-      self.request("PUT", "/models/%s/array-set/%s/array/%s/attribute/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
+      self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
   def finish_model(self, mid):
     """Completes a model."""

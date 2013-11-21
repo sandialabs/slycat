@@ -339,9 +339,21 @@ def put_model(mid):
 
   database.save(model)
 
+def post_model_copy_inputs(mid, sid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  source = database.get("model", sid)
+  if source["project"] != model["project"]:
+    raise cherrypy.HTTPError("400 Cannot duplicate a model from another project.")
+
+  slycat.web.server.model.copy_model_inputs(database, source, model)
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def put_model_parameter(mid, name):
+def post_model_parameter(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -379,7 +391,7 @@ def post_model_array_set_array(mid, name, array):
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
 @cherrypy.tools.json_out(on = True)
-def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
+def post_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])

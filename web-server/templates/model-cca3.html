@@ -387,7 +387,6 @@ rights in this software.
         });
 
         // Setup the Rerun Model form ...
-        rerun_cca_worker = null;
         rerun_cca_model = null;
         $("#rerun-cca-form").dialog(
         {
@@ -405,20 +404,7 @@ rights in this software.
           },
           close : function()
           {
-            if(rerun_cca_worker)
-            {
-              $.ajax(
-              {
-                type : "DELETE",
-                url : "{{server-root}}workers/" + rerun_cca_worker,
-                error : function(request, status, reason_phrase)
-                {
-                  window.alert("Error closing local worker: " + reason_phrase);
-                }
-              });
-              rerun_cca_worker = null;
-              rerun_cca_model = null;
-            }
+            rerun_cca_model = null;
           },
           buttons:
           {
@@ -448,18 +434,11 @@ rights in this software.
                 processData: false,
                 success: function(result)
                 {
-                  rerun_cca_worker = result["wid"];
                   rerun_cca_model = result["id"];
                   $.ajax(
                   {
                     type : "POST",
-                    url : "{{server-root}}workers/" + rerun_cca_worker + "/model/copy-model-inputs",
-                    contentType : "application/json",
-                    data: $.toJSON(
-                    {
-                      "mid" : "{{_id}}"
-                    }),
-                    processData: false,
+                    url : "{{server-root}}models/" + rerun_cca_model + "/copy-inputs/{{_id}}",
                     success: function(result)
                     {
                       $.ajax(
@@ -531,11 +510,10 @@ rights in this software.
                 {
                   async : false,
                   type : "POST",
-                  url : "{{server-root}}workers/" + rerun_cca_worker + "/model/set-parameter",
+                  url : "{{server-root}}models/" + rerun_cca_model + "/parameters/" + name,
                   contentType : "application/json",
                   data: $.toJSON(
                   {
-                    name : name,
                     value : value
                   }),
                   processData : false,
@@ -569,7 +547,7 @@ rights in this software.
               $.ajax(
               {
                 type : "POST",
-                url : "{{server-root}}workers/" + rerun_cca_worker + "/model/finish-model",
+                url : "{{server-root}}models/" + rerun_cca_model + "/finish",
                 contentType : "application/json",
                 data: $.toJSON(
                 {
@@ -577,7 +555,6 @@ rights in this software.
                 processData: false,
                 success: function(result)
                 {
-                  rerun_cca_worker = null;
                   rerun_cca_model = null;
                   window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
                   $("#rerun-cca-form").dialog("close");

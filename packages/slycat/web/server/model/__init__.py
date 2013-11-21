@@ -35,6 +35,20 @@ def set_message(database, model, message):
   model["message"] = message
   database.save(model)
 
+def copy_model_inputs(database, source, target):
+  for name in source["input-artifacts"]:
+#    self.set_message("Copying existing model input %s." % name)
+#    cherrypy.log.error("Copying artifact %s" % name)
+    original_type = source["artifact-types"][name]
+    original_value = source["artifact:%s" % name]
+    if original_type in ["json", "hdf5"]:
+      target["artifact-types"][name] = original_type
+      target["artifact:%s" % name] = original_value
+      target["input-artifacts"] = list(set(target["input-artifacts"] + [name]))
+    else:
+      raise Exception("Cannot copy unknown input artifact type %s." & original_type)
+  database.save(target)
+
 def start_array_set(database, model, name, input=False):
   """Start a model array set artifact."""
   storage = uuid.uuid4().hex
