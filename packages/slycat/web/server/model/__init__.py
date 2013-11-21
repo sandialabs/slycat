@@ -9,7 +9,26 @@ import slycat.array
 import slycat.web.server.database.hdf5
 import slycat.web.server.spider
 import sys
+import threading
 import uuid
+
+# Keep track of model revisions
+revision = 0
+# Create a condition variable used to signal observers whenever a model is updated.
+updated = threading.Condition()
+
+def update(database, model, **kwargs):
+  """Update the model, and signal any waiting threads that it's changed."""
+  for name, value in kwargs.items():
+    if name in ["state", "result", "started", "finished", "progress", "message", "uri"]:
+      model[name] = value
+
+  database.save(model)
+
+  global updated, revision
+  with updated:
+    revision += 1
+    updated.notify_all()
 
 def load_json_artifact(model, name):
   """Retrieve a json artifact from a model."""
@@ -26,16 +45,6 @@ def load_hdf5_artifact(model, name):
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
   return ((1.0 - amount) * a) + (amount * b)
-
-def set_progress(database, model, progress):
-  """Store updated model progress."""
-  model["progress"] = progress
-  database.save(model)
-
-def set_message(database, model, message):
-  """Store an updated model message."""
-  model["message"] = message
-  database.save(model)
 
 def copy_model_inputs(database, source, target):
   for name in source["input-artifacts"]:

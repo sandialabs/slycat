@@ -2,6 +2,8 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+from slycat.web.server.model import *
+
 import cherrypy
 import datetime
 import slycat.web.server.database.couchdb
@@ -15,23 +17,14 @@ def compute(mid):
 
     # Do useful work here
 
-    model["state"] = "finished"
-    model["result"] = "succeeded"
-    model["finished"] = datetime.datetime.utcnow().isoformat()
-    model["progress"] = 1.0
-    database.save(model)
+    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0)
 
   except:
     cherrypy.log.error("%s" % traceback.format_exc())
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
-    model["state"] = "finished"
-    model["result"] = "failed"
-    model["finished"] = datetime.datetime.utcnow().isoformat()
-    model["progress"] = None
-    model["message"] = traceback.format_exc()
-    database.save(model)
+    update(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
 def finish(database, model):
   thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})

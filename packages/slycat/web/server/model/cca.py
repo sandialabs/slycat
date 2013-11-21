@@ -37,12 +37,12 @@ def compute(mid):
 
       X = numpy.empty((row_count, len(input_columns)))
       for j, input in enumerate(input_columns):
-        set_progress(database, model, mix(0.0, 0.25, float(j) / float(len(input_columns))))
+        update(database, model, progress=mix(0.0, 0.25, float(j) / float(len(input_columns))))
         X[:,j] = file.array_attribute(0, input)[...]
 
       Y = numpy.empty((row_count, len(output_columns)))
       for j, output in enumerate(output_columns):
-        set_progress(database, model, mix(0.25, 0.50, float(j) / float(len(output_columns))))
+        update(database, model, progress=mix(0.25, 0.50, float(j) / float(len(output_columns))))
         Y[:,j] = file.array_attribute(0, output)[...]
 
     # Remove rows containing NaNs ...
@@ -52,11 +52,11 @@ def compute(mid):
     Y = Y[good]
 
     # Compute the CCA ...
-    set_message(database, model, "Computing CCA.")
+    update(database, model, message="Computing CCA.")
     x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=scale_inputs)
-    set_progress(database, model, 0.75)
+    update(database, model, progress=0.75)
 
-    set_message(database, model, "Storing results.")
+    update(database, model, message="Storing results.")
     component_count = x.shape[1]
     sample_count = x.shape[0]
 
@@ -70,18 +70,18 @@ def compute(mid):
     start_array(database, model, "canonical-variables", 0, [("input", "float64"), ("output", "float64")], [("component", "int64", 0, component_count), ("sample", "int64", 0, sample_count)])
     store_array_attribute(database, model, "canonical-variables", 0, 0, [(0, component_count), (0, sample_count)], x.T)
     store_array_attribute(database, model, "canonical-variables", 0, 1, [(0, component_count), (0, sample_count)], y.T)
-    set_progress(database, model, 0.80)
+    update(database, model, progress=0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
     start_array_set(database, model, "input-structure-correlation")
     start_array(database, model, "input-structure-correlation", 0, [("correlation", "float64")], [("component", "int64", 0, component_count), ("input", "int64", 0, len(input_columns))])
     store_array_attribute(database, model, "input-structure-correlation", 0, 0, [(0, component_count), (0, len(input_columns))], x_loadings.T)
-    set_progress(database, model, 0.85)
+    update(database, model, progress=0.85)
 
     start_array_set(database, model, "output-structure-correlation")
     start_array(database, model, "output-structure-correlation", 0, [("correlation", "float64")], [("component", "int64", 0, component_count), ("output", "int64", 0, len(output_columns))])
     store_array_attribute(database, model, "output-structure-correlation", 0, 0, [(0, component_count), (0, len(output_columns))], y_loadings.T)
-    set_progress(database, model, 0.90)
+    update(database, model, progress=0.90)
 
     # Store statistics as a vector of component r2/p attributes
     start_array_set(database, model, "cca-statistics")
@@ -89,23 +89,14 @@ def compute(mid):
     store_array_attribute(database, model, "cca-statistics", 0, 0, [(0, component_count)], r)
     store_array_attribute(database, model, "cca-statistics", 0, 1, [(0, component_count)], wilks)
 
-    model["state"] = "finished"
-    model["result"] = "succeeded"
-    model["finished"] = datetime.datetime.utcnow().isoformat()
-    model["progress"] = 1.0
-    database.save(model)
+    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0)
 
   except:
     cherrypy.log.error("%s" % traceback.format_exc())
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
-    model["state"] = "finished"
-    model["result"] = "failed"
-    model["finished"] = datetime.datetime.utcnow().isoformat()
-    model["progress"] = None
-    model["message"] = traceback.format_exc()
-    database.save(model)
+    update(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
 def finish(database, model):
   """Compute a CCA model given an input table, a set of input variable names, and a set of output variable names."""

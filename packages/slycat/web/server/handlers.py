@@ -37,6 +37,7 @@ import slycat.web.server.template
 import slycat.web.server.timer
 #import slycat.web.server.worker
 import threading
+import time
 import traceback
 import uuid
 
@@ -180,6 +181,9 @@ def delete_project(pid):
     couchdb.delete(bookmark)
   for model in couchdb.scan("slycat/project-models", startkey=pid, endkey=pid):
     couchdb.delete(model)
+    with slycat.web.server.model.updated:
+      slycat.web.server.model.revision += 1
+      slycat.web.server.model.updated.notify_all()
   couchdb.delete(project)
   cleanup_arrays()
 
@@ -277,11 +281,23 @@ def post_project_bookmarks(pid):
   return {"id" : bid}
 
 @cherrypy.tools.json_out(on = True)
-def get_open_models():
+def get_open_models(revision=None):
+  if revision is not None:
+    revision = int(revision)
+  start_time = time.time()
+  timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
+  while revision == slycat.web.server.model.revision:
+    with slycat.web.server.model.updated:
+      slycat.web.server.model.updated.wait(1.0)
+    if time.time() - start_time > timeout:
+      cherrypy.response.status = "204 No change."
+      return None
+    if cherrypy.engine.state != cherrypy.engine.states.STARTED:
+      return None
   database = slycat.web.server.database.couchdb.connect()
   models = [model for model in database.scan("slycat/open-models")]
   projects = [database.get("project", model["project"]) for model in models]
-  return [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
+  return slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -433,11 +449,7 @@ def post_model_finish(mid):
 
   cherrypy.response.status = "202 Finishing model."
 
-  model["state"] = "running"
-  model["started"] = datetime.datetime.utcnow().isoformat()
-  model["progress"] = 0.0
-  model["uri"] = "%s/models/%s" % (cherrypy.request.base, model["_id"])
-  database.save(model)
+  slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, uri = "%s/models/%s" % (cherrypy.request.base, model["_id"]))
 
   if model["model-type"] == "generic":
     slycat.web.server.model.generic.finish(database, model)
@@ -456,6 +468,10 @@ def delete_model(mid):
 
   couchdb.delete(model)
   cleanup_arrays()
+
+  with slycat.web.server.model.updated:
+    slycat.web.server.model.revision += 1
+    slycat.web.server.model.updated.notify_all()
 
   cherrypy.response.status = "204 Model deleted."
 
@@ -904,20 +920,6 @@ def post_browse(username, hostname):
     return response
   except IOError:
     raise cherrypy.HTTPError("403 Forbidden")
-
-#@cherrypy.tools.json_out(on = True)
-#def get_workers(revision=None):
-#  if revision is not None:
-#    revision = int(revision)
-#  timeout = cherrypy.request.app.config["slycat"]["long-polling-timeout"]
-#  result = pool.workers(revision, timeout)
-#  if result is None:
-#    cherrypy.response.status = "204 No change."
-#    return
-#  else:
-#    revision, workers = result
-#    workers = [worker.status for worker in workers if slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_worker_creator(worker)]
-#    return {"revision" : revision, "workers" : workers}
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
