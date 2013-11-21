@@ -357,11 +357,16 @@ def put_model(mid):
 
   if "name" in cherrypy.request.json:
     model["name"] = cherrypy.request.json["name"]
-
   if "description" in cherrypy.request.json:
     model["description"] = cherrypy.request.json["description"]
+  if "state" in cherrypy.request.json:
+    model["state"] = cherrypy.request.json["state"]
 
   database.save(model)
+
+  with slycat.web.server.model.updated:
+    slycat.web.server.model.revision += 1
+    slycat.web.server.model.updated.notify_all()
 
 def post_model_copy_inputs(mid, sid):
   database = slycat.web.server.database.couchdb.connect()

@@ -37,6 +37,20 @@ rights in this software.
     <script type="text/javascript">
       $(document).ready(function()
       {
+        function close(mid)
+        {
+          $.ajax(
+          {
+            type : "PUT",
+            url : "{{server-root}}models/" + mid,
+            contentType : "application/json",
+            data : $.toJSON({
+              "state" : "closed"
+            }),
+            processData : false
+          });
+        }
+
         function update(revision)
         {
           $.ajax(
@@ -50,11 +64,12 @@ rights in this software.
               var models = results[1];
 
               $("#revision").text("Revision: " + revision);
-              $("#models").empty().append("<tr><th>ID</th><th>State</th><th>Result</th><th>Created</th><th>Started</th><th>Finished</th><th>Progress</th><th>Message</th></tr>");
+              $("#models").empty().append("<tr><th></th><th>ID</th><th>State</th><th>Result</th><th>Created</th><th>Started</th><th>Finished</th><th>Progress</th><th>Message</th></tr>");
 
               $.each(models, function(index, model)
               {
                 $("<tr>")
+                  .append($("<button>").text("Close").click(close.bind(this, model["_id"])))
                   .append($("<td>").append($("<a>").text(model["_id"]).attr("href", model["uri"])))
                   .append($("<td>").text(model["state"]))
                   .append($("<td>").text(model["result"]))
