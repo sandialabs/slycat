@@ -37,6 +37,8 @@ rights in this software.
     <script type="text/javascript">
       $(document).ready(function()
       {
+        var current_revision = null;
+
         function close(mid)
         {
           $.ajax(
@@ -51,41 +53,46 @@ rights in this software.
           });
         }
 
-        function update(revision)
+        function update()
         {
           $.ajax(
           {
             dataType : "json",
             type : "GET",
-            url : "{{server-root}}models/open" + (revision != undefined ? "?revision=" + revision : ""),
+            url : "{{server-root}}models/open" + (current_revision != null ? "?revision=" + current_revision : ""),
             success : function(results)
             {
-              var revision = results[0];
-              var models = results[1];
-
-              $("#revision").text("Revision: " + revision);
-              $("#models").empty().append("<tr><th></th><th>ID</th><th>State</th><th>Result</th><th>Created</th><th>Started</th><th>Finished</th><th>Progress</th><th>Message</th></tr>");
-
-              $.each(models, function(index, model)
+              if(results != null)
               {
-                $("<tr>")
-                  .append($("<button>").text("Close").click(close.bind(this, model["_id"])))
-                  .append($("<td>").append($("<a>").text(model["_id"]).attr("href", model["uri"])))
-                  .append($("<td>").text(model["state"]))
-                  .append($("<td>").text(model["result"]))
-                  .append($("<td>").text(model["created"]))
-                  .append($("<td>").text(model["started"]))
-                  .append($("<td>").text(model["finished"]))
-                  .append($("<td>").text(model["progress"]))
-                  .append($("<td>").text(model["message"]))
-                  .appendTo($("#models"));
-              });
+                current_revision = results[0];
+                var models = results[1];
 
-              window.setTimeout(update.bind(this, revision), 10);
+                $("#revision").text("Revision: " + current_revision);
+                $("#models").empty().append("<tr><th></th><th>ID</th><th>State</th><th>Result</th><th>Created</th><th>Started</th><th>Finished</th><th>Progress</th><th>Message</th></tr>");
+
+                $.each(models, function(index, model)
+                {
+                  $("<tr>")
+                    .append($("<button>").text("Close").click(close.bind(this, model["_id"])))
+                    .append($("<td>").append($("<a>").text(model["_id"]).attr("href", model["uri"])))
+                    .append($("<td>").text(model["state"]))
+                    .append($("<td>").text(model["result"]))
+                    .append($("<td>").text(model["created"]))
+                    .append($("<td>").text(model["started"]))
+                    .append($("<td>").text(model["finished"]))
+                    .append($("<td>").text(model["progress"]))
+                    .append($("<td>").text(model["message"]))
+                    .appendTo($("#models"));
+                });
+              }
+
+              // Restart the request immediately.
+              window.setTimeout(update, 10);
             },
             error : function(request, status, reason_phrase)
             {
-              window.setTimeout(update.bind(this), 5000);
+              // Rate-limit requests when there's an error.
+              window.setTimeout(update, 5000);
             }
           });
         }
