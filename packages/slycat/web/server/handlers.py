@@ -21,6 +21,7 @@ import os
 import pprint
 import Queue
 import subprocess
+import stat
 import sys
 import slycat.array
 import slycat.web.server
@@ -866,6 +867,23 @@ def get_user(uid):
     user["server-administrator"] = uid in cherrypy.request.app.config["slycat"]["server-admins"]
   return user
 
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_browse(username, hostname):
+  path = cherrypy.request.json["path"]
+  password = cherrypy.request.json["password"]
+  session = slycat.web.server.cache.ssh_session(hostname, username, password)
+
+  try:
+    attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
+    names = [attribute.filename for attribute in attributes]
+    sizes = [attribute.st_size for attribute in attributes]
+    types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
+    response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
+    return response
+  except IOError:
+    raise cherrypy.HTTPError("403 Forbidden")
+
 @cherrypy.tools.json_out(on = True)
 def get_workers(revision=None):
   if revision is not None:
@@ -1034,6 +1052,13 @@ def get_test_grid():
   if accept == "text/html":
     context = get_context()
     return slycat.web.server.template.render("test-grid.html", context)
+
+def get_test_browser():
+  accept = cherrypy.lib.cptools.accept(media=["text/html"])
+
+  if accept == "text/html":
+    context = get_context()
+    return slycat.web.server.template.render("test-browser.html", context)
 
 def get_test_exception(code):
   def implementation():
