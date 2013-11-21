@@ -47,9 +47,8 @@ def mix(a, b, amount):
   return ((1.0 - amount) * a) + (amount * b)
 
 def copy_model_inputs(database, source, target):
+  update(database, target, message="Copying existing model inputs.")
   for name in source["input-artifacts"]:
-#    self.set_message("Copying existing model input %s." % name)
-#    cherrypy.log.error("Copying artifact %s" % name)
     original_type = source["artifact-types"][name]
     original_value = source["artifact:%s" % name]
     if original_type in ["json", "hdf5"]:
@@ -61,7 +60,7 @@ def copy_model_inputs(database, source, target):
   database.save(target)
 
 def store_table_file(database, model, name, data, filename, nan_row_filtering, input=False):
-  #self.set_message("Loading table %s." % name)
+  update(database, model, message="Loading table %s from %s." % (name, filename))
   tables = [perspective for perspective in slycat.web.server.spider.extract(type="table", content=data, filename=filename, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
   if len(tables) != 1:
     raise cherrypy.HTTPError("400 Uploaded file %s must contain exactly one table." % file.filename)
@@ -73,7 +72,6 @@ def store_table_file(database, model, name, data, filename, nan_row_filtering, i
   start_array(database, model, name, 0, attributes, dimensions)
   for attribute, data in enumerate(table["columns"]):
     store_array_attribute(database, model, name, 0, attribute, [(0, len(data))], data)
-  #self.set_message("Loaded table %s." % name)
 
 def store_parameter(database, model, name, value, input=False):
   model["artifact:%s" % name] = value
@@ -97,6 +95,7 @@ def store_json_file_artifact(database, model, name, value, input=False):
 
 def start_array_set(database, model, name, input=False):
   """Start a model array set artifact."""
+  update(database, model, message="Starting array set %s." % (name))
   storage = uuid.uuid4().hex
   with slycat.web.server.database.hdf5.create(storage) as file:
     database.save({"_id" : storage, "type" : "hdf5"})
@@ -107,6 +106,7 @@ def start_array_set(database, model, name, input=False):
     database.save(model)
 
 def start_array(database, model, name, array_index, attributes, dimensions):
+  update(database, model, message="Starting array set %s array %s." % (name, array_index))
   storage = model["artifact:%s" % name]
   attributes = slycat.array.require_attributes(attributes)
   dimensions = slycat.array.require_dimensions(dimensions)
@@ -128,6 +128,7 @@ def start_array(database, model, name, array_index, attributes, dimensions):
     array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
 
 def store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder=None):
+  update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     array_metadata = file.array(array_index).attrs

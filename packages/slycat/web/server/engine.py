@@ -92,7 +92,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
 
-  dispatcher.connect("get-open-models", "/models/open", slycat.web.server.handlers.get_open_models, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-models-open", "/models/open", slycat.web.server.handlers.get_models_open, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("post-model-copy-inputs", "/models/:mid/copy-inputs/:sid", slycat.web.server.handlers.post_model_copy_inputs, conditions={"method" : ["POST"]})

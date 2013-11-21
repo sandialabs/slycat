@@ -251,6 +251,10 @@ def post_project_models(pid):
     }
   database.save(model)
 
+  with slycat.web.server.model.updated:
+    slycat.web.server.model.revision += 1
+    slycat.web.server.model.updated.notify_all()
+
   cherrypy.response.headers["location"] = "%s/models/%s" % (cherrypy.request.base, mid)
   cherrypy.response.status = "201 Model created."
   return {"id" : mid}
@@ -280,24 +284,31 @@ def post_project_bookmarks(pid):
   cherrypy.response.status = "201 Bookmark stored."
   return {"id" : bid}
 
-@cherrypy.tools.json_out(on = True)
-def get_open_models(revision=None):
-  if revision is not None:
-    revision = int(revision)
-  start_time = time.time()
-  timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-  while revision == slycat.web.server.model.revision:
-    with slycat.web.server.model.updated:
-      slycat.web.server.model.updated.wait(1.0)
-    if time.time() - start_time > timeout:
-      cherrypy.response.status = "204 No change."
-      return None
-    if cherrypy.engine.state != cherrypy.engine.states.STARTED:
-      return None
-  database = slycat.web.server.database.couchdb.connect()
-  models = [model for model in database.scan("slycat/open-models")]
-  projects = [database.get("project", model["project"]) for model in models]
-  return slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
+def get_models_open(revision=None):
+  accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
+  cherrypy.response.headers["content-type"] = accept
+
+  if accept == "text/html":
+    context = get_context()
+    return slycat.web.server.template.render("models-open.html", context)
+  elif accept == "application/json":
+    if revision is not None:
+      revision = int(revision)
+    start_time = time.time()
+    timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
+    while revision == slycat.web.server.model.revision:
+      with slycat.web.server.model.updated:
+        slycat.web.server.model.updated.wait(1.0)
+      if time.time() - start_time > timeout:
+        cherrypy.response.status = "204 No change."
+        return json.dumps("")
+      if cherrypy.engine.state != cherrypy.engine.states.STARTED:
+        cherrypy.response.status = "204 Shutting down."
+        return json.dumps("")
+    database = slycat.web.server.database.couchdb.connect()
+    models = [model for model in database.scan("slycat/open-models")]
+    projects = [database.get("project", model["project"]) for model in models]
+    return json.dumps((slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]))
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
