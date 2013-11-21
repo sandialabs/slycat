@@ -97,6 +97,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("post-model-copy-inputs", "/models/:mid/copy-inputs/:sid", slycat.web.server.handlers.post_model_copy_inputs, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-upload-table", "/models/:mid/upload-table/:name", slycat.web.server.handlers.post_model_upload_table, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-model-load-remote-table", "/models/:mid/load-remote-table/:name/users/:username/hosts/:hostname", slycat.web.server.handlers.post_model_load_remote_table, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.post_model_parameter, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-array-set", "/models/:mid/array-sets/:name", slycat.web.server.handlers.post_model_array_set, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-array-set-array", "/models/:mid/array-sets/:name/arrays/:array", slycat.web.server.handlers.post_model_array_set_array, conditions={"method" : ["POST"]})
@@ -121,7 +122,6 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-workers", "/workers", slycat.web.server.handlers.get_workers, conditions={"method" : ["GET"]})
   dispatcher.connect("get-worker", "/workers/:wid", slycat.web.server.handlers.get_worker, conditions={"method" : ["GET"]})
   dispatcher.connect("put-worker", "/workers/:wid", slycat.web.server.handlers.put_worker, conditions={"method" : ["PUT"]})
-  dispatcher.connect("post-worker-model-load-remote-table", "/workers/:wid/model/load-remote-table", slycat.web.server.handlers.post_worker_endpoint("post_model_load_remote_table"), conditions={"method" : ["POST"]})
   dispatcher.connect("delete-worker", "/workers/:wid", slycat.web.server.handlers.delete_worker, conditions={"method" : ["DELETE"]})
 
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})

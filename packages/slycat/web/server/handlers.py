@@ -358,7 +358,30 @@ def post_model_upload_table(mid, name, file):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.upload_table(database, model, name, file, nan_row_filtering=False, input=True)
+  data = file.file.read()
+  filename = file.filename
+
+  slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=True)
+
+@cherrypy.tools.json_in(on = True)
+def post_model_load_remote_table(mid, name, username, hostname):
+  cherrypy.log.error("post_model_load_remote_table()")
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  path = cherrypy.request.json["path"]
+  password = cherrypy.request.json["password"]
+  session = slycat.web.server.cache.ssh_session(hostname, username, password)
+
+  filename = "%s@%s:%s" % (username, hostname, path)
+  if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
+    raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+  data = session["sftp"].file(path).read()
+
+  slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=True)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

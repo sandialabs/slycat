@@ -50,10 +50,9 @@ def copy_model_inputs(database, source, target):
       raise Exception("Cannot copy unknown input artifact type %s." & original_type)
   database.save(target)
 
-def upload_table(database, model, name, file, nan_row_filtering, input=False):
+def store_table_file(database, model, name, data, filename, nan_row_filtering, input=False):
   #self.set_message("Loading table %s." % name)
-  content = file.file.read()
-  tables = [perspective for perspective in slycat.web.server.spider.extract(type="table", content=content, filename=file.filename, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
+  tables = [perspective for perspective in slycat.web.server.spider.extract(type="table", content=data, filename=filename, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
   if len(tables) != 1:
     raise cherrypy.HTTPError("400 Uploaded file %s must contain exactly one table." % file.filename)
   table = tables[0]

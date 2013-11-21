@@ -157,7 +157,7 @@ $.widget("slycat.browser",
 
   _setOption: function(key, value)
   {
-    console.log("slycat.browser._setOption()", key, value);
+    //console.log("slycat.browser._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "hide_dotfiles")
@@ -173,7 +173,6 @@ $.widget("slycat.browser",
 
   selection: function()
   {
-    console.log(this.element.find(".selected").map(function() { return $(this).data("path"); }).get());
     return this.element.find(".selected").map(function() { return $(this).data("path"); }).get();
   },
 });
