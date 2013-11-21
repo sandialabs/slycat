@@ -6,6 +6,7 @@ import h5py
 import numpy
 import slycat.array
 import slycat.web.server.database.hdf5
+import slycat.web.server.spider
 import sys
 import uuid
 
@@ -48,6 +49,29 @@ def copy_model_inputs(database, source, target):
     else:
       raise Exception("Cannot copy unknown input artifact type %s." & original_type)
   database.save(target)
+
+def upload_table(database, model, name, file, nan_row_filtering, input=False):
+  #self.set_message("Loading table %s." % name)
+  content = file.file.read()
+  tables = [perspective for perspective in slycat.web.server.spider.extract(type="table", content=content, filename=file.filename, nan_row_filtering=nan_row_filtering) if perspective["type"] == "table"]
+  if len(tables) != 1:
+    raise cherrypy.HTTPError("400 Uploaded file %s must contain exactly one table." % file.filename)
+  table = tables[0]
+  attributes = zip(table["column-names"], [slycat.array.attribute_type_map[type] for type in table["column-types"]])
+  dimensions = [("row", "int64", 0, table["row-count"])]
+
+  start_array_set(database, model, name, input)
+  start_array(database, model, name, 0, attributes, dimensions)
+  for attribute, data in enumerate(table["columns"]):
+    store_array_attribute(database, model, name, 0, attribute, [(0, len(data))], data)
+  #self.set_message("Loaded table %s." % name)
+
+def store_parameter(database, model, name, value, input=False):
+  model["artifact:%s" % name] = value
+  model["artifact-types"][name] = "json"
+  if input:
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+  database.save(model)
 
 def start_array_set(database, model, name, input=False):
   """Start a model array set artifact."""

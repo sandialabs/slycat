@@ -378,7 +378,6 @@ rights in this software.
 
         /* Local CCA  user interface */
 
-        local_cca_worker = null;
         local_cca_model = null;
         $("#local-cca-form").dialog(
         {
@@ -394,20 +393,7 @@ rights in this software.
           },
           close : function()
           {
-            if(local_cca_worker)
-            {
-              $.ajax(
-              {
-                type : "DELETE",
-                url : "{{server-root}}workers/" + local_cca_worker,
-                error : function(request, status, reason_phrase)
-                {
-                  window.alert("Error closing local worker: " + reason_phrase);
-                }
-              });
-              local_cca_worker = null;
-              local_cca_model = null;
-            }
+            local_cca_model = null;
           }
         });
         $("#local-cca-basics-next").button().click(function()
@@ -427,7 +413,6 @@ rights in this software.
             processData: false,
             success: function(result)
             {
-              local_cca_worker = result["wid"];
               local_cca_model = result["id"];
               $("#local-cca-basics").css("display", "none");
               $("#local-cca-browse").css("display", "block");
@@ -447,13 +432,12 @@ rights in this software.
           }
 
           var data = new FormData();
-          data.append("name", "data-table");
           data.append("file", $("#local-cca-file")[0].files[0]);
 
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}workers/" + local_cca_worker + "/model/load-table",
+            url : "{{server-root}}models/" + local_cca_model + "/upload-table/data-table",
             data : data,
             contentType : false,
             processData : false,
@@ -531,11 +515,10 @@ rights in this software.
             {
               async : false,
               type : "POST",
-              url : "{{server-root}}workers/" + local_cca_worker + "/model/set-parameter",
+              url : "{{server-root}}models/" + local_cca_model + "/parameters/" + name,
               contentType : "application/json",
               data: $.toJSON(
               {
-                name : name,
                 value : value
               }),
               processData : false,
@@ -569,7 +552,7 @@ rights in this software.
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}workers/" + local_cca_worker + "/model/finish-model",
+            url : "{{server-root}}models/" + local_cca_model + "/finish",
             contentType : "application/json",
             data: $.toJSON(
             {
@@ -577,7 +560,6 @@ rights in this software.
             processData: false,
             success: function(result)
             {
-              local_cca_worker = null;
               local_cca_model = null;
               window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
               $("#local-cca-form").dialog("close");

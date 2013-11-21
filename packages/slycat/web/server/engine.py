@@ -96,6 +96,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("post-model-copy-inputs", "/models/:mid/copy-inputs/:sid", slycat.web.server.handlers.post_model_copy_inputs, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-model-upload-table", "/models/:mid/upload-table/:name", slycat.web.server.handlers.post_model_upload_table, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.post_model_parameter, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-array-set", "/models/:mid/array-sets/:name", slycat.web.server.handlers.post_model_array_set, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-array-set-array", "/models/:mid/array-sets/:name/arrays/:array", slycat.web.server.handlers.post_model_array_set_array, conditions={"method" : ["POST"]})
