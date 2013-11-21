@@ -3,6 +3,7 @@
 # rights in this software.
 
 import h5py
+import json
 import numpy
 import slycat.array
 import slycat.web.server.database.hdf5
@@ -71,6 +72,19 @@ def store_parameter(database, model, name, value, input=False):
   if input:
     model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
   database.save(model)
+
+def store_file_artifact(database, model, name, value, content_type, input=False):
+  fid = database.write_file(model, content=value, content_type=content_type)
+  model = database[model["_id"]] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
+  model["artifact:%s" % name] = fid
+  model["artifact-types"][name] = "file"
+  if input:
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+  database.save(model)
+  return model
+
+def store_json_file_artifact(database, model, name, value, input=False):
+  return store_file_artifact(database, model, name, json.dumps(value, separators=(",",":")), "application/json", input)
 
 def start_array_set(database, model, name, input=False):
   """Start a model array set artifact."""

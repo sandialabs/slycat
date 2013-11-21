@@ -118,12 +118,6 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("post-browse", "/browse/users/:username/hosts/:hostname", slycat.web.server.handlers.post_browse, conditions={"method" : ["POST"]})
 
-  dispatcher.connect("post-workers", "/workers", slycat.web.server.handlers.post_workers, conditions={"method" : ["POST"]})
-  dispatcher.connect("get-workers", "/workers", slycat.web.server.handlers.get_workers, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-worker", "/workers/:wid", slycat.web.server.handlers.get_worker, conditions={"method" : ["GET"]})
-  dispatcher.connect("put-worker", "/workers/:wid", slycat.web.server.handlers.put_worker, conditions={"method" : ["PUT"]})
-  dispatcher.connect("delete-worker", "/workers/:wid", slycat.web.server.handlers.delete_worker, conditions={"method" : ["DELETE"]})
-
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
 
   dispatcher.connect("get-test", "/test", slycat.web.server.handlers.get_test, conditions={"method" : ["GET"]})

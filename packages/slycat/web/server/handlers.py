@@ -31,14 +31,11 @@ import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.model.cca
 import slycat.web.server.model.generic
+import slycat.web.server.model.timeseries
 import slycat.web.server.ssh
 import slycat.web.server.template
 import slycat.web.server.timer
-import slycat.web.server.worker
-import slycat.web.server.worker.model.cca3
-import slycat.web.server.worker.model.generic
-import slycat.web.server.worker.model.timeseries
-import slycat.web.server.worker.timer
+#import slycat.web.server.worker
 import threading
 import traceback
 import uuid
@@ -305,7 +302,6 @@ def get_model(mid, **kwargs):
     context.update(model)
     context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
     context["new-model-name"] = "Model-%s" % (model_count + 1)
-    context["worker"] = model.get("worker", "null")
 
     marking = cherrypy.request.app.config["slycat"]["marking"]
     context["marking-html"] = marking.html(model["marking"])
@@ -447,6 +443,8 @@ def post_model_finish(mid):
     slycat.web.server.model.generic.finish(database, model)
   elif model["model-type"] == "cca":
     slycat.web.server.model.cca.finish(database, model)
+  elif model["model-type"] == "timeseries":
+    slycat.web.server.model.timeseries.finish(database, model)
   else:
     raise Exception("500 Cannot finish unknown model type")
 
@@ -867,7 +865,7 @@ def get_model_file(mid, name):
   cherrypy.response.headers["content-type"] = model["_attachments"][fid]["content_type"]
   return database.get_attachment(mid, fid)
 
-pool = slycat.web.server.worker.pool
+#pool = slycat.web.server.worker.pool
 
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
@@ -907,149 +905,19 @@ def post_browse(username, hostname):
   except IOError:
     raise cherrypy.HTTPError("403 Forbidden")
 
-@cherrypy.tools.json_out(on = True)
-def get_workers(revision=None):
-  if revision is not None:
-    revision = int(revision)
-  timeout = cherrypy.request.app.config["slycat"]["long-polling-timeout"]
-  result = pool.workers(revision, timeout)
-  if result is None:
-    cherrypy.response.status = "204 No change."
-    return
-  else:
-    revision, workers = result
-    workers = [worker.status for worker in workers if slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_worker_creator(worker)]
-    return {"revision" : revision, "workers" : workers}
-
-def countdown_callback():
-  cherrypy.log.error("Countdown completed.")
-
-def failure_callback():
-  raise Exception("Startup failure test.")
-
-@cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
-def post_workers():
-  if "type" not in cherrypy.request.json:
-    raise cherrypy.HTTPError("400 unspecified worker type.")
-
-  if cherrypy.request.json["type"] == "timeout":
-    wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "30-second countdown", 30, countdown_callback, cherrypy.request.app.config["slycat"]["server-root"]))
-  elif cherrypy.request.json["type"] == "startup-failure":
-    wid = pool.start_worker(slycat.web.server.worker.timer.countdown(cherrypy.request.security, "Startup failure", 0, failure_callback))
-  else:
-    raise cherrypy.HTTPError("400 Unknown worker type: %s" % cherrypy.request.json["type"])
-
-  cherrypy.response.headers["location"] = "%s/workers/%s" % (cherrypy.request.base, wid)
-  cherrypy.response.status = "201 Worker created."
-  return { "id" : wid }
-
-def get_worker(wid):
-  worker = pool.worker(wid)
-  if worker is None:
-    raise cherrypy.HTTPError(404)
-  slycat.web.server.authentication.require_worker_creator(worker)
-
-  accept = cherrypy.lib.cptools.accept(media=["text/html", "application/json"])
-
-  if accept == "text/html":
-    context = get_context()
-    context["wid"] = wid
-    return slycat.web.server.template.render("worker.html", context)
-
-  if accept == "application/json":
-    cherrypy.response.headers["content-type"] = accept
-    return json.dumps(worker.status)
-
-@cherrypy.tools.json_in(on = True)
-def put_worker(wid):
-  worker = pool.worker(wid)
-  if worker is None:
-    raise cherrypy.HTTPError(404)
-  slycat.web.server.authentication.require_worker_creator(worker)
-
-  if "result" in cherrypy.request.json and cherrypy.request.json["result"] == "stopped":
-    if worker.status["result"] is None:
-      worker.stop()
-  else:
-    for key, value in cherrypy.request.json.items():
-      worker.set_status(key, value, namespace="client:")
-
-  cherrypy.response.status = 204
-
-def get_worker_endpoint(name, force_json_output=True):
-  @cherrypy.tools.json_out(on = force_json_output)
-  def implementation(wid, **arguments):
-    worker = pool.worker(wid)
-    if worker is None:
-      raise cherrypy.HTTPError(404)
-    slycat.web.server.authentication.require_worker_creator(worker)
-
-    if not worker.is_alive():
-      raise cherrypy.HTTPError("400 Worker not running.")
-
-    try:
-      handler = getattr(worker, name)
-    except:
-      raise cherrypy.HTTPError(404)
-
-    return handler(arguments)
-  return implementation
-
-def put_worker_endpoint(name):
-  @cherrypy.tools.json_in(on = True)
-  @cherrypy.tools.json_out(on = True)
-  def implementation(wid):
-    worker = pool.worker(wid)
-    if worker is None:
-      raise cherrypy.HTTPError(404)
-    slycat.web.server.authentication.require_worker_creator(worker)
-
-    if not worker.is_alive():
-      raise cherrypy.HTTPError("400 Worker not running.")
-
-    try:
-      handler = getattr(worker, name)
-    except:
-      raise cherrypy.HTTPError(404)
-
-    return handler(cherrypy.request.json)
-  return implementation
-
-def post_worker_endpoint(name):
-  @cherrypy.tools.json_in(on = True, force = False)
-  @cherrypy.tools.json_out(on = True)
-  def implementation(wid, **arguments):
-    worker = pool.worker(wid)
-    if worker is None:
-      raise cherrypy.HTTPError(404)
-    slycat.web.server.authentication.require_worker_creator(worker)
-
-    if not worker.is_alive():
-      raise cherrypy.HTTPError("400 Worker not running.")
-#    if not worker.incremental:
-#      raise cherrypy.HTTPError("400 Model doesn't support incremental requests.""")
-
-    try:
-      handler = getattr(worker, name)
-    except:
-      raise cherrypy.HTTPError(404)
-
-    if hasattr(cherrypy.request, "json"):
-      return handler(cherrypy.request.json)
-    else:
-      return handler(arguments)
-
-  return implementation
-
-def delete_worker(wid):
-  worker = pool.worker(wid)
-  if worker is None:
-    raise cherrypy.HTTPError(404)
-  slycat.web.server.authentication.require_worker_creator(worker)
-
-  pool.delete(wid)
-  cherrypy.response.status = "204 Worker deleted."
+#@cherrypy.tools.json_out(on = True)
+#def get_workers(revision=None):
+#  if revision is not None:
+#    revision = int(revision)
+#  timeout = cherrypy.request.app.config["slycat"]["long-polling-timeout"]
+#  result = pool.workers(revision, timeout)
+#  if result is None:
+#    cherrypy.response.status = "204 No change."
+#    return
+#  else:
+#    revision, workers = result
+#    workers = [worker.status for worker in workers if slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_worker_creator(worker)]
+#    return {"revision" : revision, "workers" : workers}
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.

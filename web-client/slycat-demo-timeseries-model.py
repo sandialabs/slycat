@@ -51,31 +51,30 @@ connection = slycat.web.client.connect(options)
 pid = connection.create_project(options.project_name)
 
 # Create the new, empty model.
-wid = connection.create_model_worker(pid, "timeseries", options.model_name, options.marking)
+mid = connection.create_model(pid, "timeseries", options.model_name, options.marking)
 
 # Upload our coefficients as the "inputs" artifact.
 input_attributes = [("%s%s" % (options.input_variable_prefix, attribute), "float64") for attribute in range(inputs.shape[1])]
 input_dimensions = [("row", "int64", 0, inputs.shape[0])]
 
-connection.start_array_set(wid, "inputs")
-connection.create_array(wid, "inputs", 0, input_attributes, input_dimensions)
+connection.start_array_set(mid, "inputs")
+connection.start_array(mid, "inputs", 0, input_attributes, input_dimensions)
 for attribute, data in enumerate(inputs.T):
-  connection.store_array_attribute(wid, "inputs", 0, attribute, data)
-connection.finish_array_set(wid, "inputs")
+  connection.store_array_attribute(mid, "inputs", 0, attribute, data)
 
 # Upload a collection of timeseries as the "outputs" artifact.
-connection.start_array_set(wid, "outputs")
+connection.start_array_set(mid, "outputs")
 
 # For each timeseries ...
 for timeseries in range(options.timeseries_count):
   sys.stderr.write("Timeseries {}.\n".format(timeseries))
   timeseries_attributes = [("time", "float64")] + [("%s%s" % (options.output_variable_prefix, attribute), "float64") for attribute in range(options.output_variable_count)]
   timeseries_dimensions = [("row", "int64", 0, options.timeseries_samples)]
-  connection.create_array(wid, "outputs", timeseries, timeseries_attributes, timeseries_dimensions)
+  connection.start_array(mid, "outputs", timeseries, timeseries_attributes, timeseries_dimensions)
 
   sys.stderr.write("  Uploading times.\n")
   times = numpy.linspace(0, 2 * numpy.pi, options.timeseries_samples)
-  connection.store_array_attribute(wid, "outputs", timeseries, 0, times)
+  connection.store_array_attribute(mid, "outputs", timeseries, 0, times)
 
   for variable in range(options.output_variable_count):
     sys.stderr.write("  Uploading variable {}.\n".format(variable))
@@ -83,20 +82,15 @@ for timeseries in range(options.timeseries_count):
     values = numpy.zeros((options.timeseries_samples))
     for k in coefficients:
       values += numpy.sin(times * k) / k
-    connection.store_array_attribute(wid, "outputs", timeseries, variable + 1, values)
-
-connection.finish_array_set(wid, "outputs")
+    connection.store_array_attribute(mid, "outputs", timeseries, variable + 1, values)
 
 # Store the remaining parameters ...
-connection.set_parameter(wid, "cluster-bin-count", options.cluster_bin_count)
-connection.set_parameter(wid, "cluster-bin-type", options.cluster_bin_type)
-connection.set_parameter(wid, "cluster-type", options.cluster_type)
+connection.set_parameter(mid, "cluster-bin-count", options.cluster_bin_count)
+connection.set_parameter(mid, "cluster-bin-type", options.cluster_bin_type)
+connection.set_parameter(mid, "cluster-type", options.cluster_type)
 
 # Signal that we're done uploading artifacts to the model.  This lets Slycat Web Server know that it can start computation.
-mid = connection.finish_model(wid)
-
-# Wait for the model to finish computing, then delete the worker.
-connection.join_worker(wid)
+connection.finish_model(mid)
 
 # Give the user a URL where they can access their new model.
 sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))
