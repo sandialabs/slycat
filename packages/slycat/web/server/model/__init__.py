@@ -18,16 +18,37 @@ import uuid
 updated = threading.Condition()
 # Keep track of model revisions
 revision = 0
+# Cache model ids
+id_cache = set()
 
 def database_monitor():
-  global updated, revision
   database = slycat.web.server.database.couchdb.connect()
+
+  # Initialize the cache ...
+  global updated, revision, id_cache
+  changes = database.changes(filter="slycat/models")
+  with updated:
+    revision = changes["last_seq"]
+    for change in changes["results"]:
+      if "deleted" in change:
+        if change["id"] in id_cache:
+          del id_cache[change["id"]]
+      else:
+        id_cache.add(change["id"])
+
+  cherrypy.log.error("Initialized id cache to revision %s, loaded %s ids." % (revision, len(id_cache)))
+
+  # Update the cache when the database changes ...
   while True:
-    for item in database.changes(feed="continuous", since=revision, style="all_docs"):
-      if "seq" in item:
-        with updated:
-          #revision = item["seq"]
-          revision += 1
+    for change in database.changes(filter="slycat/models", feed="continuous", since=revision):
+      with updated:
+        if "deleted" in change:
+          if change["id"] in id_cache:
+            revision = change["seq"]
+            updated.notify_all()
+        elif "seq" in change:
+          id_cache.add(change["id"])
+          revision = change["seq"]
           updated.notify_all()
 
 def start_database_monitor():

@@ -277,6 +277,9 @@ def post_project_bookmarks(pid):
   return {"id" : bid}
 
 def get_models_open(revision=None):
+  if get_models_open.timeout is None:
+    get_models_open.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
+
   slycat.web.server.model.start_database_monitor()
 
   accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
@@ -289,22 +292,20 @@ def get_models_open(revision=None):
     if revision is not None:
       revision = int(revision)
     start_time = time.time()
-    timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-    while True:
-      with slycat.web.server.model.updated:
-        if revision != slycat.web.server.model.revision:
-          break
+    with slycat.web.server.model.updated:
+      while revision == slycat.web.server.model.revision:
         slycat.web.server.model.updated.wait(1.0)
-      if time.time() - start_time > timeout:
-        cherrypy.response.status = "204 No change."
-        return
-      if cherrypy.engine.state != cherrypy.engine.states.STARTED:
-        cherrypy.response.status = "204 Shutting down."
-        return
-    database = slycat.web.server.database.couchdb.connect()
-    models = [model for model in database.scan("slycat/open-models")]
-    projects = [database.get("project", model["project"]) for model in models]
-    return json.dumps((slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]))
+        if time.time() - start_time > get_models_open.timeout:
+          cherrypy.response.status = "204 No change."
+          return
+        if cherrypy.engine.state != cherrypy.engine.states.STARTED:
+          cherrypy.response.status = "204 Shutting down."
+          return
+      database = slycat.web.server.database.couchdb.connect()
+      models = [model for model in database.scan("slycat/open-models")]
+      projects = [database.get("project", model["project"]) for model in models]
+      return json.dumps((slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]))
+get_models_open.timeout = None
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
