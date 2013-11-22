@@ -84,14 +84,14 @@ if arguments.all:
 
 for project_id in arguments.project_id:
   logging.info("Dumping project %s", project_id)
-  project = couchdb[project_id]
+  project = couchdb.get(project_id, attachments=True)
   json.dump(project, open(os.path.join(arguments.output_dir, "project-%s.json" % project["_id"]), "w"))
 
   project_arrays = set()
 
   for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
     logging.info("Dumping model %s", row["id"])
-    model = couchdb[row["id"]]
+    model = couchdb.get(row["id"], attachments=True)
 
     artifact_types = model["artifact-types"]
     for key, artifact in model.items():
