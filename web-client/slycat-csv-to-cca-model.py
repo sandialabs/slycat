@@ -1,6 +1,9 @@
 # Copyright 2013, Sandia Corporation. Under the terms of Contract
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
+
+"""Uploads a CSV file to Slycat Web Server to compute a CCA model."""
+
 import math
 import numpy
 import slycat.web.client
@@ -21,14 +24,17 @@ parser.add_option("--project-name", default="CSV-to-CCA", help="New project name
 parser.add_option("--scale-inputs", default=False, action="store_true", help="Enable input scaling.")
 options, arguments = parser.parse_args()
 
+# Load row-oriented data into memory from the file.
 stream = sys.stdin if options.file == "-" else open(options.file, "r")
 rows = [row.split(",") for row in stream]
+
+# Extract column names from the first line of the file, and assume that all columns contain string data.
 column_names = [name.strip() for name in rows[0]]
 column_types = ["string" for name in column_names]
-column_count = len(column_names)
-row_count = len(rows) - 1
-columns = zip(*rows[1:])
+rows = rows[1:]
 
+# Convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
+columns = zip(*rows[1:])
 for index in range(len(columns)):
   try:
     columns[index] = numpy.array(columns[index], dtype="float64")
@@ -36,6 +42,7 @@ for index in range(len(columns)):
   except:
     pass
 
+# Sanity-check input arguments.
 try:
   inputs = [column_names.index(input) for input in options.input]
 except:
@@ -55,25 +62,38 @@ for output in outputs:
   if column_types[output] != "float64":
     raise Exception("Cannot analyze non-numeric output: %s" % column_names[output])
 
-attributes = zip(column_names, column_types)
-dimensions = [("row", "int64", 0, row_count)]
-
+# Setup a connection to the Slycat Web Server.
 connection = slycat.web.client.connect(options)
 
+# Create a new project to contain our model.
 pid = connection.find_or_create_project(options.project, options.project_name, options.project_description)
-wid = connection.create_model_worker(pid, "cca", options.model_name, options.marking, options.model_description)
-connection.start_array_set(wid, "data-table")
-connection.create_array(wid, "data-table", 0, attributes, dimensions)
-for index, data in enumerate(columns):
-  sys.stderr.write("Sending column {} of {} ({})\n".format(index, column_count, column_names[index]))
-  connection.store_array_attribute(wid, "data-table", 0, index, data)
-connection.finish_array_set(wid, "data-table")
-connection.set_parameter(wid, "input-columns", inputs)
-connection.set_parameter(wid, "output-columns", outputs)
-connection.set_parameter(wid, "scale-inputs", options.scale_inputs)
-mid = connection.finish_model(wid)
 
-if not options.no_join:
-  connection.join_worker(wid)
-  connection.delete_worker(wid)
-  sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))
+# Create the new, empty model.
+mid = connection.create_model(pid, "cca", options.model_name, options.marking, options.model_description)
+
+# Upload our observations as "data-table".
+connection.start_array_set(mid, "data-table")
+
+# Start our single "data-table" array.
+attributes = zip(column_names, column_types)
+dimensions = [("row", "int64", 0, len(rows))]
+connection.start_array(mid, "data-table", 0, attributes, dimensions)
+
+# Upload data into the array.
+for index, data in enumerate(columns):
+  sys.stderr.write("Sending column {} of {} ({})\n".format(index, len(columns), column_names[index]))
+  connection.store_array_attribute(mid, "data-table", 0, index, data)
+
+# Store the remaining parameters.
+connection.store_parameter(mid, "input-columns", inputs)
+connection.store_parameter(mid, "output-columns", outputs)
+connection.store_parameter(mid, "scale-inputs", options.scale_inputs)
+
+# Signal that we're done uploading data to the model.  This lets Slycat Web
+# Server know that it can start computation.
+connection.finish_model(mid)
+# Wait until the model is ready.
+connection.join_model(mid)
+
+# Supply the user with a direct link to the new model.
+sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))

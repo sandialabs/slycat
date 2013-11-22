@@ -140,7 +140,7 @@ class connection(object):
     """Creates a new model, returning the model ID."""
     return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
 
-  def set_parameter(self, mid, name, value):
+  def store_parameter(self, mid, name, value):
     """Sets a model parameter value."""
     self.request("POST", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
 
@@ -163,6 +163,8 @@ class connection(object):
       else:
         self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
     else:
+      if ranges is None:
+        ranges = [(0, len(data))]
       self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
   def finish_model(self, mid):

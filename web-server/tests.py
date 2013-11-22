@@ -148,9 +148,9 @@ def test_models():
 def test_model_parameters():
   pid = connection.create_project("test-project")
   mid = connection.create_model(pid, "generic", "test-model")
-  connection.set_parameter(mid, "foo", "bar")
-  connection.set_parameter(mid, "baz", [1, 2, 3])
-  connection.set_parameter(mid, "blah", {"cat":"dog"})
+  connection.store_parameter(mid, "foo", "bar")
+  connection.store_parameter(mid, "baz", [1, 2, 3])
+  connection.store_parameter(mid, "blah", {"cat":"dog"})
   connection.finish_model(mid)
   connection.join_model(mid)
 
@@ -206,6 +206,26 @@ def test_model_array_ranges():
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, 10), numpy.arange(10))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, (2, 5)), numpy.arange(2, 5))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, [(1, 6)]), numpy.arange(1, 6))
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
+def test_model_array_string_attributes():
+  """Test sending string attributes to the server as numpy arrays and as lists of strings."""
+  pid = connection.create_project("test-project")
+  mid = connection.create_model(pid, "generic", "test-model")
+
+  size = 10
+  connection.start_array_set(mid, "test-array-set")
+  connection.start_array(mid, "test-array-set", 0, [("v1", "string"), ("v2", "string")], ("row", "int64", 0, size))
+  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(size).astype("string"))
+  connection.store_array_attribute(mid, "test-array-set", 0, 1, numpy.arange(size).astype("string").tolist())
+
+  connection.finish_model(mid)
+  connection.join_model(mid)
+
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, size), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 1, size), numpy.arange(size).astype("string"))
 
   connection.delete_model(mid)
   connection.delete_project(pid)
