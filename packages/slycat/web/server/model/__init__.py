@@ -2,20 +2,40 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import cherrypy
 import h5py
 import json
 import numpy
 import slycat.array
+import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.spider
 import sys
 import threading
 import uuid
 
-# Keep track of model revisions
-revision = 0
 # Create a condition variable used to signal observers whenever a model is updated.
 updated = threading.Condition()
+# Keep track of model revisions
+revision = 0
+
+def database_monitor():
+  global updated, revision
+  database = slycat.web.server.database.couchdb.connect()
+  while True:
+    for item in database.changes(feed="continuous", since=revision):
+      #cherrypy.log.error("%s" % item)
+      with updated:
+        revision = item["seq"]
+        updated.notify_all()
+
+def start_database_monitor():
+  if start_database_monitor.thread is None:
+    cherrypy.log.error("Starting database monitor.")
+    start_database_monitor.thread = threading.Thread(name="Database Monitor", target=database_monitor)
+    start_database_monitor.thread.daemon = True
+    start_database_monitor.thread.start()
+start_database_monitor.thread = None
 
 def update(database, model, **kwargs):
   """Update the model, and signal any waiting threads that it's changed."""

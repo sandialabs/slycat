@@ -16,6 +16,9 @@ class database_wrapper:
   def __getitem__(self, *arguments, **keywords):
     return self.database.__getitem__(*arguments, **keywords)
 
+  def changes(self, *arguments, **keywords):
+    return self.database.changes(*arguments, **keywords)
+
   def delete(self, *arguments, **keywords):
     return self.database.delete(*arguments, **keywords)
 

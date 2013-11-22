@@ -35,7 +35,6 @@ import slycat.web.server.model.timeseries
 import slycat.web.server.ssh
 import slycat.web.server.template
 import slycat.web.server.timer
-#import slycat.web.server.worker
 import threading
 import time
 import traceback
@@ -181,9 +180,6 @@ def delete_project(pid):
     couchdb.delete(bookmark)
   for model in couchdb.scan("slycat/project-models", startkey=pid, endkey=pid):
     couchdb.delete(model)
-    with slycat.web.server.model.updated:
-      slycat.web.server.model.revision += 1
-      slycat.web.server.model.updated.notify_all()
   couchdb.delete(project)
   cleanup_arrays()
 
@@ -251,10 +247,6 @@ def post_project_models(pid):
     }
   database.save(model)
 
-  with slycat.web.server.model.updated:
-    slycat.web.server.model.revision += 1
-    slycat.web.server.model.updated.notify_all()
-
   cherrypy.response.headers["location"] = "%s/models/%s" % (cherrypy.request.base, mid)
   cherrypy.response.status = "201 Model created."
   return {"id" : mid}
@@ -285,6 +277,10 @@ def post_project_bookmarks(pid):
   return {"id" : bid}
 
 def get_models_open(revision=None):
+  if not get_models_open.initialized:
+    get_models_open.initialized = True
+    slycat.web.server.model.start_database_monitor()
+
   accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -309,6 +305,7 @@ def get_models_open(revision=None):
     models = [model for model in database.scan("slycat/open-models")]
     projects = [database.get("project", model["project"]) for model in models]
     return json.dumps((slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]))
+get_models_open.initialized = False
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -363,10 +360,6 @@ def put_model(mid):
     model["state"] = cherrypy.request.json["state"]
 
   database.save(model)
-
-  with slycat.web.server.model.updated:
-    slycat.web.server.model.revision += 1
-    slycat.web.server.model.updated.notify_all()
 
 def post_model_copy_inputs(mid, sid):
   database = slycat.web.server.database.couchdb.connect()
@@ -484,10 +477,6 @@ def delete_model(mid):
 
   couchdb.delete(model)
   cleanup_arrays()
-
-  with slycat.web.server.model.updated:
-    slycat.web.server.model.revision += 1
-    slycat.web.server.model.updated.notify_all()
 
   cherrypy.response.status = "204 Model deleted."
 
