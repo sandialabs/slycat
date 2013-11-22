@@ -304,7 +304,8 @@ def get_models_open(revision=None):
       database = slycat.web.server.database.couchdb.connect()
       models = [model for model in database.scan("slycat/open-models")]
       projects = [database.get("project", model["project"]) for model in models]
-      return json.dumps((slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]))
+      models = [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
+      return json.dumps({"revision" : slycat.web.server.model.revision, "models" : models})
 get_models_open.timeout = None
 
 def get_model(mid, **kwargs):
