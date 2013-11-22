@@ -9,6 +9,7 @@ import logging
 import os
 import shutil
 import slycat.web.server.database.hdf5
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--all", action="store_true", help="Dump all projects.")
@@ -22,6 +23,8 @@ parser.add_argument("--project-id", default=[], action="append", help="Project I
 arguments = parser.parse_args()
 
 logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 if arguments.force and os.path.exists(arguments.output_dir):
   shutil.rmtree(arguments.output_dir)
@@ -53,11 +56,8 @@ for project_id in arguments.project_id:
         continue
       if artifact_types[key[9:]] != "hdf5":
         continue
-      for role, array in value.items():
-        if array in project_arrays:
-          continue
-
-        logging.info("Dumping array set %s", array)
-        project_arrays.add(array)
-        shutil.copy(slycat.web.server.database.hdf5.make_path(array, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % array))
+      if value not in project_arrays:
+        logging.info("Dumping array set %s", value)
+        project_arrays.add(value)
+        shutil.copy(slycat.web.server.database.hdf5.make_path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
 

@@ -14,6 +14,7 @@ import shutil
 import slycat.array
 import slycat.web.server.database.hdf5
 import slycat.web.server.database.scidb
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--all", action="store_true", help="Dump all projects.")
@@ -27,6 +28,8 @@ parser.add_argument("--project-id", default=[], action="append", help="Project I
 arguments = parser.parse_args()
 
 logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 logging.getLogger("cherrypy.error").setLevel(logging.ERROR)
 
 if arguments.force and os.path.exists(arguments.output_dir):
@@ -114,7 +117,7 @@ for project_id in arguments.project_id:
           dimensions = zip(dimension_names, dimension_types, dimension_begin, dimension_end)
           dump_hdf5(attributes, dimensions, artifact["data"], "a")
         model["artifact-types"][key[9:]] = "hdf5"
-        model[key] = {"storage":artifact["data"]}
+        model[key] = artifact["data"]
 
       if type == "table":
         if artifact["columns"] not in project_arrays:
@@ -130,7 +133,7 @@ for project_id in arguments.project_id:
           dimensions = [("row", "int64", row_begin, row_end)]
           dump_hdf5(attributes, dimensions, artifact["columns"], "c")
         model["artifact-types"][key[9:]] = "hdf5"
-        model[key] = {"storage":artifact["columns"]}
+        model[key] = artifact["columns"]
 
       if type == "timeseries":
         logging.info("Dumping timeseries %s", artifact)
