@@ -57,6 +57,9 @@ for source in glob.glob(os.path.join(arguments.input_dir, "model-*.json")):
 for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
   logging.info("Loading array set %s", source)
   array = re.match(r".*array-set-(.*)\.hdf5", source).group(1)
+  if arguments.force and array in couchdb:
+    del couchdb[array]
+  couchdb.save({"_id":array, "type":"hdf5"})
   destination = slycat.web.server.database.hdf5.make_path(array, arguments.data_store)
   if not os.path.exists(os.path.dirname(destination)):
     os.makedirs(os.path.dirname(destination))
