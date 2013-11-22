@@ -17,7 +17,7 @@ def compute(mid):
 
     # Do useful work here
 
-    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0)
+    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   except:
     cherrypy.log.error("%s" % traceback.format_exc())

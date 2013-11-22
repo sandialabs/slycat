@@ -146,7 +146,7 @@ def compute(mid):
         # Store a data structure for clients ...
         model = store_json_file_artifact(database, model, "cluster-%s" % name, {"linkage":linkage.tolist(), "waveforms":waveforms, "exemplars":exemplars})
 
-    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0)
+    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   except:
     cherrypy.log.error("%s" % traceback.format_exc())

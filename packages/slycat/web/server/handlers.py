@@ -277,9 +277,7 @@ def post_project_bookmarks(pid):
   return {"id" : bid}
 
 def get_models_open(revision=None):
-  if not get_models_open.initialized:
-    get_models_open.initialized = True
-    slycat.web.server.model.start_database_monitor()
+  slycat.web.server.model.start_database_monitor()
 
   accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
   cherrypy.response.headers["content-type"] = accept
@@ -305,7 +303,6 @@ def get_models_open(revision=None):
     models = [model for model in database.scan("slycat/open-models")]
     projects = [database.get("project", model["project"]) for model in models]
     return json.dumps((slycat.web.server.model.revision, [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]))
-get_models_open.initialized = False
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()

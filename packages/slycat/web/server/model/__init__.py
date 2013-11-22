@@ -23,13 +23,11 @@ def database_monitor():
   global updated, revision
   database = slycat.web.server.database.couchdb.connect()
   while True:
-    for item in database.changes(feed="continuous", since=revision):
+    for item in database.changes(feed="continuous", since=revision, style="all_docs"):
       if "seq" in item:
         with updated:
           revision = item["seq"]
           updated.notify_all()
-      else:
-        cherrypy.log.error("%s" % item)
 
 def start_database_monitor():
   if start_database_monitor.thread is None:
@@ -44,13 +42,7 @@ def update(database, model, **kwargs):
   for name, value in kwargs.items():
     if name in ["state", "result", "started", "finished", "progress", "message", "uri"]:
       model[name] = value
-
   database.save(model)
-
-  global updated, revision
-  with updated:
-    revision += 1
-    updated.notify_all()
 
 def load_json_artifact(model, name):
   """Retrieve a json artifact from a model."""
