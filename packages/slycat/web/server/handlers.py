@@ -290,15 +290,17 @@ def get_models_open(revision=None):
       revision = int(revision)
     start_time = time.time()
     timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-    while revision == slycat.web.server.model.revision:
+    while True:
       with slycat.web.server.model.updated:
+        if revision != slycat.web.server.model.revision:
+          break
         slycat.web.server.model.updated.wait(1.0)
       if time.time() - start_time > timeout:
         cherrypy.response.status = "204 No change."
-        return json.dumps("")
+        return
       if cherrypy.engine.state != cherrypy.engine.states.STARTED:
         cherrypy.response.status = "204 Shutting down."
-        return json.dumps("")
+        return
     database = slycat.web.server.database.couchdb.connect()
     models = [model for model in database.scan("slycat/open-models")]
     projects = [database.get("project", model["project"]) for model in models]

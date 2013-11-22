@@ -26,7 +26,8 @@ def database_monitor():
     for item in database.changes(feed="continuous", since=revision, style="all_docs"):
       if "seq" in item:
         with updated:
-          revision = item["seq"]
+          #revision = item["seq"]
+          revision += 1
           updated.notify_all()
 
 def start_database_monitor():
