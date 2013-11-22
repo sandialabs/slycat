@@ -24,10 +24,12 @@ def database_monitor():
   database = slycat.web.server.database.couchdb.connect()
   while True:
     for item in database.changes(feed="continuous", since=revision):
-      #cherrypy.log.error("%s" % item)
-      with updated:
-        revision = item["seq"]
-        updated.notify_all()
+      if "seq" in item:
+        with updated:
+          revision = item["seq"]
+          updated.notify_all()
+      else:
+        cherrypy.log.error("%s" % item)
 
 def start_database_monitor():
   if start_database_monitor.thread is None:
