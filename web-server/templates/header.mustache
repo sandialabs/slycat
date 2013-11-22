@@ -193,7 +193,7 @@
                     //line.find(".details").remove();
                     //line.append($("<div>").addClass("details").append($("<button>").html("&raquo;").attr("title", "Show model details.")/*.click(worker_details(model))*/));
                     line.qtip('option','content.text',
-                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', model['uri']).text('View').click(close_model.bind(this, model_id)))
+                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', model['uri']).text('View'))
                     );
 
                   } else {

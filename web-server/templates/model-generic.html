@@ -60,6 +60,18 @@ rights in this software.
     <script type="text/javascript">
       $(document).ready(function()
       {
+        // Mark this model as closed, so it doesn't show-up in the header anymore.
+        $.ajax(
+        {
+          type : "PUT",
+          url : "{{server-root}}models/{{_id}}",
+          contentType : "application/json",
+          data : $.toJSON({
+            "state" : "closed"
+          }),
+          processData : false
+        });
+
         $("#edit-model-form").dialog(
         {
           autoOpen: false,
