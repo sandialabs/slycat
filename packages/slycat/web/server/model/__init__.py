@@ -12,6 +12,7 @@ import slycat.web.server.database.hdf5
 import slycat.web.server.spider
 import sys
 import threading
+import time
 import uuid
 
 # Create a condition variable used to signal observers whenever a model is updated.
@@ -40,16 +41,22 @@ def database_monitor():
 
   # Update the cache when the database changes ...
   while True:
-    for change in database.changes(filter="slycat/models", feed="continuous", since=revision):
-      with updated:
-        if "deleted" in change:
-          if change["id"] in id_cache:
+    try:
+      for change in database.changes(filter="slycat/models", feed="continuous", since=revision):
+        with updated:
+          if "deleted" in change:
+            if change["id"] in id_cache:
+              revision = change["seq"]
+              updated.notify_all()
+          elif "seq" in change:
+            id_cache.add(change["id"])
             revision = change["seq"]
             updated.notify_all()
-        elif "seq" in change:
-          id_cache.add(change["id"])
-          revision = change["seq"]
-          updated.notify_all()
+    except:
+      cherrypy.log.error("Waiting to reconnect to database.")
+      time.sleep(1.0)
+      database = slycat.web.server.database.couchdb.connect()
+
 
 def start_database_monitor():
   if start_database_monitor.thread is None:
