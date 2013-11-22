@@ -196,35 +196,6 @@ class connection(object):
     """Deletes an existing model."""
     self.request("DELETE", "/models/%s" % (mid))
 
-  ########################################
-  # Currently untested from here down
-
-#  def get_workers(self):
-#    """Returns all workers."""
-#    return self.request("GET", "/workers", headers={"accept":"application/json"})["workers"]
-#
-#  def stop_worker(self, wid):
-#    """Stops a running worker."""
-#    self.request("PUT", "/workers/%s" % (wid), headers={"content-type":"application/json"}, data=json.dumps({"result" : "stopped"}))
-#
-#  def join_worker(self, wid):
-#    """Waits for a worker to complete, then returns.  Note that some workers
-#    (such as a model that's still waiting for inputs) will never
-#    complete on their own - you should call stop_worker() first."""
-#    while True:
-#      worker = self.request("GET", "/workers/%s" % (wid), headers={"accept":"application/json"})
-#      if "result" in worker and worker["result"] is not None:
-#        return
-#      time.sleep(1.0)
-#
-#  def delete_worker(self, wid, stop=False):
-#    """Immediately deletes a worker.  If you want to wait for the worker to
-#    complete first, use stop=True."""
-#    if stop:
-#      self.stop_worker(wid)
-#      self.join_worker(wid)
-#    self.request("DELETE", "/workers/%s" % (wid))
-
   ###########################################################################################################3
   # Convenience functions that layer additional functionality atop the RESTful API
 
@@ -247,6 +218,20 @@ class connection(object):
       raise Exception("More than one project matched the given name.  Try using a project ID instead.")
 
     raise Exception("Project %s not found." % project)
+
+  def join_model(self, mid):
+    """Waits for a model to complete, then returns.
+
+    Note that a model that hasn't been finished will never complete, you should
+    ensure that finish_model() is called successfully before calling
+    join_model().
+    """
+    while True:
+      model = self.request("GET", "/models/%s" % (mid), headers={"accept":"application/json"})
+      if "state" in model and model["state"] not in ["waiting", "running"]:
+        return
+      time.sleep(1.0)
+
 
 def connect(options, **keywords):
   """Factory function for client connections that takes an option parser as input."""

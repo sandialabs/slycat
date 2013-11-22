@@ -55,8 +55,8 @@ def require_valid_model(model):
   nose.tools.assert_is_instance(model["model-type"], basestring)
   nose.tools.assert_in("project", model)
   nose.tools.assert_is_instance(model["project"], basestring)
-  nose.tools.assert_in("worker", model)
-  nose.tools.assert_is_instance(model["worker"], basestring)
+  nose.tools.assert_in("state", model)
+  nose.tools.assert_is_instance(model["state"], basestring)
   return model
 
 def setup():
@@ -124,13 +124,13 @@ def test_bookmarks():
 def test_models():
   pid = connection.create_project("test-project")
 
-  wid = connection.create_model_worker(pid, "generic", "test-model")
-  mid1 = connection.finish_model(wid)
-  connection.join_worker(wid)
+  mid1 = connection.create_model(pid, "generic", "test-model")
+  connection.finish_model(mid1)
+  connection.join_model(mid1)
 
-  wid = connection.create_model_worker(pid, "generic", "test-model-2")
-  mid2 = connection.finish_model(wid)
-  connection.join_worker(wid)
+  mid2 = connection.create_model(pid, "generic", "test-model-2")
+  connection.finish_model(mid2)
+  connection.join_model(mid2)
 
   models = connection.get_project_models(pid)
   nose.tools.assert_is_instance(models, list)
@@ -147,12 +147,12 @@ def test_models():
 
 def test_model_parameters():
   pid = connection.create_project("test-project")
-  wid = connection.create_model_worker(pid, "generic", "test-model")
-  connection.set_parameter(wid, "foo", "bar")
-  connection.set_parameter(wid, "baz", [1, 2, 3])
-  connection.set_parameter(wid, "blah", {"cat":"dog"})
-  mid = connection.finish_model(wid)
-  connection.join_worker(wid)
+  mid = connection.create_model(pid, "generic", "test-model")
+  connection.set_parameter(mid, "foo", "bar")
+  connection.set_parameter(mid, "baz", [1, 2, 3])
+  connection.set_parameter(mid, "blah", {"cat":"dog"})
+  connection.finish_model(mid)
+  connection.join_model(mid)
 
   model = connection.get_model(mid)
   nose.tools.assert_in("artifact:foo", model)
@@ -165,10 +165,6 @@ def test_model_parameters():
   nose.tools.assert_equal(set(model["input-artifacts"]), set(["foo", "baz", "blah"]))
   nose.tools.assert_in("artifact-types", model)
   nose.tools.assert_equal(model["artifact-types"], {"foo":"json", "baz":"json", "blah":"json"})
-
-  with nose.tools.assert_raises(requests.HTTPError):
-    connection.set_parameter(wid, "biff", 2.5)
-
   connection.delete_model(mid)
   connection.delete_project(pid)
 
@@ -176,14 +172,13 @@ def test_empty_model_arrays():
   size = 10
 
   pid = connection.create_project("test-project")
-  wid = connection.create_model_worker(pid, "generic", "test-model")
+  mid = connection.create_model(pid, "generic", "test-model")
 
-  connection.start_array_set(wid, "test-array-set")
-  connection.create_array(wid, "test-array-set", 0, [("integer", "int64"), ("float", "float64"), ("string", "string")], ("row", "int64", 0, size))
-  connection.finish_array_set(wid, "test-array-set")
+  connection.start_array_set(mid, "test-array-set")
+  connection.start_array(mid, "test-array-set", 0, [("integer", "int64"), ("float", "float64"), ("string", "string")], ("row", "int64", 0, size))
 
-  mid = connection.finish_model(wid)
-  connection.join_worker(wid)
+  connection.finish_model(mid)
+  connection.join_model(mid)
 
   metadata = connection.get_array_metadata(mid, "test-array-set", 0)
   nose.tools.assert_equal(metadata["statistics"], [{"min":None,"max":None},{"min":None,"max":None},{"min":None,"max":None}])
@@ -197,17 +192,16 @@ def test_empty_model_arrays():
 
 def test_model_array_ranges():
   pid = connection.create_project("test-project")
-  wid = connection.create_model_worker(pid, "generic", "test-model")
+  mid = connection.create_model(pid, "generic", "test-model")
 
-  connection.start_array_set(wid, "test-array-set")
-  connection.create_array(wid, "test-array-set", 0, ("value", "int64"), ("row", "int64", 0, 10))
-  connection.store_array_attribute(wid, "test-array-set", 0, 0, numpy.arange(5))
-  connection.store_array_attribute(wid, "test-array-set", 0, 0, numpy.arange(5, 8), (5, 8))
-  connection.store_array_attribute(wid, "test-array-set", 0, 0, numpy.arange(8, 10), [(8, 10)])
-  connection.finish_array_set(wid, "test-array-set")
+  connection.start_array_set(mid, "test-array-set")
+  connection.start_array(mid, "test-array-set", 0, ("value", "int64"), ("row", "int64", 0, 10))
+  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(5))
+  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(5, 8), (5, 8))
+  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(8, 10), [(8, 10)])
 
-  mid = connection.finish_model(wid)
-  connection.join_worker(wid)
+  connection.finish_model(mid)
+  connection.join_model(mid)
 
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, 10), numpy.arange(10))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, (2, 5)), numpy.arange(2, 5))
@@ -226,14 +220,13 @@ def test_model_array_1d():
   dimensions = [("row", "int64", 0, size)]
 
   pid = connection.create_project("test-project")
-  wid = connection.create_model_worker(pid, "generic", "test-model")
-  connection.start_array_set(wid, "test-array-set")
-  connection.create_array(wid, "test-array-set", 0, attributes, dimensions)
+  mid = connection.create_model(pid, "generic", "test-model")
+  connection.start_array_set(mid, "test-array-set")
+  connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
   for attribute, data in enumerate(attribute_data):
-    connection.store_array_attribute(wid, "test-array-set", 0, attribute, data)
-  connection.finish_array_set(wid, "test-array-set")
-  mid = connection.finish_model(wid)
-  connection.join_worker(wid)
+    connection.store_array_attribute(mid, "test-array-set", 0, attribute, data)
+  connection.finish_model(mid)
+  connection.join_model(mid)
 
   # Test the generic array API ...
   metadata = connection.get_array_metadata(mid, "test-array-set", 0)
