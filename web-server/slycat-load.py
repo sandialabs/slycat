@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 import slycat.web.server.database.hdf5
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
@@ -23,6 +24,8 @@ parser.add_argument("--marking", default=[], action="append", help="Use --markin
 arguments = parser.parse_args()
 
 logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 # Sanity check input arguments ...
 markings = [marking.split(":") for marking in arguments.marking]
