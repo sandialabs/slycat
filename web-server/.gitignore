@@ -1,3 +1,4 @@
 data-store
 test-data-store
 core.*
+test.hdf5
