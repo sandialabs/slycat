@@ -595,7 +595,21 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
         else:
           return data.tostring(order="C")
 
-def get_model_table_columns(columns):
+def validate_table_rows(rows):
+  try:
+    rows = [spec.split("-") for spec in rows.split(",")]
+    rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
+    rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
+    return rows
+  except:
+    raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
+
+  if numpy.any(rows < 0):
+    raise cherrypy.HTTPError("400 Row values must be non-negative.")
+
+  return rows
+
+def validate_table_columns(columns):
   try:
     columns = [spec.split("-") for spec in columns.split(",")]
     columns = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in columns]
@@ -610,7 +624,7 @@ def get_model_table_columns(columns):
 
   return columns
 
-def get_model_table_sort(sort):
+def validate_table_sort(sort):
   if sort is not None:
     try:
       sort = [spec.split(":") for spec in sort.split(",")]
@@ -634,7 +648,7 @@ def get_model_table_sort(sort):
 
   return sort
 
-def get_model_table_byteorder(byteorder):
+def validate_table_byteorder(byteorder):
   if byteorder is not None:
     if byteorder not in ["little", "big"]:
       raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
@@ -644,19 +658,17 @@ def get_model_table_byteorder(byteorder):
   cherrypy.response.headers["content-type"] = accept
   return byteorder
 
-def get_model_table_rows(rows):
-  try:
-    rows = [spec.split("-") for spec in rows.split(",")]
-    rows = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in rows]
-    rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
-    return rows
-  except:
-    raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
-
-  if numpy.any(rows < 0):
-    raise cherrypy.HTTPError("400 Row values must be non-negative.")
-
-  return rows
+def get_table_sort_index(file, metadata, array_index, sort, index):
+  sort_index = numpy.arange(metadata["row-count"])
+  if sort is not None:
+    sort_column, sort_order = sort[0]
+    if index is not None and sort_column == metadata["column-count"]-1:
+      pass # At this point, the sort index is already set from above
+    else:
+      sort_index = numpy.argsort(file.array_attribute(array_index, sort_column)[...], kind="mergesort")
+    if sort_order == "descending":
+      sort_index = sort_index[::-1]
+  return sort_index
 
 def get_table_metadata(file, array, index):
   """Return table-oriented metadata for a 1D array, plus an optional index column."""
@@ -714,9 +726,9 @@ def get_model_table_metadata(mid, aid, array, index = None):
 
 @cherrypy.tools.json_out(on = True)
 def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, sort=None):
-  rows = get_model_table_rows(rows)
-  columns = get_model_table_columns(columns)
-  sort = get_model_table_sort(sort)
+  rows = validate_table_rows(rows)
+  columns = validate_table_columns(columns)
+  sort = validate_table_sort(sort)
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -743,17 +755,9 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
           if column >= metadata["column-count"]:
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-      # Generate a database query
+      # Retrieve the data
       data = []
-      sort_index = numpy.arange(metadata["row-count"])
-      if sort is not None:
-        sort_column, sort_order = sort[0]
-        if index is not None and sort_column == metadata["column-count"]-1:
-          pass # At this point, the sort index is already set from above
-        else:
-          sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
-        if sort_order == "descending":
-          sort_index = sort_index[::-1]
+      sort_index = get_table_sort_index(file, metadata, array, sort, index)
       slice = sort_index[rows]
       slice_index = numpy.argsort(slice, kind="mergesort")
       slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
@@ -778,9 +782,9 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
   return result
 
 def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
-  rows = get_model_table_rows(rows)
-  sort = get_model_table_sort(sort)
-  byteorder = get_model_table_byteorder(byteorder)
+  rows = validate_table_rows(rows)
+  sort = validate_table_sort(sort)
+  byteorder = validate_table_byteorder(byteorder)
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -805,16 +809,8 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
           if column >= metadata["column-count"]:
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-      # Generate a database query
-      sort_index = numpy.arange(metadata["row-count"])
-      if sort is not None:
-        sort_column, sort_order = sort[0]
-        if index is not None and sort_column == metadata["column-count"]-1:
-          pass # At this point, the sort index is already set from above
-        else:
-          sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
-        if sort_order == "descending":
-          sort_index = sort_index[::-1]
+      # Retrieve the data ...
+      sort_index = get_table_sort_index(file, metadata, array, sort, index)
       slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
 
   if byteorder is None:
@@ -826,9 +822,9 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
       return slice.tostring(order="C")
 
 def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
-  rows = get_model_table_rows(rows)
-  sort = get_model_table_sort(sort)
-  byteorder = get_model_table_byteorder(byteorder)
+  rows = validate_table_rows(rows)
+  sort = validate_table_sort(sort)
+  byteorder = validate_table_byteorder(byteorder)
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -854,15 +850,7 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
       # Generate a database query
-      sort_index = numpy.arange(metadata["row-count"])
-      if sort is not None:
-        sort_column, sort_order = sort[0]
-        if index is not None and sort_column == metadata["column-count"]-1:
-          pass # At this point, the sort index is already set from above
-        else:
-          sort_index = numpy.argsort(file.array_attribute(array, sort_column)[...], kind="mergesort")
-        if sort_order == "descending":
-          sort_index = sort_index[::-1]
+      sort_index = get_table_sort_index(file, metadata, array, sort, index)
       slice = sort_index[rows].astype("int32")
 
   if byteorder is None:
