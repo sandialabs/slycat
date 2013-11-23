@@ -18,7 +18,7 @@ $.widget("cca.barplot",
     wilks:[],
     x_loadings:[],
     y_loadings:[],
-    component : null,
+    component : 0,
     variable : null,
     sort : [null, null],
   },
@@ -204,8 +204,9 @@ $.widget("cca.barplot",
       }
     }
 
-    // Hide all bars by default
+    // Setup the default selected component ...
     this.element.find("td.bar").css("display", "none");
+    this.select_component(this.options.component);
   },
 
   _setOption: function(key, value)

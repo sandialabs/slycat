@@ -722,6 +722,7 @@ rights in this software.
               wilks: wilks,
               x_loadings: x_loadings,
               y_loadings: y_loadings,
+              component: component,
             });
 
             if("variable-selection" in bookmark)
@@ -751,8 +752,6 @@ rights in this software.
                 "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
               });
             }
-
-            window.setTimeout(function() { $("#barplot").barplot("option", {component: component}); }, 2000);
           }
 
           // Setup the scatterplot ...
