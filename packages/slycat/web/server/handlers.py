@@ -276,9 +276,9 @@ def post_project_bookmarks(pid):
   cherrypy.response.status = "201 Bookmark stored."
   return {"id" : bid}
 
-def get_models_open(revision=None):
-  if get_models_open.timeout is None:
-    get_models_open.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
+def get_models_progress(revision=None):
+  if get_models_progress.timeout is None:
+    get_models_progress.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
 
   slycat.web.server.model.start_database_monitor()
 
@@ -287,7 +287,7 @@ def get_models_open(revision=None):
 
   if accept == "text/html":
     context = get_context()
-    return slycat.web.server.template.render("models-open.html", context)
+    return slycat.web.server.template.render("models-progress.html", context)
   elif accept == "application/json":
     if revision is not None:
       revision = int(revision)
@@ -295,7 +295,7 @@ def get_models_open(revision=None):
     with slycat.web.server.model.updated:
       while revision == slycat.web.server.model.revision:
         slycat.web.server.model.updated.wait(1.0)
-        if time.time() - start_time > get_models_open.timeout:
+        if time.time() - start_time > get_models_progress.timeout:
           cherrypy.response.status = "204 No change."
           return
         if cherrypy.engine.state != cherrypy.engine.states.STARTED:
@@ -306,7 +306,7 @@ def get_models_open(revision=None):
       projects = [database.get("project", model["project"]) for model in models]
       models = [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
       return json.dumps({"revision" : slycat.web.server.model.revision, "models" : models})
-get_models_open.timeout = None
+get_models_progress.timeout = None
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -861,21 +861,22 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
     else:
       return slice.tostring(order="C")
 
-def get_model_file(mid, name):
+def get_model_file(mid, aid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
 
-  key = "artifact:%s" % name
-  if key not in model:
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
     raise cherrypy.HTTPError(404)
-  fid = model[key]
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type != "file":
+    raise cherrypy.HTTPError("400 %s is not a file artifact." % aid)
+  fid = artifact
 
   cherrypy.response.headers["content-type"] = model["_attachments"][fid]["content_type"]
   return database.get_attachment(mid, fid)
-
-#pool = slycat.web.server.worker.pool
 
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])

@@ -519,7 +519,7 @@ rights in this software.
         $.ajax(
         {
           type : "GET",
-          url : "{{server-root}}models/{{_id}}/file/clusters",
+          url : "{{server-root}}models/{{_id}}/artifacts/clusters/file",
           success : function(clusters)
           {
             cluster_viewer.set_clusters(clusters);
@@ -577,7 +577,7 @@ rights in this software.
                   $.ajax(
                   {
                     type : "GET",
-                    url : "{{server-root}}models/{{_id}}/file/cluster-" + cluster_name,
+                    url : "{{server-root}}models/{{_id}}/artifacts/cluster-" + cluster_name + "/file",
                     success : function(cluster)
                     {
                       if(!skip_bookmarking) {
