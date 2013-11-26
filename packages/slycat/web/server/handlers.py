@@ -665,7 +665,14 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
     if index is not None and sort_column == metadata["column-count"]-1:
       pass # At this point, the sort index is already set from above
     else:
-      sort_index = numpy.argsort(file.array_attribute(array_index, sort_column)[...], kind="mergesort")
+      index_key = "array/%s/index/%s" % (array_index, sort_column)
+      if index_key not in file:
+        cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
+        sort_index = numpy.argsort(file.array_attribute(array_index, sort_column)[...], kind="mergesort")
+        file[index_key] = sort_index
+      else:
+        cherrypy.log.error("Loading cached sort index.")
+        sort_index = file[index_key][...]
     if sort_order == "descending":
       sort_index = sort_index[::-1]
   return sort_index
@@ -743,7 +750,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
+    with slycat.web.server.database.hdf5.open(artifact, mode="r+") as file:
       metadata = get_table_metadata(file, array, index)
 
       # Constrain end <= count along both dimensions
@@ -799,7 +806,7 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
+    with slycat.web.server.database.hdf5.open(artifact, mode="r+") as file:
       metadata = get_table_metadata(file, array, index)
 
       # Constrain end <= count along both dimensions
@@ -839,7 +846,7 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
+    with slycat.web.server.database.hdf5.open(artifact, mode="r+") as file:
       metadata = get_table_metadata(file, array, index)
 
       # Constrain end <= count along both dimensions
