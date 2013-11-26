@@ -187,6 +187,9 @@ def test_empty_model_arrays():
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="float64"))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 2, size), [""] * size)
 
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, size, "int64"), numpy.zeros(size, dtype="int64"))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 1, size, "float64"), numpy.zeros(size, dtype="float64"))
+
   connection.delete_model(mid)
   connection.delete_project(pid)
 
@@ -207,6 +210,10 @@ def test_model_array_ranges():
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, (2, 5)), numpy.arange(2, 5))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, [(1, 6)]), numpy.arange(1, 6))
 
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, 10, "int64"), numpy.arange(10))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, (2, 5), "int64"), numpy.arange(2, 5))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, [(1, 6)], "int64"), numpy.arange(1, 6))
+
   connection.delete_model(mid)
   connection.delete_project(pid)
 
@@ -226,6 +233,8 @@ def test_model_array_string_attributes():
 
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, size), numpy.arange(size).astype("string"))
   numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 1, size), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 0, size, "string"), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_array_chunk(mid, "test-array-set", 0, 1, size, "string"), numpy.arange(size).astype("string"))
 
   connection.delete_model(mid)
   connection.delete_project(pid)

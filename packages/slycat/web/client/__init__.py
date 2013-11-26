@@ -179,12 +179,17 @@ class connection(object):
     """Returns the metadata for an array artifacat."""
     return self.request("GET", "/models/%s/artifacts/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
-  def get_array_chunk(self, mid, name, array, attribute, ranges):
-    """Returns a hyperslice from an array artifact attribute."""
+  def get_array_chunk(self, mid, name, array, attribute, ranges, type=None):
+    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
     ranges = require_array_ranges(ranges)
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
-    return self.request("GET", "/models/%s/artifacts/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+    if type is None or type == "string":
+      return self.request("GET", "/models/%s/artifacts/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+    else:
+      shape = tuple([end - begin for begin, end in ranges])
+      content = self.request("GET", "/models/%s/artifacts/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
+      return numpy.fromstring(content, dtype=type).reshape(shape)
 
   def get_table_metadata(self, mid, name, array):
     """Returns the metadata for a table (array) artifact."""
