@@ -449,8 +449,14 @@ rights in this software.
                   rerun_cca_model = result["id"];
                   $.ajax(
                   {
-                    type : "POST",
-                    url : "{{server-root}}models/" + rerun_cca_model + "/copy-inputs/{{_id}}",
+                    type : "PUT",
+                    url : "{{server-root}}models/" + rerun_cca_model + "/inputs",
+                    data : $.toJSON(
+                    {
+                      "sid" : "{{_id}}",
+                    }),
+                    processData: false,
+                    contentType: "application/json",
                     success: function(result)
                     {
                       $.ajax(
