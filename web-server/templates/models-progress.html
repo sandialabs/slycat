@@ -74,7 +74,7 @@ rights in this software.
                 {
                   $("<tr>")
                     .append($("<button>").text("Close").click(close_model.bind(this, model["_id"])))
-                    .append($("<td>").append($("<a>").text(model["_id"]).attr("href", model["uri"])))
+                    .append($("<td>").append($("<a>").text(model["_id"]).attr("href", "{{server-root}}models/" + model["_id"])))
                     .append($("<td>").text(model["state"]))
                     .append($("<td>").text(model["result"]))
                     .append($("<td>").text(model["created"]))

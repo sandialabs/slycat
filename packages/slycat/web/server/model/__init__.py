@@ -69,7 +69,7 @@ start_database_monitor.thread = None
 def update(database, model, **kwargs):
   """Update the model, and signal any waiting threads that it's changed."""
   for name, value in kwargs.items():
-    if name in ["state", "result", "started", "finished", "progress", "message", "uri"]:
+    if name in ["state", "result", "started", "finished", "progress", "message"]:
       model[name] = value
   database.save(model)
 

@@ -388,7 +388,7 @@ def put_model(mid):
   if finish_model:
     cherrypy.response.status = "202 Finishing model."
 
-    slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, uri = "%s/models/%s" % (cherrypy.request.base, model["_id"]))
+    slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
 
     if model["model-type"] == "generic":
       slycat.web.server.model.generic.finish(database, model)
