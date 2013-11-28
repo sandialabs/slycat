@@ -169,7 +169,7 @@ class connection(object):
 
   def finish_model(self, mid):
     """Completes a model."""
-    self.request("POST", "/models/%s/finish" % (mid))
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"state":"running"}))
 
   def get_model(self, mid):
     """Returns a single model."""

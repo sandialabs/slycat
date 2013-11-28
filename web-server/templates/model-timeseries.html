@@ -345,11 +345,12 @@ rights in this software.
 
               $.ajax(
               {
-                type : "POST",
-                url : "{{server-root}}workers/" + rerun_timeseries_worker + "/model/finish-model",
+                type : "PUT",
+                url : "{{server-root}}models/" + rerun_timeseries_model,
                 contentType : "application/json",
                 data: $.toJSON(
                 {
+                  state: "running",
                 }),
                 processData: false,
                 success: function(result)

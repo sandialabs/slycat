@@ -346,21 +346,45 @@ def get_model(mid, **kwargs):
     return slycat.web.server.template.render("model-generic.html", context)
 
 @cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
 def put_model(mid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  if "name" in cherrypy.request.json:
-    model["name"] = cherrypy.request.json["name"]
-  if "description" in cherrypy.request.json:
-    model["description"] = cherrypy.request.json["description"]
-  if "state" in cherrypy.request.json:
-    model["state"] = cherrypy.request.json["state"]
+  save_model = False
+  finish_model = False
+  for key, value in cherrypy.request.json.items():
+    if key in ["name", "description"]:
+      save_model = True
+      model[key] = value
+    elif key == "state":
+      if value == "closed" and model["state"] in ["waiting", "finished"]:
+        save_model = True
+        model[key] = value
+      elif value == "running" and model["state"] in ["waiting"]:
+        finish_model = True
+      else:
+        raise cherrypy.HTTPError("400 Not an allowed model state transition: %s to %s" % (model["state"], value))
+    else:
+      raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
 
-  database.save(model)
+  if save_model:
+    database.save(model)
+
+  if finish_model:
+    cherrypy.response.status = "202 Finishing model."
+
+    slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, uri = "%s/models/%s" % (cherrypy.request.base, model["_id"]))
+
+    if model["model-type"] == "generic":
+      slycat.web.server.model.generic.finish(database, model)
+    elif model["model-type"] == "cca":
+      slycat.web.server.model.cca.finish(database, model)
+    elif model["model-type"] == "timeseries":
+      slycat.web.server.model.timeseries.finish(database, model)
+    else:
+      raise cherrypy.HTTPError("500 Cannot finish unknown model type")
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
@@ -440,25 +464,6 @@ def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None
   attribute_index = int(attribute)
   ranges = [(int(begin), int(end)) for begin, end in json.load(ranges.file)]
   slycat.web.server.model.store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder)
-
-def post_model_finish(mid):
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_writer(project)
-
-  cherrypy.response.status = "202 Finishing model."
-
-  slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, uri = "%s/models/%s" % (cherrypy.request.base, model["_id"]))
-
-  if model["model-type"] == "generic":
-    slycat.web.server.model.generic.finish(database, model)
-  elif model["model-type"] == "cca":
-    slycat.web.server.model.cca.finish(database, model)
-  elif model["model-type"] == "timeseries":
-    slycat.web.server.model.timeseries.finish(database, model)
-  else:
-    raise Exception("500 Cannot finish unknown model type")
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
