@@ -84,8 +84,8 @@ def start(config_file="config.ini"):
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-home", "/", slycat.web.server.handlers.get_home, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-model-array-chunk", "/models/:mid/artifacts/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_chunk, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-model-array-metadata", "/models/:mid/artifacts/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_array_metadata, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-array-chunk", "/models/:mid/array-sets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_chunk, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-array-metadata", "/models/:mid/array-sets/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_array_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-design", "/models/:mid/design", slycat.web.server.handlers.get_model_design, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/artifacts/:aid/file", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   # This must precede get-model, which would otherwise match it.
