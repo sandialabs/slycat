@@ -426,7 +426,7 @@ def put_model_array_set(mid, name):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_model_array_set_array(mid, name, array):
+def put_model_array_set_array(mid, name, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])

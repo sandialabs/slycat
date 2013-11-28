@@ -150,7 +150,7 @@ class connection(object):
 
   def start_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
-    self.request("POST", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
   def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
