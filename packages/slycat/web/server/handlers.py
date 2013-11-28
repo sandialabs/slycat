@@ -374,35 +374,23 @@ def post_model_copy_inputs(mid, sid):
 
   slycat.web.server.model.copy_model_inputs(database, source, model)
 
-def put_model_table(mid, name, file):
+def put_model_table(mid, name, file=None, username=None, hostname=None, password=None, path=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  data = file.file.read()
-  filename = file.filename
-
-  slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=True)
-
-@cherrypy.tools.json_in(on = True)
-def post_model_load_remote_table(mid, name, username, hostname):
-  cherrypy.log.error("post_model_load_remote_table()")
-
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_writer(project)
-
-  path = cherrypy.request.json["path"]
-  password = cherrypy.request.json["password"]
-  session = slycat.web.server.cache.ssh_session(hostname, username, password)
-
-  filename = "%s@%s:%s" % (username, hostname, path)
-  if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
-    raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
-  data = session["sftp"].file(path).read()
-
+  if file is not None and username is None and hostname is None and password is None and path is None:
+    data = file.file.read()
+    filename = file.filename
+  elif file is None and username is not None and hostname is not None and password is not None and path is not None:
+    filename = "%s@%s:%s" % (username, hostname, path)
+    session = slycat.web.server.cache.ssh_session(hostname, username, password)
+    if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
+      raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+    data = session["sftp"].file(path).read()
+  else:
+    raise cherrypy.HTTPError("400 Must supply a file parameter, or username, hostname, password, and path parameters.")
   slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=True)
 
 @cherrypy.tools.json_in(on = True)

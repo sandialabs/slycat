@@ -104,7 +104,6 @@ def start(config_file="config.ini"):
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-copy-inputs", "/models/:mid/copy-inputs/:sid", slycat.web.server.handlers.post_model_copy_inputs, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-model-load-remote-table", "/models/:mid/load-remote-table/:name/users/:username/hosts/:hostname", slycat.web.server.handlers.post_model_load_remote_table, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})

@@ -657,19 +657,21 @@ rights in this software.
             window.alert("You must select exactly one file to index.");
             return;
           }
-          selection = selection[0];
+          path = selection[0];
+
+          var data = new FormData();
+          data.append("username", username);
+          data.append("hostname", hostname);
+          data.append("password", password);
+          data.append("path", path);
 
           $.ajax(
           {
-            type : "POST",
-            contentType : "application/json",
+            type : "PUT",
+            contentType : false,
             processData : false,
-            url : "{{server-root}}models/" + remote_cca_model + "/load-remote-table/data-table/users/" + username + "/hosts/" + hostname,
-            data : $.toJSON(
-            {
-              password : password,
-              path : selection,
-            }),
+            url : "{{server-root}}models/" + remote_cca_model + "/table/data-table",
+            data : data,
             success : function(result)
             {
               $.ajax(
