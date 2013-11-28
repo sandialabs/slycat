@@ -87,7 +87,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-model-array-chunk", "/models/:mid/array-sets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-metadata", "/models/:mid/array-sets/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_array_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-design", "/models/:mid/design", slycat.web.server.handlers.get_model_design, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-model-file", "/models/:mid/artifacts/:aid/file", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   # This must precede get-model, which would otherwise match it.
   dispatcher.connect("get-models-progress", "/models/progress", slycat.web.server.handlers.get_models_progress, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
