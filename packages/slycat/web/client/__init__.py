@@ -193,11 +193,11 @@ class connection(object):
 
   def get_table_metadata(self, mid, name, array):
     """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/artifacts/%s/tables/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_table_chunk(self, mid, name, array, rows, columns):
     """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/artifacts/%s/tables/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
 
   def delete_model(self, mid):
     """Deletes an existing model."""
