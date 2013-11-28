@@ -45,7 +45,7 @@ def require_parameter(name):
     raise cherrypy.HTTPError("400 Missing %s parameter." % name)
   return cherrypy.request.json[name]
 
-def require_boolean(name):
+def require_boolean_parameter(name):
   value = require_parameter(name)
   if value != True and value != False:
     raise cherrypy.HTTPError("400 Parameter %s must be true or false." % name)
@@ -440,20 +440,22 @@ def put_model_parameter(mid, name):
   slycat.web.server.authentication.require_project_writer(project)
 
   value = require_parameter("value")
-  input = require_boolean("input")
+  input = require_boolean_parameter("input")
 
   slycat.web.server.model.store_parameter(database, model, name, value, input)
 
+@cherrypy.tools.json_in(on = True)
 def put_model_array_set(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.start_array_set(database, model, name, input=True)
+  input = require_boolean_parameter("input")
+
+  slycat.web.server.model.start_array_set(database, model, name, input)
 
 @cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
 def put_model_array_set_array(mid, name, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -466,7 +468,6 @@ def put_model_array_set_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-@cherrypy.tools.json_out(on = True)
 def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)

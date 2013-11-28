@@ -144,9 +144,9 @@ class connection(object):
     """Sets a model parameter value."""
     self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
-  def start_array_set(self, mid, name):
+  def start_array_set(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
+    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def start_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
