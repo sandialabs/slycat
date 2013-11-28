@@ -416,7 +416,7 @@ def put_model_parameter(mid, name):
   value = cherrypy.request.json["value"]
   slycat.web.server.model.store_parameter(database, model, name, value, input=True)
 
-def post_model_array_set(mid, name):
+def put_model_array_set(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])

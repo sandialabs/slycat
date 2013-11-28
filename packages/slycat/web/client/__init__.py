@@ -146,7 +146,7 @@ class connection(object):
 
   def start_array_set(self, mid, name):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("POST", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
+    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({}))
 
   def start_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
