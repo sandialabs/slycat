@@ -359,7 +359,9 @@ def put_model(mid):
       save_model = True
       model[key] = value
     elif key == "state":
-      if value == "closed" and model["state"] in ["waiting", "finished"]:
+      if value == model["state"]:
+        pass
+      elif value == "closed" and model["state"] in ["waiting", "finished"]:
         save_model = True
         model[key] = value
       elif value == "running" and model["state"] in ["waiting"]:
