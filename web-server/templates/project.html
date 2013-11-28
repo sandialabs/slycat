@@ -436,8 +436,8 @@ rights in this software.
 
           $.ajax(
           {
-            type : "POST",
-            url : "{{server-root}}models/" + local_cca_model + "/upload-table/data-table",
+            type : "PUT",
+            url : "{{server-root}}models/" + local_cca_model + "/table/data-table",
             data : data,
             contentType : false,
             processData : false,

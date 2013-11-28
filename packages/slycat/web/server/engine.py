@@ -105,7 +105,6 @@ def start(config_file="config.ini"):
   dispatcher.connect("post-model-copy-inputs", "/models/:mid/copy-inputs/:sid", slycat.web.server.handlers.post_model_copy_inputs, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-load-remote-table", "/models/:mid/load-remote-table/:name/users/:username/hosts/:hostname", slycat.web.server.handlers.post_model_load_remote_table, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-model-upload-table", "/models/:mid/upload-table/:name", slycat.web.server.handlers.post_model_upload_table, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
@@ -114,6 +113,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("put-model-array-set", "/models/:mid/array-sets/:name", slycat.web.server.handlers.put_model_array_set, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
+  dispatcher.connect("put-model-table", "/models/:mid/table/:name", slycat.web.server.handlers.put_model_table, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
 
   configuration["/"]["request.dispatch"] = dispatcher

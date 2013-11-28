@@ -374,7 +374,7 @@ def post_model_copy_inputs(mid, sid):
 
   slycat.web.server.model.copy_model_inputs(database, source, model)
 
-def post_model_upload_table(mid, name, file):
+def put_model_table(mid, name, file):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
