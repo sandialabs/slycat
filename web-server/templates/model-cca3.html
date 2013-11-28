@@ -516,12 +516,12 @@ rights in this software.
               });
             },
             "Run" : function(){
-              function set_parameter(name, value)
+              function store_parameter(name, value)
               {
                 $.ajax(
                 {
                   async : false,
-                  type : "POST",
+                  type : "PUT",
                   url : "{{server-root}}models/" + rerun_cca_model + "/parameters/" + name,
                   contentType : "application/json",
                   data: $.toJSON(
@@ -552,9 +552,9 @@ rights in this software.
                 return;
               }
 
-              set_parameter("input-columns", input_columns);
-              set_parameter("output-columns", output_columns);
-              set_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked"));
+              store_parameter("input-columns", input_columns);
+              store_parameter("output-columns", output_columns);
+              store_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked"));
 
               $.ajax(
               {

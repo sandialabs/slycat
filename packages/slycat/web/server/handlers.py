@@ -407,7 +407,7 @@ def post_model_load_remote_table(mid, name, username, hostname):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_model_parameter(mid, name):
+def put_model_parameter(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])

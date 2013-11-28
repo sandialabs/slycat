@@ -319,17 +319,16 @@ rights in this software.
               });
             },
             "Run" : function(){
-              function set_parameter(name, value)
+              function store_parameter(name, value)
               {
                 $.ajax(
                 {
                   async : false,
-                  type : "POST",
-                  url : "{{server-root}}workers/" + rerun_timeseries_worker + "/model/set-parameter",
+                  type : "PUT",
+                  url : "{{server-root}}models/" + rerun_timeseries_model + "/parameters/" + name,
                   contentType : "application/json",
                   data: $.toJSON(
                   {
-                    name : name,
                     value : value
                   }),
                   processData : false,
@@ -340,9 +339,9 @@ rights in this software.
                 });
               }
 
-              set_parameter("cluster-type", $("#rerun-timeseries-cluster-type").val());
-              set_parameter("cluster-bin-count", parseInt($("#rerun-timeseries-cluster-bin-count").val()));
-              set_parameter("cluster-bin-type", $("#rerun-timeseries-cluster-bin-type").val());
+              store_parameter("cluster-type", $("#rerun-timeseries-cluster-type").val());
+              store_parameter("cluster-bin-count", parseInt($("#rerun-timeseries-cluster-bin-count").val()));
+              store_parameter("cluster-bin-type", $("#rerun-timeseries-cluster-bin-type").val());
 
               $.ajax(
               {

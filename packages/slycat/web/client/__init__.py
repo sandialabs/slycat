@@ -142,7 +142,7 @@ class connection(object):
 
   def store_parameter(self, mid, name, value):
     """Sets a model parameter value."""
-    self.request("POST", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
+    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value}))
 
   def start_array_set(self, mid, name):
     """Starts a new model array set artifact, ready to receive data."""
