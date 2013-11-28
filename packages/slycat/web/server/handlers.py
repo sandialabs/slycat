@@ -898,7 +898,9 @@ def get_user(uid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_browse(username, hostname):
+def post_browse():
+  username = cherrypy.request.json["username"]
+  hostname = cherrypy.request.json["hostname"]
   path = cherrypy.request.json["path"]
   password = cherrypy.request.json["password"]
   session = slycat.web.server.cache.ssh_session(hostname, username, password)

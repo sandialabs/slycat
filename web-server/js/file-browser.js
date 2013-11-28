@@ -76,10 +76,12 @@ $.widget("slycat.browser",
           {
             context : this,
             type : "POST",
-            url : self.options.server_root + "browse/users/" + self.options.username + "/hosts/" + self.options.hostname,
+            url : self.options.server_root + "browse",
             contentType : "application/json",
             processData : false,
             data : $.toJSON({
+              username : self.options.username,
+              hostname : self.options.hostname,
               password : self.options.password,
               path : $(this).data("path")
             }),
