@@ -151,6 +151,7 @@ def test_model_parameters():
   connection.store_parameter(mid, "foo", "bar")
   connection.store_parameter(mid, "baz", [1, 2, 3])
   connection.store_parameter(mid, "blah", {"cat":"dog"})
+  connection.store_parameter(mid, "output", True, input=False)
   connection.finish_model(mid)
   connection.join_model(mid)
 
@@ -161,10 +162,12 @@ def test_model_parameters():
   nose.tools.assert_equal(model["artifact:baz"], [1, 2, 3])
   nose.tools.assert_in("artifact:blah", model)
   nose.tools.assert_equal(model["artifact:blah"], {"cat":"dog"})
+  nose.tools.assert_in("artifact:output", model)
+  nose.tools.assert_equal(model["artifact:output"], True)
   nose.tools.assert_in("input-artifacts", model)
   nose.tools.assert_equal(set(model["input-artifacts"]), set(["foo", "baz", "blah"]))
   nose.tools.assert_in("artifact-types", model)
-  nose.tools.assert_equal(model["artifact-types"], {"foo":"json", "baz":"json", "blah":"json"})
+  nose.tools.assert_equal(model["artifact-types"], {"foo":"json", "baz":"json", "blah":"json", "output":"json"})
   connection.delete_model(mid)
   connection.delete_project(pid)
 

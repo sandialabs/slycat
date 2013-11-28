@@ -40,6 +40,17 @@ import time
 import traceback
 import uuid
 
+def require_parameter(name):
+  if name not in cherrypy.request.json:
+    raise cherrypy.HTTPError("400 Missing %s parameter." % name)
+  return cherrypy.request.json[name]
+
+def require_boolean(name):
+  value = require_parameter(name)
+  if value != True and value != False:
+    raise cherrypy.HTTPError("400 Parameter %s must be true or false." % name)
+  return value
+
 def get_context():
   """Helper function that populates a default context object for use expanding HTML templates."""
   context = {}
@@ -422,15 +433,16 @@ def put_model_table(mid, name, file=None, username=None, hostname=None, password
   slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=True)
 
 @cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
 def put_model_parameter(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  value = cherrypy.request.json["value"]
-  slycat.web.server.model.store_parameter(database, model, name, value, input=True)
+  value = require_parameter("value")
+  input = require_boolean("input")
+
+  slycat.web.server.model.store_parameter(database, model, name, value, input)
 
 def put_model_array_set(mid, name):
   database = slycat.web.server.database.couchdb.connect()
