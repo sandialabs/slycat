@@ -433,6 +433,7 @@ rights in this software.
 
           var data = new FormData();
           data.append("file", $("#local-cca-file")[0].files[0]);
+          data.append("input", true);
 
           $.ajax(
           {
@@ -666,6 +667,7 @@ rights in this software.
           data.append("hostname", hostname);
           data.append("password", password);
           data.append("path", path);
+          data.append("input", true);
 
           $.ajax(
           {

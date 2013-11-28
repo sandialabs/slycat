@@ -413,11 +413,15 @@ def put_model_inputs(mid):
 
   slycat.web.server.model.copy_model_inputs(database, source, model)
 
-def put_model_table(mid, name, file=None, username=None, hostname=None, password=None, path=None):
+def put_model_table(mid, name, input=None, file=None, username=None, hostname=None, password=None, path=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
+
+  if input is None:
+    raise cherrypy.HTTPError("400 Required input parameter is missing.")
+  input = True if int(input) else False
 
   if file is not None and username is None and hostname is None and password is None and path is None:
     data = file.file.read()
@@ -430,7 +434,7 @@ def put_model_table(mid, name, file=None, username=None, hostname=None, password
     data = session["sftp"].file(path).read()
   else:
     raise cherrypy.HTTPError("400 Must supply a file parameter, or username, hostname, password, and path parameters.")
-  slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=True)
+  slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_parameter(mid, name):
