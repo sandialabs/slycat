@@ -159,13 +159,13 @@ class connection(object):
       if ranges is None:
         ranges = [(0, end) for end in data.shape]
       if data.dtype.char == "S":
-        self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
+        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
       else:
-        self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
+        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
     else:
       if ranges is None:
         ranges = [(0, len(data))]
-      self.request("POST", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
+      self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
   def finish_model(self, mid):
     """Completes a model."""
