@@ -81,7 +81,7 @@
           {
             dataType : "json",
             type : "GET",
-            url : "{{server-root}}models/progress" + (current_revision != null ? "?revision=" + current_revision : ""),
+            url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
             success : function(results)
             {
               if(results != null)
