@@ -182,7 +182,8 @@ rights in this software.
         {
           $("#status-messages").empty().html(
             "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-            "<div class='error-description'>Look up at the status bar for more details.</div>");
+            "<div class='error-description'>Here's what was happening when it ended:</div>" +
+            "<pre>{{message}}</pre>");
           show_status_messages();
         }
         else if(model_result == "succeeded")
