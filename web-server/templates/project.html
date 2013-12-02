@@ -553,14 +553,8 @@ rights in this software.
 
           $.ajax(
           {
-            type : "PUT",
-            url : "{{server-root}}models/" + local_cca_model,
-            contentType : "application/json",
-            data: $.toJSON(
-            {
-              state: "running",
-            }),
-            processData: false,
+            type : "POST",
+            url : "{{server-root}}models/" + local_cca_model + "/finish",
             success: function(result)
             {
               local_cca_model = null;
@@ -786,14 +780,8 @@ rights in this software.
 
           $.ajax(
           {
-            type : "PUT",
-            url : "{{server-root}}models/" + remote_cca_model,
-            contentType : "application/json",
-            data: $.toJSON(
-            {
-              state : "running",
-            }),
-            processData: false,
+            type : "POST",
+            url : "{{server-root}}models/" + remote_cca_model + "/finish",
             success: function(result)
             {
               remote_cca_model = null;

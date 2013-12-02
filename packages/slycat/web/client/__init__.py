@@ -177,17 +177,25 @@ class connection(object):
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
-  def set_progress(self, mid, progress):
+  def set_model_state(self, mid, state):
+    """Sets the current model state."""
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"state": require_string(state)}))
+
+  def set_model_result(self, mid, result):
+    """Sets the current model result."""
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"result": require_string(result)}))
+
+  def set_model_progress(self, mid, progress):
     """Sets the current model progress."""
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"progress": require_float(progress)}))
 
-  def set_message(self, mid, message):
+  def set_model_message(self, mid, message):
     """Sets the current model message."""
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"message": require_string(message)}))
 
   def finish_model(self, mid):
     """Completes a model."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"state":"running"}))
+    self.request("POST", "/models/%s/finish" % (mid))
 
   def get_model(self, mid):
     """Returns a single model."""

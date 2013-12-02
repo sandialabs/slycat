@@ -611,14 +611,8 @@ rights in this software.
 
               $.ajax(
               {
-                type : "PUT",
-                url : "{{server-root}}models/" + rerun_cca_model,
-                contentType : "application/json",
-                data: $.toJSON(
-                {
-                  state: "running",
-                }),
-                processData: false,
+                type : "POST",
+                url : "{{server-root}}models/" + rerun_cca_model + "/finish",
                 success: function(result)
                 {
                   rerun_cca_model = null;

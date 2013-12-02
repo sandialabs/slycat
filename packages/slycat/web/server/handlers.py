@@ -364,40 +364,36 @@ def put_model(mid):
   slycat.web.server.authentication.require_project_writer(project)
 
   save_model = False
-  finish_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "progress", "message"]:
-      save_model = True
-      model[key] = value
-    elif key == "state":
-      if value == model["state"]:
-        pass
-      elif value == "closed" and model["state"] in ["waiting", "finished"]:
-        save_model = True
+    if key in ["name", "description", "state", "result", "progress", "message"]:
+      if value != model.get(key):
         model[key] = value
-      elif value == "running" and model["state"] in ["waiting"]:
-        finish_model = True
-      else:
-        raise cherrypy.HTTPError("400 Not an allowed model state transition: %s to %s" % (model["state"], value))
+        save_model = True
     else:
       raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
 
   if save_model:
     database.save(model)
 
-  if finish_model:
-    cherrypy.response.status = "202 Finishing model."
+def post_model_finish(mid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
 
-    slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
+  if model["state"] != "waiting":
+    raise cherrypy.HTTPError("400 Only waiting models can be finished.")
+  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries"]:
+    raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
-    if model["model-type"] == "generic":
-      slycat.web.server.model.generic.finish(database, model)
-    elif model["model-type"] == "cca":
-      slycat.web.server.model.cca.finish(database, model)
-    elif model["model-type"] == "timeseries":
-      slycat.web.server.model.timeseries.finish(database, model)
-    else:
-      raise cherrypy.HTTPError("500 Cannot finish unknown model type")
+  slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
+  if model["model-type"] == "generic":
+    slycat.web.server.model.generic.finish(database, model)
+  elif model["model-type"] == "cca":
+    slycat.web.server.model.cca.finish(database, model)
+  elif model["model-type"] == "timeseries":
+    slycat.web.server.model.timeseries.finish(database, model)
+  cherrypy.response.status = "202 Finishing model."
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
@@ -421,7 +417,7 @@ def put_model_table(mid, name, input=None, file=None, username=None, hostname=No
 
   if input is None:
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
-  input = True if int(input) else False
+  input = True if input == "true" else False
 
   if file is not None and username is None and hostname is None and password is None and path is None:
     data = file.file.read()
