@@ -14,6 +14,11 @@ import time
 
 from slycat.array import *
 
+def require_float(value):
+  if not isinstance(value, float):
+    raise Exception("Not a floating-point value.")
+  return value
+
 def require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
   if ranges is None:
@@ -166,6 +171,10 @@ class connection(object):
       if ranges is None:
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
+
+  def set_progress(self, mid, progress):
+    """Sets the current model progress."""
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"progress": require_float(progress)}))
 
   def finish_model(self, mid):
     """Completes a model."""

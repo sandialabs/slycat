@@ -91,10 +91,10 @@ def test_projects():
   nose.tools.assert_equal(projects, [])
 
 def test_project():
-  pid = connection.create_project("test-project", "My test project.")
+  pid = connection.create_project("project", "My test project.")
 
   project = require_valid_project(connection.get_project(pid))
-  nose.tools.assert_equal(project["name"], "test-project")
+  nose.tools.assert_equal(project["name"], "project")
   nose.tools.assert_equal(project["description"], "My test project.")
   nose.tools.assert_equal(project["creator"], "slycat")
   nose.tools.assert_equal(project["acl"], {'administrators': [{'user': 'slycat'}], 'writers': [], 'readers': []})
@@ -110,7 +110,7 @@ def test_project():
     project = connection.get_project(pid)
 
 def test_bookmarks():
-  pid = connection.create_project("test-project")
+  pid = connection.create_project("bookmark-project")
 
   bookmark = {"foo":"bar", "baz":[1, 2, 3]}
   bid = connection.create_bookmark(pid, bookmark)
@@ -122,13 +122,13 @@ def test_bookmarks():
   connection.delete_project(pid)
 
 def test_models():
-  pid = connection.create_project("test-project")
+  pid = connection.create_project("models-project")
 
-  mid1 = connection.create_model(pid, "generic", "test-model")
+  mid1 = connection.create_model(pid, "generic", "model")
   connection.finish_model(mid1)
   connection.join_model(mid1)
 
-  mid2 = connection.create_model(pid, "generic", "test-model-2")
+  mid2 = connection.create_model(pid, "generic", "model2")
   connection.finish_model(mid2)
   connection.join_model(mid2)
 
@@ -145,9 +145,24 @@ def test_models():
 
   connection.delete_project(pid)
 
+def test_model_state():
+  pid = connection.create_project("model-state-project")
+  mid = connection.create_model(pid, "generic", "model-state-model")
+
+  connection.set_progress(mid, 0.0)
+  #connection.set_message(mid, "Testing model.")
+
+  model = connection.get_model(mid)
+  nose.tools.assert_equal(model["state"], "waiting")
+  nose.tools.assert_equal(model["progress"], 0.0)
+  #nose.tools.assert_equal(model["message"], "Testing model.")
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
 def test_model_parameters():
-  pid = connection.create_project("test-project")
-  mid = connection.create_model(pid, "generic", "test-model")
+  pid = connection.create_project("model-parameters-project")
+  mid = connection.create_model(pid, "generic", "parameters-model")
   connection.store_parameter(mid, "foo", "bar")
   connection.store_parameter(mid, "baz", [1, 2, 3])
   connection.store_parameter(mid, "blah", {"cat":"dog"})
@@ -174,8 +189,8 @@ def test_model_parameters():
 def test_empty_model_arrays():
   size = 10
 
-  pid = connection.create_project("test-project")
-  mid = connection.create_model(pid, "generic", "test-model")
+  pid = connection.create_project("empty-arrays-project")
+  mid = connection.create_model(pid, "generic", "empty-arrays-model")
 
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, [("integer", "int64"), ("float", "float64"), ("string", "string")], ("row", "int64", 0, size))
@@ -197,8 +212,8 @@ def test_empty_model_arrays():
   connection.delete_project(pid)
 
 def test_model_array_ranges():
-  pid = connection.create_project("test-project")
-  mid = connection.create_model(pid, "generic", "test-model")
+  pid = connection.create_project("array-ranges-project")
+  mid = connection.create_model(pid, "generic", "array-ranges-model")
 
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, ("value", "int64"), ("row", "int64", 0, 10))
@@ -222,8 +237,8 @@ def test_model_array_ranges():
 
 def test_model_array_string_attributes():
   """Test sending string attributes to the server as numpy arrays and as lists of strings."""
-  pid = connection.create_project("test-project")
-  mid = connection.create_model(pid, "generic", "test-model")
+  pid = connection.create_project("array-strings-project")
+  mid = connection.create_model(pid, "generic", "array-strings-model")
 
   size = 10
   connection.start_array_set(mid, "test-array-set")
@@ -251,8 +266,8 @@ def test_model_array_1d():
   attributes = zip(attribute_names, attribute_types)
   dimensions = [("row", "int64", 0, size)]
 
-  pid = connection.create_project("test-project")
-  mid = connection.create_model(pid, "generic", "test-model")
+  pid = connection.create_project("1d-array-project")
+  mid = connection.create_model(pid, "generic", "1d-array-model")
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
   for attribute, data in enumerate(attribute_data):
