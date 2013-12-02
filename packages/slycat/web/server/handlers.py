@@ -366,7 +366,7 @@ def put_model(mid):
   save_model = False
   finish_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "progress"]:
+    if key in ["name", "description", "progress", "message"]:
       save_model = True
       model[key] = value
     elif key == "state":

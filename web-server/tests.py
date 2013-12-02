@@ -150,12 +150,12 @@ def test_model_state():
   mid = connection.create_model(pid, "generic", "model-state-model")
 
   connection.set_progress(mid, 0.0)
-  #connection.set_message(mid, "Testing model.")
+  connection.set_message(mid, "Test.")
 
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "waiting")
   nose.tools.assert_equal(model["progress"], 0.0)
-  #nose.tools.assert_equal(model["message"], "Testing model.")
+  nose.tools.assert_equal(model["message"], "Test.")
 
   connection.delete_model(mid)
   connection.delete_project(pid)

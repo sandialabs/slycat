@@ -19,6 +19,11 @@ def require_float(value):
     raise Exception("Not a floating-point value.")
   return value
 
+def require_string(value):
+  if not isinstance(value, basestring):
+    raise Exception("Not a string value.")
+  return value
+
 def require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
   if ranges is None:
@@ -175,6 +180,10 @@ class connection(object):
   def set_progress(self, mid, progress):
     """Sets the current model progress."""
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"progress": require_float(progress)}))
+
+  def set_message(self, mid, message):
+    """Sets the current model message."""
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"message": require_string(message)}))
 
   def finish_model(self, mid):
     """Completes a model."""
