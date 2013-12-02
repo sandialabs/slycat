@@ -178,7 +178,7 @@ rights in this software.
             "<div class='error-description'>We're probabably building it for you right now. Look up at the status bar for progress information and more details.</div>");
           show_status_messages();
         }
-        else if(model_result != "succeeded")
+        else if(model_result == "failed")
         {
           $("#status-messages").empty().html(
             "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
@@ -186,7 +186,7 @@ rights in this software.
             "<pre>{{message}}</pre>");
           show_status_messages();
         }
-        else if(model_result == "succeeded")
+        else
         {
           // Display progress as the load happens ...
           $(".load-status").text("Loading data.");
