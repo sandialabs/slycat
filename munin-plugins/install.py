@@ -15,7 +15,7 @@ for plugin in ["couchdb-availability", "couchdb-request-times", "slycat-availabi
   subprocess.check_call(["chcon", context, os.path.join(plugin_storage, plugin)])
   subprocess.check_call(["ln", "-sf", os.path.join(plugin_storage, plugin), os.path.join(enabled_plugins, plugin)])
 
-for conf in ["slycat-files.conf", "slycat-requests.conf"]:
+for conf in ["slycat.conf", "slycat-files.conf", "slycat-requests.conf"]:
   subprocess.check_call(["cp", conf, conf_storage])
 
 subprocess.check_call(["/etc/init.d/munin-node", "restart"])
