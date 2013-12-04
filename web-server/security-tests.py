@@ -20,6 +20,7 @@ server_outsider = None
 
 sample_acl = {"administrators":[{"user":"foo"}], "writers":[{"user":"bar"}], "readers":[{"user":"baz"}]}
 sample_bookmark = {"selected-column":16, "selected-row":34, "color-scheme":"lighthearted"}
+sample_table = """name,age\nTim,43\nJake,1\n"""
 
 def setup():
   shutil.rmtree("test-data-store", ignore_errors=True)
@@ -221,6 +222,28 @@ def test_api():
   project_admin.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
   server_admin.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
 
+  # Any project writer can upload a table.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.request("PUT", "/models/%s/tables/test" % models[0], files={"file":("table.csv", sample_table)}, data={"input":"true"})
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.request("PUT", "/models/%s/tables/test" % models[0], files={"file":("table.csv", sample_table)}, data={"input":"true"})
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.request("PUT", "/models/%s/tables/test" % models[0], files={"file":("table.csv", sample_table)}, data={"input":"true"})
+  project_writer.request("PUT", "/models/%s/tables/test" % models[0], files={"file":("table.csv", sample_table)}, data={"input":"true"})
+  project_admin.request("PUT", "/models/%s/tables/test" % models[0], files={"file":("table.csv", sample_table)}, data={"input":"true"})
+  server_admin.request("PUT", "/models/%s/tables/test" % models[0], files={"file":("table.csv", sample_table)}, data={"input":"true"})
+
+  # Any project writer can copy inputs from one model to another.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.copy_inputs(models[0], models[1])
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.copy_inputs(models[0], models[1])
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.copy_inputs(models[0], models[1])
+  project_writer.copy_inputs(models[0], models[1])
+  project_admin.copy_inputs(models[0], models[1])
+  server_admin.copy_inputs(models[0], models[1])
+
   # Any logged-in user can request the list of open models, but will only see models from their projects.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.request("GET", "/models")
@@ -310,6 +333,26 @@ def test_api():
   project_writer.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
   project_admin.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
   server_admin.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
+
+  # Any project member can retrieve model table sorted indices.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_table_sorted_indices(models[0], "data", 0, range(5))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_table_sorted_indices(models[0], "data", 0, range(5))
+  project_reader.get_model_table_sorted_indices(models[0], "data", 0, range(5))
+  project_writer.get_model_table_sorted_indices(models[0], "data", 0, range(5))
+  project_admin.get_model_table_sorted_indices(models[0], "data", 0, range(5))
+  server_admin.get_model_table_sorted_indices(models[0], "data", 0, range(5))
+
+  # Any project member can retrieve model table unsorted indices.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
+  project_reader.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
+  project_writer.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
+  project_admin.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
+  server_admin.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
 
   # Any project writer can modify a model.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
