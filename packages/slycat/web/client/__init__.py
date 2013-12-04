@@ -114,55 +114,78 @@ class connection(object):
       raise
 
   ###########################################################################################################3
-  # Functions that map directly to the underlying RESTful API
+  # Low-level functions that map directly to the underlying RESTful API
 
-  def get_projects(self):
-    """Returns all projects."""
-    return self.request("GET", "/projects", headers={"accept":"application/json"})
-
-  def create_project(self, name, description=""):
-    """Creates a new project, returning the project ID."""
-    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
-
-  def get_project(self, pid):
-    """Returns a single project."""
-    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
-
-  def put_project(self, pid, project):
-    """Modifies a project."""
-    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+  def delete_model(self, mid):
+    """Deletes an existing model."""
+    self.request("DELETE", "/models/%s" % (mid))
 
   def delete_project(self, pid):
     """Deletes an existing project."""
     self.request("DELETE", "/projects/%s" % (pid))
 
-  def create_bookmark(self, pid, bookmark):
-    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
-
   def get_bookmark(self, bid):
     return self.request("GET", "/bookmarks/%s" % (bid))
+
+  def get_model_array_chunk(self, mid, name, array, attribute, ranges, type=None):
+    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
+    ranges = require_array_ranges(ranges)
+    if ranges is None:
+      raise Exception("An explicit chunk range is required.")
+    if type is None or type == "string":
+      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+    else:
+      shape = tuple([end - begin for begin, end in ranges])
+      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
+      return numpy.fromstring(content, dtype=type).reshape(shape)
+
+  def get_model_array_metadata(self, mid, name, array):
+    """Returns the metadata for an array artifacat."""
+    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+
+  def get_model(self, mid):
+    """Returns a single model."""
+    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
+
+  def get_model_table_chunk(self, mid, name, array, rows, columns):
+    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
+
+  def get_model_table_metadata(self, mid, name, array):
+    """Returns the metadata for a table (array) artifact."""
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
 
-  def create_model(self, pid, type, name, marking="", description=""):
+  def get_project(self, pid):
+    """Returns a single project."""
+    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
+
+  def get_projects(self):
+    """Returns all projects."""
+    return self.request("GET", "/projects", headers={"accept":"application/json"})
+
+  def get_user(self, uid):
+    return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
+
+  def post_model_finish(self, mid):
+    """Completes a model."""
+    self.request("POST", "/models/%s/finish" % (mid))
+
+  def post_project_bookmarks(self, pid, bookmark):
+    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
+
+  def post_project_models(self, pid, type, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
     return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
 
-  def store_parameter(self, mid, name, value, input=True):
-    """Sets a model parameter value."""
-    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+  def post_projects(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
-  def start_array_set(self, mid, name, input=True):
-    """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
-
-  def start_array(self, mid, name, array, attributes, dimensions):
-    """Starts a new array set array, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
-
-  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+  def put_model_array_set_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
     ranges = require_array_ranges(ranges)
     if isinstance(data, numpy.ndarray):
@@ -177,59 +200,77 @@ class connection(object):
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
+  def put_model_array_set_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
+
+  def put_model_array_set(self, mid, name, input=True):
+    """Starts a new model array set artifact, ready to receive data."""
+    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+
+  def put_model(self, mid, model):
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
+
+  def put_model_parameter(self, mid, name, value, input=True):
+    """Sets a model parameter value."""
+    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+
+  def put_project(self, pid, project):
+    """Modifies a project."""
+    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+
+  ###########################################################################################################
+  # Aliases for low-level functions that make client code more readable.
+
+  def create_project(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.post_projects(name, description)
+
+  def create_model(self, pid, type, name, marking="", description=""):
+    """Creates a new model, returning the model ID."""
+    return self.post_project_models(pid, type, name, marking, description)
+
+  def create_bookmark(self, pid, bookmark):
+    return self.post_project_bookmarks(pid, bookmark)
+
   def set_model_state(self, mid, state):
     """Sets the current model state."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"state": require_string(state)}))
+    self.put_model(mid, {"state": require_string(state)})
 
   def set_model_result(self, mid, result):
     """Sets the current model result."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"result": require_string(result)}))
+    self.put_model(mid, {"result": require_string(result)})
 
   def set_model_progress(self, mid, progress):
     """Sets the current model progress."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"progress": require_float(progress)}))
+    self.put_model(mid, {"progress": require_float(progress)})
 
   def set_model_message(self, mid, message):
     """Sets the current model message."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"message": require_string(message)}))
+    self.put_model(mid, {"message": require_string(message)})
+
+  def store_parameter(self, mid, name, value, input=True):
+    """Sets a model parameter value."""
+    self.put_model_parameter(mid, name, value, input)
+
+  def start_array_set(self, mid, name, input=True):
+    """Starts a new model array set artifact, ready to receive data."""
+    self.put_model_array_set(mid, name, input)
+
+  def start_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.put_model_array_set_array(mid, name, array, attributes, dimensions)
+
+  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+    """Sends an array attribute (or a slice of an array attribute) to the server."""
+    self.put_model_array_set_array_attribute(mid, name, array, attribute, data, ranges)
 
   def finish_model(self, mid):
     """Completes a model."""
-    self.request("POST", "/models/%s/finish" % (mid))
+    self.post_model_finish(mid)
 
-  def get_model(self, mid):
-    """Returns a single model."""
-    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def get_array_metadata(self, mid, name, array):
-    """Returns the metadata for an array artifacat."""
-    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_array_chunk(self, mid, name, array, attribute, ranges, type=None):
-    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
-    ranges = require_array_ranges(ranges)
-    if ranges is None:
-      raise Exception("An explicit chunk range is required.")
-    if type is None or type == "string":
-      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
-    else:
-      shape = tuple([end - begin for begin, end in ranges])
-      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
-      return numpy.fromstring(content, dtype=type).reshape(shape)
-
-  def get_table_metadata(self, mid, name, array):
-    """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_table_chunk(self, mid, name, array, rows, columns):
-    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
-
-  def delete_model(self, mid):
-    """Deletes an existing model."""
-    self.request("DELETE", "/models/%s" % (mid))
-
-  ###########################################################################################################3
+  ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
 
   def find_or_create_project(self, project, name, description):
