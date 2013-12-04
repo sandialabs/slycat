@@ -309,6 +309,20 @@ def test_api():
   project_admin.request("GET", "/models/%s/design" % models[0])
   server_admin.request("GET", "/models/%s/design" % models[0])
 
+  # Any project member can retrieve a model file.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.request("GET", "/models/%s/files/foo" % models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.request("GET", "/models/%s/files/foo" % models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^404"):
+    project_reader.request("GET", "/models/%s/files/foo" % models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^404"):
+    project_writer.request("GET", "/models/%s/files/foo" % models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^404"):
+    project_admin.request("GET", "/models/%s/files/foo" % models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^404"):
+    server_admin.request("GET", "/models/%s/files/foo" % models[0])
+
   # Any project member can retrieve model array metadata.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_array_metadata(models[0], "data", 0)
