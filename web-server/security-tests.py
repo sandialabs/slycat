@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import json
 import nose
 import numpy
 import slycat.web.client
@@ -70,6 +71,20 @@ def test_api():
   project_writer.request("POST", "/events/test")
   project_admin.request("POST", "/events/test")
   server_admin.request("POST", "/events/test")
+
+  # Any logged-in user can browse a remote filesystem.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
+  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+    project_outsider.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
+  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+    project_reader.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
+  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+    project_writer.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
+  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+    project_admin.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
+  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+    server_admin.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
 
   # Any logged-in user can request the home page.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
