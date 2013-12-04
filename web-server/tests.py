@@ -113,10 +113,10 @@ def test_bookmarks():
   pid = connection.create_project("bookmark-project")
 
   bookmark = {"foo":"bar", "baz":[1, 2, 3]}
-  bid = connection.create_bookmark(pid, bookmark)
+  bid = connection.store_bookmark(pid, bookmark)
   nose.tools.assert_equal(connection.get_bookmark(bid), bookmark)
 
-  bid2 = connection.create_bookmark(pid, bookmark)
+  bid2 = connection.store_bookmark(pid, bookmark)
   nose.tools.assert_equal(bid, bid2)
 
   connection.delete_project(pid)

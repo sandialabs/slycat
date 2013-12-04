@@ -230,7 +230,7 @@ class connection(object):
     """Creates a new model, returning the model ID."""
     return self.post_project_models(pid, type, name, marking, description)
 
-  def create_bookmark(self, pid, bookmark):
+  def store_bookmark(self, pid, bookmark):
     return self.post_project_bookmarks(pid, bookmark)
 
   def set_model_state(self, mid, state):
