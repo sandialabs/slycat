@@ -3,6 +3,7 @@
 # rights in this software.
 
 import nose
+import numpy
 import slycat.web.client
 import shutil
 import subprocess
@@ -176,6 +177,50 @@ def test_api():
   models.append(project_admin.create_model(pid, "generic", "test-model"))
   models.append(server_admin.create_model(pid, "generic", "test-model"))
 
+  # Any project writer can store a model parameter.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.store_parameter(models[0], "pi", 3.1415)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.store_parameter(models[0], "pi", 3.1415)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.store_parameter(models[0], "pi", 3.1415)
+  project_writer.store_parameter(models[0], "pi", 3.1415)
+  project_admin.store_parameter(models[0], "pi", 3.1415)
+  server_admin.store_parameter(models[0], "pi", 3.1415)
+
+  # Any project writer can start an arrayset artifact.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.start_array_set(models[0], "data")
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.start_array_set(models[0], "data")
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.start_array_set(models[0], "data")
+  project_writer.start_array_set(models[0], "data")
+  project_admin.start_array_set(models[0], "data")
+  server_admin.start_array_set(models[0], "data")
+
+  # Any project writer can start an array.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+  project_writer.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+  project_admin.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+  server_admin.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+
+  # Any project writer can store an array attribute.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+  project_writer.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+  project_admin.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+  server_admin.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+
   # Any logged-in user can request the list of open models, but will only see models from their projects.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.request("GET", "/models")
@@ -184,6 +229,17 @@ def test_api():
   nose.tools.assert_equal(len(project_writer.request("GET", "/models")["models"]), 3)
   nose.tools.assert_equal(len(project_admin.request("GET", "/models")["models"]), 3)
   nose.tools.assert_equal(len(server_admin.request("GET", "/models")["models"]), 3)
+
+  # Any project writer can finish a model.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.finish_model(models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.finish_model(models[0])
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.finish_model(models[0])
+  project_writer.finish_model(models[0])
+  project_admin.finish_model(models[1])
+  server_admin.finish_model(models[2])
 
   # Any project member can request the list of project models.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -214,6 +270,46 @@ def test_api():
   project_writer.request("GET", "/models/%s/design" % models[0])
   project_admin.request("GET", "/models/%s/design" % models[0])
   server_admin.request("GET", "/models/%s/design" % models[0])
+
+  # Any project member can retrieve model array metadata.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_array_metadata(models[0], "data", 0)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_array_metadata(models[0], "data", 0)
+  project_reader.get_model_array_metadata(models[0], "data", 0)
+  project_writer.get_model_array_metadata(models[0], "data", 0)
+  project_admin.get_model_array_metadata(models[0], "data", 0)
+  server_admin.get_model_array_metadata(models[0], "data", 0)
+
+  # Any project member can retrieve model array chunks.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_array_chunk(models[0], "data", 0, 0, 10)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_array_chunk(models[0], "data", 0, 0, 10)
+  project_reader.get_model_array_chunk(models[0], "data", 0, 0, 10)
+  project_writer.get_model_array_chunk(models[0], "data", 0, 0, 10)
+  project_admin.get_model_array_chunk(models[0], "data", 0, 0, 10)
+  server_admin.get_model_array_chunk(models[0], "data", 0, 0, 10)
+
+  # Any project member can retrieve model table metadata.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_table_metadata(models[0], "data", 0)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_table_metadata(models[0], "data", 0)
+  project_reader.get_model_table_metadata(models[0], "data", 0)
+  project_writer.get_model_table_metadata(models[0], "data", 0)
+  project_admin.get_model_table_metadata(models[0], "data", 0)
+  server_admin.get_model_table_metadata(models[0], "data", 0)
+
+  # Any project member can retrieve model table chunks.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
+  project_reader.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
+  project_writer.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
+  project_admin.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
+  server_admin.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
 
   # Any project writer can modify a model.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
