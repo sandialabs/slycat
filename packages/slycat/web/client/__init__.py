@@ -155,6 +155,14 @@ class connection(object):
     """Returns the metadata for a table (array) artifact."""
     return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
+  def get_model_table_sorted_indices(self, mid, name, array, rows, index=None, sort=None):
+    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/sorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
+    return numpy.fromstring(content, dtype="int32")
+
+  def get_model_table_unsorted_indices(self, mid, name, array, rows, index=None, sort=None):
+    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/unsorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
+    return numpy.fromstring(content, dtype="int32")
+
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})

@@ -374,6 +374,12 @@ def test_model_array_1d():
     nose.tools.assert_equal(chunk["column-names"][0], attribute_names[attribute])
     numpy.testing.assert_array_equal(chunk["data"][0], data)
 
+  numpy.testing.assert_array_equal(connection.get_model_table_sorted_indices(mid, "test-array-set", 0, numpy.arange(5)), [0, 1, 2, 3, 4])
+  numpy.testing.assert_array_equal(connection.get_model_table_sorted_indices(mid, "test-array-set", 0, numpy.arange(5), sort=[(0, "descending")]), [9, 8, 7, 6, 5])
+
+  numpy.testing.assert_array_equal(connection.get_model_table_unsorted_indices(mid, "test-array-set", 0, numpy.arange(5)), [0, 1, 2, 3, 4])
+  numpy.testing.assert_array_equal(connection.get_model_table_unsorted_indices(mid, "test-array-set", 0, numpy.arange(5), sort=[(0, "descending")]), [9, 8, 7, 6, 5])
+
   connection.delete_model(mid)
   connection.delete_project(pid)
 
