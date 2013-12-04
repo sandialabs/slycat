@@ -158,6 +158,8 @@ def start_array(database, model, name, array_index, attributes, dimensions):
 
   # Allocate space for the coming data ...
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
+    if "array/{}".format(array_index) in file:
+      del file["array/{}".format(array_index)]
     for attribute_index, stored_type in enumerate(stored_types):
       file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
 
