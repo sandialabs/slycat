@@ -219,6 +219,9 @@ class connection(object):
     """Starts a new model array set artifact, ready to receive data."""
     self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
+  def put_model_inputs(self, source, target):
+    self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
+
   def put_model_parameter(self, mid, name, value, input=True):
     """Sets a model parameter value."""
     self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
@@ -272,6 +275,9 @@ class connection(object):
   def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
     self.put_model_array_attribute(mid, name, array, attribute, data, ranges)
+
+  def copy_inputs(self, source, target):
+    self.put_model_inputs(source, target)
 
   def finish_model(self, mid):
     """Completes a model."""

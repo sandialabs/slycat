@@ -383,3 +383,20 @@ def test_model_array_1d():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
+def test_copy_model_inputs():
+  pid = connection.create_project("copy-model-inputs-project")
+  source = connection.create_model(pid, "generic", "source-model")
+  target = connection.create_model(pid, "generic", "target-model")
+
+  connection.store_parameter(source, "name", "Tim")
+  connection.store_parameter(source, "pi", 3.1415)
+
+  connection.copy_inputs(source, target)
+
+  model = connection.get_model(target)
+  nose.tools.assert_equal(model.get("artifact:name"), "Tim")
+  nose.tools.assert_equal(model.get("artifact:pi"), 3.1415)
+
+  connection.delete_model(target)
+  connection.delete_model(source)
+  connection.delete_project(pid)
