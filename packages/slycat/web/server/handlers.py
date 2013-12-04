@@ -923,7 +923,11 @@ def post_browse():
   hostname = cherrypy.request.json["hostname"]
   path = cherrypy.request.json["path"]
   password = cherrypy.request.json["password"]
-  session = slycat.web.server.cache.ssh_session(hostname, username, password)
+
+  try:
+    session = slycat.web.server.cache.ssh_session(hostname, username, password)
+  except:
+    raise cherrypy.HTTPError("403 Remote connection failed.")
 
   try:
     attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
