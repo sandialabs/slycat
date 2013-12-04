@@ -185,7 +185,10 @@ class connection(object):
     """Creates a new project, returning the project ID."""
     return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
-  def put_model_array_set_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+  def put_model(self, mid, model):
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
+
+  def put_model_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
     ranges = require_array_ranges(ranges)
     if isinstance(data, numpy.ndarray):
@@ -200,16 +203,13 @@ class connection(object):
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
-  def put_model_array_set_array(self, mid, name, array, attributes, dimensions):
+  def put_model_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
     self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
   def put_model_array_set(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
     self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
-
-  def put_model(self, mid, model):
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
   def put_model_parameter(self, mid, name, value, input=True):
     """Sets a model parameter value."""
@@ -259,16 +259,15 @@ class connection(object):
 
   def start_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
-    self.put_model_array_set_array(mid, name, array, attributes, dimensions)
+    self.put_model_array(mid, name, array, attributes, dimensions)
 
   def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
-    self.put_model_array_set_array_attribute(mid, name, array, attribute, data, ranges)
+    self.put_model_array_attribute(mid, name, array, attribute, data, ranges)
 
   def finish_model(self, mid):
     """Completes a model."""
     self.post_model_finish(mid)
-
 
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API

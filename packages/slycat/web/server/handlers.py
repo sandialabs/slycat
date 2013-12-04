@@ -456,7 +456,7 @@ def put_model_array_set(mid, name):
   slycat.web.server.model.start_array_set(database, model, name, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_array_set_array(mid, name, array):
+def put_model_array(mid, name, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -468,7 +468,7 @@ def put_model_array_set_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
+def put_model_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
