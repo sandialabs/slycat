@@ -127,13 +127,12 @@ rights in this software.
         //////////////////////////////////////////////////////////////////////////////////////////
 
         var model = null;
+        var input_columns = null;
+        var output_columns = null;
+        var scale_inputs = null;
 
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
-
-        var input_columns = {{input-columns}};
-        var output_columns = {{output-columns}};
-        var scale_inputs = {{scale-inputs}};
 
         var x_loadings = null;
         var y_loadings = null;
@@ -162,6 +161,9 @@ rights in this software.
           success : function(result)
           {
             model = result;
+            input_columns = model["artifact:input-columns"];
+            output_columns = model["artifact:output-columns"];
+            scale_inputs = model["artifact:scale-inputs"];
             setup_page();
           },
           error: function(request, status, reason_phrase)
@@ -598,24 +600,24 @@ rights in this software.
                 });
               }
 
-              input_columns = [];
-              $(".rerun-cca-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
-              if(input_columns.length < 1)
+              var selected_input_columns = [];
+              $(".rerun-cca-input-variable:checked").each(function(index, element) { selected_input_columns.push(Number($(element).val())); });
+              if(selected_input_columns.length < 1)
               {
                 window.alert("You must select at least one input column.");
                 return;
               }
 
-              output_columns = [];
-              $(".rerun-cca-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
-              if(output_columns.length < 1)
+              var selected_output_columns = [];
+              $(".rerun-cca-output-variable:checked").each(function(index, element) { selected_output_columns.push(Number($(element).val())); });
+              if(selected_output_columns.length < 1)
               {
                 window.alert("You must select at least one output column.");
                 return;
               }
 
-              store_parameter("input-columns", input_columns);
-              store_parameter("output-columns", output_columns);
+              store_parameter("input-columns", selected_input_columns);
+              store_parameter("output-columns", selected_output_columns);
               store_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked"));
 
               $.ajax(

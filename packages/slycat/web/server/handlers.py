@@ -349,9 +349,6 @@ def get_model(mid, **kwargs):
       return slycat.web.server.template.render("model-timeseries.html", context)
 
     if "model-type" in model and model["model-type"] in ["cca", "cca3"]:
-      context["input-columns"] = json.dumps(model["artifact:input-columns"]) if "artifact:input-columns" in model else "null"
-      context["output-columns"] = json.dumps(model["artifact:output-columns"]) if "artifact:output-columns" in model else "null"
-      context["scale-inputs"] = json.dumps(model["artifact:scale-inputs"]) if "artifact:scale-inputs" in model else "null"
       return slycat.web.server.template.render("model-cca3.html", context)
 
     return slycat.web.server.template.render("model-generic.html", context)
