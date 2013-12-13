@@ -285,28 +285,19 @@ class connection(object):
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
 
-  def find_or_create_project(self, project, name, description):
-    """Looks-up a project by name or id, or creates a new project with the given name and description."""
-    if project is None:
+  def find_or_create_project(self, name, description=""):
+    """Looks-up a project by name, creating it if it doesn't already exist."""
+    projects = [project for project in self.get_projects() if project["name"] == name]
+
+    if len(projects) > 1:
+      raise Exception("More than one project matched the given name.  Try using a different project name instead.")
+    elif len(projects) == 1:
+      return projects[0]["_id"]
+    else:
       return self.create_project(name, description)
-    projects = self.request("GET", "/projects", headers={"accept":"application/json"})
-
-    # Look for an ID match ...
-    ids = [p["_id"] for p in projects if p["_id"] == project]
-    if len(ids) == 1:
-      return ids[0]
-
-    # Look for a name match ...
-    ids = [p["_id"] for p in projects if p["name"] == project]
-    if len(ids) == 1:
-      return ids[0]
-    if len(ids) > 1:
-      raise Exception("More than one project matched the given name.  Try using a project ID instead.")
-
-    raise Exception("Project %s not found." % project)
 
   def join_model(self, mid):
-    """Waits for a model to complete, then returns.
+    """Wait for a model to complete before returning.
 
     Note that a model that hasn't been finished will never complete, you should
     ensure that finish_model() is called successfully before calling
@@ -317,7 +308,6 @@ class connection(object):
       if "state" in model and model["state"] not in ["waiting", "running"]:
         return
       time.sleep(1.0)
-
 
 def connect(arguments, **keywords):
   """Factory function for client connections that takes an option parser as input."""

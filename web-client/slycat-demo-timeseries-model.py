@@ -47,7 +47,7 @@ inputs = numpy.hstack([numpy.sort(numpy.random.random((arguments.timeseries_coun
 connection = slycat.web.client.connect(arguments)
 
 # Create a new project to contain our model.
-pid = connection.create_project(arguments.project_name)
+pid = connection.find_or_create_project(arguments.project_name)
 
 # Create the new, empty model.
 mid = connection.create_model(pid, "timeseries", arguments.model_name, arguments.marking)

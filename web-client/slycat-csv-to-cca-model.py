@@ -18,7 +18,6 @@ parser.add_argument("--model-description", default="", help="New model descripti
 parser.add_argument("--model-name", default="CSV-to-CCA", help="New model name.  Default: %(default)s")
 parser.add_argument("--no-join", default=False, action="store_true", help="Don't wait for the model to finish.")
 parser.add_argument("--output", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
-parser.add_argument("--project", default=None, help="Name of an existing project.  Default: create a new project.")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
 parser.add_argument("--project-name", default="CSV-to-CCA", help="New project name.  Default: %(default)s")
 parser.add_argument("--scale-inputs", default=False, action="store_true", help="Enable input scaling.")
@@ -66,7 +65,7 @@ for output in outputs:
 connection = slycat.web.client.connect(arguments)
 
 # Create a new project to contain our model.
-pid = connection.find_or_create_project(arguments.project, arguments.project_name, arguments.project_description)
+pid = connection.find_or_create_project(arguments.project_name, arguments.project_description)
 
 # Create the new, empty model.
 mid = connection.create_model(pid, "cca", arguments.model_name, arguments.marking, arguments.model_description)

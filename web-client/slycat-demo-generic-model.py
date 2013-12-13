@@ -23,7 +23,7 @@ arguments = parser.parse_args()
 connection = slycat.web.client.connect(arguments)
 
 # Create a new project to contain our model.
-pid = connection.create_project(arguments.project_name)
+pid = connection.find_or_create_project(arguments.project_name)
 
 # Create the new, empty model.
 mid = connection.create_model(pid, "generic", arguments.model_name, arguments.marking)
