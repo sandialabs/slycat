@@ -2,10 +2,10 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import argparse
 import getpass
 import json
 import numpy
-import optparse
 import os
 import requests
 import shlex
@@ -42,24 +42,23 @@ class dev_null:
   def write(*arguments, **keywords):
     pass
 
-class option_parser(optparse.OptionParser):
-  """Returns an instance of optparse.OptionParser, pre-configured with options
-  to connect to a Slycat server."""
+class option_parser(argparse.ArgumentParser):
+  """Returns an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
-    optparse.OptionParser.__init__(self, *arguments, **keywords)
+    argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_option("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %default")
-    self.add_option("--http-proxy", default="", help="HTTP proxy URL.  Default: %default")
-    self.add_option("--https-proxy", default="", help="HTTPS proxy URL.  Default: %default")
-    self.add_option("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
-    self.add_option("--user", default=getpass.getuser(), help="Slycat username.  Default: %default")
-    self.add_option("--verbose", default=False, action="store_true", help="Verbose output.")
-    self.add_option("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
+    self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
+    self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
+    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
+    self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
+    self.add_argument("--verbose", default=False, action="store_true", help="Verbose output.")
+    self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
   def parse_args(self):
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
-    return optparse.OptionParser.parse_args(self)
+    return argparse.ArgumentParser.parse_args(self)
 
 class connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
@@ -320,12 +319,11 @@ class connection(object):
       time.sleep(1.0)
 
 
-def connect(options, **keywords):
+def connect(arguments, **keywords):
   """Factory function for client connections that takes an option parser as input."""
-  import getpass
-  if options.no_verify:
+  if arguments.no_verify:
     keywords["verify"] = False
-  elif options.verify is not None:
-    keywords["verify"] = options.verify
-  return connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, log=sys.stderr if options.verbose else dev_null(), **keywords)
+  elif arguments.verify is not None:
+    keywords["verify"] = arguments.verify
+  return connection(auth=(arguments.user, getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, log=sys.stderr if arguments.verbose else dev_null(), **keywords)
 
