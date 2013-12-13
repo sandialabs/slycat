@@ -33,7 +33,7 @@ column_types = ["string" for name in column_names]
 rows = rows[1:]
 
 # Convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
-columns = zip(*rows[1:])
+columns = zip(*rows)
 for index in range(len(columns)):
   try:
     columns[index] = numpy.array(columns[index], dtype="float64")
