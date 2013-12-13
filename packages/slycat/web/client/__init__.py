@@ -323,8 +323,9 @@ class connection(object):
 def connect(options, **keywords):
   """Factory function for client connections that takes an option parser as input."""
   import getpass
-  if options.no_verify and (options.verify is not None):
-    raise Exception("Cannot use --verify with --no-verify.")
-  verify = options.verify if options.verify is not None else not options.no_verify
-  return connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=verify, log=sys.stderr if options.verbose else dev_null(), **keywords)
+  if options.no_verify:
+    keywords["verify"] = False
+  elif options.verify is not None:
+    keywords["verify"] = options.verify
+  return connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, log=sys.stderr if options.verbose else dev_null(), **keywords)
 
