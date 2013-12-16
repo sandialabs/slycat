@@ -153,23 +153,23 @@ def test_model_state():
   nose.tools.assert_equal(model["state"], "waiting")
 
   with nose.tools.assert_raises(requests.HTTPError):
-    connection.set_model_state(mid, "bull")
+    connection.update_model(mid, state="bull")
 
   with nose.tools.assert_raises(requests.HTTPError):
-    connection.set_model_state(mid, "finished")
+    connection.update_model(mid, state="finished")
 
-  connection.set_model_state(mid, "running")
+  connection.update_model(mid, state="running")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "running")
 
   with nose.tools.assert_raises(requests.HTTPError):
-    connection.set_model_state(mid, "closed")
+    connection.update_model(mid, state="closed")
 
-  connection.set_model_state(mid, "finished")
+  connection.update_model(mid, state="finished")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "finished")
 
-  connection.set_model_state(mid, "closed")
+  connection.update_model(mid, state="closed")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "closed")
 
@@ -184,14 +184,14 @@ def test_model_result():
   nose.tools.assert_equal(model.get("result"), None)
 
   with nose.tools.assert_raises(requests.HTTPError):
-    connection.set_model_result(mid, "bull")
+    connection.update_model(mid, result="bull")
 
-  connection.set_model_result(mid, "succeeded")
+  connection.update_model(mid, result="succeeded")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["result"], "succeeded")
 
   with nose.tools.assert_raises(requests.HTTPError):
-    connection.set_model_result(mid, "failed")
+    connection.update_model(mid, result="failed")
 
   connection.delete_model(mid)
   connection.delete_project(pid)
@@ -203,11 +203,11 @@ def test_model_progress():
   model = connection.get_model(mid)
   nose.tools.assert_equal(model.get("progress", None), None)
 
-  connection.set_model_progress(mid, 0.0)
+  connection.update_model(mid, progress=0.0)
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["progress"], 0.0)
 
-  connection.set_model_progress(mid, 1.0)
+  connection.update_model(mid, progress=1.0)
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["progress"], 1.0)
 
@@ -221,11 +221,11 @@ def test_model_message():
   model = connection.get_model(mid)
   nose.tools.assert_equal(model.get("message", None), None)
 
-  connection.set_model_message(mid, "test 1")
+  connection.update_model(mid, message="test 1")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["message"], "test 1")
 
-  connection.set_model_message(mid, "test 2")
+  connection.update_model(mid, message="test 2")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["message"], "test 2")
 

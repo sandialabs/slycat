@@ -243,21 +243,9 @@ class connection(object):
   def store_bookmark(self, pid, bookmark):
     return self.post_project_bookmarks(pid, bookmark)
 
-  def set_model_state(self, mid, state):
-    """Sets the current model state."""
-    self.put_model(mid, {"state": require_string(state)})
-
-  def set_model_result(self, mid, result):
-    """Sets the current model result."""
-    self.put_model(mid, {"result": require_string(result)})
-
-  def set_model_progress(self, mid, progress):
-    """Sets the current model progress."""
-    self.put_model(mid, {"progress": require_float(progress)})
-
-  def set_model_message(self, mid, message):
-    """Sets the current model message."""
-    self.put_model(mid, {"message": require_string(message)})
+  def update_model(self, mid, **kwargs):
+    """Updates the model state/result/progress/message."""
+    self.put_model(mid, kwargs)
 
   def store_parameter(self, mid, name, value, input=True):
     """Sets a model parameter value."""
