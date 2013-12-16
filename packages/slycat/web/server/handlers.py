@@ -254,7 +254,6 @@ def post_project_models(pid):
     "finished" : None,
     "progress" : None,
     "message" : None,
-    "uri" : None
     }
   database.save(model)
 
