@@ -20,7 +20,6 @@ provide in your own scripts:
 
 import numpy
 import slycat.web.client
-import sys
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("--cluster-bin-count", type=int, default=500, help="Cluster bin count.  Default: %(default)s")
@@ -64,17 +63,17 @@ for attribute, data in enumerate(inputs.T):
 # Upload a collection of timeseries as "outputs".
 connection.start_array_set(mid, "outputs")
 for timeseries in range(arguments.timeseries_count):
-  sys.stderr.write("Timeseries {}.\n".format(timeseries))
+  slycat.web.client.log.info("Uploading timeseries {}.".format(timeseries))
   timeseries_attributes = [("time", "float64")] + [("%s%s" % (arguments.output_variable_prefix, attribute), "float64") for attribute in range(arguments.output_variable_count)]
   timeseries_dimensions = [("row", "int64", 0, arguments.timeseries_samples)]
   connection.start_array(mid, "outputs", timeseries, timeseries_attributes, timeseries_dimensions)
 
-  sys.stderr.write("  Uploading times.\n")
+  slycat.web.client.log.info("Uploading times.")
   times = numpy.linspace(0, 2 * numpy.pi, arguments.timeseries_samples)
   connection.store_array_attribute(mid, "outputs", timeseries, 0, times)
 
   for variable in range(arguments.output_variable_count):
-    sys.stderr.write("  Uploading variable {}.\n".format(variable))
+    slycat.web.client.log.info("Uploading variable {}.".format(variable))
     coefficients = inputs[timeseries, variable * arguments.timeseries_waves : (variable+1) * arguments.timeseries_waves]
     values = numpy.zeros((arguments.timeseries_samples))
     for k in coefficients:
@@ -93,4 +92,4 @@ connection.finish_model(mid)
 connection.join_model(mid)
 
 # Supply the user with a direct link to the new model.
-sys.stderr.write("Your new model is located at %s/models/%s\n" % (arguments.host, mid))
+slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))

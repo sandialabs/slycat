@@ -12,12 +12,12 @@ import sys
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("file", default="-", help="Input CSV file.  Use - for stdin.  Default: %(default)s")
-parser.add_argument("--input", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
+parser.add_argument("--input", default=[], nargs="+", help="Input column(s).")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
 parser.add_argument("--model-name", default="CSV-to-CCA", help="New model name.  Default: %(default)s")
 parser.add_argument("--no-join", default=False, action="store_true", help="Don't wait for the model to finish.")
-parser.add_argument("--output", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
+parser.add_argument("--output", default=[], nargs="+", help="Output column(s).")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
 parser.add_argument("--project-name", default="CSV-to-CCA", help="New project name.  Default: %(default)s")
 parser.add_argument("--scale-inputs", default=False, action="store_true", help="Enable input scaling.")
@@ -80,7 +80,7 @@ connection.start_array(mid, "data-table", 0, attributes, dimensions)
 
 # Upload data into the array.
 for index, data in enumerate(columns):
-  sys.stderr.write("Sending column {} of {} ({})\n".format(index, len(columns), column_names[index]))
+  slycat.web.client.log.info("Uploading column {} of {} ({})".format(index, len(columns), column_names[index]))
   connection.store_array_attribute(mid, "data-table", 0, index, data)
 
 # Store the remaining parameters.
@@ -95,4 +95,4 @@ connection.finish_model(mid)
 connection.join_model(mid)
 
 # Supply the user with a direct link to the new model.
-sys.stderr.write("Your new model is located at %s/models/%s\n" % (arguments.host, mid))
+slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))

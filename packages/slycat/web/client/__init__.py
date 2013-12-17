@@ -5,6 +5,7 @@
 import argparse
 import getpass
 import json
+import logging
 import numpy
 import os
 import requests
@@ -13,6 +14,11 @@ import sys
 import time
 
 from slycat.array import *
+
+log = logging.getLogger("slycat.web.client")
+log.setLevel(logging.DEBUG)
+log.addHandler(logging.StreamHandler())
+log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 
 def require_float(value):
   if not isinstance(value, float):
@@ -37,11 +43,6 @@ def require_array_ranges(ranges):
   else:
     raise Exception("Not a valid ranges object.")
 
-class dev_null:
-  """Do-nothing stream object, for disabling logging."""
-  def write(*arguments, **keywords):
-    pass
-
 class option_parser(argparse.ArgumentParser):
   """Returns an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
@@ -51,22 +52,34 @@ class option_parser(argparse.ArgumentParser):
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
     self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
+    self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
     self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
-    self.add_argument("--verbose", default=False, action="store_true", help="Verbose output.")
     self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
   def parse_args(self):
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
-    return argparse.ArgumentParser.parse_args(self)
+
+    arguments = argparse.ArgumentParser.parse_args(self)
+    if arguments.log_level == "debug":
+      log.setLevel(logging.DEBUG)
+    elif arguments.log_level == "info":
+      log.setLevel(logging.INFO)
+    elif arguments.log_level == "warning":
+      log.setLevel(logging.WARNING)
+    elif arguments.log_level == "error":
+      log.setLevel(logging.ERROR)
+    elif arguments.log_level == "critical":
+      log.setLevel(logging.CRITICAL)
+
+    return arguments
 
 class connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
-  def __init__(self, host="http://localhost:8092", log=sys.stderr, **keywords):
+  def __init__(self, host="http://localhost:8092", **keywords):
     self.host = host
-    self.log = log
     self.keywords = keywords
     self.session = requests.Session()
 
@@ -81,18 +94,12 @@ class connection(object):
     # Combine host and path to produce the final request URI ...
     uri = self.host + path
 
-    # Try extracting a user name ...
-    user = keywords.get("auth", ("", ""))[0]
-
-    self.log.write("%s %s %s" % (user, method, uri))
-
-    if "data" in keywords:
-      self.log.write(" %s" % (keywords["data"]))
+    log_message = "{} {} {}".format(keywords.get("auth", ("", ""))[0], method, uri)
 
     try:
       response = self.session.request(method, uri, **keywords)
 
-      self.log.write(" => %s %s" % (response.status_code, response.raw.reason))
+      log_message += " => {} {}".format(response.status_code, response.raw.reason)
 
       response.raise_for_status()
 
@@ -102,14 +109,10 @@ class connection(object):
       else:
         body = response.content
 
-#      if response.headers["content-type"].startswith("text/html"):
-#        self.log.write(" => <html>...</html>")
-#      else:
-#        self.log.write(" => %s" % (body)
-      self.log.write("\n")
+      log.debug(log_message)
       return body
     except:
-      self.log.write("\n")
+      log.debug(log_message)
       raise
 
   ###########################################################################################################3
@@ -303,5 +306,5 @@ def connect(arguments, **keywords):
     keywords["verify"] = False
   elif arguments.verify is not None:
     keywords["verify"] = arguments.verify
-  return connection(auth=(arguments.user, getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, log=sys.stderr if arguments.verbose else dev_null(), **keywords)
+  return connection(auth=(arguments.user, getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 

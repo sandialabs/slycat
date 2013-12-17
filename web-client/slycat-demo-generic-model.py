@@ -11,7 +11,6 @@ starting-point for custom models of your own.
 
 import numpy
 import slycat.web.client
-import sys
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
@@ -48,4 +47,4 @@ connection.finish_model(mid)
 connection.join_model(mid)
 
 # Suppl the user with a direct link to the new model.
-sys.stderr.write("Your new model is located at %s/models/%s\n" % (arguments.host, mid))
+slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
