@@ -391,6 +391,25 @@ def post_model_finish(mid):
     slycat.web.server.model.timeseries.finish(database, model)
   cherrypy.response.status = "202 Finishing model."
 
+def put_model_file(mid, name, input=None, file=None):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  if input is None:
+    raise cherrypy.HTTPError("400 Required input parameter is missing.")
+  input = True if input == "true" else False
+
+  if file is None:
+    raise cherrypy.HTTPError("400 Required file parameter is missing.")
+
+  data = file.file.read()
+  #filename = file.filename
+  content_type = file.content_type
+
+  slycat.web.server.model.store_file_artifact(database, model, name, data, content_type, input)
+
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
   database = slycat.web.server.database.couchdb.connect()

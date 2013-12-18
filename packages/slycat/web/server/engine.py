@@ -108,6 +108,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("put-model-array-attribute", "/models/:mid/array-sets/:name/arrays/:array/attributes/:attribute", slycat.web.server.handlers.put_model_array_attribute, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-array", "/models/:mid/array-sets/:name/arrays/:array", slycat.web.server.handlers.put_model_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-array-set", "/models/:mid/array-sets/:name", slycat.web.server.handlers.put_model_array_set, conditions={"method" : ["PUT"]})
+  dispatcher.connect("put-model-file", "/models/:mid/files/:name", slycat.web.server.handlers.put_model_file, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-inputs", "/models/:mid/inputs", slycat.web.server.handlers.put_model_inputs, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})

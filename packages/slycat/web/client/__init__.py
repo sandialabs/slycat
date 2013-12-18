@@ -149,6 +149,9 @@ class connection(object):
     """Returns a single model."""
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
+  def get_model_file(self, mid, name):
+    return self.request("GET", "/models/%s/files/%s" % (mid, name))
+
   def get_model_table_chunk(self, mid, name, array, rows, columns):
     """Returns a chunk (set of rows and columns) from a table (array) artifact."""
     return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
@@ -221,6 +224,10 @@ class connection(object):
     """Starts a new model array set artifact, ready to receive data."""
     self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
+  def put_model_file(self, mid, name, data, content_type, input=True):
+    """Stores a model file artifact."""
+    self.request("PUT", "/models/%s/files/%s" % (mid, name), data=({"input":json.dumps(input)}), files={"file":("file", data, content_type)})
+
   def put_model_inputs(self, source, target):
     self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
@@ -253,6 +260,10 @@ class connection(object):
   def store_parameter(self, mid, name, value, input=True):
     """Sets a model parameter value."""
     self.put_model_parameter(mid, name, value, input)
+
+  def store_file(self, mid, name, data, content_type, input=True):
+    """Uploads a model file."""
+    self.put_model_file(mid, name, data, content_type, input)
 
   def start_array_set(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""

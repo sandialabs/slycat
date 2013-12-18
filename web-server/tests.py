@@ -258,6 +258,16 @@ def test_model_parameters():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
+def test_model_file():
+  pid = connection.create_project("model-file-project")
+  mid = connection.create_model(pid, "generic", "model-file-model")
+
+  connection.store_file(mid, "foo", "Howdy, World!", "text/plain")
+  nose.tools.assert_equal(connection.get_model_file(mid, "foo"), "Howdy, World!")
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
 def test_empty_model_arrays():
   size = 10
 
@@ -400,3 +410,4 @@ def test_copy_model_inputs():
   connection.delete_model(target)
   connection.delete_model(source)
   connection.delete_project(pid)
+
