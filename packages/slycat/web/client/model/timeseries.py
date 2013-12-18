@@ -1,10 +1,14 @@
 from slycat.web.client import log
 import collections
 import datetime
+import json
 import numpy
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
 import traceback
+
+def mix(a, b, amount):
+  return ((1.0 - amount) * a) + (amount * b)
 
 class serial(object):
   """Template design pattern object for computing timeseries models in serial.
@@ -63,7 +67,7 @@ class serial(object):
           clusters[attribute_name].append((timeseries_index, attribute_index))
 
       # Store an alphabetized collection of cluster names.
-      #self.store_cluster_names(sorted(clusters.keys()))
+      self.connection.store_file(self.mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
       # Get the minimum and maximum times for every timeseries.
       time_ranges = []
@@ -74,8 +78,10 @@ class serial(object):
 
       # For each cluster ...
       for index, (name, storage) in enumerate(sorted(clusters.items())):
+        progress_begin = float(index) / float(len(clusters))
+        progress_end = float(index + 1) / float(len(clusters))
         # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-        self.connection.update_model(self.mid, message="Rebinning data for %s" % name)
+        self.connection.update_model(self.mid, message="Rebinning data for %s" % name, progress=progress_begin)
         log.info("Rebinning data for %s" % name)
 
         # Get the minimum and maximum times across every series in the cluster.
@@ -105,7 +111,7 @@ class serial(object):
         observation_count = len(waveforms)
         distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
         for i in range(0, observation_count):
-          self.connection.update_model(self.mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
+          self.connection.update_model(self.mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
           log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
           for j in range(i + 1, observation_count):
             distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
@@ -128,7 +134,7 @@ class serial(object):
           cluster_membership.append(set([i]))
 
         for i in range(len(linkage)):
-          self.connection.update_model(self.mid, "Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
+          self.connection.update_model(self.mid, message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
           log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
           cluster_id = i + observation_count
           (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -167,11 +173,12 @@ class serial(object):
           exemplars[cluster_id] = exemplar_id
 
         # Store the cluster.
-        #self.store_cluster(name, {"linkage":linkage, "waveforms":waveforms, "exemplars":exemplars})
+        self.connection.store_file(self.mid, "cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
 
       self.connection.update_model(self.mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
     except:
       self.connection.update_model(self.mid, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
+      log.error(traceback.format_exc())
 
   def get_input_metadata(self):
     """Return (attributes, dimensions) for the model's input table."""
