@@ -32,12 +32,12 @@ def setup():
   time.sleep(2.0)
 
   global server_admin, project_admin, project_writer, project_reader, project_outsider, server_outsider
-  server_admin = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"), log=slycat.web.client.dev_null())
-  project_admin = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("foo", "foo"), log=slycat.web.client.dev_null())
-  project_writer = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("bar", "bar"), log=slycat.web.client.dev_null())
-  project_reader = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("baz", "baz"), log=slycat.web.client.dev_null())
-  project_outsider = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("blah", "blah"), log=slycat.web.client.dev_null())
-  server_outsider = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, log=slycat.web.client.dev_null())
+  server_admin = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
+  project_admin = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("foo", "foo"))
+  project_writer = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("bar", "bar"))
+  project_reader = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("baz", "baz"))
+  project_outsider = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("blah", "blah"))
+  server_outsider = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False)
 
 def teardown():
   global server_process

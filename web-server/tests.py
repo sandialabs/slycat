@@ -66,7 +66,7 @@ def setup():
   global server_process, connection
   server_process = subprocess.Popen(["python", "slycat-web-server.py", "--config=test-config.ini"])
   time.sleep(2.0)
-  connection = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"), log=slycat.web.client.dev_null())
+  connection = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
 
 def teardown():
   global server_process
