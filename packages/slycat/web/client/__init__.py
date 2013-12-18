@@ -16,7 +16,7 @@ import time
 from slycat.array import *
 
 log = logging.getLogger("slycat.web.client")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
 log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 
