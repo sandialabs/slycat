@@ -5,6 +5,7 @@ import json
 import numpy
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
+import slycat.array
 import traceback
 
 def mix(a, b, amount):
@@ -35,12 +36,13 @@ class serial(object):
       log.info("Storing input table.")
 
       attributes, dimensions = self.get_input_metadata()
+      attributes = slycat.array.require_attributes(attributes)
+      dimensions = slycat.array.require_dimensions(dimensions)
       if len(attributes) < 1:
         raise Exception("Inputs table must have at least one attribute.")
       if len(dimensions) != 1:
         raise Exception("Inputs table must have exactly one dimension.")
-      dimension_name, dimension_type, dimension_begin, dimension_end = dimensions[0]
-      timeseries_count = dimension_end - dimension_begin
+      timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
       self.connection.start_array_set(self.mid, "inputs")
       self.connection.start_array(self.mid, "inputs", 0, attributes, dimensions)
@@ -60,11 +62,11 @@ class serial(object):
 
       clusters = collections.defaultdict(list)
       for timeseries_index in range(timeseries_count):
-        attributes = self.get_timeseries_attributes(timeseries_index)
+        attributes = slycat.array.require_attributes(self.get_timeseries_attributes(timeseries_index))
         if len(attributes) < 1:
           raise Exception("A timeseries must have at least one attribute.")
-        for attribute_index, (attribute_name, attribute_type) in enumerate(attributes):
-          clusters[attribute_name].append((timeseries_index, attribute_index))
+        for attribute_index, attribute in enumerate(attributes):
+          clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
       # Store an alphabetized collection of cluster names.
       self.connection.store_file(self.mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
