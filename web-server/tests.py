@@ -155,9 +155,6 @@ def test_model_state():
   with nose.tools.assert_raises(requests.HTTPError):
     connection.update_model(mid, state="bull")
 
-  with nose.tools.assert_raises(requests.HTTPError):
-    connection.update_model(mid, state="finished")
-
   connection.update_model(mid, state="running")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "running")
