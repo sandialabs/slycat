@@ -61,7 +61,7 @@ function(new_document, old_document, user_context)
         if(new_document["state"] == "closed")
           require(old_document["state"] == "finished" || old_document["state"] == "waiting", "Invalid model state transition.");
         else if(new_document["state"] == "finished")
-          require(old_document["state"] == "running", "Invalid model state transition.");
+          require(old_document["state"] == "running" || old_document["state"] == "waiting", "Invalid model state transition.");
         else if(new_document["state"] == "running")
           require(old_document["state"] == "waiting", "Invalid model state transition.");
       }
