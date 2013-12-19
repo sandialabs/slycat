@@ -49,11 +49,11 @@ class timeseries(slycat.web.client.model.timeseries.serial):
     return statistics[0]["min"], statistics[0]["max"]
 
   def get_timeseries_times(self, index):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
       return slycat.data.hdf5.get_array_attribute(outputs, index, 0)
 
   def get_timeseries_attribute(self, index, attribute):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
       return slycat.data.hdf5.get_array_attribute(outputs, index, attribute + 1)
 
 # Setup a connection to the Slycat Web Server.
