@@ -23,7 +23,6 @@ import Queue
 import subprocess
 import stat
 import sys
-import slycat.array
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cache

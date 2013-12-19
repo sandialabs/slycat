@@ -13,7 +13,7 @@ import shlex
 import sys
 import time
 
-from slycat.array import *
+from slycat.data.array import *
 
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)

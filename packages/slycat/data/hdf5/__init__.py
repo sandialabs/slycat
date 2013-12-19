@@ -1,6 +1,6 @@
 import h5py
 import numpy
-import slycat.array
+import slycat.data.array
 import slycat.web.server.database.hdf5
 
 def start_array_set(path):
@@ -8,8 +8,8 @@ def start_array_set(path):
     pass
 
 def start_array(path, array_index, attributes, dimensions):
-  attributes = slycat.array.require_attributes(attributes)
-  dimensions = slycat.array.require_dimensions(dimensions)
+  attributes = slycat.data.array.require_attributes(attributes)
+  dimensions = slycat.data.array.require_dimensions(dimensions)
   stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
   shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
 
