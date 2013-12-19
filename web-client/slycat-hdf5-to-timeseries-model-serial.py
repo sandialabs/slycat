@@ -13,7 +13,7 @@ This script loads data from a directory containing:
 
 import numpy
 import os
-import slycat.hdf5
+import slycat.data.hdf5
 import slycat.web.client.model.timeseries
 
 parser = slycat.web.client.option_parser()
@@ -30,31 +30,31 @@ arguments = parser.parse_args()
 
 class timeseries(slycat.web.client.model.timeseries.serial):
   def get_input_metadata(self):
-    path = os.path.join(arguments.directory, "inputs.hdf5")
-    attributes, dimensions, statistics = slycat.hdf5.get_array_metadata(path, 0)
-    return attributes, dimensions
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as inputs:
+      metadata = slycat.data.hdf5.get_array_metadata(inputs, 0)
+    return metadata["attributes"], metadata["dimensions"]
 
   def get_input_attribute(self, attribute):
-    path = os.path.join(arguments.directory, "inputs.hdf5")
-    return slycat.hdf5.get_array_attribute(path, 0, attribute)
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as inputs:
+      return slycat.data.hdf5.get_array_attribute(inputs, 0, attribute)[...]
 
   def get_timeseries_attributes(self, index):
-    path = os.path.join(arguments.directory, "outputs.hdf5")
-    attributes, dimensions, statistics = slycat.hdf5.get_array_metadata(path, index)
-    return attributes[1:] # Skip the timestamps
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+      metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
+    return metadata["attributes"][1:] # Skip the timestamps
 
   def get_timeseries_time_range(self, index):
-    path = os.path.join(arguments.directory, "outputs.hdf5")
-    attributes, dimensions, statistics = slycat.hdf5.get_array_metadata(path, index)
-    return statistics[0]["min"], statistics[0]["max"]
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+      metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
+    return metadata["statistics"][0]["min"], metadata["statistics"][0]["max"]
 
   def get_timeseries_times(self, index):
-    path = os.path.join(arguments.directory, "outputs.hdf5")
-    return slycat.hdf5.get_array_attribute(path, index, 0)
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+      return slycat.data.hdf5.get_array_attribute(outputs, index, 0)[...]
 
   def get_timeseries_attribute(self, index, attribute):
-    path = os.path.join(arguments.directory, "outputs.hdf5")
-    return slycat.hdf5.get_array_attribute(path, index, attribute + 1)
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+      return slycat.data.hdf5.get_array_attribute(outputs, index, attribute + 1)[...]
 
 # Setup a connection to the Slycat Web Server.
 connection = slycat.web.client.connect(arguments)

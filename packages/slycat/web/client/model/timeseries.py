@@ -5,7 +5,7 @@ import json
 import numpy
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
-import slycat.array
+import slycat.data.array
 import traceback
 
 def mix(a, b, amount):
@@ -36,8 +36,8 @@ class serial(object):
       log.info("Storing input table.")
 
       attributes, dimensions = self.get_input_metadata()
-      attributes = slycat.array.require_attributes(attributes)
-      dimensions = slycat.array.require_dimensions(dimensions)
+      attributes = slycat.data.array.require_attributes(attributes)
+      dimensions = slycat.data.array.require_dimensions(dimensions)
       if len(attributes) < 1:
         raise Exception("Inputs table must have at least one attribute.")
       if len(dimensions) != 1:
@@ -62,7 +62,7 @@ class serial(object):
 
       clusters = collections.defaultdict(list)
       for timeseries_index in range(timeseries_count):
-        attributes = slycat.array.require_attributes(self.get_timeseries_attributes(timeseries_index))
+        attributes = slycat.data.array.require_attributes(self.get_timeseries_attributes(timeseries_index))
         if len(attributes) < 1:
           raise Exception("A timeseries must have at least one attribute.")
         for attribute_index, attribute in enumerate(attributes):

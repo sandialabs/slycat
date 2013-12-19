@@ -6,7 +6,8 @@ import cherrypy
 import h5py
 import json
 import numpy
-import slycat.array
+import slycat.data.array
+import slycat.data.hdf5
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.spider
@@ -108,7 +109,7 @@ def store_table_file(database, model, name, data, filename, nan_row_filtering, i
   if len(tables) != 1:
     raise cherrypy.HTTPError("400 Uploaded file %s must contain exactly one table." % file.filename)
   table = tables[0]
-  attributes = zip(table["column-names"], [slycat.array.attribute_type_map[type] for type in table["column-types"]])
+  attributes = zip(table["column-names"], [slycat.data.array.attribute_type_map[type] for type in table["column-types"]])
   dimensions = [("row", "int64", 0, table["row-count"])]
 
   start_array_set(database, model, name, input)
@@ -151,9 +152,9 @@ def start_array_set(database, model, name, input=False):
 def start_array(database, model, name, array_index, attributes, dimensions):
   update(database, model, message="Starting array set %s array %s." % (name, array_index))
   storage = model["artifact:%s" % name]
-  attributes = slycat.array.require_attributes(attributes)
-  dimensions = slycat.array.require_dimensions(dimensions)
-  stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
+  attributes = slycat.data.array.require_attributes(attributes)
+  dimensions = slycat.data.array.require_dimensions(dimensions)
+  stored_types = [slycat.data.hdf5.dtype(attribute["type"]) for attribute in attributes]
   shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
 
   # Allocate space for the coming data ...
@@ -179,7 +180,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
     array_metadata = file.array(array_index).attrs
     if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
       raise cherrypy.HTTPError("400 Attribute index {} out-of-range.".format(attribute_index))
-    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+    stored_type = slycat.data.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
 
     if len(ranges) != len(array_metadata["dimension-begin"]):
       raise cherrypy.HTTPError("400 Expected {} dimensions, got {}.".format(len(array_metadata["dimension-begin"]), len(ranges)))
@@ -207,7 +208,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
       raise cherrypy.HTTPError("400 Data and range shapes don't match.")
 
     # Store the data ...
-    attribute = file.array_attribute(array_index, attribute_index)
+    attribute = slycat.data.hdf5.get_array_attribute(file, array_index, attribute_index)
     index = tuple([slice(begin, end) for begin, end in ranges])
     attribute[index] = data
 
