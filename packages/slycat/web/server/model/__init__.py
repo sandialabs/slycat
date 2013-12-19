@@ -7,6 +7,7 @@ import h5py
 import json
 import numpy
 import slycat.data.array
+import slycat.data.hdf5
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.spider
@@ -153,7 +154,7 @@ def start_array(database, model, name, array_index, attributes, dimensions):
   storage = model["artifact:%s" % name]
   attributes = slycat.data.array.require_attributes(attributes)
   dimensions = slycat.data.array.require_dimensions(dimensions)
-  stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
+  stored_types = [slycat.data.hdf5.dtype(attribute["type"]) for attribute in attributes]
   shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
 
   # Allocate space for the coming data ...
@@ -179,7 +180,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
     array_metadata = file.array(array_index).attrs
     if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
       raise cherrypy.HTTPError("400 Attribute index {} out-of-range.".format(attribute_index))
-    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+    stored_type = slycat.data.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
 
     if len(ranges) != len(array_metadata["dimension-begin"]):
       raise cherrypy.HTTPError("400 Expected {} dimensions, got {}.".format(len(array_metadata["dimension-begin"]), len(ranges)))

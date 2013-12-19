@@ -1,16 +1,24 @@
 import h5py
 import numpy
 import slycat.data.array
-import slycat.web.server.database.hdf5
+
+def dtype(type):
+  """Convert a string attribute type into a dtype suitable for use with h5py."""
+  if type not in dtype.type_map.keys():
+    raise Exception("Unsupported type: {}".format(type))
+  return dtype.type_map[type]
+dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=unicode), "float":"float32", "double":"float64"}
 
 def start_array_set(path):
+  """Create a new array set at the given file location."""
   with h5py.File(path, "w") as file:
     pass
 
 def start_array(path, array_index, attributes, dimensions):
+  """Add an array to an existing array set."""
   attributes = slycat.data.array.require_attributes(attributes)
   dimensions = slycat.data.array.require_dimensions(dimensions)
-  stored_types = [slycat.web.server.database.hdf5.dtype(attribute["type"]) for attribute in attributes]
+  stored_types = [dtype(attribute["type"]) for attribute in attributes]
   shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
 
   # Allocate space for the coming data ...
@@ -31,13 +39,14 @@ def start_array(path, array_index, attributes, dimensions):
     array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
 
 def store_array_attribute(path, array_index, attribute_index, ranges, data):
+  """Store attribute data in an existing array."""
   with h5py.File(path, "r+") as file:
     array_key = "array/{}".format(array_index)
     attribute_key = "array/{}/attribute/{}".format(array_index, attribute_index)
     array_metadata = file[array_key].attrs
     if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
       raise Exception("Attribute index {} out-of-range.".format(attribute_index))
-    stored_type = slycat.web.server.database.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+    stored_type = dtype(array_metadata["attribute-types"][attribute_index])
 
     if len(ranges) != len(array_metadata["dimension-begin"]):
       raise Exception("Expected {} dimensions, got {}.".format(len(array_metadata["dimension-begin"]), len(ranges)))
@@ -75,6 +84,7 @@ def store_array_attribute(path, array_index, attribute_index, ranges, data):
       attribute.attrs["max"] = attribute_max
 
 def get_array_metadata(path, array_index):
+  """Return an (attributes, dimensions, statistics) tuple for an array."""
   with h5py.File(path, "r") as file:
     array_key = "array/{}".format(array_index)
     array_metadata = file[array_key].attrs
@@ -95,5 +105,6 @@ def get_array_metadata(path, array_index):
       )
 
 def get_array_attribute(path, array_index, attribute_index):
+  """Return attribute data from an array."""
   with h5py.File(path, "r") as file:
     return file["array/{}/attribute/{}".format(array_index, attribute_index)][...]

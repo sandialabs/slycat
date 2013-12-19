@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import slycat.data.array
+import slycat.data.hdf5
 import slycat.web.server.database.hdf5
 import slycat.web.server.database.scidb
 import sys
@@ -48,7 +49,7 @@ def dump_hdf5(attributes, dimensions, array, attribute_prefix):
   logging.debug("attributes: %s", attributes)
   logging.debug("dimensions: %s", dimensions)
   with h5py.File(os.path.join(arguments.output_dir, "array-set-%s.hdf5" % array), "w") as file:
-    stored_types = [slycat.web.server.database.hdf5.dtype(type) for name, type in attributes]
+    stored_types = [slycat.data.hdf5.dtype(type) for name, type in attributes]
     shape = tuple([end - begin for name, type, begin, end in dimensions])
     for attribute_index, stored_type in enumerate(stored_types):
       file.create_dataset("array/0/attribute/{}".format(attribute_index), shape, dtype=stored_type)
