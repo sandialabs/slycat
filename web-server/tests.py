@@ -587,6 +587,17 @@ def test_api():
   project_admin.store_parameter(models[0], "pi", 3.1415)
   server_admin.store_parameter(models[0], "pi", 3.1415)
 
+  # Any project writer can store a model file.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_reader.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  project_writer.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  project_admin.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  server_admin.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+
   # Any project writer can start an arrayset artifact.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.start_array_set(models[0], "data")
@@ -672,7 +683,7 @@ def test_api():
   project_admin.get_project_models(pid)
   server_admin.get_project_models(pid)
 
-  # Any project member can get a model.
+  # Any project reader can get a model.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model(models[0])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -682,7 +693,7 @@ def test_api():
   project_admin.get_model(models[0])
   server_admin.get_model(models[0])
 
-  # Any project member can get a model design page.
+  # Any project reader can get a model design page.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.request("GET", "/models/%s/design" % models[0])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -692,21 +703,17 @@ def test_api():
   project_admin.request("GET", "/models/%s/design" % models[0])
   server_admin.request("GET", "/models/%s/design" % models[0])
 
-  # Any project member can retrieve a model file.
+  # Any project reader can retrieve a model file.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.request("GET", "/models/%s/files/foo" % models[0])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
     project_outsider.request("GET", "/models/%s/files/foo" % models[0])
-  with nose.tools.assert_raises_regexp(Exception, "^404"):
-    project_reader.request("GET", "/models/%s/files/foo" % models[0])
-  with nose.tools.assert_raises_regexp(Exception, "^404"):
-    project_writer.request("GET", "/models/%s/files/foo" % models[0])
-  with nose.tools.assert_raises_regexp(Exception, "^404"):
-    project_admin.request("GET", "/models/%s/files/foo" % models[0])
-  with nose.tools.assert_raises_regexp(Exception, "^404"):
-    server_admin.request("GET", "/models/%s/files/foo" % models[0])
+  project_reader.request("GET", "/models/%s/files/foo" % models[0])
+  project_writer.request("GET", "/models/%s/files/foo" % models[0])
+  project_admin.request("GET", "/models/%s/files/foo" % models[0])
+  server_admin.request("GET", "/models/%s/files/foo" % models[0])
 
-  # Any project member can retrieve model array metadata.
+  # Any project reader can retrieve model array metadata.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_array_metadata(models[0], "data", 0)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -716,7 +723,7 @@ def test_api():
   project_admin.get_model_array_metadata(models[0], "data", 0)
   server_admin.get_model_array_metadata(models[0], "data", 0)
 
-  # Any project member can retrieve model array chunks.
+  # Any project reader can retrieve model array chunks.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_array_chunk(models[0], "data", 0, 0, 10)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -726,7 +733,7 @@ def test_api():
   project_admin.get_model_array_chunk(models[0], "data", 0, 0, 10)
   server_admin.get_model_array_chunk(models[0], "data", 0, 0, 10)
 
-  # Any project member can retrieve model table metadata.
+  # Any project reader can retrieve model table metadata.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_table_metadata(models[0], "data", 0)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -736,7 +743,7 @@ def test_api():
   project_admin.get_model_table_metadata(models[0], "data", 0)
   server_admin.get_model_table_metadata(models[0], "data", 0)
 
-  # Any project member can retrieve model table chunks.
+  # Any project reader can retrieve model table chunks.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -746,7 +753,7 @@ def test_api():
   project_admin.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
   server_admin.get_model_table_chunk(models[0], "data", 0, range(10), range(1))
 
-  # Any project member can retrieve model table sorted indices.
+  # Any project reader can retrieve model table sorted indices.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_table_sorted_indices(models[0], "data", 0, range(5))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
@@ -756,7 +763,7 @@ def test_api():
   project_admin.get_model_table_sorted_indices(models[0], "data", 0, range(5))
   server_admin.get_model_table_sorted_indices(models[0], "data", 0, range(5))
 
-  # Any project member can retrieve model table unsorted indices.
+  # Any project reader can retrieve model table unsorted indices.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_model_table_unsorted_indices(models[0], "data", 0, range(5))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
