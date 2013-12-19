@@ -286,7 +286,7 @@ def post_project_bookmarks(pid):
   cherrypy.response.status = "201 Bookmark stored."
   return {"id" : bid}
 
-def get_models(revision=None):
+def get_models(revision=None, **keywords):
   if get_models.timeout is None:
     get_models.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
 
