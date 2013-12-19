@@ -208,7 +208,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
       raise cherrypy.HTTPError("400 Data and range shapes don't match.")
 
     # Store the data ...
-    attribute = file.array_attribute(array_index, attribute_index)
+    attribute = slycat.data.hdf5.get_array_attribute(file, array_index, attribute_index)
     index = tuple([slice(begin, end) for begin, end in ranges])
     attribute[index] = data
 

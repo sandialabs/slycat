@@ -588,7 +588,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
       index = tuple([slice(begin, end) for begin, end in ranges])
 
       attribute_type =  metadata["attributes"][attribute]["type"]
-      data = file.array_attribute(array, attribute)[index]
+      data = slycat.data.hdf5.get_array_attribute(file, array, attribute)[index]
 
       if byteorder is None:
         return json.dumps(data.tolist())
@@ -671,7 +671,7 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
       index_key = "array/%s/index/%s" % (array_index, sort_column)
       if index_key not in file:
         cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
-        sort_index = numpy.argsort(file.array_attribute(array_index, sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(slycat.data.hdf5.get_array_attribute(file, array_index, sort_column)[...], kind="mergesort")
         file[index_key] = sort_index
       else:
         cherrypy.log.error("Loading cached sort index.")
@@ -690,7 +690,7 @@ def get_table_metadata(file, array, index):
   column_min = []
   column_max = []
   for attribute in range(len(column_names)):
-    file_metadata = file.array_attribute(array, attribute).attrs
+    file_metadata = slycat.data.hdf5.get_array_attribute(file, array, attribute).attrs
     column_min.append(file_metadata.get("min", None))
     column_max.append(file_metadata.get("max", None))
 
@@ -776,7 +776,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
         if index is not None and column == metadata["column-count"]-1:
           values = slice.tolist()
         else:
-          values = file.array_attribute(array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+          values = slycat.data.hdf5.get_array_attribute(file, array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
           if type in ["float32", "float64"]:
             values = [None if numpy.isnan(value) else value for value in values]
         data.append(values)
