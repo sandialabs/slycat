@@ -1,5 +1,6 @@
 import h5py
 import numpy
+import os
 import slycat.data.array
 
 def dtype(type):
@@ -8,6 +9,9 @@ def dtype(type):
     raise Exception("Unsupported type: {}".format(type))
   return dtype.type_map[type]
 dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=unicode), "float":"float32", "double":"float64"}
+
+def path(array, directory):
+  return os.path.join(directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")
 
 def open(path, mode="r"):
   return h5py.File(path, mode)

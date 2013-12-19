@@ -5,17 +5,15 @@
 import cherrypy
 import h5py
 import os
+import slycat.data.hdf5
 import threading
 import types
-
-def make_path(array, path):
-  return os.path.join(path, array[0:2], array[2:4], array[4:6], array + ".hdf5")
 
 def path(array):
   """Convert an array identifier to a data store filesystem path."""
   if path.root is None:
     path.root = cherrypy.tree.apps[""].config["slycat"]["data-store"]
-  return make_path(array, path.root)
+  return slycat.data.hdf5.path(array, path.root)
 path.root = None
 
 def create(array):
