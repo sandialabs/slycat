@@ -931,11 +931,10 @@ select
   color: #9f6000;
   opacity: 0;
   font-size: 2em;
-  height: 100px;
+  line-height: 100px;
   left: 50%;
   margin-left: -200px;
   margin-top: -50px;
-  padding: 12px;
   position: absolute;
   top: 50%;
   width: 400px;
