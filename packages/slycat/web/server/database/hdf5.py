@@ -22,16 +22,10 @@ def wrap(file):
   """Adds convenience functions to an h5py.File object."""
   def get_array(self, array):
     return self["array/{}".format(array)]
-  def get_array_shape(self, array):
-    array_metadata = self["array/{}".format(array)].attrs
-    dimension_begin = array_metadata["dimension-begin"]
-    dimension_end = array_metadata["dimension-end"]
-    return tuple([end - begin for begin, end in zip(dimension_begin, dimension_end)])
   def get_array_attribute(self, array, attribute):
     return self["array/{}/attribute/{}".format(array, attribute)]
 
   file.array = types.MethodType(get_array, file, file.__class__)
-  file.array_shape = types.MethodType(get_array_shape, file, file.__class__)
   file.array_attribute = types.MethodType(get_array_attribute, file, file.__class__)
   return file
 

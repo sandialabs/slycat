@@ -23,6 +23,7 @@ import Queue
 import subprocess
 import stat
 import sys
+import slycat.data.hdf5
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cache
@@ -520,28 +521,6 @@ def get_model_design(mid):
 
   return slycat.web.server.template.render("model-design.html", context)
 
-def get_array_metadata(file, array):
-  """Return metadata for an array artifact."""
-  file_metadata = file.array(array).attrs
-  attribute_names = file_metadata["attribute-names"]
-  attribute_types = file_metadata["attribute-types"]
-  dimension_names = file_metadata["dimension-names"]
-  dimension_types = file_metadata["dimension-types"]
-  dimension_begin = file_metadata["dimension-begin"]
-  dimension_end = file_metadata["dimension-end"]
-  statistics = []
-  for attribute in range(len(attribute_types)):
-    file_metadata = file.array_attribute(array, attribute).attrs
-    statistics.append({"min":file_metadata.get("min", None), "max":file_metadata.get("max", None)})
-
-  metadata = {
-    "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
-    "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
-    "statistics" : statistics
-    }
-
-  return metadata
-
 @cherrypy.tools.json_out(on = True)
 def get_model_array_metadata(mid, aid, array):
   database = slycat.web.server.database.couchdb.connect()
@@ -558,7 +537,7 @@ def get_model_array_metadata(mid, aid, array):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = get_array_metadata(file, array)
+      metadata = slycat.data.hdf5.get_array_metadata(file, array)
   return metadata
 
 def get_model_array_chunk(mid, aid, array, attribute, **arguments):
@@ -597,7 +576,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = get_array_metadata(file, array)
+      metadata = slycat.data.hdf5.get_array_metadata(file, array)
 
       if not(0 <= attribute and attribute < len(metadata["attributes"])):
         raise cherrypy.HTTPError("400 Attribute argument out-of-range.")

@@ -101,11 +101,19 @@ def get_array_metadata(file, array_index):
     array_metadata = file["array/{}/attribute/{}".format(array_index, attribute_index)].attrs
     statistics.append({"min":array_metadata.get("min", None), "max":array_metadata.get("max", None)})
 
-  return ([{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
-    [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
-    statistics
-    )
+  return {
+    "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
+    "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
+    "statistics" : statistics,
+    }
+
+def get_array_shape(file, array_index):
+  array_key = "array/{}".format(array_index)
+  array_metadata = file[array_key].attrs
+  dimension_begin = array_metadata["dimension-begin"]
+  dimension_end = array_metadata["dimension-end"]
+  return tuple([end - begin for begin, end in zip(dimension_begin, dimension_end)])
 
 def get_array_attribute(file, array_index, attribute_index):
   """Return attribute data from an array."""
-  return file["array/{}/attribute/{}".format(array_index, attribute_index)][...]
+  return file["array/{}/attribute/{}".format(array_index, attribute_index)]
