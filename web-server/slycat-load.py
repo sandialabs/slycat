@@ -14,13 +14,13 @@ import slycat.data.hdf5
 import sys
 
 parser = argparse.ArgumentParser()
+parser.add_argument("input_dir", help="Directory containing data dumped with slycat-dump.py.")
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
 parser.add_argument("--data-store", default="data-store", help="Path to the hdf5 data storage directory.  Default: %(default)s")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
-parser.add_argument("--input-dir", required=True, help="Directory containing data dumped with slycat-dump.py.")
-parser.add_argument("--marking", default=[], action="append", help="Use --marking='<source>:<target>' to transform <source> markings to <target> markings.  You may specifiy --marking multiple times.")
+parser.add_argument("--marking", default=[], nargs="+", help="Use --marking='<source>:<target>' to map <source> markings to <target> markings.  You may specify multiple maps, separated by whitespace.")
 arguments = parser.parse_args()
 
 logging.getLogger().setLevel(logging.INFO)
