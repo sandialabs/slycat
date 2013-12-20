@@ -93,6 +93,8 @@ for project_id in arguments.project_id:
   for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
     logging.info("Dumping model %s", row["id"])
     model = couchdb.get(row["id"], attachments=True)
+    if model["model-type"] == "timeseries":
+      continue
 
     artifact_types = model["artifact-types"]
     for key, artifact in model.items():
