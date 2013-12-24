@@ -1,6 +1,6 @@
-from slycat.web.client import log
 import collections
 import datetime
+import itertools
 import json
 import numpy
 import scipy.cluster.hierarchy
@@ -62,8 +62,8 @@ class client_storage_strategy(storage_strategy):
   def store_file(self, name, data, content_type):
     self.connection.store_file(self.mid, name, data, content_type)
 
-def serial(input_strategy, storage_strategy, cluster_bin_type, cluster_bin_count, cluster_type):
-  """Compute a timeseries model in serial."""
+def compute(log, executor, input_strategy, storage_strategy, cluster_bin_type, cluster_bin_count, cluster_type):
+  """Compute a timeseries model."""
   if cluster_bin_type not in ["naive"]:
     raise Exception("Unknown cluster bin type: %s" % cluster_bin_type)
   if cluster_bin_count < 1:
@@ -110,16 +110,19 @@ def serial(input_strategy, storage_strategy, cluster_bin_type, cluster_bin_count
     storage_strategy.store_file("clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
     # Get the minimum and maximum times for every timeseries.
-    time_ranges = []
-    for timeseries_index in range(timeseries_count):
-      storage_strategy.update_model(message="Collecting statistics for timeseries %s" % timeseries_index)
-      log.info("Collecting statistics for timeseries %s" % timeseries_index)
-      time_ranges.append(input_strategy.get_timeseries_time_range(timeseries_index))
+    def get_time_range(timeseries_index):
+      log.debug("get time range %s", timeseries_index)
+      return input_strategy.get_timeseries_time_range(timeseries_index)
+
+    storage_strategy.update_model(message="Collecting timeseries statistics.")
+    log.info("Collecting timeseries statistics.")
+    time_ranges = list(executor.map(get_time_range, range(timeseries_count)))
 
     # For each cluster ...
     for index, (name, storage) in enumerate(sorted(clusters.items())):
       progress_begin = float(index) / float(len(clusters))
       progress_end = float(index + 1) / float(len(clusters))
+
       # Rebin each timeseries within the cluster so they share common stop/start times and samples.
       storage_strategy.update_model(message="Rebinning data for %s" % name, progress=progress_begin)
       log.info("Rebinning data for %s" % name)
@@ -129,11 +132,12 @@ def serial(input_strategy, storage_strategy, cluster_bin_type, cluster_bin_count
       time_min = min(zip(*ranges)[0])
       time_max = max(zip(*ranges)[1])
 
-      waveforms = []
       if cluster_bin_type == "naive":
         bin_edges = numpy.linspace(time_min, time_max, cluster_bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
-        for timeseries_index, attribute_index in storage:
+        def naive_rebin(item):
+          timeseries_index, attribute_index = item
+          log.debug("naive rebin %s %s", timeseries_index, attribute_index)
           original_times = input_strategy.get_timeseries_times(timeseries_index)
           original_values = input_strategy.get_timeseries_attribute(timeseries_index, attribute_index)
           bin_indices = numpy.digitize(original_times, bin_edges)
@@ -141,11 +145,12 @@ def serial(input_strategy, storage_strategy, cluster_bin_type, cluster_bin_count
           bin_counts = numpy.bincount(bin_indices)[1:]
           bin_sums = numpy.bincount(bin_indices, original_values)[1:]
           bin_values = bin_sums / bin_counts
-          waveforms.append({
+          return {
             "input-index" : timeseries_index,
             "times" : bin_times,
             "values" : bin_values
-          })
+          }
+        waveforms = list(executor.map(naive_rebin, storage))
 
       # Compute a distance matrix comparing every series to every other ...
       observation_count = len(waveforms)
