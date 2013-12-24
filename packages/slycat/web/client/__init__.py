@@ -255,7 +255,8 @@ class connection(object):
 
   def update_model(self, mid, **kwargs):
     """Updates the model state/result/progress/message."""
-    self.put_model(mid, kwargs)
+    model = {key : value for key, value in kwargs.items() if value is not None}
+    self.put_model(mid, model)
 
   def store_parameter(self, mid, name, value, input=True):
     """Sets a model parameter value."""

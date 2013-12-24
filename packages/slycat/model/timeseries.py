@@ -11,20 +11,50 @@ import traceback
 def mix(a, b, amount):
   return ((1.0 - amount) * a) + (amount * b)
 
+class storage_strategy(object):
+  def update_model(self, state=None, result=None, started=None, finished=None, progress=None, message=None):
+    raise NotImplementedError("You must implement update_model().")
+  def store_parameter(self, name, value):
+    raise NotImplementedError("You must implement store_parameter().")
+  def start_array_set(self, name):
+    raise NotImplementedError("You must implement start_array_set().")
+  def start_array(self, name, array_index, attributes, dimensions):
+    raise NotImplementedError("You must implement start_array().")
+  def store_array_attribute(self, name, array_index, attribute_index, data):
+    raise NotImplementedError("You must implement store_array_attribute().")
+  def store_file(self, name, data, content_type):
+    raise NotImplementedError("You must implement store_file().")
+
+class client_storage_strategy(storage_strategy):
+  def __init__(self, connection, mid):
+    self.connection = connection
+    self.mid = mid
+  def update_model(self, state=None, result=None, started=None, finished=None, progress=None, message=None):
+    self.connection.update_model(self.mid, state=state, result=result, started=started, finished=finished, progress=progress, message=message)
+  def store_parameter(self, name, value):
+    self.connection.store_parameter(self.mid, name, value)
+  def start_array_set(self, name):
+    self.connection.start_array_set(self.mid, name)
+  def start_array(self, name, array_index, attributes, dimensions):
+    self.connection.start_array(self.mid, name, array_index, attributes, dimensions)
+  def store_array_attribute(self, name, array_index, attribute_index, data):
+    self.connection.store_array_attribute(self.mid, name, array_index, attribute_index, data)
+  def store_file(self, name, data, content_type):
+    self.connection.store_file(self.mid, name, data, content_type)
+
 class serial(object):
   """Template design pattern object for computing timeseries models in serial.
 
   Derive from this class and reimplement the required hook methods to compute
   a timeseries model using your own data.
   """
-  def __init__(self, connection, mid, cluster_bin_type, cluster_bin_count, cluster_type):
+  def __init__(self, storage, cluster_bin_type, cluster_bin_count, cluster_type):
     if cluster_bin_type not in ["naive"]:
       raise Exception("Unknown cluster bin type: %s" % cluster_bin_type)
     if cluster_bin_count < 1:
       raise Exception("Cluster bin count must be greater than zero.")
 
-    self.connection = connection
-    self.mid = mid
+    self.storage = storage
     self.cluster_bin_type = cluster_bin_type
     self.cluster_bin_count = cluster_bin_count
     self.cluster_type = cluster_type
@@ -32,7 +62,7 @@ class serial(object):
   def compute(self):
     """Compute the timeseries model."""
     try:
-      self.connection.update_model(self.mid, message="Storing input table.")
+      self.storage.update_model(message="Storing input table.")
       log.info("Storing input table.")
 
       attributes, dimensions = self.get_input_metadata()
@@ -44,21 +74,21 @@ class serial(object):
         raise Exception("Inputs table must have exactly one dimension.")
       timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
-      self.connection.start_array_set(self.mid, "inputs")
-      self.connection.start_array(self.mid, "inputs", 0, attributes, dimensions)
+      self.storage.start_array_set("inputs")
+      self.storage.start_array("inputs", 0, attributes, dimensions)
       for attribute in range(len(attributes)):
-        self.connection.store_array_attribute(self.mid, "inputs", 0, attribute, self.get_input_attribute(attribute))
+        self.storage.store_array_attribute("inputs", 0, attribute, self.get_input_attribute(attribute))
 
       # Store clustering parameters.
-      self.connection.update_model(self.mid, message="Storing clustering parameters.")
+      self.storage.update_model(message="Storing clustering parameters.")
       log.info("Storing clustering parameters.")
 
-      self.connection.store_parameter(self.mid, "cluster-bin-count", self.cluster_bin_count)
-      self.connection.store_parameter(self.mid, "cluster-bin-type", self.cluster_bin_type)
-      self.connection.store_parameter(self.mid, "cluster-type", self.cluster_type)
+      self.storage.store_parameter("cluster-bin-count", self.cluster_bin_count)
+      self.storage.store_parameter("cluster-bin-type", self.cluster_bin_type)
+      self.storage.store_parameter("cluster-type", self.cluster_type)
 
       # Create a mapping from unique cluster names to timeseries attributes.
-      self.connection.update_model(self.mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
+      self.storage.update_model(state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
 
       clusters = collections.defaultdict(list)
       for timeseries_index in range(timeseries_count):
@@ -69,12 +99,12 @@ class serial(object):
           clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
       # Store an alphabetized collection of cluster names.
-      self.connection.store_file(self.mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
+      self.storage.store_file("clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
       # Get the minimum and maximum times for every timeseries.
       time_ranges = []
       for timeseries_index in range(timeseries_count):
-        self.connection.update_model(self.mid, message="Collecting statistics for timeseries %s" % timeseries_index)
+        self.storage.update_model(message="Collecting statistics for timeseries %s" % timeseries_index)
         log.info("Collecting statistics for timeseries %s" % timeseries_index)
         time_ranges.append(self.get_timeseries_time_range(timeseries_index))
 
@@ -83,7 +113,7 @@ class serial(object):
         progress_begin = float(index) / float(len(clusters))
         progress_end = float(index + 1) / float(len(clusters))
         # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-        self.connection.update_model(self.mid, message="Rebinning data for %s" % name, progress=progress_begin)
+        self.storage.update_model(message="Rebinning data for %s" % name, progress=progress_begin)
         log.info("Rebinning data for %s" % name)
 
         # Get the minimum and maximum times across every series in the cluster.
@@ -113,7 +143,7 @@ class serial(object):
         observation_count = len(waveforms)
         distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
         for i in range(0, observation_count):
-          self.connection.update_model(self.mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
+          self.storage.update_model(message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
           log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
           for j in range(i + 1, observation_count):
             distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
@@ -121,7 +151,7 @@ class serial(object):
             distance_matrix[j, i] = distance
 
         # Use the distance matrix to cluster observations ...
-        self.connection.update_model(self.mid, message="Clustering %s" % name)
+        self.storage.update_model(message="Clustering %s" % name)
         log.info("Clustering %s" % name)
         distance = scipy.spatial.distance.squareform(distance_matrix)
         linkage = scipy.cluster.hierarchy.linkage(distance, method=str(self.cluster_type))
@@ -136,7 +166,7 @@ class serial(object):
           cluster_membership.append(set([i]))
 
         for i in range(len(linkage)):
-          self.connection.update_model(self.mid, message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
+          self.storage.update_model(message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
           log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
           cluster_id = i + observation_count
           (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -175,12 +205,12 @@ class serial(object):
           exemplars[cluster_id] = exemplar_id
 
         # Store the cluster.
-        self.connection.store_file(self.mid, "cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
+        self.storage.store_file("cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
 
-      self.connection.update_model(self.mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+      self.storage.update_model(state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
     except:
-      self.connection.update_model(self.mid, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
       log.error(traceback.format_exc())
+      self.storage.update_model(state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
   def get_input_metadata(self):
     """Return (attributes, dimensions) for the model's input table."""
