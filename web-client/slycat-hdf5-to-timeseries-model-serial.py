@@ -28,7 +28,7 @@ parser.add_argument("--project-description", default="", help="New project descr
 parser.add_argument("--project-name", default="HDF5-Timeseries", help="New or existing project name.  Default: %(default)s")
 arguments = parser.parse_args()
 
-class timeseries(slycat.model.timeseries.serial):
+class hdf5_inputs(slycat.model.timeseries.input_strategy):
   def get_input_metadata(self):
     with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as inputs:
       metadata = slycat.data.hdf5.get_array_metadata(inputs, 0)
@@ -66,8 +66,7 @@ pid = connection.find_or_create_project(arguments.project_name, arguments.projec
 mid = connection.create_model(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
 
 # Compute the model.
-model = timeseries(slycat.model.timeseries.client_storage_strategy(connection, mid), arguments.cluster_bin_type, arguments.cluster_bin_count, arguments.cluster_type)
-model.compute()
+slycat.model.timeseries.serial(hdf5_inputs(), slycat.model.timeseries.client_storage_strategy(connection, mid), arguments.cluster_bin_type, arguments.cluster_bin_count, arguments.cluster_type)
 
 # Supply the user with a direct link to the new model.
 slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))

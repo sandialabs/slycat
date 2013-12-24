@@ -11,6 +11,26 @@ import traceback
 def mix(a, b, amount):
   return ((1.0 - amount) * a) + (amount * b)
 
+class input_strategy(object):
+  def get_input_metadata(self):
+    """Return (attributes, dimensions) for the model's input table."""
+    raise NotImplementedError("You must implement get_input_metadata().")
+  def get_input_attribute(self, attribute):
+    """Return an attribute for the model's input table."""
+    raise NotImplementedError("You must implement get_input_attribute().")
+  def get_timeseries_attributes(self, index):
+    """Return the attributes for timeseries N (the timestamps should *not* be included in the attributes)."""
+    raise NotImplementedError("You must implement get_timeseries_attributes().")
+  def get_timeseries_time_range(self, index):
+    """Return the minimum and maximum time for timeseries N."""
+    raise NotImplementedError("You must implement get_timeseries_time_range().")
+  def get_timeseries_times(self, index):
+    """Return the timestamps for timeseries N."""
+    raise NotImplementedError("You must implement get_timeseries_times().")
+  def get_timeseries_attribute(self, index, attribute):
+    """Return an attribute for timeseries N (the timestamps should *not* be included in the attributes)."""
+    raise NotImplementedError("You must implement get_timeseries_attribute().")
+
 class storage_strategy(object):
   def update_model(self, state=None, result=None, started=None, finished=None, progress=None, message=None):
     raise NotImplementedError("You must implement update_model().")
@@ -42,197 +62,161 @@ class client_storage_strategy(storage_strategy):
   def store_file(self, name, data, content_type):
     self.connection.store_file(self.mid, name, data, content_type)
 
-class serial(object):
-  """Template design pattern object for computing timeseries models in serial.
+def serial(input_strategy, storage_strategy, cluster_bin_type, cluster_bin_count, cluster_type):
+  """Compute a timeseries model in serial."""
+  if cluster_bin_type not in ["naive"]:
+    raise Exception("Unknown cluster bin type: %s" % cluster_bin_type)
+  if cluster_bin_count < 1:
+    raise Exception("Cluster bin count must be greater than zero.")
 
-  Derive from this class and reimplement the required hook methods to compute
-  a timeseries model using your own data.
-  """
-  def __init__(self, storage, cluster_bin_type, cluster_bin_count, cluster_type):
-    if cluster_bin_type not in ["naive"]:
-      raise Exception("Unknown cluster bin type: %s" % cluster_bin_type)
-    if cluster_bin_count < 1:
-      raise Exception("Cluster bin count must be greater than zero.")
+  try:
+    storage_strategy.update_model(message="Storing input table.")
+    log.info("Storing input table.")
 
-    self.storage = storage
-    self.cluster_bin_type = cluster_bin_type
-    self.cluster_bin_count = cluster_bin_count
-    self.cluster_type = cluster_type
+    attributes, dimensions = input_strategy.get_input_metadata()
+    attributes = slycat.data.array.require_attributes(attributes)
+    dimensions = slycat.data.array.require_dimensions(dimensions)
+    if len(attributes) < 1:
+      raise Exception("Inputs table must have at least one attribute.")
+    if len(dimensions) != 1:
+      raise Exception("Inputs table must have exactly one dimension.")
+    timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
-  def compute(self):
-    """Compute the timeseries model."""
-    try:
-      self.storage.update_model(message="Storing input table.")
-      log.info("Storing input table.")
+    storage_strategy.start_array_set("inputs")
+    storage_strategy.start_array("inputs", 0, attributes, dimensions)
+    for attribute in range(len(attributes)):
+      storage_strategy.store_array_attribute("inputs", 0, attribute, input_strategy.get_input_attribute(attribute))
 
-      attributes, dimensions = self.get_input_metadata()
-      attributes = slycat.data.array.require_attributes(attributes)
-      dimensions = slycat.data.array.require_dimensions(dimensions)
+    # Store clustering parameters.
+    storage_strategy.update_model(message="Storing clustering parameters.")
+    log.info("Storing clustering parameters.")
+
+    storage_strategy.store_parameter("cluster-bin-count", cluster_bin_count)
+    storage_strategy.store_parameter("cluster-bin-type", cluster_bin_type)
+    storage_strategy.store_parameter("cluster-type", cluster_type)
+
+    # Create a mapping from unique cluster names to timeseries attributes.
+    storage_strategy.update_model(state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
+
+    clusters = collections.defaultdict(list)
+    for timeseries_index in range(timeseries_count):
+      attributes = slycat.data.array.require_attributes(input_strategy.get_timeseries_attributes(timeseries_index))
       if len(attributes) < 1:
-        raise Exception("Inputs table must have at least one attribute.")
-      if len(dimensions) != 1:
-        raise Exception("Inputs table must have exactly one dimension.")
-      timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
+        raise Exception("A timeseries must have at least one attribute.")
+      for attribute_index, attribute in enumerate(attributes):
+        clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
-      self.storage.start_array_set("inputs")
-      self.storage.start_array("inputs", 0, attributes, dimensions)
-      for attribute in range(len(attributes)):
-        self.storage.store_array_attribute("inputs", 0, attribute, self.get_input_attribute(attribute))
+    # Store an alphabetized collection of cluster names.
+    storage_strategy.store_file("clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
-      # Store clustering parameters.
-      self.storage.update_model(message="Storing clustering parameters.")
-      log.info("Storing clustering parameters.")
+    # Get the minimum and maximum times for every timeseries.
+    time_ranges = []
+    for timeseries_index in range(timeseries_count):
+      storage_strategy.update_model(message="Collecting statistics for timeseries %s" % timeseries_index)
+      log.info("Collecting statistics for timeseries %s" % timeseries_index)
+      time_ranges.append(input_strategy.get_timeseries_time_range(timeseries_index))
 
-      self.storage.store_parameter("cluster-bin-count", self.cluster_bin_count)
-      self.storage.store_parameter("cluster-bin-type", self.cluster_bin_type)
-      self.storage.store_parameter("cluster-type", self.cluster_type)
+    # For each cluster ...
+    for index, (name, storage) in enumerate(sorted(clusters.items())):
+      progress_begin = float(index) / float(len(clusters))
+      progress_end = float(index + 1) / float(len(clusters))
+      # Rebin each timeseries within the cluster so they share common stop/start times and samples.
+      storage_strategy.update_model(message="Rebinning data for %s" % name, progress=progress_begin)
+      log.info("Rebinning data for %s" % name)
 
-      # Create a mapping from unique cluster names to timeseries attributes.
-      self.storage.update_model(state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
+      # Get the minimum and maximum times across every series in the cluster.
+      ranges = [time_ranges[timeseries[0]] for timeseries in storage]
+      time_min = min(zip(*ranges)[0])
+      time_max = max(zip(*ranges)[1])
 
-      clusters = collections.defaultdict(list)
-      for timeseries_index in range(timeseries_count):
-        attributes = slycat.data.array.require_attributes(self.get_timeseries_attributes(timeseries_index))
-        if len(attributes) < 1:
-          raise Exception("A timeseries must have at least one attribute.")
-        for attribute_index, attribute in enumerate(attributes):
-          clusters[attribute["name"]].append((timeseries_index, attribute_index))
+      waveforms = []
+      if cluster_bin_type == "naive":
+        bin_edges = numpy.linspace(time_min, time_max, cluster_bin_count + 1)
+        bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
+        for timeseries_index, attribute_index in storage:
+          original_times = input_strategy.get_timeseries_times(timeseries_index)
+          original_values = input_strategy.get_timeseries_attribute(timeseries_index, attribute_index)
+          bin_indices = numpy.digitize(original_times, bin_edges)
+          bin_indices[-1] -= 1
+          bin_counts = numpy.bincount(bin_indices)[1:]
+          bin_sums = numpy.bincount(bin_indices, original_values)[1:]
+          bin_values = bin_sums / bin_counts
+          waveforms.append({
+            "input-index" : timeseries_index,
+            "times" : bin_times,
+            "values" : bin_values
+          })
 
-      # Store an alphabetized collection of cluster names.
-      self.storage.store_file("clusters", json.dumps(sorted(clusters.keys())), "application/json")
+      # Compute a distance matrix comparing every series to every other ...
+      observation_count = len(waveforms)
+      distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
+      for i in range(0, observation_count):
+        storage_strategy.update_model(message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
+        log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
+        for j in range(i + 1, observation_count):
+          distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
+          distance_matrix[i, j] = distance
+          distance_matrix[j, i] = distance
 
-      # Get the minimum and maximum times for every timeseries.
-      time_ranges = []
-      for timeseries_index in range(timeseries_count):
-        self.storage.update_model(message="Collecting statistics for timeseries %s" % timeseries_index)
-        log.info("Collecting statistics for timeseries %s" % timeseries_index)
-        time_ranges.append(self.get_timeseries_time_range(timeseries_index))
+      # Use the distance matrix to cluster observations ...
+      storage_strategy.update_model(message="Clustering %s" % name)
+      log.info("Clustering %s" % name)
+      distance = scipy.spatial.distance.squareform(distance_matrix)
+      linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_type))
 
-      # For each cluster ...
-      for index, (name, storage) in enumerate(sorted(clusters.items())):
-        progress_begin = float(index) / float(len(clusters))
-        progress_end = float(index + 1) / float(len(clusters))
-        # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-        self.storage.update_model(message="Rebinning data for %s" % name, progress=progress_begin)
-        log.info("Rebinning data for %s" % name)
+      # Identify exemplar waveforms for each cluster ...
+      summed_distances = numpy.zeros(shape=(observation_count))
+      exemplars = dict()
+      cluster_membership = []
 
-        # Get the minimum and maximum times across every series in the cluster.
-        ranges = [time_ranges[timeseries[0]] for timeseries in storage]
-        time_min = min(zip(*ranges)[0])
-        time_max = max(zip(*ranges)[1])
+      for i in range(observation_count):
+        exemplars[i] = i
+        cluster_membership.append(set([i]))
 
-        waveforms = []
-        if self.cluster_bin_type == "naive":
-          bin_edges = numpy.linspace(time_min, time_max, self.cluster_bin_count + 1)
-          bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
-          for timeseries_index, attribute_index in storage:
-            original_times = self.get_timeseries_times(timeseries_index)
-            original_values = self.get_timeseries_attribute(timeseries_index, attribute_index)
-            bin_indices = numpy.digitize(original_times, bin_edges)
-            bin_indices[-1] -= 1
-            bin_counts = numpy.bincount(bin_indices)[1:]
-            bin_sums = numpy.bincount(bin_indices, original_values)[1:]
-            bin_values = bin_sums / bin_counts
-            waveforms.append({
-              "input-index" : timeseries_index,
-              "times" : bin_times,
-              "values" : bin_values
-            })
+      for i in range(len(linkage)):
+        storage_strategy.update_model(message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
+        log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
+        cluster_id = i + observation_count
+        (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
+        cluster1 = int(f_cluster1)
+        cluster2 = int(f_cluster2)
+        # Housekeeping: assemble the membership of the new cluster
+        cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
+        #cherrypy.log.error("Finding exemplar for cluster %s containing %s members from %s and %s." % (cluster_id, len(cluster_membership[-1]), cluster1, cluster2))
 
-        # Compute a distance matrix comparing every series to every other ...
-        observation_count = len(waveforms)
-        distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
-        for i in range(0, observation_count):
-          self.storage.update_model(message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
-          log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
-          for j in range(i + 1, observation_count):
-            distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
-            distance_matrix[i, j] = distance
-            distance_matrix[j, i] = distance
+        # We need to update the distance from each member of the new
+        # cluster to all the other members of the cluster.  That means
+        # that for all the members of cluster1, we need to add in the
+        # distances to members of cluster2, and for all members of
+        # cluster2, we need to add in the distances to members of
+        # cluster1.
+        for cluster1_member in cluster_membership[cluster1]:
+          for cluster2_member in cluster_membership[cluster2]:
+            summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
 
-        # Use the distance matrix to cluster observations ...
-        self.storage.update_model(message="Clustering %s" % name)
-        log.info("Clustering %s" % name)
-        distance = scipy.spatial.distance.squareform(distance_matrix)
-        linkage = scipy.cluster.hierarchy.linkage(distance, method=str(self.cluster_type))
-
-        # Identify exemplar waveforms for each cluster ...
-        summed_distances = numpy.zeros(shape=(observation_count))
-        exemplars = dict()
-        cluster_membership = []
-
-        for i in range(observation_count):
-          exemplars[i] = i
-          cluster_membership.append(set([i]))
-
-        for i in range(len(linkage)):
-          self.storage.update_model(message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
-          log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
-          cluster_id = i + observation_count
-          (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
-          cluster1 = int(f_cluster1)
-          cluster2 = int(f_cluster2)
-          # Housekeeping: assemble the membership of the new cluster
-          cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
-          #cherrypy.log.error("Finding exemplar for cluster %s containing %s members from %s and %s." % (cluster_id, len(cluster_membership[-1]), cluster1, cluster2))
-
-          # We need to update the distance from each member of the new
-          # cluster to all the other members of the cluster.  That means
-          # that for all the members of cluster1, we need to add in the
-          # distances to members of cluster2, and for all members of
-          # cluster2, we need to add in the distances to members of
-          # cluster1.
+        for cluster2_member in cluster_membership[int(cluster2)]:
           for cluster1_member in cluster_membership[cluster1]:
-            for cluster2_member in cluster_membership[cluster2]:
-              summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
+            summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
 
-          for cluster2_member in cluster_membership[int(cluster2)]:
-            for cluster1_member in cluster_membership[cluster1]:
-              summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
+        min_summed_distance = None
+        max_summed_distance = None
 
-          min_summed_distance = None
-          max_summed_distance = None
+        exemplar_id = 0
+        for member in cluster_membership[cluster_id]:
+          if min_summed_distance is None or summed_distances[member] < min_summed_distance:
+            min_summed_distance = summed_distances[member]
+            exemplar_id = member
 
-          exemplar_id = 0
-          for member in cluster_membership[cluster_id]:
-            if min_summed_distance is None or summed_distances[member] < min_summed_distance:
-              min_summed_distance = summed_distances[member]
-              exemplar_id = member
+          if max_summed_distance is None or summed_distances[member] > min_summed_distance:
+            max_summed_distance = summed_distances[member]
 
-            if max_summed_distance is None or summed_distances[member] > min_summed_distance:
-              max_summed_distance = summed_distances[member]
+        exemplars[cluster_id] = exemplar_id
 
-          exemplars[cluster_id] = exemplar_id
+      # Store the cluster.
+      storage_strategy.store_file("cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
 
-        # Store the cluster.
-        self.storage.store_file("cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
-
-      self.storage.update_model(state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
-    except:
-      log.error(traceback.format_exc())
-      self.storage.update_model(state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
-
-  def get_input_metadata(self):
-    """Return (attributes, dimensions) for the model's input table."""
-    raise NotImplementedError("You must implement get_input_metadata().")
-
-  def get_input_attribute(self, attribute):
-    """Return an attribute for the model's input table."""
-    raise NotImplementedError("You must implement get_input_attribute().")
-
-  def get_timeseries_attributes(self, index):
-    """Return the attributes for timeseries N (the timestamps should *not* be included in the attributes)."""
-    raise NotImplementedError("You must implement get_timeseries_attributes().")
-
-  def get_timeseries_time_range(self, index):
-    """Return the minimum and maximum time for timeseries N."""
-    raise NotImplementedError("You must implement get_timeseries_time_range().")
-
-  def get_timeseries_times(self, index):
-    """Return the timestamps for timeseries N."""
-    raise NotImplementedError("You must implement get_timeseries_times().")
-
-  def get_timeseries_attribute(self, index, attribute):
-    """Return an attribute for timeseries N (the timestamps should *not* be included in the attributes)."""
-    raise NotImplementedError("You must implement get_timeseries_attribute().")
+    storage_strategy.update_model(state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+  except:
+    log.error(traceback.format_exc())
+    storage_strategy.update_model(state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
