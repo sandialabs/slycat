@@ -8,7 +8,7 @@ import json
 import logging
 import os
 import shutil
-import slycat.web.server.database.hdf5
+import slycat.data.hdf5
 import sys
 
 parser = argparse.ArgumentParser()
@@ -59,5 +59,5 @@ for project_id in arguments.project_id:
       if value not in project_arrays:
         logging.info("Dumping array set %s", value)
         project_arrays.add(value)
-        shutil.copy(slycat.web.server.database.hdf5.make_path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
+        shutil.copy(slycat.data.hdf5.path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
 

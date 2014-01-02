@@ -680,30 +680,23 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
       sort_index = sort_index[::-1]
   return sort_index
 
-def get_table_metadata(file, array, index):
+def get_table_metadata(file, array_index, index):
   """Return table-oriented metadata for a 1D array, plus an optional index column."""
-  file_metadata = file.array(array).attrs
-  column_names = file_metadata["attribute-names"]
-  column_types = file_metadata["attribute-types"]
-  dimension_begin = file_metadata["dimension-begin"]
-  dimension_end = file_metadata["dimension-end"]
-  column_min = []
-  column_max = []
-  for attribute in range(len(column_names)):
-    file_metadata = slycat.data.hdf5.get_array_attribute(file, array, attribute).attrs
-    column_min.append(file_metadata.get("min", None))
-    column_max.append(file_metadata.get("max", None))
+  metadata = slycat.data.hdf5.get_array_metadata(file, array_index)
+  attributes = metadata["attributes"]
+  dimensions = metadata["dimensions"]
+  statistics = metadata["statistics"]
 
-  if len(dimension_begin) != 1:
+  if len(dimensions) != 1:
     raise cherrypy.HTTPError("400 Not a table (1D array) artifact.")
 
   metadata = {
-    "row-count" : dimension_end[0] - dimension_begin[0],
-    "column-count" : len(column_names),
-    "column-names" : column_names.tolist(),
-    "column-types" : column_types.tolist(),
-    "column-min" : column_min,
-    "column-max" : column_max
+    "row-count" : dimensions[0]["end"] - dimensions[0]["begin"],
+    "column-count" : len(attributes),
+    "column-names" : [attribute["name"] for attribute in attributes],
+    "column-types" : [attribute["type"] for attribute in attributes],
+    "column-min" : [attribute["min"] for attribute in statistics],
+    "column-max" : [attribute["max"] for attribute in statistics]
     }
 
   if index is not None:
