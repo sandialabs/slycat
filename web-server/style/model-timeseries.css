@@ -23,13 +23,13 @@ rights in this software.
   border-collapse: collapse;
 }
 
-#cluster-viewer th.output
+#cluster-viewer td.output
 {
   background: #dbd9eb;
   cursor: pointer;
 }
 
-#cluster-viewer th.output.selected
+#cluster-viewer td.output.selected
 {
   background: #7767b0;
   color: white;
