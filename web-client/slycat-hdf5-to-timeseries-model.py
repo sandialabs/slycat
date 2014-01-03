@@ -43,21 +43,21 @@ class hdf5_inputs(slycat.model.timeseries.input_strategy):
       return slycat.data.hdf5.get_array_attribute(inputs, 0, attribute)[...]
 
   def get_timeseries_attributes(self, index):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
       metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
     return metadata["attributes"][1:] # Skip the timestamps
 
   def get_timeseries_time_range(self, index):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
       metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
     return metadata["statistics"][0]["min"], metadata["statistics"][0]["max"]
 
   def get_timeseries_times(self, index):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
       return slycat.data.hdf5.get_array_attribute(outputs, index, 0)[...]
 
   def get_timeseries_attribute(self, index, attribute):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "outputs.hdf5")) as outputs:
+    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
       return slycat.data.hdf5.get_array_attribute(outputs, index, attribute + 1)[...]
 
 # Setup a connection to the Slycat Web Server.
