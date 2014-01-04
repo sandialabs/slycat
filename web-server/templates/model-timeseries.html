@@ -18,6 +18,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <script type="text/javascript" src="{{server-root}}js/timeseries-cluster.js"></script>
     <script type="text/javascript" src="{{server-root}}js/timeseries-dendrogram.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-waveformplot.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -628,7 +629,6 @@ rights in this software.
             {
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
-              aid : "data-table",
               clusters: clusters,
               clusters_data: clusters_data, // Currently this only contains the data for the initial cluster we are loading
             };
@@ -653,8 +653,24 @@ rights in this software.
             }
 
             $("#dendrogram-viewer").dendrogram(dendrogram_options);
+          }
 
+          // Setup the waveform plot ...
+          if(!waveformplot_ready && clusters_data)
+          {
+            waveformplot_ready = true;
 
+            $("#waveform-pane .load-status").css("display", "none");
+
+            var waveformplot_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              clusters_data: clusters_data, // Currently this only contains the data for the initial cluster we are loading
+              waveforms: clusters_data.waveforms,
+            };
+
+            $("#waveform-viewer").waveformplot(waveformplot_options);
           }
 
           
