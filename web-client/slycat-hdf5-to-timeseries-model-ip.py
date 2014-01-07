@@ -11,21 +11,18 @@ This script loads data from a directory containing:
     One timeseries-N.hdf5 file for each row in the input table.
 """
 
+import collections
+import datetime
 import IPython.parallel
+import json
 import numpy
 import os
+import scipy.cluster.hierarchy
+import scipy.spatial.distance
+import slycat.data.array
 import slycat.data.hdf5
 import slycat.model.timeseries
 import slycat.web.client
-
-import collections
-import datetime
-#import itertools
-#import json
-#import numpy
-#import scipy.cluster.hierarchy
-#import scipy.spatial.distance
-#import slycat.data.array
 
 #def mix(a, b, amount):
 #  return ((1.0 - amount) * a) + (amount * b)
