@@ -60,7 +60,7 @@ def get_context():
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
 
   marking = cherrypy.request.app.config["slycat"]["marking"]
-  context["marking-types"] = [{"type" : type, "label" : marking.label(type)} for type in marking.types()]
+  context["marking-types"] = [{"type" : type, "label" : marking.label(type), "html" : marking.html(type)} for type in marking.types()]
   return context
 
 def get_home():
@@ -97,7 +97,7 @@ def post_projects():
   cherrypy.response.status = "201 Project created."
   return {"id" : pid}
 
-def get_project(pid):
+def get_project(pid, _=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -105,22 +105,12 @@ def get_project(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project)
 
-  models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
-  models = sorted(models, key=lambda x: x["created"], reverse=True)
-
-  marking = cherrypy.request.app.config["slycat"]["marking"]
-  for model in models:
-    model["marking-html"] = marking.html(model["marking"])
-
   if accept == "text/html":
     context = get_context()
     context.update(project)
-    context["models"] = models
-    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
-    context["acl-json"] = json.dumps(project["acl"])
     context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
     context["remote-hosts"] = [{"name" : host} for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
-    context["new-model-name"] = "Model-%s" % (len(models) + 1)
+    context["marking-types-json"] = json.dumps({marking_type["type"] : {"label":marking_type["label"], "html":marking_type["html"]} for marking_type in context["marking-types"]})
 
     return slycat.web.server.template.render("project.html", context)
 
