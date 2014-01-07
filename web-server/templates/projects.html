@@ -33,16 +33,6 @@ rights in this software.
           <button id="create-project" title="Create new Slycat project.">Add New Project</button>
         </div>
         <ul id="project-list" class="main-list">
-          {{#projects}}
-          <li>
-            <div class='main-item'>
-              <h3 class='main-title'><a class='project-link' href="{{server-root}}projects/{{_id}}">{{name}}</a></h3>
-              <a class='main-tag project' href="{{server-root}}projects/{{_id}}">Project</a>
-              <div class='main-created'>Created {{created}} by {{creator}}</div>
-              <p class='main-description'>{{description}}</p>
-            </div>
-          </li>
-          {{/projects}}
         </ul>
       </div>
     </div>
@@ -53,6 +43,48 @@ rights in this software.
     </div>
 
     <script type="text/javascript">
+      // Load the list of existing projects.
+      $.ajax(
+      {
+        type: "GET",
+        cache: false, // So the browser doesn't cache the JSON and display it to the user later-on.
+        url: "{{server-root}}projects",
+        dataType : "json",
+        success: function(projects)
+        {
+          var project_list = $("#project-list").empty();
+          $.each(projects, function(index, project)
+          {
+            $("<li>")
+              .append(
+                $("<div class='main-item'>")
+                  .append($("<h3 class='main-title'>")
+                    .append($("<a class='project-link'>")
+                      .attr("href", "{{server-root}}projects/" + project._id)
+                      .text(project.name)
+                      )
+                    )
+                  .append($("<a class='main-tag project'>")
+                    .attr("href", "{{server-root}}projects/" + project._id)
+                    .text("Project")
+                    )
+                  .append($("<div class='main-created'>")
+                    .text("Created " + project.created + " by " + project.creator)
+                    )
+                  .append($("<p class='main-description'>")
+                    .text(project.description)
+                    )
+                )
+              .appendTo(project_list);
+          });
+        },
+        error: function(request, status, reason_phrase)
+        {
+          window.alert("Error retrieving project list: " + reason_phrase);
+        }
+      });
+
+      // Setup the user interface for creating new projects.
       $( "#new-project-form" ).dialog(
       {
         autoOpen: false,

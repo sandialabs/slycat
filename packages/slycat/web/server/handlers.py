@@ -63,33 +63,22 @@ def get_context():
   context["marking-types"] = [{"type" : type, "label" : marking.label(type)} for type in marking.types()]
   return context
 
-def is_deleted(entity):
-  """Identify objects that have been marked for deletion."""
-  return "deleted" in entity and entity["deleted"] == "true"
-
-def hide_deleted(entity):
-  """Treat objects that have been marked for deletion as if they don't exist."""
-  if is_deleted(entity):
-    raise cherrypy.HTTPError("404 Entity marked for deletion.")
-
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["projects-redirect"])
 
-def get_projects():
+def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
-  database = slycat.web.server.database.couchdb.connect()
-  projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
-  projects = [project for project in projects if not is_deleted(project)]
-  projects = sorted(projects, key = lambda x: x["created"], reverse=True)
 
   if accept == "text/html":
     context = get_context()
-    context["projects"] = projects
     return slycat.web.server.template.render("projects.html", context)
 
   if accept == "application/json":
+    database = slycat.web.server.database.couchdb.connect()
+    projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
+    projects = sorted(projects, key = lambda x: x["created"], reverse=True)
     return json.dumps(projects)
 
 @cherrypy.tools.json_in(on = True)
