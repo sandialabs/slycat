@@ -25,14 +25,11 @@ import slycat.data.hdf5
 import slycat.model.timeseries
 import slycat.web.client
 
-#def mix(a, b, amount):
-#  return ((1.0 - amount) * a) + (amount * b)
-
 parser = slycat.web.client.option_parser()
 parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
 parser.add_argument("--cluster-bin-count", type=int, default=100, help="Cluster bin count.  Default: %(default)s")
 parser.add_argument("--cluster-bin-type", default="naive", choices=["naive"], help="Cluster bin type.  Default: %(default)s")
-parser.add_argument("--cluster-type", default="average", help="Clustering type.  Default: %(default)s")
+parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Clustering type.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
 parser.add_argument("--model-name", default="HDF5-Timeseries", help="New model name.  Default: %(default)s")
@@ -45,19 +42,8 @@ if arguments.cluster_bin_count < 1:
 
 pool = IPython.parallel.Client()
 
-#class hdf5_inputs(slycat.model.timeseries.input_strategy):
-#  def get_timeseries_time_range(self, index):
-#    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
-#      metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
-#    return metadata["statistics"][0]["min"], metadata["statistics"][0]["max"]
-#
-#  def get_timeseries_times(self, index):
-#    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
-#      return slycat.data.hdf5.get_array_attribute(outputs, index, 0)[...]
-#
-#  def get_timeseries_attribute(self, index, attribute):
-#    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
-#      return slycat.data.hdf5.get_array_attribute(outputs, index, attribute + 1)[...]
+def mix(a, b, amount):
+  return ((1.0 - amount) * a) + (amount * b)
 
 # Setup a connection to the Slycat Web Server.
 connection = slycat.web.client.connect(arguments)
@@ -129,107 +115,111 @@ try:
   slycat.web.client.log.info("Collecting timeseries statistics.")
   time_ranges = pool[:].map_sync(get_time_range, itertools.repeat(arguments.directory, timeseries_count), range(timeseries_count))
 
-#    # For each cluster ...
-#    for index, (name, storage) in enumerate(sorted(clusters.items())):
-#      progress_begin = float(index) / float(len(clusters))
-#      progress_end = float(index + 1) / float(len(clusters))
-#
-#      # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-#      connection.update_model(mid, message="Rebinning data for %s" % name, progress=progress_begin)
-#      slycat.web.client.log.info("Rebinning data for %s" % name)
-#
-#      # Get the minimum and maximum times across every series in the cluster.
-#      ranges = [time_ranges[timeseries[0]] for timeseries in storage]
-#      time_min = min(zip(*ranges)[0])
-#      time_max = max(zip(*ranges)[1])
-#
-#      if cluster_bin_type == "naive":
-#        bin_edges = numpy.linspace(time_min, time_max, cluster_bin_count + 1)
-#        bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
-#        def naive_rebin(item):
-#          timeseries_index, attribute_index = item
-#          slycat.web.client.log.debug("naive rebin %s %s", timeseries_index, attribute_index)
-#          original_times = input_strategy.get_timeseries_times(timeseries_index)
-#          original_values = input_strategy.get_timeseries_attribute(timeseries_index, attribute_index)
-#          bin_indices = numpy.digitize(original_times, bin_edges)
-#          bin_indices[-1] -= 1
-#          bin_counts = numpy.bincount(bin_indices)[1:]
-#          bin_sums = numpy.bincount(bin_indices, original_values)[1:]
-#          bin_values = bin_sums / bin_counts
-#          return {
-#            "input-index" : timeseries_index,
-#            "times" : bin_times,
-#            "values" : bin_values
-#          }
-#        waveforms = list(executor.map(naive_rebin, storage))
-#
-#      # Compute a distance matrix comparing every series to every other ...
-#      observation_count = len(waveforms)
-#      distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
-#      for i in range(0, observation_count):
-#        connection.update_model(mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
-#        slycat.web.client.log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
-#        for j in range(i + 1, observation_count):
-#          distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
-#          distance_matrix[i, j] = distance
-#          distance_matrix[j, i] = distance
-#
-#      # Use the distance matrix to cluster observations ...
-#      connection.update_model(mid, message="Clustering %s" % name)
-#      slycat.web.client.log.info("Clustering %s" % name)
-#      distance = scipy.spatial.distance.squareform(distance_matrix)
-#      linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_type))
-#
-#      # Identify exemplar waveforms for each cluster ...
-#      summed_distances = numpy.zeros(shape=(observation_count))
-#      exemplars = dict()
-#      cluster_membership = []
-#
-#      for i in range(observation_count):
-#        exemplars[i] = i
-#        cluster_membership.append(set([i]))
-#
-#      for i in range(len(linkage)):
-#        connection.update_model(mid, message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
-#        slycat.web.client.log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
-#        cluster_id = i + observation_count
-#        (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
-#        cluster1 = int(f_cluster1)
-#        cluster2 = int(f_cluster2)
-#        # Housekeeping: assemble the membership of the new cluster
-#        cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
-#        #cherrypy.log.error("Finding exemplar for cluster %s containing %s members from %s and %s." % (cluster_id, len(cluster_membership[-1]), cluster1, cluster2))
-#
-#        # We need to update the distance from each member of the new
-#        # cluster to all the other members of the cluster.  That means
-#        # that for all the members of cluster1, we need to add in the
-#        # distances to members of cluster2, and for all members of
-#        # cluster2, we need to add in the distances to members of
-#        # cluster1.
-#        for cluster1_member in cluster_membership[cluster1]:
-#          for cluster2_member in cluster_membership[cluster2]:
-#            summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
-#
-#        for cluster2_member in cluster_membership[int(cluster2)]:
-#          for cluster1_member in cluster_membership[cluster1]:
-#            summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
-#
-#        min_summed_distance = None
-#        max_summed_distance = None
-#
-#        exemplar_id = 0
-#        for member in cluster_membership[cluster_id]:
-#          if min_summed_distance is None or summed_distances[member] < min_summed_distance:
-#            min_summed_distance = summed_distances[member]
-#            exemplar_id = member
-#
-#          if max_summed_distance is None or summed_distances[member] > min_summed_distance:
-#            max_summed_distance = summed_distances[member]
-#
-#        exemplars[cluster_id] = exemplar_id
-#
-#      # Store the cluster.
-#      connection.store_file("cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
+  # For each cluster ...
+  for index, (name, storage) in enumerate(sorted(clusters.items())):
+    progress_begin = float(index) / float(len(clusters))
+    progress_end = float(index + 1) / float(len(clusters))
+
+    # Rebin each timeseries within the cluster so they share common stop/start times and samples.
+    connection.update_model(mid, message="Rebinning data for %s" % name, progress=progress_begin)
+    slycat.web.client.log.info("Rebinning data for %s" % name)
+
+    # Get the minimum and maximum times across every series in the cluster.
+    ranges = [time_ranges[timeseries[0]] for timeseries in storage]
+    time_min = min(zip(*ranges)[0])
+    time_max = max(zip(*ranges)[1])
+
+    if arguments.cluster_bin_type == "naive":
+      bin_edges = numpy.linspace(time_min, time_max, arguments.cluster_bin_count + 1)
+      bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
+      def naive_rebin(directory, bin_edges, bin_times, item):
+        import numpy
+        import os
+        import slycat.data.hdf5
+
+        timeseries_index, attribute_index = item
+        with slycat.data.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
+          original_times = slycat.data.hdf5.get_array_attribute(file, 0, 0)[:]
+          original_values = slycat.data.hdf5.get_array_attribute(file, 0, attribute_index + 1)[:]
+          bin_indices = numpy.digitize(original_times, bin_edges)
+          bin_indices[-1] -= 1
+          bin_counts = numpy.bincount(bin_indices)[1:]
+          bin_sums = numpy.bincount(bin_indices, original_values)[1:]
+          bin_values = bin_sums / bin_counts
+          return {
+            "input-index" : timeseries_index,
+            "times" : bin_times,
+            "values" : bin_values
+          }
+      waveforms = pool[:].map_sync(naive_rebin, itertools.repeat(arguments.directory, len(storage)), itertools.repeat(bin_edges, len(storage)), itertools.repeat(bin_times, len(storage)), storage)
+
+    # Compute a distance matrix comparing every series to every other ...
+    observation_count = len(waveforms)
+    distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
+    for i in range(0, observation_count):
+      connection.update_model(mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
+      slycat.web.client.log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
+      for j in range(i + 1, observation_count):
+        distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
+        distance_matrix[i, j] = distance
+        distance_matrix[j, i] = distance
+
+    # Use the distance matrix to cluster observations ...
+    connection.update_model(mid, message="Clustering %s" % name)
+    slycat.web.client.log.info("Clustering %s" % name)
+    distance = scipy.spatial.distance.squareform(distance_matrix)
+    linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type))
+
+    # Identify exemplar waveforms for each cluster ...
+    summed_distances = numpy.zeros(shape=(observation_count))
+    exemplars = dict()
+    cluster_membership = []
+
+    for i in range(observation_count):
+      exemplars[i] = i
+      cluster_membership.append(set([i]))
+
+    for i in range(len(linkage)):
+      connection.update_model(mid, message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
+      slycat.web.client.log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
+      cluster_id = i + observation_count
+      (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
+      cluster1 = int(f_cluster1)
+      cluster2 = int(f_cluster2)
+      # Housekeeping: assemble the membership of the new cluster
+      cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
+      #cherrypy.log.error("Finding exemplar for cluster %s containing %s members from %s and %s." % (cluster_id, len(cluster_membership[-1]), cluster1, cluster2))
+
+      # We need to update the distance from each member of the new
+      # cluster to all the other members of the cluster.  That means
+      # that for all the members of cluster1, we need to add in the
+      # distances to members of cluster2, and for all members of
+      # cluster2, we need to add in the distances to members of
+      # cluster1.
+      for cluster1_member in cluster_membership[cluster1]:
+        for cluster2_member in cluster_membership[cluster2]:
+          summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
+
+      for cluster2_member in cluster_membership[int(cluster2)]:
+        for cluster1_member in cluster_membership[cluster1]:
+          summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
+
+      min_summed_distance = None
+      max_summed_distance = None
+
+      exemplar_id = 0
+      for member in cluster_membership[cluster_id]:
+        if min_summed_distance is None or summed_distances[member] < min_summed_distance:
+          min_summed_distance = summed_distances[member]
+          exemplar_id = member
+
+        if max_summed_distance is None or summed_distances[member] > min_summed_distance:
+          max_summed_distance = summed_distances[member]
+
+      exemplars[cluster_id] = exemplar_id
+
+    # Store the cluster.
+    connection.store_file(mid, "cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
