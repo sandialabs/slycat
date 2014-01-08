@@ -14,6 +14,7 @@ This script loads data from a directory containing:
 import collections
 import datetime
 import IPython.parallel
+import itertools
 import json
 import numpy
 import os
@@ -45,11 +46,6 @@ if arguments.cluster_bin_count < 1:
 pool = IPython.parallel.Client()
 
 #class hdf5_inputs(slycat.model.timeseries.input_strategy):
-#  def get_timeseries_attributes(self, index):
-#    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
-#      metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
-#    return metadata["attributes"][1:] # Skip the timestamps
-#
 #  def get_timeseries_time_range(self, index):
 #    with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % index)) as outputs:
 #      metadata = slycat.data.hdf5.get_array_metadata(outputs, index)
@@ -120,15 +116,19 @@ try:
   # Store an alphabetized collection of cluster names.
   connection.store_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
-#    # Get the minimum and maximum times for every timeseries.
-#    def get_time_range(timeseries_index):
-#      slycat.web.client.log.debug("get time range %s", timeseries_index)
-#      return input_strategy.get_timeseries_time_range(timeseries_index)
-#
-#    connection.update_model(mid, message="Collecting timeseries statistics.")
-#    slycat.web.client.log.info("Collecting timeseries statistics.")
-#    time_ranges = list(executor.map(get_time_range, range(timeseries_count)))
-#
+  # Get the minimum and maximum times for every timeseries.
+  def get_time_range(directory, timeseries_index):
+    import os
+    import slycat.web.client
+    import slycat.data.hdf5
+    with slycat.data.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
+      metadata = slycat.data.hdf5.get_array_metadata(file, 0)
+    return metadata["statistics"][0]["min"], metadata["statistics"][0]["max"]
+
+  connection.update_model(mid, message="Collecting timeseries statistics.")
+  slycat.web.client.log.info("Collecting timeseries statistics.")
+  time_ranges = pool[:].map_sync(get_time_range, itertools.repeat(arguments.directory, timeseries_count), range(timeseries_count))
+
 #    # For each cluster ...
 #    for index, (name, storage) in enumerate(sorted(clusters.items())):
 #      progress_begin = float(index) / float(len(clusters))
@@ -230,8 +230,8 @@ try:
 #
 #      # Store the cluster.
 #      connection.store_file("cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
-#
-#    connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+
+  connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
   import traceback
   slycat.web.client.log.error(traceback.format_exc())
