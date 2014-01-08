@@ -65,7 +65,6 @@ try:
   connection.store_parameter(mid, "cluster-type", arguments.cluster_type)
 
   connection.update_model(mid, message="Storing input table.")
-  slycat.web.client.log.info("Storing input table.")
 
   with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
     metadata = slycat.data.hdf5.get_array_metadata(file, 0)
@@ -162,7 +161,7 @@ try:
     observation_count = len(waveforms)
     distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
     for i in range(0, observation_count):
-      connection.update_model(mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
+      #connection.update_model(mid, message="Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count), progress=mix(progress_begin, progress_end, float(i) / float(observation_count)))
       slycat.web.client.log.info("Computing distance matrix for %s, %s of %s" % (name, i+1, observation_count))
       for j in range(i + 1, observation_count):
         distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
@@ -184,9 +183,9 @@ try:
       exemplars[i] = i
       cluster_membership.append(set([i]))
 
+    connection.update_model(mid, message="Identifying examplars for %s" % (name))
+    slycat.web.client.log.info("Identifying examplars for %s" % (name))
     for i in range(len(linkage)):
-      connection.update_model(mid, message="Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
-      slycat.web.client.log.info("Identifying examplars for %s, %s of %s" % (name, i+1, len(linkage)))
       cluster_id = i + observation_count
       (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
       cluster1 = int(f_cluster1)
