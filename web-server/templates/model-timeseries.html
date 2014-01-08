@@ -288,8 +288,7 @@ rights in this software.
             bookmarker.get_state(function(state)
             {
               bookmark = state;
-              //setup_colorswitcher();
-              //setup_v();
+              setup_colorswitcher();
               setup_cluster();
               setup_widgets();
             });
@@ -608,6 +607,17 @@ rights in this software.
               error: artifact_missing
             });
           }
+        }
+
+        function setup_colorswitcher()
+        {
+          var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+          $("#color-switcher").colorswitcher({colormap:colormap});
+          $("#color-switcher").bind("colormap-changed", function(event, colormap)
+          {
+            selected_colormap_changed(colormap);
+          });
         }
 
         function setup_widgets()
