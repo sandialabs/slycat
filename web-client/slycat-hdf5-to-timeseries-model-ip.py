@@ -69,20 +69,20 @@ try:
 
   with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
     metadata = slycat.data.hdf5.get_array_metadata(file, 0)
-  attributes = metadata["attributes"]
-  dimensions = metadata["dimensions"]
-  attributes = slycat.data.array.require_attributes(attributes)
-  dimensions = slycat.data.array.require_dimensions(dimensions)
-  if len(attributes) < 1:
-    raise Exception("Inputs table must have at least one attribute.")
-  if len(dimensions) != 1:
-    raise Exception("Inputs table must have exactly one dimension.")
-  timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
+    attributes = metadata["attributes"]
+    dimensions = metadata["dimensions"]
+    attributes = slycat.data.array.require_attributes(attributes)
+    dimensions = slycat.data.array.require_dimensions(dimensions)
+    if len(attributes) < 1:
+      raise Exception("Inputs table must have at least one attribute.")
+    if len(dimensions) != 1:
+      raise Exception("Inputs table must have exactly one dimension.")
+    timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
-  connection.start_array_set(mid, "inputs")
-  connection.start_array(mid, "inputs", 0, attributes, dimensions)
-  for attribute in range(len(attributes)):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
+    connection.start_array_set(mid, "inputs")
+    connection.start_array(mid, "inputs", 0, attributes, dimensions)
+    for attribute in range(len(attributes)):
+      slycat.web.client.log.info("Storing input table attribute %s", attribute)
       data = slycat.data.hdf5.get_array_attribute(file, 0, attribute)[...]
       connection.store_array_attribute(mid, "inputs", 0, attribute, data)
 
