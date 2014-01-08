@@ -69,20 +69,20 @@ try:
 
   with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
     metadata = slycat.data.hdf5.get_array_metadata(file, 0)
-  attributes = metadata["attributes"]
-  dimensions = metadata["dimensions"]
-  attributes = slycat.data.array.require_attributes(attributes)
-  dimensions = slycat.data.array.require_dimensions(dimensions)
-  if len(attributes) < 1:
-    raise Exception("Inputs table must have at least one attribute.")
-  if len(dimensions) != 1:
-    raise Exception("Inputs table must have exactly one dimension.")
-  timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
+    attributes = metadata["attributes"]
+    dimensions = metadata["dimensions"]
+    attributes = slycat.data.array.require_attributes(attributes)
+    dimensions = slycat.data.array.require_dimensions(dimensions)
+    if len(attributes) < 1:
+      raise Exception("Inputs table must have at least one attribute.")
+    if len(dimensions) != 1:
+      raise Exception("Inputs table must have exactly one dimension.")
+    timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
-  connection.start_array_set(mid, "inputs")
-  connection.start_array(mid, "inputs", 0, attributes, dimensions)
-  for attribute in range(len(attributes)):
-    with slycat.data.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
+    connection.start_array_set(mid, "inputs")
+    connection.start_array(mid, "inputs", 0, attributes, dimensions)
+    for attribute in range(len(attributes)):
+      slycat.web.client.log.info("Storing input table attribute %s", attribute)
       data = slycat.data.hdf5.get_array_attribute(file, 0, attribute)[...]
       connection.store_array_attribute(mid, "inputs", 0, attribute, data)
 
@@ -130,28 +130,33 @@ try:
     time_max = max(zip(*ranges)[1])
 
     if arguments.cluster_bin_type == "naive":
-      bin_edges = numpy.linspace(time_min, time_max, arguments.cluster_bin_count + 1)
-      bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
-      def naive_rebin(directory, bin_edges, bin_times, item):
+      def naive_rebin(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
         import numpy
         import os
         import slycat.data.hdf5
 
-        timeseries_index, attribute_index = item
+        bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
+        bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
         with slycat.data.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
           original_times = slycat.data.hdf5.get_array_attribute(file, 0, 0)[:]
           original_values = slycat.data.hdf5.get_array_attribute(file, 0, attribute_index + 1)[:]
-          bin_indices = numpy.digitize(original_times, bin_edges)
-          bin_indices[-1] -= 1
-          bin_counts = numpy.bincount(bin_indices)[1:]
-          bin_sums = numpy.bincount(bin_indices, original_values)[1:]
-          bin_values = bin_sums / bin_counts
-          return {
-            "input-index" : timeseries_index,
-            "times" : bin_times,
-            "values" : bin_values
-          }
-      waveforms = pool[:].map_sync(naive_rebin, itertools.repeat(arguments.directory, len(storage)), itertools.repeat(bin_edges, len(storage)), itertools.repeat(bin_times, len(storage)), storage)
+        bin_indices = numpy.digitize(original_times, bin_edges)
+        bin_indices[-1] -= 1
+        bin_counts = numpy.bincount(bin_indices)[1:]
+        bin_sums = numpy.bincount(bin_indices, original_values)[1:]
+        bin_values = bin_sums / bin_counts
+        return {
+          "input-index" : timeseries_index,
+          "times" : bin_times,
+          "values" : bin_values,
+        }
+      directories = itertools.repeat(arguments.directory, len(storage))
+      min_times = itertools.repeat(time_min, len(storage))
+      max_times = itertools.repeat(time_max, len(storage))
+      bin_counts = itertools.repeat(arguments.cluster_bin_count, len(storage))
+      timeseries_indices = [timeseries for timeseries, attribute in storage]
+      attribute_indices = [attribute for timeseries, attribute in storage]
+      waveforms = pool[:].map_sync(naive_rebin, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
 
     # Compute a distance matrix comparing every series to every other ...
     observation_count = len(waveforms)
