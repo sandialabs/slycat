@@ -19,14 +19,13 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/timeseries-cluster.js"></script>
     <script type="text/javascript" src="{{server-root}}js/timeseries-dendrogram.js"></script>
     <script type="text/javascript" src="{{server-root}}js/timeseries-waveformplot.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-table.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/table-timeseries-simulation.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.timeseriesloader.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
 
@@ -128,9 +127,10 @@ rights in this software.
         </div>
       </div>
     </div>
-    <div id="data-pane" class="ui-layout-south" style="overflow: auto">
+    <div id="table-pane" class="ui-layout-south" style="overflow: auto">
       <div class="load-status"></div>
-      <div id="table"></div>
+      <div id="table">
+      </div>
     </div>
 
 
@@ -153,6 +153,7 @@ rights in this software.
         var outputs = null;
         var clusters = null; // This is just the list of cluster names
         var clusters_data = null; // This holds data for each cluster
+        var table_metadata = null;
 
         var cluster_ready = false;
         var dendrogram_ready = false;
@@ -265,6 +266,19 @@ rights in this software.
               {
                 clusters = result;
                 setup_cluster();
+                setup_widgets();
+              },
+              error: artifact_missing
+            });
+
+            // Load data table metadata.
+            $.ajax({
+              url : "{{server-root}}models/{{_id}}/tables/inputs/arrays/0/metadata?index=Index",
+              contentType : "application/json",
+              success: function(metadata)
+              {
+                table_metadata = metadata;
+
                 setup_widgets();
               },
               error: artifact_missing
@@ -671,6 +685,28 @@ rights in this software.
             };
 
             $("#waveform-viewer").waveformplot(waveformplot_options);
+          }
+
+          // Setup the table ...
+          if(!table_ready && bookmark && table_metadata)
+          {
+            table_ready = true;
+
+            $("#table-pane .load-status").css("display", "none");
+
+            var table_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "inputs",
+              metadata : table_metadata,
+            };
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+
+            $("#table").table(table_options);
+
           }
 
           
