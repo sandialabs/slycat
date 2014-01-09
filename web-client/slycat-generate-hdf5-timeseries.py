@@ -62,10 +62,10 @@ def generate_timeseries(timeseries):
   with slycat.data.hdf5.start_array_set(os.path.join(arguments.output_directory, "timeseries-%s.hdf5" % timeseries)) as file:
     timeseries_attributes = [("time", "float64")] + [("%s%s" % (arguments.timeseries_variable_prefix, attribute), "float64") for attribute in range(arguments.timeseries_variables)]
     timeseries_dimensions = [("row", "int64", 0, arguments.timeseries_samples)]
-    slycat.data.hdf5.start_array(file, timeseries, timeseries_attributes, timeseries_dimensions)
+    slycat.data.hdf5.start_array(file, 0, timeseries_attributes, timeseries_dimensions)
 
     times = numpy.linspace(0, 2 * numpy.pi, arguments.timeseries_samples)
-    slycat.data.hdf5.store_array_attribute(file, timeseries, 0, [(0, times.shape[0])], times)
+    slycat.data.hdf5.store_array_attribute(file, 0, 0, [(0, times.shape[0])], times)
 
     for variable in range(arguments.timeseries_variables):
       with log_lock:
@@ -74,7 +74,7 @@ def generate_timeseries(timeseries):
       values = numpy.zeros((arguments.timeseries_samples))
       for k in coefficients:
         values += numpy.sin(times * k) / k
-      slycat.data.hdf5.store_array_attribute(file, timeseries, variable + 1, [(0, values.shape[0])], values)
+      slycat.data.hdf5.store_array_attribute(file, 0, variable + 1, [(0, values.shape[0])], values)
 
 with concurrent.futures.ProcessPoolExecutor(arguments.parallel_jobs) as pool:
   results = list(pool.map(generate_timeseries, range(arguments.timeseries_count)))
