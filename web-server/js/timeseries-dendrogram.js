@@ -153,20 +153,6 @@ $.widget("timeseries.dendrogram",
       if(!skip_bookmarking)
         context.element.trigger("node-selection-changed", d);
 
-      // TODO this needs to be done outside of the widget
-      // if(!skip_bookmarking){
-      //   var selected_node_index = {};
-      //   selected_node_index[cluster_index + "-selected-node-index"] = d["node-index"];
-      //   bookmarker.updateState(selected_node_index);
-      // }
-
-      // TODO this needs to be done outside of the widget
-      // $.ajax(
-      // {
-      //   type : "POST",
-      //   url : "{{server-root}}events/models/{{_id}}/select/node/" + d["node-index"],
-      // });
-
       function select_subtree(d, selection)
       {
         selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
@@ -185,8 +171,7 @@ $.widget("timeseries.dendrogram",
         .classed("selected", function(d) { return d.selected; })
         ;
 
-      // TODO color links needs to be implemented later
-      //color_links();
+      color_links();
 
       // TODO this needs to be implemented outside of the widget
       // function make_selection_update(selection)
@@ -417,42 +402,32 @@ $.widget("timeseries.dendrogram",
         d.y0 = d.y;
       });
 
-      // TODO this needs to be done outside this widget
       // Bookmark expanded and collapsed nodes
-      // if(!skip_bookmarking){
-      //   var expanded = [];
-      //   var collapsed = [];
-      //   function findExpandedAndCollapsedNodes(d){
-      //     // If this node is expanded, add its node-index to the expanded array
-      //     if(d.children) {
-      //       expanded.push(d["node-index"]);
-      //       // Recursively call this function for each child to capture any collapsed and expanded ones
-      //       for(var i = 0; i < d.children.length; i++) {
-      //         findExpandedAndCollapsedNodes(d.children[i]);
-      //       }
-      //     }
-      //     // Otherwise if this node is collapsed, add its node-index to the collapsed array
-      //     else if(d._children) {
-      //       collapsed.push(d["node-index"]);
-      //     }
-      //   }
-      //   findExpandedAndCollapsedNodes(root);
-      //   var cluster_state = {};
-      //   cluster_state[cluster_index + "-expanded-nodes"] = expanded;
-      //   cluster_state[cluster_index + "-collapsed-nodes"] = collapsed;
-      //   bookmarker.updateState(cluster_state);
-      // }
+      if(!skip_bookmarking){
+        var expanded = [];
+        var collapsed = [];
+        function findExpandedAndCollapsedNodes(d){
+          // If this node is expanded, add its node-index to the expanded array
+          if(d.children) {
+            expanded.push(d["node-index"]);
+            // Recursively call this function for each child to capture any collapsed and expanded ones
+            for(var i = 0; i < d.children.length; i++) {
+              findExpandedAndCollapsedNodes(d.children[i]);
+            }
+          }
+          // Otherwise if this node is collapsed, add its node-index to the collapsed array
+          else if(d._children) {
+            collapsed.push(d["node-index"]);
+          }
+        }
+        findExpandedAndCollapsedNodes(root);
+        self.element.trigger("expanded-collapsed-nodes-changed", {expanded:expanded, collapsed:collapsed});
+      }
     }
 
     // Toggle children.
     function toggle(d)
     {
-      $.ajax(
-      {
-        type : "POST",
-        url : server_root + "events/models/" + mid + "/toggle/node/" + d["node-index"],
-      });
-
       if(d.children)
       {
         d._children = d.children;
@@ -463,9 +438,9 @@ $.widget("timeseries.dendrogram",
         d.children = d._children;
         d._children = null;
       }
-    }
 
-    
+      self.element.trigger("node-toggled", d);
+    }
 
     // Setup the default selected node ...
     //this.select_node(this.options.node);

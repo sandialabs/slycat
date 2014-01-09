@@ -687,6 +687,20 @@ rights in this software.
             {
               selected_node_changed(node);
             });
+
+            // Bookmark changes to expanded and collapsed nodes ...
+            $("#dendrogram-viewer").bind("expanded-collapsed-nodes-changed", function(event, nodes)
+            {
+              expanded_collapsed_nodes_changed(nodes);
+            });
+
+            // Log changes to node toggle ...
+            $("#dendrogram-viewer").bind("node-toggled", function(event, node)
+            {
+              node_toggled(node);
+            });
+
+
           }
 
           // Setup the waveform plot ...
@@ -764,6 +778,22 @@ rights in this software.
           selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = node["node-index"];
           bookmarker.updateState(selected_node_index);
         }
+
+        function expanded_collapsed_nodes_changed(nodes){
+          var cluster_state = {};
+          cluster_state[$("#cluster-viewer").cluster("option", "cluster") + "-expanded-nodes"] = nodes.expanded;
+          cluster_state[$("#cluster-viewer").cluster("option", "cluster") + "-collapsed-nodes"] = nodes.collapsed;
+          bookmarker.updateState(cluster_state);
+        }
+
+        function node_toggled(node){
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/toggle/node/" + node["node-index"],
+          });
+        }
+        
 
         function update_dendrogram(cluster)
         {
