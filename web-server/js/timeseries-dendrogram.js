@@ -61,7 +61,6 @@ $.widget("timeseries.dendrogram",
 	    .separation(function() { return 1; })
 	    ;
 
-	  // TODO probably not needed the first time around on _create
 	  self.container.selectAll("g").remove();
 
 	  var vis = self.container.append("svg:g")
@@ -82,7 +81,7 @@ $.widget("timeseries.dendrogram",
       nodes.forEach(function(d) { 
         if(selected_node_index != undefined) {
           if( d["node-index"] == selected_node_index ) {
-            select_node(d, true);
+            select_node(self, d, true);
           }
         }
         if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
@@ -100,7 +99,7 @@ $.widget("timeseries.dendrogram",
     }
     // We have no selected node data. Let's select the root node.
     if(selected_node_index == null){
-      select_node(root, true);
+      select_node(self, root, true);
     }
 
     // Initial update for the diagram ...
@@ -146,11 +145,13 @@ $.widget("timeseries.dendrogram",
 
 		// TODO the last selected node needs to be tracked elsewhere
     var last_selected_node = null;
-    function select_node(d, skip_bookmarking)
+    function select_node(context, d, skip_bookmarking)
     {
       if(last_selected_node === d)
         return;
       last_selected_node = d;
+      if(!skip_bookmarking)
+        context.element.trigger("node-selection-changed", d);
 
       // TODO this needs to be done outside of the widget
       // if(!skip_bookmarking){
@@ -293,7 +294,7 @@ $.widget("timeseries.dendrogram",
           } 
           // Regular click just selects it
           else {
-            select_node(d);
+            select_node(self, d);
           }
         })
         .style("opacity", 1e-6)

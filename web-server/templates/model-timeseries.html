@@ -681,6 +681,12 @@ rights in this software.
             }
 
             $("#dendrogram-viewer").dendrogram(dendrogram_options);
+
+            // Log changes to the node selection ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, node)
+            {
+              selected_node_changed(node);
+            });
           }
 
           // Setup the waveform plot ...
@@ -745,6 +751,18 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/cluster/" + cluster
           });
           bookmarker.updateState({"cluster-index" : cluster});
+        }
+
+        function selected_node_changed(node)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/node/" + node["node-index"],
+          });
+          var selected_node_index = {};
+          selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = node["node-index"];
+          bookmarker.updateState(selected_node_index);
         }
 
         function update_dendrogram(cluster)
