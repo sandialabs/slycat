@@ -15,7 +15,7 @@ $.widget("timeseries.dendrogram",
     mid : null,
   	clusters:[],
   	cluster: 0,
-  	clusters_data:[],
+  	cluster_data:null,
   	collapsed_nodes:null,
   	expanded_nodes:null,
   	selected_node_index:null,
@@ -23,19 +23,24 @@ $.widget("timeseries.dendrogram",
 
   _create: function()
   {
+    this._set_cluster();
+  },
+
+  _set_cluster: function()
+  {
   	var self = this;
   	self.container = d3.select("#dendrogram-viewer");
 
-  	var clusters_data = this.options.clusters_data;
+  	var cluster_data = this.options.cluster_data;
   	var collapsed_nodes = this.options.collapsed_nodes;
   	var expanded_nodes = this.options.expanded_nodes;
   	var selected_node_index = this.options.selected_node_index;
   	var server_root = self.options["server-root"];
   	var mid = self.options.mid;
 
-  	var linkage = clusters_data["linkage"];
-	  var waveforms = clusters_data["waveforms"];
-	  var exemplars = clusters_data["exemplars"];
+  	var linkage = cluster_data["linkage"];
+	  var waveforms = cluster_data["waveforms"];
+	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
 
 	  $.each(waveforms, function(index, waveform)
@@ -465,12 +470,15 @@ $.widget("timeseries.dendrogram",
     //this.select_node(this.options.node);
   },
 
-  // _setOption: function(key, value)
-  // {
-  //   //console.log("timeseries.cluster._setOption()", key, value);
-  // },
+  _setOption: function(key, value)
+  {
+    console.log("timeseries.dendrogram._setOption()", key, value);
+    this.options[key] = value;
 
-
-
+    if(key == "cluster_data")
+    {
+      this._set_cluster();
+    }
+  }
 
 });

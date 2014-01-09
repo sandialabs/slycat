@@ -153,6 +153,7 @@ rights in this software.
         var outputs = null;
         var clusters = null; // This is just the list of cluster names
         var clusters_data = null; // This holds data for each cluster
+        var initial_cluster = null; // This holds the index of the initially selected cluster
         var table_metadata = null;
 
         var cluster_ready = false;
@@ -265,6 +266,7 @@ rights in this software.
               success: function(result)
               {
                 clusters = result;
+                clusters_data = new Array(clusters.length)
                 setup_cluster();
                 setup_widgets();
               },
@@ -278,7 +280,6 @@ rights in this software.
               success: function(metadata)
               {
                 table_metadata = metadata;
-
                 setup_widgets();
               },
               error: artifact_missing
@@ -601,7 +602,8 @@ rights in this software.
               contentType : "application/json",
               success : function(cluster_data)
               {
-                clusters_data = cluster_data;
+                clusters_data[cluster] = cluster_data;
+                initial_cluster = cluster;
                 setup_widgets();
               },
               error: artifact_missing
@@ -636,14 +638,21 @@ rights in this software.
               cluster: cluster,
             });
 
+            // Log changes to the cluster selection ...
             $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
             {
               selected_cluster_changed(cluster);
             });
+
+            // Changing the cluster updates the dendrogram ...
+            $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
+            {
+              update_dendrogram(cluster);
+            });
           }
 
           // Setup the dendrogram ...
-          if(!dendrogram_ready && bookmark && clusters && clusters_data)
+          if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) )
           {
             dendrogram_ready = true;
 
@@ -654,33 +663,28 @@ rights in this software.
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
               clusters: clusters,
-              clusters_data: clusters_data, // Currently this only contains the data for the initial cluster we are loading
+              cluster_data: clusters_data[initial_cluster],
+              cluster: initial_cluster,
             };
 
-            var selected_cluster = 0;
-            if("cluster-index" in bookmark)
+            if(initial_cluster + "-collapsed-nodes" in bookmark)
             {
-              dendrogram_options.cluster = bookmark["cluster-index"];
-              selected_cluster = bookmark["cluster-index"];
+              dendrogram_options.collapsed_nodes = bookmark[initial_cluster  + "-collapsed-nodes"];
             }
-            if(selected_cluster + "-collapsed-nodes" in bookmark)
+            if(initial_cluster + "-expanded-nodes" in bookmark)
             {
-              dendrogram_options.collapsed_nodes = bookmark[selected_cluster  + "-collapsed-nodes"];
+              dendrogram_options.expanded_nodes = bookmark[initial_cluster  + "-expanded-nodes"];
             }
-            if(selected_cluster + "-expanded-nodes" in bookmark)
+            if(initial_cluster + "-selected-node-index" in bookmark)
             {
-              dendrogram_options.expanded_nodes = bookmark[selected_cluster  + "-expanded-nodes"];
-            }
-            if(selected_cluster + "-selected-node-index" in bookmark)
-            {
-              dendrogram_options.selected_node_index = bookmark[selected_cluster  + "-selected-node-index"];
+              dendrogram_options.selected_node_index = bookmark[initial_cluster  + "-selected-node-index"];
             }
 
             $("#dendrogram-viewer").dendrogram(dendrogram_options);
           }
 
           // Setup the waveform plot ...
-          if(!waveformplot_ready && clusters_data)
+          if(!waveformplot_ready && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
           {
             waveformplot_ready = true;
 
@@ -690,8 +694,7 @@ rights in this software.
             {
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
-              clusters_data: clusters_data, // Currently this only contains the data for the initial cluster we are loading
-              waveforms: clusters_data.waveforms,
+              waveforms: clusters_data[initial_cluster].waveforms,
             };
 
             $("#waveform-viewer").waveformplot(waveformplot_options);
@@ -718,9 +721,6 @@ rights in this software.
             $("#table").table(table_options);
 
           }
-
-          
-
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -747,8 +747,25 @@ rights in this software.
           bookmarker.updateState({"cluster-index" : cluster});
         }
 
-
-
+        function update_dendrogram(cluster)
+        {
+          // Retrieve cluster data if it's not already in the cache
+          if(clusters_data[cluster] === undefined) {
+             $.ajax(
+            {
+              url : "{{server-root}}models/{{_id}}/files/cluster-" + clusters[cluster],
+              contentType : "application/json",
+              success : function(cluster_data)
+              {
+                clusters_data[cluster] = cluster_data;
+                $("#dendrogram-viewer").dendrogram("option", {cluster_data : clusters_data[cluster]});
+              },
+              error: artifact_missing
+            });
+          } else {
+            $("#dendrogram-viewer").dendrogram("option", {cluster_data : clusters_data[cluster]});
+          }
+        }
 
       });
 
