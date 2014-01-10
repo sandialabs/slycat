@@ -14,6 +14,7 @@ $.widget("timeseries.waveformplot",
   	"server-root" : "",
     mid : null,
     waveforms : null,
+    selection : null,
   },
 
   _create: function()
@@ -48,21 +49,6 @@ $.widget("timeseries.waveformplot",
     this.color_scale = null;
     this.data_table_index_array = null;
 
-    var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["times"]); });
-    var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["times"]); });
-    var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["values"]); });
-    var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["values"]); });
-
-    this.x = d3.scale.linear()
-      .domain([x_min, x_max])
-      .range([0, this.diagram_width])
-      ;
-
-    this.y = d3.scale.linear()
-      .domain([y_max, y_min])
-      .range([0, this.diagram_height])
-      ;
-
     this.container.selectAll("g").remove();
 
     this.visualization = this.container.append("svg:g")
@@ -77,6 +63,8 @@ $.widget("timeseries.waveformplot",
       .on("click", panel_selection_callback(self)) // unselect all the waveforms when someone clicks in the panel but not on a waveform
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
+
+    //this._set_visible();
 
     function panel_selection_callback(context)
     {
@@ -93,10 +81,46 @@ $.widget("timeseries.waveformplot",
       }
     }
 
+    
+  },
+
+  _set_visible: function(){
+    var self = this;
+    var visible = this.options.selection;
+    this.waveforms = this.options.waveforms;
+
+    // Cancel any previously started work
+    self._stopProcessingWaveforms();
+
+    var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["times"]); });
+    var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["times"]); });
+    var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["values"]); });
+    var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["values"]); });
+
+    this.x = d3.scale.linear()
+      .domain([x_min, x_max])
+      .range([0, this.diagram_width])
+      ;
+
+    this.y = d3.scale.linear()
+      .domain([y_max, y_min])
+      .range([0, this.diagram_height])
+      ;
+
+    var waveform_subset = [];
+    $.each(visible, function(index, node)
+    {
+      if(node["waveform-index"] != null)
+        waveform_subset.push(self.waveforms[node["waveform-index"]]);
+    });
+
+    this.container.selectAll("g.waveform").remove();
+    this.container.selectAll("g.selection").remove();
+
     waveformsContainer = this.visualization;
 
     waveforms = waveformsContainer.selectAll("g.waveform")
-      .data(this.waveforms) // TODO for now just showing all of them. Should limit according to bookmarked node.
+      .data(waveform_subset)
       .enter()
       .append("svg:g")
       .attr("class", "waveform")
@@ -213,6 +237,27 @@ $.widget("timeseries.waveformplot",
 
 
 
-
   },
+
+  _stopProcessingWaveforms: function()
+  {
+    var self = this;
+    // Cancel any previously started work
+    clearTimeout(self.waveformProcessingTimeout);
+    clearTimeout(self.previewWaveformsTimeout);
+    clearTimeout(self.showWaveformPieContainerTimeout);
+    self.waveformPieContainer.hide();
+  },
+
+  _setOption: function(key, value)
+  {
+    console.log("timeseries.waveform._setOption()", key, value);
+    this.options[key] = value;
+
+    if(key == "selection")
+    {
+      this._set_visible();
+    }
+  },
+
 });

@@ -651,41 +651,7 @@ rights in this software.
             });
           }
 
-          // Setup the dendrogram ...
-          if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) )
-          {
-            dendrogram_ready = true;
-
-            $("#dendrogram-pane .load-status").css("display", "none");
-
-            var dendrogram_options = build_dendrogram_node_options(initial_cluster);
-            dendrogram_options["server-root"]="{{server-root}}";
-            dendrogram_options.mid="{{_id}}";
-            dendrogram_options.clusters=clusters;
-            dendrogram_options.cluster_data=clusters_data[initial_cluster];
-
-            $("#dendrogram-viewer").dendrogram(dendrogram_options);
-
-            // Log changes to the node selection ...
-            $("#dendrogram-viewer").bind("node-selection-changed", function(event, node)
-            {
-              selected_node_changed(node);
-            });
-
-            // Bookmark changes to expanded and collapsed nodes ...
-            $("#dendrogram-viewer").bind("expanded-collapsed-nodes-changed", function(event, nodes)
-            {
-              expanded_collapsed_nodes_changed(nodes);
-            });
-
-            // Log changes to node toggle ...
-            $("#dendrogram-viewer").bind("node-toggled", function(event, node)
-            {
-              node_toggled(node);
-            });
-
-
-          }
+          
 
           // Setup the waveform plot ...
           if(!waveformplot_ready && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
@@ -702,6 +668,48 @@ rights in this software.
             };
 
             $("#waveform-viewer").waveformplot(waveformplot_options);
+
+            // Log changes to the node selection ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
+            });
+          }
+
+          // Setup the dendrogram ...
+          if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) )
+          {
+            dendrogram_ready = true;
+
+            $("#dendrogram-pane .load-status").css("display", "none");
+
+            var dendrogram_options = build_dendrogram_node_options(initial_cluster);
+            dendrogram_options["server-root"]="{{server-root}}";
+            dendrogram_options.mid="{{_id}}";
+            dendrogram_options.clusters=clusters;
+            dendrogram_options.cluster_data=clusters_data[initial_cluster];
+
+            $("#dendrogram-viewer").dendrogram(dendrogram_options);
+
+            // Log changes to the node selection ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              selected_node_changed(parameters);
+            });
+
+            // Bookmark changes to expanded and collapsed nodes ...
+            $("#dendrogram-viewer").bind("expanded-collapsed-nodes-changed", function(event, nodes)
+            {
+              expanded_collapsed_nodes_changed(nodes);
+            });
+
+            // Log changes to node toggle ...
+            $("#dendrogram-viewer").bind("node-toggled", function(event, node)
+            {
+              node_toggled(node);
+            });
+
+
           }
 
           // Setup the table ...
@@ -751,16 +759,19 @@ rights in this software.
           bookmarker.updateState({"cluster-index" : cluster});
         }
 
-        function selected_node_changed(node)
+        function selected_node_changed(parameters)
         {
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/node/" + node["node-index"],
+            url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
           });
-          var selected_node_index = {};
-          selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = node["node-index"];
-          bookmarker.updateState(selected_node_index);
+          if(parameters.skip_bookmarking != true) {
+            var selected_node_index = {};
+            selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = parameters.node["node-index"];
+            bookmarker.updateState(selected_node_index);
+          }
+
         }
 
         function expanded_collapsed_nodes_changed(nodes){
@@ -792,6 +803,7 @@ rights in this software.
                 clusters_data[cluster] = cluster_data;
                 var dendrogram_options = build_dendrogram_node_options(cluster);
                 dendrogram_options.cluster_data = clusters_data[cluster];
+                $("#waveform-viewer").waveformplot("option", "waveforms", clusters_data[cluster].waveforms);
                 $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
               },
               error: artifact_missing
@@ -799,6 +811,7 @@ rights in this software.
           } else {
             var dendrogram_options = build_dendrogram_node_options(cluster);
             dendrogram_options.cluster_data = clusters_data[cluster];
+            $("#waveform-viewer").waveformplot("option", "waveforms", clusters_data[cluster].waveforms);
             $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
           }
         }

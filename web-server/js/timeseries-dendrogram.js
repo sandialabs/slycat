@@ -142,16 +142,12 @@ $.widget("timeseries.dendrogram",
       return "M 0 0 L 50 0 L 100 -5";
     }
 
-
-		// TODO the last selected node needs to be tracked elsewhere
     var last_selected_node = null;
     function select_node(context, d, skip_bookmarking)
     {
       if(last_selected_node === d)
         return;
       last_selected_node = d;
-      if(!skip_bookmarking)
-        context.element.trigger("node-selection-changed", d);
 
       function select_subtree(d, selection)
       {
@@ -172,6 +168,8 @@ $.widget("timeseries.dendrogram",
         ;
 
       color_links();
+
+      context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
 
       // TODO this needs to be implemented outside of the widget
       // function make_selection_update(selection)
@@ -455,6 +453,6 @@ $.widget("timeseries.dendrogram",
     {
       this._set_cluster();
     }
-  }
+  },
 
 });
