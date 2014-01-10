@@ -30,6 +30,7 @@ $.widget("timeseries.cluster",
       return function()
       {
         context.select_cluster(cluster);
+        self.options.cluster = cluster;
         context.element.trigger("cluster-changed", cluster);
       }
     }
@@ -55,13 +56,5 @@ $.widget("timeseries.cluster",
     // Setup the default selected cluster ...
     this.select_cluster(this.options.cluster);
   },
-
-  // _setOption: function(key, value)
-  // {
-  //   //console.log("timeseries.cluster._setOption()", key, value);
-  // },
-
-
-
 
 });

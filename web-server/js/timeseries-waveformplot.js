@@ -13,9 +13,6 @@ $.widget("timeseries.waveformplot",
   {
   	"server-root" : "",
     mid : null,
-  	clusters:[],
-  	cluster: 0,
-  	clusters_data:[],
     waveforms : null,
   },
 

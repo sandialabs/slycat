@@ -980,8 +980,10 @@ select
 
 #color-switcher {
   float: right;
-  font-weight: bold;
   margin: 9px;
+}
+#color-switcher .label {
+  font-weight: bold;
 }
 .cca #color-switcher {
   position: absolute;

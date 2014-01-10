@@ -15,7 +15,7 @@ $.widget("timeseries.dendrogram",
     mid : null,
   	clusters:[],
   	cluster: 0,
-  	clusters_data:[],
+  	cluster_data:null,
   	collapsed_nodes:null,
   	expanded_nodes:null,
   	selected_node_index:null,
@@ -23,19 +23,24 @@ $.widget("timeseries.dendrogram",
 
   _create: function()
   {
+    this._set_cluster();
+  },
+
+  _set_cluster: function()
+  {
   	var self = this;
   	self.container = d3.select("#dendrogram-viewer");
 
-  	var clusters_data = this.options.clusters_data;
+  	var cluster_data = this.options.cluster_data;
   	var collapsed_nodes = this.options.collapsed_nodes;
   	var expanded_nodes = this.options.expanded_nodes;
   	var selected_node_index = this.options.selected_node_index;
   	var server_root = self.options["server-root"];
   	var mid = self.options.mid;
 
-  	var linkage = clusters_data["linkage"];
-	  var waveforms = clusters_data["waveforms"];
-	  var exemplars = clusters_data["exemplars"];
+  	var linkage = cluster_data["linkage"];
+	  var waveforms = cluster_data["waveforms"];
+	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
 
 	  $.each(waveforms, function(index, waveform)
@@ -56,7 +61,6 @@ $.widget("timeseries.dendrogram",
 	    .separation(function() { return 1; })
 	    ;
 
-	  // TODO probably not needed the first time around on _create
 	  self.container.selectAll("g").remove();
 
 	  var vis = self.container.append("svg:g")
@@ -77,7 +81,7 @@ $.widget("timeseries.dendrogram",
       nodes.forEach(function(d) { 
         if(selected_node_index != undefined) {
           if( d["node-index"] == selected_node_index ) {
-            select_node(d, true);
+            select_node(self, d, true);
           }
         }
         if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
@@ -95,7 +99,7 @@ $.widget("timeseries.dendrogram",
     }
     // We have no selected node data. Let's select the root node.
     if(selected_node_index == null){
-      select_node(root, true);
+      select_node(self, root, true);
     }
 
     // Initial update for the diagram ...
@@ -141,25 +145,13 @@ $.widget("timeseries.dendrogram",
 
 		// TODO the last selected node needs to be tracked elsewhere
     var last_selected_node = null;
-    function select_node(d, skip_bookmarking)
+    function select_node(context, d, skip_bookmarking)
     {
       if(last_selected_node === d)
         return;
       last_selected_node = d;
-
-      // TODO this needs to be done outside of the widget
-      // if(!skip_bookmarking){
-      //   var selected_node_index = {};
-      //   selected_node_index[cluster_index + "-selected-node-index"] = d["node-index"];
-      //   bookmarker.updateState(selected_node_index);
-      // }
-
-      // TODO this needs to be done outside of the widget
-      // $.ajax(
-      // {
-      //   type : "POST",
-      //   url : "{{server-root}}events/models/{{_id}}/select/node/" + d["node-index"],
-      // });
+      if(!skip_bookmarking)
+        context.element.trigger("node-selection-changed", d);
 
       function select_subtree(d, selection)
       {
@@ -179,8 +171,7 @@ $.widget("timeseries.dendrogram",
         .classed("selected", function(d) { return d.selected; })
         ;
 
-      // TODO color links needs to be implemented later
-      //color_links();
+      color_links();
 
       // TODO this needs to be implemented outside of the widget
       // function make_selection_update(selection)
@@ -288,7 +279,7 @@ $.widget("timeseries.dendrogram",
           } 
           // Regular click just selects it
           else {
-            select_node(d);
+            select_node(self, d);
           }
         })
         .style("opacity", 1e-6)
@@ -411,42 +402,32 @@ $.widget("timeseries.dendrogram",
         d.y0 = d.y;
       });
 
-      // TODO this needs to be done outside this widget
       // Bookmark expanded and collapsed nodes
-      // if(!skip_bookmarking){
-      //   var expanded = [];
-      //   var collapsed = [];
-      //   function findExpandedAndCollapsedNodes(d){
-      //     // If this node is expanded, add its node-index to the expanded array
-      //     if(d.children) {
-      //       expanded.push(d["node-index"]);
-      //       // Recursively call this function for each child to capture any collapsed and expanded ones
-      //       for(var i = 0; i < d.children.length; i++) {
-      //         findExpandedAndCollapsedNodes(d.children[i]);
-      //       }
-      //     }
-      //     // Otherwise if this node is collapsed, add its node-index to the collapsed array
-      //     else if(d._children) {
-      //       collapsed.push(d["node-index"]);
-      //     }
-      //   }
-      //   findExpandedAndCollapsedNodes(root);
-      //   var cluster_state = {};
-      //   cluster_state[cluster_index + "-expanded-nodes"] = expanded;
-      //   cluster_state[cluster_index + "-collapsed-nodes"] = collapsed;
-      //   bookmarker.updateState(cluster_state);
-      // }
+      if(!skip_bookmarking){
+        var expanded = [];
+        var collapsed = [];
+        function findExpandedAndCollapsedNodes(d){
+          // If this node is expanded, add its node-index to the expanded array
+          if(d.children) {
+            expanded.push(d["node-index"]);
+            // Recursively call this function for each child to capture any collapsed and expanded ones
+            for(var i = 0; i < d.children.length; i++) {
+              findExpandedAndCollapsedNodes(d.children[i]);
+            }
+          }
+          // Otherwise if this node is collapsed, add its node-index to the collapsed array
+          else if(d._children) {
+            collapsed.push(d["node-index"]);
+          }
+        }
+        findExpandedAndCollapsedNodes(root);
+        self.element.trigger("expanded-collapsed-nodes-changed", {expanded:expanded, collapsed:collapsed});
+      }
     }
 
     // Toggle children.
     function toggle(d)
     {
-      $.ajax(
-      {
-        type : "POST",
-        url : server_root + "events/models/" + mid + "/toggle/node/" + d["node-index"],
-      });
-
       if(d.children)
       {
         d._children = d.children;
@@ -457,20 +438,23 @@ $.widget("timeseries.dendrogram",
         d.children = d._children;
         d._children = null;
       }
-    }
 
-    
+      self.element.trigger("node-toggled", d);
+    }
 
     // Setup the default selected node ...
     //this.select_node(this.options.node);
   },
 
-  // _setOption: function(key, value)
-  // {
-  //   //console.log("timeseries.cluster._setOption()", key, value);
-  // },
+  _setOption: function(key, value)
+  {
+    console.log("timeseries.dendrogram._setOption()", key, value);
+    this.options[key] = value;
 
-
-
+    if(key == "cluster_data")
+    {
+      this._set_cluster();
+    }
+  }
 
 });
