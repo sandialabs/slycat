@@ -22,7 +22,6 @@ import scipy.cluster.hierarchy
 import scipy.spatial.distance
 import slycat.data.array
 import slycat.data.hdf5
-import slycat.model.timeseries
 import slycat.web.client
 
 parser = slycat.web.client.option_parser()
