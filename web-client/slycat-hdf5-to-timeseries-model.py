@@ -32,13 +32,16 @@ parser.add_argument("--cluster-bin-type", default="naive", choices=["naive"], he
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Clustering type.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
-parser.add_argument("--model-name", default="HDF5-Timeseries", help="New model name.  Default: %(default)s")
+parser.add_argument("--model-name", default=None, help="New model name.  Defaults to the name of the input data directory.")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
 parser.add_argument("--project-name", default="HDF5-Timeseries", help="New or existing project name.  Default: %(default)s")
 arguments = parser.parse_args()
 
 if arguments.cluster_bin_count < 1:
   raise Exception("Cluster bin count must be greater than zero.")
+
+if arguments.model_name is None:
+  arguments.model_name = os.path.basename(os.path.abspath(arguments.directory))
 
 pool = IPython.parallel.Client()
 
