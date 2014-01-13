@@ -30,13 +30,25 @@ with slycat.data.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5
   times = slycat.data.hdf5.get_array_attribute(file, 0, 0)[...]
   values = slycat.data.hdf5.get_array_attribute(file, 0, arguments.variable + 1)[...]
 
+print "Loaded %s samples." % len(values)
+
 # Compute uniform bins, based on the min and max times of the original data.
 bin_times, bin_width = numpy.linspace(times.min(), times.max(), arguments.bin_count, retstep=True)
 
 # Plot the original data.
 pyplot.plot(times, values, "-", color=(0.7, 0.7, 0.7), label="Timeseries %s variable %s" % (arguments.timeseries, arguments.variable))
 
-pyplot.plot(bin_times, scipy.interpolate.griddata(times, values, bin_times), "-", label="griddata")
+# Plot our naive rebinning.
+bin_edges = numpy.append(bin_times - (bin_width / 2), [bin_times[-1] + (bin_width / 2)])
+bin_indices = numpy.digitize(times, bin_times) - 1
+bin_counts = numpy.bincount(bin_indices)
+bin_sums = numpy.bincount(bin_indices, values)
+bin_values = bin_sums / bin_counts
+pyplot.plot(bin_times, bin_values, "-", label="naive")
+
+pyplot.plot(bin_times, scipy.interpolate.griddata(times, values, bin_times, method="nearest"), "-", label="griddata-nearest")
+#pyplot.plot(bin_times, scipy.interpolate.griddata(times, values, bin_times, method="linear"), "-", label="griddata-linear")
+#pyplot.plot(bin_times, scipy.interpolate.griddata(times, values, bin_times, method="cubic"), "-", label="griddata-cubic")
 
 #rbf = scipy.interpolate.Rbf(times, values, function="linear")
 #pyplot.plot(bin_times, rbf(bin_times), "-", label="rbf")
