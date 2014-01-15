@@ -45,7 +45,7 @@ $.widget("timeseries.dendrogram",
 
 	  $.each(waveforms, function(index, waveform)
     {
-      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : waveform["data-table-index"]});
+      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : waveform["input-index"]});
     });
     $.each(linkage, function(index, link)
     {

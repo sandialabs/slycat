@@ -20,6 +20,10 @@ $.widget("timeseries.table",
     "sort-variable" : null,
     "sort-order" : null,
     colormap : null,
+    table_filter : [],
+    waveform_indexes : [],
+    selection : null,
+    row_count : null,
   },
 
   _create: function()
@@ -69,23 +73,25 @@ $.widget("timeseries.table",
 
   	self.columns;
 
-  	self.data = new self._data_provider({
-      server_root : self.options["server-root"],
-      mid : self.options.mid,
-      aid : self.options.aid,
-      metadata : self.options.metadata,
-      sort_column : self.options["sort-variable"],
-      sort_order : self.options["sort-order"],
-      });
+  	// self.data = new self._data_provider({
+   //    server_root : self.options["server-root"],
+   //    mid : self.options.mid,
+   //    aid : self.options.aid,
+   //    metadata : self.options.metadata,
+   //    sort_column : self.options["sort-variable"],
+   //    sort_order : self.options["sort-order"],
+   //    table_filter : self.options.table_filter,
+   //    row_count : self.options.row_count,
+   //    });
 
   	// TODO: not sure what this does
   	//self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+    // self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
 
-    self.grid.setSelectionModel(new Slick.RowSelectionModel());
+    // self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
-    self.grid.init();
+    // self.grid.init();
 
 
 
@@ -98,6 +104,82 @@ $.widget("timeseries.table",
     self.grid.resizeCanvas();
   },
 
+  _setOption: function(key, value)
+  {
+    var self = this;
+
+    if(key == "row-selection")
+    {
+      if(self._array_equal(self.options[key], value))
+        return;
+
+      self.options[key] = value;
+      self.data.get_indices("sorted", value, function(sorted_rows)
+      {
+        self.trigger_row_selection = false;
+        self.grid.setSelectedRows(sorted_rows);
+        if(sorted_rows.length)
+          self.grid.scrollRowToTop(sorted_rows[0]);
+      });
+    }
+    else if(key == "variable-selection")
+    {
+      if(self._array_equal(self.options[key], value))
+        return;
+
+      self.options[key] = value;
+      self._color_variables(value);
+    }
+    else if(key == "colormap")
+    {
+      self.options[key] = value;
+      self._color_variables(self.options["variable-selection"])
+    }
+    else if(key == "selection")
+    {
+      self.options[key] = value;
+
+      var data_table_index, waveform_index;
+      var table_filter = [];
+      var waveform_indexes = [];
+      $.each(value, function(index, node)
+      {
+        data_table_index = node["data-table-index"];
+        waveform_index   = node["waveform-index"];
+
+        if(data_table_index == null)
+          return;
+
+        table_filter.push(data_table_index);
+        waveform_indexes.push(waveform_index);
+      });
+      self.options.table_filter = table_filter;
+      self.options.waveform_indexes = waveform_indexes;
+      self.options.row_count = table_filter.length;
+
+      self.data = new self._data_provider({
+        server_root : self.options["server-root"],
+        mid : self.options.mid,
+        aid : self.options.aid,
+        metadata : self.options.metadata,
+        sort_column : self.options["sort-variable"],
+        sort_order : self.options["sort-order"],
+        table_filter : self.options.table_filter,
+        row_count : self.options.row_count,
+        });
+
+      if(self.grid) {
+        self.grid.setData(self.data);
+        self.grid.invalidate();
+      }
+      else {
+        self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+        self.grid.setSelectionModel(new Slick.RowSelectionModel());
+        self.grid.init();
+      }
+    }
+  },
+
   _data_provider: function(parameters)
   {
     var self = this;
@@ -108,13 +190,16 @@ $.widget("timeseries.table",
     self.metadata = parameters.metadata;
     self.sort_column = parameters.sort_column;
     self.sort_order = parameters.sort_order;
+    self.table_filter = parameters.table_filter;
+    self.row_count = parameters.row_count;
 
     self.pages = {};
     self.page_size = 50;
 
     self.getLength = function()
     {
-      return self.metadata["row-count"];
+      //return self.metadata["row-count"];
+      return self.row_count;
     }
 
     self.getItem = function(index)
@@ -133,10 +218,12 @@ $.widget("timeseries.table",
         if(self.sort_column !== null && self.sort_order !== null)
           sort = "&sort=" + self.sort_column + ":" + self.sort_order;
 
+        var rowsToRetrieve = self.table_filter.slice(row_begin, row_end ).join(',');
+
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
           async : false,
           success : function(data)
           {
@@ -212,4 +299,8 @@ $.widget("timeseries.table",
     }
   },
 
+  _array_equal: function(a, b)
+  {
+    return $(a).not(b).length == 0 && $(b).not(a).length == 0;
+  },
 });

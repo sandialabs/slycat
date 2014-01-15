@@ -732,6 +732,12 @@ rights in this software.
 
             $("#table").table(table_options);
 
+            // Log changes to the node selection ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              $("#table").table("option", "selection", parameters.selection);
+            });
+
           }
         }
 
