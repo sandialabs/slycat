@@ -72,30 +72,6 @@ $.widget("timeseries.table",
       self.columns.push(make_column(i, "headerInput", "rowInput"));
 
   	self.columns;
-
-  	// self.data = new self._data_provider({
-   //    server_root : self.options["server-root"],
-   //    mid : self.options.mid,
-   //    aid : self.options.aid,
-   //    metadata : self.options.metadata,
-   //    sort_column : self.options["sort-variable"],
-   //    sort_order : self.options["sort-order"],
-   //    table_filter : self.options.table_filter,
-   //    row_count : self.options.row_count,
-   //    });
-
-  	// TODO: not sure what this does
-  	//self.trigger_row_selection = true;
-
-    // self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
-
-    // self.grid.setSelectionModel(new Slick.RowSelectionModel());
-
-    // self.grid.init();
-
-
-
-
   },
 
   resize_canvas: function()
@@ -173,8 +149,22 @@ $.widget("timeseries.table",
         self.grid.invalidate();
       }
       else {
+        self.trigger_row_selection = true;
         self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
         self.grid.setSelectionModel(new Slick.RowSelectionModel());
+        self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
+        {
+          // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
+          if(self.trigger_row_selection)
+          {
+            var waveform_indexes=[];
+            for(var i=0; i<selection.rows.length; i++){
+              waveform_indexes.push( self.grid.getDataItem(selection.rows[i])[self.options.metadata["column-count"]-1] );
+            }
+            self.element.trigger("row-selection-changed", [waveform_indexes]);
+          }
+          self.trigger_row_selection = true;
+        });
         self.grid.init();
       }
     }

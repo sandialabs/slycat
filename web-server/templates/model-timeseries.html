@@ -674,6 +674,12 @@ rights in this software.
             {
               $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
             });
+
+            // Changing the table row selection updates the waveform plot ...
+            $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+            {
+              $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+            });
           }
 
           // Setup the dendrogram ...
