@@ -90,13 +90,22 @@ $.widget("timeseries.table",
         return;
 
       self.options[key] = value;
-      self.data.get_indices("sorted", value, function(sorted_rows)
-      {
-        self.trigger_row_selection = false;
-        self.grid.setSelectedRows(sorted_rows);
-        if(sorted_rows.length)
-          self.grid.scrollRowToTop(sorted_rows[0]);
-      });
+
+      // This does not work for filtered rows
+      // self.data.get_indices("sorted", value, function(sorted_rows)
+      // {
+      //   self.trigger_row_selection = false;
+      //   self.grid.setSelectedRows(sorted_rows);
+      //   if(sorted_rows.length)
+      //     self.grid.scrollRowToTop(sorted_rows[0]);
+      // });
+      var selected_rows = [];
+      for(var i=0; i<value.length; i++) {
+        selected_rows.push( self.options.table_filter.indexOf(value[i]) );
+      }
+      self.grid.setSelectedRows(selected_rows);
+      if(selected_rows.length)
+        self.grid.scrollRowToTop(selected_rows[0]);
     }
     else if(key == "variable-selection")
     {
@@ -161,6 +170,7 @@ $.widget("timeseries.table",
             for(var i=0; i<selection.rows.length; i++){
               waveform_indexes.push( self.grid.getDataItem(selection.rows[i])[self.options.metadata["column-count"]-1] );
             }
+            self.options["row-selection"] = waveform_indexes;
             self.element.trigger("row-selection-changed", [waveform_indexes]);
           }
           self.trigger_row_selection = true;

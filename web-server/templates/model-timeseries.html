@@ -744,6 +744,13 @@ rights in this software.
               $("#table").table("option", "selection", parameters.selection);
             });
 
+            
+            // Changing the waveform selection updates the table row selection ...
+            $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+            {
+              $("#table").table("option", "row-selection", waveform_indexes);
+            });
+
           }
         }
 

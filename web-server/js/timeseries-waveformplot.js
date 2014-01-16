@@ -15,6 +15,7 @@ $.widget("timeseries.waveformplot",
     mid : null,
     waveforms : null,
     selection : null,
+    highlight : null,
   },
 
   _create: function()
@@ -72,12 +73,14 @@ $.widget("timeseries.waveformplot",
       {
         var selection = [];
 
-        context.select(selection);
+        context._select(selection);
 
         // TODO this needs to be done outside of this widget
         // if(table_viewer_instance != null) {
         //   table_viewer_instance.select_simulations(selection);
         // }
+
+        context.element.trigger("waveform-selection-changed", [selection]);
       }
     }
 
@@ -116,6 +119,7 @@ $.widget("timeseries.waveformplot",
 
     this.container.selectAll("g.waveform").remove();
     this.container.selectAll("g.selection").remove();
+    this.container.selectAll("rect.selectionMask").remove();
 
     waveformsContainer = this.visualization;
 
@@ -176,8 +180,25 @@ $.widget("timeseries.waveformplot",
             return "black"; // TODO for now setting to black. Used to be white. Need to color according to data.
         })
         .attr("class", "unselected")
-        //.on("click", waveform_selection_callback(self))
+        .on("click", waveform_selection_callback(self))
         ;
+    }
+
+    function waveform_selection_callback(context){
+      return function(d)
+      {
+        var selection = [d['input-index']];
+
+        context._select(selection);
+
+        // TODO this needs to be done with a trigger
+        // if(table_viewer_instance != null) {
+        //   table_viewer_instance.select_simulations(selection);
+        // }
+        context.element.trigger("waveform-selection-changed", [selection]);
+
+        d3.event.stopPropagation();
+      }
     }
 
     function finishedProcessingWaveforms(){
@@ -239,6 +260,55 @@ $.widget("timeseries.waveformplot",
 
   },
 
+  _select: function(selected)
+  {
+    var self = this;
+    var waveform_subset = [];
+    $.each(selected, function(index, node_index)
+    {
+      if(node_index < self.waveforms.length)
+        waveform_subset.push(self.waveforms[node_index]);
+    });
+
+    this.container.selectAll("g.selection").remove();
+    this.container.selectAll("rect.selectionMask").remove();
+
+    if(selected.length > 0) {
+      this.visualization.append("svg:rect")
+        .attr("width", this.diagram_width)
+        .attr("height", this.diagram_height)
+        .attr("pointer-events", "none")
+        //.style("fill", "#333333")
+        //.style("fill-opacity", 0.5)
+        .attr("class", "selectionMask")
+        ;
+    }
+
+    var waveforms = this.visualization.selectAll("g.selection")
+      .data(waveform_subset)
+    .enter().append("svg:g")
+      .attr("class", "selection");
+
+    // Turning off yellow highlighting now that the background waveforms are faded out.
+    // waveforms.append("svg:path")
+    //   .attr("d", this.make_sax_line())
+    //   .style("fill", "none")
+    //   .style("stroke", "yellow")
+    //   .style("stroke-width", 5.0)
+    //   ;
+
+    waveforms.append("svg:path")
+      .attr("d", this.make_sax_line())
+      .style("stroke", function(d, i) { 
+        if (self.color_scale != null && self.color_array != null && self.data_table_index_array != null)
+          return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
+        else
+          return "white";
+      })
+      .attr("class", "highlight")
+      ;
+  },
+
   _stopProcessingWaveforms: function()
   {
     var self = this;
@@ -257,6 +327,10 @@ $.widget("timeseries.waveformplot",
     if(key == "selection")
     {
       this._set_visible();
+    }
+    else if(key == "highlight")
+    {
+      this._select(value);
     }
   },
 
