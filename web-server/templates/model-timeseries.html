@@ -660,6 +660,16 @@ rights in this software.
 
             $("#waveform-pane .load-status").css("display", "none");
 
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+            $("#waveform-viewer").css({
+              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+              });
+            $("#waveform-viewer rect.selectionMask").css({
+              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+              "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+              });
+
             var waveformplot_options =
             {
               "server-root" : "{{server-root}}",
@@ -679,6 +689,19 @@ rights in this software.
             $("#table").bind("row-selection-changed", function(event, waveform_indexes)
             {
               $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+            });
+
+            // Changing the color map updates the scatterplot ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#waveform-viewer").css({
+                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+                });
+              $("#waveform-viewer rect.selectionMask").css({
+                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+                "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+                });
+              $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
           }
 

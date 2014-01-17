@@ -278,8 +278,8 @@ $.widget("timeseries.waveformplot",
         .attr("width", this.diagram_width)
         .attr("height", this.diagram_height)
         .attr("pointer-events", "none")
-        //.style("fill", "#333333")
-        //.style("fill-opacity", 0.5)
+        .style("fill", $("#color-switcher").colorswitcher("get_background") )
+        .style("fill-opacity", $("#color-switcher").colorswitcher("get_opacity") )
         .attr("class", "selectionMask")
         ;
     }
