@@ -183,7 +183,35 @@ $.widget("timeseries.table",
           {
             self.options["variable-selection"] = [args.column.field];
             self._color_variables(self.options["variable-selection"]);
-            self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+
+            var column_begin = 0;
+            var column_end = self.options.metadata["column-count"];
+
+            //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
+            var columnsToRetrieve = [args.column.field, self.options.metadata["column-count"]-1].join(',');
+            var rowsToRetrieve = self.options.table_filter.join(',');
+
+            $.ajax({
+              url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
+              async: true,
+              success: function(resp){
+                var color_array = resp["data"][0];
+                var data_table_index_array = resp["data"][1];
+                self.element.trigger("color-scale-changed", { 
+                  variable:self.options["variable-selection"], 
+                  colormap:args.column.colormap,
+                  color_array:color_array,
+                  data_table_index_array:data_table_index_array,
+                });
+              },
+              error: function(request, status, reason_phrase){
+                window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
+              }
+            });
+
+
+
+            self.element.trigger("variable-selection-changed", { variable:[self.options["variable-selection"]], colormap:args.column.colormap, });
           }
         });
 

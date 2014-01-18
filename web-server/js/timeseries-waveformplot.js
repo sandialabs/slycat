@@ -16,6 +16,7 @@ $.widget("timeseries.waveformplot",
     waveforms : null,
     selection : null,
     highlight : null,
+    color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
   },
 
   _create: function()
@@ -72,19 +73,10 @@ $.widget("timeseries.waveformplot",
       return function()
       {
         var selection = [];
-
         context._select(selection);
-
-        // TODO this needs to be done outside of this widget
-        // if(table_viewer_instance != null) {
-        //   table_viewer_instance.select_simulations(selection);
-        // }
-
         context.element.trigger("waveform-selection-changed", [selection]);
       }
     }
-
-    
   },
 
   _set_visible: function(){
@@ -174,8 +166,8 @@ $.widget("timeseries.waveformplot",
         //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
         .style("display", "none")
         .style("stroke", function(d, i) { 
-          if(self.color_scale != null)
-            return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] ); 
+          if(self.options.color_scale != null)
+            return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] ); 
           else
             return "black"; // TODO for now setting to black. Used to be white. Need to color according to data.
         })
@@ -188,15 +180,8 @@ $.widget("timeseries.waveformplot",
       return function(d)
       {
         var selection = [d['input-index']];
-
         context._select(selection);
-
-        // TODO this needs to be done with a trigger
-        // if(table_viewer_instance != null) {
-        //   table_viewer_instance.select_simulations(selection);
-        // }
         context.element.trigger("waveform-selection-changed", [selection]);
-
         d3.event.stopPropagation();
       }
     }
@@ -254,10 +239,6 @@ $.widget("timeseries.waveformplot",
         return result;
       }
     }
-
-
-
-
   },
 
   _select: function(selected)
@@ -300,8 +281,8 @@ $.widget("timeseries.waveformplot",
     waveforms.append("svg:path")
       .attr("d", this.make_sax_line())
       .style("stroke", function(d, i) { 
-        if (self.color_scale != null && self.color_array != null && self.data_table_index_array != null)
-          return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
+        if (self.options.color_scale != null && self.options.color_array != null && self.options.data_table_index_array != null)
+          return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] );
         else
           return "white";
       })
@@ -331,6 +312,12 @@ $.widget("timeseries.waveformplot",
     else if(key == "highlight")
     {
       this._select(value);
+    }
+    else if(key == "color-scale")
+    {
+      this.options.color_array = value.color_array;
+      this.options.color_scale = value.colormap;
+      this.options.data_table_index_array = value.data_table_index_array;
     }
   },
 

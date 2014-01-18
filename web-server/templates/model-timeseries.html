@@ -675,6 +675,7 @@ rights in this software.
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
               waveforms: clusters_data[initial_cluster].waveforms,
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
             };
 
             $("#waveform-viewer").waveformplot(waveformplot_options);
@@ -691,7 +692,7 @@ rights in this software.
               $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
             });
 
-            // Changing the color map updates the scatterplot ...
+            // Changing the color map updates the waveform plot ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
               $("#waveform-viewer").css({
@@ -703,6 +704,13 @@ rights in this software.
                 });
               $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
+
+            
+            $("#table").bind("color-scale-changed", function(event, parameters)
+            {
+              $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
+            });
+
           }
 
           // Setup the dendrogram ...
