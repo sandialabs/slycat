@@ -654,7 +654,7 @@ rights in this software.
           
 
           // Setup the waveform plot ...
-          if(!waveformplot_ready && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
+          if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
           {
             waveformplot_ready = true;
 
@@ -704,8 +704,8 @@ rights in this software.
                 });
               $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
-
             
+            // Changing the color scale updates the waveform plot ...
             $("#table").bind("color-scale-changed", function(event, parameters)
             {
               $("#waveform-viewer").waveformplot("option", "color-scale", parameters);

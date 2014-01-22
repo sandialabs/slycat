@@ -300,6 +300,55 @@ $.widget("timeseries.waveformplot",
     self.waveformPieContainer.hide();
   },
 
+  _set_color: function()
+  {
+    var self = this;
+
+    // this.container.selectAll("g.waveform path")
+    //   .style("stroke", function(d, i) { 
+    //     return color_scale(color_array[i]); 
+    //   })
+    //   ;
+
+    // No use coloring waveforms if none exist, for example, during initial creation of waveform plot
+    if(this.container.selectAll("g.waveform path, g.selection path.highlight").pop().length > 0){
+      this.container.style("display", "none");
+      // Coloring both the standard waveforms (g.waveform path) and the ones used to show selected simulations (g.selection path.highlight)
+      timedColorWaveforms(this.container.selectAll("g.waveform path, g.selection path.highlight").pop(), colorWaveform, finishedColoringWaveforms);
+    }
+
+    function timedColorWaveforms(items, process, callback){
+      var timeout = 100; //how long to yield control to UI thread
+      var todo = items.concat(); //create a clone of the original
+
+      self.waveformProcessingTimeout = setTimeout(function(){
+        var start = +new Date();
+        do {
+          process(todo.shift());
+        } while (todo.length > 0 && (+new Date() - start < 50));
+
+        if (todo.length > 0){
+          self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
+        } else if (callback != null) {
+          callback(items);
+        }
+      }, timeout);
+    }
+
+    function colorWaveform(waveform){
+      d3.select(waveform).style("stroke", function(d, i) { 
+        return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] );
+      })
+      ;
+    }
+
+    function finishedColoringWaveforms(){
+
+      self.container.style("display", "block");
+      
+    }
+  },
+
   _setOption: function(key, value)
   {
     console.log("timeseries.waveform._setOption()", key, value);
@@ -318,6 +367,7 @@ $.widget("timeseries.waveformplot",
       this.options.color_array = value.color_array;
       this.options.color_scale = value.colormap;
       this.options.data_table_index_array = value.data_table_index_array;
+      this._set_color();
     }
   },
 
