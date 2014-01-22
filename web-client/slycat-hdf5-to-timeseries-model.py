@@ -26,8 +26,8 @@ import slycat.web.client
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
-parser.add_argument("--cluster-bin-count", type=int, default=100, help="Cluster bin count.  Default: %(default)s")
-parser.add_argument("--cluster-bin-type", default="naive", choices=["naive"], help="Cluster bin type.  Default: %(default)s")
+parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Sample count used for the uniform-pla and uniform-paa resampling algorithms.  Default: %(default)s")
+parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Clustering type.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
@@ -36,8 +36,8 @@ parser.add_argument("--project-description", default="", help="New project descr
 parser.add_argument("--project-name", default="HDF5-Timeseries", help="New or existing project name.  Default: %(default)s")
 arguments = parser.parse_args()
 
-if arguments.cluster_bin_count < 1:
-  raise Exception("Cluster bin count must be greater than zero.")
+if arguments.cluster_sample_count < 1:
+  raise Exception("Cluster sample count must be greater than zero.")
 
 if arguments.model_name is None:
   arguments.model_name = os.path.basename(os.path.abspath(arguments.directory))
@@ -62,8 +62,8 @@ try:
   connection.update_model(mid, message="Storing clustering parameters.")
   slycat.web.client.log.info("Storing clustering parameters.")
 
-  connection.store_parameter(mid, "cluster-bin-count", arguments.cluster_bin_count)
-  connection.store_parameter(mid, "cluster-bin-type", arguments.cluster_bin_type)
+  connection.store_parameter(mid, "cluster-bin-count", arguments.cluster_sample_count)
+  connection.store_parameter(mid, "cluster-bin-type", arguments.cluster_sample_type)
   connection.store_parameter(mid, "cluster-type", arguments.cluster_type)
 
   connection.update_model(mid, message="Storing input table.")
@@ -122,16 +122,40 @@ try:
     progress_end = float(index + 1) / float(len(clusters))
 
     # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-    connection.update_model(mid, message="Rebinning data for %s" % name, progress=progress_begin)
-    slycat.web.client.log.info("Rebinning data for %s" % name)
+    connection.update_model(mid, message="Resampling data for %s" % name, progress=progress_begin)
+    slycat.web.client.log.info("Resampling data for %s" % name)
 
     # Get the minimum and maximum times across every series in the cluster.
     ranges = [time_ranges[timeseries[0]] for timeseries in storage]
     time_min = min(zip(*ranges)[0])
     time_max = max(zip(*ranges)[1])
 
-    if arguments.cluster_bin_type == "naive":
-      def naive_rebin(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
+    if arguments.cluster_sample_type == "uniform-pla":
+      def uniform_pla(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
+        import numpy
+        import os
+        import slycat.data.hdf5
+
+        bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
+        bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
+        with slycat.data.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
+          original_times = slycat.data.hdf5.get_array_attribute(file, 0, 0)[:]
+          original_values = slycat.data.hdf5.get_array_attribute(file, 0, attribute_index + 1)[:]
+        bin_values = numpy.interp(bin_times, original_times, original_values)
+        return {
+          "input-index" : timeseries_index,
+          "times" : bin_times,
+          "values" : bin_values,
+        }
+      directories = itertools.repeat(arguments.directory, len(storage))
+      min_times = itertools.repeat(time_min, len(storage))
+      max_times = itertools.repeat(time_max, len(storage))
+      bin_counts = itertools.repeat(arguments.cluster_sample_count, len(storage))
+      timeseries_indices = [timeseries for timeseries, attribute in storage]
+      attribute_indices = [attribute for timeseries, attribute in storage]
+      waveforms = pool[:].map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
+    elif arguments.cluster_sample_type == "uniform-paa":
+      def uniform_paa(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
         import numpy
         import os
         import slycat.data.hdf5
@@ -145,6 +169,9 @@ try:
         bin_indices[-1] -= 1
         bin_counts = numpy.bincount(bin_indices)[1:]
         bin_sums = numpy.bincount(bin_indices, original_values)[1:]
+        lonely_bins = (bin_counts < 2)
+        bin_counts[lonely_bins] = 1
+        bin_sums[lonely_bins] = numpy.interp(bin_times, original_times, original_values)[lonely_bins]
         bin_values = bin_sums / bin_counts
         return {
           "input-index" : timeseries_index,
@@ -154,10 +181,10 @@ try:
       directories = itertools.repeat(arguments.directory, len(storage))
       min_times = itertools.repeat(time_min, len(storage))
       max_times = itertools.repeat(time_max, len(storage))
-      bin_counts = itertools.repeat(arguments.cluster_bin_count, len(storage))
+      bin_counts = itertools.repeat(arguments.cluster_sample_count, len(storage))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
-      waveforms = pool[:].map_sync(naive_rebin, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
+      waveforms = pool[:].map_sync(uniform_paa, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
 
     # Compute a distance matrix comparing every series to every other ...
     observation_count = len(waveforms)
