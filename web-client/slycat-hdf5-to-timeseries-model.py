@@ -30,7 +30,7 @@ parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Samp
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Clustering type.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
-parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
+parser.add_argument("--model-description", default=None, help="New model description.  Defaults to a summary of the input parameters.")
 parser.add_argument("--model-name", default=None, help="New model name.  Defaults to the name of the input data directory.")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
 parser.add_argument("--project-name", default="HDF5-Timeseries", help="New or existing project name.  Default: %(default)s")
@@ -41,6 +41,13 @@ if arguments.cluster_sample_count < 1:
 
 if arguments.model_name is None:
   arguments.model_name = os.path.basename(os.path.abspath(arguments.directory))
+
+if arguments.model_description is None:
+  arguments.model_description = ""
+  arguments.model_description += "Input directory: %s.\n" % os.path.abspath(arguments.directory)
+  arguments.model_description += "Cluster sampling algorithm: %s.\n" % {"uniform-pla":"Uniform PLA","uniform-paa":"Uniform PAA"}[arguments.cluster_sample_type]
+  if arguments.cluster_sample_type in ["uniform-pla", "uniform-paa"]:
+    arguments.model_description += "Cluster sample count: %s." % arguments.cluster_sample_count
 
 pool = IPython.parallel.Client()
 
