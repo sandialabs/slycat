@@ -822,6 +822,11 @@ rights in this software.
               node_toggled(node);
             });
 
+            // Changing the color scale updates the waveform plot ...
+            $("#table").bind("color-scale-changed", function(event, parameters)
+            {
+              $("#dendrogram-viewer").dendrogram("option", "color-scale", parameters);
+            });
 
           }
 

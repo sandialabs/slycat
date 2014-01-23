@@ -19,6 +19,9 @@ $.widget("timeseries.dendrogram",
   	collapsed_nodes:null,
   	expanded_nodes:null,
   	selected_node_index:null,
+    color_array: null,
+    color_scale: null,
+    data_table_index_array: null,
   },
 
   _create: function()
@@ -444,6 +447,23 @@ $.widget("timeseries.dendrogram",
     //this.select_node(this.options.node);
   },
 
+  _set_color: function()
+  {
+    var self = this;
+
+    this.container.selectAll("g.sparkline path")
+      .style("stroke", function(d, i){
+        var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
+        if(index > -1)
+          return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["data-table-index"]) ] ); // This might be "input-index" instead
+        else if (d.selected || (d.parent && d.parent.selected))
+          return "black";
+        else
+          return "#C9C9C9";
+      })
+      ;
+  },
+
   _setOption: function(key, value)
   {
     console.log("timeseries.dendrogram._setOption()", key, value);
@@ -452,6 +472,13 @@ $.widget("timeseries.dendrogram",
     if(key == "cluster_data")
     {
       this._set_cluster();
+    }
+    else if(key == "color-scale")
+    {
+      this.options.color_array = value.color_array;
+      this.options.color_scale = value.colormap;
+      this.options.data_table_index_array = value.data_table_index_array;
+      this._set_color();
     }
   },
 
