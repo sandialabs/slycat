@@ -283,7 +283,7 @@ $.widget("cca.scatterplot",
       // Draw points using circles ...
       if(count < 100000)
       {
-        var radius = 2;
+        var radius = 4;
         var twopi = Math.PI * 2;
         this.data_context.stokeStyle = "black";
         this.data_context.lineWidth = 1;
@@ -320,7 +320,7 @@ $.widget("cca.scatterplot",
       this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
       this.selection_context.clearRect(0, 0, width, height);
 
-      var radius = 5;
+      var radius = 8;
       var twopi = Math.PI * 2;
       this.selection_context.strokeStyle = "black";
       this.selection_context.lineWidth = 1;
