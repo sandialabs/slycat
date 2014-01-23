@@ -329,6 +329,20 @@ $.widget("timeseries.dendrogram",
 
       node_sparkline.append("svg:path")
         .attr("d", sparkline)
+        .style("stroke", function(d, i){
+          if(self.options.data_table_index_array !== null && self.options.color_scale !== null && self.options.color_array != null){
+            var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
+            if(index > -1)
+              return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["data-table-index"]) ] ); // This might be "input-index" instead
+            else if (d.selected || (d.parent && d.parent.selected))
+              return "black";
+            else
+              return "#C9C9C9";
+          } else {
+            return "black";
+          }
+          
+        })
         ;
 
       // Transition new nodes to their final position.
@@ -402,6 +416,8 @@ $.widget("timeseries.dendrogram",
         d.x0 = d.x;
         d.y0 = d.y;
       });
+
+      //this._set_color();
 
       // Bookmark expanded and collapsed nodes
       if(!skip_bookmarking){

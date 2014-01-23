@@ -216,6 +216,7 @@ $.widget("timeseries.table",
         }
         
         self.grid.init();
+        self._trigger_color_scale_change();
       }
     }
   },
