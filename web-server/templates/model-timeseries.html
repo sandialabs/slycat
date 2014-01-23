@@ -149,8 +149,6 @@ rights in this software.
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
 
-        var inputs = null;
-        var outputs = null;
         var clusters = null; // This is just the list of cluster names
         var clusters_data = null; // This holds data for each cluster
         var initial_cluster = null; // This holds the index of the initially selected cluster
@@ -227,36 +225,6 @@ rights in this software.
                 "state" : "closed"
               }),
               processData : false
-            });
-
-            // Load the inputs artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "inputs",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                inputs = result;
-                setup_widgets();
-              },
-              error : artifact_missing
-            });
-
-            // Load the outputs artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "outputs",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                outputs = result;
-                setup_widgets();
-              },
-              error : artifact_missing
             });
 
             // Load list of clusters.
