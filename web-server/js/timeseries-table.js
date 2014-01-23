@@ -107,6 +107,10 @@ $.widget("timeseries.table",
       if(selected_rows.length)
         self.grid.scrollRowToTop(selected_rows[0]);
     }
+    else if(key == "row-selection-silent")
+    {
+      self.options["row-selection"] = value;
+    }
     else if(key == "variable-selection")
     {
       if(self._array_equal(self.options[key], value))
@@ -156,6 +160,16 @@ $.widget("timeseries.table",
       if(self.grid) {
         self.grid.setData(self.data);
         self.grid.invalidate();
+        if(self.options["row-selection"].length > 0){
+
+          var selected_rows = [];
+          for(var i=0; i<self.options["row-selection"].length; i++) {
+            selected_rows.push( self.options.table_filter.indexOf(self.options["row-selection"][i]) );
+          }
+
+          self.trigger_row_selection = false;
+          self.grid.setSelectedRows(selected_rows);
+        }
         self._trigger_color_scale_change();
       }
       else {
@@ -190,6 +204,17 @@ $.widget("timeseries.table",
 
         self._color_variables(self.options["variable-selection"]);
 
+        if(self.options["row-selection"].length > 0){
+
+          var selected_rows = [];
+          for(var i=0; i<self.options["row-selection"].length; i++) {
+            selected_rows.push( self.options.table_filter.indexOf(self.options["row-selection"][i]) );
+          }
+
+          self.trigger_row_selection = false;
+          self.grid.setSelectedRows(selected_rows);
+        }
+        
         self.grid.init();
       }
     }

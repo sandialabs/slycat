@@ -244,6 +244,17 @@ $.widget("timeseries.waveformplot",
   _select: function(selected)
   {
     var self = this;
+
+    // Only highlight a waveform if it's part of the current selection
+    var selection = self.options.selection;
+    var inCurrentSelection = [];
+    for(var i=0; i<selection.length; i++){
+      if( selected.indexOf(self.options.selection[i]["waveform-index"]) > -1 ){
+        inCurrentSelection.push(self.options.selection[i]["waveform-index"]);
+      }
+    }
+    selected = inCurrentSelection;
+
     var waveform_subset = [];
     $.each(selected, function(index, node_index)
     {

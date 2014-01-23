@@ -680,10 +680,13 @@ rights in this software.
 
             $("#waveform-viewer").waveformplot(waveformplot_options);
 
-            // Log changes to the node selection ...
+            // Changing the selected dendrogram node updates the waveform plot ...
             $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
             {
               $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
+
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+                $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
             });
 
             // Changing the table row selection updates the waveform plot ...
@@ -709,6 +712,67 @@ rights in this software.
             $("#table").bind("color-scale-changed", function(event, parameters)
             {
               $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
+            });
+
+          }
+
+          // Setup the table ...
+          if( !table_ready && bookmark && table_metadata && (initial_cluster !==  null) )
+          {
+            table_ready = true;
+
+            $("#table-pane .load-status").css("display", "none");
+
+            var table_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "inputs",
+              metadata : table_metadata,
+            };
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+
+            if("variable-selection" in bookmark)
+            {
+              table_options["variable-selection"] = [bookmark["variable-selection"]];
+            }
+            else
+            {
+              table_options["variable-selection"] = [table_metadata["column-count"] - 1];
+            }
+
+            if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
+              table_options["row-selection"] = bookmark[initial_cluster + "-selected-row-simulations"];
+
+            $("#table").table(table_options);
+
+            // Changing the selected dendrogram node updates the table ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+                $("#table").table("option", "row-selection-silent", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+              
+              $("#table").table("option", "selection", parameters.selection);
+            });
+            
+            // Changing the waveform selection updates the table row selection ...
+            $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+            {
+              $("#table").table("option", "row-selection", waveform_indexes);
+            });
+
+            // Changing the colormap updates the table ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
+            });
+
+            // Log changes to the table row selection
+            $("#table").bind("row-selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
             });
 
           }
@@ -749,54 +813,7 @@ rights in this software.
 
           }
 
-          // Setup the table ...
-          if(!table_ready && bookmark && table_metadata)
-          {
-            table_ready = true;
-
-            $("#table-pane .load-status").css("display", "none");
-
-            var table_options =
-            {
-              "server-root" : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "inputs",
-              metadata : table_metadata,
-            };
-
-            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
-
-            if("variable-selection" in bookmark)
-            {
-              table_options["variable-selection"] = [bookmark["variable-selection"]];
-            }
-            else
-            {
-              table_options["variable-selection"] = [table_metadata["column-count"] - 1];
-            }
-
-            $("#table").table(table_options);
-
-            // Log changes to the node selection ...
-            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
-            {
-              $("#table").table("option", "selection", parameters.selection);
-            });
-            
-            // Changing the waveform selection updates the table row selection ...
-            $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
-            {
-              $("#table").table("option", "row-selection", waveform_indexes);
-            });
-
-            // Changing the colormap updates the table ...
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
-            });
-
-          }
+          
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -835,7 +852,19 @@ rights in this software.
             selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = parameters.node["node-index"];
             bookmarker.updateState(selected_node_index);
           }
+        }
 
+        function selected_simulations_changed(selection)
+        {
+          // Logging every selected item is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+          });
+          var selected_simulations = {};
+          selected_simulations[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] = selection;
+          bookmarker.updateState(selected_simulations);
         }
 
         function expanded_collapsed_nodes_changed(nodes){
