@@ -198,7 +198,7 @@ $.widget("timeseries.table",
           {
             self.options["variable-selection"] = [args.column.field];
             self._color_variables(self.options["variable-selection"]);
-            self.element.trigger("variable-selection-changed", { variable:[self.options["variable-selection"]], colormap:args.column.colormap, });
+            self.element.trigger("variable-selection-changed", { variable:self.options["variable-selection"], colormap:args.column.colormap, });
           }
         });
 

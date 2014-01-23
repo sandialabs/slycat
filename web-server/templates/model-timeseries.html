@@ -734,9 +734,9 @@ rights in this software.
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
 
-            if("variable-selection" in bookmark)
+            if(bookmark[initial_cluster + "-column-index"] !== undefined)
             {
-              table_options["variable-selection"] = [bookmark["variable-selection"]];
+              table_options["variable-selection"] = [bookmark[initial_cluster + "-column-index"]];
             }
             else
             {
@@ -773,6 +773,18 @@ rights in this software.
             $("#table").bind("row-selection-changed", function(event, selection)
             {
               selected_simulations_changed(selection);
+            });
+
+            // Log changes to the table variable selection
+            $("#table").bind("variable-selection-changed", function(event, parameters)
+            {
+              selected_variable_changed(parameters.variable);
+            });
+
+            $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
+            {
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"] !== undefined)
+                $("#table").table("option", "variable-selection", [bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"]]);
             });
 
           }
@@ -865,6 +877,18 @@ rights in this software.
           var selected_simulations = {};
           selected_simulations[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] = selection;
           bookmarker.updateState(selected_simulations);
+        }
+
+        function selected_variable_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+          });
+          var selected_variable = {};
+          selected_variable[ $("#cluster-viewer").cluster("option", "cluster") + "-column-index"] = variable[0];
+          bookmarker.updateState(selected_variable);
         }
 
         function expanded_collapsed_nodes_changed(nodes){
