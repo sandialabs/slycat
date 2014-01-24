@@ -123,34 +123,16 @@ rights in this software.
       $(document).ready(function()
       {
         //////////////////////////////////////////////////////////////////////////////////////////
-        // Check to see if the model is ready.
-        //////////////////////////////////////////////////////////////////////////////////////////
-
-        if(model_state == "waiting" || model_state == "running")
-        {
-          $(".load-status").css("display", "none");
-
-          $("#status-messages").empty().html(
-            "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-            "<div class='error-description'>We're probabably building it for you right now. Look up at the status bar for progress information and more details.</div>");
-
-          show_status_messages();
-          return;
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////
         // Setup global variables.
         //////////////////////////////////////////////////////////////////////////////////////////
 
-        var model_state = "{{state}}";
-        var model_result = "{{result}}";
+        var model = null;
+        var input_columns = null;
+        var output_columns = null;
+        var scale_inputs = null;
 
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
-
-        var input_columns = {{input-columns}};
-        var output_columns = {{output-columns}};
-        var scale_inputs = {{scale-inputs}};
 
         var x_loadings = null;
         var y_loadings = null;
@@ -168,172 +150,205 @@ rights in this software.
         var table_ready = false;
 
         //////////////////////////////////////////////////////////////////////////////////////////
+        // Get the model
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}models/{{_id}}",
+          success : function(result)
+          {
+            model = result;
+            input_columns = model["artifact:input-columns"];
+            output_columns = model["artifact:output-columns"];
+            scale_inputs = model["artifact:scale-inputs"];
+            setup_page();
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error retrieving model: " + reason_phrase);
+          }
+        });
+
+        //////////////////////////////////////////////////////////////////////////////////////////
         // If the model is ready, start retrieving data, including bookmarked state.
         //////////////////////////////////////////////////////////////////////////////////////////
 
-        if(model_state == "waiting" || model_state == "running")
+        function setup_page()
         {
-          $("#status-messages").empty().html(
-            "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-            "<div class='error-description'>We're probabably building it for you right now. Look up at the status bar for progress information and more details.</div>");
-          show_status_messages();
-        }
-        else if(model_result == "failed")
-        {
-          $("#status-messages").empty().html(
-            "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-            "<div class='error-description'>Here's what was happening when it ended:</div>" +
-            "<pre>{{message}}</pre>");
-          show_status_messages();
-        }
-        else
-        {
-          // Display progress as the load happens ...
-          $(".load-status").text("Loading data.");
-
-          // Mark this model as closed, so it doesn't show-up in the header anymore.
-          $.ajax(
+          if(model["state"] == "waiting" || model["state"] == "running")
           {
-            type : "PUT",
-            url : "{{server-root}}models/{{_id}}",
-            contentType : "application/json",
-            data : $.toJSON({
-              "state" : "closed"
-            }),
-            processData : false
-          });
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
+              "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
+            show_status_messages();
+          }
+          else if(model["state"] == "closed" && model["result"] == null)
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
+              "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
+              "<pre>" + model["message"] + "</pre>");
+            show_status_messages();
+          }
+          else if(model["result"] == "failed")
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
+              "<div class='error-description'>Here's what was happening when it ended:</div>" +
+              "<pre>" + model["message"] + "</pre>");
+            show_status_messages();
+          }
+          else
+          {
+            // Display progress as the load happens ...
+            $(".load-status").text("Loading data.");
 
-          // Load the x_loadings artifact.
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "input-structure-correlation",
-            array : 0,
-            attribute : 0,
-            success : function(result)
+            // Mark this model as closed, so it doesn't show-up in the header anymore.
+            $.ajax(
             {
-              x_loadings = result;
-              setup_widgets();
-            },
-            error : artifact_missing
-          });
+              type : "PUT",
+              url : "{{server-root}}models/{{_id}}",
+              contentType : "application/json",
+              data : $.toJSON({
+                "state" : "closed"
+              }),
+              processData : false
+            });
 
-          // Load the y_loadings artifact.
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "output-structure-correlation",
-            array : 0,
-            attribute : 0,
-            success : function(result)
-            {
-              y_loadings = result;
-              setup_widgets();
-            },
-            error : artifact_missing
-          });
+            // Load the x_loadings artifact.
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "input-structure-correlation",
+              array : 0,
+              attribute : 0,
+              success : function(result)
+              {
+                x_loadings = result;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
 
-          // Load the r^2 statistics artifact.
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "cca-statistics",
-            array : 0,
-            attribute : 0,
-            success : function(result)
-            {
-              r2 = result;
-              setup_widgets();
-            },
-            error : artifact_missing
-          });
+            // Load the y_loadings artifact.
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "output-structure-correlation",
+              array : 0,
+              attribute : 0,
+              success : function(result)
+              {
+                y_loadings = result;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
 
-          // Load the Wilks statistics artifact.
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "cca-statistics",
-            array : 0,
-            attribute : 1,
-            success : function(result)
-            {
-              wilks = result;
-              setup_widgets();
-            },
-            error : artifact_missing
-          });
+            // Load the r^2 statistics artifact.
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "cca-statistics",
+              array : 0,
+              attribute : 0,
+              success : function(result)
+              {
+                r2 = result;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
 
-          // Load the canonical-indices artifact.
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "canonical-indices",
-            array : 0,
-            attribute : 0,
-            success : function(result)
-            {
-              indices = result;
-              setup_widgets();
-            },
-            error : function()
-            {
-              generate_indices = true;
-              setup_indices();
-            }
-          });
+            // Load the Wilks statistics artifact.
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "cca-statistics",
+              array : 0,
+              attribute : 1,
+              success : function(result)
+              {
+                wilks = result;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
 
-          // Load the canonical-variables artifacts.
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "canonical-variables",
-            array : 0,
-            attribute : 0,
-            success : function(result)
-            {
-              x = result;
-              setup_widgets();
-            },
-            error : artifact_missing
-          });
+            // Load the canonical-indices artifact.
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "canonical-indices",
+              array : 0,
+              attribute : 0,
+              success : function(result)
+              {
+                indices = result;
+                setup_widgets();
+              },
+              error : function()
+              {
+                generate_indices = true;
+                setup_indices();
+              }
+            });
 
-          get_model_array_attribute({
-            server_root : "{{server-root}}",
-            mid : "{{_id}}",
-            aid : "canonical-variables",
-            array : 0,
-            attribute : 1,
-            success : function(result)
-            {
-              y = result;
-              setup_widgets();
-            },
-            error : artifact_missing
-          });
+            // Load the canonical-variables artifacts.
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "canonical-variables",
+              array : 0,
+              attribute : 0,
+              success : function(result)
+              {
+                x = result;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
 
-          // Load data table metadata.
-          $.ajax({
-            url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
-            contentType : "application/json",
-            success: function(metadata)
-            {
-              table_metadata = metadata;
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "canonical-variables",
+              array : 0,
+              attribute : 1,
+              success : function(result)
+              {
+                y = result;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
 
-              setup_indices();
+            // Load data table metadata.
+            $.ajax({
+              url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
+              contentType : "application/json",
+              success: function(metadata)
+              {
+                table_metadata = metadata;
+
+                setup_indices();
+                setup_v();
+                setup_widgets();
+              },
+              error: artifact_missing
+            });
+
+            // Retrieve bookmarked state information ...
+            bookmarker.get_state(function(state)
+            {
+              bookmark = state;
+              setup_colorswitcher();
               setup_v();
               setup_widgets();
-            },
-            error: artifact_missing
-          });
-
-          // Retrieve bookmarked state information ...
-          bookmarker.get_state(function(state)
-          {
-            bookmark = state;
-            setup_colorswitcher();
-            setup_v();
-            setup_widgets();
-          });
+            });
+          }
         }
 
         function show_status_messages()
@@ -360,7 +375,8 @@ rights in this software.
 
           $("#status-messages").empty().html(
             "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-            "<div class='error-description'>This probably means that there was a problem building the model.  Look up at the status bar for more details.</div>");
+            "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
+            "<pre>" + model["message"] + "</pre>");
 
           show_status_messages();
         }
@@ -583,36 +599,30 @@ rights in this software.
                 });
               }
 
-              input_columns = [];
-              $(".rerun-cca-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
-              if(input_columns.length < 1)
+              var selected_input_columns = [];
+              $(".rerun-cca-input-variable:checked").each(function(index, element) { selected_input_columns.push(Number($(element).val())); });
+              if(selected_input_columns.length < 1)
               {
                 window.alert("You must select at least one input column.");
                 return;
               }
 
-              output_columns = [];
-              $(".rerun-cca-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
-              if(output_columns.length < 1)
+              var selected_output_columns = [];
+              $(".rerun-cca-output-variable:checked").each(function(index, element) { selected_output_columns.push(Number($(element).val())); });
+              if(selected_output_columns.length < 1)
               {
                 window.alert("You must select at least one output column.");
                 return;
               }
 
-              store_parameter("input-columns", input_columns);
-              store_parameter("output-columns", output_columns);
+              store_parameter("input-columns", selected_input_columns);
+              store_parameter("output-columns", selected_output_columns);
               store_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked"));
 
               $.ajax(
               {
-                type : "PUT",
-                url : "{{server-root}}models/" + rerun_cca_model,
-                contentType : "application/json",
-                data: $.toJSON(
-                {
-                  state: "running",
-                }),
-                processData: false,
+                type : "POST",
+                url : "{{server-root}}models/" + rerun_cca_model + "/finish",
                 success: function(result)
                 {
                   rerun_cca_model = null;

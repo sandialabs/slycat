@@ -11,7 +11,8 @@ import numpy
 import os
 import re
 import shutil
-import slycat.array
+import slycat.data.array
+import slycat.data.hdf5
 import slycat.web.server.database.hdf5
 import slycat.web.server.database.scidb
 import sys
@@ -43,12 +44,12 @@ scidb = slycat.web.server.database.scidb.connect()
 os.makedirs(arguments.output_dir)
 
 def dump_hdf5(attributes, dimensions, array, attribute_prefix):
-  attributes = [(name, slycat.array.attribute_type_map[type]) for name, type in attributes]
-  dimensions = [(name, slycat.array.require_dimension_type(type), begin, end) for name, type, begin, end in dimensions]
+  attributes = [(name, slycat.data.array.attribute_type_map[type]) for name, type in attributes]
+  dimensions = [(name, slycat.data.array.require_dimension_type(type), begin, end) for name, type, begin, end in dimensions]
   logging.debug("attributes: %s", attributes)
   logging.debug("dimensions: %s", dimensions)
   with h5py.File(os.path.join(arguments.output_dir, "array-set-%s.hdf5" % array), "w") as file:
-    stored_types = [slycat.web.server.database.hdf5.dtype(type) for name, type in attributes]
+    stored_types = [slycat.data.hdf5.dtype(type) for name, type in attributes]
     shape = tuple([end - begin for name, type, begin, end in dimensions])
     for attribute_index, stored_type in enumerate(stored_types):
       file.create_dataset("array/0/attribute/{}".format(attribute_index), shape, dtype=stored_type)
@@ -92,6 +93,8 @@ for project_id in arguments.project_id:
   for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
     logging.info("Dumping model %s", row["id"])
     model = couchdb.get(row["id"], attachments=True)
+    if model["model-type"] == "timeseries":
+      continue
 
     artifact_types = model["artifact-types"]
     for key, artifact in model.items():

@@ -59,6 +59,7 @@ rights in this software.
           {
             dataType : "json",
             type : "GET",
+            cache : false, // Don't cache this request; otherwise, the browser will display the JSON results if the user leaves-and-then-returns to this page.
             url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
             success : function(results)
             {

@@ -14,18 +14,22 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/jquery.ba-bbq.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/d3.v2.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-cluster.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-dendrogram.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-waveformplot.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-table.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/table-timeseries-simulation.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.timeseriesloader.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
 
+    <!-- Page styles -->
     <link rel="stylesheet" href="{{server-root}}style/model-timeseries.css" type="text/css">
 
     <!-- SlickGrid styles -->
@@ -34,7 +38,7 @@ rights in this software.
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
   </head>
 
-  <body>
+  <body class="timeseries">
     <div class="ui-layout-north">
 {{> header}}
       <div id="page-title">
@@ -48,12 +52,7 @@ rights in this software.
           </div>
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
-          <div id="status-messages" style="display: none;">
-            <div class='error-heading'>Oops, this model is not ready yet.</div>
-            <div class='error-description'>We are probabably building it for your right now. We'll load it for you automatically once it's ready. Look up at the status bar for progress information and more details.</div>
-            <div><a href="#" onClick="$('#status-messages .technical-details').show(); return false;">Show Technical Information</a></div>
-            <div class="technical-details" style="display: none;"></div>
-          </div>
+          <div id="status-messages" style="display: none;"></div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
               <button id="delete-model-link">Delete Model</button>
@@ -102,15 +101,13 @@ rights in this software.
 
     <div id="content-pane" class="ui-layout-center">
       <div id="cluster-pane" class="ui-layout-north">
-
+        <div class="load-status"></div>
         <div id="color-switcher"></div>
-
-        <table id="cluster-viewer">
-        </table>
-
+        <table id="cluster-viewer"></table>
       </div>
       <div id="model-pane" class="ui-layout-center">
         <div id="dendrogram-pane" class="ui-layout-west">
+          <div class="load-status"></div>
           <svg id="dendrogram-viewer" width="100%" height="100%">
             <defs>
               <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -121,6 +118,7 @@ rights in this software.
           </svg>
         </div>
         <div id="waveform-pane" class="ui-layout-center">
+          <div class="load-status"></div>
           <svg id="waveform-viewer" width="100%" height="100%">
           </svg>
           <div id="waveform-progress">
@@ -128,36 +126,178 @@ rights in this software.
           </div>
         </div>
       </div>
-      <div id="data-pane" class="ui-layout-south" style="overflow: auto">
+    </div>
+    <div id="table-pane" class="ui-layout-south" style="overflow: auto">
+      <div class="load-status"></div>
+      <div id="table">
       </div>
     </div>
 
-    <div id="footer" class="ui-layout-south">
-      <div class="width-wrapper">
-        <ul id="footer-links">
-          {{#is-project-administrator}}
-          <li class="admin">
-            <a href="{{server-root}}models/{{_id}}/design">Design View</a>
-          </li>
-          {{/is-project-administrator}}
-        </ul>
-      </div>
-    </div>
 
     <script type="text/javascript">
       $(document).ready(function()
       {
-        // Mark this model as closed, so it doesn't show-up in the header anymore.
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup global variables.
+        //////////////////////////////////////////////////////////////////////////////////////////
+        
+        var model = null;
+        var cluster_bin_count = null;
+        var cluster_bin_type = null;
+        var cluster_type = null;
+
+        var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+        var bookmark = null;
+
+        var clusters = null; // This is just the list of cluster names
+        var clusters_data = null; // This holds data for each cluster
+        var initial_cluster = null; // This holds the index of the initially selected cluster
+        var table_metadata = null;
+
+        var cluster_ready = false;
+        var dendrogram_ready = false;
+        var waveformplot_ready = false;
+        var table_ready = false;
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Get the model
+        //////////////////////////////////////////////////////////////////////////////////////////
+
         $.ajax(
         {
-          type : "PUT",
+          type : "GET",
           url : "{{server-root}}models/{{_id}}",
-          contentType : "application/json",
-          data : $.toJSON({
-            "state" : "closed"
-          }),
-          processData : false
+          success : function(result)
+          {
+            model = result;
+            cluster_bin_count = model["artifact:cluster-bin-count"];
+            cluster_bin_type = model["artifact:cluster-bin-type"];
+            cluster_type = model["artifact:cluster-type"];
+            setup_page();
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error retrieving model: " + reason_phrase);
+          }
         });
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // If the model is ready, start retrieving data, including bookmarked state.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        function setup_page()
+        {
+          if(model["state"] == "waiting" || model["state"] == "running")
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
+              "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
+            show_status_messages();
+          }
+          else if(model["state"] == "closed" && model["result"] == null)
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
+              "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
+              "<pre>" + model["message"] + "</pre>");
+            show_status_messages();
+          }
+          else if(model["result"] == "failed")
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
+              "<div class='error-description'>Here's what was happening when it ended:</div>" +
+              "<pre>" + model["message"] + "</pre>");
+            show_status_messages();
+          }
+          else
+          {
+            // Display progress as the load happens ...
+            $(".load-status").text("Loading data.");
+
+            // Mark this model as closed, so it doesn't show-up in the header anymore.
+            $.ajax(
+            {
+              type : "PUT",
+              url : "{{server-root}}models/{{_id}}",
+              contentType : "application/json",
+              data : $.toJSON({
+                "state" : "closed"
+              }),
+              processData : false
+            });
+
+            // Load list of clusters.
+            $.ajax({
+              url : "{{server-root}}models/{{_id}}/files/clusters",
+              contentType : "application/json",
+              success: function(result)
+              {
+                clusters = result;
+                clusters_data = new Array(clusters.length)
+                setup_cluster();
+                setup_widgets();
+              },
+              error: artifact_missing
+            });
+
+            // Load data table metadata.
+            $.ajax({
+              url : "{{server-root}}models/{{_id}}/tables/inputs/arrays/0/metadata?index=Index",
+              contentType : "application/json",
+              success: function(metadata)
+              {
+                table_metadata = metadata;
+                setup_widgets();
+              },
+              error: artifact_missing
+            });
+
+            // Retrieve bookmarked state information ...
+            bookmarker.get_state(function(state)
+            {
+              bookmark = state;
+              setup_colorswitcher();
+              setup_cluster();
+              setup_widgets();
+            });
+
+          }
+        }
+
+        function show_status_messages()
+        {
+          $("#status-messages").dialog(
+          {
+            autoOpen: true,
+            width: 500,
+            height: 300,
+            modal: false,
+            buttons:
+            {
+              OK: function()
+              {
+                $("#status-messages").dialog("close");
+              }
+            }
+          });
+        }
+
+        function artifact_missing()
+        {
+          $(".load-status").css("display", "none");
+
+          $("#status-messages").empty().html(
+            "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
+            "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
+            "<pre>" + model["message"] + "</pre>");
+
+          show_status_messages();
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup page layout and forms.
+        //////////////////////////////////////////////////////////////////////////////////////////
 
         // Setup the edit-model dialog ...
         $("#edit-model-form").dialog(
@@ -377,29 +517,24 @@ rights in this software.
           $("#rerun-timeseries-form").dialog("open");
         });
 
-        // Verify that we have the required inputs before setting-up the rest of the visualization ...
-        var cluster_type = "{{cluster-type}}";
-        var cluster_bin_type = "{{cluster-bin-type}}";
-        var cluster_bin_count = {{cluster-bin-count}};
-
-        // We stop rendering the UI if inputs are missing. We should probably provide a useful message instead.
-        if(cluster_type === null || cluster_bin_type === null || cluster_bin_count === null) {
-          $("#status-messages").show();
-          $("#status-messages .technical-details").append("<pre>Required inputs are not present.</pre>");
-          setTimeout("location.reload(true);", 15000);
-          return;
-        }
-
-        // Setup the resizing layout ...
+        // Setup the resizing layout ...      
         var bodyLayout = $("body").layout({
           north:
-            {
-              initClosed : true
-            },
+          {
+            initClosed : true,
+          },
+          center:
+          {
+          },
           south:
+          {
+            size: $(window).height() / 3,
+            resizeWhileDragging : false,
+            onresize: function()
             {
-              initClosed : true
-            }
+              $("#table").table("resize_canvas");
+            },
+          },
         });
 
         var contentPaneLayout = $("#content-pane").layout({
@@ -412,11 +547,6 @@ rights in this software.
           {
             resizeWhileDragging : true
           },
-          south :
-          {
-            size: $("#content-pane").height() / 3,
-            resizeWhileDragging : true
-          }
         });
 
         var modelPaneLayout = $("#model-pane").layout({
@@ -427,1059 +557,373 @@ rights in this software.
           }
         });
 
-        var last_selected_node = null;
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup the rest of the UI as data is received.
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-        var cluster_viewer = new cluster_viewer_component($("#cluster-viewer"));
-        var dendrogram_viewer = new dendrogram_viewer_component(d3.select("#dendrogram-viewer"), $("#dendrogram-pane").width(), $("#dendrogram-pane").height());
-        var waveform_viewer = new waveform_viewer_component(d3.select("#waveform-viewer"), $("#waveform-pane").width(), $("#waveform-pane").height());
-
-        // Retrieve data ...
-        function deleteWorker(worker)
+        function setup_cluster()
         {
-          $.ajax(
+          if(bookmark && clusters)
           {
-            type : "DELETE",
-            url : "{{server-root}}" + "workers/" + worker.id,
-            async: false,
-            success : function()
-            {
-            },
-            error : function(request, status, reason_phrase)
-            {
-              //window.alert("Error deleting remote worker: " + reason_phrase);
-            }
-          });
-        }
-
-        function stopWorker(worker)
-        {
-          $.ajax(
-          {
-            contentType : "application/json",
-            data : $.toJSON({ result : "stopped" }),
-            processData : false,
-            type : "PUT",
-            url : "{{server-root}}" + "workers/" + worker.id,
-            async: false, // Need to do this synchonously since it's called by the beforeunload even and will not happen otherwise.
-            timeout: 3000, // Setting timeout to a few seconds so user is not waiting forever after trying to leave page if worker can't be stopped.
-            success : function(worker)
-            {
-            },
-            error : function(request, status, reason_phrase)
-            {
-              //window.alert("Error stopping worker: " + reason_phrase);
-            }
-          });
-        }
-
-        var table_viewer_instance;
-        var workerId = null;
-
-        // Creating a table chunker worker for the data table
-        $.ajax(
-        {
-          contentType : "application/json",
-          data : $.toJSON({ type : "table-chunker", "mid" : "{{_id}}", "artifact" : "inputs", "generate-index" : "Simulation" }),
-          processData : false,
-          type : "POST",
-          cache: false,
-          url : "{{server-root}}" + "workers",
-          async: false, // Much of the rest of the script relies on this table chunker, so dong this synchronously
-          success : function(worker)
-          {
-            workerId = worker.id;
-            // setup beforeunload handler to stop and delete worker when user leaves page
-            window.onbeforeunload = function(){ stopWorker(worker); deleteWorker(worker); };
-          },
-          error : function(request, status, reason_phrase)
-          {
-            window.alert("Error creating table-chunker worker: " + reason_phrase);
-          },
-        });
-
-        // Start up a bookmark manager
-        var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
-        // Retrieve bookmark
-        var bookmark = bookmarker.getState();
-
-        // Start up a color switcher
-        var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-        $("#color-switcher").colorswitcher({colormap:colormap});
-        $("#waveform-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
-
-        // Handle colormap changes ...
-        $("#color-switcher").bind("colormap-changed", function(event, colormap)
-        {
-          $("#waveform-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
-          if(table_viewer_instance)
-            table_viewer_instance.updateColorMap(colormap);
-          bookmarker.updateState( {"colormap" : colormap} );
-        });
-
-        // First just a short list of the clusters
-        $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}models/{{_id}}/files/clusters",
-          success : function(clusters)
-          {
-            cluster_viewer.set_clusters(clusters);
-          },
-          error : function(request, status, reason_phrase)
-          {
-            //window.alert("Error retrieving cluster data: " + reason_phrase);
-            $("#status-messages").show();
-            $("#status-messages .technical-details").append("<pre>Error retrieving list of clusters. " + reason_phrase + "</pre>");
-            setTimeout("location.reload(true);", 15000);
-          }
-        });
-
-
-
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // cluster_viewer_component
-
-        function cluster_viewer_component(container)
-        {
-          var self = this;
-          self.container = container;
-        }
-
-        cluster_viewer_component.prototype.set_clusters = function(clusters)
-        {
-          var self = this;
-
-          self.container.empty();
-
-          var row = $("<tr>").appendTo($("<thead>").appendTo(self.container));
-          $("<th>").text("Outputs:").appendTo(row);
-          $.each(clusters, function(index, name)
-          {
-            // This only fires on initial page load and POSTs twice. Pehaps it should be inside the click event below and POST the cluster ID?
-            $.ajax(
-            {
-              type : "POST",
-              url : "{{server-root}}events/models/{{_id}}/select/cluster",
-            });
-
-            $("<th>")
-              .addClass("output")
-              .appendTo(row)
-              .click(function(event, skip_bookmarking)
-                {
-                  waveform_viewer.stopProcessingWaveforms();
-                  $(this).data("self").container.find("th").removeClass("selected");
-                  $(this).addClass("selected");
-
-                  var cluster_name = $(this).data("name");
-                  var cluster_index = $(this).data("index");
-
-                  $.ajax(
-                  {
-                    type : "GET",
-                    url : "{{server-root}}models/{{_id}}/files/cluster-" + cluster_name,
-                    success : function(cluster)
-                    {
-                      if(!skip_bookmarking) {
-                        bookmarker.updateState( {"cluster-index" : cluster_index,
-                                                 "cluster-name" : cluster_name} );
-                      }
-                      
-                      dendrogram_viewer.set_cluster(cluster, cluster_name, cluster_index);
-                      waveform_viewer.set_waveforms(cluster["waveforms"]);
-                    },
-                    error : function(request, status, reason_phrase)
-                    {
-                      //window.alert("Error retrieving cluster data: " + reason_phrase);
-                      $("#status-messages").show();
-                      $("#status-messages .technical-details").append("<pre>Error retrieving cluster data. " + reason_phrase + "</pre>");
-                      // Show top and bottom panes while hiding the center one.
-                      bodyLayout.toggle("north");
-                      bodyLayout.toggle("south");
-                      $("#content-pane").hide();
-                      setTimeout("location.reload(true);", 15000);
-                    }
-                  });
-                })
-              .data("name", name)
-              .data("self", self)
-              .data("index", index)
-              .text(name)
-              ;
-          });
-
-          // Select the cluster according to what's bookmarked, or first available if no bookmark
-          var sliceIndex = 0;
-          if("cluster-index" in bookmark) {
-            sliceIndex = bookmark["cluster-index"];
-          }
-          self.container.find("th.output").slice(sliceIndex, sliceIndex+1).trigger("click", [true]);
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // dendrogram_viewer_component
-
-        function dendrogram_viewer_component(container, width, height)
-        {
-          var self = this;
-          self.container = container;
-          self.width = width;
-          self.height = height;
-        }
-
-        dendrogram_viewer_component.prototype.set_color = function(color_array, colorMap, data_table_index_array)
-        {
-          this.container.selectAll("g.sparkline path")
-            .style("stroke", function(d, i){
-              var index = data_table_index_array.indexOf(d["data-table-index"]);
-              if(index > -1)
-                return colorMap( color_array[ data_table_index_array.indexOf(d["data-table-index"]) ] );
-              else if (d.selected || (d.parent && d.parent.selected))
-                return "black";
-              else
-                return "#C9C9C9";
-            })
-            ;
-        }
-
-        dendrogram_viewer_component.prototype.set_cluster = function(cluster, cluster_name, cluster_index)
-        {
-          var self = this;
-
-          // Convert the linkage matrix into a tree suitable for use with d3 ...
-          var linkage = cluster["linkage"];
-          var waveforms = cluster["waveforms"];
-          var exemplars = cluster["exemplars"];
-          var subtrees = [];
-          $.each(waveforms, function(index, waveform)
-          {
-            subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : waveform["data-table-index"]});
-          });
-          $.each(linkage, function(index, link)
-          {
-            subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + waveforms.length], selected: false, "waveform-index" : null, "data-table-index" : null})
-          });
-
-          var padding = 20;
-          var diagram_width = self.width - padding - padding - 110;
-          var diagram_height = self.height - padding - padding;
-
-          var layout = d3.layout.cluster()
-            .size([diagram_height, diagram_width]) // Width and height are transposed here because the layout defaults top-to-buttom.
-            .separation(function() { return 1; })
-            ;
-
-          self.container.selectAll("g").remove();
-
-          var vis = self.container.append("svg:g")
-            .attr("transform", "translate(" + padding + "," + padding + ")")
-            ;
-
-          var root = subtrees[subtrees.length - 1];
-          root.x0 = diagram_height / 2;
-          root.y0 = 0;
-
-          // Compute the layout once for the entire tree so we can capture the max depth ...
-          var nodes = layout.nodes(root).reverse();
-          var max_depth = -1;
-          nodes.forEach(function(d) { max_depth = Math.max(max_depth, d.depth); });
-
-          // Set up tree nodes according to what's in the bookmark
-          var collapsed_nodes = bookmark[cluster_index  + "-collapsed-nodes"];
-          var expanded_nodes = bookmark[cluster_index  + "-expanded-nodes"];
-          var selected_node_index = bookmark[cluster_index  + "-selected-node-index"];
-
-          // We have collapse/expand/selected node data in the bookmark. Let's go ahead and apply it.
-          if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_node_index!=null) ){
-            nodes.forEach(function(d) { 
-              if(selected_node_index != undefined) {
-                if( d["node-index"] == selected_node_index ) {
-                  select_node(d, true);
-                }
-              }
-              if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
-                toggle(d);
-              }
-              else if ( expanded_nodes && (expanded_nodes.indexOf(d["node-index"]) > -1) && d._children ) {
-                toggle(d);
-              }
-            });
-          }
-          // We have no data on expanded / collapsed nodes. Let's go ahead and just show the top four levels.
-          if( (expanded_nodes==null) && (collapsed_nodes==null) ) {
-            // Start showing the top four levels of the tree ...
-            nodes.forEach(function(d) { if(d.depth == 3) toggle(d); });
-          }
-          // We have no selected node data. Let's select the root node.
-          if(selected_node_index == null){
-            select_node(root, true);
-          }
-
-          // Initial update for the diagram ...
-          update_subtree(root, true);
-
-          // Helper function that draws dendrogram links with right-angles.
-          function path(d, i)
-          {
-            if(d.target._children) {
-              return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + (diagram_width);
-            }
-            return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
-          }
-
-          // Helper function that renders a waveform as a sparkline.
-          function sparkline(d, i)
-          {
-            if(d.exemplar == undefined)
-              return "";
-
-            var waveform = waveforms[d.exemplar];
-            var values = waveform["values"];
-            var data = [];
-            for(var i = 0; i != values.length; ++i)
-              data.push(values[i]);
-
-            var width = 100;
-            var height = 15;
-            var min = d3.min(data);
-            var max = d3.max(data);
-            var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
-            var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
-
-            var path = d3.svg.line()
-              .x(function(d,i) { return x(i); })
-              .y(function(d) { return y(d); })
-              ;
-
-            return path(data);
-            return "M 0 0 L 50 0 L 100 -5";
-          }
-
-          function select_node(d, skip_bookmarking)
-          {
-            if(last_selected_node === d)
-              return;
-            last_selected_node = d;
-
-            if(!skip_bookmarking){
-              var selected_node_index = {};
-              selected_node_index[cluster_index + "-selected-node-index"] = d["node-index"];
-              bookmarker.updateState(selected_node_index);
-            }
+            var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
             $.ajax(
             {
-              type : "POST",
-              url : "{{server-root}}events/models/{{_id}}/select/node/" + d["node-index"],
-            });
-
-            function select_subtree(d, selection)
-            {
-              selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
-              d.selected = true;
-              if(d.children)
-                $.each(d.children, function(index, subtree) { select_subtree(subtree, selection); });
-              if(d._children)
-                $.each(d._children, function(index, subtree) { select_subtree(subtree, selection); });
-            }
-
-            var selection = []
-            $.each(subtrees, function(index, subtree) { subtree.selected = false; });
-            select_subtree(d, selection);
-
-            self.container.selectAll(".node")
-              .classed("selected", function(d) { return d.selected; })
-              ;
-
-            color_links();
-
-            function make_selection_update(selection)
-            {
-              return function()
+              url : "{{server-root}}models/{{_id}}/files/cluster-" + clusters[cluster],
+              contentType : "application/json",
+              success : function(cluster_data)
               {
-                update_table_filter(selection, cluster_name, cluster_index);
-                waveform_viewer.set_visible(selection);
-              }
-            }
-            window.setTimeout(make_selection_update(selection), 750);
-          }
-
-          function color_links(){
-            self.container.selectAll("path.link").attr("style", function(d){
-              if(d.source.selected) {
-                return "stroke: black;";
-              }
-              else if(checkChildren(d.target)){
-                return "stroke: gray;";
-              }
+                clusters_data[cluster] = cluster_data;
+                initial_cluster = cluster;
+                setup_widgets();
+              },
+              error: artifact_missing
             });
-
-            // Checks if target or any of its children are selected
-            function checkChildren(target){
-              if(target.selected)
-                return true;
-              else if(!target.children)
-                return false;
-              else {
-                for(var i=0; i<target.children.length; i++){
-                  if(checkChildren(target.children[i]))
-                    return true
-                }
-                return false;
-              }
-            }
           }
+        }
 
+        function setup_colorswitcher()
+        {
+          var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
-
-          function update_subtree(source, skip_bookmarking)
+          $("#color-switcher").colorswitcher({colormap:colormap});
+          $("#color-switcher").bind("colormap-changed", function(event, colormap)
           {
-            var duration = d3.event && d3.event.altKey ? 5000 : 500;
+            selected_colormap_changed(colormap);
+          });
+        }
 
-            // Compute the new layout.
-            var nodes = layout.nodes(root).reverse();
+        function setup_widgets()
+        {
+          // Setup the cluster ...
+          if(!cluster_ready && bookmark && clusters)
+          {
+            cluster_ready = true;
 
-            // Normalize for fixed-depth.
-            nodes.forEach(function(d) { if(d.children || d._children) d.y = d.depth * (diagram_width / max_depth); });
+            $("#cluster-pane .load-status").css("display", "none");
 
-            // Update the nodes.
-            var node = vis.selectAll("g.node")
-              .data(nodes, function(d) { return d["node-index"]; })
-              ;
+            var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
-            // Expand all child nodes up to a certain level, collapse all child when level is rached
-            function expandUpToLevel(d, level) {
-              if(d.children) {
-                for(var i = 0; i < d.children.length; i++) {
-                  // If this child is at the correct depth and it is expanded, we collapse it
-                  if(d.children[i].depth == level && d.children[i].children) {
-                    toggle(d.children[i]);
-                  } 
-                  // If this child is above the correct depth and it is collapsed, we expand it and process its children
-                  else if(d.children[i].depth < level && d.children[i]._children) {
-                    toggle(d.children[i]);
-                    expandUpToLevel(d.children[i], level);
-                  }
-                  // If this child is above the correct depth and it is expanded, we just process its children
-                  else if(d.children[i].depth < level && d.children[i].children) {
-                    expandUpToLevel(d.children[i], level);
-                  }
-                }
-              } 
-              // If d has no children, we do nothing
-              else {
-                return;
-              }
-            }
-
-            // Create new nodes at the parent's previous position.
-            var node_enter = node.enter().append("svg:g")
-              .attr("class", "node")
-              .classed("selected", function(d) { return d.selected; })
-              .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-              .on("dblclick", function(d) { 
-                table_viewer_instance.setWaveformColorsPerSelectedColumn(true);
-                // Toggle the target node (expand if collapsed, collapse if expanded)
-                toggle(d);
-                // If target node is now expanded, expand its children up to a certain depth
-                if(d.children) {
-                  // Change expandThisFar to however deep below the target node you want to expand
-                  var expandThisFar = 2;
-                  expandUpToLevel(d, d.depth + expandThisFar);
-                }
-                update_subtree(d);
-              })
-              .on("click", function(d) {
-                // Shift+click expands current node
-                if(d3.event.shiftKey){
-                  table_viewer_instance.setWaveformColorsPerSelectedColumn(true); 
-                  toggle(d); 
-                  update_subtree(d);
-                } 
-                // Regular click just selects it
-                else {
-                  select_node(d);
-                }
-              })
-              .style("opacity", 1e-6)
-              ;
-
-            // Triangle
-            var node_subtree = node_enter.append("svg:g")
-              .attr("class", "subtree")
-              .style("opacity", 1e-6)
-              .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
-              ;
-
-            node_subtree.append("svg:path")
-              .attr("class", "subtree-glyph")
-              .attr("d", "M 0 0 L 40 -13 L 40 13 Z")
-              .style("fill", "url(#subtree-gradient)")
-              ;
-
-            node_subtree.append("svg:text")
-              .attr("x", 28)
-              .attr("dy", ".4em")
-              .attr("text-anchor", "middle")
-              .text(function(d) { return d.leaves; })
-              ;
-
-            // Circle
-            var node_glyph = node_enter.append("svg:g")
-              .attr("class", "glyph")
-              ;
-
-            node_glyph.append("svg:circle")
-              .attr("r", 4.5)
-              // All circles are clickable so all should use a pointer cursor
-              //.style("cursor", function(d) { return d.children || d._children ? "pointer" : ""; })
-              .style("cursor", "pointer")
-              .style("fill", function(d) { return d.children || d._children ? "#dbd9eb" : "white"; })
-              ;
-
-            // Sparkline
-            var node_sparkline = node_enter.append("svg:g")
-              .attr("class", "sparkline")
-              .attr("transform", function(d) { return d.leaves > 1 ? "translate(45, 0)" : "translate(10, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
-              .style("opacity", 1e-6)
-              .style("display", "none")
-              ;
-
-            node_sparkline.append("svg:path")
-              .attr("d", sparkline)
-              ;
-
-            // Transition new nodes to their final position.
-            var node_update = node.transition()
-              .duration(duration)
-              .attr("transform", function(d) { 
-                return "translate(" + (d._children ? (diagram_width - 35) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
-              })
-              .style("opacity", 1.0)
-              ;
-
-            node_update.select(".subtree")
-              .style("opacity", function(d) { return d._children ? 1.0 : 1e-6; })
-              .style("display", function(d) { return d._children ? "inline" : "none"; })
-              ;
-
-            node_update.select(".sparkline")
-              .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
-              .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
-              ;
-
-            // Transition exiting nodes to the parent's new position.
-            var node_exit = node.exit().transition()
-              .duration(duration)
-              .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-              .style("opacity", 1e-6)
-              .remove()
-              ;
-
-            node_exit.select(".sparkline")
-              .each("start", function() { d3.select(this).style("display", "none"); })
-              ;
-
-            // Update the links.
-            var link = vis.selectAll("path.link")
-              .data(layout.links(nodes), function(d) { return d.target["node-index"]; });
-
-            // Enter any new links at the parent's previous position.
-            link.enter().insert("svg:path", "g")
-              .attr("class", "link")
-              .attr("d", function(d)
-              {
-                var o = {x: source.x0, y: source.y0};
-                return path({source: o, target: o});
-              })
-            .transition()
-              .duration(duration)
-              .attr("d", path);
-
-            // Transition new links to their new position.
-            link.transition()
-              .duration(duration)
-              .attr("d", path);
-
-            // Transition exiting links to the parent's new position.
-            link.exit().transition()
-              .duration(duration)
-              .attr("d", function(d)
-              {
-                var o = {x: source.x, y: source.y};
-                return path({source: o, target: o});
-              })
-              .remove()
-              ;
-
-            color_links();
-
-            // Stash the old positions for transition.
-            nodes.forEach(function(d)
-            {
-              d.x0 = d.x;
-              d.y0 = d.y;
+            $("#cluster-viewer").cluster({
+              clusters: clusters,
+              cluster: cluster,
             });
 
-            // Bookmark expanded and collapsed nodes
-            if(!skip_bookmarking){
-              var expanded = [];
-              var collapsed = [];
-              function findExpandedAndCollapsedNodes(d){
-                // If this node is expanded, add its node-index to the expanded array
-                if(d.children) {
-                  expanded.push(d["node-index"]);
-                  // Recursively call this function for each child to capture any collapsed and expanded ones
-                  for(var i = 0; i < d.children.length; i++) {
-                    findExpandedAndCollapsedNodes(d.children[i]);
-                  }
-                }
-                // Otherwise if this node is collapsed, add its node-index to the collapsed array
-                else if(d._children) {
-                  collapsed.push(d["node-index"]);
-                }
-              }
-              findExpandedAndCollapsedNodes(root);
-              var cluster_state = {};
-              cluster_state[cluster_index + "-expanded-nodes"] = expanded;
-              cluster_state[cluster_index + "-collapsed-nodes"] = collapsed;
-              bookmarker.updateState(cluster_state);
-            }
+            // Log changes to the cluster selection ...
+            $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
+            {
+              selected_cluster_changed(cluster);
+            });
+
+            // Changing the cluster updates the dendrogram ...
+            $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
+            {
+              update_dendrogram(cluster);
+            });
           }
 
-          // Toggle children.
-          function toggle(d)
+          // Setup the waveform plot ...
+          if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
           {
-            $.ajax(
+            waveformplot_ready = true;
+
+            $("#waveform-pane .load-status").css("display", "none");
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+            $("#waveform-viewer").css({
+              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+              });
+            $("#waveform-viewer rect.selectionMask").css({
+              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+              "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+              });
+
+            var waveformplot_options =
             {
-              type : "POST",
-              url : "{{server-root}}events/models/{{_id}}/toggle/node/" + d["node-index"],
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              waveforms: clusters_data[initial_cluster].waveforms,
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+            };
+
+            $("#waveform-viewer").waveformplot(waveformplot_options);
+
+            // Changing the selected dendrogram node updates the waveform plot ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
+
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+                $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
             });
 
-            if(d.children)
+            // Changing the table row selection updates the waveform plot ...
+            $("#table").bind("row-selection-changed", function(event, waveform_indexes)
             {
-              d._children = d.children;
-              d.children = null;
+              $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+            });
+
+            // Changing the color map updates the waveform plot ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#waveform-viewer").css({
+                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+                });
+              $("#waveform-viewer rect.selectionMask").css({
+                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+                "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+                });
+              $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
+            });
+            
+            // Changing the color scale updates the waveform plot ...
+            $("#table").bind("color-scale-changed", function(event, parameters)
+            {
+              $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
+            });
+          }
+
+          // Setup the table ...
+          if( !table_ready && bookmark && table_metadata && (initial_cluster !==  null) )
+          {
+            table_ready = true;
+
+            $("#table-pane .load-status").css("display", "none");
+
+            var table_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "inputs",
+              metadata : table_metadata,
+            };
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+
+            if(bookmark[initial_cluster + "-column-index"] !== undefined)
+            {
+              table_options["variable-selection"] = [bookmark[initial_cluster + "-column-index"]];
             }
             else
             {
-              d.children = d._children;
-              d._children = null;
+              table_options["variable-selection"] = [table_metadata["column-count"] - 1];
             }
-          }
-        }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // waveform_viewer_component
+            if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
+              table_options["row-selection"] = bookmark[initial_cluster + "-selected-row-simulations"];
 
-        function waveform_viewer_component(container, width, height)
-        {
-          this.container = container;
-          this.width = width;
-          this.height = height;
-          this.padding = 20;
-          this.diagram_width = this.width - this.padding - this.padding;
-          this.diagram_height = this.height - this.padding - this.padding;
+            $("#table").table(table_options);
 
-          this.waveforms = null;
-
-          this.waveformPieContainer = $("#waveform-progress");
-          this.waveformPie = $("#waveform-progress .waveformPie")
-          this.waveformPie.knob({
-                        'min':0,
-                        'readOnly':true,
-                        'displayInput':false,
-                        'fgColor':'#7767B0',
-                        'bgColor':'#DBD9EB',
-                        'width':200,
-                        'height':200,
-                        'thickness':0.35,
-                        'step':1,
-                      });
-          this.waveformProcessingTimeout = null;
-          this.previewWaveformsTimeout = null;
-          this.showWaveformPieContainerTimeout = null;
-          this.color_array = null;
-          this.color_scale = null;
-          this.data_table_index_array = null;
-        }
-
-        waveform_viewer_component.prototype.stopProcessingWaveforms = function()
-        {
-          var self = this;
-          // Cancel any previously started work
-          clearTimeout(self.waveformProcessingTimeout);
-          clearTimeout(self.previewWaveformsTimeout);
-          clearTimeout(self.showWaveformPieContainerTimeout);
-          self.waveformPieContainer.hide();
-        }
-
-        waveform_viewer_component.prototype.set_waveforms = function(waveforms)
-        {
-          var self = this;
-
-          // Cancel any previously started work
-          self.stopProcessingWaveforms();
-
-          this.waveforms = waveforms;
-
-          var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["times"]); });
-          var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["times"]); });
-          var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["values"]); });
-          var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["values"]); });
-
-          this.x = d3.scale.linear()
-            .domain([x_min, x_max])
-            .range([0, this.diagram_width])
-            ;
-
-          this.y = d3.scale.linear()
-            .domain([y_max, y_min])
-            .range([0, this.diagram_height])
-            ;
-
-          this.container.selectAll("g").remove();
-
-          this.visualization = this.container.append("svg:g")
-            .attr("transform", "translate(" + this.padding + "," + this.padding + ")")
-            ;
-
-          this.visualization.append("svg:rect")
-            .attr("width", this.diagram_width)
-            .attr("height", this.diagram_height)
-            .attr("pointer-events", "all")
-            .style("fill", "transparent")
-            .on("click", panel_selection_callback(self)) // unselect all the waveforms when someone clicks in the panel but not on a waveform
-//            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
-            ;
-
-          function panel_selection_callback(context)
-          {
-            return function()
+            // Changing the selected dendrogram node updates the table ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
             {
-              var selection = [];
-
-              context.select(selection);
-
-              if(table_viewer_instance != null) {
-                table_viewer_instance.select_simulations(selection);
-              }
-            }
-          }
-
-/*
-          function redraw_waveforms()
-          {
-            // Update waveforms ...
-            self.container.selectAll("g.waveform path")
-              .attr("d", sax_line)
-              ;
-          }
-*/
-        }
-
-        waveform_viewer_component.prototype.make_sax_line = function()
-        {
-          var self = this;
-          return function(d)
-          {
-
-            result = "";
-            for(var i = 0; i != d.times.length; ++i)
-            {
-              result += "M" + self.x(d.times[i]) + "," + self.y(d.values[i]);
-              break;
-            }
-            for(var i = 1; i < d.times.length; ++i)
-            {
-              result += "L" + self.x(d.times[i]) + "," + self.y(d.values[i]);
-            }
-
-            return result;
-          }
-        }
-
-        waveform_viewer_component.prototype.set_visible = function(visible)
-        {
-          var self = this;
-
-          // Cancel any previously started work
-          self.stopProcessingWaveforms();
-
-          var waveform_subset = [];
-          $.each(visible, function(index, node)
-          {
-            if(node["waveform-index"] != null)
-              waveform_subset.push(self.waveforms[node["waveform-index"]]);
-          });
-
-          this.container.selectAll("g.waveform").remove();
-          this.container.selectAll("g.selection").remove();
-
-          waveformsContainer = this.visualization;
-          waveforms = waveformsContainer.selectAll("g.waveform")
-            .data(waveform_subset)
-            .enter()
-            .append("svg:g")
-            .attr("class", "waveform")
-            //.style("visibility", "hidden")
-            //.style("display", "none")
-            ;
-
-          var waveformsLength = waveforms[0].length;
-          self.waveformPie.trigger(
-            'configure',
-            {
-              "max":waveformsLength,
-            }
-          );
-
-          // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
-          self.showWaveformPieContainerTimeout = setTimeout(function(){
-            self.waveformPieContainer.show(0);
-          }, 1000);
-
-          timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
-          previewWaveforms();
-
-          function timedProcessArray(items, process, callback){
-            var timeout = 100; //how long to yield control to UI thread
-            var todo = items.concat(); //create a clone of the original
-
-            self.waveformProcessingTimeout = setTimeout(function(){
-              var start = +new Date();
-              do {
-                process(todo.shift());
-              } while (todo.length > 0 && (+new Date() - start < 50));
-
-              if (todo.length > 0){
-                self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
-              } else {
-                callback(items);
-              }
-
-              self.waveformPie.val(waveformsLength - todo.length).trigger('change');
-            }, timeout);
-          }
-
-          function processWaveform(waveform){
-            d3.select(waveform).append("svg:path")
-              .attr("d", self.make_sax_line())
-              //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
-              .style("display", "none")
-              .style("stroke", function(d, i) { 
-                if(self.color_scale != null)
-                  return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] ); 
-                else
-                  return "white";
-              })
-              .attr("class", "unselected")
-              .on("click", waveform_selection_callback(self))
-              ;
-          }
-
-          function waveform_selection_callback(context)
-          {
-            return function(d)
-            {
-              var selection = [d['data-table-index']];
-
-              context.select(selection);
-
-              if(table_viewer_instance != null) {
-                table_viewer_instance.select_simulations(selection);
-              }
-
-              d3.event.stopPropagation();
-            }
-          }
-
-          function finishedProcessingWaveforms(){
-
-            // Cancelling the timeout that was set to delay progress indicator display
-            clearTimeout(self.showWaveformPieContainerTimeout);
-            self.waveformPieContainer.hide();
-            clearTimeout(self.previewWaveformsTimeout);
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+                $("#table").table("option", "row-selection-silent", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+              
+              $("#table").table("option", "selection", parameters.selection);
+            });
             
-            self.visualization.selectAll("path").
-              style("display", "block") // displaying the hidden paths
-              ;
+            // Changing the waveform selection updates the table row selection ...
+            $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+            {
+              $("#table").table("option", "row-selection", waveform_indexes);
+            });
+
+            // Changing the colormap updates the table ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
+            });
+
+            // Log changes to the table row selection
+            $("#table").bind("row-selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
+            });
+
+            // Log changes to the table variable selection
+            $("#table").bind("variable-selection-changed", function(event, parameters)
+            {
+              selected_variable_changed(parameters.variable);
+            });
+
+            $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
+            {
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"] !== undefined)
+                $("#table").table("option", "variable-selection", [bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"]]);
+            });
           }
 
-          function previewWaveforms(timeout, maxIterations){
-            if (timeout == null)
-              timeout = 100
-            if (maxIterations == null)
-              maxIterations = 6;
-
-            self.previewWaveformsTimeout = setTimeout( function(){
-                self.visualization.selectAll("path").
-                  style("display", "block") // displaying the hidden paths
-                  ;
-
-                maxIterations--;
-                timeout = timeout * 2;
-
-                if (maxIterations > 0) {
-                  self.previewWaveformsTimeout = setTimeout(arguments.callee, timeout);
-                }
-            }, timeout );
-            
-          }
-
-        }
-
-        waveform_viewer_component.prototype.set_color = function(color_array, color_scale, data_table_index_array)
-        {
-          var self = this;
-
-          self.color_array = color_array;
-          self.color_scale = color_scale;
-          self.data_table_index_array = data_table_index_array;
-
-          // this.container.selectAll("g.waveform path")
-          //   .style("stroke", function(d, i) { 
-          //     return color_scale(color_array[i]); 
-          //   })
-          //   ;
-          this.container.style("display", "none");
-          // Coloring both the standard waveforms (g.waveform path) and the ones used to show selected simulations (g.selection path.highlight)
-          timedColorWaveforms(this.container.selectAll("g.waveform path, g.selection path.highlight").pop(), colorWaveform, finishedColoringWaveforms);
-
-          function timedColorWaveforms(items, process, callback){
-            var timeout = 100; //how long to yield control to UI thread
-            var todo = items.concat(); //create a clone of the original
-
-            self.waveformProcessingTimeout = setTimeout(function(){
-              var start = +new Date();
-              do {
-                process(todo.shift());
-              } while (todo.length > 0 && (+new Date() - start < 50));
-
-              if (todo.length > 0){
-                self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
-              } else if (callback != null) {
-                callback(items);
-              }
-            }, timeout);
-          }
-
-          function colorWaveform(waveform){
-            d3.select(waveform).style("stroke", function(d, i) { 
-              return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
-            })
-            ;
-          }
-
-          function finishedColoringWaveforms(){
-
-            self.container.style("display", "block");
-            
-          }
-        }
-
-        waveform_viewer_component.prototype.select = function(selected)
-        {
-          var self = this;
-          var waveform_subset = [];
-          $.each(selected, function(index, node_index)
+          // Setup the dendrogram ...
+          if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) )
           {
-            if(node_index < self.waveforms.length)
-              waveform_subset.push(self.waveforms[node_index]);
-          });
+            dendrogram_ready = true;
 
-          this.container.selectAll("g.selection").remove();
-          this.container.selectAll("rect.selectionMask").remove();
+            $("#dendrogram-pane .load-status").css("display", "none");
 
-          if(selected.length > 0) {
-            this.visualization.append("svg:rect")
-              .attr("width", this.diagram_width)
-              .attr("height", this.diagram_height)
-              .attr("pointer-events", "none")
-              //.style("fill", "#333333")
-              //.style("fill-opacity", 0.5)
-              .attr("class", "selectionMask")
-              ;
+            var dendrogram_options = build_dendrogram_node_options(initial_cluster);
+            dendrogram_options["server-root"]="{{server-root}}";
+            dendrogram_options.mid="{{_id}}";
+            dendrogram_options.clusters=clusters;
+            dendrogram_options.cluster_data=clusters_data[initial_cluster];
+
+            $("#dendrogram-viewer").dendrogram(dendrogram_options);
+
+            // Log changes to the node selection ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              selected_node_changed(parameters);
+            });
+
+            // Bookmark changes to expanded and collapsed nodes ...
+            $("#dendrogram-viewer").bind("expanded-collapsed-nodes-changed", function(event, nodes)
+            {
+              expanded_collapsed_nodes_changed(nodes);
+            });
+
+            // Log changes to node toggle ...
+            $("#dendrogram-viewer").bind("node-toggled", function(event, node)
+            {
+              node_toggled(node);
+            });
+
+            // Changing the color scale updates the waveform plot ...
+            $("#table").bind("color-scale-changed", function(event, parameters)
+            {
+              $("#dendrogram-viewer").dendrogram("option", "color-scale", parameters);
+            });
           }
-
-          var waveforms = this.visualization.selectAll("g.selection")
-            .data(waveform_subset)
-          .enter().append("svg:g")
-            .attr("class", "selection");
-
-          // Turning off yellow highlighting now that the background waveforms are faded out.
-          // waveforms.append("svg:path")
-          //   .attr("d", this.make_sax_line())
-          //   .style("fill", "none")
-          //   .style("stroke", "yellow")
-          //   .style("stroke-width", 5.0)
-          //   ;
-
-          waveforms.append("svg:path")
-            .attr("d", this.make_sax_line())
-            .style("stroke", function(d, i) { 
-              if (self.color_scale != null && self.color_array != null && self.data_table_index_array != null)
-                return self.color_scale( self.color_array[ self.data_table_index_array.indexOf(d["data-table-index"]) ] );
-              else
-                return "white";
-            })
-            .attr("class", "highlight")
-            ;
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //table_viewer_component
-        function update_table_filter(visible, cluster_name, cluster_index) {
-          this.visible = visible;
-          var self = this;
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Event handlers.
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-          var data_table_index, waveform_index;
-          var table_filter = [];
-          var waveform_indexes = [];
-          $.each(self.visible, function(index, node)
+        function selected_colormap_changed(colormap)
+        {
+          $.ajax(
           {
-            data_table_index = node["data-table-index"];
-            waveform_index   = node["waveform-index"];
-
-            if(data_table_index == null)
-              return;
-
-            table_filter.push(data_table_index);
-            waveform_indexes.push(waveform_index);
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
           });
+          bookmarker.updateState({"colormap" : colormap});
+        }
 
-          // Just update slickgrid with a new table filter. Or if we don't have a slickgrid yet, make one.
-          if(table_viewer_instance) {
-            table_viewer_instance.update({
-              table_filter : table_filter,
-              waveform_indexes: waveform_indexes,
-              cluster_name: cluster_name,
-              cluster_index: cluster_index,
-              selected_column_index: bookmark[cluster_index + "-column-index"],
-              selected_row_simulations: bookmark[cluster_index + "-selected-row-simulations"],
+        function selected_cluster_changed(cluster)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/cluster/" + cluster
+          });
+          bookmarker.updateState({"cluster-index" : cluster});
+        }
+
+        function selected_node_changed(parameters)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
+          });
+          if(parameters.skip_bookmarking != true) {
+            var selected_node_index = {};
+            selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = parameters.node["node-index"];
+            bookmarker.updateState(selected_node_index);
+          }
+        }
+
+        function selected_simulations_changed(selection)
+        {
+          // Logging every selected item is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+          });
+          var selected_simulations = {};
+          selected_simulations[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] = selection;
+          bookmarker.updateState(selected_simulations);
+        }
+
+        function selected_variable_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+          });
+          var selected_variable = {};
+          selected_variable[ $("#cluster-viewer").cluster("option", "cluster") + "-column-index"] = variable[0];
+          bookmarker.updateState(selected_variable);
+        }
+
+        function expanded_collapsed_nodes_changed(nodes){
+          var cluster_state = {};
+          cluster_state[$("#cluster-viewer").cluster("option", "cluster") + "-expanded-nodes"] = nodes.expanded;
+          cluster_state[$("#cluster-viewer").cluster("option", "cluster") + "-collapsed-nodes"] = nodes.collapsed;
+          bookmarker.updateState(cluster_state);
+        }
+
+        function node_toggled(node){
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/toggle/node/" + node["node-index"],
+          });
+        }
+        
+
+        function update_dendrogram(cluster)
+        {
+          // Retrieve cluster data if it's not already in the cache
+          if(clusters_data[cluster] === undefined) {
+             $.ajax(
+            {
+              url : "{{server-root}}models/{{_id}}/files/cluster-" + clusters[cluster],
+              contentType : "application/json",
+              success : function(cluster_data)
+              {
+                clusters_data[cluster] = cluster_data;
+                var dendrogram_options = build_dendrogram_node_options(cluster);
+                dendrogram_options.cluster_data = clusters_data[cluster];
+                $("#waveform-viewer").waveformplot("option", "waveforms", clusters_data[cluster].waveforms);
+                $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
+              },
+              error: artifact_missing
             });
           } else {
-            table_viewer_instance = new timeseries_simulation_table(
-              { container : "#data-pane",
-                table_filter : table_filter,
-                waveform_indexes: waveform_indexes,
-                waveform_viewer : waveform_viewer,
-                dendrogram_viewer : dendrogram_viewer,
-                model_id : "{{_id}}",
-                bookmarker : bookmarker,
-                selected_column_index: bookmark[cluster_index + "-column-index"],
-                selected_row_simulations: bookmark[cluster_index + "-selected-row-simulations"],
-                cluster_name: cluster_name,
-                cluster_index: cluster_index,
-                colormap: bookmark["colormap"],
-                colorMapper: $("#color-switcher"),
-              },
-              "{{server-root}}",
-              workerId
-            );
+            var dendrogram_options = build_dendrogram_node_options(cluster);
+            dendrogram_options.cluster_data = clusters_data[cluster];
+            $("#waveform-viewer").waveformplot("option", "waveforms", clusters_data[cluster].waveforms);
+            $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
           }
         }
+
+        function build_dendrogram_node_options(cluster)
+        {
+          var dendrogram_options = {
+            cluster: cluster,
+          };
+          
+          if(cluster + "-collapsed-nodes" in bookmark)
+          {
+            dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
+          }
+          if(cluster + "-expanded-nodes" in bookmark)
+          {
+            dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
+          }
+          if(cluster + "-selected-node-index" in bookmark)
+          {
+            dendrogram_options.selected_node_index = bookmark[cluster  + "-selected-node-index"];
+          }
+
+          return dendrogram_options;
+        }
+
       });
     </script>
   </body>

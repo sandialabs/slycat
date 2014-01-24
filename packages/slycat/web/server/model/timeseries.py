@@ -49,8 +49,8 @@ def compute(mid):
 
         # Get the minimum and maximum times across every series in the cluster
         update(database, model, message="Collecting statistics for %s" % name)
-        min_times = [file.array_attribute(array_index, 0).attrs["min"] for array_index, attribute_index in storage]
-        max_times = [file.array_attribute(array_index, 0).attrs["max"] for array_index, attribute_index in storage]
+        min_times = [slycat.data.hdf5.get_array_attribute(file, array_index, 0).attrs["min"] for array_index, attribute_index in storage]
+        max_times = [slycat.data.hdf5.get_array_attribute(file, array_index, 0).attrs["max"] for array_index, attribute_index in storage]
         time_min = min(min_times)
         time_max = max(max_times)
 
@@ -63,8 +63,8 @@ def compute(mid):
           bin_edges = numpy.linspace(time_min, time_max, cluster_bin_count + 1)
           bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
           for array_index, attribute_index in storage:
-            original_times = file.array_attribute(array_index, 0)[...]
-            original_values = file.array_attribute(array_index, attribute_index)[...]
+            original_times = slycat.data.hdf5.get_array_attribute(file, array_index, 0)[...]
+            original_values = slycat.data.hdf5.get_array_attribute(file, array_index, attribute_index)[...]
             bin_indices = numpy.digitize(original_times, bin_edges)
             bin_indices[-1] -= 1
             bin_counts = numpy.bincount(bin_indices)[1:]

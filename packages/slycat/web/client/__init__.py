@@ -2,21 +2,32 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import argparse
 import getpass
 import json
+import logging
 import numpy
-import optparse
 import os
 import requests
 import shlex
 import sys
 import time
 
-from slycat.array import *
+from slycat.data.array import *
+
+log = logging.getLogger("slycat.web.client")
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler())
+log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 
 def require_float(value):
   if not isinstance(value, float):
     raise Exception("Not a floating-point value.")
+  return value
+
+def require_string(value):
+  if not isinstance(value, basestring):
+    raise Exception("Not a string value.")
   return value
 
 def require_array_ranges(ranges):
@@ -32,37 +43,43 @@ def require_array_ranges(ranges):
   else:
     raise Exception("Not a valid ranges object.")
 
-class dev_null:
-  """Do-nothing stream object, for disabling logging."""
-  def write(*arguments, **keywords):
-    pass
-
-class option_parser(optparse.OptionParser):
-  """Returns an instance of optparse.OptionParser, pre-configured with options
-  to connect to a Slycat server."""
+class option_parser(argparse.ArgumentParser):
+  """Returns an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
-    optparse.OptionParser.__init__(self, *arguments, **keywords)
+    argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_option("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %default")
-    self.add_option("--http-proxy", default="", help="HTTP proxy URL.  Default: %default")
-    self.add_option("--https-proxy", default="", help="HTTPS proxy URL.  Default: %default")
-    self.add_option("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
-    self.add_option("--user", default=getpass.getuser(), help="Slycat username.  Default: %default")
-    self.add_option("--verbose", default=False, action="store_true", help="Verbose output.")
-    self.add_option("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
+    self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
+    self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
+    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
+    self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
+    self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
+    self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
   def parse_args(self):
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
-    return optparse.OptionParser.parse_args(self)
+
+    arguments = argparse.ArgumentParser.parse_args(self)
+    if arguments.log_level == "debug":
+      log.setLevel(logging.DEBUG)
+    elif arguments.log_level == "info":
+      log.setLevel(logging.INFO)
+    elif arguments.log_level == "warning":
+      log.setLevel(logging.WARNING)
+    elif arguments.log_level == "error":
+      log.setLevel(logging.ERROR)
+    elif arguments.log_level == "critical":
+      log.setLevel(logging.CRITICAL)
+
+    return arguments
 
 class connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
-  def __init__(self, host="http://localhost:8092", log=sys.stderr, **keywords):
+  def __init__(self, host="http://localhost:8092", **keywords):
     self.host = host
-    self.log = log
     self.keywords = keywords
     self.session = requests.Session()
 
@@ -77,18 +94,12 @@ class connection(object):
     # Combine host and path to produce the final request URI ...
     uri = self.host + path
 
-    # Try extracting a user name ...
-    user = keywords.get("auth", ("", ""))[0]
-
-    self.log.write("%s %s %s" % (user, method, uri))
-
-    if "data" in keywords:
-      self.log.write(" %s" % (keywords["data"]))
+    log_message = "{} {} {}".format(keywords.get("auth", ("", ""))[0], method, uri)
 
     try:
       response = self.session.request(method, uri, **keywords)
 
-      self.log.write(" => %s %s" % (response.status_code, response.raw.reason))
+      log_message += " => {} {}".format(response.status_code, response.raw.reason)
 
       response.raise_for_status()
 
@@ -98,66 +109,99 @@ class connection(object):
       else:
         body = response.content
 
-#      if response.headers["content-type"].startswith("text/html"):
-#        self.log.write(" => <html>...</html>")
-#      else:
-#        self.log.write(" => %s" % (body)
-      self.log.write("\n")
+      log.debug(log_message)
       return body
     except:
-      self.log.write("\n")
+      log.debug(log_message)
       raise
 
   ###########################################################################################################3
-  # Functions that map directly to the underlying RESTful API
+  # Low-level functions that map directly to the underlying RESTful API
 
-  def get_projects(self):
-    """Returns all projects."""
-    return self.request("GET", "/projects", headers={"accept":"application/json"})
-
-  def create_project(self, name, description=""):
-    """Creates a new project, returning the project ID."""
-    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
-
-  def get_project(self, pid):
-    """Returns a single project."""
-    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
-
-  def put_project(self, pid, project):
-    """Modifies a project."""
-    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+  def delete_model(self, mid):
+    """Deletes an existing model."""
+    self.request("DELETE", "/models/%s" % (mid))
 
   def delete_project(self, pid):
     """Deletes an existing project."""
     self.request("DELETE", "/projects/%s" % (pid))
 
-  def create_bookmark(self, pid, bookmark):
-    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
-
   def get_bookmark(self, bid):
     return self.request("GET", "/bookmarks/%s" % (bid))
+
+  def get_model_array_chunk(self, mid, name, array, attribute, ranges, type=None):
+    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
+    ranges = require_array_ranges(ranges)
+    if ranges is None:
+      raise Exception("An explicit chunk range is required.")
+    if type is None or type == "string":
+      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+    else:
+      shape = tuple([end - begin for begin, end in ranges])
+      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
+      return numpy.fromstring(content, dtype=type).reshape(shape)
+
+  def get_model_array_metadata(self, mid, name, array):
+    """Returns the metadata for an array artifacat."""
+    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+
+  def get_model(self, mid):
+    """Returns a single model."""
+    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
+
+  def get_model_file(self, mid, name):
+    return self.request("GET", "/models/%s/files/%s" % (mid, name))
+
+  def get_model_table_chunk(self, mid, name, array, rows, columns):
+    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
+
+  def get_model_table_metadata(self, mid, name, array):
+    """Returns the metadata for a table (array) artifact."""
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+
+  def get_model_table_sorted_indices(self, mid, name, array, rows, index=None, sort=None):
+    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/sorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
+    return numpy.fromstring(content, dtype="int32")
+
+  def get_model_table_unsorted_indices(self, mid, name, array, rows, index=None, sort=None):
+    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/unsorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
+    return numpy.fromstring(content, dtype="int32")
 
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
 
-  def create_model(self, pid, type, name, marking="", description=""):
+  def get_project(self, pid):
+    """Returns a single project."""
+    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
+
+  def get_projects(self):
+    """Returns all projects."""
+    return self.request("GET", "/projects", headers={"accept":"application/json"})
+
+  def get_user(self, uid):
+    return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
+
+  def post_model_finish(self, mid):
+    """Completes a model."""
+    self.request("POST", "/models/%s/finish" % (mid))
+
+  def post_project_bookmarks(self, pid, bookmark):
+    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
+
+  def post_project_models(self, pid, type, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
     return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
 
-  def store_parameter(self, mid, name, value, input=True):
-    """Sets a model parameter value."""
-    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+  def post_projects(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
-  def start_array_set(self, mid, name, input=True):
-    """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+  def put_model(self, mid, model):
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def start_array(self, mid, name, array, attributes, dimensions):
-    """Starts a new array set array, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
-
-  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+  def put_model_array_attribute(self, mid, name, array, attribute, data, ranges=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
     ranges = require_array_ranges(ranges)
     if isinstance(data, numpy.ndarray):
@@ -172,71 +216,91 @@ class connection(object):
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
-  def set_progress(self, mid, progress):
-    """Sets the current model progress."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"progress": require_float(progress)}))
+  def put_model_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
+
+  def put_model_array_set(self, mid, name, input=True):
+    """Starts a new model array set artifact, ready to receive data."""
+    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+
+  def put_model_file(self, mid, name, data, content_type, input=True):
+    """Stores a model file artifact."""
+    self.request("PUT", "/models/%s/files/%s" % (mid, name), data=({"input":json.dumps(input)}), files={"file":("file", data, content_type)})
+
+  def put_model_inputs(self, source, target):
+    self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
+
+  def put_model_parameter(self, mid, name, value, input=True):
+    """Sets a model parameter value."""
+    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+
+  def put_project(self, pid, project):
+    """Modifies a project."""
+    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+
+  ###########################################################################################################
+  # Aliases for low-level functions that make client code more readable.
+
+  def create_project(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.post_projects(name, description)
+
+  def create_model(self, pid, type, name, marking="", description=""):
+    """Creates a new model, returning the model ID."""
+    return self.post_project_models(pid, type, name, marking, description)
+
+  def store_bookmark(self, pid, bookmark):
+    return self.post_project_bookmarks(pid, bookmark)
+
+  def update_model(self, mid, **kwargs):
+    """Updates the model state/result/progress/message."""
+    model = {key : value for key, value in kwargs.items() if value is not None}
+    self.put_model(mid, model)
+
+  def store_parameter(self, mid, name, value, input=True):
+    """Sets a model parameter value."""
+    self.put_model_parameter(mid, name, value, input)
+
+  def store_file(self, mid, name, data, content_type, input=True):
+    """Uploads a model file."""
+    self.put_model_file(mid, name, data, content_type, input)
+
+  def start_array_set(self, mid, name, input=True):
+    """Starts a new model array set artifact, ready to receive data."""
+    self.put_model_array_set(mid, name, input)
+
+  def start_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.put_model_array(mid, name, array, attributes, dimensions)
+
+  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+    """Sends an array attribute (or a slice of an array attribute) to the server."""
+    self.put_model_array_attribute(mid, name, array, attribute, data, ranges)
+
+  def copy_inputs(self, source, target):
+    self.put_model_inputs(source, target)
 
   def finish_model(self, mid):
     """Completes a model."""
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps({"state":"running"}))
+    self.post_model_finish(mid)
 
-  def get_model(self, mid):
-    """Returns a single model."""
-    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
-
-  def get_array_metadata(self, mid, name, array):
-    """Returns the metadata for an array artifacat."""
-    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_array_chunk(self, mid, name, array, attribute, ranges, type=None):
-    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
-    ranges = require_array_ranges(ranges)
-    if ranges is None:
-      raise Exception("An explicit chunk range is required.")
-    if type is None or type == "string":
-      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
-    else:
-      shape = tuple([end - begin for begin, end in ranges])
-      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
-      return numpy.fromstring(content, dtype=type).reshape(shape)
-
-  def get_table_metadata(self, mid, name, array):
-    """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_table_chunk(self, mid, name, array, rows, columns):
-    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
-
-  def delete_model(self, mid):
-    """Deletes an existing model."""
-    self.request("DELETE", "/models/%s" % (mid))
-
-  ###########################################################################################################3
+  ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
 
-  def find_or_create_project(self, project, name, description):
-    """Looks-up a project by name or id, or creates a new project with the given name and description."""
-    if project is None:
+  def find_or_create_project(self, name, description=""):
+    """Looks-up a project by name, creating it if it doesn't already exist."""
+    projects = [project for project in self.get_projects() if project["name"] == name]
+
+    if len(projects) > 1:
+      raise Exception("More than one project matched the given name.  Try using a different project name instead.")
+    elif len(projects) == 1:
+      return projects[0]["_id"]
+    else:
       return self.create_project(name, description)
-    projects = self.request("GET", "/projects", headers={"accept":"application/json"})
-
-    # Look for an ID match ...
-    ids = [p["_id"] for p in projects if p["_id"] == project]
-    if len(ids) == 1:
-      return ids[0]
-
-    # Look for a name match ...
-    ids = [p["_id"] for p in projects if p["name"] == project]
-    if len(ids) == 1:
-      return ids[0]
-    if len(ids) > 1:
-      raise Exception("More than one project matched the given name.  Try using a project ID instead.")
-
-    raise Exception("Project %s not found." % project)
 
   def join_model(self, mid):
-    """Waits for a model to complete, then returns.
+    """Wait for a model to complete before returning.
 
     Note that a model that hasn't been finished will never complete, you should
     ensure that finish_model() is called successfully before calling
@@ -248,12 +312,11 @@ class connection(object):
         return
       time.sleep(1.0)
 
-
-def connect(options, **keywords):
+def connect(arguments, **keywords):
   """Factory function for client connections that takes an option parser as input."""
-  import getpass
-  if options.no_verify and (options.verify is not None):
-    raise Exception("Cannot use --verify with --no-verify.")
-  verify = options.verify if options.verify is not None else not options.no_verify
-  return connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=verify, log=sys.stderr if options.verbose else dev_null(), **keywords)
+  if arguments.no_verify:
+    keywords["verify"] = False
+  elif arguments.verify is not None:
+    keywords["verify"] = arguments.verify
+  return connection(auth=(arguments.user, getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 

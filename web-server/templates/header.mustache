@@ -81,6 +81,7 @@
           {
             dataType : "json",
             type : "GET",
+            cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
             url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
             success : function(results)
             {

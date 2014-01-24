@@ -320,7 +320,7 @@ $.widget("cca.scatterplot",
       this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
       this.selection_context.clearRect(0, 0, width, height);
 
-      var radius = 7;
+      var radius = 8;
       var twopi = Math.PI * 2;
       this.selection_context.strokeStyle = "black";
       this.selection_context.lineWidth = 1;

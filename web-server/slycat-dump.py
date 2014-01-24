@@ -8,17 +8,17 @@ import json
 import logging
 import os
 import shutil
-import slycat.web.server.database.hdf5
+import slycat.data.hdf5
 import sys
 
 parser = argparse.ArgumentParser()
+parser.add_argument("output_dir", help="Directory where results will be stored.")
 parser.add_argument("--all", action="store_true", help="Dump all projects.")
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
 parser.add_argument("--data-store", default="data-store", help="Path to the hdf5 data storage directory.  Default: %(default)s")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
-parser.add_argument("--output-dir", required=True, help="Directory for storing results.")
 parser.add_argument("--project-id", default=[], action="append", help="Project ID to dump.  You may specify --project-id multiple times.")
 arguments = parser.parse_args()
 
@@ -54,10 +54,15 @@ for project_id in arguments.project_id:
     for key, value in model.items():
       if not key.startswith("artifact:"):
         continue
-      if artifact_types[key[9:]] != "hdf5":
-        continue
-      if value not in project_arrays:
-        logging.info("Dumping array set %s", value)
-        project_arrays.add(value)
-        shutil.copy(slycat.web.server.database.hdf5.make_path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
+      artifact_name = key[9:]
+      artifact_type = artifact_types[artifact_name]
+      if artifact_type == "hdf5":
+        if value not in project_arrays:
+          logging.info("Dumping array set %s", value)
+          project_arrays.add(value)
+          shutil.copy(slycat.data.hdf5.path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
+      elif artifact_type == "json":
+        continue # JSON artifacts are stored in the model itself
+      else:
+        logging.warning("Skipping unsupported artifact type: %s %s", artifact_name, artifact_type)
 

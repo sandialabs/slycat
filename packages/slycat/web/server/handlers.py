@@ -23,7 +23,7 @@ import Queue
 import subprocess
 import stat
 import sys
-import slycat.array
+import slycat.data.hdf5
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cache
@@ -60,36 +60,25 @@ def get_context():
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
 
   marking = cherrypy.request.app.config["slycat"]["marking"]
-  context["marking-types"] = [{"type" : type, "label" : marking.label(type)} for type in marking.types()]
+  context["marking-types"] = [{"type" : type, "label" : marking.label(type), "html" : marking.html(type)} for type in marking.types()]
   return context
-
-def is_deleted(entity):
-  """Identify objects that have been marked for deletion."""
-  return "deleted" in entity and entity["deleted"] == "true"
-
-def hide_deleted(entity):
-  """Treat objects that have been marked for deletion as if they don't exist."""
-  if is_deleted(entity):
-    raise cherrypy.HTTPError("404 Entity marked for deletion.")
 
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["projects-redirect"])
 
-def get_projects():
+def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
-  database = slycat.web.server.database.couchdb.connect()
-  projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
-  projects = [project for project in projects if not is_deleted(project)]
-  projects = sorted(projects, key = lambda x: x["created"], reverse=True)
 
   if accept == "text/html":
     context = get_context()
-    context["projects"] = projects
     return slycat.web.server.template.render("projects.html", context)
 
   if accept == "application/json":
+    database = slycat.web.server.database.couchdb.connect()
+    projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
+    projects = sorted(projects, key = lambda x: x["created"], reverse=True)
     return json.dumps(projects)
 
 @cherrypy.tools.json_in(on = True)
@@ -108,7 +97,7 @@ def post_projects():
   cherrypy.response.status = "201 Project created."
   return {"id" : pid}
 
-def get_project(pid):
+def get_project(pid, _=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -116,22 +105,12 @@ def get_project(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project)
 
-  models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
-  models = sorted(models, key=lambda x: x["created"], reverse=True)
-
-  marking = cherrypy.request.app.config["slycat"]["marking"]
-  for model in models:
-    model["marking-html"] = marking.html(model["marking"])
-
   if accept == "text/html":
     context = get_context()
     context.update(project)
-    context["models"] = models
-    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
-    context["acl-json"] = json.dumps(project["acl"])
     context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
     context["remote-hosts"] = [{"name" : host} for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
-    context["new-model-name"] = "Model-%s" % (len(models) + 1)
+    context["marking-types-json"] = json.dumps({marking_type["type"] : {"label":marking_type["label"], "html":marking_type["html"]} for marking_type in context["marking-types"]})
 
     return slycat.web.server.template.render("project.html", context)
 
@@ -254,7 +233,6 @@ def post_project_models(pid):
     "finished" : None,
     "progress" : None,
     "message" : None,
-    "uri" : None
     }
   database.save(model)
 
@@ -287,7 +265,7 @@ def post_project_bookmarks(pid):
   cherrypy.response.status = "201 Bookmark stored."
   return {"id" : bid}
 
-def get_models(revision=None):
+def get_models(revision=None, _=None):
   if get_models.timeout is None:
     get_models.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
 
@@ -349,9 +327,6 @@ def get_model(mid, **kwargs):
       return slycat.web.server.template.render("model-timeseries.html", context)
 
     if "model-type" in model and model["model-type"] in ["cca", "cca3"]:
-      context["input-columns"] = json.dumps(model["artifact:input-columns"]) if "artifact:input-columns" in model else "null"
-      context["output-columns"] = json.dumps(model["artifact:output-columns"]) if "artifact:output-columns" in model else "null"
-      context["scale-inputs"] = json.dumps(model["artifact:scale-inputs"]) if "artifact:scale-inputs" in model else "null"
       return slycat.web.server.template.render("model-cca3.html", context)
 
     return slycat.web.server.template.render("model-generic.html", context)
@@ -364,40 +339,55 @@ def put_model(mid):
   slycat.web.server.authentication.require_project_writer(project)
 
   save_model = False
-  finish_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "progress"]:
-      save_model = True
-      model[key] = value
-    elif key == "state":
-      if value == model["state"]:
-        pass
-      elif value == "closed" and model["state"] in ["waiting", "finished"]:
-        save_model = True
+    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished"]:
+      if value != model.get(key):
         model[key] = value
-      elif value == "running" and model["state"] in ["waiting"]:
-        finish_model = True
-      else:
-        raise cherrypy.HTTPError("400 Not an allowed model state transition: %s to %s" % (model["state"], value))
+        save_model = True
     else:
       raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
 
   if save_model:
     database.save(model)
 
-  if finish_model:
-    cherrypy.response.status = "202 Finishing model."
+def post_model_finish(mid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
 
-    slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
+  if model["state"] != "waiting":
+    raise cherrypy.HTTPError("400 Only waiting models can be finished.")
+  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries"]:
+    raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
-    if model["model-type"] == "generic":
-      slycat.web.server.model.generic.finish(database, model)
-    elif model["model-type"] == "cca":
-      slycat.web.server.model.cca.finish(database, model)
-    elif model["model-type"] == "timeseries":
-      slycat.web.server.model.timeseries.finish(database, model)
-    else:
-      raise cherrypy.HTTPError("500 Cannot finish unknown model type")
+  slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
+  if model["model-type"] == "generic":
+    slycat.web.server.model.generic.finish(database, model)
+  elif model["model-type"] == "cca":
+    slycat.web.server.model.cca.finish(database, model)
+  elif model["model-type"] == "timeseries":
+    slycat.web.server.model.timeseries.finish(database, model)
+  cherrypy.response.status = "202 Finishing model."
+
+def put_model_file(mid, name, input=None, file=None):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  if input is None:
+    raise cherrypy.HTTPError("400 Required input parameter is missing.")
+  input = True if input == "true" else False
+
+  if file is None:
+    raise cherrypy.HTTPError("400 Required file parameter is missing.")
+
+  data = file.file.read()
+  #filename = file.filename
+  content_type = file.content_type
+
+  slycat.web.server.model.store_file_artifact(database, model, name, data, content_type, input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
@@ -421,7 +411,7 @@ def put_model_table(mid, name, input=None, file=None, username=None, hostname=No
 
   if input is None:
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
-  input = True if int(input) else False
+  input = True if input == "true" else False
 
   if file is not None and username is None and hostname is None and password is None and path is None:
     data = file.file.read()
@@ -460,7 +450,7 @@ def put_model_array_set(mid, name):
   slycat.web.server.model.start_array_set(database, model, name, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_array_set_array(mid, name, array):
+def put_model_array(mid, name, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -472,7 +462,7 @@ def put_model_array_set_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_set_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
+def put_model_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -510,28 +500,6 @@ def get_model_design(mid):
 
   return slycat.web.server.template.render("model-design.html", context)
 
-def get_array_metadata(file, array):
-  """Return metadata for an array artifact."""
-  file_metadata = file.array(array).attrs
-  attribute_names = file_metadata["attribute-names"]
-  attribute_types = file_metadata["attribute-types"]
-  dimension_names = file_metadata["dimension-names"]
-  dimension_types = file_metadata["dimension-types"]
-  dimension_begin = file_metadata["dimension-begin"]
-  dimension_end = file_metadata["dimension-end"]
-  statistics = []
-  for attribute in range(len(attribute_types)):
-    file_metadata = file.array_attribute(array, attribute).attrs
-    statistics.append({"min":file_metadata.get("min", None), "max":file_metadata.get("max", None)})
-
-  metadata = {
-    "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
-    "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
-    "statistics" : statistics
-    }
-
-  return metadata
-
 @cherrypy.tools.json_out(on = True)
 def get_model_array_metadata(mid, aid, array):
   database = slycat.web.server.database.couchdb.connect()
@@ -548,7 +516,7 @@ def get_model_array_metadata(mid, aid, array):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = get_array_metadata(file, array)
+      metadata = slycat.data.hdf5.get_array_metadata(file, array)
   return metadata
 
 def get_model_array_chunk(mid, aid, array, attribute, **arguments):
@@ -587,7 +555,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = get_array_metadata(file, array)
+      metadata = slycat.data.hdf5.get_array_metadata(file, array)
 
       if not(0 <= attribute and attribute < len(metadata["attributes"])):
         raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
@@ -599,7 +567,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
       index = tuple([slice(begin, end) for begin, end in ranges])
 
       attribute_type =  metadata["attributes"][attribute]["type"]
-      data = file.array_attribute(array, attribute)[index]
+      data = slycat.data.hdf5.get_array_attribute(file, array, attribute)[index]
 
       if byteorder is None:
         return json.dumps(data.tolist())
@@ -682,7 +650,7 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
       index_key = "array/%s/index/%s" % (array_index, sort_column)
       if index_key not in file:
         cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
-        sort_index = numpy.argsort(file.array_attribute(array_index, sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(slycat.data.hdf5.get_array_attribute(file, array_index, sort_column)[...], kind="mergesort")
         file[index_key] = sort_index
       else:
         cherrypy.log.error("Loading cached sort index.")
@@ -691,30 +659,23 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
       sort_index = sort_index[::-1]
   return sort_index
 
-def get_table_metadata(file, array, index):
+def get_table_metadata(file, array_index, index):
   """Return table-oriented metadata for a 1D array, plus an optional index column."""
-  file_metadata = file.array(array).attrs
-  column_names = file_metadata["attribute-names"]
-  column_types = file_metadata["attribute-types"]
-  dimension_begin = file_metadata["dimension-begin"]
-  dimension_end = file_metadata["dimension-end"]
-  column_min = []
-  column_max = []
-  for attribute in range(len(column_names)):
-    file_metadata = file.array_attribute(array, attribute).attrs
-    column_min.append(file_metadata.get("min", None))
-    column_max.append(file_metadata.get("max", None))
+  metadata = slycat.data.hdf5.get_array_metadata(file, array_index)
+  attributes = metadata["attributes"]
+  dimensions = metadata["dimensions"]
+  statistics = metadata["statistics"]
 
-  if len(dimension_begin) != 1:
+  if len(dimensions) != 1:
     raise cherrypy.HTTPError("400 Not a table (1D array) artifact.")
 
   metadata = {
-    "row-count" : dimension_end[0] - dimension_begin[0],
-    "column-count" : len(column_names),
-    "column-names" : column_names.tolist(),
-    "column-types" : column_types.tolist(),
-    "column-min" : column_min,
-    "column-max" : column_max
+    "row-count" : dimensions[0]["end"] - dimensions[0]["begin"],
+    "column-count" : len(attributes),
+    "column-names" : [attribute["name"] for attribute in attributes],
+    "column-types" : [attribute["type"] for attribute in attributes],
+    "column-min" : [attribute["min"] for attribute in statistics],
+    "column-max" : [attribute["max"] for attribute in statistics]
     }
 
   if index is not None:
@@ -787,7 +748,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
         if index is not None and column == metadata["column-count"]-1:
           values = slice.tolist()
         else:
-          values = file.array_attribute(array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+          values = slycat.data.hdf5.get_array_attribute(file, array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
           if type in ["float32", "float64"]:
             values = [None if numpy.isnan(value) else value for value in values]
         data.append(values)
@@ -927,7 +888,11 @@ def post_browse():
   hostname = cherrypy.request.json["hostname"]
   path = cherrypy.request.json["path"]
   password = cherrypy.request.json["password"]
-  session = slycat.web.server.cache.ssh_session(hostname, username, password)
+
+  try:
+    session = slycat.web.server.cache.ssh_session(hostname, username, password)
+  except:
+    raise cherrypy.HTTPError("403 Remote connection failed.")
 
   try:
     attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
