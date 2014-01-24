@@ -105,14 +105,14 @@ def get_project(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project)
 
-  models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
-  models = sorted(models, key=lambda x: x["created"], reverse=True)
-
-  marking = cherrypy.request.app.config["slycat"]["marking"]
-  for model in models:
-    model["marking-html"] = marking.html(model["marking"])
-
   if accept == "text/html":
+    models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
+    models = sorted(models, key=lambda x: x["created"], reverse=True)
+
+    marking = cherrypy.request.app.config["slycat"]["marking"]
+    for model in models:
+      model["marking-html"] = marking.html(model["marking"])
+
     context = get_context()
     context.update(project)
     context["models"] = models
