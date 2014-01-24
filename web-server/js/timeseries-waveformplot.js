@@ -66,8 +66,6 @@ $.widget("timeseries.waveformplot",
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
 
-    //this._set_visible();
-
     function panel_selection_callback(context)
     {
       return function()
@@ -169,7 +167,7 @@ $.widget("timeseries.waveformplot",
           if(self.options.color_scale != null)
             return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] ); 
           else
-            return "black"; // TODO for now setting to black. Used to be white. Need to color according to data.
+            return "white";
         })
         .attr("class", "unselected")
         .on("click", waveform_selection_callback(self))
@@ -216,7 +214,6 @@ $.widget("timeseries.waveformplot",
             self.previewWaveformsTimeout = setTimeout(arguments.callee, timeout);
           }
       }, timeout );
-      
     }
 
     this.make_sax_line = function()
@@ -249,7 +246,7 @@ $.widget("timeseries.waveformplot",
     var selection = self.options.selection;
     var inCurrentSelection = [];
     for(var i=0; i<selection.length; i++){
-      if( selected.indexOf(self.options.selection[i]["waveform-index"]) > -1 ){
+      if( selected.indexOf(self.options.selection[i]["data-table-index"]) > -1 ){
         inCurrentSelection.push(self.options.selection[i]["waveform-index"]);
       }
     }

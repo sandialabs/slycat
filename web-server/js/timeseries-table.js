@@ -52,6 +52,7 @@ $.widget("timeseries.table",
         headerCssClass : header_class,
         cssClass : cell_class,
         formatter : cell_formatter,
+        // Disabling sort controls from cca
         // header :
         // {
         //   buttons :
@@ -91,14 +92,6 @@ $.widget("timeseries.table",
 
       self.options[key] = value;
 
-      // This does not work for filtered rows
-      // self.data.get_indices("sorted", value, function(sorted_rows)
-      // {
-      //   self.trigger_row_selection = false;
-      //   self.grid.setSelectedRows(sorted_rows);
-      //   if(sorted_rows.length)
-      //     self.grid.scrollRowToTop(sorted_rows[0]);
-      // });
       var selected_rows = [];
       for(var i=0; i<value.length; i++) {
         selected_rows.push( self.options.table_filter.indexOf(value[i]) );
@@ -316,7 +309,6 @@ $.widget("timeseries.table",
 
     self.getLength = function()
     {
-      //return self.metadata["row-count"];
       return self.row_count;
     }
 

@@ -173,17 +173,6 @@ $.widget("timeseries.dendrogram",
       color_links();
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
-
-      // TODO this needs to be implemented outside of the widget
-      // function make_selection_update(selection)
-      // {
-      //   return function()
-      //   {
-      //     update_table_filter(selection, cluster_name, cluster_index);
-      //     waveform_viewer.set_visible(selection);
-      //   }
-      // }
-      // window.setTimeout(make_selection_update(selection), 750);
     }
 
 		function color_links(){
@@ -258,8 +247,6 @@ $.widget("timeseries.dendrogram",
         .classed("selected", function(d) { return d.selected; })
         .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
         .on("dblclick", function(d) { 
-        	// TODO this needs to be done outside this widget
-          //table_viewer_instance.setWaveformColorsPerSelectedColumn(true);
           // Toggle the target node (expand if collapsed, collapse if expanded)
           toggle(d);
           // If target node is now expanded, expand its children up to a certain depth
@@ -273,8 +260,6 @@ $.widget("timeseries.dendrogram",
         .on("click", function(d) {
           // Shift+click expands current node
           if(d3.event.shiftKey){
-          	// TODO this needs to be done outside this widget
-            //table_viewer_instance.setWaveformColorsPerSelectedColumn(true); 
             toggle(d); 
             update_subtree(d);
           } 
@@ -417,8 +402,6 @@ $.widget("timeseries.dendrogram",
         d.y0 = d.y;
       });
 
-      //this._set_color();
-
       // Bookmark expanded and collapsed nodes
       if(!skip_bookmarking){
         var expanded = [];
@@ -458,9 +441,6 @@ $.widget("timeseries.dendrogram",
 
       self.element.trigger("node-toggled", d);
     }
-
-    // Setup the default selected node ...
-    //this.select_node(this.options.node);
   },
 
   _set_color: function()

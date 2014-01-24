@@ -295,7 +295,6 @@ rights in this software.
           show_status_messages();
         }
 
-
         //////////////////////////////////////////////////////////////////////////////////////////
         // Setup page layout and forms.
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -557,7 +556,6 @@ rights in this software.
             resizeWhileDragging : true
           }
         });
-        
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Setup the rest of the UI as data is received.
@@ -624,8 +622,6 @@ rights in this software.
             });
           }
 
-          
-
           // Setup the waveform plot ...
           if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
           {
@@ -686,7 +682,6 @@ rights in this software.
             {
               $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
             });
-
           }
 
           // Setup the table ...
@@ -759,7 +754,6 @@ rights in this software.
               if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"] !== undefined)
                 $("#table").table("option", "variable-selection", [bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"]]);
             });
-
           }
 
           // Setup the dendrogram ...
@@ -800,10 +794,7 @@ rights in this software.
             {
               $("#dendrogram-viewer").dendrogram("option", "color-scale", parameters);
             });
-
           }
-
-          
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////
