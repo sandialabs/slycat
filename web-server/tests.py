@@ -178,9 +178,6 @@ def test_model_state():
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "running")
 
-  with nose.tools.assert_raises(requests.HTTPError):
-    connection.update_model(mid, state="closed")
-
   connection.update_model(mid, state="finished")
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "finished")
@@ -206,8 +203,9 @@ def test_model_result():
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["result"], "succeeded")
 
-  with nose.tools.assert_raises(requests.HTTPError):
-    connection.update_model(mid, result="failed")
+  connection.update_model(mid, result="failed")
+  model = connection.get_model(mid)
+  nose.tools.assert_equal(model["result"], "failed")
 
   connection.delete_model(mid)
   connection.delete_project(pid)
