@@ -92,7 +92,7 @@ rights in this software.
         <div id="local-cca-form" class="dialog" title="Local File CCA Model">
           <div id="local-cca-basics">
             <label for="local-cca-name">Model Name</label>
-            <input id="local-cca-name" class="text ui-widget-content ui-corner-all" value="My Local CCA Model" />
+            <input id="local-cca-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
             <label for="local-cca-description">Description</label>
             <textarea id="local-cca-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
             <label for="local-cca-marking">Marking</label>
@@ -140,7 +140,7 @@ rights in this software.
         <div id="remote-cca-form" class="dialog" title="Remote File CCA Model">
           <div id="remote-cca-basics">
             <label for="remote-cca-name">Model Name</label>
-            <input id="remote-cca-name" class="text ui-widget-content ui-corner-all" value="My Remote CCA Model" />
+            <input id="remote-cca-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
             <label for="remote-cca-description">Description</label>
             <textarea id="remote-cca-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
             <select id="remote-cca-marking">
@@ -193,6 +193,28 @@ rights in this software.
         </div>
 
         <ul id="models" class="main-list">
+        {{#models}}
+          <li>
+            <div class="main-item">
+              <h3 class="main-title"><a class="model-link" href="{{server-root}}models/{{_id}}">{{name}}</a></h3>
+              <a class="main-tag model" href="{{server-root}}models/{{_id}}">Model</a>
+              <div class="main-type">{{model-type}}</div>
+              <div class="main-created">Created {{created}} by {{creator}}</div>
+              <div class="main-marking">{{{marking-html}}}</div>
+              <p class="main-description">{{description}}</p>
+            </div>
+          </li>
+        {{/models}}
+        </ul>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="width-wrapper">
+        <ul id="footer-links">
+          {{#is-project-administrator}}
+          <li class="admin"><a href="{{server-root}}projects/{{_id}}/design">Design View</a></li>
+          {{/is-project-administrator}}
         </ul>
       </div>
     </div>
@@ -202,71 +224,8 @@ rights in this software.
       $(document).ready(function()
       {
         /* Project user interface */
-        var security = {administrators:[], readers:[], writers:[]};
-        var modified_security = {administrators:[], readers:[], writers:[]};
-        var marking_types = {{{marking-types-json}}};
-
-        $.ajax({
-          type: "GET",
-          url: "{{server-root}}projects/{{_id}}",
-          cache: false,
-          dataType: "json",
-          success: function(project)
-          {
-            security = project.acl;
-            modified_security = project.acl;
-
-            $.ajax({
-              type: "GET",
-              url: "{{server-root}}projects/{{_id}}/models",
-              dataType: "json",
-              success: function(models)
-              {
-                var model_list = $("#models").empty();
-                $.each(models, function(index, model)
-                {
-                  console.log(marking_types);
-                  console.log(model.marking);
-
-                  $("<li>")
-                    .append($("<div class='main-item'>")
-                      .append($("<h3 class='main-title'>")
-                        .append($("<a class='model-link'>")
-                          .attr("href", "{{server-root}}models/" + model._id)
-                          .text(model.name)
-                          )
-                        )
-                      .append($("<a class='main-tag model'>")
-                        .attr("href", "{{server-root}}models/" + model._id)
-                        .text("Model")
-                        )
-                      .append($("<div class='main-type'>")
-                        .text(model["model-type"])
-                        )
-                      .append($("<div class='main-created'>")
-                        .text("Created " + model.created + " by " + model.creator)
-                        )
-                      .append($("<div class='main-marking'>")
-                        .html(marking_types[model.marking].html)
-                        )
-                      .append($("<p class='main-description'>")
-                        .text(model.description)
-                        )
-                      )
-                    .appendTo(model_list);
-                });
-              },
-              error: function(request, status, reason_phrase)
-              {
-                window.alert("Error retrieving project models: " + reason_phrase);
-              }
-            });
-          },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error retrieving project: " + reason_phrase);
-          }
-        });
+        var security = {{acl-json}};
+        var modified_security = {{acl-json}};
 
         function add_user(control, list, callback)
         {
