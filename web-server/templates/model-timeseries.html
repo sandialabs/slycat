@@ -194,7 +194,7 @@ rights in this software.
               "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
             show_status_messages();
           }
-          else if(model["state"] == "closed" && model["result"] == null)
+          else if(model["state"] == "closed" && model["result"] === null)
           {
             $("#status-messages").empty().html(
               "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
