@@ -284,6 +284,14 @@ $.widget("timeseries.dendrogram",
         .style("fill", "url(#subtree-gradient)")
         ;
 
+      // Due to a bug in Firefox, we cannot use css to change the fill style on path.subtree-glyph from above.
+      // Instead we'll use css to display and hide this path.filled-glyph
+      node_subtree.append("svg:path")
+        .attr("class", "filled-glyph")
+        .attr("d", "M 0 0 L 40 -13 L 40 13 Z")
+        .style("fill", "#7767b0")
+        ;
+
       node_subtree.append("svg:text")
         .attr("x", 28)
         .attr("dy", ".4em")

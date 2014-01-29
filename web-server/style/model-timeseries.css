@@ -58,9 +58,15 @@ rights in this software.
   stroke: none;
 }
 
-#dendrogram-viewer .node.selected .subtree path
+/* Hiding the additional glyph initially */
+#dendrogram-viewer .node .subtree path.filled-glyph
 {
-  fill: #7767b0 !important;
+  display: none;
+}
+/* Showing it for selected nodes */
+#dendrogram-viewer .node.selected .subtree path.filled-glyph
+{
+  display: inline;
 }
 
 #dendrogram-viewer .node.selected .subtree text
