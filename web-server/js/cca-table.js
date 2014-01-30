@@ -277,11 +277,15 @@ $.widget("cca.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/artifacts/" + self.aid + "/table-chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
           async : false,
           success : function(data)
           {
             self.pages[page] = data;
+          },
+          error: function(request, status, reason_phrase)
+          {
+            console.log("error", request, status, reason_phrase);
           }
         });
       }
@@ -318,6 +322,18 @@ $.widget("cca.table",
       if(self.sort_column !== null && self.sort_order !== null)
         sort = "&sort=" + self.sort_column + ":" + self.sort_order;
 
+      var row_string = "";
+      for(var i = 0; i < rows.length; ++i)
+      {
+        row_string += rows[i];
+        break
+      }
+      for(var i = 1; i < rows.length; ++i)
+      {
+        row_string += ",";
+        row_string += rows[i];
+      }
+
       function is_little_endian()
       {
         if(this.result === undefined)
@@ -326,7 +342,7 @@ $.widget("cca.table",
       }
 
       var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/artifacts/" + self.aid + "/table-" + direction + "-indices?rows=" + rows.join(",") + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
       request.responseType = "arraybuffer";
       request.callback = callback;
       request.onload = function(e)

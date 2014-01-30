@@ -16,6 +16,9 @@ class database_wrapper:
   def __getitem__(self, *arguments, **keywords):
     return self.database.__getitem__(*arguments, **keywords)
 
+  def changes(self, *arguments, **keywords):
+    return self.database.changes(*arguments, **keywords)
+
   def delete(self, *arguments, **keywords):
     return self.database.delete(*arguments, **keywords)
 
@@ -26,7 +29,10 @@ class database_wrapper:
     return self.database.put_attachment(*arguments, **keywords)
 
   def save(self, *arguments, **keywords):
-    return self.database.save(*arguments, **keywords)
+    try:
+      return self.database.save(*arguments, **keywords)
+    except couchdb.http.ServerError as e:
+      raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
 
   def view(self, *arguments, **keywords):
     return self.database.view(*arguments, **keywords)

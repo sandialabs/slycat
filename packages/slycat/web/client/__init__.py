@@ -2,75 +2,84 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import cStringIO
+import argparse
 import getpass
-import itertools
 import json
+import logging
 import numpy
-import optparse
 import os
 import requests
 import shlex
-import struct
 import sys
 import time
 
-class dev_null:
-  """Do-nothing stream object, for disabling logging."""
-  def write(*arguments, **keywords):
-    pass
+from slycat.data.array import *
 
-def binary_encoder(sequence):
-  for value in sequence:
-    if isinstance(value, basestring):
-      yield struct.pack("<I", len(value) + 1)
-      yield value
-      yield "\0"
-    elif isinstance(value, int):
-      yield struct.pack("<q", value)
-    else:
-      yield struct.pack("<d", value)
+log = logging.getLogger("slycat.web.client")
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler())
+log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 
-def zip_times(ids, times, rows):
-  for id, time, row in itertools.izip(ids, times, rows):
-    yield id
-    yield time
-    for field in row:
-      yield field
+def require_float(value):
+  if not isinstance(value, float):
+    raise Exception("Not a floating-point value.")
+  return value
 
-def format_code(array):
-  if array.dtype == numpy.int64:
-    return "q"
-  elif array.dtype == numpy.float64:
-    return "d"
-  raise Exception("Unknown array type: %s" % array.dtype)
+def require_string(value):
+  if not isinstance(value, basestring):
+    raise Exception("Not a string value.")
+  return value
 
-class option_parser(optparse.OptionParser):
-  """Returns an instance of optparse.OptionParser, pre-configured with options
-  to connect to a Slycat server."""
+def require_array_ranges(ranges):
+  """Validates a range object (hyperslice) for transmission to the server."""
+  if ranges is None:
+    return None
+  elif isinstance(ranges, int):
+    return [(0, ranges)]
+  elif isinstance(ranges, tuple):
+    return [ranges]
+  elif isinstance(ranges, list):
+    return ranges
+  else:
+    raise Exception("Not a valid ranges object.")
+
+class option_parser(argparse.ArgumentParser):
+  """Returns an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
-    optparse.OptionParser.__init__(self, *arguments, **keywords)
+    argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_option("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %default")
-    self.add_option("--http-proxy", default="", help="HTTP proxy URL.  Default: %default")
-    self.add_option("--https-proxy", default="", help="HTTPS proxy URL.  Default: %default")
-    self.add_option("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
-    self.add_option("--user", default=getpass.getuser(), help="Slycat username.  Default: %default")
-    self.add_option("--verbose", default=False, action="store_true", help="Verbose output.")
-    self.add_option("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
+    self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
+    self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
+    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
+    self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
+    self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
+    self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
   def parse_args(self):
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
-    return optparse.OptionParser.parse_args(self)
+
+    arguments = argparse.ArgumentParser.parse_args(self)
+    if arguments.log_level == "debug":
+      log.setLevel(logging.DEBUG)
+    elif arguments.log_level == "info":
+      log.setLevel(logging.INFO)
+    elif arguments.log_level == "warning":
+      log.setLevel(logging.WARNING)
+    elif arguments.log_level == "error":
+      log.setLevel(logging.ERROR)
+    elif arguments.log_level == "critical":
+      log.setLevel(logging.CRITICAL)
+
+    return arguments
 
 class connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
-  def __init__(self, host="http://localhost:8092", log=sys.stderr, **keywords):
+  def __init__(self, host="http://localhost:8092", **keywords):
     self.host = host
-    self.log = log
     self.keywords = keywords
     self.session = requests.Session()
 
@@ -85,18 +94,12 @@ class connection(object):
     # Combine host and path to produce the final request URI ...
     uri = self.host + path
 
-    # Try extracting a user name ...
-    user = keywords.get("auth", ("", ""))[0]
-
-    self.log.write("%s %s %s" % (user, method, uri))
-
-    if "data" in keywords:
-      self.log.write(" %s" % (keywords["data"]))
+    log_message = "{} {} {}".format(keywords.get("auth", ("", ""))[0], method, uri)
 
     try:
       response = self.session.request(method, uri, **keywords)
 
-      self.log.write(" => %s %s" % (response.status_code, response.raw.reason))
+      log_message += " => {} {}".format(response.status_code, response.raw.reason)
 
       response.raise_for_status()
 
@@ -106,189 +109,214 @@ class connection(object):
       else:
         body = response.content
 
-#      if response.headers["content-type"].startswith("text/html"):
-#        self.log.write(" => <html>...</html>")
-#      else:
-#        self.log.write(" => %s" % (body)
-      self.log.write("\n")
+      log.debug(log_message)
       return body
     except:
-      self.log.write("\n")
+      log.debug(log_message)
       raise
 
-  def create_project(self, name, description=""):
-    """Creates a new project, returning the project ID."""
-    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
+  ###########################################################################################################3
+  # Low-level functions that map directly to the underlying RESTful API
 
-  def find_or_create_project(self, project, name, description):
-    """Looks-up a project by name or id, or creates a new project with the given name and description."""
-    if project is None:
-      return self.create_project(name, description)
-    projects = self.request("GET", "/projects", headers={"accept":"application/json"})
-
-    # Look for an ID match ...
-    ids = [p["_id"] for p in projects if p["_id"] == project]
-    if len(ids) == 1:
-      return ids[0]
-
-    # Look for a name match ...
-    ids = [p["_id"] for p in projects if p["name"] == project]
-    if len(ids) == 1:
-      return ids[0]
-    if len(ids) > 1:
-      raise Exception("More than one project matched the given name.  Try using a project ID instead.")
-
-    raise Exception("Project %s not found." % project)
-
-  def get_projects(self):
-    """Returns all projects."""
-    return self.request("GET", "/projects", headers={"accept":"application/json"})
-
-  def get_project(self, pid):
-    """Returns a single project."""
-    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
-
-  def get_project_models(self, pid):
-    """Returns every model in a project."""
-    return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
+  def delete_model(self, mid):
+    """Deletes an existing model."""
+    self.request("DELETE", "/models/%s" % (mid))
 
   def delete_project(self, pid):
     """Deletes an existing project."""
     self.request("DELETE", "/projects/%s" % (pid))
 
+  def get_bookmark(self, bid):
+    return self.request("GET", "/bookmarks/%s" % (bid))
+
+  def get_model_array_chunk(self, mid, name, array, attribute, ranges, type=None):
+    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
+    ranges = require_array_ranges(ranges)
+    if ranges is None:
+      raise Exception("An explicit chunk range is required.")
+    if type is None or type == "string":
+      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+    else:
+      shape = tuple([end - begin for begin, end in ranges])
+      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
+      return numpy.fromstring(content, dtype=type).reshape(shape)
+
+  def get_model_array_metadata(self, mid, name, array):
+    """Returns the metadata for an array artifacat."""
+    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+
   def get_model(self, mid):
     """Returns a single model."""
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def create_model_worker(self, pid, type, name, marking, description=""):
-    """Creates a new model worker, returning the worker ID."""
-    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["wid"]
+  def get_model_file(self, mid, name):
+    return self.request("GET", "/models/%s/files/%s" % (mid, name))
 
-  def create_generic_model_worker(self, pid, name, marking, description=""):
-    """Creates a new generic model worker, returning the worker ID."""
-    return self.create_model_worker(pid, "generic", name, marking, description)
+  def get_model_table_chunk(self, mid, name, array, rows, columns):
+    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
 
-  def create_cca_model_worker(self, pid, name, marking, description=""):
-    """Creates a new CCA model worker, returning the worker ID."""
-    return self.create_model_worker(pid, "cca3", name, marking, description)
+  def get_model_table_metadata(self, mid, name, array):
+    """Returns the metadata for a table (array) artifact."""
+    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
-  def create_timeseries_model_worker(self, pid, name, marking, description=""):
-    """Creates a new timeseries  model worker, returning the worker ID."""
-    return self.create_model_worker(pid, "timeseries", name, marking, description)
+  def get_model_table_sorted_indices(self, mid, name, array, rows, index=None, sort=None):
+    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/sorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
+    return numpy.fromstring(content, dtype="int32")
 
-  def create_test_array_chunker(self, shape):
-    """Creates a new test array chunker, returning the worker ID."""
-    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"array-chunker", "shape":shape}))["id"]
+  def get_model_table_unsorted_indices(self, mid, name, array, rows, index=None, sort=None):
+    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/unsorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
+    return numpy.fromstring(content, dtype="int32")
 
-  def create_array_chunker(self, mid, artifact):
-    """Creates a new array chunker, returning the worker ID."""
-    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"array-chunker", "mid":mid, "artifact":artifact}))["id"]
+  def get_project_models(self, pid):
+    """Returns every model in a project."""
+    return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
 
-  def get_array_chunker_metadata(self, wid):
-    return self.request("GET", "/workers/%s/array-chunker/metadata" % (wid), headers={"accept":"application/json"})
+  def get_project(self, pid):
+    """Returns a single project."""
+    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
-  def get_array_chunker_chunk(self, wid, attribute, ranges, byteorder=None):
-    ranges = ",".join([str(range) for range in ranges])
-    if byteorder is None:
-      return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s" % (wid, attribute, ranges), headers={"accept":"application/json"})
-    else:
-      return self.request("GET", "/workers/%s/array-chunker/chunk?attribute=%s&ranges=%s&byteorder=%s" % (wid, attribute, ranges, byteorder), headers={"accept":"application/octet-stream"})
+  def get_projects(self):
+    """Returns all projects."""
+    return self.request("GET", "/projects", headers={"accept":"application/json"})
 
-  def create_test_table_chunker(self, rows, generate_index = None):
-    """Creates a new test table chunker, returning the worker ID."""
-    return self.request("POST", "/workers", headers={"content-type":"application/json"}, data=json.dumps({"type":"table-chunker", "row-count":rows, "generate-index":generate_index}))["id"]
+  def get_user(self, uid):
+    return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
 
-  def get_table_chunker_metadata(self, wid):
-    return self.request("GET", "/workers/%s/table-chunker/metadata" % (wid), headers={"accept":"application/json"})
+  def post_model_finish(self, mid):
+    """Completes a model."""
+    self.request("POST", "/models/%s/finish" % (mid))
 
-  def get_table_chunker_chunk(self, wid, rows, columns):
-    rows = ["%s-%s" % (row[0], row[1]) if isinstance(row, tuple) else str(row) for row in rows]
-    columns = ["%s-%s" % (column[0], column[1]) if isinstance(column, tuple) else str(column) for column in columns]
-    return self.request("GET", "/workers/{}/table-chunker/chunk?rows={}&columns={}".format(wid, ",".join(rows), ",".join(columns)))
-
-  def create_bookmark(self, pid, bookmark):
+  def post_project_bookmarks(self, pid, bookmark):
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
-  def get_bookmark(self, bid):
-    return self.request("GET", "/bookmarks/%s" % (bid))
+  def post_project_models(self, pid, type, name, marking="", description=""):
+    """Creates a new model, returning the model ID."""
+    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
 
-  def start_table(self, mwid, name, column_names, column_types):
-    """Starts uploading a new table to a model worker."""
-    self.request("POST", "/workers/%s/model/start-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "column-names":column_names, "column-types":column_types}))
+  def post_projects(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
-  def send_table_rows(self, mwid, name, rows):
-    """Appends zero-to-many rows to a model worker table."""
-    buffer = cStringIO.StringIO()
-    for chunk in binary_encoder(itertools.chain(*rows)):
-      buffer.write(chunk)
-    self.request("POST", "/workers/%s/model/send-table-rows" % (mwid), data={"name":name}, files={"rows":buffer.getvalue()})
+  def put_model(self, mid, model):
+    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def finish_table(self, mwid, name):
-    """Completes uploading a model worker table."""
-    self.request("POST", "/workers/%s/model/finish-table" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
+  def put_model_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+    """Sends an array attribute (or a slice of an array attribute) to the server."""
+    ranges = require_array_ranges(ranges)
+    if isinstance(data, numpy.ndarray):
+      if ranges is None:
+        ranges = [(0, end) for end in data.shape]
+      if data.dtype.char == "S":
+        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
+      else:
+        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
+    else:
+      if ranges is None:
+        ranges = [(0, len(data))]
+      self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
-  def start_timeseries(self, mwid, name, column_names, column_types):
-    """Starts uploading a new timeseries to a model worker."""
-    self.request("POST", "/workers/%s/model/start-timeseries" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "column-names":column_names, "column-types":column_types}))
+  def put_model_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
 
-  def send_timeseries_rows(self, mwid, name, ids, times, rows):
-    """Appends zero-to-many rows to a model worker timeseries."""
-    buffer = cStringIO.StringIO()
-    for chunk in binary_encoder(zip_times(ids, times, rows)):
-      buffer.write(chunk)
-    self.request("POST", "/workers/%s/model/send-timeseries-rows" % (mwid), data={"name":name}, files={"rows":buffer.getvalue()})
+  def put_model_array_set(self, mid, name, input=True):
+    """Starts a new model array set artifact, ready to receive data."""
+    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
-  def send_timeseries_columns(self, mwid, name, ids, times, *columns):
-    """Appends zero-to-many columns to a model worker timeseries set."""
-    format = "<" + "".join([format_code(array) for array in [ids, times] + list(columns)])
-    buffer = cStringIO.StringIO()
-    for row in itertools.izip(ids, times, *columns):
-      buffer.write(struct.pack(format, *row))
-    self.request("POST", "/workers/%s/model/send-timeseries-rows" % (mwid), data={"name":name}, files={"rows":buffer.getvalue()})
+  def put_model_file(self, mid, name, data, content_type, input=True):
+    """Stores a model file artifact."""
+    self.request("PUT", "/models/%s/files/%s" % (mid, name), data=({"input":json.dumps(input)}), files={"file":("file", data, content_type)})
 
-  def finish_timeseries(self, mwid, name):
-    """Completes uploading a model worker timeseries."""
-    self.request("POST", "/workers/%s/model/finish-timeseries" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name}))
+  def put_model_inputs(self, source, target):
+    self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
-  def set_parameter(self, mwid, name, value):
-    """Sets a model worker parameter value."""
-    self.request("POST", "/workers/%s/model/set-parameter" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "value":value}))
+  def put_model_parameter(self, mid, name, value, input=True):
+    """Sets a model parameter value."""
+    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
-  def finish_model(self, mwid):
-    """Completes a model, returning the new model ID."""
-    return self.request("POST", "/workers/%s/model/finish-model" % (mwid), headers={"content-type":"application/json"}, data=json.dumps({}))["mid"]
+  def put_project(self, pid, project):
+    """Modifies a project."""
+    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
 
-  def get_workers(self):
-    """Returns all workers."""
-    return self.request("GET", "/workers", headers={"accept":"application/json"})["workers"]
+  ###########################################################################################################
+  # Aliases for low-level functions that make client code more readable.
 
-  def stop_worker(self, wid):
-    """Stops a running worker."""
-    self.request("PUT", "/workers/%s" % (wid), headers={"content-type":"application/json"}, data=json.dumps({"result" : "stopped"}))
+  def create_project(self, name, description=""):
+    """Creates a new project, returning the project ID."""
+    return self.post_projects(name, description)
 
-  def join_worker(self, wid):
-    """Waits for a worker to complete, then returns.  Note that some workers
-    (such as a model that's still waiting for inputs or a chunker) will never
-    complete on their own - you should call stop_worker() first."""
+  def create_model(self, pid, type, name, marking="", description=""):
+    """Creates a new model, returning the model ID."""
+    return self.post_project_models(pid, type, name, marking, description)
+
+  def store_bookmark(self, pid, bookmark):
+    return self.post_project_bookmarks(pid, bookmark)
+
+  def update_model(self, mid, **kwargs):
+    """Updates the model state/result/progress/message."""
+    model = {key : value for key, value in kwargs.items() if value is not None}
+    self.put_model(mid, model)
+
+  def store_parameter(self, mid, name, value, input=True):
+    """Sets a model parameter value."""
+    self.put_model_parameter(mid, name, value, input)
+
+  def store_file(self, mid, name, data, content_type, input=True):
+    """Uploads a model file."""
+    self.put_model_file(mid, name, data, content_type, input)
+
+  def start_array_set(self, mid, name, input=True):
+    """Starts a new model array set artifact, ready to receive data."""
+    self.put_model_array_set(mid, name, input)
+
+  def start_array(self, mid, name, array, attributes, dimensions):
+    """Starts a new array set array, ready to receive data."""
+    self.put_model_array(mid, name, array, attributes, dimensions)
+
+  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+    """Sends an array attribute (or a slice of an array attribute) to the server."""
+    self.put_model_array_attribute(mid, name, array, attribute, data, ranges)
+
+  def copy_inputs(self, source, target):
+    self.put_model_inputs(source, target)
+
+  def finish_model(self, mid):
+    """Completes a model."""
+    self.post_model_finish(mid)
+
+  ###########################################################################################################
+  # Convenience functions that layer additional functionality atop the RESTful API
+
+  def find_or_create_project(self, name, description=""):
+    """Looks-up a project by name, creating it if it doesn't already exist."""
+    projects = [project for project in self.get_projects() if project["name"] == name]
+
+    if len(projects) > 1:
+      raise Exception("More than one project matched the given name.  Try using a different project name instead.")
+    elif len(projects) == 1:
+      return projects[0]["_id"]
+    else:
+      return self.create_project(name, description)
+
+  def join_model(self, mid):
+    """Wait for a model to complete before returning.
+
+    Note that a model that hasn't been finished will never complete, you should
+    ensure that finish_model() is called successfully before calling
+    join_model().
+    """
     while True:
-      worker = self.request("GET", "/workers/%s" % (wid), headers={"accept":"application/json"})
-      if "result" in worker and worker["result"] is not None:
+      model = self.request("GET", "/models/%s" % (mid), headers={"accept":"application/json"})
+      if "state" in model and model["state"] not in ["waiting", "running"]:
         return
       time.sleep(1.0)
 
-  def delete_worker(self, wid, stop=False):
-    """Immediately deletes a worker.  If you want to wait for the worker to
-    complete first, use stop=True."""
-    if stop:
-      self.stop_worker(wid)
-      self.join_worker(wid)
-    self.request("DELETE", "/workers/%s" % (wid))
-
-def connect(options, **keywords):
+def connect(arguments, **keywords):
   """Factory function for client connections that takes an option parser as input."""
-  import getpass
-  if options.no_verify and (options.verify is not None):
-    raise Exception("Cannot use --verify with --no-verify.")
-  verify = options.verify if options.verify is not None else not options.no_verify
-  return connection(auth=(options.user, getpass.getpass("%s password: " % options.user)), host=options.host, proxies={"http":options.http_proxy, "https":options.https_proxy}, verify=verify, log=sys.stderr if options.verbose else dev_null(), **keywords)
+  if arguments.no_verify:
+    keywords["verify"] = False
+  elif arguments.verify is not None:
+    keywords["verify"] = arguments.verify
+  return connection(auth=(arguments.user, getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 

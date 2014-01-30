@@ -7,7 +7,10 @@ import os
 import pystache
 
 def render(path, context):
-  template_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["server-resources"], "templates")
-  pystache.View.template_path = template_path
-  template = os.path.join(template_path, path)
-  return pystache.render(open(template, "r").read(), context)
+  if render.templates is None:
+    render.templates = os.path.join(cherrypy.tree.apps[""].config["slycat"]["server-resources"], "templates")
+  if render.renderer is None:
+    render.renderer = pystache.Renderer(search_dirs = render.templates)
+  return render.renderer.render(open(os.path.join(render.templates, path), "r").read(), context)
+render.templates = None
+render.renderer = None

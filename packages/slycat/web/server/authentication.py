@@ -99,41 +99,61 @@ def is_project_reader(project):
 def is_worker_creator(worker):
   return cherrypy.request.security["user"] == worker.status["creator"]
 
-def require_server_administrator():
+def test_server_administrator():
   """Tests to see that the current request is from a user with server administrator privileges."""
   if is_server_administrator():
-    return
-  raise cherrypy.HTTPError(403)
+    return True
+  raise False
+
+def test_project_administrator(project):
+  """Tests to see that the current request is from a user with administrator privileges."""
+  if is_server_administrator():
+    return True
+  if is_project_administrator(project):
+    return True
+  return False
+
+def test_project_writer(project):
+  """Tests to see that the current request is from a user with write privileges."""
+  if is_server_administrator():
+    return True
+  if is_project_administrator(project):
+    return True
+  if is_project_writer(project):
+    return True
+  return False
+
+def test_project_reader(project):
+  """Tests to see that the current request is from a user with read privileges."""
+  if is_server_administrator():
+    return True
+  if is_project_administrator(project):
+    return True
+  if is_project_writer(project):
+    return True
+  if is_project_reader(project):
+    return True
+  return False
+
+def require_server_administrator():
+  """Tests to see that the current request is from a user with server administrator privileges."""
+  if not test_server_administrator():
+    raise cherrypy.HTTPError(403)
 
 def require_project_administrator(project):
   """Tests to see that the current request is from a user with administrator privileges."""
-  if is_server_administrator():
-    return
-  if is_project_administrator(project):
-    return
-  raise cherrypy.HTTPError(403)
+  if not test_project_administrator(project):
+    raise cherrypy.HTTPError(403)
 
 def require_project_writer(project):
   """Tests to see that the current request is from a user with write privileges."""
-  if is_server_administrator():
-    return
-  if is_project_administrator(project):
-    return
-  if is_project_writer(project):
-    return
-  raise cherrypy.HTTPError(403)
+  if not test_project_writer(project):
+    raise cherrypy.HTTPError(403)
 
 def require_project_reader(project):
   """Tests to see that the current request is from a user with read privileges."""
-  if is_server_administrator():
-    return
-  if is_project_administrator(project):
-    return
-  if is_project_writer(project):
-    return
-  if is_project_reader(project):
-    return
-  raise cherrypy.HTTPError(403)
+  if not test_project_reader(project):
+    raise cherrypy.HTTPError(403)
 
 def require_worker_creator(worker):
   """Tests to see that the current request is from the user that created the given worker."""

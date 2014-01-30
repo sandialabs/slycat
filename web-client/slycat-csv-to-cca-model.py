@@ -2,77 +2,95 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+"""Uploads a CSV file to Slycat Web Server to compute a CCA model."""
+
 import numpy
 import slycat.web.client
 import sys
 
 parser = slycat.web.client.option_parser()
-parser.add_option("--bundling", type="int", default=10, help="Maximum number of rows to bundle into a single request.  Default: %default")
-parser.add_option("--file", default="-", help="Input CSV file.  Use - for stdin.  Default: %default")
-parser.add_option("--input", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
-parser.add_option("--marking", default="", help="Marking type.  Default: %default")
-parser.add_option("--model-description", default="", help="New model description.  Default: %default")
-parser.add_option("--model-name", default="CSV-to-CCA", help="New model name.  Default: %default")
-parser.add_option("--output", default=[], action="append", help="Input column.  Use an --input argument for each input column.")
-parser.add_option("--project", default=None, help="Name of an existing project.  Default: create a new project.")
-parser.add_option("--project-description", default="", help="New project description.  Default: %default")
-parser.add_option("--project-name", default="CSV-to-CCA", help="New project name.  Default: %default")
-parser.add_option("--scale-inputs", default=False, action="store_true", help="Enable input scaling.")
-options, arguments = parser.parse_args()
+parser.add_argument("file", default="-", help="Input CSV file.  Use - for stdin.  Default: %(default)s")
+parser.add_argument("--input", default=[], nargs="+", help="Input column(s).")
+parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
+parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
+parser.add_argument("--model-name", default="CSV-to-CCA", help="New model name.  Default: %(default)s")
+parser.add_argument("--no-join", default=False, action="store_true", help="Don't wait for the model to finish.")
+parser.add_argument("--output", default=[], nargs="+", help="Output column(s).")
+parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
+parser.add_argument("--project-name", default="CSV-to-CCA", help="New project name.  Default: %(default)s")
+parser.add_argument("--scale-inputs", default=False, action="store_true", help="Enable input scaling.")
+arguments = parser.parse_args()
 
-stream = sys.stdin if options.file == "-" else open(options.file, "r")
+# Load row-oriented data into memory from the file.
+stream = sys.stdin if arguments.file == "-" else open(arguments.file, "r")
 rows = [row.split(",") for row in stream]
+
+# Extract column names from the first line of the file, and assume that all columns contain string data.
 column_names = [name.strip() for name in rows[0]]
-column_types = ["double" for name in column_names]
-column_count = len(column_names)
+column_types = ["string" for name in column_names]
 rows = rows[1:]
 
-# Identify non-numeric columns.
+# Convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
 columns = zip(*rows)
-for index, column in enumerate(columns):
+for index in range(len(columns)):
   try:
-    numeric = numpy.array(column, dtype="float64")
-  except Exception as e:
-    print e
-    column_types[index] = "string"
+    columns[index] = numpy.array(columns[index], dtype="float64")
+    column_types[index] = "float64"
+  except:
+    pass
 
-# Convert numeric columns from their string representations.
-for index, type in enumerate(column_types):
-  if type == "string":
-    continue
-  for row in rows:
-    row[index] = float(row[index])
-
-inputs = [column_names.index(input) for input in options.input]
-outputs = [column_names.index(output) for output in options.output]
+# Sanity-check input arguments.
+try:
+  inputs = [column_names.index(input) for input in arguments.input]
+except:
+  raise Exception("Unknown input column.  Available columns: %s" % ", ".join(column_names))
+try:
+  outputs = [column_names.index(output) for output in arguments.output]
+except:
+  raise Exception("Unknown output column.  Available columns: %s" % ", ".join(column_names))
 if len(inputs) < 1:
   raise Exception("You must specify at least one input column.  Available columns: %s" % ", ".join(column_names))
 if len(outputs) < 1:
   raise Exception("You must specify at least one output column.  Available columns: %s" % ", ".join(column_names))
 for input in inputs:
-  if not (0 <= input and input < column_count):
-    raise Exception("Input column out of range: %s" % input)
-  if column_types[input] != "double":
+  if column_types[input] != "float64":
     raise Exception("Cannot analyze non-numeric input: %s" % column_names[input])
 for output in outputs:
-  if not (0 <= output and output < column_count):
-    raise Exception("Output column out of range: %s" % output)
-  if column_types[output] != "double":
+  if column_types[output] != "float64":
     raise Exception("Cannot analyze non-numeric output: %s" % column_names[output])
 
-connection = slycat.web.client.connect(options)
+# Setup a connection to the Slycat Web Server.
+connection = slycat.web.client.connect(arguments)
 
-pid = connection.find_or_create_project(options.project, options.project_name, options.project_description)
-wid = connection.create_cca_model_worker(pid, options.model_name, options.marking, options.model_description)
-connection.start_table(wid, "data-table", column_names,column_types)
-for row_start in range(0, len(rows), options.bundling):
-  connection.send_table_rows(wid, "data-table", rows[row_start:row_start + options.bundling])
-connection.finish_table(wid, "data-table")
-connection.set_parameter(wid, "input-columns", inputs)
-connection.set_parameter(wid, "output-columns", outputs)
-connection.set_parameter(wid, "scale-inputs", options.scale_inputs)
-mid = connection.finish_model(wid)
-connection.join_worker(wid)
-connection.delete_worker(wid)
+# Create a new project to contain our model.
+pid = connection.find_or_create_project(arguments.project_name, arguments.project_description)
 
-sys.stderr.write("Your new model is located at %s/models/%s\n" % (options.host, mid))
+# Create the new, empty model.
+mid = connection.create_model(pid, "cca", arguments.model_name, arguments.marking, arguments.model_description)
+
+# Upload our observations as "data-table".
+connection.start_array_set(mid, "data-table")
+
+# Start our single "data-table" array.
+attributes = zip(column_names, column_types)
+dimensions = [("row", "int64", 0, len(rows))]
+connection.start_array(mid, "data-table", 0, attributes, dimensions)
+
+# Upload data into the array.
+for index, data in enumerate(columns):
+  slycat.web.client.log.info("Uploading column {} of {} ({})".format(index, len(columns), column_names[index]))
+  connection.store_array_attribute(mid, "data-table", 0, index, data)
+
+# Store the remaining parameters.
+connection.store_parameter(mid, "input-columns", inputs)
+connection.store_parameter(mid, "output-columns", outputs)
+connection.store_parameter(mid, "scale-inputs", arguments.scale_inputs)
+
+# Signal that we're done uploading data to the model.  This lets Slycat Web
+# Server know that it can start computation.
+connection.finish_model(mid)
+# Wait until the model is ready.
+connection.join_model(mid)
+
+# Supply the user with a direct link to the new model.
+slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))

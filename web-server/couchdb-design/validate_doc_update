@@ -44,17 +44,20 @@ function(new_document, old_document, user_context)
     require(new_document["creator"] != null, "Model must contain creator.");
     require(new_document["marking"] != null, "Model must contain marking information.");
     require(new_document["name"] != null, "Model must have a name.");
-    require(new_document["model-type"] != null, "Model must have a model-type.")
+    require(new_document["model-type"] != null, "Model must have a model-type.");
+    require(new_document["state"] == null || new_document["state"] == "waiting" || new_document["state"] == "running" || new_document["state"] == "finished" || new_document["state"] == "closed", "Invalid model state.");
+    require(new_document["result"] == null || new_document["result"] == "succeeded" || new_document["result"] == "failed", "Invalid model result.");
 
     if(old_document)
     {
+      require(new_document["state"] == null || new_document["state"] == "waiting" || new_document["state"] == "running" || new_document["state"] == "finished" || new_document["state"] == "closed", "Invalid model state.");
       require(new_document["project"] == old_document["project"], "Model project id cannot be modified.");
       require(new_document["created"] == old_document["created"], "Model creation time cannot be modified.");
       require(new_document["creator"] == old_document["creator"], "Model creator creator cannot be modified.");
       require(new_document["marking"] == old_document["marking"], "Model marking cannot be modified.");
     }
   }
-  else if(new_document["type"] == "array")
+  else if(new_document["type"] == "hdf5")
   {
   }
   else if(new_document["type"] == "bookmark")

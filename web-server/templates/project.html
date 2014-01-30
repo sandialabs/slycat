@@ -166,8 +166,8 @@ rights in this software.
 
           <div id="remote-cca-browse">
             <p>Highlight the file to be analyzed:</p>
-            <p><button id="remote-cca-show-hidden">Show Hidden Files</button><button id="remote-cca-hide-dotfiles">Hide Dotfiles</button></p>
-            <ul id="remote-cca-browser" class="file-browser"></ul>
+            <p><input id="remote-cca-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+            <div id="remote-cca-browser"></div>
             <button id="remote-cca-browse-next">Next</button>
           </div>
 
@@ -224,8 +224,8 @@ rights in this software.
       $(document).ready(function()
       {
         /* Project user interface */
-        var security = {{acl-json}};
-        var modified_security = {{acl-json}};
+        var security = {{{acl-json}}};
+        var modified_security = {{{acl-json}}};
 
         function add_user(control, list, callback)
         {
@@ -378,7 +378,6 @@ rights in this software.
 
         /* Local CCA  user interface */
 
-        local_cca_worker = null;
         local_cca_model = null;
         $("#local-cca-form").dialog(
         {
@@ -394,20 +393,7 @@ rights in this software.
           },
           close : function()
           {
-            if(local_cca_worker)
-            {
-              $.ajax(
-              {
-                type : "DELETE",
-                url : "{{server-root}}workers/" + local_cca_worker,
-                error : function(request, status, reason_phrase)
-                {
-                  window.alert("Error closing local worker: " + reason_phrase);
-                }
-              });
-              local_cca_worker = null;
-              local_cca_model = null;
-            }
+            local_cca_model = null;
           }
         });
         $("#local-cca-basics-next").button().click(function()
@@ -419,7 +405,7 @@ rights in this software.
             contentType : "application/json",
             data: $.toJSON(
             {
-              "model-type" : "cca3",
+              "model-type" : "cca",
               "name" : $("#local-cca-name").val(),
               "marking" : $("#local-cca-marking").val(),
               "description" : $("#local-cca-description").val()
@@ -427,7 +413,6 @@ rights in this software.
             processData: false,
             success: function(result)
             {
-              local_cca_worker = result["wid"];
               local_cca_model = result["id"];
               $("#local-cca-basics").css("display", "none");
               $("#local-cca-browse").css("display", "block");
@@ -447,13 +432,13 @@ rights in this software.
           }
 
           var data = new FormData();
-          data.append("name", "data-table");
           data.append("file", $("#local-cca-file")[0].files[0]);
+          data.append("input", true);
 
           $.ajax(
           {
-            type : "POST",
-            url : "{{server-root}}workers/" + local_cca_worker + "/model/load-table",
+            type : "PUT",
+            url : "{{server-root}}models/" + local_cca_model + "/tables/data-table",
             data : data,
             contentType : false,
             processData : false,
@@ -462,7 +447,7 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/" + local_cca_model + "/artifacts/data-table/table-metadata",
+                url : "{{server-root}}models/" + local_cca_model + "/tables/data-table/arrays/0/metadata",
                 success : function(table)
                 {
                   function deselect_companion(companion)
@@ -525,18 +510,18 @@ rights in this software.
         });
         $("#local-cca-parameters-next").button().click(function()
         {
-          function set_parameter(name, value)
+          function store_parameter(name, value)
           {
             $.ajax(
             {
               async : false,
-              type : "POST",
-              url : "{{server-root}}workers/" + local_cca_worker + "/model/set-parameter",
+              type : "PUT",
+              url : "{{server-root}}models/" + local_cca_model + "/parameters/" + name,
               contentType : "application/json",
               data: $.toJSON(
               {
-                name : name,
-                value : value
+                input : true,
+                value : value,
               }),
               processData : false,
               error: function(request, status, reason_phrase)
@@ -562,22 +547,16 @@ rights in this software.
             return;
           }
 
-          set_parameter("input-columns", input_columns);
-          set_parameter("output-columns", output_columns);
-          set_parameter("scale-inputs", $("#local-cca-scale-inputs").attr("checked"));
+          store_parameter("input-columns", input_columns);
+          store_parameter("output-columns", output_columns);
+          store_parameter("scale-inputs", $("#local-cca-scale-inputs").attr("checked"));
 
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}workers/" + local_cca_worker + "/model/finish-model",
-            contentType : "application/json",
-            data: $.toJSON(
-            {
-            }),
-            processData: false,
+            url : "{{server-root}}models/" + local_cca_model + "/finish",
             success: function(result)
             {
-              local_cca_worker = null;
               local_cca_model = null;
               window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
               $("#local-cca-form").dialog("close");
@@ -595,9 +574,7 @@ rights in this software.
 
         /* Remote CCA  user interface */
 
-        remote_cca_worker = null;
         remote_cca_model = null;
-        remote_cca_browser = null;
         $("#remote-cca-form").dialog(
         {
           autoOpen: false,
@@ -613,25 +590,10 @@ rights in this software.
           },
           close : function()
           {
-            remote_cca_browser = null;
-            if(remote_cca_worker)
-            {
-              $.ajax(
-              {
-                type : "DELETE",
-                url : "{{server-root}}workers/" + remote_cca_worker,
-                error : function(request, status, reason_phrase)
-                {
-                  window.alert("Error closing remote worker: " + reason_phrase);
-                }
-              });
-              remote_cca_worker = null;
-              remote_cca_model = null;
-            }
+            remote_cca_model = null;
+
             // Clear password field
             $("#remote-cca-password").val("");
-            // Clear the username field
-            //$("#remote-cca-username").val("");
           }
         });
         $("#remote-cca-basics-next").button().click(function()
@@ -643,7 +605,7 @@ rights in this software.
             contentType : "application/json",
             data: $.toJSON(
             {
-              "model-type" : "cca3",
+              "model-type" : "cca",
               "name" : $("#remote-cca-name").val(),
               "marking" : $("#remote-cca-marking").val(),
               "description" : $("#remote-cca-description").val()
@@ -651,7 +613,6 @@ rights in this software.
             processData: false,
             success: function(result)
             {
-              remote_cca_worker = result["wid"];
               remote_cca_model = result["id"];
               $("#remote-cca-basics").css("display", "none");
               $("#remote-cca-connection").css("display", "block");
@@ -664,63 +625,57 @@ rights in this software.
         });
         $("#remote-cca-connection-next").button().click(function()
         {
-          $.ajax(
-          {
-            type : "PUT",
-            contentType : "application/json",
-            processData : false,
-            url : "{{server-root}}workers/" + remote_cca_worker + "/model/remote-connection",
-            data : $.toJSON(
-            {
-              hostname : $("#remote-cca-hostname").val(),
-              username : $("#remote-cca-username").val(),
-              password : $("#remote-cca-password").val()
-            }),
-            success : function(result)
-            {
-              remote_cca_browser = new file_browser({container: $("#remote-cca-browser"), label: $("#remote-cca-hostname").val() + "//", url: "{{server-root}}workers/" + remote_cca_worker + "/model/browse", path: "/", multiple_selection: false});
-              $("#remote-cca-connection").css("display", "none");
-              $("#remote-cca-browse").css("display", "block");
-            },
-            error : function(request, status, reason_phrase)
-            {
-              window.alert("Error setting-up remote connection: " + reason_phrase);
-            }
-          });
+          $("#remote-cca-browser").empty().browser({
+            server_root : "{{server-root}}",
+            root_label : $("#remote-cca-hostname").val() + "//",
+            root_path : "/",
+            hostname : $("#remote-cca-hostname").val(),
+            username : $("#remote-cca-username").val(),
+            password : $("#remote-cca-password").val(),
+            directory_selection : false,
+            multiple_selection : false,
+            hide_dotfiles : false
+            });
+          $("#remote-cca-connection").css("display", "none");
+          $("#remote-cca-browse").css("display", "block");
         });
-        $("#remote-cca-show-hidden").button().click(function()
+        $("#remote-cca-hide-dotfiles").click(function()
         {
-          remote_cca_browser.show_all();
-        });
-        $("#remote-cca-hide-dotfiles").button().click(function()
-        {
-          remote_cca_browser.hide_dotfiles();
+          $("#remote-cca-browser").browser("option", "hide_dotfiles", $(this).attr("checked"));
         });
         $("#remote-cca-browse-next").button().click(function()
         {
-          if(remote_cca_browser.selection().length != 1)
+          var username = $("#remote-cca-browser").browser("option", "username");
+          var hostname = $("#remote-cca-browser").browser("option", "hostname");
+          var password = $("#remote-cca-browser").browser("option", "password");
+          var selection = $("#remote-cca-browser").browser("selection");
+          if(selection.length != 1)
           {
             window.alert("You must select exactly one file to index.");
             return;
           }
+          path = selection[0];
+
+          var data = new FormData();
+          data.append("username", username);
+          data.append("hostname", hostname);
+          data.append("password", password);
+          data.append("path", path);
+          data.append("input", true);
 
           $.ajax(
           {
-            type : "POST",
-            contentType : "application/json",
+            type : "PUT",
+            contentType : false,
             processData : false,
-            url : "{{server-root}}workers/" + remote_cca_worker + "/model/load-remote-table",
-            data : $.toJSON(
-            {
-              name : "data-table",
-              path : remote_cca_browser.selection()[0],
-            }),
+            url : "{{server-root}}models/" + remote_cca_model + "/tables/data-table",
+            data : data,
             success : function(result)
             {
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/" + remote_cca_model + "/artifacts/data-table/table-metadata",
+                url : "{{server-root}}models/" + remote_cca_model + "/tables/data-table/arrays/0/metadata",
                 success : function(table)
                 {
                   function deselect_companion(companion)
@@ -782,18 +737,18 @@ rights in this software.
         });
         $("#remote-cca-parameters-next").button().click(function()
         {
-          function set_parameter(name, value)
+          function store_parameter(name, value)
           {
             $.ajax(
             {
               async : false,
-              type : "POST",
-              url : "{{server-root}}workers/" + remote_cca_worker + "/model/set-parameter",
+              type : "PUT",
+              url : "{{server-root}}models/" + remote_cca_model + "/parameters/" + name,
               contentType : "application/json",
               data: $.toJSON(
               {
-                name : name,
-                value : value
+                input : true,
+                value : value,
               }),
               processData : false,
               error: function(request, status, reason_phrase)
@@ -819,22 +774,16 @@ rights in this software.
             return;
           }
 
-          set_parameter("input-columns", input_columns);
-          set_parameter("output-columns", output_columns);
-          set_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked"));
+          store_parameter("input-columns", input_columns);
+          store_parameter("output-columns", output_columns);
+          store_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked"));
 
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}workers/" + remote_cca_worker + "/model/finish-model",
-            contentType : "application/json",
-            data: $.toJSON(
-            {
-            }),
-            processData: false,
+            url : "{{server-root}}models/" + remote_cca_model + "/finish",
             success: function(result)
             {
-              remote_cca_worker = null;
               remote_cca_model = null;
               window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
               $("#remote-cca-form").dialog("close");

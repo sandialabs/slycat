@@ -21,6 +21,7 @@ $.widget("slycat.colorswitcher",
       {
         "label": "Night",
         "background": d3.rgb("#333333"),
+        "opacity": "0.5",
         "colors":
         [
           d3.rgb( 59,  76, 192),
@@ -62,6 +63,7 @@ $.widget("slycat.colorswitcher",
       {
         "label": "Day",
         "background": d3.rgb(255, 255, 255),
+        "opacity": "0.7",
         "colors":
         [
           d3.rgb(100, 108, 234),
@@ -103,6 +105,7 @@ $.widget("slycat.colorswitcher",
       {
         "label": "Rainbow",
         "background": d3.rgb(128, 128, 128),
+        "opacity": "0.6",
         "colors":
         [
           d3.rgb(255, 0, 0),
@@ -156,7 +159,17 @@ $.widget("slycat.colorswitcher",
   // Return a d3 rgb object with the suggested background color for the given color map.
   get_background: function(name)
   {
+    if(name === undefined)
+      name = this.options.colormap;
     return this.color_maps[name].background;
+  },
+
+  // Return the suggested opacity value for the given color map.
+  get_opacity: function(name)
+  {
+    if(name === undefined)
+      name = this.options.colormap;
+    return this.color_maps[name].opacity;
   },
 
   // Return a d3 linear color scale with the current color map for the domain [0, 1].

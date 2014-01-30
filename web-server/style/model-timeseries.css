@@ -23,13 +23,13 @@ rights in this software.
   border-collapse: collapse;
 }
 
-#cluster-viewer th.output
+#cluster-viewer td.output
 {
   background: #dbd9eb;
   cursor: pointer;
 }
 
-#cluster-viewer th.output.selected
+#cluster-viewer td.output.selected
 {
   background: #7767b0;
   color: white;
@@ -58,9 +58,15 @@ rights in this software.
   stroke: none;
 }
 
-#dendrogram-viewer .node.selected .subtree path
+/* Hiding the additional glyph initially */
+#dendrogram-viewer .node .subtree path.filled-glyph
 {
-  fill: #7767b0 !important;
+  display: none;
+}
+/* Showing it for selected nodes */
+#dendrogram-viewer .node.selected .subtree path.filled-glyph
+{
+  display: inline;
 }
 
 #dendrogram-viewer .node.selected .subtree text
@@ -135,4 +141,12 @@ rights in this software.
   stroke-width: 4.0;
   fill: none;
   stroke-linecap: round;
+}
+#table
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }

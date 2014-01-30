@@ -3,16 +3,10 @@
 # rights in this software.
 
 import slycat.web.client
-import getpass
-import optparse
 
 parser = slycat.web.client.option_parser()
-options, arguments = parser.parse_args()
+arguments = parser.parse_args()
 
-connection = slycat.web.client.connect(options)
-
+connection = slycat.web.client.connect(arguments)
 for project in connection.get_projects():
   connection.delete_project(project["_id"])
-
-for worker in connection.get_workers():
-  connection.delete_worker(worker["_id"], stop=True)
