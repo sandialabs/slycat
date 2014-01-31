@@ -456,15 +456,15 @@ def test_api():
   # Any logged-in user can browse a remote filesystem.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
-  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname") as context:
     project_outsider.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
-  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
     project_reader.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
-  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
     project_writer.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
-  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
     project_admin.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
-  with nose.tools.assert_raises_regexp(Exception, "Remote connection failed."):
+  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
     server_admin.request("POST", "/browse", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing", "path":"/home/nobody"}))
 
   # Any logged-in user can request the home page.

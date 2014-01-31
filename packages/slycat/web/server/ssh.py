@@ -4,6 +4,7 @@
 
 import cherrypy
 import paramiko
+import socket
 
 def connect(hostname, username, password):
   """Create a standard SSH connection."""
@@ -13,8 +14,11 @@ def connect(hostname, username, password):
     connection.connect(hostname=hostname, username=username, password=password)
     return connection
   except paramiko.AuthenticationException:
-    raise cherrypy.HTTPError("400 Remote authentication failed.")
+    raise cherrypy.HTTPError("403 Remote authentication failed.")
+  except socket.gaierror as e:
+    cherrypy.log.error("%s %s" % (type(e), e))
+    raise cherrypy.HTTPError("400 %s" % e.strerror)
   except Exception as e:
     import traceback
-    cherrypy.log.error("%s" % traceback.print_exc())
+    cherrypy.log.error("%s %s" % (type(e), e))
     raise cherrypy.HTTPError("500 Remote connection failed.")
