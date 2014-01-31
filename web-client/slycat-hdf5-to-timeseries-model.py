@@ -259,15 +259,20 @@ try:
 
     # Store the cluster.
     slycat.web.client.log.info("Storing %s" % name)
-    connection.store_file(mid, "cluster-%s" % name, json.dumps({"linkage":linkage.tolist(), "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms], "exemplars":exemplars}), "application/json")
+    connection.store_file(mid, "cluster-%s" % name, json.dumps({
+      "linkage":linkage.tolist(),
+      "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms],
+      "exemplars":exemplars,
+      "input-indices":[waveform["input-index"] for waveform in waveforms],
+      }), "application/json")
 
     connection.start_array_set(mid, "preview-%s" % name)
-    for waveform in waveforms:
+    for index, waveform in enumerate(waveforms):
       attributes = [("time", "float64"), ("value", "float64")]
       dimensions = [("sample", "int64", 0, len(waveform["times"]))]
-      connection.start_array(mid, "preview-%s" % name, waveform["input-index"], attributes, dimensions)
-      connection.store_array_attribute(mid, "preview-%s" % name, waveform["input-index"], 0, waveform["times"])
-      connection.store_array_attribute(mid, "preview-%s" % name, waveform["input-index"], 1, waveform["values"])
+      connection.start_array(mid, "preview-%s" % name, index, attributes, dimensions)
+      connection.store_array_attribute(mid, "preview-%s" % name, index, 0, waveform["times"])
+      connection.store_array_attribute(mid, "preview-%s" % name, index, 1, waveform["values"])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
