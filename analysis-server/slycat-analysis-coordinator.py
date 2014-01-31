@@ -37,6 +37,7 @@ options, arguments = parser.parse_args()
 
 Pyro4.config.HMAC_KEY = options.hmac_key
 Pyro4.config.SERIALIZER = "pickle"
+Pyro4.config.SERIALIZERS_ACCEPTED.add('pickle')
 Pyro4.config.SOCK_REUSE = True
 
 if options.log_level == "debug":
