@@ -509,6 +509,21 @@ def get_model_design(mid):
 
   return slycat.web.server.template.render("model-design.html", context)
 
+def get_model_timeseries_performance_test(mid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  context = get_context()
+  context["full-project"] = project
+  context.update(model)
+  context["model-design"] = json.dumps(model, indent=2, sort_keys=True)
+  marking = cherrypy.request.app.config["slycat"]["marking"]
+  context["marking-html"] = marking.html(model["marking"])
+
+  return slycat.web.server.template.render("timeseries-performance-test.html", context)
+
 @cherrypy.tools.json_out(on = True)
 def get_model_array_metadata(mid, aid, array):
   database = slycat.web.server.database.couchdb.connect()
