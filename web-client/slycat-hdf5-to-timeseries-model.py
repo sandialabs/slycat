@@ -113,7 +113,6 @@ try:
   # Get the minimum and maximum times for every timeseries.
   def get_time_range(directory, timeseries_index):
     import os
-    import slycat.web.client
     import slycat.data.hdf5
     with slycat.data.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
       metadata = slycat.data.hdf5.get_array_metadata(file, 0)

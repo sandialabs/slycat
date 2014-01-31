@@ -19,6 +19,7 @@ log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
 log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
+log.propagate = False
 
 def require_float(value):
   if not isinstance(value, float):
