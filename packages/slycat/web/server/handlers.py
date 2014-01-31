@@ -14,7 +14,6 @@ import h5py
 import itertools
 import json
 import logging.handlers
-import multiprocessing
 import numpy
 import optparse
 import os
