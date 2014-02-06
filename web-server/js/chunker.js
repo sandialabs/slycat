@@ -11,6 +11,30 @@ function is_little_endian()
   return this.result;
 }
 
+// Retrieve an array attribute's metadata asynchronously, calling a callback when it's ready ...
+function get_model_array_attribute_metadata(parameters)
+{
+  $.ajax({
+    url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
+    contentType : "application/json",
+    success: function(metadata)
+    {
+      parameters.metadata = metadata;
+      if(parameters.metadataSuccess !== undefined) {
+        parameters.metadataSuccess(parameters);
+      } else {
+        parameters.success(parameters);
+      }
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(parameters.error)
+        parameters.error(request, status, reason_phrase);
+    }
+  });
+}
+
+
 // Retrieve an array attribute asynchronously, calling a callback when it's ready ...
 function get_model_array_attribute(parameters)
 {
@@ -78,55 +102,58 @@ function get_model_array_attribute(parameters)
       console.error("Unknown array buffer type: " + type);
   }
 
-  $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
-    contentType : "application/json",
-    success: function(metadata)
+  function retrieve_model_array_attribute(parameters)
+  {
+    var ranges = [];
+    var metadata = parameters.metadata;
+    for(var dimension in metadata.dimensions)
     {
-      var ranges = [];
-      for(var dimension in metadata.dimensions)
-      {
-        ranges.push(metadata.dimensions[dimension].begin);
-        ranges.push(metadata.dimensions[dimension].end);
-      }
-      ranges = ranges.join(",");
-
-      var request = new XMLHttpRequest();
-      request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
-      request.responseType = "arraybuffer";
-      request.success = parameters.success;
-      request.attribute = parameters.attribute;
-      request.metadata = metadata;
-      request.onload = function(e)
-      {
-        var buffer = this.response;
-        var metadata = this.metadata;
-        var attribute = this.metadata.attributes[this.attribute];
-
-        if(metadata.dimensions.length == 1)
-        {
-          var result = cast_array_buffer(buffer, attribute.type);
-        }
-        else if(metadata.dimensions.length == 2)
-        {
-          var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
-          var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
-          var result = [];
-          for(var i = 0; i != row_count; ++i)
-            result.push(cast_array_buffer(buffer, attribute.type, i * column_count, column_count))
-        }
-        else
-        {
-          window.alert("Can't handle array with " + metadata.dimensions.length + " dimensions.");
-        }
-        this.success(result);
-      }
-      request.send();
-    },
-    error: function(request, status, reason_phrase)
-    {
-      if(parameters.error)
-        parameters.error(request, status, reason_phrase);
+      ranges.push(metadata.dimensions[dimension].begin);
+      ranges.push(metadata.dimensions[dimension].end);
     }
-  });
+    ranges = ranges.join(",");
+
+    var request = new XMLHttpRequest();
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
+    request.responseType = "arraybuffer";
+    request.success = parameters.success;
+    request.attribute = parameters.attribute;
+    request.metadata = metadata;
+    request.onload = function(e)
+    {
+      var buffer = this.response;
+      var metadata = this.metadata;
+      var attribute = this.metadata.attributes[this.attribute];
+
+      if(metadata.dimensions.length == 1)
+      {
+        var result = cast_array_buffer(buffer, attribute.type);
+      }
+      else if(metadata.dimensions.length == 2)
+      {
+        var row_count = metadata.dimensions[0].end - metadata.dimensions[0].begin;
+        var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
+        var result = [];
+        for(var i = 0; i != row_count; ++i)
+          result.push(cast_array_buffer(buffer, attribute.type, i * column_count, column_count))
+      }
+      else
+      {
+        window.alert("Can't handle array with " + metadata.dimensions.length + " dimensions.");
+      }
+      this.success(result);
+    }
+    request.send();
+  }
+
+  if(parameters.metadata === undefined)
+  {
+    parameters.metadataSuccess = retrieve_model_array_attribute;
+    get_model_array_attribute_metadata(parameters);
+  } 
+  else
+  {
+    retrieve_model_array_attribute(parameters);
+  } 
+
 }

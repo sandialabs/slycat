@@ -41,7 +41,29 @@
               var elapsed = window.performance.now() - start;
               $("<p>").text("Retrieve cluster " + name + " time: " + elapsed + " ms").appendTo($("#results"));
               $("<p>").text("Cluster contains " + cluster["input-indices"].length + " timeseries").appendTo($("#results")); 
-              retrieve_timeseries(name, cluster);
+              retrieve_cluster_as_text(name);
+            }
+          });
+        }
+
+        function retrieve_cluster_as_text(name)
+        {
+          var start = window.performance.now();
+          $.ajax({
+            url : "{{server-root}}models/{{_id}}/files/cluster-" + name,
+            contentType : "application/json",
+            dataType: "text",
+            success: function(cluster)
+            {
+              var elapsed = window.performance.now() - start;
+              $("<p>").text("Retrieve cluster " + name + " as text time: " + elapsed + " ms").appendTo($("#results"));
+              start = window.performance.now();
+              var parsed = $.parseJSON(cluster);
+              elapsed = window.performance.now() - start;
+              $("<p>").text("Parse time: " + elapsed + " ms").appendTo($("#results"));
+              $("<p>").text("Cluster contains " + parsed["input-indices"].length + " timeseries").appendTo($("#results")); 
+              retrieve_timeseries(name, parsed);
+              //retrieve_timeseries_with_metadata_limit(name, parsed);
             }
           });
         }
@@ -68,6 +90,54 @@
                   var elapsed = window.performance.now() - start;
                   $("<p>").text("Retrieve cluster " + name + " timeseries 0 time: " + elapsed + " ms").appendTo($("#results"));
                   $("<p>").text("Estimated total time: " + elapsed * cluster["input-indices"].length + " ms").appendTo($("#results"));
+                  retrieve_timeseries_with_metadata_limit(name, cluster);
+                }
+              });
+            }
+          });
+        }
+
+        function retrieve_timeseries_with_metadata_limit(name, cluster)
+        {
+          var start = window.performance.now();
+          get_model_array_attribute_metadata({
+            server_root : "{{server-root}}",
+            mid : "{{_id}}",
+            aid : "preview-" + name,
+            array : 0,
+            attribute : 0,
+            success: function(parameters)
+            {
+              var elapsedMetadata = window.performance.now() - start;
+              $("<p>").text("Retrieve metadata for cluster " + name + " timeseries 0 time: " + elapsedMetadata + " ms").appendTo($("#results"));
+
+              start = window.performance.now();
+
+              var metadata = parameters.metadata;
+
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "preview-" + name,
+                array : 0,
+                attribute : 0,
+                metadata : metadata,
+                success: function()
+                {
+                  get_model_array_attribute({
+                    server_root : "{{server-root}}",
+                    mid : "{{_id}}",
+                    aid : "preview-" + name,
+                    array : 0,
+                    attribute : 1,
+                    metadata : metadata,
+                    success: function()
+                    {
+                      var elapsed = window.performance.now() - start;
+                      $("<p>").text("Retrieve cluster " + name + " timeseries 0 time: " + elapsed + " ms").appendTo($("#results"));
+                      $("<p>").text("Estimated total time: " + ((elapsed * cluster["input-indices"].length) + elapsedMetadata) + " ms").appendTo($("#results"));
+                    }
+                  });
                 }
               });
             }
