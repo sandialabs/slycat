@@ -27,8 +27,13 @@ rights in this software.
 
 #barplot
 {
-  margin: 2em;
+  margin: 0;
   border-collapse: collapse;
+  /*float: left;*/
+}
+
+#barplot tbody {
+  /*overflow: auto;*/
 }
 
 #barplot td

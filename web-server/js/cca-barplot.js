@@ -122,7 +122,9 @@ $.widget("cca.barplot",
     var y_loadings = this.options.y_loadings;
     var component_count = x_loadings.length;
 
-    var row = $("<tr>").appendTo(this.element);
+    var thead = $("<thead>").appendTo(this.element);
+
+    var row = $("<tr>").appendTo(thead);
     $("<th>").appendTo(row);
     for(var component = 0; component != component_count; ++component)
     {
@@ -137,7 +139,7 @@ $.widget("cca.barplot",
     }
 
     // Add r-squared statistic ...
-    var row = $("<tr class='r2'>").appendTo(this.element);
+    var row = $("<tr class='r2'>").appendTo(thead);
     $("<th>R<sup>2</sup></th>").appendTo(row);
     for(var component = 0; component != component_count; ++component)
     {
@@ -147,7 +149,7 @@ $.widget("cca.barplot",
     }
 
     // Add p statistic ...
-    var row = $("<tr class='p'>").appendTo(this.element);
+    var row = $("<tr class='p'>").appendTo(thead);
     $("<th>P</th>").appendTo(row);
     for(var component = 0; component != component_count; ++component)
     {
@@ -156,10 +158,11 @@ $.widget("cca.barplot",
       $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
+    var tbody = $("<tbody>").appendTo(this.element);
     // Add input variables ...
     for(var i = 0; i != inputs.length; ++i)
     {
-      var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(this.element);
+      var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
       row.click(click_row(this, row, inputs[i]));
 
       $("<th>").html(metadata["column-names"][inputs[i]]).appendTo(row);
@@ -183,7 +186,7 @@ $.widget("cca.barplot",
     // Add output variables ...
     for(var i = 0; i != outputs.length; ++i)
     {
-      var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(this.element);
+      var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
       row.click(click_row(this, row, outputs[i]));
 
       $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
@@ -207,6 +210,10 @@ $.widget("cca.barplot",
     // Setup the default selected component ...
     this.element.find("td.bar").css("display", "none");
     this.select_component(this.options.component);
+
+    //this.element.fixedHeaderTable({ footer: false, cloneHeadToFoot: false, fixedColumn: false });
+    //var table = new ScrollableTable(document.getElementById('barplot'), 200, 1280);
+    //$('#barplot').tableScroll({height:200});
   },
 
   _setOption: function(key, value)
