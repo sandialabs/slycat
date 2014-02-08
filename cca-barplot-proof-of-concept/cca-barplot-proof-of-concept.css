@@ -1,0 +1,14 @@
+.barplotHeaderColumns {
+	outline: 1px solid blue;
+}
+.barplotHeaderColumn {
+	display: inline-block;
+	outline: 1px solid red;
+}
+.barplotRow {
+	outline: 1px solid cyan;
+}
+.barplotCell {
+	display: inline-block;
+	outline: 1px solid green;
+}
