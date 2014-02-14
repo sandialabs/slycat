@@ -543,7 +543,7 @@ def get_model_array_metadata(mid, aid, array):
       metadata = slycat.data.hdf5.get_array_metadata(file, array)
   return metadata
 
-def get_model_array_chunk(mid, aid, array, attribute, **arguments):
+def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
   try:
     attribute = int(attribute)
   except:
