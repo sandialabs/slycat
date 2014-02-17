@@ -602,7 +602,10 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
           return data.tostring(order="C")
 
 @cherrypy.tools.json_out(on = True)
-def get_model_arrayset_metadata(mid, aid):
+def get_model_arrayset_metadata(mid, aid, **arguments):
+  arrays = arguments.get("arrays", "::")
+  arrays = slice(*[int(value) if value != "" else None for value in arrays.split(":")])
+
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -617,8 +620,15 @@ def get_model_arrayset_metadata(mid, aid):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = slycat.data.hdf5.get_arrayset_metadata(file)
-  return metadata
+      results = []
+      for key in sorted([int(key) for key in file["array"].keys()])[arrays]:
+        array_metadata = file["array/%s" % key].attrs
+        results.append({
+          "index" : int(key),
+          "attributes" : [{"name":name, "type":type} for name, type in zip(array_metadata["attribute-names"], array_metadata["attribute-types"])],
+          "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(array_metadata["dimension-names"], array_metadata["dimension-types"], array_metadata["dimension-begin"], array_metadata["dimension-end"])],
+          })
+      return results
 
 def get_model_arrayset(mid, aid, **arguments):
   accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
@@ -630,6 +640,9 @@ def get_model_arrayset(mid, aid, **arguments):
 
   if byteorder not in ["little", "big"]:
     raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+
+  arrays = arguments.get("arrays", "::")
+  arrays = slice(*[int(value) if value != "" else None for value in arrays.split(":")])
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -646,7 +659,7 @@ def get_model_arrayset(mid, aid, **arguments):
   def content():
     with slycat.web.server.database.hdf5.lock:
       with slycat.web.server.database.hdf5.open(artifact) as file:
-        for array_key in sorted([int(key) for key in file["array"].keys()]):
+        for array_key in sorted([int(key) for key in file["array"].keys()])[arrays]:
           for attribute_key in file["array/%s/attribute" % array_key].keys():
             data = file["array/%s/attribute/%s" % (array_key, attribute_key)][...]
             if sys.byteorder != byteorder:

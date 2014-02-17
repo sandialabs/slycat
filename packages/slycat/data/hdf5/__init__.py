@@ -111,18 +111,6 @@ def get_array_metadata(file, array_index):
     "statistics" : statistics,
     }
 
-def get_arrayset_metadata(file):
-  """Return a list of {index, attributes, dimensions} dicts describing an arrayset."""
-  results = []
-  for key in sorted([int(key) for key in file["array"].keys()]):
-    array_metadata = file["array/%s" % key].attrs
-    results.append({
-      "index" : int(key),
-      "attributes" : [{"name":name, "type":type} for name, type in zip(array_metadata["attribute-names"], array_metadata["attribute-types"])],
-      "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(array_metadata["dimension-names"], array_metadata["dimension-types"], array_metadata["dimension-begin"], array_metadata["dimension-end"])],
-      })
-  return results
-
 def get_array_shape(file, array_index):
   array_key = "array/{}".format(array_index)
   array_metadata = file[array_key].attrs
