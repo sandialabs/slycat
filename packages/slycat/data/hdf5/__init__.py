@@ -91,7 +91,7 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
     attribute.attrs["max"] = attribute_max
 
 def get_array_metadata(file, array_index):
-  """Return an (attributes, dimensions, statistics) tuple for an array."""
+  """Return an {attributes, dimensions, statistics} dict describing an array."""
   array_key = "array/{}".format(array_index)
   array_metadata = file[array_key].attrs
   attribute_names = array_metadata["attribute-names"]
@@ -110,6 +110,18 @@ def get_array_metadata(file, array_index):
     "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
     "statistics" : statistics,
     }
+
+def get_arrayset_metadata(file):
+  """Return a list of {index, attributes, dimensions} dicts describing an arrayset."""
+  results = []
+  for key in file["array"].keys():
+    array_metadata = file["array/%s" % key].attrs
+    results.append({
+      "index" : int(key),
+      "attributes" : [{"name":name, "type":type} for name, type in zip(array_metadata["attribute-names"], array_metadata["attribute-types"])],
+      "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(array_metadata["dimension-names"], array_metadata["dimension-types"], array_metadata["dimension-begin"], array_metadata["dimension-end"])],
+      })
+  return results
 
 def get_array_shape(file, array_index):
   array_key = "array/{}".format(array_index)

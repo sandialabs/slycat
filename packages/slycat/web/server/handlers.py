@@ -601,6 +601,25 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
         else:
           return data.tostring(order="C")
 
+@cherrypy.tools.json_out(on = True)
+def get_model_arrayset_metadata(mid, aid):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
+      metadata = slycat.data.hdf5.get_arrayset_metadata(file)
+  return metadata
+
 def validate_table_rows(rows):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
