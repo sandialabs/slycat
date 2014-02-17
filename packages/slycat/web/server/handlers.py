@@ -620,6 +620,43 @@ def get_model_arrayset_metadata(mid, aid):
       metadata = slycat.data.hdf5.get_arrayset_metadata(file)
   return metadata
 
+def get_model_arrayset(mid, aid, **arguments):
+  accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  cherrypy.response.headers["content-type"] = accept
+
+  byteorder = arguments.get("byteorder", None)
+  if byteorder is None:
+    raise cherrypy.HTTPError("400 byteorder parameter must be specified.")
+
+  if byteorder not in ["little", "big"]:
+    raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  def content():
+    with slycat.web.server.database.hdf5.lock:
+      with slycat.web.server.database.hdf5.open(artifact) as file:
+        for array_key in sorted([int(key) for key in file["array"].keys()]):
+          for attribute_key in file["array/%s/attribute" % array_key].keys():
+            data = file["array/%s/attribute/%s" % (array_key, attribute_key)][...]
+            if sys.byteorder != byteorder:
+              yield data.byteswap().tostring(order="C")
+            else:
+              yield data.tostring(order="C")
+
+  return content()
+get_model_arrayset._cp_config = {"response.stream" : True}
+
 def validate_table_rows(rows):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]

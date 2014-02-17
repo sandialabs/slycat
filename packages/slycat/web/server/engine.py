@@ -87,6 +87,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/array-sets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-metadata", "/models/:mid/array-sets/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_array_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/array-sets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-arrayset", "/models/:mid/array-sets/:aid", slycat.web.server.handlers.get_model_arrayset, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-design", "/models/:mid/design", slycat.web.server.handlers.get_model_design, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-tpt", "/models/:mid/timeseries-performance-test", slycat.web.server.handlers.get_model_timeseries_performance_test, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})

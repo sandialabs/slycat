@@ -20,7 +20,6 @@
           var start = window.performance.now();
           $.ajax({
             url : "{{server-root}}models/{{_id}}/files/clusters",
-            contentType : "application/json",
             success: function(clusters)
             {
               var elapsed = window.performance.now() - start;
@@ -35,16 +34,10 @@
           var start = window.performance.now();
           $.ajax({
             url : "{{server-root}}models/{{_id}}/files/cluster-" + name,
-            contentType : "application/json",
-            dataType: "text",
             success: function(cluster)
             {
               var elapsed = window.performance.now() - start;
               $("<p>").text("Retrieve cluster " + name + " time: " + elapsed + " ms").appendTo($("#results"));
-              start = window.performance.now();
-              var parsed = $.parseJSON(cluster);
-              elapsed = window.performance.now() - start;
-              $("<p>").text("Parse cluster " + name + " time: " + elapsed + " ms").appendTo($("#results"));
               retrieve_arrayset_metadata(name);
             }
           });
@@ -69,7 +62,7 @@
         {
           var start = window.performance.now();
           var request = new XMLHttpRequest();
-          request.open("GET", "{{server-root}}models/{{_id}}/array-sets/preview-" + name + "&byteorder=" + (is_little_endian() ? "little" : "big"));
+          request.open("GET", "{{server-root}}models/{{_id}}/array-sets/preview-" + name + "?byteorder=" + (is_little_endian() ? "little" : "big"));
           request.responseType = "arraybuffer";
           request.onload = function(e)
           {
