@@ -38,21 +38,6 @@
             {
               var elapsed = window.performance.now() - start;
               $("<p>").text("Retrieve cluster " + name + " time: " + elapsed + " ms").appendTo($("#results"));
-              retrieve_arrayset_metadata(name);
-            }
-          });
-        }
-
-        function retrieve_arrayset_metadata(name)
-        {
-          var start = window.performance.now();
-          $.ajax({
-            url : "{{server-root}}models/{{_id}}/array-sets/preview-" + name + "/metadata",
-            contentType : "application/json",
-            success: function(metadata)
-            {
-              var elapsed = window.performance.now() - start;
-              $("<p>").text("Retrieve arrayset metadata time: " + elapsed + " ms").appendTo($("#results"));
               retrieve_arrayset(name);
             }
           });
@@ -61,6 +46,17 @@
         function retrieve_arrayset(name)
         {
           var start = window.performance.now();
+
+          $.ajax({
+            url : "{{server-root}}models/{{_id}}/array-sets/preview-" + name + "/metadata",
+            contentType : "application/json",
+            success: function(metadata)
+            {
+              var elapsed = window.performance.now() - start;
+              $("<p>").text("Retrieve arrayset metadata time: " + elapsed + " ms").appendTo($("#results"));
+            }
+          });
+
           var request = new XMLHttpRequest();
           request.open("GET", "{{server-root}}models/{{_id}}/array-sets/preview-" + name + "?byteorder=" + (is_little_endian() ? "little" : "big"));
           request.responseType = "arraybuffer";
