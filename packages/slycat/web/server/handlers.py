@@ -622,7 +622,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
     with slycat.web.server.database.hdf5.open(artifact) as file:
       results = []
       for key in sorted([int(key) for key in file["array"].keys()])[arrays]:
-        array_metadata = file["array/%s" % key].attrs
+        array_metadata = slycat.data.hdf5.raw_array_metadata(file, key)
         results.append({
           "index" : int(key),
           "attributes" : [{"name":name, "type":type} for name, type in zip(array_metadata["attribute-names"], array_metadata["attribute-types"])],
