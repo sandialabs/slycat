@@ -16,6 +16,12 @@ def path(array, directory):
 def open(path, mode="r"):
   return h5py.File(path, mode)
 
+def raw_array_metadata(file, array_index):
+  metadata = file["array/%s" % array_index].get("metadata", None)
+  if metadata is None:
+    metadata = file["array/%s" % array_index].attrs
+  return metadata
+
 def start_array_set(path):
   """Create a new array set.
 
@@ -38,7 +44,7 @@ def start_array(file, array_index, attributes, dimensions):
     file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
 
   # Store array metadata ...
-  array_metadata = file[array_key].attrs
+  array_metadata = file[array_key].create_group("metadata")
   array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
   array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
   array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
@@ -50,7 +56,7 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
   """Store attribute data in an existing array."""
   array_key = "array/{}".format(array_index)
   attribute_key = "array/{}/attribute/{}".format(array_index, attribute_index)
-  array_metadata = file[array_key].attrs
+  array_metadata = raw_array_metadata(file, array_index)
   if not (0 <= attribute_index and attribute_index < len(array_metadata["attribute-names"])):
     raise Exception("Attribute index {} out-of-range.".format(attribute_index))
   stored_type = dtype(array_metadata["attribute-types"][attribute_index])
@@ -93,7 +99,7 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
 def get_array_metadata(file, array_index):
   """Return an (attributes, dimensions, statistics) tuple for an array."""
   array_key = "array/{}".format(array_index)
-  array_metadata = file[array_key].attrs
+  array_metadata = raw_array_metadata(file, array_index)
   attribute_names = array_metadata["attribute-names"]
   attribute_types = array_metadata["attribute-types"]
   dimension_names = array_metadata["dimension-names"]
@@ -102,8 +108,8 @@ def get_array_metadata(file, array_index):
   dimension_end = array_metadata["dimension-end"]
   statistics = []
   for attribute_index in range(len(attribute_types)):
-    array_metadata = file["array/{}/attribute/{}".format(array_index, attribute_index)].attrs
-    statistics.append({"min":array_metadata.get("min", None), "max":array_metadata.get("max", None)})
+    attribute_metadata = file["array/{}/attribute/{}".format(array_index, attribute_index)].attrs
+    statistics.append({"min":attribute_metadata.get("min", None), "max":attribute_metadata.get("max", None)})
 
   return {
     "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
@@ -113,7 +119,7 @@ def get_array_metadata(file, array_index):
 
 def get_array_shape(file, array_index):
   array_key = "array/{}".format(array_index)
-  array_metadata = file[array_key].attrs
+  array_metadata = raw_array_metadata(file, array_index)
   dimension_begin = array_metadata["dimension-begin"]
   dimension_end = array_metadata["dimension-end"]
   return tuple([end - begin for begin, end in zip(dimension_begin, dimension_end)])
