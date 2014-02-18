@@ -261,7 +261,6 @@ try:
     slycat.web.client.log.info("Storing %s" % name)
     connection.store_file(mid, "cluster-%s" % name, json.dumps({
       "linkage":linkage.tolist(),
-      "waveforms":[{"input-index":waveform["input-index"], "times":waveform["times"].tolist(), "values":waveform["values"].tolist()} for waveform in waveforms],
       "exemplars":exemplars,
       "input-indices":[waveform["input-index"] for waveform in waveforms],
       }), "application/json")
