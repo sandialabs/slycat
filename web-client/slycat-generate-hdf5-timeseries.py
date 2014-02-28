@@ -17,18 +17,16 @@ files, which you will have to provide in your own scripts:
 """
 
 import argparse
-import concurrent.futures
-import multiprocessing
+import IPython.parallel
+import itertools
 import numpy
 import os
 import shutil
 import slycat.data.hdf5
-import threading
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
 parser.add_argument("--input-variable-prefix", default="X", help="Input variable prefix.  Default: %(default)s")
-parser.add_argument("--parallel-jobs", "-j", default=multiprocessing.cpu_count(), type=int, help="Number of parallel jobs to run.  Default: %(default)s")
 parser.add_argument("--seed", type=int, default=12345, help="Random seed.  Default: %(default)s")
 parser.add_argument("--timeseries-count", type=int, default=10, help="Number of timeseries.  Default: %(default)s")
 parser.add_argument("--timeseries-samples", type=int, default=15000, help="Number of samples in each timeseries.  Default: %(default)s")
@@ -38,7 +36,8 @@ parser.add_argument("--timeseries-waves", type=int, default=4, help="Number of r
 parser.add_argument("output_directory", help="Destination directory that will contain the generated .hdf5 files.")
 arguments = parser.parse_args()
 
-log_lock = threading.Lock()
+client = IPython.parallel.Client()
+workers = client.load_balanced_view()
 
 if arguments.force:
   shutil.rmtree(arguments.output_directory, ignore_errors=True)
@@ -46,36 +45,49 @@ if os.path.exists(arguments.output_directory):
   raise Exception("Destination directory %s already exists.  Use --force to overwrite." % arguments.output_directory)
 os.makedirs(arguments.output_directory)
 
-# Generate a set of random coefficients that we'll use later to synthesize our timeseries.
+# Generate a set of random coefficients that we'll use later to synthesize timeseries.
 numpy.random.seed(arguments.seed)
 inputs = numpy.hstack([numpy.sort(numpy.random.random((arguments.timeseries_count, arguments.timeseries_waves)) * 8 + 1) for output_variable in range(arguments.timeseries_variables)])
 input_attributes = [("%s%s" % (arguments.input_variable_prefix, attribute), "float64") for attribute in range(inputs.shape[1])]
 input_dimensions = [("row", "int64", 0, inputs.shape[0])]
+
+jobs = [(
+  index,
+  os.path.join(arguments.output_directory, "timeseries-%s.hdf5" % index),
+  arguments.timeseries_variable_prefix,
+  arguments.timeseries_samples,
+  numpy.split(coefficients, arguments.timeseries_variables),
+  ) for index, coefficients in enumerate(inputs)]
 
 with slycat.data.hdf5.start_array_set(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
   slycat.data.hdf5.start_array(file, 0, input_attributes, input_dimensions)
   for attribute, data in enumerate(inputs.T):
     slycat.data.hdf5.store_array_attribute(file, 0, attribute, [(0, inputs.shape[0])], data)
 
-# Upload a collection of timeseries as "outputs".
-def generate_timeseries(timeseries):
-  with slycat.data.hdf5.start_array_set(os.path.join(arguments.output_directory, "timeseries-%s.hdf5" % timeseries)) as file:
-    timeseries_attributes = [("time", "float64")] + [("%s%s" % (arguments.timeseries_variable_prefix, attribute), "float64") for attribute in range(arguments.timeseries_variables)]
-    timeseries_dimensions = [("row", "int64", 0, arguments.timeseries_samples)]
+# Generate a collection of "output" timeseries.
+def generate_timeseries(job):
+  import slycat.data.hdf5
+
+  timeseries_index, filename, prefix, samples, variables = job
+
+  with slycat.data.hdf5.start_array_set(filename) as file:
+    timeseries_attributes = [("time", "float64")] + [("%s%s" % (prefix, attribute), "float64") for attribute in range(len(variables))]
+    timeseries_dimensions = [("row", "int64", 0, samples)]
     slycat.data.hdf5.start_array(file, 0, timeseries_attributes, timeseries_dimensions)
 
-    times = numpy.linspace(0, 2 * numpy.pi, arguments.timeseries_samples)
+    times = numpy.linspace(0, 2 * numpy.pi, samples)
     slycat.data.hdf5.store_array_attribute(file, 0, 0, [(0, times.shape[0])], times)
 
-    for variable in range(arguments.timeseries_variables):
-      with log_lock:
-        print "Generating timeseries %s variable %s" % (timeseries, variable)
-      coefficients = inputs[timeseries, variable * arguments.timeseries_waves : (variable+1) * arguments.timeseries_waves]
-      values = numpy.zeros((arguments.timeseries_samples))
+    for variable_index, coefficients in enumerate(variables):
+      print "Generating timeseries %s variable %s" % (timeseries_index, variable_index)
+      values = numpy.zeros((samples))
       for k in coefficients:
         values += numpy.sin(times * k) / k
-      slycat.data.hdf5.store_array_attribute(file, 0, variable + 1, [(0, values.shape[0])], values)
+      slycat.data.hdf5.store_array_attribute(file, 0, variable_index + 1, [(0, values.shape[0])], values)
 
-with concurrent.futures.ProcessPoolExecutor(arguments.parallel_jobs) as pool:
-  results = list(pool.map(generate_timeseries, range(arguments.timeseries_count)))
+  return timeseries_index
+
+for job in jobs:
+  generate_timeseries(job)
+#workers.map_async(generate_timeseries, jobs)
 
