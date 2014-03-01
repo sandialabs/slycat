@@ -1,12 +1,28 @@
+#barplot-table {
+	width: 400px;
+	height: 100px;
+	overflow: hidden;
+}
+.barplotHeader {
+	overflow: hidden;
+}
 .barplotHeaderColumns {
 	outline: 1px solid blue;
+	white-space: nowrap;
 }
 .barplotHeaderColumn {
 	display: inline-block;
 	outline: 1px solid red;
 }
+.barplotViewport {
+	overflow: auto;
+}
+.barplotCanvas {
+
+}
 .barplotRow {
 	outline: 1px solid cyan;
+	white-space: nowrap;
 }
 .barplotCell {
 	display: inline-block;

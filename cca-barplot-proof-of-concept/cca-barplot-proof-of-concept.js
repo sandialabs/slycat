@@ -12,6 +12,14 @@ $( document ).ready(function() {
 		}
 	);
 
+	var tableHeight = $("#barplot-table").height();
+	var headerHeight = $(".barplotHeader").height();
+	$(".barplotViewport").height(tableHeight - headerHeight);
+
+	$(".barplotViewport").on("scroll", function(){
+		$(".barplotHeader").scrollLeft( $(this).scrollLeft() );
+	});
+
 	// $(".col0").each(
 	// 	function(index, element){
 	// 		console.log( index + ": " + "is a cell in the first column. Its width is: " + $(element).width() );
