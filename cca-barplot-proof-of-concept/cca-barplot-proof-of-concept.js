@@ -1,6 +1,5 @@
 $( document ).ready(function() {
 
-	// Get all the columns
 	var numberOfColumns = $(".barplotHeaderColumn").length;
 
 	$(".barplotHeaderColumn").each(
@@ -14,10 +13,14 @@ $( document ).ready(function() {
 
 	var tableHeight = $("#barplot-table").height();
 	var headerHeight = $(".barplotHeader").height();
-	$(".barplotViewport").height(tableHeight - headerHeight);
+	$(".barplotCanvas").height(tableHeight - headerHeight);
+	var tableWidth = $("#barplot-table").width();
+	var firstColumnWidth = $(".barplotColumn").width();
+	$(".barplotCanvas").width(tableWidth - firstColumnWidth);
 
-	$(".barplotViewport").on("scroll", function(){
-		$(".barplotHeader").scrollLeft( $(this).scrollLeft() );
+	$(".barplotCanvas").on("scroll", function(){
+		$(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+		$(".barplotColumn").css("margin-top", "-" + $(this).scrollTop() + "px");
 	});
 
 	// $(".col0").each(

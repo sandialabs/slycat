@@ -4,21 +4,34 @@
 	overflow: hidden;
 }
 .barplotHeader {
-	overflow: hidden;
+	/*overflow: hidden;*/
+	white-space: nowrap;
 }
 .barplotHeaderColumns {
 	outline: 1px solid blue;
 	white-space: nowrap;
+	display: inline-block;
 }
 .barplotHeaderColumn {
 	display: inline-block;
 	outline: 1px solid red;
 }
+.headerInput.col0 {
+	background-color: gray;
+}
 .barplotViewport {
-	overflow: auto;
+
+}
+.barplotColumn {
+	display: inline-block;
+	float: left;
+}
+.barplotColumn .barplotCell {
+	display: block;
 }
 .barplotCanvas {
-
+	display: inline-block;
+	overflow: auto;
 }
 .barplotRow {
 	outline: 1px solid cyan;
