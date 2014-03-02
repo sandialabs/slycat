@@ -13,14 +13,21 @@ $( document ).ready(function() {
 
 	var tableHeight = $("#barplot-table").height();
 	var headerHeight = $(".barplotHeader").height();
-	$(".barplotCanvas").height(tableHeight - headerHeight);
+	$(".barplotCanvas").height( (tableHeight - headerHeight)/2 );
+	$(".barplotGroup").height( (tableHeight - headerHeight)/2 );
 	var tableWidth = $("#barplot-table").width();
 	var firstColumnWidth = $(".barplotColumn").width();
 	$(".barplotCanvas").width(tableWidth - firstColumnWidth);
 
-	$(".barplotCanvas").on("scroll", function(){
+	$(".barplotCanvas.input").on("scroll", function(){
 		$(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
-		$(".barplotColumn").css("margin-top", "-" + $(this).scrollTop() + "px");
+		$(".barplotColumn.input").css("margin-top", "-" + $(this).scrollTop() + "px");
+	});
+
+	$(".barplotCanvas.output").on("scroll", function(){
+		$(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+		$(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
+		$(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
 	});
 
 	// $(".col0").each(

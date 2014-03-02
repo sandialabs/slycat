@@ -1,6 +1,6 @@
 #barplot-table {
 	width: 400px;
-	height: 100px;
+	height: 200px;
 	overflow: hidden;
 }
 .barplotHeader {
@@ -23,15 +23,23 @@
 .barplotViewport {
 
 }
+.barplotGroup {
+	overflow: hidden;
+}
 .barplotColumn {
-	display: inline-block;
+	/*display: inline-block;*/
 	float: left;
+	clear: left;
 }
 .barplotColumn .barplotCell {
 	display: block;
 }
 .barplotCanvas {
 	overflow: auto;
+}
+.barplotCanvas.input {
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 .barplotRow {
 	/*outline: 1px solid cyan;*/
