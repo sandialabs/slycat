@@ -36,9 +36,6 @@ parser.add_argument("--timeseries-waves", type=int, default=4, help="Number of r
 parser.add_argument("output_directory", help="Destination directory that will contain the generated .hdf5 files.")
 arguments = parser.parse_args()
 
-client = IPython.parallel.Client()
-workers = client.load_balanced_view()
-
 if arguments.force:
   shutil.rmtree(arguments.output_directory, ignore_errors=True)
 if os.path.exists(arguments.output_directory):
@@ -66,6 +63,7 @@ with slycat.data.hdf5.start_array_set(os.path.join(arguments.output_directory, "
 
 # Generate a collection of "output" timeseries.
 def generate_timeseries(job):
+  import numpy
   import slycat.data.hdf5
 
   timeseries_index, filename, prefix, samples, variables = job
@@ -87,7 +85,7 @@ def generate_timeseries(job):
 
   return timeseries_index
 
-for job in jobs:
-  generate_timeseries(job)
-#workers.map_async(generate_timeseries, jobs)
+client = IPython.parallel.Client()
+workers = client.load_balanced_view()
+workers.map_sync(generate_timeseries, jobs)
 
