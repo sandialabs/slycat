@@ -42,17 +42,20 @@ $.widget("timeseries.dendrogram",
   	var mid = self.options.mid;
 
   	var linkage = cluster_data["linkage"];
-	  var waveforms = cluster_data["waveforms"];
+    // waveforms no longer exists in cluster data
+	  //var waveforms = cluster_data["waveforms"];
+    // instead we have input-indices
+    var input_indices = cluster_data["input-indices"];
 	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
 
-	  $.each(waveforms, function(index, waveform)
+	  $.each(input_indices, function(index, waveform)
     {
-      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : waveform["input-index"]});
+      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : input_indices[index]});
     });
     $.each(linkage, function(index, link)
     {
-      subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + waveforms.length], selected: false, "waveform-index" : null, "data-table-index" : null})
+      subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null})
     });
 
     var padding = 20;
@@ -123,25 +126,26 @@ $.widget("timeseries.dendrogram",
       if(d.exemplar == undefined)
         return "";
 
-      var waveform = waveforms[d.exemplar];
-      var values = waveform["values"];
-      var data = [];
-      for(var i = 0; i != values.length; ++i)
-        data.push(values[i]);
+      //Commenting out for now since the waveform data is elsewhere
+      // var waveform = waveforms[d.exemplar];
+      // var values = waveform["values"];
+      // var data = [];
+      // for(var i = 0; i != values.length; ++i)
+      //   data.push(values[i]);
 
-      var width = 100;
-      var height = 15;
-      var min = d3.min(data);
-      var max = d3.max(data);
-      var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
-      var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
+      // var width = 100;
+      // var height = 15;
+      // var min = d3.min(data);
+      // var max = d3.max(data);
+      // var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
+      // var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
 
-      var path = d3.svg.line()
-        .x(function(d,i) { return x(i); })
-        .y(function(d) { return y(d); })
-        ;
+      // var path = d3.svg.line()
+      //   .x(function(d,i) { return x(i); })
+      //   .y(function(d) { return y(d); })
+      //   ;
 
-      return path(data);
+      // return path(data);
       return "M 0 0 L 50 0 L 100 -5";
     }
 

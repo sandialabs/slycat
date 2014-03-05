@@ -622,67 +622,68 @@ rights in this software.
             });
           }
 
+          //Temporarily commenting out waveform plot since waveform data changed so much.
           // Setup the waveform plot ...
-          if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
-          {
-            waveformplot_ready = true;
+          // if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
+          // {
+          //   waveformplot_ready = true;
 
-            $("#waveform-pane .load-status").css("display", "none");
+          //   $("#waveform-pane .load-status").css("display", "none");
 
-            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+          //   var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
-            $("#waveform-viewer").css({
-              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
-              });
-            $("#waveform-viewer rect.selectionMask").css({
-              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
-              "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
-              });
+          //   $("#waveform-viewer").css({
+          //     "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+          //     });
+          //   $("#waveform-viewer rect.selectionMask").css({
+          //     "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+          //     "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+          //     });
 
-            var waveformplot_options =
-            {
-              "server-root" : "{{server-root}}",
-              mid : "{{_id}}",
-              waveforms: clusters_data[initial_cluster].waveforms,
-              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
-            };
+          //   var waveformplot_options =
+          //   {
+          //     "server-root" : "{{server-root}}",
+          //     mid : "{{_id}}",
+          //     waveforms: clusters_data[initial_cluster].waveforms,
+          //     color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+          //   };
 
-            $("#waveform-viewer").waveformplot(waveformplot_options);
+          //   $("#waveform-viewer").waveformplot(waveformplot_options);
 
-            // Changing the selected dendrogram node updates the waveform plot ...
-            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
-            {
-              $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
+          //   // Changing the selected dendrogram node updates the waveform plot ...
+          //   $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+          //   {
+          //     $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
 
-              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
-                $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
-            });
+          //     if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+          //       $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+          //   });
 
-            // Changing the table row selection updates the waveform plot ...
-            $("#table").bind("row-selection-changed", function(event, waveform_indexes)
-            {
-              $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
-            });
+          //   // Changing the table row selection updates the waveform plot ...
+          //   $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+          //   {
+          //     $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+          //   });
 
-            // Changing the color map updates the waveform plot ...
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              $("#waveform-viewer").css({
-                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
-                });
-              $("#waveform-viewer rect.selectionMask").css({
-                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
-                "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
-                });
-              $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
-            });
+          //   // Changing the color map updates the waveform plot ...
+          //   $("#color-switcher").bind("colormap-changed", function(event, colormap)
+          //   {
+          //     $("#waveform-viewer").css({
+          //       "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+          //       });
+          //     $("#waveform-viewer rect.selectionMask").css({
+          //       "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+          //       "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+          //       });
+          //     $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
+          //   });
             
-            // Changing the color scale updates the waveform plot ...
-            $("#table").bind("color-scale-changed", function(event, parameters)
-            {
-              $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
-            });
-          }
+          //   // Changing the color scale updates the waveform plot ...
+          //   $("#table").bind("color-scale-changed", function(event, parameters)
+          //   {
+          //     $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
+          //   });
+          // }
 
           // Setup the table ...
           if( !table_ready && bookmark && table_metadata && (initial_cluster !==  null) )
