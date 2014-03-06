@@ -474,7 +474,7 @@ $.widget("timeseries.dendrogram",
 
   _setOption: function(key, value)
   {
-    console.log("timeseries.dendrogram._setOption()", key, value);
+    //console.log("timeseries.dendrogram._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "cluster_data")

@@ -85,10 +85,10 @@ $.widget("timeseries.waveformplot",
     // Cancel any previously started work
     self._stopProcessingWaveforms();
 
-    var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["times"]); });
-    var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["times"]); });
-    var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["values"]); });
-    var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["values"]); });
+    var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["time"]); });
+    var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["time"]); });
+    var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["value"]); });
+    var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["value"]); });
 
     this.x = d3.scale.linear()
       .domain([x_min, x_max])
@@ -223,14 +223,14 @@ $.widget("timeseries.waveformplot",
       {
 
         result = "";
-        for(var i = 0; i != d.times.length; ++i)
+        for(var i = 0; i != d["time"].length; ++i)
         {
-          result += "M" + self.x(d.times[i]) + "," + self.y(d.values[i]);
+          result += "M" + self.x(d.time[i]) + "," + self.y(d["value"][i]);
           break;
         }
-        for(var i = 1; i < d.times.length; ++i)
+        for(var i = 1; i < d["time"].length; ++i)
         {
-          result += "L" + self.x(d.times[i]) + "," + self.y(d.values[i]);
+          result += "L" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
         }
 
         return result;
@@ -359,7 +359,7 @@ $.widget("timeseries.waveformplot",
 
   _setOption: function(key, value)
   {
-    console.log("timeseries.waveform._setOption()", key, value);
+    //console.log("timeseries.waveform._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "selection")

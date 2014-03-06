@@ -151,6 +151,7 @@ rights in this software.
 
         var clusters = null; // This is just the list of cluster names
         var clusters_data = null; // This holds data for each cluster
+        var waveforms_data = null; // This holds the waveforms for each cluster
         var initial_cluster = null; // This holds the index of the initially selected cluster
         var table_metadata = null;
 
@@ -234,9 +235,11 @@ rights in this software.
               success: function(result)
               {
                 clusters = result;
-                clusters_data = new Array(clusters.length)
+                clusters_data = new Array(clusters.length);
+                waveforms_data = new Array(clusters.length);
                 setup_cluster();
                 setup_widgets();
+                setup_waveforms();
               },
               error: artifact_missing
             });
@@ -260,6 +263,7 @@ rights in this software.
               setup_colorswitcher();
               setup_cluster();
               setup_widgets();
+              setup_waveforms();
             });
 
           }
@@ -582,6 +586,40 @@ rights in this software.
           }
         }
 
+        function setup_waveforms()
+        {
+          if(bookmark && clusters)
+          {
+            var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
+
+            // Load the waveform metadata.
+            // get_model_arrayset_metadata({
+            //   server_root : "{{server-root}}",
+            //   mid : "{{_id}}",
+            //   aid : "preview-" + clusters[cluster],
+            //   success : function(parameters)
+            //   {
+            //     console.log(parameters.metadata);
+            //   },
+            //   error : artifact_missing
+            // });
+
+            // Load the waveforms.
+            get_model_arrayset({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "preview-" + clusters[cluster],
+              success : function(result)
+              {
+                waveforms_data[cluster] = result;
+                initial_cluster = cluster;
+                setup_widgets();
+              },
+              error : artifact_missing
+            });
+          }
+        }
+
         function setup_colorswitcher()
         {
           var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -624,66 +662,66 @@ rights in this software.
 
           //Temporarily commenting out waveform plot since waveform data changed so much.
           // Setup the waveform plot ...
-          // if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (clusters_data[initial_cluster] !== undefined) )
-          // {
-          //   waveformplot_ready = true;
+          if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined) )
+          {
+            waveformplot_ready = true;
 
-          //   $("#waveform-pane .load-status").css("display", "none");
+            $("#waveform-pane .load-status").css("display", "none");
 
-          //   var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
-          //   $("#waveform-viewer").css({
-          //     "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
-          //     });
-          //   $("#waveform-viewer rect.selectionMask").css({
-          //     "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
-          //     "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
-          //     });
+            $("#waveform-viewer").css({
+              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+              });
+            $("#waveform-viewer rect.selectionMask").css({
+              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+              "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+              });
 
-          //   var waveformplot_options =
-          //   {
-          //     "server-root" : "{{server-root}}",
-          //     mid : "{{_id}}",
-          //     waveforms: clusters_data[initial_cluster].waveforms,
-          //     color: $("#color-switcher").colorswitcher("get_color_map", colormap),
-          //   };
+            var waveformplot_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              waveforms: waveforms_data[initial_cluster],
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+            };
 
-          //   $("#waveform-viewer").waveformplot(waveformplot_options);
+            $("#waveform-viewer").waveformplot(waveformplot_options);
 
-          //   // Changing the selected dendrogram node updates the waveform plot ...
-          //   $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
-          //   {
-          //     $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
+            // Changing the selected dendrogram node updates the waveform plot ...
+            $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+            {
+              $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
 
-          //     if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
-          //       $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
-          //   });
+              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+                $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+            });
 
-          //   // Changing the table row selection updates the waveform plot ...
-          //   $("#table").bind("row-selection-changed", function(event, waveform_indexes)
-          //   {
-          //     $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
-          //   });
+            // Changing the table row selection updates the waveform plot ...
+            $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+            {
+              $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+            });
 
-          //   // Changing the color map updates the waveform plot ...
-          //   $("#color-switcher").bind("colormap-changed", function(event, colormap)
-          //   {
-          //     $("#waveform-viewer").css({
-          //       "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
-          //       });
-          //     $("#waveform-viewer rect.selectionMask").css({
-          //       "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
-          //       "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
-          //       });
-          //     $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
-          //   });
+            // Changing the color map updates the waveform plot ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#waveform-viewer").css({
+                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+                });
+              $("#waveform-viewer rect.selectionMask").css({
+                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+                "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+                });
+              $("#waveform-viewer").waveformplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
+            });
             
-          //   // Changing the color scale updates the waveform plot ...
-          //   $("#table").bind("color-scale-changed", function(event, parameters)
-          //   {
-          //     $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
-          //   });
-          // }
+            // Changing the color scale updates the waveform plot ...
+            $("#table").bind("color-scale-changed", function(event, parameters)
+            {
+              $("#waveform-viewer").waveformplot("option", "color-scale", parameters);
+            });
+          }
 
           // Setup the table ...
           if( !table_ready && bookmark && table_metadata && (initial_cluster !==  null) )
@@ -890,7 +928,7 @@ rights in this software.
                 clusters_data[cluster] = cluster_data;
                 var dendrogram_options = build_dendrogram_node_options(cluster);
                 dendrogram_options.cluster_data = clusters_data[cluster];
-                $("#waveform-viewer").waveformplot("option", "waveforms", clusters_data[cluster].waveforms);
+                $("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
                 $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
               },
               error: artifact_missing
@@ -898,7 +936,7 @@ rights in this software.
           } else {
             var dendrogram_options = build_dendrogram_node_options(cluster);
             dendrogram_options.cluster_data = clusters_data[cluster];
-            $("#waveform-viewer").waveformplot("option", "waveforms", clusters_data[cluster].waveforms);
+            $("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
             $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
           }
         }

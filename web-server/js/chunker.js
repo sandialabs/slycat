@@ -34,74 +34,96 @@ function get_model_array_attribute_metadata(parameters)
   });
 }
 
+// Retrieve an arrayset's metadata asynchronously, calling a callback when it's ready ...
+function get_model_arrayset_metadata(parameters)
+{
+  $.ajax({
+    url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/metadata",
+    contentType : "application/json",
+    success: function(metadata)
+    {
+      parameters.metadata = metadata;
+      if(parameters.metadataSuccess !== undefined) {
+        parameters.metadataSuccess(parameters);
+      } else {
+        parameters.success(parameters);
+      }
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(parameters.error)
+        parameters.error(request, status, reason_phrase);
+    }
+  });
+}
+
+// Cast a generic arraybuffer to a typed array, with an optional offset and
+// count.  Note that offset and count are measured in elements, not bytes.
+function cast_array_buffer(buffer, type, offset, count)
+{
+  if(type == "int32")
+  {
+    if(offset !== undefined)
+      return new Int32Array(buffer, offset*4, count);
+    else
+      return new Int32Array(buffer);
+  }
+  else if(type == "int16")
+  {
+    if(offset !== undefined)
+      return new Int16Array(buffer, offset*2, count);
+    else
+      return new Int16Array(buffer);
+  }
+  else if(type == "int8")
+  {
+    if(offset !== undefined)
+      return new Int8Array(buffer, offset, count);
+    else
+      return new Int8Array(buffer);
+  }
+  else if(type == "uint32")
+  {
+    if(offset !== undefined)
+      return new Uint32Array(buffer, offset*4, count);
+    else
+      return new Uint32Array(buffer);
+  }
+  else if(type == "uint16")
+  {
+    if(offset !== undefined)
+      return new Uint16Array(buffer, offset*2, count);
+    else
+      return new Uint16Array(buffer);
+  }
+  else if(type == "uint8")
+  {
+    if(offset !== undefined)
+      return new Uint8Array(buffer, offset, count);
+    else
+      return new Uint8Array(buffer);
+  }
+  else if(type == "float64")
+  {
+    if(offset !== undefined)
+      return new Float64Array(buffer, offset*8, count);
+    else
+      return new Float64Array(buffer);
+  }
+  else if(type == "float32")
+  {
+    if(offset !== undefined)
+      return new Float32Array(buffer, offset*4, count);
+    else
+      return new Float32Array(buffer);
+  }
+  else
+    console.error("Unknown array buffer type: " + type);
+}
 
 // Retrieve an array attribute asynchronously, calling a callback when it's ready ...
 function get_model_array_attribute(parameters)
 {
-  // Cast a generic arraybuffer to a typed array, with an optional offset and
-  // count.  Note that offset and count are measured in elements, not bytes.
-  function cast_array_buffer(buffer, type, offset, count)
-  {
-    if(type == "int32")
-    {
-      if(offset !== undefined)
-        return new Int32Array(buffer, offset*4, count);
-      else
-        return new Int32Array(buffer);
-    }
-    else if(type == "int16")
-    {
-      if(offset !== undefined)
-        return new Int16Array(buffer, offset*2, count);
-      else
-        return new Int16Array(buffer);
-    }
-    else if(type == "int8")
-    {
-      if(offset !== undefined)
-        return new Int8Array(buffer, offset, count);
-      else
-        return new Int8Array(buffer);
-    }
-    else if(type == "uint32")
-    {
-      if(offset !== undefined)
-        return new Uint32Array(buffer, offset*4, count);
-      else
-        return new Uint32Array(buffer);
-    }
-    else if(type == "uint16")
-    {
-      if(offset !== undefined)
-        return new Uint16Array(buffer, offset*2, count);
-      else
-        return new Uint16Array(buffer);
-    }
-    else if(type == "uint8")
-    {
-      if(offset !== undefined)
-        return new Uint8Array(buffer, offset, count);
-      else
-        return new Uint8Array(buffer);
-    }
-    else if(type == "float64")
-    {
-      if(offset !== undefined)
-        return new Float64Array(buffer, offset*8, count);
-      else
-        return new Float64Array(buffer);
-    }
-    else if(type == "float32")
-    {
-      if(offset !== undefined)
-        return new Float32Array(buffer, offset*4, count);
-      else
-        return new Float32Array(buffer);
-    }
-    else
-      console.error("Unknown array buffer type: " + type);
-  }
-
   function retrieve_model_array_attribute(parameters)
   {
     var ranges = [];
@@ -156,4 +178,56 @@ function get_model_array_attribute(parameters)
     retrieve_model_array_attribute(parameters);
   } 
 
+}
+
+// Retrieve an arrayset asynchronously, calling a callback when it's ready ...
+function get_model_arrayset(parameters)
+{
+  if(parameters.metadata === undefined)
+  {
+    parameters.metadataSuccess = retrieve_model_arrayset;
+    get_model_arrayset_metadata(parameters);
+  } 
+  else
+  {
+    retrieve_model_arrayset(parameters);
+  }
+
+  function retrieve_model_arrayset(parameters)
+  {
+    var metadata = parameters.metadata;
+
+    var request = new XMLHttpRequest();
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "?byteorder=" + (is_little_endian() ? "little" : "big"));
+    //request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
+    request.responseType = "arraybuffer";
+    request.success = parameters.success;
+    request.metadata = metadata;
+    request.onload = function(e)
+    {
+      var buffer = this.response;
+      var metadata = this.metadata;
+      var results = [];
+      var result, item, index, count, attributes, attribute = null;
+      var offset = 0;
+      for(var i=0; i < metadata.length; i++)
+      {
+        item = metadata[i];
+        index = item.index;
+        count = item.dimensions[0].end - item.dimensions[0].begin;
+        attributes = item.attributes;
+        result = {};
+        result["input-index"] = index;
+        for(var j=0; j < attributes.length; j++)
+        {
+          attribute = attributes[j];
+          result[attribute.name] = cast_array_buffer(buffer, attribute.type, offset, count);
+          offset = offset + count;
+        }
+        results.push(result);
+      }
+      this.success(results);
+    }
+    request.send();
+  }
 }
