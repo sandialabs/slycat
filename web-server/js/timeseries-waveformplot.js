@@ -66,6 +66,8 @@ $.widget("timeseries.waveformplot",
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
 
+    this._set_visible();
+
     function panel_selection_callback(context)
     {
       return function()
@@ -101,11 +103,15 @@ $.widget("timeseries.waveformplot",
       ;
 
     var waveform_subset = [];
-    $.each(visible, function(index, node)
-    {
-      if(node["waveform-index"] != null)
-        waveform_subset.push(self.waveforms[node["waveform-index"]]);
-    });
+    if(visible !== null) {
+      $.each(visible, function(index, waveform_index)
+      {
+        waveform_subset.push(self.waveforms[waveform_index]);
+      });
+    }
+    else {
+      waveform_subset = self.waveforms;
+    }
 
     this.container.selectAll("g.waveform").remove();
     this.container.selectAll("g.selection").remove();

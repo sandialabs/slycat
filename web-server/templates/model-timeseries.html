@@ -657,10 +657,10 @@ rights in this software.
             $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
             {
               update_dendrogram(cluster);
+              update_waveformplot(cluster);
             });
           }
 
-          //Temporarily commenting out waveform plot since waveform data changed so much.
           // Setup the waveform plot ...
           if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined) )
           {
@@ -686,15 +686,21 @@ rights in this software.
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
             };
 
+            if(bookmark[initial_cluster + "-selected-waveform-indexes"] !== undefined)
+              waveformplot_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
+
             $("#waveform-viewer").waveformplot(waveformplot_options);
 
             // Changing the selected dendrogram node updates the waveform plot ...
             $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
             {
-              $("#waveform-viewer").waveformplot("option", "selection", parameters.selection);
+              // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
+              if(parameters.skip_bookmarking != true) {
+                $("#waveform-viewer").waveformplot("option", "selection", getWaveformIndexes(parameters.selection));
 
-              if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
-                $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+                if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+                  $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+              }
             });
 
             // Changing the table row selection updates the waveform plot ...
@@ -868,9 +874,10 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
           });
           if(parameters.skip_bookmarking != true) {
-            var selected_node_index = {};
-            selected_node_index[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index"] = parameters.node["node-index"];
-            bookmarker.updateState(selected_node_index);
+            var state = {};
+            state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index" ] = parameters.node["node-index"];
+            state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-waveform-indexes" ] = getWaveformIndexes(parameters.selection);
+            bookmarker.updateState(state);
           }
         }
 
@@ -928,7 +935,7 @@ rights in this software.
                 clusters_data[cluster] = cluster_data;
                 var dendrogram_options = build_dendrogram_node_options(cluster);
                 dendrogram_options.cluster_data = clusters_data[cluster];
-                $("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
+                //$("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
                 $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
               },
               error: artifact_missing
@@ -936,8 +943,53 @@ rights in this software.
           } else {
             var dendrogram_options = build_dendrogram_node_options(cluster);
             dendrogram_options.cluster_data = clusters_data[cluster];
-            $("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
+            //$("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
             $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
+          }
+        }
+
+        function update_waveformplot(cluster)
+        {
+          // Retrieve waveform data if it's not already in the cache
+          if(waveforms_data[cluster] === undefined) {
+            // Load the waveforms.
+            get_model_arrayset({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "preview-" + clusters[cluster],
+              success : function(result)
+              {
+                waveforms_data[cluster] = result;
+                var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+                var waveformplot_options =
+                {
+                  "server-root" : "{{server-root}}",
+                  mid : "{{_id}}",
+                  waveforms: waveforms_data[cluster],
+                  color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+                };
+
+                if(bookmark[cluster + "-selected-waveform-indexes"] !== undefined)
+                  waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
+
+                $("#waveform-viewer").waveformplot(waveformplot_options);
+              },
+              error : artifact_missing
+            });
+          } else {
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            var waveformplot_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              waveforms: waveforms_data[cluster],
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+            };
+
+            if(bookmark[cluster + "-selected-waveform-indexes"] !== undefined)
+              waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
+
+            $("#waveform-viewer").waveformplot(waveformplot_options);
           }
         }
 
@@ -961,6 +1013,21 @@ rights in this software.
           }
 
           return dendrogram_options;
+        }
+
+        function getWaveformIndexes(nodes)
+        {
+          var waveform_indexes = [];
+          var waveform_index = null;
+
+          $.each(nodes, function(index, node)
+          {
+            waveform_index = node["waveform-index"];
+            if(waveform_index != null)
+              waveform_indexes.push(waveform_index);
+          });
+
+          return waveform_indexes;
         }
 
       });
