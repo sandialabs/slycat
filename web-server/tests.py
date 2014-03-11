@@ -531,16 +531,6 @@ def test_api():
   project_admin.put_project(pid, {"acl":sample_acl})
   server_admin.put_project(pid, {"acl":sample_acl})
 
-  # Any project member can request the project design page.
-  with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.request("GET", "/projects/%s/design" % pid)
-  with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.request("GET", "/projects/%s/design" % pid)
-  project_reader.request("GET", "/projects/%s/design" % pid)
-  project_writer.request("GET", "/projects/%s/design" % pid)
-  project_admin.request("GET", "/projects/%s/design" % pid)
-  server_admin.request("GET", "/projects/%s/design" % pid)
-
   # Any project member (not just writers) can save a bookmark.
   bookmarks = []
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -690,16 +680,6 @@ def test_api():
   project_writer.get_model(models[0])
   project_admin.get_model(models[0])
   server_admin.get_model(models[0])
-
-  # Any project reader can get a model design page.
-  with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.request("GET", "/models/%s/design" % models[0])
-  with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.request("GET", "/models/%s/design" % models[0])
-  project_reader.request("GET", "/models/%s/design" % models[0])
-  project_writer.request("GET", "/models/%s/design" % models[0])
-  project_admin.request("GET", "/models/%s/design" % models[0])
-  server_admin.request("GET", "/models/%s/design" % models[0])
 
   # Any project reader can retrieve a model file.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
