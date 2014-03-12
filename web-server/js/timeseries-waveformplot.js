@@ -72,9 +72,9 @@ $.widget("timeseries.waveformplot",
     {
       return function()
       {
-        var selection = [];
-        context._select(selection);
-        context.element.trigger("waveform-selection-changed", [selection]);
+        context.options.highlight = [];
+        context._select();
+        context.element.trigger("waveform-selection-changed", [context.options.highlight]);
       }
     }
   },
@@ -183,9 +183,9 @@ $.widget("timeseries.waveformplot",
     function waveform_selection_callback(context){
       return function(d)
       {
-        var selection = [d['input-index']];
-        context._select(selection);
-        context.element.trigger("waveform-selection-changed", [selection]);
+        context.options.highlight = [d['input-index']];
+        context._select();
+        context.element.trigger("waveform-selection-changed", [context.options.highlight]);
         d3.event.stopPropagation();
       }
     }
@@ -244,22 +244,24 @@ $.widget("timeseries.waveformplot",
     }
   },
 
-  _select: function(selected)
+  /* Highlights waveforms */
+  _select: function()
   {
     var self = this;
 
     // Only highlight a waveform if it's part of the current selection
     var selection = self.options.selection;
+    var highlight = self.options.highlight;
     var inCurrentSelection = [];
-    for(var i=0; i<selection.length; i++){
-      if( selected.indexOf(self.options.selection[i]["data-table-index"]) > -1 ){
-        inCurrentSelection.push(self.options.selection[i]["waveform-index"]);
+    for(var i=0; i<highlight.length; i++){
+      if( selection.indexOf(highlight[i]) > -1 ){
+        inCurrentSelection.push(highlight[i]);
       }
     }
-    selected = inCurrentSelection;
+    highlight = inCurrentSelection;
 
     var waveform_subset = [];
-    $.each(selected, function(index, node_index)
+    $.each(highlight, function(index, node_index)
     {
       if(node_index < self.waveforms.length)
         waveform_subset.push(self.waveforms[node_index]);
@@ -268,7 +270,7 @@ $.widget("timeseries.waveformplot",
     this.container.selectAll("g.selection").remove();
     this.container.selectAll("rect.selectionMask").remove();
 
-    if(selected.length > 0) {
+    if(highlight.length > 0) {
       this.visualization.append("svg:rect")
         .attr("width", this.diagram_width)
         .attr("height", this.diagram_height)
@@ -374,7 +376,7 @@ $.widget("timeseries.waveformplot",
     }
     else if(key == "highlight")
     {
-      this._select(value);
+      this._select();
     }
     else if(key == "color-scale")
     {

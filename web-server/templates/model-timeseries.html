@@ -689,6 +689,9 @@ rights in this software.
             if(bookmark[initial_cluster + "-selected-waveform-indexes"] !== undefined)
               waveformplot_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
 
+            if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
+              waveformplot_options["highlight"] = bookmark[initial_cluster + "-selected-row-simulations"];
+
             $("#waveform-viewer").waveformplot(waveformplot_options);
 
             // Changing the selected dendrogram node updates the waveform plot ...
