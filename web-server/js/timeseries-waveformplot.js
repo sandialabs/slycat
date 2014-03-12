@@ -67,6 +67,7 @@ $.widget("timeseries.waveformplot",
       ;
 
     this._set_visible();
+    this._select();
 
     function panel_selection_callback(context)
     {
