@@ -184,15 +184,6 @@ def delete_project(pid):
 
   cherrypy.response.status = "204 Project deleted."
 
-def get_project_design(pid):
-  database = slycat.web.server.database.couchdb.connect()
-  project = database.get("project", pid)
-  slycat.web.server.authentication.require_project_reader(project)
-  context = get_context()
-  context.update(project)
-  context["project-design"] = json.dumps(project, indent=2, sort_keys=True)
-  return slycat.web.server.template.render("project-design.html", context)
-
 @cherrypy.tools.json_out(on = True)
 def get_project_models(pid):
   database = slycat.web.server.database.couchdb.connect()
@@ -493,21 +484,6 @@ def delete_model(mid):
   cleanup_arrays()
 
   cherrypy.response.status = "204 Model deleted."
-
-def get_model_design(mid):
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_reader(project)
-  context = get_context()
-  context["full-project"] = project
-  context.update(model)
-  context["model-design"] = json.dumps(model, indent=2, sort_keys=True)
-
-  marking = cherrypy.request.app.config["slycat"]["marking"]
-  context["marking-html"] = marking.html(model["marking"])
-
-  return slycat.web.server.template.render("model-design.html", context)
 
 def get_model_timeseries_performance_test(mid):
   database = slycat.web.server.database.couchdb.connect()

@@ -28,7 +28,8 @@ parser = slycat.web.client.option_parser()
 parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
 parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Sample count used for the uniform-pla and uniform-paa resampling algorithms.  Default: %(default)s")
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
-parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Clustering type.  Default: %(default)s")
+parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
+parser.add_argument("--cluster-metric", default="euclidean", choices=["euclidean"], help="Hierarchical clustering distance metric.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default=None, help="New model description.  Defaults to a summary of the input parameters.")
 parser.add_argument("--model-name", default=None, help="New model name.  Defaults to the name of the input data directory.")
@@ -47,7 +48,9 @@ if arguments.model_description is None:
   arguments.model_description += "Input directory: %s.\n" % os.path.abspath(arguments.directory)
   arguments.model_description += "Cluster sampling algorithm: %s.\n" % {"uniform-pla":"Uniform PLA","uniform-paa":"Uniform PAA"}[arguments.cluster_sample_type]
   if arguments.cluster_sample_type in ["uniform-pla", "uniform-paa"]:
-    arguments.model_description += "Cluster sample count: %s." % arguments.cluster_sample_count
+    arguments.model_description += "Cluster sample count: %s.\n" % arguments.cluster_sample_count
+  arguments.model_description += "Cluster method: %s.\n" % arguments.cluster_type
+  arguments.model_description += "Cluster distance metric: %s.\n" % arguments.cluster_metric
 
 pool = IPython.parallel.Client()
 
@@ -72,6 +75,7 @@ try:
   connection.store_parameter(mid, "cluster-bin-count", arguments.cluster_sample_count)
   connection.store_parameter(mid, "cluster-bin-type", arguments.cluster_sample_type)
   connection.store_parameter(mid, "cluster-type", arguments.cluster_type)
+  connection.store_parameter(mid, "cluster-metric", arguments.cluster_metric)
 
   connection.update_model(mid, message="Storing input table.")
 
@@ -207,7 +211,7 @@ try:
     connection.update_model(mid, message="Clustering %s" % name)
     slycat.web.client.log.info("Clustering %s" % name)
     distance = scipy.spatial.distance.squareform(distance_matrix)
-    linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type))
+    linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type), metric=str(arguments.cluster_metric))
 
     # Identify exemplar waveforms for each cluster ...
     summed_distances = numpy.zeros(shape=(observation_count))
