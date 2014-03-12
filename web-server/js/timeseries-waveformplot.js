@@ -15,7 +15,7 @@ $.widget("timeseries.waveformplot",
     mid : null,
     waveforms : null,
     selection : null,
-    highlight : null,
+    highlight : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
   },
 
@@ -65,6 +65,16 @@ $.widget("timeseries.waveformplot",
       .on("click", panel_selection_callback(self)) // unselect all the waveforms when someone clicks in the panel but not on a waveform
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
+
+    // Set all waveforms to visible if this options has not been set
+    var visible = this.options.selection;
+    if(visible === null) {
+      visible = [];
+      for(var i=0; i<this.waveforms.length; i++) {
+        visible.push(this.waveforms[i]["input-index"]);
+      }
+      this.options.selection = visible;
+    }
 
     this._set_visible();
     this._select();
