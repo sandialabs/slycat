@@ -6,12 +6,18 @@ import argparse
 import getpass
 import json
 import logging
+import numbers
 import numpy
 import os
 import requests
 import shlex
 import sys
 import time
+
+try:
+  import cStringIO as StringIO
+except:
+  import StringIO
 
 from slycat.data.array import *
 
@@ -20,16 +26,6 @@ log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
 log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 log.propagate = False
-
-def require_float(value):
-  if not isinstance(value, float):
-    raise Exception("Not a floating-point value.")
-  return value
-
-def require_string(value):
-  if not isinstance(value, basestring):
-    raise Exception("Not a string value.")
-  return value
 
 def require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
@@ -216,6 +212,64 @@ class connection(object):
       if ranges is None:
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
+
+  def put_model_array_data(self, mid, name, array=None, attribute=None, data=None, hyperslice=None):
+    """Sends array data to the server."""
+    # Sanity check arguments
+    if not isinstance(array, (type(None), numbers.Integral, slice)):
+      raise Exception("array argument must be an integer, a slice, or None")
+
+    if not isinstance(attribute, (type(None), numbers.Integral, slice)):
+      raise Exception("attribute argument must be an integer, a slice, or None")
+
+    if data is None:
+      data = []
+    if isinstance(data, numpy.ndarray):
+      data = [data]
+    data = list(data)
+
+    try:
+      if hyperslice is not None:
+        if isinstance(hyperslice, tuple):
+          begin, end = hyperslice
+          hyperslice = [(begin, end)]
+        else:
+          hyperslice = [(begin, end) for begin, end in hyperslice]
+    except:
+      raise Exception("hyperslice argument must be a 2-tuple, a sequence of 2-tuples, or None")
+
+    # Generate the request
+    all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
+
+    def format_none(x):
+      return "" if x is None else x
+
+    request_data = {}
+    request_buffer = StringIO.StringIO()
+
+    if isinstance(array, numbers.Integral):
+      request_data["array"] = str(array)
+    if isinstance(array, slice):
+      request_data["array"] = "%s:%s:%s" % (format_none(array.start), format_none(array.stop), format_none(array.step))
+
+    if isinstance(attribute, numbers.Integral):
+      request_data["attribute"] = str(attribute)
+    if isinstance(attribute, slice):
+      request_data["attribute"] = "%s:%s:%s" % (format_none(attribute.start), format_none(attribute.stop), format_none(attribute.step))
+
+    if hyperslice is not None:
+      request_data["hyperslice"] = ",".join(["%s:%s" % (begin, end) for begin, end in hyperslice])
+
+    if all_numeric:
+      request_data["byteorder"] = sys.byteorder
+
+    if all_numeric:
+      for dataset in data:
+        request_buffer.write(dataset.tostring(order="C"))
+    else:
+      request_buffer.write(json.dumps([dataset.tolist() for dataset in data]))
+
+    self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
 
   def put_model_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
