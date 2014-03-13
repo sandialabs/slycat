@@ -673,7 +673,7 @@ rights in this software.
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
-            $("#waveform-viewer").css({
+            $("#waveform-pane").css({
               "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
               });
             $("#waveform-viewer rect.selectionMask").css({
@@ -718,7 +718,7 @@ rights in this software.
             // Changing the color map updates the waveform plot ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              $("#waveform-viewer").css({
+              $("#waveform-pane").css({
                 "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
                 });
               $("#waveform-viewer rect.selectionMask").css({
