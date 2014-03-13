@@ -152,6 +152,7 @@ rights in this software.
         var clusters = null; // This is just the list of cluster names
         var clusters_data = null; // This holds data for each cluster
         var waveforms_data = null; // This holds the waveforms for each cluster
+        var waveforms_metadata = null; // This holds the waveforms metadata for each cluster
         var initial_cluster = null; // This holds the index of the initially selected cluster
         var table_metadata = null;
 
@@ -237,6 +238,7 @@ rights in this software.
                 clusters = result;
                 clusters_data = new Array(clusters.length);
                 waveforms_data = new Array(clusters.length);
+                waveforms_metadata = new Array(clusters.length);
                 setup_cluster();
                 setup_widgets();
                 setup_waveforms();
@@ -609,9 +611,10 @@ rights in this software.
               server_root : "{{server-root}}",
               mid : "{{_id}}",
               aid : "preview-" + clusters[cluster],
-              success : function(result)
+              success : function(result, metadata)
               {
                 waveforms_data[cluster] = result;
+                waveforms_metadata[cluster] = metadata;
                 initial_cluster = cluster;
                 setup_widgets();
               },
@@ -653,7 +656,7 @@ rights in this software.
               selected_cluster_changed(cluster);
             });
 
-            // Changing the cluster updates the dendrogram ...
+            // Changing the cluster updates the dendrogram and waveformplot ...
             $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
             {
               update_dendrogram(cluster);
@@ -960,9 +963,10 @@ rights in this software.
               server_root : "{{server-root}}",
               mid : "{{_id}}",
               aid : "preview-" + clusters[cluster],
-              success : function(result)
+              success : function(result, metadata)
               {
                 waveforms_data[cluster] = result;
+                waveforms_metadata[cluster] = metadata;
                 var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
                 var waveformplot_options =
                 {

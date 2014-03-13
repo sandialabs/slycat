@@ -3,6 +3,7 @@ Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
+var arrayset_metadata_cache = {};
 
 function is_little_endian()
 {
@@ -37,24 +38,34 @@ function get_model_array_attribute_metadata(parameters)
 // Retrieve an arrayset's metadata asynchronously, calling a callback when it's ready ...
 function get_model_arrayset_metadata(parameters)
 {
-  $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/metadata",
-    contentType : "application/json",
-    success: function(metadata)
-    {
-      parameters.metadata = metadata;
-      if(parameters.metadataSuccess !== undefined) {
-        parameters.metadataSuccess(parameters);
-      } else {
-        parameters.success(parameters);
-      }
-    },
-    error: function(request, status, reason_phrase)
-    {
-      if(parameters.error)
-        parameters.error(request, status, reason_phrase);
+  if(arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
+    parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
+    if(parameters.metadataSuccess !== undefined) {
+      parameters.metadataSuccess(parameters);
+    } else {
+      parameters.success(parameters);
     }
-  });
+  } else {
+    $.ajax({
+      url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/metadata",
+      contentType : "application/json",
+      success: function(metadata)
+      {
+        arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] = metadata;
+        parameters.metadata = metadata;
+        if(parameters.metadataSuccess !== undefined) {
+          parameters.metadataSuccess(parameters);
+        } else {
+          parameters.success(parameters);
+        }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(parameters.error)
+          parameters.error(request, status, reason_phrase);
+      }
+    });
+  }
 }
 
 // Cast a generic arraybuffer to a typed array, with an optional offset and
@@ -183,14 +194,14 @@ function get_model_array_attribute(parameters)
 // Retrieve an arrayset asynchronously, calling a callback when it's ready ...
 function get_model_arrayset(parameters)
 {
-  if(parameters.metadata === undefined)
-  {
+  if(parameters.metadata !== undefined) {
+    retrieve_model_arrayset(parameters);
+  } else if (arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
+    parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
+    retrieve_model_arrayset(parameters);
+  } else {
     parameters.metadataSuccess = retrieve_model_arrayset;
     get_model_arrayset_metadata(parameters);
-  } 
-  else
-  {
-    retrieve_model_arrayset(parameters);
   }
 
   function retrieve_model_arrayset(parameters)
@@ -198,8 +209,7 @@ function get_model_arrayset(parameters)
     var metadata = parameters.metadata;
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "?byteorder=" + (is_little_endian() ? "little" : "big"));
-    //request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "?byteorder=" + (is_little_endian() ? "little" : "big") + "&arrays=" + (parameters.arrays !== undefined ? parameters.arrays : ""));
     request.responseType = "arraybuffer";
     request.success = parameters.success;
     request.metadata = metadata;
@@ -209,8 +219,15 @@ function get_model_arrayset(parameters)
       var metadata = this.metadata;
       var results = [];
       var result, item, index, count, attributes, attribute = null;
+      var start = 0;
+      var length = metadata.length;
+      if(parameters.arrays !== undefined) {
+        var arrays = parameters.arrays.split(":");
+        start = parseInt(arrays[0]);
+        length = parseInt(arrays[1]);
+      }
       var offset = 0;
-      for(var i=0; i < metadata.length; i++)
+      for(var i=start; i < length; i++)
       {
         item = metadata[i];
         index = item.index;
@@ -226,7 +243,7 @@ function get_model_arrayset(parameters)
         }
         results.push(result);
       }
-      this.success(results);
+      this.success(results, metadata, parameters);
     }
     request.send();
   }

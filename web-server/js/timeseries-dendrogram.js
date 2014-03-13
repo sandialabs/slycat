@@ -120,35 +120,6 @@ $.widget("timeseries.dendrogram",
       return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
     }
 
-		// Helper function that renders a waveform as a sparkline.
-    function sparkline(d, i)
-    {
-      if(d.exemplar == undefined)
-        return "";
-
-      //Commenting out for now since the waveform data is elsewhere
-      // var waveform = waveforms[d.exemplar];
-      // var values = waveform["values"];
-      // var data = [];
-      // for(var i = 0; i != values.length; ++i)
-      //   data.push(values[i]);
-
-      // var width = 100;
-      // var height = 15;
-      // var min = d3.min(data);
-      // var max = d3.max(data);
-      // var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
-      // var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
-
-      // var path = d3.svg.line()
-      //   .x(function(d,i) { return x(i); })
-      //   .y(function(d) { return y(d); })
-      //   ;
-
-      // return path(data);
-      return "M 0 0 L 50 0 L 100 -5";
-    }
-
     var last_selected_node = null;
     function select_node(context, d, skip_bookmarking)
     {
@@ -324,8 +295,9 @@ $.widget("timeseries.dendrogram",
         .style("display", "none")
         ;
 
-      node_sparkline.append("svg:path")
-        .attr("d", sparkline)
+      var node_sparkline_path = node_sparkline.append("svg:path")
+        // Can't set attr here because we download waveforms asynchronously. Instead doing this below.
+        //.attr("d", sparkline)
         .style("stroke", function(d, i){
           if(self.options.data_table_index_array !== null && self.options.color_scale !== null && self.options.color_array != null){
             var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
@@ -341,6 +313,63 @@ $.widget("timeseries.dendrogram",
           
         })
         ;
+
+      get_model_arrayset_metadata({
+        server_root : self.options["server-root"],
+        mid : self.options.mid,
+        aid : "preview-" + self.options.clusters[self.options.cluster],
+        success : function(parameters)
+        {
+          node_sparkline_path.each(function(d,i){
+            if(d.exemplar == undefined) {
+              $(this).attr("d", "");
+            } else {
+              get_model_arrayset({
+                server_root : self.options["server-root"],
+                mid : self.options.mid,
+                aid : "preview-" + self.options.clusters[self.options.cluster],
+                arrays : d["exemplar"] + ":" + (d["exemplar"]+1),
+                element : this,
+                success : function(result, metadata, parameters)
+                {
+                  console.log("result=" + result);
+                  var values = result[0]["value"];
+                  var data = [];
+                  for(var i = 0; i != values.length; ++i) {
+                    data.push(values[i]);
+                  }
+
+                  var width = 100;
+                  var height = 15;
+                  var min = d3.min(data);
+                  var max = d3.max(data);
+                  var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
+                  var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
+
+                  var path = d3.svg.line()
+                    .x(function(d,i) { return x(i); })
+                    .y(function(d) { return y(d); })
+                    ;
+
+                  $(parameters.element).attr("d", path(data));
+                  //$(parameters.element).attr("d", "M 0 0 L 50 0 L 100 -5");
+                },
+              });
+            }
+          });
+        },
+      });
+      // Set the d attribute of each sparkline path. Currently doing this by downloading each waveform individually. In the future we might want to batch it up.
+
+
+      // If we ever get the ability to download arbitrary batches of waveforms using "GET Model Arrayset", this is a stub-out for doing so
+      // function getWaveforms(selection){
+      //   console.log(selection);
+      //   selection.each(function(d,i){
+      //     console.log("exemplar is " + d.exemplar);
+      //   });
+      // }
+      // node_enter.call(getWaveforms);
 
       // Transition new nodes to their final position.
       var node_update = node.transition()
