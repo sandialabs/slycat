@@ -299,10 +299,10 @@ $.widget("timeseries.dendrogram",
         // Can't set attr here because we download waveforms asynchronously. Instead doing this below.
         //.attr("d", sparkline)
         .style("stroke", function(d, i){
-          if(self.options.data_table_index_array !== null && self.options.color_scale !== null && self.options.color_array != null){
-            var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
+          if(self.options.color_scale !== null && self.options.color_array != null){
+            var index = d["data-table-index"];
             if(index > -1)
-              return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["data-table-index"]) ] ); // This might be "input-index" instead
+              return self.options.color_scale( self.options.color_array[ d["data-table-index"] ] ); // This might be "input-index" instead
             else if (d.selected || (d.parent && d.parent.selected))
               return "black";
             else
@@ -490,9 +490,9 @@ $.widget("timeseries.dendrogram",
 
     this.container.selectAll("g.sparkline path")
       .style("stroke", function(d, i){
-        var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
+        var index = d["data-table-index"];
         if(index > -1)
-          return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["data-table-index"]) ] ); // This might be "input-index" instead
+          return self.options.color_scale( self.options.color_array[ d["data-table-index"] ] ); // This might be "input-index" instead
         else if (d.selected || (d.parent && d.parent.selected))
           return "black";
         else
@@ -510,11 +510,14 @@ $.widget("timeseries.dendrogram",
     {
       this._set_cluster();
     }
-    else if(key == "color-scale")
+    else if(key == "color-options")
     {
       this.options.color_array = value.color_array;
-      this.options.color_scale = value.colormap;
-      this.options.data_table_index_array = value.data_table_index_array;
+      this.options.color_scale = value.color_scale;
+      this._set_color();
+    }
+    else if(key == "color_scale")
+    {
       this._set_color();
     }
   },

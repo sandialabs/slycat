@@ -772,27 +772,6 @@ rights in this software.
                 });
               $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
             });
-            
-            // Changing the table variable selection updates the waveform plot ...
-            $("#table").bind("variable-selection-changed", function(event, parameters)
-            {
-              selected_column = parameters.variable[0];
-              selected_column_min = table_metadata["column-min"][selected_column];
-              selected_column_max = table_metadata["column-max"][selected_column];
-
-              retrieve_sorted_column({
-                column : selected_column,
-                callback : function(array){
-                  var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
-                  var parameters = {
-                    color_array : array,
-                    color_scale : $("#color-switcher").colorswitcher("get_color_map", currentColormap, selected_column_min, selected_column_max),
-                  }
-                  $("#waveform-viewer").waveformplot("option", "color-options", parameters);
-                }
-              });
-
-            });
           }
 
           // Setup the table ...
@@ -854,10 +833,27 @@ rights in this software.
               selected_simulations_changed(selection);
             });
 
-            // Log changes to the table variable selection
+            // Changing the table variable selection logs it, updates the waveform plot and dendrogram...
             $("#table").bind("variable-selection-changed", function(event, parameters)
             {
               selected_variable_changed(parameters.variable);
+
+              selected_column = parameters.variable[0];
+              selected_column_min = table_metadata["column-min"][selected_column];
+              selected_column_max = table_metadata["column-max"][selected_column];
+
+              retrieve_sorted_column({
+                column : selected_column,
+                callback : function(array){
+                  var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
+                  var parameters = {
+                    color_array : array,
+                    color_scale : $("#color-switcher").colorswitcher("get_color_map", currentColormap, selected_column_min, selected_column_max),
+                  }
+                  $("#waveform-viewer").waveformplot("option", "color-options", parameters);
+                  $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
+                }
+              });
             });
 
             $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
@@ -874,11 +870,18 @@ rights in this software.
 
             $("#dendrogram-pane .load-status").css("display", "none");
 
+            // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
+            //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            var colormap = $("#color-switcher").colorswitcher("option", "colormap");
+            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max)
+
             var dendrogram_options = build_dendrogram_node_options(initial_cluster);
             dendrogram_options["server-root"]="{{server-root}}";
             dendrogram_options.mid="{{_id}}";
             dendrogram_options.clusters=clusters;
             dendrogram_options.cluster_data=clusters_data[initial_cluster];
+            dendrogram_options.color_scale=color_scale;
+            dendrogram_options.color_array=color_array;
 
             $("#dendrogram-viewer").dendrogram(dendrogram_options);
 
@@ -900,10 +903,10 @@ rights in this software.
               node_toggled(node);
             });
 
-            // Changing the color scale updates the dendrogram ...
-            $("#table").bind("color-scale-changed", function(event, parameters)
+            // Changing the color map updates the dendrogram ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              $("#dendrogram-viewer").dendrogram("option", "color-scale", parameters);
+              $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
             });
           }
         }
@@ -1001,7 +1004,6 @@ rights in this software.
                 clusters_data[cluster] = cluster_data;
                 var dendrogram_options = build_dendrogram_node_options(cluster);
                 dendrogram_options.cluster_data = clusters_data[cluster];
-                //$("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
                 $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
               },
               error: artifact_missing
@@ -1009,7 +1011,6 @@ rights in this software.
           } else {
             var dendrogram_options = build_dendrogram_node_options(cluster);
             dendrogram_options.cluster_data = clusters_data[cluster];
-            //$("#waveform-viewer").waveformplot("option", "waveforms", waveforms_data[cluster]);
             $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
           }
         }
@@ -1030,11 +1031,9 @@ rights in this software.
                 var waveformplot_options =
                 {
                   waveforms: waveforms_data[cluster],
+                  selection: bookmark[cluster + "-selected-waveform-indexes"],
+                  highlight: bookmark[cluster + "-selected-row-simulations"],
                 };
-
-                waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
-                waveformplot_options["highlight"] = bookmark[cluster + "-selected-row-simulations"];
-
                 $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
               },
               error : artifact_missing
@@ -1043,12 +1042,9 @@ rights in this software.
             var waveformplot_options =
             {
               waveforms: waveforms_data[cluster],
-              
+              selection: bookmark[cluster + "-selected-waveform-indexes"],
+              highlight: bookmark[cluster + "-selected-row-simulations"],
             };
-
-            waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
-            waveformplot_options["highlight"] = bookmark[cluster + "-selected-row-simulations"];
-
             $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
           }
         }
