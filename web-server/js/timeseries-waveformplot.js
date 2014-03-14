@@ -14,7 +14,7 @@ $.widget("timeseries.waveformplot",
   	"server-root" : "",
     mid : null,
     waveforms : null,
-    selection : null,
+    selection : undefined,
     highlight : [],
     color_array : null,
     color_scale : null,
@@ -68,7 +68,7 @@ $.widget("timeseries.waveformplot",
 
     // Set all waveforms to visible if this options has not been set
     var visible = this.options.selection;
-    if(visible === null) {
+    if(visible === undefined) {
       visible = [];
       for(var i=0; i<this.waveforms.length; i++) {
         visible.push(this.waveforms[i]["input-index"]);
@@ -114,7 +114,7 @@ $.widget("timeseries.waveformplot",
       ;
 
     var waveform_subset = [];
-    if(visible !== null) {
+    if(visible !== undefined) {
       $.each(visible, function(index, waveform_index)
       {
         waveform_subset.push(self.waveforms[waveform_index]);
@@ -398,6 +398,27 @@ $.widget("timeseries.waveformplot",
     else if(key == "color_scale")
     {
       this._set_color();
+    }
+    else if(key == "waveforms")
+    {
+      this.options.waveforms = value.waveforms;
+      // Setting selection to all if it's undefined
+      if(value.selection === undefined) {
+        visible = [];
+        for(var i=0; i<this.options.waveforms.length; i++) {
+          visible.push(this.options.waveforms[i]["input-index"]);
+        }
+        this.options.selection = visible;
+      } else {
+        this.options.selection = value.selection;
+      }
+
+      // Only setting new highlight if one was passed in. Otherwise, leaving the existing one, just like the table does.
+      if(value.highlight !== undefined)
+        this.options.highlight = value.highlight;
+
+      this._set_visible();
+      this._select();
     }
   },
 

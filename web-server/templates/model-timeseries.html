@@ -1027,36 +1027,29 @@ rights in this software.
               {
                 waveforms_data[cluster] = result;
                 waveforms_metadata[cluster] = metadata;
-                var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
                 var waveformplot_options =
                 {
-                  "server-root" : "{{server-root}}",
-                  mid : "{{_id}}",
                   waveforms: waveforms_data[cluster],
-                  color: $("#color-switcher").colorswitcher("get_color_map", colormap),
                 };
 
-                if(bookmark[cluster + "-selected-waveform-indexes"] !== undefined)
-                  waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
+                waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
+                waveformplot_options["highlight"] = bookmark[cluster + "-selected-row-simulations"];
 
-                $("#waveform-viewer").waveformplot(waveformplot_options);
+                $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
               },
               error : artifact_missing
             });
           } else {
-            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var waveformplot_options =
             {
-              "server-root" : "{{server-root}}",
-              mid : "{{_id}}",
               waveforms: waveforms_data[cluster],
-              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+              
             };
 
-            if(bookmark[cluster + "-selected-waveform-indexes"] !== undefined)
-              waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
+            waveformplot_options["selection"] = bookmark[cluster + "-selected-waveform-indexes"];
+            waveformplot_options["highlight"] = bookmark[cluster + "-selected-row-simulations"];
 
-            $("#waveform-viewer").waveformplot(waveformplot_options);
+            $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
           }
         }
 
