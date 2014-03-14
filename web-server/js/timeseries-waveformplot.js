@@ -16,7 +16,8 @@ $.widget("timeseries.waveformplot",
     waveforms : null,
     selection : null,
     highlight : [],
-    color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    color_array : null,
+    color_scale : null,
   },
 
   _create: function()
@@ -47,9 +48,8 @@ $.widget("timeseries.waveformplot",
     this.waveformProcessingTimeout = null;
     this.previewWaveformsTimeout = null;
     this.showWaveformPieContainerTimeout = null;
-    this.color_array = null;
-    this.color_scale = null;
-    this.data_table_index_array = null;
+    this.color_array = this.options.color_array;
+    this.color_scale = this.options.color_scale;
 
     this.container.selectAll("g").remove();
 
@@ -182,7 +182,7 @@ $.widget("timeseries.waveformplot",
         .style("display", "none")
         .style("stroke", function(d, i) { 
           if(self.options.color_scale != null)
-            return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] ); 
+            return self.options.color_scale( self.options.color_array[ d["input-index"] ] ); 
           else
             return "white";
         })
@@ -308,8 +308,8 @@ $.widget("timeseries.waveformplot",
     waveforms.append("svg:path")
       .attr("d", this.make_sax_line())
       .style("stroke", function(d, i) { 
-        if (self.options.color_scale != null && self.options.color_array != null && self.options.data_table_index_array != null)
-          return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] );
+        if (self.options.color_scale != null && self.options.color_array != null)
+          return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
         else
           return "white";
       })
@@ -364,7 +364,7 @@ $.widget("timeseries.waveformplot",
 
     function colorWaveform(waveform){
       d3.select(waveform).style("stroke", function(d, i) { 
-        return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] );
+        return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
       })
       ;
     }
@@ -389,11 +389,14 @@ $.widget("timeseries.waveformplot",
     {
       this._select();
     }
-    else if(key == "color-scale")
+    else if(key == "color-options")
     {
       this.options.color_array = value.color_array;
-      this.options.color_scale = value.colormap;
-      this.options.data_table_index_array = value.data_table_index_array;
+      this.options.color_scale = value.color_scale;
+      this._set_color();
+    }
+    else if(key == "color_scale")
+    {
       this._set_color();
     }
   },

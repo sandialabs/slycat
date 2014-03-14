@@ -252,43 +252,43 @@ $.widget("timeseries.table",
 
   _trigger_color_scale_change: function(variable, colormap)
   {
-    var self = this;
+    // var self = this;
 
-    if(variable === undefined)
-      variable = self.options["variable-selection"];
-    if(colormap === undefined) {
-      var columns = self.grid.getColumns();
-      for(var i in columns)
-      {
-        var column = columns[i];
-        if(column.highlighted) {
-          colormap = column.colormap;
-          break;
-        }
-      }
-    }
+    // if(variable === undefined)
+    //   variable = self.options["variable-selection"];
+    // if(colormap === undefined) {
+    //   var columns = self.grid.getColumns();
+    //   for(var i in columns)
+    //   {
+    //     var column = columns[i];
+    //     if(column.highlighted) {
+    //       colormap = column.colormap;
+    //       break;
+    //     }
+    //   }
+    // }
 
-    //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
-    var columnsToRetrieve = [variable, self.options.metadata["column-count"]-1].join(',');
-    var rowsToRetrieve = self.options.table_filter.join(',');
+    // //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
+    // var columnsToRetrieve = [variable, self.options.metadata["column-count"]-1].join(',');
+    // var rowsToRetrieve = self.options.table_filter.join(',');
 
-    $.ajax({
-      url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
-      async: true,
-      success: function(resp){
-        var color_array = resp["data"][0];
-        var data_table_index_array = resp["data"][1];
-        self.element.trigger("color-scale-changed", { 
-          variable:[variable], 
-          colormap:colormap,
-          color_array:color_array,
-          data_table_index_array:data_table_index_array,
-        });
-      },
-      error: function(request, status, reason_phrase){
-        window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
-      }
-    });
+    // $.ajax({
+    //   url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
+    //   async: true,
+    //   success: function(resp){
+    //     var color_array = resp["data"][0];
+    //     var data_table_index_array = resp["data"][1];
+    //     self.element.trigger("color-scale-changed", { 
+    //       variable:[variable], 
+    //       colormap:colormap,
+    //       color_array:color_array,
+    //       data_table_index_array:data_table_index_array,
+    //     });
+    //   },
+    //   error: function(request, status, reason_phrase){
+    //     window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
+    //   }
+    // });
   },
 
   _data_provider: function(parameters)
