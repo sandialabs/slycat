@@ -181,24 +181,26 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
     slycat.data.hdf5.store_array_attribute(file, array_index, attribute_index, ranges, data)
 
 def store_array_data(database, model, name, array, attribute, hyperslice, byteorder, data):
-  cherrypy.log.error("%s %s %s" % (os.fstat(data.file.fileno()), data.filename, data.content_type))
+  def expand(item, N):
+    if isinstance(item, numbers.Integral):
+      yield item
+    if isinstance(item, slice):
+      for index in numpy.arange(*item.indices(N)):
+        yield index
 
   if byteorder is None:
     data = json.load(data.file)
     data_iterator = iter(data)
 
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
-    cherrypy.log.error("store_array_data name: %s" % name)
     if array is None:
       array = numpy.array([int(key) for key in file["array"].keys()])
-    elif isinstance(array, numbers.Integral):
-      array = numpy.array([array])
-    elif isinstance(array, slice):
-      array = array.indices(len(file["array"]))
-      array = numpy.arange(array[0], array[1], array[2])
+    else:
+      if isinstance(array, (numbers.Integral, slice)):
+        array = [array]
+      array = numpy.array([index for item in array for index in expand(item, len(file["array"]))])
 
     for array_index in array:
-      cherrypy.log.error("  array: %s" % array_index)
 
       array_metadata = slycat.data.hdf5.raw_array_metadata(file, array_index)
       if attribute is None:
@@ -213,24 +215,20 @@ def store_array_data(database, model, name, array, attribute, hyperslice, byteor
         array_hyperslice = [(begin, end) for begin, end in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"])]
       else:
         array_hyperslice = [(begin, end) for begin, end in hyperslice]
+      array_shape = [(end - begin) for begin, end in array_hyperslice]
 
       for attribute_index in attribute:
         update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
-        cherrypy.log.error("    attribute: %s" % attribute_index)
 
         # Convert data to an array ...
         stored_type = slycat.data.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
         if byteorder is None:
-          attribute_data = numpy.array(data_iterator.next(), dtype=stored_type)
+          attribute_data = numpy.array(data_iterator.next(), dtype=stored_type).reshape(array_shape)
         elif byteorder == sys.byteorder:
           count = numpy.prod([(end - begin) for begin, end in array_hyperslice])
-          cherrypy.log.error("count: %s" % count)
-          attribute_data = numpy.fromfile(data.file, dtype=stored_type, count=count)
+          attribute_data = numpy.fromfile(data.file, dtype=stored_type, count=count).reshape(array_shape)
         else:
           raise NotImplementedError()
-
-        cherrypy.log.error("      hyperslice: %s" % (array_hyperslice,))
-        cherrypy.log.error("      data shape: %s" % (attribute_data.shape,))
 
         slycat.data.hdf5.store_array_attribute(file, array_index, attribute_index, array_hyperslice, attribute_data)
 

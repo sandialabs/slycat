@@ -475,51 +475,36 @@ def put_model_array_attribute(mid, name, array, attribute, ranges=None, data=Non
   slycat.web.server.model.store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder)
 
 def put_model_array_data(mid, name, array=None, attribute=None, hyperslice=None, byteorder=None, data=None):
-  cherrypy.log.error("%s" % (type(data)))
+  # Sanity check inputs ...
+  try:
+    if array is not None:
+      array = [[None if index == "" else int(index) for index in item.split(":")] for item in array.split(",")]
+      array = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in array]
+  except:
+    raise cherrypy.HTTPError("400 optional array argument must be a comma-separated sequence of integers / slices.")
 
+  try:
+    if attribute is not None:
+      attribute = [[None if index == "" else int(index) for index in item.split(":")] for item in attribute.split(",")]
+      attribute = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in attribute]
+  except:
+    raise cherrypy.HTTPError("400 optional attribute argument must be a comma-separated sequence of integers / slices.")
+
+  try:
+    if hyperslice is not None:
+      hyperslice = [(int(begin), int(end)) for begin, end in [range.split(":") for range in hyperslice.split(",")]]
+  except:
+    raise cherrypy.HTTPError("400 optional hyperslice argument must be a comma-separated set of ranges.")
+
+  if byteorder is not None:
+    if byteorder not in ["big", "little"]:
+      raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
+
+  # Handle the request ...
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
-
-  # Sanity check inputs ...
-  try:
-    if array is not None:
-      array = [None if index == "" else int(index) for index in array.split(":")]
-      if len(array) == 1:
-        array = array[0]
-      elif len(array) == 2:
-        array = slice(array[0], array[1])
-      elif len(array) == 3:
-        array = slice(array[0], array[1], array[2])
-  except:
-    raise cherrypy.HTTPError("400 optional array argument must be an integer or a slice.")
-
-  try:
-    if attribute is not None:
-      attribute = [None if index == "" else int(index) for index in attribute.split(":")]
-      if len(attribute) == 1:
-        attribute = attribute[0]
-      elif len(attribute) == 2:
-        attribute = slice(attribute[0], attribute[1])
-      elif len(array) == 3:
-        attribute = slice(attribute[0], attribute[1], attribute[2])
-  except:
-    raise cherrypy.HTTPError("400 optional attribute argument must be an integer or a slice.")
-
-  try:
-    if hyperslice is not None:
-      hyperslice = [range.split(":") for range in hyperslice.split(",")]
-      hyperslice = [(int(begin), int(end)) for begin, end in hyperslice]
-  except:
-    raise cherrypy.HTTPError("400 optional hyperslice argument must be a comma-separated set of ranges.")
-
-  try:
-    if byteorder is not None:
-      if byteorder not in ["big", "little"]:
-        raise Exception()
-  except:
-    raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
 
   slycat.web.server.model.store_array_data(database, model, name, array, attribute, hyperslice, byteorder, data)
 

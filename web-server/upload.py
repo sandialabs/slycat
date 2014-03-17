@@ -29,14 +29,15 @@ connection.start_array(mid, "data", 1, ["x", "y", "z"], [("i", "int64", 0, 4), (
 connection.start_array(mid, "data", 2, ["x", "y", "z"], [("i", "int64", 0, 6), ("j", "int64", 0, 6)])
 
 # Store values into increasingly-large subsets of the array set.
-m22 = numpy.random.random((2, 2))
-m44 = numpy.random.random((4, 4))
-m66 = numpy.random.random((6, 6))
+m22 = numpy.arange(4, dtype="float64").reshape((2, 2))
+m44 = numpy.arange(16, dtype="float64").reshape((4, 4))
+m66 = numpy.arange(36, dtype="float64").reshape((6, 6))
 
 connection.put_model_array_data(mid, "data", array=0, attribute=0, hyperslice=[(0, 2), (0, 2)], data=m22) # A hyperslice of one attribute of one array
 connection.put_model_array_data(mid, "data", array=0, attribute=1, data=m44) # One attribute of one array
 connection.put_model_array_data(mid, "data", array=0, data=[m44, m44, m44]) # Every attribute of one array
 connection.put_model_array_data(mid, "data", array=slice(1, 3), data=[m44, m44, m44, m66, m66, m66]) # Every attribute of a range of arrays
+connection.put_model_array_data(mid, "data", array=[2, 1], attribute=[1, 0], data=[m66, m66, m44, m44]) # Multiple attributes of multiple arrays 
 connection.put_model_array_data(mid, "data", data=[m44, m44, m44, m44, m44, m44, m66, m66, m66]) # Every attribute of every array
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web

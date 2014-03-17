@@ -213,20 +213,32 @@ class connection(object):
         ranges = [(0, len(data))]
       self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
 
-  def put_model_array_data(self, mid, name, array=None, attribute=None, data=None, hyperslice=None):
+  def put_model_array_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
     """Sends array data to the server."""
     # Sanity check arguments
-    if not isinstance(array, (type(None), numbers.Integral, slice)):
-      raise Exception("array argument must be an integer, a slice, or None")
+    try:
+      if array is not None:
+        if isinstance(array, (numbers.Integral, slice)):
+          array = [array]
+        else:
+          array = list(array)
+          for item in array:
+            if not isinstance(item, (numbers.Integral, slice)):
+              raise Exception()
+    except:
+      raise Exception("array argument must be an integer, a slice, a sequence of integers/slices, or None.")
 
-    if not isinstance(attribute, (type(None), numbers.Integral, slice)):
-      raise Exception("attribute argument must be an integer, a slice, or None")
-
-    if data is None:
-      data = []
-    if isinstance(data, numpy.ndarray):
-      data = [data]
-    data = list(data)
+    try:
+      if attribute is not None:
+        if isinstance(attribute, (numbers.Integral, slice)):
+          attribute = [attribute]
+        else:
+          attribute = list(attribute)
+          for item in attribute:
+            if not isinstance(item, (numbers.Integral, slice)):
+              raise Exception()
+    except:
+      raise Exception("attribute argument must be an integer, a slice, a sequence of integers/slices, or None.")
 
     try:
       if hyperslice is not None:
@@ -238,24 +250,33 @@ class connection(object):
     except:
       raise Exception("hyperslice argument must be a 2-tuple, a sequence of 2-tuples, or None")
 
+    try:
+      if isinstance(data, numpy.ndarray):
+        data = [data]
+      else:
+        data = list(data)
+        for item in data:
+          if not isinstance(item, numpy.ndarray):
+            raise Exception()
+    except Exception as e:
+      raise Exception("data argument must be a numpy array or a sequence of numpy arrays.")
+
     # Generate the request
     all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
-
-    def format_none(x):
-      return "" if x is None else x
 
     request_data = {}
     request_buffer = StringIO.StringIO()
 
-    if isinstance(array, numbers.Integral):
-      request_data["array"] = str(array)
-    if isinstance(array, slice):
-      request_data["array"] = "%s:%s:%s" % (format_none(array.start), format_none(array.stop), format_none(array.step))
+    def format_spec(item):
+      if isinstance(item, numbers.Integral):
+        return str(item)
+      return "%s:%s:%s" % (item.start if item.start is not None else "", item.stop if item.stop is not None else "", item.step if item.step is not None else "")
 
-    if isinstance(attribute, numbers.Integral):
-      request_data["attribute"] = str(attribute)
-    if isinstance(attribute, slice):
-      request_data["attribute"] = "%s:%s:%s" % (format_none(attribute.start), format_none(attribute.stop), format_none(attribute.step))
+    if array is not None:
+      request_data["array"] = ",".join([format_spec(item) for item in array])
+
+    if attribute is not None:
+      request_data["attribute"] = ",".join([format_spec(item) for item in attribute])
 
     if hyperslice is not None:
       request_data["hyperslice"] = ",".join(["%s:%s" % (begin, end) for begin, end in hyperslice])
