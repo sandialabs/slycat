@@ -240,12 +240,22 @@ $.widget("timeseries.waveformplot",
       {
 
         result = "";
+
+	// Adding basic subsampling based on panel width
+	var samples = d["time"].length;
+	var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
+	var multiplier = Math.ceil( (samples / panelWidth) * 4 );
+	if(multiplier < 1)
+ 	  multiplier = 1;
+	
+	//console.log("multiplier: " + multiplier);
         for(var i = 0; i != d["time"].length; ++i)
         {
-          result += "M" + self.x(d.time[i]) + "," + self.y(d["value"][i]);
+          result += "M" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
           break;
         }
-        for(var i = 1; i < d["time"].length; ++i)
+        //for(var i = 1; i < d["time"].length; ++i)
+        for(var i = 1; i < d["time"].length; i+=multiplier)
         {
           result += "L" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
         }

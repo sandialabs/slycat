@@ -332,7 +332,6 @@ $.widget("timeseries.dendrogram",
                 element : this,
                 success : function(result, metadata, parameters)
                 {
-                  console.log("result=" + result);
                   var values = result[0]["value"];
                   var data = [];
                   for(var i = 0; i != values.length; ++i) {
