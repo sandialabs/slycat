@@ -864,7 +864,7 @@ rights in this software.
           }
 
           // Setup the dendrogram ...
-          if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) )
+          if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) && color_array !== null )
           {
             dendrogram_ready = true;
 
@@ -873,7 +873,7 @@ rights in this software.
             // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
             //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var colormap = $("#color-switcher").colorswitcher("option", "colormap");
-            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max)
+            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max);
 
             var dendrogram_options = build_dendrogram_node_options(initial_cluster);
             dendrogram_options["server-root"]="{{server-root}}";
