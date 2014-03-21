@@ -19,7 +19,9 @@ rights in this software.
 
     <div id="page-title">
       <div class="width-wrapper">
+        {{#is-project-administrator}}
         <button id="edit-project-button" class="edit-page" title="Edit this project's name, description, and security.">Edit Project</button>
+        {{/is-project-administrator}}
         <div id="breadcrumbs">
           <a href="{{server-root}}projects">Projects</a> &rarr;
         </div>
