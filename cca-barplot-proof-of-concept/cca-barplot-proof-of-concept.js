@@ -30,6 +30,9 @@ $( document ).ready(function() {
 		$(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
 	});
 
+
+
+
 	// $(".col0").each(
 	// 	function(index, element){
 	// 		console.log( index + ": " + "is a cell in the first column. Its width is: " + $(element).width() );

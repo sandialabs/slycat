@@ -172,7 +172,7 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != inputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowInput">').addClass('row' + i).html(metadata["column-names"][inputs[i]]).appendTo(barplotColumn);
+      var variableName = $('<div class="barplotCell col0 rowInput inputLabel">').addClass('row' + i).html(metadata["column-names"][inputs[i]]).appendTo(barplotColumn);
 
       // var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
       // row.click(click_row(this, row, inputs[i]));
@@ -206,7 +206,7 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != outputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowOutput">').addClass('row' + i).html(metadata["column-names"][outputs[i]]).appendTo(barplotColumn);
+      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + i).html(metadata["column-names"][outputs[i]]).appendTo(barplotColumn);
 
       // var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
       // row.click(click_row(this, row, outputs[i]));
@@ -232,6 +232,17 @@ $.widget("cca.barplot",
         //   .appendTo(row);
       }
     }
+
+    var numberOfColumns = $(".barplotHeaderColumn").length;
+
+    $(".barplotHeaderColumn").each(
+      function(index){
+        var maxWidth = Math.max.apply( null, $(".col" + index).map( function () {
+          return $( this ).width();
+        }).get() );
+        $(".col" + index).width(maxWidth);
+      }
+    );
 
     // // Setup the default selected component ...
     // this.element.find("td.bar").css("display", "none");

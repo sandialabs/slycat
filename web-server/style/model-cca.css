@@ -174,3 +174,73 @@ rights in this software.
 	right: 0;
 	bottom: 0;
 }
+
+/* New CCA table styles */
+#barplot-table {
+  width: 400px;
+  height: 250px;
+  overflow: hidden;
+}
+.barplotHeader {
+  /*overflow: hidden;*/
+  white-space: nowrap;
+}
+.barplotHeaderColumns {
+  /*outline: 1px solid blue;*/
+  white-space: nowrap;
+  display: inline-block;
+}
+.barplotHeaderColumn {
+  display: inline-block;
+  /*outline: 1px solid red;*/
+}
+.headerInput.col0,
+.mask
+{
+  background-color: white;
+  position: relative; /* needed to get this cell to cover scrolling header row */
+}
+.barplotViewport {
+
+}
+.barplotGroup {
+  overflow: hidden;
+}
+.barplotColumn {
+  /*display: inline-block;*/
+  float: left;
+  clear: left;
+}
+.barplotColumn .barplotCell {
+  display: block;
+}
+.barplotCanvas {
+  overflow: auto;
+}
+.barplotCanvas.input {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.barplotRow {
+  /*outline: 1px solid cyan;*/
+  white-space: nowrap;
+}
+.barplotCell {
+  display: inline-block;
+  padding: 3px;
+  /*outline: 1px solid green;*/
+}
+#barplot-table .inputLabel,
+#barplot-table .outputLabel
+{
+  font-weight: bold;
+  padding: 3px;
+}
+#barplot-table .inputLabel
+{
+  background: #eeffe0;
+}
+#barplot-table .outputLabel
+{
+  background: #eeeeff;
+}
