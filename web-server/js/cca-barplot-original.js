@@ -7,7 +7,7 @@ rights in this software.
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM barplot visualization, for use with the cca model.
 
-$.widget("cca.barplot",
+$.widget("cca.barplotoriginal",
 {
   options:
   {
@@ -122,97 +122,94 @@ $.widget("cca.barplot",
     var y_loadings = this.options.y_loadings;
     var component_count = x_loadings.length;
 
-    var barplotHeader = $("<div class='barplotHeader'>").appendTo(this.element);
-    var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
-    var blank = $('<div class="barplotHeaderColumn mask col0">&nbsp;</div>').appendTo(barplotRow);
-    var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
+    var thead = $("<thead>").appendTo(this.element);
 
+    var row = $("<tr>").appendTo(thead);
+    $("<th>").appendTo(row);
     for(var component = 0; component != component_count; ++component)
     {
-      var barplotHeaderColumn = $('<div class="barplotHeaderColumn">CCA' + (component+1) + '</div>').addClass('col' + (component+1)).appendTo(barplotHeaderColumns);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
 
-      //var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (component+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(component))
-      //th.appendTo(row);
-      // $("span.selectCCAComponent", th).click(click_component(this, component));
-      // $("span.sortCCAComponent", th).click(sort_component(this, component));
+      var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (component+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(component))
+      th.appendTo(row);
+      $("span.selectCCAComponent", th).click(click_component(this, component));
+      $("span.sortCCAComponent", th).click(sort_component(this, component));
 
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     // Add r-squared statistic ...
-    var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
-    $('<div class="barplotCell mask col0">R<sup>2</sup></div>').appendTo(barplotRow);
-    var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
+    var row = $("<tr class='r2'>").appendTo(thead);
+    $("<th>R<sup>2</sup></th>").appendTo(row);
     for(var component = 0; component != component_count; ++component)
     {
-      var barplotCell = $('<div class="barplotCell">' + Number(r2[component]).toFixed(3) + '</div>').addClass('col' + (component+1)).appendTo(barplotHeaderColumns);
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
-      // $("<td class='value'>").html(Number(r2[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+      $("<td class='value'>").html(Number(r2[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
-    // // Add p statistic ...
-    // var row = $("<tr class='p'>").appendTo(thead);
-    // $("<th>P</th>").appendTo(row);
-    // for(var component = 0; component != component_count; ++component)
-    // {
-    //   $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
-    //   $("<td class='value'>").html(Number(wilks[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
-    //   $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
-    // }
+    // Add p statistic ...
+    var row = $("<tr class='p'>").appendTo(thead);
+    $("<th>P</th>").appendTo(row);
+    for(var component = 0; component != component_count; ++component)
+    {
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+      $("<td class='value'>").html(Number(wilks[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+      $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
+    }
 
-    // var tbody = $("<tbody>").appendTo(this.element);
-    // // Add input variables ...
-    // for(var i = 0; i != inputs.length; ++i)
-    // {
-    //   var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
-    //   row.click(click_row(this, row, inputs[i]));
+    var tbody = $("<tbody>").appendTo(this.element);
+    // Add input variables ...
+    for(var i = 0; i != inputs.length; ++i)
+    {
+      var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
+      row.click(click_row(this, row, inputs[i]));
 
-    //   $("<th>").html(metadata["column-names"][inputs[i]]).appendTo(row);
+      $("<th>").html(metadata["column-names"][inputs[i]]).appendTo(row);
 
-    //   for(var component = 0; component != component_count; ++component)
-    //   {
-    //     $("<td class='input bar negative'/>")
-    //       .append($("<div/>").css("width", negative_bar_width(x_loadings[component][i])))
-    //       .addClass(component_class(component))
-    //       .appendTo(row);
+      for(var component = 0; component != component_count; ++component)
+      {
+        $("<td class='input bar negative'/>")
+          .append($("<div/>").css("width", negative_bar_width(x_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
 
-    //     $("<td class='input value'>").html(Number(x_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+        $("<td class='input value'>").html(Number(x_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
 
-    //     $("<td class='input bar positive'/>")
-    //       .append($("<div/>").css("width", positive_bar_width(x_loadings[component][i])))
-    //       .addClass(component_class(component))
-    //       .appendTo(row);
-    //   }
-    // }
+        $("<td class='input bar positive'/>")
+          .append($("<div/>").css("width", positive_bar_width(x_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
+      }
+    }
 
-    // // Add output variables ...
-    // for(var i = 0; i != outputs.length; ++i)
-    // {
-    //   var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
-    //   row.click(click_row(this, row, outputs[i]));
+    // Add output variables ...
+    for(var i = 0; i != outputs.length; ++i)
+    {
+      var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
+      row.click(click_row(this, row, outputs[i]));
 
-    //   $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
+      $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
 
-    //   for(var component = 0; component != component_count; ++component)
-    //   {
-    //     $("<td class='output bar negative'/>")
-    //       .append($("<div/>").css("width", negative_bar_width(y_loadings[component][i])))
-    //       .addClass(component_class(component))
-    //       .appendTo(row);
+      for(var component = 0; component != component_count; ++component)
+      {
+        $("<td class='output bar negative'/>")
+          .append($("<div/>").css("width", negative_bar_width(y_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
 
-    //     $("<td class='output value'>").html(Number(y_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
+        $("<td class='output value'>").html(Number(y_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
 
-    //     $("<td class='output bar positive'/>")
-    //       .append($("<div/>").css("width", positive_bar_width(y_loadings[component][i])))
-    //       .addClass(component_class(component))
-    //       .appendTo(row);
-    //   }
-    // }
+        $("<td class='output bar positive'/>")
+          .append($("<div/>").css("width", positive_bar_width(y_loadings[component][i])))
+          .addClass(component_class(component))
+          .appendTo(row);
+      }
+    }
 
-    // // Setup the default selected component ...
-    // this.element.find("td.bar").css("display", "none");
-    // this.select_component(this.options.component);
+    // Setup the default selected component ...
+    this.element.find("td.bar").css("display", "none");
+    this.select_component(this.options.component);
 
     //this.element.fixedHeaderTable({ footer: false, cloneHeadToFoot: false, fixedColumn: false });
     //var table = new ScrollableTable(document.getElementById('barplot'), 200, 1280);

@@ -1,6 +1,6 @@
 #barplot-table {
 	width: 400px;
-	height: 200px;
+	height: 250px;
 	overflow: hidden;
 }
 .barplotHeader {
@@ -16,7 +16,9 @@
 	display: inline-block;
 	/*outline: 1px solid red;*/
 }
-.headerInput.col0 {
+.headerInput.col0,
+.mask
+{
 	background-color: white;
 	position: relative; /* needed to get this cell to cover scrolling header row */
 }

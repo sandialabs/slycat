@@ -17,6 +17,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-barplot.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/cca-barplot-original.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
 
@@ -106,6 +107,7 @@ rights in this software.
         <div class="load-status"></div>
         <table id="barplot">
         </table>
+        <div id="barplot-table"></div>
       </div>
       <div id="scatterplot-pane" class="ui-layout-center">
         <div class="load-status"></div>
@@ -772,7 +774,18 @@ rights in this software.
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
-            $("#barplot").barplot({
+            $("#barplot").barplotoriginal({
+              metadata: table_metadata,
+              inputs: input_columns,
+              outputs: output_columns,
+              r2: r2,
+              wilks: wilks,
+              x_loadings: x_loadings,
+              y_loadings: y_loadings,
+              component: component,
+            });
+
+            $("#barplot-table").barplot({
               metadata: table_metadata,
               inputs: input_columns,
               outputs: output_columns,
@@ -785,7 +798,7 @@ rights in this software.
 
             if("variable-selection" in bookmark)
             {
-              $("#barplot").barplot("option", "variable", bookmark["variable-selection"]);
+              $("#barplot").barplotoriginal("option", "variable", bookmark["variable-selection"]);
             }
 
             $("#barplot").bind("component-changed", function(event, component)
@@ -805,7 +818,7 @@ rights in this software.
 
             if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
             {
-              $("#barplot").barplot("option",
+              $("#barplot").barplotoriginal("option",
               {
                 "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
               });
@@ -947,7 +960,7 @@ rights in this software.
             // Changing the table variable updates the barplot ...
             $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              $("#barplot").barplot("option", "variable", selection[0]);
+              $("#barplot").barplotoriginal("option", "variable", selection[0]);
             });
 
             // Changing the table variable updates the scatterplot ...
