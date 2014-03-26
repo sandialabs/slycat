@@ -116,6 +116,8 @@ def get_project(pid):
     context.update(project)
     context["models"] = models
     context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
+    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
+    context["can-administer"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project)
     context["acl-json"] = json.dumps(project["acl"])
     context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
     context["remote-hosts"] = [{"name" : host} for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
@@ -324,6 +326,7 @@ def get_model(mid, **kwargs):
     context["full-project"] = project
     context.update(model)
     context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
+    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
     context["new-model-name"] = "Model-%s" % (model_count + 1)
 
     marking = cherrypy.request.app.config["slycat"]["marking"]

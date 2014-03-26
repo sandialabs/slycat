@@ -44,8 +44,10 @@ rights in this software.
       <div id="page-title">
         <div class="width-wrapper">
           <div class="marking">{{{marking-html}}}</div>
+          {{#can-write}}
           <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
           <!--<button id="rerun-timeseries-button" title="Rerun this model using different parameters.">Rerun Model</button>-->
+          {{/can-write}}
           <div id="breadcrumbs">
             <a href="{{server-root}}projects">Projects</a> &rarr;
             {{#full-project}}<a href="{{server-root}}projects/{{_id}}" id="project-link">{{name}}</a> &rarr;{{/full-project}}

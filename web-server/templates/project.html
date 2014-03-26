@@ -19,9 +19,9 @@ rights in this software.
 
     <div id="page-title">
       <div class="width-wrapper">
-        {{#is-project-administrator}}
+        {{#can-administer}}
         <button id="edit-project-button" class="edit-page" title="Edit this project's name, description, and security.">Edit Project</button>
-        {{/is-project-administrator}}
+        {{/can-administer}}
         <div id="breadcrumbs">
           <a href="{{server-root}}projects">Projects</a> &rarr;
         </div>
@@ -134,8 +134,10 @@ rights in this software.
         </div>
 
         <div class="buttonBar">
+          {{#can-write}}
           <button id="local-cca-button" title="Compute a CCA model using a local file.">Local CCA</button>
           <button id="remote-cca-button" title="Compute a CCA model using a remote file.">Remote CCA</button>
+          {{/can-write}}
         </div>
 
         <!-- Remote CCA user interface -->
