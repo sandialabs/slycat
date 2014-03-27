@@ -21,6 +21,9 @@ $.widget("cca.barplot",
     component : 0,
     variable : null,
     sort : [null, null],
+    tableHeight : null,
+    inputsHeight: null,
+    outputsHeight: null,
   },
 
   _create: function ()
@@ -233,8 +236,23 @@ $.widget("cca.barplot",
       }
     }
 
-    var numberOfColumns = $(".barplotHeaderColumn").length;
+    /* Sizing table */
+    this.options.tableHeight = $('#barplot-table').height();
+    this.options.inputsHeight = $('.barplotGroup.inputs').height();
+    this.options.outputsHeight = $('.barplotGroup.outputs').height();
+    this.resize_canvas();
 
+    // // Setup the default selected component ...
+    // this.element.find("td.bar").css("display", "none");
+    // this.select_component(this.options.component);
+
+    //this.element.fixedHeaderTable({ footer: false, cloneHeadToFoot: false, fixedColumn: false });
+    //var table = new ScrollableTable(document.getElementById('barplot'), 200, 1280);
+    //$('#barplot').tableScroll({height:200});
+  },
+
+  resize_canvas: function()
+  {
     var tableWidth = 0;
     $(".barplotHeaderColumn").each(
       function(index){
@@ -247,14 +265,38 @@ $.widget("cca.barplot",
     );
     var barplotPaneWidth = $('#barplot-pane').width();
     $('#barplot-table').width(Math.min(tableWidth, barplotPaneWidth));
-
-    // // Setup the default selected component ...
-    // this.element.find("td.bar").css("display", "none");
-    // this.select_component(this.options.component);
-
-    //this.element.fixedHeaderTable({ footer: false, cloneHeadToFoot: false, fixedColumn: false });
-    //var table = new ScrollableTable(document.getElementById('barplot'), 200, 1280);
-    //$('#barplot').tableScroll({height:200});
+    var barplotPaneHeight = $('#barplot-pane').height();
+    $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
+    if(this.options.tableHeight > barplotPaneHeight) {
+      // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
+      var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').height();
+      var halfViewportHeight = viewportHeight / 2;
+      if(this.options.inputsHeight > halfViewportHeight) {
+        if(this.options.outputsHeight > halfViewportHeight) {
+          // Both inputs and outputs are too big, so both get sized to 50% of available area.
+          $(".barplotCanvas").height( halfViewportHeight );
+          $(".barplotGroup").height( halfViewportHeight );
+        } else {
+          // Only inputs need to be sized down
+          $(".barplotCanvas.input").height( viewportHeight - this.options.outputsHeight );
+          $(".barplotGroup.inputs").height( viewportHeight - this.options.outputsHeight );
+          $(".barplotCanvas.output").height( this.options.outputsHeight );
+          $(".barplotGroup.outputs").height( this.options.outputsHeight );
+        }
+      } else {
+        // Only outputs needs to be sized down
+        $(".barplotCanvas.input").height( this.options.inputsHeight );
+        $(".barplotGroup.inputs").height( this.options.inputsHeight );
+        $(".barplotCanvas.output").height( viewportHeight - this.options.inputsHeight );
+        $(".barplotGroup.outputs").height( viewportHeight - this.options.inputsHeight );
+      }
+    } else {
+      // We have room to show everything, so size things to their full height.
+      $(".barplotCanvas.input").height( this.options.inputsHeight );
+      $(".barplotGroup.inputs").height( this.options.inputsHeight );
+      $(".barplotCanvas.output").height( this.options.outputsHeight );
+      $(".barplotGroup.outputs").height( this.options.outputsHeight );
+    }
   },
 
   _setOption: function(key, value)

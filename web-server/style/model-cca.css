@@ -177,7 +177,7 @@ rights in this software.
 
 /* New CCA table styles */
 #barplot-table {
-  height: 250px;
+  /*height: 250px;*/
   overflow: hidden;
 }
 .barplotHeader {
