@@ -177,7 +177,6 @@ rights in this software.
 
 /* New CCA table styles */
 #barplot-table {
-  width: 400px;
   height: 250px;
   overflow: hidden;
 }
@@ -192,6 +191,9 @@ rights in this software.
 }
 .barplotHeaderColumn {
   display: inline-block;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  padding: 3px;
   /*outline: 1px solid red;*/
 }
 .headerInput.col0,
@@ -228,13 +230,23 @@ rights in this software.
 .barplotCell {
   display: inline-block;
   padding: 3px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  text-align: right;
   /*outline: 1px solid green;*/
 }
 #barplot-table .inputLabel,
 #barplot-table .outputLabel
 {
-  font-weight: bold;
   padding: 3px;
+}
+#barplot-table .inputLabel,
+#barplot-table .outputLabel,
+.barplotCell.col0,
+.barplotHeaderColumn
+{
+  font-weight: bold;
+  text-align: center;
 }
 #barplot-table .inputLabel
 {

@@ -235,14 +235,18 @@ $.widget("cca.barplot",
 
     var numberOfColumns = $(".barplotHeaderColumn").length;
 
+    var tableWidth = 0;
     $(".barplotHeaderColumn").each(
       function(index){
         var maxWidth = Math.max.apply( null, $(".col" + index).map( function () {
-          return $( this ).width();
+          return $( this ).innerWidth();
         }).get() );
         $(".col" + index).width(maxWidth);
+        tableWidth += maxWidth;
       }
     );
+    var barplotPaneWidth = $('#barplot-pane').width();
+    $('#barplot-table').width(Math.min(tableWidth, barplotPaneWidth));
 
     // // Setup the default selected component ...
     // this.element.find("td.bar").css("display", "none");
