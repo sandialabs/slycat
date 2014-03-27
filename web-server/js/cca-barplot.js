@@ -242,6 +242,17 @@ $.widget("cca.barplot",
     this.options.outputsHeight = $('.barplotGroup.outputs').height();
     this.resize_canvas();
 
+    $(".barplotCanvas.input").bind("scroll", function(){
+      $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+      $(".barplotColumn.input").css("margin-top", "-" + $(this).scrollTop() + "px");
+    });
+
+    $(".barplotCanvas.output").bind("scroll", function(){
+      $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+      $(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
+      $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
+    });
+
     // // Setup the default selected component ...
     // this.element.find("td.bar").css("display", "none");
     // this.select_component(this.options.component);
@@ -253,7 +264,7 @@ $.widget("cca.barplot",
 
   resize_canvas: function()
   {
-    var tableWidth = 0;
+    var tableWidth = 20;  // Adding 25px space for scrollbars
     $(".barplotHeaderColumn").each(
       function(index){
         var maxWidth = Math.max.apply( null, $(".col" + index).map( function () {
@@ -265,6 +276,14 @@ $.widget("cca.barplot",
     );
     var barplotPaneWidth = $('#barplot-pane').width();
     $('#barplot-table').width(Math.min(tableWidth, barplotPaneWidth));
+    if(tableWidth > barplotPaneWidth) {
+      $('.barplotCanvas.output').css("overflow", "scroll");
+      $('.barplotCanvas.input').css("overflow-y", "scroll");
+    } else {
+      $('.barplotCanvas.output').css("overflow", "auto");
+      $('.barplotCanvas.input').css("overflow-y", "auto");
+    }
+
     var barplotPaneHeight = $('#barplot-pane').height();
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
     if(this.options.tableHeight > barplotPaneHeight) {

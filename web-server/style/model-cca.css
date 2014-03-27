@@ -217,11 +217,11 @@ rights in this software.
   display: block;
 }
 .barplotCanvas {
-  overflow: auto;
+  /*overflow: auto;*/
 }
 .barplotCanvas.input {
   overflow-x: hidden;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
 }
 .barplotRow {
   /*outline: 1px solid cyan;*/
