@@ -229,7 +229,6 @@ rights in this software.
 }
 .barplotCell {
   display: inline-block;
-  padding: 3px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   text-align: right;
@@ -255,4 +254,52 @@ rights in this software.
 #barplot-table .outputLabel
 {
   background: #eeeeff;
+}
+.barplotCellValue,
+.spacer,
+.negative,
+.positive
+{
+  display: inline-block;
+}
+.barplotCellValue
+{
+  padding: 3px 10px;
+  width: 40px;
+}
+/*.selected*/ .barplotCellValue
+{
+  background-color: #DDDDDD;
+  border-width: 0px 1px;
+  border-style: solid;
+  border-color: #808080;
+}
+.spacer
+{
+  width: 100px;
+}
+.negativeSpacer
+{
+  text-align: right;
+}
+.positiveSpacer
+{
+  text-align: left;
+}
+.negative,
+.positive
+{
+  height: 12px;
+}
+.negative
+{
+  background-color: blue;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+.positive
+{
+  background-color: red;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
 }
