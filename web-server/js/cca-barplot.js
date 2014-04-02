@@ -47,15 +47,9 @@ $.widget("cca.barplot",
 
     this.select_component = function(component)
     {
-      console.log('component selected: ' + component);
       this.element.find(".selected-component").removeClass("selected-component");
       this.element.find(".col" + (component+1)).addClass("selected-component");
       this.resize_canvas();
-      // this.element.find("td.bar.selected-component").css("display", "none");
-      // this.element.find(".selected-component").removeClass("selected-component");
-
-      // this.element.find("td.bar." + component_class(component)).css("display", "");
-      // this.element.find("." + component_class(component)).addClass("selected-component");
     }
 
     this.do_component_sort = function(component, sort_order)
@@ -113,7 +107,7 @@ $.widget("cca.barplot",
     {
       return function()
       {
-        context.element.find("tr").removeClass("selected-variable");
+        context.element.find(".selected-variable").removeClass("selected-variable");
         row.addClass("selected-variable");
 
         context.element.trigger("variable-changed", [variable]);
@@ -151,7 +145,7 @@ $.widget("cca.barplot",
 
     // Add r-squared statistic ...
     var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
-    $('<div class="barplotCell mask col0"><div class="wrapper">R<sup>2</sup></div></div>').appendTo(barplotRow);
+    $('<div class="barplotCell mask col0" id="rsquared-label"><div class="wrapper">R<sup>2</sup></div></div>').appendTo(barplotRow);
     var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
     for(var component = 0; component != component_count; ++component)
     {
@@ -192,6 +186,9 @@ $.widget("cca.barplot",
     {
       var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i).appendTo(barplotColumn);
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
+      variableName.click( 
+        click_row(this, variableName, inputs[i]) 
+        );
 
       // var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
       // row.click(click_row(this, row, inputs[i]));
@@ -232,7 +229,7 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != outputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + i).appendTo(barplotColumn);
+      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + (i + inputs.length)).appendTo(barplotColumn);
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][outputs[i]]).appendTo(variableName);
 
       // var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
@@ -240,11 +237,11 @@ $.widget("cca.barplot",
 
       // $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
 
-      var barplotRow = $('<div class="barplotRow rowOutput">').addClass('row' + i).appendTo(barplotCanvas);
+      var barplotRow = $('<div class="barplotRow rowOutput">').addClass('row' + (i + inputs.length)).appendTo(barplotCanvas);
 
       for(var component = 0; component != component_count; ++component)
       {
-        var barplotCell = $('<div class="barplotCell rowOutput">').addClass('row' + i + ' col' + (component+1)).appendTo(barplotRow);
+        var barplotCell = $('<div class="barplotCell rowOutput">').addClass('row' + (i + inputs.length) + ' col' + (component+1)).appendTo(barplotRow);
         var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
         var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellNegative = $('<div class="negative" />').css("width", negative_bar_width(y_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellNegativeSpacer);
@@ -266,12 +263,15 @@ $.widget("cca.barplot",
       }
     }
 
+    
+
     /* Sizing table */
     this.options.tableHeight = $('#barplot-table').height();
-    console.log('table height: ' + this.options.tableHeight);
     this.options.inputsHeight = $('.barplotGroup.inputs').height();
     this.options.outputsHeight = $('.barplotGroup.outputs').height();
-    this.resize_canvas();
+    // No need to call resize_canvas here since select_component calls it anyway.
+    //this.resize_canvas();
+    this.select_component(this.options.component);
 
     $(".barplotCanvas.input").bind("scroll", function(){
       $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
@@ -283,14 +283,6 @@ $.widget("cca.barplot",
       $(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
       $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
     });
-
-    // // Setup the default selected component ...
-    // this.element.find("td.bar").css("display", "none");
-    // this.select_component(this.options.component);
-
-    //this.element.fixedHeaderTable({ footer: false, cloneHeadToFoot: false, fixedColumn: false });
-    //var table = new ScrollableTable(document.getElementById('barplot'), 200, 1280);
-    //$('#barplot').tableScroll({height:200});
   },
 
   resize_canvas: function()
@@ -316,7 +308,6 @@ $.widget("cca.barplot",
     }
 
     var barplotPaneHeight = $('#barplot-pane').height();
-    console.log('barplotPaneHeight: ' + barplotPaneHeight);
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
     if(this.options.tableHeight > barplotPaneHeight) {
       // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
@@ -364,8 +355,8 @@ $.widget("cca.barplot",
     }
     else if(key == "variable")
     {
-      this.element.find("tr").removeClass("selected-variable");
-      this.element.find("tr." + ".index-" + value).addClass("selected-variable");
+      this.element.find(".selected-variable").removeClass("selected-variable");
+      this.element.find(".row" + value).addClass("selected-variable");
     }
     else if(key == "sort")
     {

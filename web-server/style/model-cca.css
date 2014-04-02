@@ -242,6 +242,10 @@ rights in this software.
   text-align: right;
   /*outline: 1px solid green;*/
 }
+#rsquared-label {
+  vertical-align: top;
+  height: 23px;
+}
 #barplot-table .inputLabel,
 #barplot-table .outputLabel
 {
@@ -281,12 +285,17 @@ rights in this software.
   padding: 3px 10px;
   width: 40px;
 }
-.selected-component .barplotCellValue
+.selected-component .barplotCellValue,
+.barplotHeaderColumn.selected-component .wrapper
 {
   background-color: #DDDDDD;
   border-width: 0px 1px;
   border-style: solid;
   border-color: #808080;
+}
+.barplotHeaderColumn.selected-component .wrapper {
+  padding: 3px 10px;
+  width: 62px;
 }
 .spacer
 {

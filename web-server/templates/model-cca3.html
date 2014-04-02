@@ -800,7 +800,7 @@ rights in this software.
 
             if("variable-selection" in bookmark)
             {
-              $("#barplot").barplotoriginal("option", "variable", bookmark["variable-selection"]);
+              $("#barplot-table").barplot("option", "variable", bookmark["variable-selection"]);
             }
 
             $("#barplot-table").bind("component-changed", function(event, component)
@@ -813,7 +813,7 @@ rights in this software.
               component_sort_changed(component, order);
             });
 
-            $("#barplot").bind("variable-changed", function(event, variable)
+            $("#barplot-table").bind("variable-changed", function(event, variable)
             {
               selected_variable_changed(variable);
             });
@@ -870,7 +870,7 @@ rights in this software.
             });
 
             // Changing the barplot variable updates the scatterplot ...
-            $("#barplot").bind("variable-changed", function(event, variable)
+            $("#barplot-table").bind("variable-changed", function(event, variable)
             {
               update_scatterplot_value(variable);
             });
@@ -954,7 +954,7 @@ rights in this software.
             });
 
             // Changing the barplot variable updates the table ...
-            $("#barplot").bind("variable-changed", function(event, variable)
+            $("#barplot-table").bind("variable-changed", function(event, variable)
             {
               $("#table").table("option", "variable-selection", [variable]);
             });
@@ -962,7 +962,7 @@ rights in this software.
             // Changing the table variable updates the barplot ...
             $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              $("#barplot").barplotoriginal("option", "variable", selection[0]);
+              $("#barplot-table").barplot("option", "variable", selection[0]);
             });
 
             // Changing the table variable updates the scatterplot ...
