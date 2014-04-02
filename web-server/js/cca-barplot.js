@@ -47,11 +47,15 @@ $.widget("cca.barplot",
 
     this.select_component = function(component)
     {
-      this.element.find("td.bar.selected-component").css("display", "none");
+      console.log('component selected: ' + component);
       this.element.find(".selected-component").removeClass("selected-component");
+      this.element.find(".col" + (component+1)).addClass("selected-component");
+      this.resize_canvas();
+      // this.element.find("td.bar.selected-component").css("display", "none");
+      // this.element.find(".selected-component").removeClass("selected-component");
 
-      this.element.find("td.bar." + component_class(component)).css("display", "");
-      this.element.find("." + component_class(component)).addClass("selected-component");
+      // this.element.find("td.bar." + component_class(component)).css("display", "");
+      // this.element.find("." + component_class(component)).addClass("selected-component");
     }
 
     this.do_component_sort = function(component, sort_order)
@@ -127,12 +131,15 @@ $.widget("cca.barplot",
 
     var barplotHeader = $("<div class='barplotHeader'>").appendTo(this.element);
     var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
-    var blank = $('<div class="barplotHeaderColumn mask col0">&nbsp;</div>').appendTo(barplotRow);
+    var blank = $('<div class="barplotHeaderColumn mask col0"><div class="wrapper">&nbsp;</div></div>').appendTo(barplotRow);
     var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
 
     for(var component = 0; component != component_count; ++component)
     {
-      var barplotHeaderColumn = $('<div class="barplotHeaderColumn">CCA' + (component+1) + '</div>').addClass('col' + (component+1)).appendTo(barplotHeaderColumns);
+      var barplotHeaderColumn = $('<div class="barplotHeaderColumn"><div class="wrapper"><span class="selectCCAComponent">CCA' + (component+1) + '</span></div></div>')
+        .addClass('col' + (component+1))
+        .appendTo(barplotHeaderColumns);
+      $("span.selectCCAComponent", barplotHeaderColumn).click(click_component(this, component));
 
       //var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (component+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(component))
       //th.appendTo(row);
@@ -144,14 +151,15 @@ $.widget("cca.barplot",
 
     // Add r-squared statistic ...
     var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
-    $('<div class="barplotCell mask col0">R<sup>2</sup></div>').appendTo(barplotRow);
+    $('<div class="barplotCell mask col0"><div class="wrapper">R<sup>2</sup></div></div>').appendTo(barplotRow);
     var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
     for(var component = 0; component != component_count; ++component)
     {
       var barplotCell = $('<div class="barplotCell" />').addClass('col' + (component+1)).appendTo(barplotHeaderColumns);
-      var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCell);
-      var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(r2[component]).toFixed(3)).appendTo(barplotCell);
-      var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCell);
+      var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
+      var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
+      var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(r2[component]).toFixed(3)).appendTo(barplotCellWrapper);
+      var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
       // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
       // $("<td class='value'>").html(Number(r2[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
       // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
@@ -159,14 +167,15 @@ $.widget("cca.barplot",
 
     // Add p statistic ...
     var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
-    $('<div class="barplotCell mask col0">P</div>').appendTo(barplotRow);
+    $('<div class="barplotCell mask col0"><div class="wrapper">P</div></div>').appendTo(barplotRow);
     var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
     for(var component = 0; component != component_count; ++component)
     {
       var barplotCell = $('<div class="barplotCell" />').addClass('col' + (component+1)).appendTo(barplotHeaderColumns);
-      var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCell);
-      var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(wilks[component]).toFixed(3)).appendTo(barplotCell);
-      var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCell);
+      var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
+      var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
+      var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(wilks[component]).toFixed(3)).appendTo(barplotCellWrapper);
+      var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
       // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
       // $("<td class='value'>").html(Number(wilks[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
       // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
@@ -181,7 +190,8 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != inputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowInput inputLabel">').addClass('row' + i).html(metadata["column-names"][inputs[i]]).appendTo(barplotColumn);
+      var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i).appendTo(barplotColumn);
+      var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
 
       // var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
       // row.click(click_row(this, row, inputs[i]));
@@ -193,10 +203,11 @@ $.widget("cca.barplot",
       for(var component = 0; component != component_count; ++component)
       {
         var barplotCell = $('<div class="barplotCell rowInput">').addClass('row' + i + ' col' + (component+1)).appendTo(barplotRow);
-        var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCell);
+        var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
+        var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellNegative = $('<div class="negative" />').css("width", negative_bar_width(x_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellNegativeSpacer);
-        var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(x_loadings[component][i]).toFixed(3)).appendTo(barplotCell);
-        var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCell);
+        var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(x_loadings[component][i]).toFixed(3)).appendTo(barplotCellWrapper);
+        var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellPositive = $('<div class="positive" />').css("width", positive_bar_width(x_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellPositiveSpacer);
 
 
@@ -221,7 +232,8 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != outputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + i).html(metadata["column-names"][outputs[i]]).appendTo(barplotColumn);
+      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + i).appendTo(barplotColumn);
+      var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][outputs[i]]).appendTo(variableName);
 
       // var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
       // row.click(click_row(this, row, outputs[i]));
@@ -233,10 +245,11 @@ $.widget("cca.barplot",
       for(var component = 0; component != component_count; ++component)
       {
         var barplotCell = $('<div class="barplotCell rowOutput">').addClass('row' + i + ' col' + (component+1)).appendTo(barplotRow);
-        var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCell);
+        var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
+        var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellNegative = $('<div class="negative" />').css("width", negative_bar_width(y_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellNegativeSpacer);
-        var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(y_loadings[component][i]).toFixed(3)).appendTo(barplotCell);
-        var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCell);
+        var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(y_loadings[component][i]).toFixed(3)).appendTo(barplotCellWrapper);
+        var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellPositive = $('<div class="positive" />').css("width", positive_bar_width(y_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellPositiveSpacer);
 
         // $("<td class='output bar negative'/>")
@@ -255,6 +268,7 @@ $.widget("cca.barplot",
 
     /* Sizing table */
     this.options.tableHeight = $('#barplot-table').height();
+    console.log('table height: ' + this.options.tableHeight);
     this.options.inputsHeight = $('.barplotGroup.inputs').height();
     this.options.outputsHeight = $('.barplotGroup.outputs').height();
     this.resize_canvas();
@@ -284,7 +298,7 @@ $.widget("cca.barplot",
     var tableWidth = 20;  // Adding 25px space for scrollbars
     $(".barplotHeaderColumn").each(
       function(index){
-        var maxWidth = Math.max.apply( null, $(".col" + index).map( function () {
+        var maxWidth = Math.max.apply( null, $(".col" + index + " .wrapper").map( function () {
           return $( this ).innerWidth();
         }).get() );
         $(".col" + index).width(maxWidth);
@@ -302,6 +316,7 @@ $.widget("cca.barplot",
     }
 
     var barplotPaneHeight = $('#barplot-pane').height();
+    console.log('barplotPaneHeight: ' + barplotPaneHeight);
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
     if(this.options.tableHeight > barplotPaneHeight) {
       // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
@@ -309,9 +324,12 @@ $.widget("cca.barplot",
       var halfViewportHeight = viewportHeight / 2;
       if(this.options.inputsHeight > halfViewportHeight) {
         if(this.options.outputsHeight > halfViewportHeight) {
-          // Both inputs and outputs are too big, so both get sized to 50% of available area.
-          $(".barplotCanvas").height( halfViewportHeight );
-          $(".barplotGroup").height( halfViewportHeight );
+          // Both inputs and outputs are too big, so inputs get sized to 50% of available area and outputs get the rest. 
+          // Sizing both to 50% of available area was causing problems in Chrome with fractions of pixels. 
+          $(".barplotCanvas.input").height( halfViewportHeight );
+          $(".barplotGroup.inputs").height( halfViewportHeight );
+          $(".barplotCanvas.output").height( viewportHeight - $(".barplotCanvas").height() );
+          $(".barplotGroup.outputs").height( viewportHeight - $(".barplotCanvas").height() );
         } else {
           // Only inputs need to be sized down
           $(".barplotCanvas.input").height( viewportHeight - this.options.outputsHeight );

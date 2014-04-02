@@ -23,6 +23,7 @@ rights in this software.
 #barplot-pane
 {
   overflow: auto;
+  overflow: hidden;
 }
 
 #barplot
@@ -191,16 +192,25 @@ rights in this software.
 }
 .barplotHeaderColumn {
   display: inline-block;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  padding: 3px;
+  /*padding: 3px;*/
+  cursor: pointer;
   /*outline: 1px solid red;*/
 }
-.headerInput.col0,
+.wrapper {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+.barplotHeaderColumn .wrapper {
+  padding: 3px;
+}
+/*.headerInput.col0,*/
 .mask
 {
   background-color: white;
   position: relative; /* needed to get this cell to cover scrolling header row */
+}
+.mask .wrapper {
+  padding: 3px;
 }
 .barplotViewport {
 
@@ -229,13 +239,16 @@ rights in this software.
 }
 .barplotCell {
   display: inline-block;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
   text-align: right;
   /*outline: 1px solid green;*/
 }
 #barplot-table .inputLabel,
 #barplot-table .outputLabel
+{
+  cursor: pointer;
+}
+#barplot-table .inputLabel .wrapper,
+#barplot-table .outputLabel .wrapper
 {
   padding: 3px;
 }
@@ -255,8 +268,9 @@ rights in this software.
 {
   background: #eeeeff;
 }
+.wrapper,
 .barplotCellValue,
-.spacer,
+.selected-component .spacer,
 .negative,
 .positive
 {
@@ -267,7 +281,7 @@ rights in this software.
   padding: 3px 10px;
   width: 40px;
 }
-/*.selected*/ .barplotCellValue
+.selected-component .barplotCellValue
 {
   background-color: #DDDDDD;
   border-width: 0px 1px;
@@ -277,6 +291,7 @@ rights in this software.
 .spacer
 {
   width: 100px;
+  display: none;
 }
 .negativeSpacer
 {

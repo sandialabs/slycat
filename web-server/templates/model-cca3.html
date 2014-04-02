@@ -803,7 +803,7 @@ rights in this software.
               $("#barplot").barplotoriginal("option", "variable", bookmark["variable-selection"]);
             }
 
-            $("#barplot").bind("component-changed", function(event, component)
+            $("#barplot-table").bind("component-changed", function(event, component)
             {
               selected_component_changed(component);
             });
@@ -864,7 +864,7 @@ rights in this software.
             });
 
             // Changing the barplot component updates the scatterplot ...
-            $("#barplot").bind("component-changed", function(event, component)
+            $("#barplot-table").bind("component-changed", function(event, component)
             {
               $("#scatterplot").scatterplot("option", {x : x[component], y : y[component]});
             });
