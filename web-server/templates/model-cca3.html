@@ -17,7 +17,6 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-barplot.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/cca-barplot-original.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
 
@@ -105,8 +104,6 @@ rights in this software.
     <div id="cca-pane" class="ui-layout-center">
       <div id="barplot-pane" class="ui-layout-west">
         <div class="load-status"></div>
-        <table id="barplot">
-        </table>
         <div id="barplot-table"></div>
       </div>
       <div id="scatterplot-pane" class="ui-layout-center">
@@ -820,7 +817,7 @@ rights in this software.
 
             if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
             {
-              $("#barplot").barplotoriginal("option",
+              $("#barplot-table").barplot("option",
               {
                 "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
               });

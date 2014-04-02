@@ -108,7 +108,11 @@ $.widget("cca.barplot",
       return function()
       {
         context.element.find(".selected-variable").removeClass("selected-variable");
-        row.addClass("selected-variable");
+        context.element.find(".row" + variable).addClass("selected-variable");
+        // row.addClass("selected-variable");
+
+        // this.element.find(".selected-variable").removeClass("selected-variable");
+        // this.element.find(".row" + value).addClass("selected-variable");
 
         context.element.trigger("variable-changed", [variable]);
       }
@@ -186,16 +190,10 @@ $.widget("cca.barplot",
     {
       var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i).appendTo(barplotColumn);
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
-      variableName.click( 
-        click_row(this, variableName, inputs[i]) 
-        );
-
-      // var row = $("<tr class='input'>").addClass("index-" + inputs[i]).data("index", i).appendTo(tbody);
-      // row.click(click_row(this, row, inputs[i]));
-
-      // $("<th>").html(metadata["column-names"][inputs[i]]).appendTo(row);
+      variableName.click( click_row(this, variableName, inputs[i]) );
 
       var barplotRow = $('<div class="barplotRow rowInput">').addClass('row' + i).appendTo(barplotCanvas);
+      barplotRow.click( click_row(this, barplotRow, inputs[i]) );
 
       for(var component = 0; component != component_count; ++component)
       {
@@ -231,13 +229,10 @@ $.widget("cca.barplot",
     {
       var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + (i + inputs.length)).appendTo(barplotColumn);
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][outputs[i]]).appendTo(variableName);
-
-      // var row = $("<tr class='output'>").addClass("index-" + outputs[i]).data("index", i).appendTo(tbody);
-      // row.click(click_row(this, row, outputs[i]));
-
-      // $("<th>").html(metadata["column-names"][outputs[i]]).appendTo(row);
+      variableName.click( click_row(this, variableName, outputs[i]) );
 
       var barplotRow = $('<div class="barplotRow rowOutput">').addClass('row' + (i + inputs.length)).appendTo(barplotCanvas);
+      barplotRow.click( click_row(this, barplotRow, outputs[i]) );
 
       for(var component = 0; component != component_count; ++component)
       {
