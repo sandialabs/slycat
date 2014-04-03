@@ -271,11 +271,13 @@ try:
 
     connection.start_array_set(mid, "preview-%s" % name)
     for index, waveform in enumerate(waveforms):
+      slycat.web.client.log.info("Creating preview %s" % index)
       attributes = [("time", "float64"), ("value", "float64")]
       dimensions = [("sample", "int64", 0, len(waveform["times"]))]
       connection.start_array(mid, "preview-%s" % name, index, attributes, dimensions)
-      connection.store_array_set_data(mid, "preview-%s" % name, index, 0, data=waveform["times"])
-      connection.store_array_set_data(mid, "preview-%s" % name, index, 1, data=waveform["values"])
+
+    slycat.web.client.log.info("Storing previews")
+    connection.store_array_set_data(mid, "preview-%s" % name, data=[waveform[key] for waveform in waveforms for key in ["times", "values"]])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
