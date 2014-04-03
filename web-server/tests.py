@@ -313,9 +313,10 @@ def test_model_array_ranges():
 
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, ("value", "int64"), ("row", "int64", 0, 10))
-  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(5))
-  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(5, 8), (5, 8))
-  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(8, 10), [(8, 10)])
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10))
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5), hyperslice=(0, 5))
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5, 8), hyperslice=(5, 8))
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(8, 10), hyperslice=[(8, 10)])
 
   connection.finish_model(mid)
   connection.join_model(mid)
@@ -332,23 +333,22 @@ def test_model_array_ranges():
   connection.delete_project(pid)
 
 def test_model_array_string_attributes():
-  """Test sending string attributes to the server as numpy arrays and as lists of strings."""
+  """Test sending string attributes to the server."""
   pid = connection.create_project("array-strings-project")
   mid = connection.create_model(pid, "generic", "array-strings-model")
 
   size = 10
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, [("v1", "string"), ("v2", "string")], ("row", "int64", 0, size))
-  connection.store_array_attribute(mid, "test-array-set", 0, 0, numpy.arange(size).astype("string"))
-  connection.store_array_attribute(mid, "test-array-set", 0, 1, numpy.arange(size).astype("string").tolist())
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(size).astype("string"))
 
   connection.finish_model(mid)
   connection.join_model(mid)
 
   numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size), numpy.arange(size).astype("string"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="string"))
   numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size, "string"), numpy.arange(size).astype("string"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size, "string"), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size, "string"), numpy.zeros(size, dtype="string"))
 
   connection.delete_model(mid)
   connection.delete_project(pid)
@@ -367,7 +367,7 @@ def test_model_array_1d():
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
   for attribute, data in enumerate(attribute_data):
-    connection.store_array_attribute(mid, "test-array-set", 0, attribute, data)
+    connection.store_array_set_data(mid, "test-array-set", 0, attribute, data=data)
   connection.finish_model(mid)
   connection.join_model(mid)
 
@@ -610,14 +610,14 @@ def test_api():
 
   # Any project writer can store an array attribute.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+    server_outsider.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+    project_outsider.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
-  project_writer.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
-  project_admin.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
-  server_admin.store_array_attribute(models[0], "data", 0, 0, numpy.arange(10))
+    project_reader.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+  project_writer.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+  project_admin.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+  server_admin.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
 
   # Any project writer can upload a table.
   with nose.tools.assert_raises_regexp(Exception, "^401"):

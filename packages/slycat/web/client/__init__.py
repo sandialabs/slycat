@@ -198,22 +198,7 @@ class connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_array_attribute(self, mid, name, array, attribute, data, ranges=None):
-    """Sends an array attribute (or a slice of an array attribute) to the server."""
-    ranges = require_array_ranges(ranges)
-    if isinstance(data, numpy.ndarray):
-      if ranges is None:
-        ranges = [(0, end) for end in data.shape]
-      if data.dtype.char == "S":
-        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
-      else:
-        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
-    else:
-      if ranges is None:
-        ranges = [(0, len(data))]
-      self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
-
-  def put_model_array_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
+  def put_model_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
     """Sends array data to the server."""
     # Sanity check arguments
     try:
@@ -350,9 +335,9 @@ class connection(object):
     """Starts a new array set array, ready to receive data."""
     self.put_model_array(mid, name, array, attributes, dimensions)
 
-  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+  def store_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
-    self.put_model_array_attribute(mid, name, array, attribute, data, ranges)
+    self.put_model_array_set_data(mid, name, array, attribute, hyperslice, data)
 
   def copy_inputs(self, source, target):
     self.put_model_inputs(source, target)

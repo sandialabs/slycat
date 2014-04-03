@@ -462,19 +462,9 @@ def put_model_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_writer(project)
+def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=None, byteorder=None, data=None):
+  cherrypy.log.error("put data: arrayset %s array %s attribute %s hyperslice %s byteorder %s" % (name, array, attribute, hyperslice, byteorder))
 
-  # Sanity check inputs ...
-  array_index = int(array)
-  attribute_index = int(attribute)
-  ranges = [(int(begin), int(end)) for begin, end in json.load(ranges.file)]
-  slycat.web.server.model.store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder)
-
-def put_model_array_data(mid, name, array=None, attribute=None, hyperslice=None, byteorder=None, data=None):
   # Sanity check inputs ...
   try:
     if array is not None:
@@ -506,7 +496,7 @@ def put_model_array_data(mid, name, array=None, attribute=None, hyperslice=None,
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.store_array_data(database, model, name, array, attribute, hyperslice, byteorder, data)
+  slycat.web.server.model.store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data)
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()

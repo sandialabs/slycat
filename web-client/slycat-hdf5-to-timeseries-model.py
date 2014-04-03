@@ -96,7 +96,7 @@ try:
     for attribute in range(len(attributes)):
       slycat.web.client.log.info("Storing input table attribute %s", attribute)
       data = slycat.data.hdf5.get_array_attribute(file, 0, attribute)[...]
-      connection.store_array_attribute(mid, "inputs", 0, attribute, data)
+      connection.store_array_set_data(mid, "inputs", 0, attribute, data=data)
 
   # Create a mapping from unique cluster names to timeseries attributes.
   connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
@@ -274,8 +274,8 @@ try:
       attributes = [("time", "float64"), ("value", "float64")]
       dimensions = [("sample", "int64", 0, len(waveform["times"]))]
       connection.start_array(mid, "preview-%s" % name, index, attributes, dimensions)
-      connection.store_array_attribute(mid, "preview-%s" % name, index, 0, waveform["times"])
-      connection.store_array_attribute(mid, "preview-%s" % name, index, 1, waveform["values"])
+      connection.store_array_set_data(mid, "preview-%s" % name, index, 0, data=waveform["times"])
+      connection.store_array_set_data(mid, "preview-%s" % name, index, 1, data=waveform["values"])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
