@@ -194,14 +194,13 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
 
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
     if array is None:
-      array = numpy.array([int(key) for key in file["array"].keys()])
+      array = numpy.sort(numpy.array([int(key) for key in file["array"].keys()]))
     else:
       if isinstance(array, (numbers.Integral, slice)):
         array = [array]
       array = numpy.array([index for item in array for index in expand(item, len(file["array"]))])
 
     for array_index in array:
-
       array_metadata = slycat.data.hdf5.raw_array_metadata(file, array_index)
       if attribute is None:
         attribute = numpy.arange(len(array_metadata["attribute-names"]))
