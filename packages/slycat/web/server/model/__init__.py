@@ -181,6 +181,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
     slycat.data.hdf5.store_array_attribute(file, array_index, attribute_index, ranges, data)
 
 def store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data):
+  update(database, model, message="Storing data to array set %s." % (name))
   def expand(item, N):
     if isinstance(item, numbers.Integral):
       yield item
@@ -217,7 +218,7 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
       array_shape = [(end - begin) for begin, end in array_hyperslice]
 
       for attribute_index in attribute:
-        update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
+        #update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
 
         # Convert data to an array ...
         stored_type = slycat.data.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
