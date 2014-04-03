@@ -278,6 +278,16 @@ $.widget("cca.barplot",
       $(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
       $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
     });
+
+    $(".barplotColumn.input").mousewheel(function(event) {
+      $(".barplotCanvas.input").scrollTop( $(".barplotCanvas.input").scrollTop() + -(event.deltaY * event.deltaFactor) );
+    });
+    $(".barplotColumn.output").mousewheel(function(event) {
+      $(".barplotCanvas.output").scrollTop( $(".barplotCanvas.output").scrollTop() + -(event.deltaY * event.deltaFactor) );
+    });
+    $(".barplotHeader").mousewheel(function(event) {
+      $(".barplotCanvas.output").scrollLeft( $(".barplotCanvas.output").scrollLeft() + (event.deltaX * event.deltaFactor) );
+    });
   },
 
   resize_canvas: function()
