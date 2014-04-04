@@ -362,6 +362,15 @@ $.widget("cca.barplot",
     {
       this.element.find(".selected-variable").removeClass("selected-variable");
       this.element.find(".row" + value).addClass("selected-variable");
+      // Using scrollintoview jQuery plugin instead of browser built-in functionality (DOM's scrollIntoView() function).
+      // DOM's scrollIntoView() works but has problems: 
+      //   1. scrolls each time it's called, even when element is already visible, to bring it to top or bottom of scroll area.
+      //   2. always scrolls in both directions, displayin left edge of target element even if user has already scrolled horizontally to display other CCA components.
+      //   3. lacks animation when scrolling
+      //   4. always scrolls to top or bottom of scroll area instead of the least amount needed to make it visible
+      // The jQuery plugin solves all these issues.
+      //this.element.find(".barplotRow.row" + value).get(0).scrollIntoView();
+      this.element.find(".barplotRow.row" + value).scrollintoview({direction: "vertical",});
     }
     else if(key == "sort")
     {

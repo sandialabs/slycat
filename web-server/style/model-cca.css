@@ -228,6 +228,7 @@ rights in this software.
 }
 .barplotCanvas {
   /*overflow: auto;*/
+  /*display: relative;*/ /* Only needed if using DOM's scrollIntoView() function instead of jQuery plugin */
 }
 .barplotCanvas.input {
   overflow-x: hidden;
