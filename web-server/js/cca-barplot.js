@@ -317,7 +317,7 @@ $.widget("cca.barplot",
     if(this.options.tableHeight > barplotPaneHeight) {
       // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
       var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').height();
-      var halfViewportHeight = viewportHeight / 2;
+      var halfViewportHeight = Math.floor(viewportHeight / 2);
       if(this.options.inputsHeight > halfViewportHeight) {
         if(this.options.outputsHeight > halfViewportHeight) {
           // Both inputs and outputs are too big, so inputs get sized to 50% of available area and outputs get the rest. 
