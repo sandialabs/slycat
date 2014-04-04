@@ -151,7 +151,7 @@ $.widget("cca.barplot",
 
     for(var component = 0; component != component_count; ++component)
     {
-      var barplotHeaderColumn = $('<div class="barplotHeaderColumn"><div class="wrapper"><span class="selectCCAComponent">CCA' + (component+1) + '</span><span class="sortCCAComponent icon-sort-off" /></div></div>')
+      var barplotHeaderColumn = $('<div class="barplotHeaderColumn"><div class="wrapper"><div class="negativeSpacer spacer" /><div class="barplotHeaderColumnLabelWrapper"><span class="selectCCAComponent">CCA' + (component+1) + '</span><span class="sortCCAComponent icon-sort-off" /></div><div class="positiveSpacer spacer" /></div></div>')
         .addClass('col' + (component+1))
         .addClass(component_class(component))
         .appendTo(barplotHeaderColumns);

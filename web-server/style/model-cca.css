@@ -191,6 +191,7 @@ rights in this software.
   display: inline-block;
 }
 .barplotHeaderColumn {
+  text-align: right !important;
   display: inline-block;
   /*padding: 3px;*/
   cursor: pointer;
@@ -203,7 +204,6 @@ rights in this software.
 .barplotHeaderColumn .wrapper {
   padding: 3px;
 }
-/*.headerInput.col0,*/
 .mask
 {
   background-color: white;
@@ -219,7 +219,6 @@ rights in this software.
   overflow: hidden;
 }
 .barplotColumn {
-  /*display: inline-block;*/
   float: left;
   clear: left;
 }
@@ -243,9 +242,9 @@ rights in this software.
   text-align: right;
   /*outline: 1px solid green;*/
 }
-#rsquared-label {
-  vertical-align: top;
-  height: 23px;
+#rsquared-label sup {
+  position: absolute;
+  margin-top: -3px;
 }
 .rowInput,
 .rowOutput
@@ -287,6 +286,8 @@ rights in this software.
   background: #7767b0;
   color: white;
 }
+.barplotHeaderColumnLabelWrapper,
+.selectCCAComponent,
 .wrapper,
 .barplotCellValue,
 .selected-component .spacer,
@@ -297,11 +298,11 @@ rights in this software.
 }
 .barplotCellValue
 {
-  padding: 3px 10px;
+  padding: 3px 23px 3px 18px;
   width: 40px;
 }
 .selected-component .barplotCellValue,
-.barplotHeaderColumn.selected-component .wrapper
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
 {
   background-color: #DDDDDD;
   border-width: 0px 1px;
@@ -310,8 +311,12 @@ rights in this software.
   color: #666655;
 }
 .barplotHeaderColumn.selected-component .wrapper {
-  padding: 3px 10px;
-  width: 62px;
+  padding: 0;
+}
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
+{
+  padding: 3px 3px 3px 3px;
+  width: 75px;
 }
 .spacer
 {
@@ -343,7 +348,6 @@ rights in this software.
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
-
 #barplot-table span.sortCCAComponent 
 {
   width: 15px;
