@@ -343,3 +343,26 @@ rights in this software.
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
+
+#barplot-table span.sortCCAComponent {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border: 1px solid transparent;
+  cursor: pointer;
+  position: relative;
+  top: 3px;
+  margin-left: 3px;
+}
+#barplot th.label:hover .icon-sort-off,
+.icon-sort-off:hover {
+  background: transparent url(sort-desc-light.png) no-repeat center center;
+}
+.icon-sort-off:hover {
+  border: 1px solid #C7C7C7 !important;
+}
+.icon-sort-ascending:hover,
+.icon-sort-descending:hover
+{
+  border: 1px solid #878787 !important;
+}

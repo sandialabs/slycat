@@ -54,32 +54,33 @@ $.widget("cca.barplot",
 
     this.do_component_sort = function(component, sort_order)
     {
-      var sort_icon = $("th." + component_class(component) + " .sortCCAComponent", self.element)
+      console.log('doing sort');
+      // var sort_icon = $("th." + component_class(component) + " .sortCCAComponent", self.element)
 
-      $("span.sortCCAComponent", self.element).removeClass("icon-sort-descending icon-sort-ascending").addClass("icon-sort-off");
-      $(sort_icon).removeClass("icon-sort-off").addClass("icon-sort-" + sort_order);
+      // $("span.sortCCAComponent", self.element).removeClass("icon-sort-descending icon-sort-ascending").addClass("icon-sort-off");
+      // $(sort_icon).removeClass("icon-sort-off").addClass("icon-sort-" + sort_order);
 
 
-      $("tbody tr.input", self.element).sort(sortFunction).appendTo(self.element);
-      $("tbody tr.output", self.element).sort(sortFunction).appendTo(self.element);
+      // $("tbody tr.input", self.element).sort(sortFunction).appendTo(self.element);
+      // $("tbody tr.output", self.element).sort(sortFunction).appendTo(self.element);
 
-      self.element.trigger("component-sort-changed", [component, sort_order]);
+      // self.element.trigger("component-sort-changed", [component, sort_order]);
 
-      function sortFunction(a,b){
-        var selector = "td.value:eq(" + component + ")";
-        var value_a = $(selector, a).text();
-        var value_b = $(selector, b).text();
-        var aa = parseFloat(value_a.replace(/[^0-9.-]/g,''));
-        if (isNaN(aa)) aa = 0;
-        var bb = parseFloat(value_b.replace(/[^0-9.-]/g,''));
-        if (isNaN(bb)) bb = 0;
-        var result;
-        if(sort_order == 'descending')
-          result = Math.abs(bb)-Math.abs(aa);
-        else
-          result = Math.abs(aa)-Math.abs(bb);
-        return result;
-      }
+      // function sortFunction(a,b){
+      //   var selector = "td.value:eq(" + component + ")";
+      //   var value_a = $(selector, a).text();
+      //   var value_b = $(selector, b).text();
+      //   var aa = parseFloat(value_a.replace(/[^0-9.-]/g,''));
+      //   if (isNaN(aa)) aa = 0;
+      //   var bb = parseFloat(value_b.replace(/[^0-9.-]/g,''));
+      //   if (isNaN(bb)) bb = 0;
+      //   var result;
+      //   if(sort_order == 'descending')
+      //     result = Math.abs(bb)-Math.abs(aa);
+      //   else
+      //     result = Math.abs(aa)-Math.abs(bb);
+      //   return result;
+      // }
     }
 
     function click_component(context, component)
@@ -99,7 +100,7 @@ $.widget("cca.barplot",
         if( $(this).hasClass('icon-sort-descending') )
           sort_order = 'ascending';
 
-       context.do_component_sort(component, sort_order);
+        context.do_component_sort(component, sort_order);
       }
     }
 
@@ -134,10 +135,11 @@ $.widget("cca.barplot",
 
     for(var component = 0; component != component_count; ++component)
     {
-      var barplotHeaderColumn = $('<div class="barplotHeaderColumn"><div class="wrapper"><span class="selectCCAComponent">CCA' + (component+1) + '</span></div></div>')
+      var barplotHeaderColumn = $('<div class="barplotHeaderColumn"><div class="wrapper"><span class="selectCCAComponent">CCA' + (component+1) + '</span><span class="sortCCAComponent icon-sort-off" /></div></div>')
         .addClass('col' + (component+1))
         .appendTo(barplotHeaderColumns);
       $("span.selectCCAComponent", barplotHeaderColumn).click(click_component(this, component));
+      $("span.sortCCAComponent", barplotHeaderColumn).click(sort_component(this, component));
 
       //var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (component+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(component))
       //th.appendTo(row);
@@ -189,6 +191,7 @@ $.widget("cca.barplot",
     for(var i = 0; i != inputs.length; ++i)
     {
       var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i).appendTo(barplotColumn);
+      variableName.data('x_loadings_index', i);
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
       variableName.click( click_row(this, variableName, inputs[i]) );
 
@@ -228,6 +231,7 @@ $.widget("cca.barplot",
     for(var i = 0; i != outputs.length; ++i)
     {
       var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + (i + inputs.length)).appendTo(barplotColumn);
+      variableName.data('y_loadings_index', i);
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][outputs[i]]).appendTo(variableName);
       variableName.click( click_row(this, variableName, outputs[i]) );
 
