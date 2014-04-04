@@ -128,10 +128,6 @@ $.widget("cca.barplot",
       {
         context.element.find(".selected-variable").removeClass("selected-variable");
         context.element.find(".row" + variable).addClass("selected-variable");
-        // row.addClass("selected-variable");
-
-        // this.element.find(".selected-variable").removeClass("selected-variable");
-        // this.element.find(".row" + value).addClass("selected-variable");
 
         context.element.trigger("variable-changed", [variable]);
       }
@@ -159,13 +155,6 @@ $.widget("cca.barplot",
         .appendTo(barplotHeaderColumns);
       $("span.selectCCAComponent", barplotHeaderColumn).click(click_component(this, component));
       $("span.sortCCAComponent", barplotHeaderColumn).click(sort_component(this, component));
-
-      //var th = $("<th class='label'><span class='selectCCAComponent'>CCA" + (component+1) + "</span><span class='sortCCAComponent icon-sort-off' /></th>").addClass(component_class(component))
-      //th.appendTo(row);
-      // $("span.selectCCAComponent", th).click(click_component(this, component));
-      // $("span.sortCCAComponent", th).click(sort_component(this, component));
-
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     // Add r-squared statistic ...
@@ -179,9 +168,6 @@ $.widget("cca.barplot",
       var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
       var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(r2[component]).toFixed(3)).appendTo(barplotCellWrapper);
       var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
-      // $("<td class='value'>").html(Number(r2[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     // Add p statistic ...
@@ -195,9 +181,6 @@ $.widget("cca.barplot",
       var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
       var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(wilks[component]).toFixed(3)).appendTo(barplotCellWrapper);
       var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
-      // $("<td class='value'>").html(Number(wilks[component]).toFixed(3)).addClass(component_class(component)).appendTo(row);
-      // $("<td class='bar'>").addClass(component_class(component)).appendTo(row);
     }
 
     var barplotViewport = $('<div class="barplotViewport">').appendTo(this.element);
@@ -227,19 +210,6 @@ $.widget("cca.barplot",
         var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(x_loadings[component][i]).toFixed(3)).appendTo(barplotCellWrapper);
         var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellPositive = $('<div class="positive" />').css("width", positive_bar_width(x_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellPositiveSpacer);
-
-
-        // $("<td class='input bar negative'/>")
-        //   .append($("<div/>").css("width", negative_bar_width(x_loadings[component][i])))
-        //   .addClass(component_class(component))
-        //   .appendTo(row);
-
-        // $("<td class='input value'>").html(Number(x_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
-
-        // $("<td class='input bar positive'/>")
-        //   .append($("<div/>").css("width", positive_bar_width(x_loadings[component][i])))
-        //   .addClass(component_class(component))
-        //   .appendTo(row);
       }
     }
 
@@ -268,18 +238,6 @@ $.widget("cca.barplot",
         var barplotCellValue = $('<div class="barplotCellValue" />').html(Number(y_loadings[component][i]).toFixed(3)).appendTo(barplotCellWrapper);
         var barplotCellPositiveSpacer = $('<div class="positiveSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellPositive = $('<div class="positive" />').css("width", positive_bar_width(y_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellPositiveSpacer);
-
-        // $("<td class='output bar negative'/>")
-        //   .append($("<div/>").css("width", negative_bar_width(y_loadings[component][i])))
-        //   .addClass(component_class(component))
-        //   .appendTo(row);
-
-        // $("<td class='output value'>").html(Number(y_loadings[component][i]).toFixed(3)).addClass(component_class(component)).appendTo(row);
-
-        // $("<td class='output bar positive'/>")
-        //   .append($("<div/>").css("width", positive_bar_width(y_loadings[component][i])))
-        //   .addClass(component_class(component))
-        //   .appendTo(row);
       }
     }
 
