@@ -344,7 +344,8 @@ rights in this software.
   border-bottom-right-radius: 2px;
 }
 
-#barplot-table span.sortCCAComponent {
+#barplot-table span.sortCCAComponent 
+{
   width: 15px;
   height: 15px;
   display: inline-block;
@@ -354,11 +355,13 @@ rights in this software.
   top: 3px;
   margin-left: 3px;
 }
-#barplot th.label:hover .icon-sort-off,
-.icon-sort-off:hover {
+#barplot-table .barplotHeaderColumn:hover .icon-sort-off,
+.icon-sort-off:hover 
+{
   background: transparent url(sort-desc-light.png) no-repeat center center;
 }
-.icon-sort-off:hover {
+.icon-sort-off:hover 
+{
   border: 1px solid #C7C7C7 !important;
 }
 .icon-sort-ascending:hover,

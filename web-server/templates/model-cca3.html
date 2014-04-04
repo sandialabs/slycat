@@ -775,17 +775,6 @@ rights in this software.
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
-            // $("#barplot").barplotoriginal({
-            //   metadata: table_metadata,
-            //   inputs: input_columns,
-            //   outputs: output_columns,
-            //   r2: r2,
-            //   wilks: wilks,
-            //   x_loadings: x_loadings,
-            //   y_loadings: y_loadings,
-            //   component: component,
-            // });
-
             $("#barplot-table").barplot({
               metadata: table_metadata,
               inputs: input_columns,
@@ -807,7 +796,7 @@ rights in this software.
               selected_component_changed(component);
             });
 
-            $("#barplot").bind("component-sort-changed", function(event, component, order)
+            $("#barplot-table").bind("component-sort-changed", function(event, component, order)
             {
               component_sort_changed(component, order);
             });
