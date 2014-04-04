@@ -208,6 +208,7 @@ rights in this software.
 {
   background-color: white;
   position: relative; /* needed to get this cell to cover scrolling header row */
+  z-index: 1;
 }
 .mask .wrapper {
   padding: 3px;

@@ -69,6 +69,8 @@ $.widget("cca.barplot",
       outputLabels.sort(outputSortFunction).appendTo($('.barplotColumn.output', self.element));
       outputRows.sort(outputSortFunction).appendTo($('.barplotCanvas.output', self.element));
 
+      self.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
+
       self.element.trigger("component-sort-changed", [component, sort_order]);
 
       function inputSortFunction(a,b){
@@ -393,7 +395,7 @@ $.widget("cca.barplot",
       //   4. always scrolls to top or bottom of scroll area instead of the least amount needed to make it visible
       // The jQuery plugin solves all these issues.
       //this.element.find(".barplotRow.row" + value).get(0).scrollIntoView();
-      this.element.find(".barplotRow.row" + value).scrollintoview({direction: "vertical",});
+      this.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
     }
     else if(key == "sort")
     {
