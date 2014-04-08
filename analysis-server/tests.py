@@ -507,7 +507,7 @@ def test_build_2_int():
   numpy.testing.assert_array_equal(values(array1, 1), numpy.array(range(5), dtype="int64") ** 2)
 
 def test_cca():
-  from slycat.web.server.cca import cca
+  from slycat.cca import cca
   autos = load("../data/cars.csv", "csv-file", chunk_size=100)
   inputs = project(autos, "Year", "Cylinders", "Displacement")
   outputs = project(autos, "Acceleration", "MPG", "Horsepower")

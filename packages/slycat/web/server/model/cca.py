@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-from slycat.web.server.cca import cca
+from slycat.cca import cca
 from slycat.web.server.model import *
 
 import cherrypy
