@@ -15,6 +15,22 @@ def sum_of_squares(times, values):
   estimated = numpy.interp(times, times[[0, -1]], values[[0, -1]])
   return numpy.sum(numpy.square(values - estimated))
 
+def sliding_window(times, values, max_error):
+  """Return the sliding-window segmentation of a timeseries as a (times, values) tuple.
+
+  The returned timeseries will contain a subset of the input samples, chosen so
+  that no segment exceeds the supplied max_error.
+  """
+  anchors = numpy.zeros(len(times), dtype="bool")
+  anchors[0] = True
+  anchors[-1] = True
+  anchor = 0
+  for i in xrange(3, len(times)):
+    if sum_of_squares(times[anchor:i], values[anchor:i]) > max_error:
+      anchor = i - 2
+      anchors[anchor] = True
+  return times[anchors], values[anchors]
+
 def bottom_up(times, values, max_error):
   """Return the bottom-up segmentation of a timeseries as a (times, values) tuple.
 
