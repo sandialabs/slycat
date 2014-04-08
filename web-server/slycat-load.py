@@ -10,7 +10,7 @@ import logging
 import os
 import re
 import shutil
-import slycat.data.hdf5
+import slycat.hdf5
 import sys
 
 parser = argparse.ArgumentParser()
@@ -60,7 +60,7 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
   if arguments.force and array in couchdb:
     del couchdb[array]
   couchdb.save({"_id":array, "type":"hdf5"})
-  destination = slycat.data.hdf5.path(array, arguments.data_store)
+  destination = slycat.hdf5.path(array, arguments.data_store)
   if not os.path.exists(os.path.dirname(destination)):
     os.makedirs(os.path.dirname(destination))
   shutil.copy(source, destination)

@@ -8,7 +8,7 @@ from slycat.web.server.model import *
 import cherrypy
 import datetime
 import numpy
-import slycat.data.hdf5
+import slycat.hdf5
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import threading
@@ -33,18 +33,18 @@ def compute(mid):
 
     # Transform the input data table to a form usable with our cca() function ...
     with slycat.web.server.database.hdf5.open(data_table) as file:
-      row_count = slycat.data.hdf5.get_array_shape(file, 0)[0]
+      row_count = slycat.hdf5.get_array_shape(file, 0)[0]
       indices = numpy.arange(row_count, dtype="int32")
 
       X = numpy.empty((row_count, len(input_columns)))
       for j, input in enumerate(input_columns):
         update(database, model, progress=mix(0.0, 0.25, float(j) / float(len(input_columns))))
-        X[:,j] = slycat.data.hdf5.get_array_attribute(file, 0, input)[...]
+        X[:,j] = slycat.hdf5.get_array_attribute(file, 0, input)[...]
 
       Y = numpy.empty((row_count, len(output_columns)))
       for j, output in enumerate(output_columns):
         update(database, model, progress=mix(0.25, 0.50, float(j) / float(len(output_columns))))
-        Y[:,j] = slycat.data.hdf5.get_array_attribute(file, 0, output)[...]
+        Y[:,j] = slycat.hdf5.get_array_attribute(file, 0, output)[...]
 
     # Remove rows containing NaNs ...
     good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))

@@ -19,7 +19,7 @@ try:
 except:
   import StringIO
 
-from slycat.data.array import *
+from slycat.array import *
 
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)

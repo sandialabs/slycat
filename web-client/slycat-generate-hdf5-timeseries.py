@@ -22,7 +22,7 @@ import itertools
 import numpy
 import os
 import shutil
-import slycat.data.hdf5
+import slycat.hdf5
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
@@ -56,32 +56,32 @@ jobs = [(
   numpy.split(coefficients, arguments.timeseries_variables),
   ) for index, coefficients in enumerate(inputs)]
 
-with slycat.data.hdf5.start_array_set(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
-  slycat.data.hdf5.start_array(file, 0, input_attributes, input_dimensions)
+with slycat.hdf5.start_array_set(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
+  slycat.hdf5.start_array(file, 0, input_attributes, input_dimensions)
   for attribute, data in enumerate(inputs.T):
-    slycat.data.hdf5.store_array_attribute(file, 0, attribute, [(0, inputs.shape[0])], data)
+    slycat.hdf5.store_array_attribute(file, 0, attribute, [(0, inputs.shape[0])], data)
 
 # Generate a collection of "output" timeseries.
 def generate_timeseries(job):
   import numpy
-  import slycat.data.hdf5
+  import slycat.hdf5
 
   timeseries_index, filename, prefix, samples, variables = job
 
-  with slycat.data.hdf5.start_array_set(filename) as file:
+  with slycat.hdf5.start_array_set(filename) as file:
     timeseries_attributes = [("time", "float64")] + [("%s%s" % (prefix, attribute), "float64") for attribute in range(len(variables))]
     timeseries_dimensions = [("row", "int64", 0, samples)]
-    slycat.data.hdf5.start_array(file, 0, timeseries_attributes, timeseries_dimensions)
+    slycat.hdf5.start_array(file, 0, timeseries_attributes, timeseries_dimensions)
 
     times = numpy.linspace(0, 2 * numpy.pi, samples)
-    slycat.data.hdf5.store_array_attribute(file, 0, 0, [(0, times.shape[0])], times)
+    slycat.hdf5.store_array_attribute(file, 0, 0, [(0, times.shape[0])], times)
 
     for variable_index, coefficients in enumerate(variables):
       print "Generating timeseries %s variable %s" % (timeseries_index, variable_index)
       values = numpy.zeros((samples))
       for k in coefficients:
         values += numpy.sin(times * k) / k
-      slycat.data.hdf5.store_array_attribute(file, 0, variable_index + 1, [(0, values.shape[0])], values)
+      slycat.hdf5.store_array_attribute(file, 0, variable_index + 1, [(0, values.shape[0])], values)
 
   return timeseries_index
 

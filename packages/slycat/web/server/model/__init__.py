@@ -8,8 +8,8 @@ import json
 import numbers
 import numpy
 import os
-import slycat.data.array
-import slycat.data.hdf5
+import slycat.array
+import slycat.hdf5
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.spider
@@ -111,7 +111,7 @@ def store_table_file(database, model, name, data, filename, nan_row_filtering, i
   if len(tables) != 1:
     raise cherrypy.HTTPError("400 Uploaded file %s must contain exactly one table." % file.filename)
   table = tables[0]
-  attributes = zip(table["column-names"], [slycat.data.array.attribute_type_map[type] for type in table["column-types"]])
+  attributes = zip(table["column-names"], [slycat.array.attribute_type_map[type] for type in table["column-types"]])
   dimensions = [("row", "int64", 0, table["row-count"])]
 
   start_array_set(database, model, name, input)
@@ -156,14 +156,14 @@ def start_array(database, model, name, array_index, attributes, dimensions):
   storage = model["artifact:%s" % name]
 
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    slycat.data.hdf5.start_array(file, array_index, attributes, dimensions)
+    slycat.hdf5.start_array(file, array_index, attributes, dimensions)
 
 def store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder=None):
   update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    array_metadata = slycat.data.hdf5.raw_array_metadata(file, array_index)
-    stored_type = slycat.data.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+    array_metadata = slycat.hdf5.raw_array_metadata(file, array_index)
+    stored_type = slycat.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
 
     # Convert data to an array ...
     if isinstance(data, numpy.ndarray):
@@ -178,7 +178,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
       else:
         raise NotImplementedError()
 
-    slycat.data.hdf5.store_array_attribute(file, array_index, attribute_index, ranges, data)
+    slycat.hdf5.store_array_attribute(file, array_index, attribute_index, ranges, data)
 
 def store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data):
   update(database, model, message="Storing data to array set %s." % (name))
@@ -202,7 +202,7 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
       array = numpy.array([index for item in array for index in expand(item, len(file["array"]))])
 
     for array_index in array:
-      array_metadata = slycat.data.hdf5.raw_array_metadata(file, array_index)
+      array_metadata = slycat.hdf5.raw_array_metadata(file, array_index)
       if attribute is None:
         attribute = numpy.arange(len(array_metadata["attribute-names"]))
       elif isinstance(attribute, numbers.Integral):
@@ -221,7 +221,7 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
         #update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
 
         # Convert data to an array ...
-        stored_type = slycat.data.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+        stored_type = slycat.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
         if byteorder is None:
           attribute_data = numpy.array(data_iterator.next(), dtype=stored_type).reshape(array_shape)
         elif byteorder == sys.byteorder:
@@ -230,5 +230,5 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
         else:
           raise NotImplementedError()
 
-        slycat.data.hdf5.store_array_attribute(file, array_index, attribute_index, array_hyperslice, attribute_data)
+        slycat.hdf5.store_array_attribute(file, array_index, attribute_index, array_hyperslice, attribute_data)
 
