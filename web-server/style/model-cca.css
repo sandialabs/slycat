@@ -70,6 +70,7 @@ rights in this software.
 }
 .barplotGroup {
   overflow: hidden;
+  width: auto !important; /* Need to force auto width since jQuery Resizable Widget sets static width on resize, which then breaks horizontal expansion/contraction on pane resize */
 }
 .barplotColumn {
   float: left;
