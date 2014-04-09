@@ -186,9 +186,9 @@ $.widget("cca.barplot",
     var barplotViewport = $('<div class="barplotViewport">').appendTo(this.element);
 
     // Add input variables ...
-    var barplotGroup = $('<div class="barplotGroup inputs">').appendTo(barplotViewport);
-    var barplotColumn = $('<div class="barplotColumn input">').appendTo(barplotGroup);
-    var barplotCanvas = $('<div class="barplotCanvas input">').appendTo(barplotGroup);
+    var barplotGroupInputs = $('<div class="barplotGroup inputs">').appendTo(barplotViewport);
+    var barplotColumn = $('<div class="barplotColumn input">').appendTo(barplotGroupInputs);
+    var barplotCanvas = $('<div class="barplotCanvas input">').appendTo(barplotGroupInputs);
 
     for(var i = 0; i != inputs.length; ++i)
     {
@@ -214,9 +214,9 @@ $.widget("cca.barplot",
     }
 
     // Add output variables ...
-    var barplotGroup = $('<div class="barplotGroup outputs">').appendTo(barplotViewport);
-    var barplotColumn = $('<div class="barplotColumn output">').appendTo(barplotGroup);
-    var barplotCanvas = $('<div class="barplotCanvas output">').appendTo(barplotGroup);
+    var barplotGroupOutputs = $('<div class="barplotGroup outputs">').appendTo(barplotViewport);
+    var barplotColumn = $('<div class="barplotColumn output">').appendTo(barplotGroupOutputs);
+    var barplotCanvas = $('<div class="barplotCanvas output">').appendTo(barplotGroupOutputs);
 
     for(var i = 0; i != outputs.length; ++i)
     {
@@ -245,8 +245,8 @@ $.widget("cca.barplot",
 
     /* Sizing table */
     this.options.tableHeight = $('#barplot-table').height();
-    this.options.inputsHeight = $('.barplotGroup.inputs').height();
-    this.options.outputsHeight = $('.barplotGroup.outputs').height();
+    this.options.inputsHeight = barplotGroupInputs.height();
+    this.options.outputsHeight = barplotGroupOutputs.height();
     // No need to call resize_canvas here since select_component calls it anyway.
     //this.resize_canvas();
     this.select_component(this.options.component);
@@ -270,6 +270,40 @@ $.widget("cca.barplot",
     });
     $(".barplotHeader").mousewheel(function(event) {
       $(".barplotCanvas.output").scrollLeft( $(".barplotCanvas.output").scrollLeft() + (event.deltaX * event.deltaFactor) );
+    });
+    $(".barplotCanvas.input").mousewheel(function(event) {
+      $(".barplotCanvas.output").scrollLeft( $(".barplotCanvas.output").scrollLeft() + (event.deltaX * event.deltaFactor) );
+    });
+
+    // Resizing functionality
+    var barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+    barplotGroupInputs.resizable({
+      //alsoResize: ".barplotGroup.outputs",
+      containment: barplotViewport,
+      handles: "s",
+      maxHeight: this.options.inputsHeight,
+      minHeight: 50,
+      //animate: true,
+      //ghost: true,
+      create: function(event,ui){
+        //console.log("create: " + event);
+      },
+      resize: function(event,ui){
+        //console.log("resize. originalHeight: " + ui.originalSize.height + ", newHeight: " + ui.size.height + " , barplotViewportHeight: " + barplotViewport.height());
+        // ui.size.height is unreliable, so getting the new height directly from element
+        //barplotGroupOutputs.height( barplotViewport.height() - ui.element.height() );
+        barplotGroupOutputs.height( barplotGroupOutputsOriginalHeight + (ui.originalSize.height - ui.element.height()) );
+      },
+      start: function(event,ui){
+        //console.log("start: " + event);
+        barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+      },
+      stop: function(event,ui){
+        //console.log("stop. originalHeight: " + ui.originalSize.height + ", newHeight: " + ui.size.height);
+        //var barplotGroupOutputs = $(".barplotGroup.outputs");
+        // ui.size.height is unreliable, so getting the new height directly from element
+        //barplotGroupOutputs.height( barplotGroupOutputs.height() + (ui.originalSize.height - ui.element.height()) );
+      },
     });
   },
 
@@ -297,6 +331,40 @@ $.widget("cca.barplot",
 
     var barplotPaneHeight = $('#barplot-pane').height();
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
+    // if(this.options.tableHeight > barplotPaneHeight) {
+    //   // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
+    //   var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').height();
+    //   var halfViewportHeight = Math.floor(viewportHeight / 2);
+    //   if(this.options.inputsHeight > halfViewportHeight) {
+    //     if(this.options.outputsHeight > halfViewportHeight) {
+    //       // Both inputs and outputs are too big, so inputs get sized to 50% of available area and outputs get the rest. 
+    //       // Sizing both to 50% of available area was causing problems in Chrome with fractions of pixels. 
+    //       $(".barplotCanvas.input").height( halfViewportHeight );
+    //       $(".barplotGroup.inputs").height( halfViewportHeight );
+    //       $(".barplotCanvas.output").height( viewportHeight - $(".barplotCanvas").height() );
+    //       $(".barplotGroup.outputs").height( viewportHeight - $(".barplotCanvas").height() );
+    //     } else {
+    //       // Only inputs need to be sized down
+    //       $(".barplotCanvas.input").height( viewportHeight - this.options.outputsHeight );
+    //       $(".barplotGroup.inputs").height( viewportHeight - this.options.outputsHeight );
+    //       $(".barplotCanvas.output").height( this.options.outputsHeight );
+    //       $(".barplotGroup.outputs").height( this.options.outputsHeight );
+    //     }
+    //   } else {
+    //     // Only outputs needs to be sized down
+    //     $(".barplotCanvas.input").height( this.options.inputsHeight );
+    //     $(".barplotGroup.inputs").height( this.options.inputsHeight );
+    //     $(".barplotCanvas.output").height( viewportHeight - this.options.inputsHeight );
+    //     $(".barplotGroup.outputs").height( viewportHeight - this.options.inputsHeight );
+    //   }
+    // } else {
+    //   // We have room to show everything, so size things to their full height.
+    //   $(".barplotCanvas.input").height( this.options.inputsHeight );
+    //   $(".barplotGroup.inputs").height( this.options.inputsHeight );
+    //   $(".barplotCanvas.output").height( this.options.outputsHeight );
+    //   $(".barplotGroup.outputs").height( this.options.outputsHeight );
+    // }
+
     if(this.options.tableHeight > barplotPaneHeight) {
       // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
       var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').height();
@@ -305,29 +373,29 @@ $.widget("cca.barplot",
         if(this.options.outputsHeight > halfViewportHeight) {
           // Both inputs and outputs are too big, so inputs get sized to 50% of available area and outputs get the rest. 
           // Sizing both to 50% of available area was causing problems in Chrome with fractions of pixels. 
-          $(".barplotCanvas.input").height( halfViewportHeight );
+          //$(".barplotCanvas.input").height( halfViewportHeight );
           $(".barplotGroup.inputs").height( halfViewportHeight );
-          $(".barplotCanvas.output").height( viewportHeight - $(".barplotCanvas").height() );
+          //$(".barplotCanvas.output").height( viewportHeight - $(".barplotCanvas").height() );
           $(".barplotGroup.outputs").height( viewportHeight - $(".barplotCanvas").height() );
         } else {
           // Only inputs need to be sized down
-          $(".barplotCanvas.input").height( viewportHeight - this.options.outputsHeight );
+          //$(".barplotCanvas.input").height( viewportHeight - this.options.outputsHeight );
           $(".barplotGroup.inputs").height( viewportHeight - this.options.outputsHeight );
-          $(".barplotCanvas.output").height( this.options.outputsHeight );
+          //$(".barplotCanvas.output").height( this.options.outputsHeight );
           $(".barplotGroup.outputs").height( this.options.outputsHeight );
         }
       } else {
         // Only outputs needs to be sized down
-        $(".barplotCanvas.input").height( this.options.inputsHeight );
+        //$(".barplotCanvas.input").height( this.options.inputsHeight );
         $(".barplotGroup.inputs").height( this.options.inputsHeight );
-        $(".barplotCanvas.output").height( viewportHeight - this.options.inputsHeight );
+        //$(".barplotCanvas.output").height( viewportHeight - this.options.inputsHeight );
         $(".barplotGroup.outputs").height( viewportHeight - this.options.inputsHeight );
       }
     } else {
       // We have room to show everything, so size things to their full height.
-      $(".barplotCanvas.input").height( this.options.inputsHeight );
+      //$(".barplotCanvas.input").height( this.options.inputsHeight );
       $(".barplotGroup.inputs").height( this.options.inputsHeight );
-      $(".barplotCanvas.output").height( this.options.outputsHeight );
+      //$(".barplotCanvas.output").height( this.options.outputsHeight );
       $(".barplotGroup.outputs").height( this.options.outputsHeight );
     }
   },
