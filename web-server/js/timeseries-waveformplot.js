@@ -241,13 +241,15 @@ $.widget("timeseries.waveformplot",
 
         result = "";
 
-	// Adding basic subsampling based on panel width
-	var samples = d["time"].length;
-	var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
-	var multiplier = Math.ceil( (samples / panelWidth) * 4 );
-	if(multiplier < 1)
- 	  multiplier = 1;
-	
+  // Commenting out decimation while we wait to find a better approach to this 
+  var multiplier = 1;
+	// // Adding downsampling decimation based on panel width
+	// var samples = d["time"].length;
+	// var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
+	// var multiplier = Math.ceil( (samples / panelWidth) * 4 );
+	// if(multiplier < 1)
+  //   multiplier = 1;
+  
 	//console.log("multiplier: " + multiplier);
         for(var i = 0; i != d["time"].length; ++i)
         {
