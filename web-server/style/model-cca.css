@@ -228,3 +228,6 @@ rights in this software.
 {
   border: 1px solid #878787 !important;
 }
+.ui-resizable-s {
+  bottom: -2px;
+}

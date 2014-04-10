@@ -50,6 +50,7 @@ $.widget("cca.barplot",
       this.element.find(".selected-component").removeClass("selected-component");
       this.element.find(".col" + (component+1)).addClass("selected-component");
       this.resize_canvas();
+      this.element.find(".rowOutput.selected-component").first().scrollintoview({direction: "horizontal",});
     }
 
     this.do_component_sort = function(component, sort_order)
@@ -280,8 +281,8 @@ $.widget("cca.barplot",
     barplotGroupInputs.resizable({
       containment: barplotViewport,
       handles: "s",
-      minHeight: Math.max(50, barplotViewport.height()-this.options.outputsHeight),
-      maxHeight: Math.min(this.options.inputsHeight, barplotViewport.height()-50),
+      minHeight: Math.max(1, barplotViewport.height()-this.options.outputsHeight),
+      maxHeight: this.options.inputsHeight,
       create: function(event,ui){
         //console.log("create: " + event);
       },
@@ -358,8 +359,8 @@ $.widget("cca.barplot",
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
     var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
     $(".barplotGroup.inputs").resizable("option", {
-      minHeight: Math.max( 50, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight) ), // Need to take into account horizontal scroll bar height
-      maxHeight: Math.min(this.options.inputsHeight, viewportHeight-50),
+      minHeight: Math.max(1, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight)), // Need to take into account horizontal scroll bar height
+      maxHeight: this.options.inputsHeight,
     });
   },
 
