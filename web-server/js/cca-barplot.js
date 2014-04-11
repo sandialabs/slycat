@@ -338,6 +338,7 @@ $.widget("cca.barplot",
       $('.barplotCanvas.input').css("overflow-y", "auto");
     }
 
+    var increaseHeight = 0;
     var barplotPaneHeight = $('#barplot-pane').height();
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
     var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').outerHeight(true);
@@ -364,13 +365,23 @@ $.widget("cca.barplot",
       // We have room to show everything, so size things to their full height.
       $(".barplotGroup.inputs").height( this.options.inputsHeight );
       $(".barplotGroup.outputs").height( this.options.outputsHeight );
+      // Check to see if we have horizontal scrollbars and try to make additional space for it
+      var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
+      var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
+      var extraSpace = barplotPaneHeight - this.options.tableHeight;
+      increaseHeight = Math.min(horizontalScrollbarHeight, extraSpace);
+      if(increaseHeight > 0) {
+        console.log("Should increases height by " + increaseHeight);
+        $('#barplot-table').height( $('#barplot-table').height() + increaseHeight );
+        $(".barplotGroup.outputs").height( $(".barplotGroup.outputs").height() + increaseHeight );
+      }
     }
 
     // Resetting the inputs resizer max height after table resize
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
     var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
     $(".barplotGroup.inputs").resizable("option", {
-      minHeight: Math.max(1, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight)), // Need to take into account horizontal scroll bar height
+      minHeight: Math.max(1, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
       maxHeight: this.options.inputsHeight,
     });
     // Shifting default resize handle to left to stop overlap over scrollbar.
