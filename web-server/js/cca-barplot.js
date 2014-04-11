@@ -303,20 +303,31 @@ $.widget("cca.barplot",
         //barplotGroupOutputs.height( barplotGroupOutputs.height() + (ui.originalSize.height - ui.element.height()) );
       },
     });
+    // Shifting default resize handle to left to stop overlap over scrollbar.
+    var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
+    var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
+    $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
   },
 
   resize_canvas: function()
   {
-    var tableWidth = 20;  // Adding 25px space for scrollbars
+    var tableWidth = 20;  // Adding space for scrollbars
     $(".barplotHeaderColumn").each(
       function(index){
         var maxWidth = Math.max.apply( null, $(".col" + index + " .wrapper").map( function () {
-          return $( this ).innerWidth();
+          return $( this ).outerWidth(true);
         }).get() );
         $(".col" + index).width(maxWidth);
-        tableWidth += maxWidth;
       }
     );
+
+    // Width of table is set to sum of outerWidths(true), which includes content, padding, border, and margin, of all the columns.
+    $(".barplotHeaderColumn").each(
+      function(index){
+        tableWidth += $(this).outerWidth(true);
+      }
+    );
+
     var barplotPaneWidth = $('#barplot-pane').width();
     $('#barplot-table').width(Math.min(tableWidth, barplotPaneWidth));
     if(tableWidth > barplotPaneWidth) {
@@ -329,7 +340,7 @@ $.widget("cca.barplot",
 
     var barplotPaneHeight = $('#barplot-pane').height();
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
-    var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').height();
+    var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').outerHeight(true);
     if(this.options.tableHeight > barplotPaneHeight) {
       // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
       var halfViewportHeight = Math.floor(viewportHeight / 2);
@@ -355,13 +366,17 @@ $.widget("cca.barplot",
       $(".barplotGroup.outputs").height( this.options.outputsHeight );
     }
 
-    // Resetting the inputs max height after table resize
+    // Resetting the inputs resizer max height after table resize
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
     var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
     $(".barplotGroup.inputs").resizable("option", {
       minHeight: Math.max(1, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight)), // Need to take into account horizontal scroll bar height
       maxHeight: this.options.inputsHeight,
     });
+    // Shifting default resize handle to left to stop overlap over scrollbar.
+    var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
+    var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
+    $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
   },
 
   _setOption: function(key, value)

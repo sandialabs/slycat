@@ -50,8 +50,9 @@ rights in this software.
   /*outline: 1px solid red;*/
 }
 .wrapper {
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
+  /*No longer using box-sizing since we are sizing cells based on an wrapper div inside them*/
+/*  box-sizing: border-box;
+  -moz-box-sizing: border-box;*/
 }
 .barplotHeaderColumn .wrapper {
   padding: 3px;
@@ -76,6 +77,36 @@ rights in this software.
   float: left;
   clear: left;
 }
+.barplotHeader,
+.barplotColumn,
+.mask,
+.inputs .ui-resizable-s
+{
+  border-color: #C0C0C0;
+  border-style: solid;
+  border-width: 0;
+}
+.barplotHeader {
+  border-bottom-width: 1px;
+}
+.barplotColumn,
+.mask
+{
+  border-right-width: 1px;
+}
+.inputs .ui-resizable-s {
+  bottom: 0;
+  height: 3px;
+  border-bottom-width: 1px;
+  border-top-width: 1px;
+  background-color: #DDDDCC;
+}
+.inputs .ui-resizable-s:hover {
+  background-color: #FFCC66;
+}
+/*.barplotGroup.inputs {
+  border-bottom: 7px solid red;
+}*/
 .barplotColumn .barplotCell {
   display: block;
 }
@@ -89,13 +120,11 @@ rights in this software.
   /*overflow-y: auto;*/
 }
 .barplotRow {
-  /*outline: 1px solid cyan;*/
   white-space: nowrap;
 }
 .barplotCell {
   display: inline-block;
   text-align: right;
-  /*outline: 1px solid green;*/
 }
 #rsquared-label sup {
   position: absolute;
@@ -227,7 +256,4 @@ rights in this software.
 .icon-sort-descending:hover
 {
   border: 1px solid #878787 !important;
-}
-.ui-resizable-s {
-  bottom: -2px;
 }
