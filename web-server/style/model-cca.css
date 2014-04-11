@@ -257,3 +257,6 @@ rights in this software.
 {
   border: 1px solid #878787 !important;
 }
+.barplotHeaderColumn.mask.col0 {
+  vertical-align: top;
+}

@@ -307,6 +307,9 @@ $.widget("cca.barplot",
     var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
     var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
     $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
+
+    // Can't figure out how to do this in CSS so setting explicit height here :(
+    $(".barplotHeaderColumn.mask.col0").height( $(".barplotHeader .barplotRow:first-child").height() );
   },
 
   resize_canvas: function()
