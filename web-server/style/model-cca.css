@@ -77,6 +77,7 @@ rights in this software.
   float: left;
   clear: left;
 }
+.barplotGroup.inputs,
 .barplotHeader,
 .barplotColumn,
 .mask,
@@ -86,7 +87,9 @@ rights in this software.
   border-style: solid;
   border-width: 0;
 }
-.barplotHeader {
+/*.barplotGroup.inputs,*/
+.barplotHeader
+{
   border-bottom-width: 1px;
 }
 .barplotColumn,
@@ -103,6 +106,9 @@ rights in this software.
 }
 .inputs .ui-resizable-s:hover {
   background-color: #FFCC66;
+}
+.noVerticalResize .ui-resizable-s {
+  display: none !important;
 }
 /*.barplotGroup.inputs {
   border-bottom: 7px solid red;

@@ -283,24 +283,12 @@ $.widget("cca.barplot",
       handles: "s",
       minHeight: Math.max(4, barplotViewport.height()-this.options.outputsHeight),
       maxHeight: this.options.inputsHeight,
-      create: function(event,ui){
-        //console.log("create: " + event);
-      },
       resize: function(event,ui){
-        //console.log("resize. originalHeight: " + ui.originalSize.height + ", newHeight: " + ui.size.height + " , barplotViewportHeight: " + barplotViewport.height());
         // ui.size.height is unreliable, so getting the new height directly from element
-        //barplotGroupOutputs.height( barplotViewport.height() - ui.element.height() );
         barplotGroupOutputs.height( barplotGroupOutputsOriginalHeight + (ui.originalSize.height - ui.element.height()) );
       },
       start: function(event,ui){
-        //console.log("start: " + event);
         barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
-      },
-      stop: function(event,ui){
-        //console.log("stop. originalHeight: " + ui.originalSize.height + ", newHeight: " + ui.size.height);
-        //var barplotGroupOutputs = $(".barplotGroup.outputs");
-        // ui.size.height is unreliable, so getting the new height directly from element
-        //barplotGroupOutputs.height( barplotGroupOutputs.height() + (ui.originalSize.height - ui.element.height()) );
       },
     });
     // Shifting default resize handle to left to stop overlap over scrollbar.
@@ -341,6 +329,9 @@ $.widget("cca.barplot",
       $('.barplotCanvas.input').css("overflow-y", "auto");
     }
 
+    // Assuming we need vertical resize for now. We add this class later after the table size is determined.
+    $("#barplot-table").removeClass("noVerticalResize");
+
     var increaseHeight = 0;
     var barplotPaneHeight = $('#barplot-pane').height();
     $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
@@ -374,9 +365,13 @@ $.widget("cca.barplot",
       var extraSpace = barplotPaneHeight - this.options.tableHeight;
       increaseHeight = Math.min(horizontalScrollbarHeight, extraSpace);
       if(increaseHeight > 0) {
-        console.log("Should increases height by " + increaseHeight);
         $('#barplot-table').height( $('#barplot-table').height() + increaseHeight );
         $(".barplotGroup.outputs").height( $(".barplotGroup.outputs").height() + increaseHeight );
+      }
+      // Check to see if we need resizing
+      if(horizontalScrollbarHeight <= extraSpace) {
+        // We don't need resizing, so mark table as such so we can hide the resize handle
+        $("#barplot-table").addClass("noVerticalResize");
       }
     }
 
