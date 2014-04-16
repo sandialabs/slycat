@@ -281,7 +281,7 @@ $.widget("cca.barplot",
     barplotGroupInputs.resizable({
       containment: barplotViewport,
       handles: "s",
-      minHeight: Math.max(1, barplotViewport.height()-this.options.outputsHeight),
+      minHeight: Math.max(4, barplotViewport.height()-this.options.outputsHeight),
       maxHeight: this.options.inputsHeight,
       create: function(event,ui){
         //console.log("create: " + event);
@@ -384,7 +384,7 @@ $.widget("cca.barplot",
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
     var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
     $(".barplotGroup.inputs").resizable("option", {
-      minHeight: Math.max(1, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
+      minHeight: Math.max(4, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
       maxHeight: this.options.inputsHeight,
     });
     // Shifting default resize handle to left to stop overlap over scrollbar.
