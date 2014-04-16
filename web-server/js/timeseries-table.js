@@ -52,18 +52,17 @@ $.widget("timeseries.table",
         headerCssClass : header_class,
         cssClass : cell_class,
         formatter : cell_formatter,
-        // Disabling sort controls from cca
-        // header :
-        // {
-        //   buttons :
-        //   [
-        //     {
-        //       cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-        //       tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-        //       command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
-        //     }
-        //   ]
-        // }
+        header :
+        {
+          buttons :
+          [
+            {
+              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
+            }
+          ]
+        }
       };
     }
 
@@ -71,8 +70,6 @@ $.widget("timeseries.table",
     self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId")); // Last column is added as simid
     for(var i = 0; i < self.options.metadata["column-count"]-1; i++) // rest of columns are added as inputs
       self.columns.push(make_column(i, "headerInput", "rowInput"));
-
-  	self.columns;
   },
 
   resize_canvas: function()
@@ -83,6 +80,19 @@ $.widget("timeseries.table",
 
   _setOption: function(key, value)
   {
+
+    function set_sort(column, order)
+    {
+      self.data.set_sort(column, order);
+      self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+      {
+        self.grid.invalidate();
+        self.trigger_row_selection = false;
+        self.grid.setSelectedRows(sorted_rows);
+        self.element.trigger("variable-sort-changed", [column, order]);
+      });
+    }
+    
     var self = this;
 
     if(key == "row-selection")
@@ -168,6 +178,42 @@ $.widget("timeseries.table",
       else {
         self.trigger_row_selection = true;
         self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+
+        var header_buttons = new Slick.Plugins.HeaderButtons();
+        header_buttons.onCommand.subscribe(function(e, args)
+        {
+          var column = args.column;
+          var button = args.button;
+          var command = args.command;
+          var grid = args.grid;
+
+          for(var i in self.columns)
+          {
+            self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+            self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+            self.columns[i].header.buttons[0].command = "sort-ascending";
+            grid.updateColumnHeader(self.columns[i].id);
+          }
+
+          if(command == "sort-ascending")
+          {
+            button.cssClass = 'icon-sort-ascending';
+            button.command = 'sort-descending';
+            button.tooltip = 'Sort descending';
+            set_sort(column.id, "ascending");
+          }
+          else if(command == "sort-descending")
+          {
+            button.cssClass = 'icon-sort-descending';
+            button.command = 'sort-ascending';
+            button.tooltip = 'Sort ascending';
+            set_sort(column.id, "descending");
+          }
+        });
+
+        self.grid.registerPlugin(header_buttons);
+        self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+
         self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
         self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
