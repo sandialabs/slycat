@@ -128,7 +128,7 @@ $.widget("cca.barplot",
       return function()
       {
         context.element.find(".selected-variable").removeClass("selected-variable");
-        context.element.find(".row" + variable).addClass("selected-variable");
+        context.element.find(".variable" + variable).addClass("selected-variable");
 
         context.element.trigger("variable-changed", [variable]);
       }
@@ -193,18 +193,18 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != inputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i).appendTo(barplotColumn);
-      variableName.data('loadings_index', i);
+      var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i + ' variable' + inputs[i]).appendTo(barplotColumn);
+      variableName.data({loadings_index: i, variable: inputs[i],});
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
       variableName.click( click_row(this, variableName, inputs[i]) );
 
-      var barplotRow = $('<div class="barplotRow rowInput">').addClass('row' + i).appendTo(barplotCanvas);
-      barplotRow.data('loadings_index', i);
+      var barplotRow = $('<div class="barplotRow rowInput">').addClass('row' + i + ' variable' + inputs[i]).appendTo(barplotCanvas);
+      barplotRow.data({loadings_index: i, variable: inputs[i],});
       barplotRow.click( click_row(this, barplotRow, inputs[i]) );
 
       for(var component = 0; component != component_count; ++component)
       {
-        var barplotCell = $('<div class="barplotCell rowInput">').addClass('row' + i + ' col' + (component+1)).appendTo(barplotRow);
+        var barplotCell = $('<div class="barplotCell rowInput">').addClass('row' + i + ' col' + (component+1) + ' variable' + inputs[i]).appendTo(barplotRow);
         var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
         var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellNegative = $('<div class="negative" />').css("width", negative_bar_width(x_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellNegativeSpacer);
@@ -221,18 +221,18 @@ $.widget("cca.barplot",
 
     for(var i = 0; i != outputs.length; ++i)
     {
-      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + (i + inputs.length)).appendTo(barplotColumn);
-      variableName.data('loadings_index', i);
+      var variableName = $('<div class="barplotCell col0 rowOutput outputLabel">').addClass('row' + (i + inputs.length) + ' variable' + outputs[i]).appendTo(barplotColumn);
+      variableName.data({loadings_index: i, variable: outputs[i],});
       var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][outputs[i]]).appendTo(variableName);
       variableName.click( click_row(this, variableName, outputs[i]) );
 
-      var barplotRow = $('<div class="barplotRow rowOutput">').addClass('row' + (i + inputs.length)).appendTo(barplotCanvas);
-      barplotRow.data('loadings_index', i);
+      var barplotRow = $('<div class="barplotRow rowOutput">').addClass('row' + (i + inputs.length) + ' variable' + outputs[i]).appendTo(barplotCanvas);
+      barplotRow.data({loadings_index: i, variable: outputs[i],});
       barplotRow.click( click_row(this, barplotRow, outputs[i]) );
 
       for(var component = 0; component != component_count; ++component)
       {
-        var barplotCell = $('<div class="barplotCell rowOutput">').addClass('row' + (i + inputs.length) + ' col' + (component+1)).appendTo(barplotRow);
+        var barplotCell = $('<div class="barplotCell rowOutput">').addClass('row' + (i + inputs.length) + ' col' + (component+1) + ' variable' + outputs[i]).appendTo(barplotRow);
         var barplotCellWrapper = $('<div class="wrapper" />').appendTo(barplotCell);
         var barplotCellNegativeSpacer = $('<div class="negativeSpacer spacer" />').appendTo(barplotCellWrapper);
         var barplotCellNegative = $('<div class="negative" />').css("width", negative_bar_width(y_loadings[component][i])).addClass(component_class(component)).appendTo(barplotCellNegativeSpacer);
@@ -405,7 +405,7 @@ $.widget("cca.barplot",
     else if(key == "variable")
     {
       this.element.find(".selected-variable").removeClass("selected-variable");
-      this.element.find(".row" + value).addClass("selected-variable");
+      this.element.find(".variable" + value).addClass("selected-variable");
       // Using scrollintoview jQuery plugin instead of browser built-in functionality (DOM's scrollIntoView() function).
       // DOM's scrollIntoView() works but has problems: 
       //   1. scrolls each time it's called, even when element is already visible, to bring it to top or bottom of scroll area.
@@ -413,7 +413,7 @@ $.widget("cca.barplot",
       //   3. lacks animation when scrolling
       //   4. always scrolls to top or bottom of scroll area instead of the least amount needed to make it visible
       // The jQuery plugin solves all these issues.
-      //this.element.find(".barplotRow.row" + value).get(0).scrollIntoView();
+      //this.element.find(".barplotRow.selected-variable").get(0).scrollIntoView();
       this.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
     }
     else if(key == "sort")
