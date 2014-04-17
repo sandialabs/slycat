@@ -422,7 +422,7 @@ $.widget("timeseries.table",
       self.sort_column = column;
       self.sort_order = order;
       sorted_rows = Array.apply( [], sorted_rows );
-      sorted_rows.sort();
+      sorted_rows.sort(function (a, b) { return a - b });
       self.sorted_table_filter = sorted_rows;
       self.pages = {};
     }
