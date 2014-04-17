@@ -83,16 +83,25 @@ $.widget("timeseries.table",
 
     function set_sort(column, order)
     {
-      self.data.set_sort(column, order);
-      self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+      //self.data.set_sort(column, order);
+      // self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+      // {
+      //   self.grid.invalidate();
+      //   self.trigger_row_selection = false;
+      //   self.grid.setSelectedRows(sorted_rows);
+      //   self.element.trigger("variable-sort-changed", [column, order]);
+      // });
+      self.data.get_indices("sorted", self.options["table_filter"], column, order ,function(sorted_rows)
       {
+        //self.options.sorted_table_filter = sorted_rows;
+        self.data.set_sort(column, order, sorted_rows);
         self.grid.invalidate();
-        self.trigger_row_selection = false;
-        self.grid.setSelectedRows(sorted_rows);
-        self.element.trigger("variable-sort-changed", [column, order]);
+        //self.trigger_row_selection = false;
+        //self.grid.setSelectedRows(sorted_rows);
+        //self.element.trigger("variable-sort-changed", [column, order]);
       });
     }
-    
+
     var self = this;
 
     if(key == "row-selection")
@@ -173,7 +182,7 @@ $.widget("timeseries.table",
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selected_rows);
         }
-        self._trigger_color_scale_change();
+        //self._trigger_color_scale_change();
       }
       else {
         self.trigger_row_selection = true;
@@ -255,7 +264,7 @@ $.widget("timeseries.table",
         }
         
         self.grid.init();
-        self._trigger_color_scale_change();
+        //self._trigger_color_scale_change();
       }
     }
   },
@@ -282,7 +291,7 @@ $.widget("timeseries.table",
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
         column.highlighted = true;
 
-        self._trigger_color_scale_change(column.id, column.colormap);
+        //self._trigger_color_scale_change(column.id, column.colormap);
         
       }
       else
@@ -296,46 +305,46 @@ $.widget("timeseries.table",
     self.grid.invalidate();
   },
 
-  _trigger_color_scale_change: function(variable, colormap)
-  {
-    // var self = this;
+  // _trigger_color_scale_change: function(variable, colormap)
+  // {
+  //   // var self = this;
 
-    // if(variable === undefined)
-    //   variable = self.options["variable-selection"];
-    // if(colormap === undefined) {
-    //   var columns = self.grid.getColumns();
-    //   for(var i in columns)
-    //   {
-    //     var column = columns[i];
-    //     if(column.highlighted) {
-    //       colormap = column.colormap;
-    //       break;
-    //     }
-    //   }
-    // }
+  //   // if(variable === undefined)
+  //   //   variable = self.options["variable-selection"];
+  //   // if(colormap === undefined) {
+  //   //   var columns = self.grid.getColumns();
+  //   //   for(var i in columns)
+  //   //   {
+  //   //     var column = columns[i];
+  //   //     if(column.highlighted) {
+  //   //       colormap = column.colormap;
+  //   //       break;
+  //   //     }
+  //   //   }
+  //   // }
 
-    // //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
-    // var columnsToRetrieve = [variable, self.options.metadata["column-count"]-1].join(',');
-    // var rowsToRetrieve = self.options.table_filter.join(',');
+  //   // //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
+  //   // var columnsToRetrieve = [variable, self.options.metadata["column-count"]-1].join(',');
+  //   // var rowsToRetrieve = self.options.table_filter.join(',');
 
-    // $.ajax({
-    //   url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
-    //   async: true,
-    //   success: function(resp){
-    //     var color_array = resp["data"][0];
-    //     var data_table_index_array = resp["data"][1];
-    //     self.element.trigger("color-scale-changed", { 
-    //       variable:[variable], 
-    //       colormap:colormap,
-    //       color_array:color_array,
-    //       data_table_index_array:data_table_index_array,
-    //     });
-    //   },
-    //   error: function(request, status, reason_phrase){
-    //     window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
-    //   }
-    // });
-  },
+  //   // $.ajax({
+  //   //   url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
+  //   //   async: true,
+  //   //   success: function(resp){
+  //   //     var color_array = resp["data"][0];
+  //   //     var data_table_index_array = resp["data"][1];
+  //   //     self.element.trigger("color-scale-changed", { 
+  //   //       variable:[variable], 
+  //   //       colormap:colormap,
+  //   //       color_array:color_array,
+  //   //       data_table_index_array:data_table_index_array,
+  //   //     });
+  //   //   },
+  //   //   error: function(request, status, reason_phrase){
+  //   //     window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
+  //   //   }
+  //   // });
+  // },
 
   _data_provider: function(parameters)
   {
@@ -348,6 +357,7 @@ $.widget("timeseries.table",
     self.sort_column = parameters.sort_column;
     self.sort_order = parameters.sort_order;
     self.table_filter = parameters.table_filter;
+    self.sorted_table_filter = null;
     self.row_count = parameters.row_count;
 
     self.pages = {};
@@ -371,10 +381,12 @@ $.widget("timeseries.table",
         var row_end = (page + 1) * self.page_size;
 
         var sort = "";
-        if(self.sort_column !== null && self.sort_order !== null)
+        if(self.sort_column !== null && self.sort_order !== null) {
           sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-
-        var rowsToRetrieve = self.table_filter.slice(row_begin, row_end ).join(',');
+          var rowsToRetrieve = self.sorted_table_filter.slice(row_begin, row_end ).join(',');
+        } else {
+          var rowsToRetrieve = self.table_filter.slice(row_begin, row_end ).join(',');
+        }
 
         $.ajax(
         {
@@ -403,17 +415,21 @@ $.widget("timeseries.table",
       return null;
     }
 
-    self.set_sort = function(column, order)
+    self.set_sort = function(column, order, sorted_rows)
     {
       if(column == self.sort_column && order == self.sort_order)
         return;
       self.sort_column = column;
       self.sort_order = order;
+      sorted_rows = Array.apply( [], sorted_rows );
+      sorted_rows.sort();
+      self.sorted_table_filter = sorted_rows;
       self.pages = {};
-    },
+    }
 
-    self.get_indices = function(direction, rows, callback)
+    self.get_indices = function(sortedUnsorted, rows, sortColumn, sortOrder, callback)
     {
+      console.log("get_indices!!!! direction: " + sortedUnsorted + ", rows: " + rows);
       if(rows.length == 0)
       {
         callback([]);
@@ -421,8 +437,8 @@ $.widget("timeseries.table",
       }
 
       var sort = "";
-      if(self.sort_column !== null && self.sort_order !== null)
-        sort = "&sort=" + self.sort_column + ":" + self.sort_order;
+      if(sortColumn !== null && sortOrder !== null)
+        sort = "&sort=" + sortColumn + ":" + sortOrder;
 
       var row_string = "";
       for(var i = 0; i < rows.length; ++i)
@@ -444,7 +460,7 @@ $.widget("timeseries.table",
       }
 
       var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
       request.responseType = "arraybuffer";
       request.callback = callback;
       request.onload = function(e)
