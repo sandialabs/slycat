@@ -91,15 +91,20 @@ $.widget("timeseries.table",
       //   self.grid.setSelectedRows(sorted_rows);
       //   self.element.trigger("variable-sort-changed", [column, order]);
       // });
-      self.data.get_indices("sorted", self.options["table_filter"], column, order ,function(sorted_rows)
-      {
-        //self.options.sorted_table_filter = sorted_rows;
-        self.data.set_sort(column, order, sorted_rows);
-        self.grid.invalidate();
-        //self.trigger_row_selection = false;
-        //self.grid.setSelectedRows(sorted_rows);
-        //self.element.trigger("variable-sort-changed", [column, order]);
-      });
+
+      self.options["sort-variable"] = column;
+      self.options["sort-order"] = order;
+      self.data.set_sort(column, order);
+      //self.grid.invalidate();
+      // self.data.get_indices("sorted", self.options["table_filter"], column, order ,function(sorted_rows)
+      // {
+      //   //self.options.sorted_table_filter = sorted_rows;
+      //   self.data.set_sort(column, order, sorted_rows);
+      //   self.grid.invalidate();
+      //   //self.trigger_row_selection = false;
+      //   //self.grid.setSelectedRows(sorted_rows);
+      //   //self.element.trigger("variable-sort-changed", [column, order]);
+      // });
     }
 
     var self = this;
@@ -171,6 +176,7 @@ $.widget("timeseries.table",
 
       if(self.grid) {
         self.grid.setData(self.data);
+        self.data.setGrid(self.grid);
         self.grid.invalidate();
         if(self.options["row-selection"].length > 0){
 
@@ -182,11 +188,11 @@ $.widget("timeseries.table",
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selected_rows);
         }
-        //self._trigger_color_scale_change();
       }
       else {
         self.trigger_row_selection = true;
         self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+        self.data.setGrid(self.grid);
 
         var header_buttons = new Slick.Plugins.HeaderButtons();
         header_buttons.onCommand.subscribe(function(e, args)
@@ -264,7 +270,6 @@ $.widget("timeseries.table",
         }
         
         self.grid.init();
-        //self._trigger_color_scale_change();
       }
     }
   },
@@ -290,9 +295,6 @@ $.widget("timeseries.table",
 
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
         column.highlighted = true;
-
-        //self._trigger_color_scale_change(column.id, column.colormap);
-        
       }
       else
       {
@@ -304,47 +306,6 @@ $.widget("timeseries.table",
 
     self.grid.invalidate();
   },
-
-  // _trigger_color_scale_change: function(variable, colormap)
-  // {
-  //   // var self = this;
-
-  //   // if(variable === undefined)
-  //   //   variable = self.options["variable-selection"];
-  //   // if(colormap === undefined) {
-  //   //   var columns = self.grid.getColumns();
-  //   //   for(var i in columns)
-  //   //   {
-  //   //     var column = columns[i];
-  //   //     if(column.highlighted) {
-  //   //       colormap = column.colormap;
-  //   //       break;
-  //   //     }
-  //   //   }
-  //   // }
-
-  //   // //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
-  //   // var columnsToRetrieve = [variable, self.options.metadata["column-count"]-1].join(',');
-  //   // var rowsToRetrieve = self.options.table_filter.join(',');
-
-  //   // $.ajax({
-  //   //   url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
-  //   //   async: true,
-  //   //   success: function(resp){
-  //   //     var color_array = resp["data"][0];
-  //   //     var data_table_index_array = resp["data"][1];
-  //   //     self.element.trigger("color-scale-changed", { 
-  //   //       variable:[variable], 
-  //   //       colormap:colormap,
-  //   //       color_array:color_array,
-  //   //       data_table_index_array:data_table_index_array,
-  //   //     });
-  //   //   },
-  //   //   error: function(request, status, reason_phrase){
-  //   //     window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
-  //   //   }
-  //   // });
-  // },
 
   _data_provider: function(parameters)
   {
@@ -358,78 +319,17 @@ $.widget("timeseries.table",
     self.sort_order = parameters.sort_order;
     self.table_filter = parameters.table_filter;
     self.sorted_table_filter = null;
+    self.retrieve_table_filter = null;
     self.row_count = parameters.row_count;
 
     self.pages = {};
     self.page_size = 50;
 
-    self.getLength = function()
+    self.get_indices = function(sortedUnsorted, rows, sortColumn, sortOrder, callback, asynchronous)
     {
-      return self.row_count;
-    }
+      if(asynchronous != false)
+        asynchronous = true;
 
-    self.getItem = function(index)
-    {
-      var column_begin = 0;
-      var column_end = self.metadata["column-count"];
-      var page = Math.floor(index / self.page_size);
-      var page_begin = page * self.page_size;
-
-      if(!(page in self.pages))
-      {
-        var row_begin = page_begin;
-        var row_end = (page + 1) * self.page_size;
-
-        var sort = "";
-        if(self.sort_column !== null && self.sort_order !== null) {
-          sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-          var rowsToRetrieve = self.sorted_table_filter.slice(row_begin, row_end ).join(',');
-        } else {
-          var rowsToRetrieve = self.table_filter.slice(row_begin, row_end ).join(',');
-        }
-
-        $.ajax(
-        {
-          type : "GET",
-          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
-          async : false,
-          success : function(data)
-          {
-            self.pages[page] = data;
-          },
-          error: function(request, status, reason_phrase)
-          {
-            console.log("error", request, status, reason_phrase);
-          }
-        });
-      }
-
-      result = {};
-      for(var i = column_begin; i != column_end; ++i)
-        result[i] = self.pages[page].data[i][index - page_begin];
-      return result;
-    }
-
-    self.getItemMetadata = function(index)
-    {
-      return null;
-    }
-
-    self.set_sort = function(column, order, sorted_rows)
-    {
-      if(column == self.sort_column && order == self.sort_order)
-        return;
-      self.sort_column = column;
-      self.sort_order = order;
-      sorted_rows = Array.apply( [], sorted_rows );
-      sorted_rows.sort(function (a, b) { return a - b });
-      self.sorted_table_filter = sorted_rows;
-      self.pages = {};
-    }
-
-    self.get_indices = function(sortedUnsorted, rows, sortColumn, sortOrder, callback)
-    {
-      console.log("get_indices!!!! direction: " + sortedUnsorted + ", rows: " + rows);
       if(rows.length == 0)
       {
         callback([]);
@@ -459,15 +359,113 @@ $.widget("timeseries.table",
         return this.result;
       }
 
-      var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
-      request.responseType = "arraybuffer";
-      request.callback = callback;
-      request.onload = function(e)
-      {
-        this.callback(new Int32Array(this.response));
+      // XMLHttpRequest does not support synchronous retrieval with arraybuffer, so falling back to ajax with no arraybuffer for initial synchronous sorted table filter retrieval.
+      if(asynchronous){
+        var request = new XMLHttpRequest();
+        request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+        request.responseType = "arraybuffer";
+        request.callback = callback;
+        request.onload = function(e)
+        {
+          this.callback(new Int32Array(this.response));
+        }
+        request.send();
+      } else {
+        $.ajax(
+        {
+          type : "GET",
+          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index" + sort,
+          async : false,
+          callback : callback,
+          success : function(data)
+          {
+            console.log(data);
+            this.callback(new Int32Array(data));
+          },
+        });
       }
-      request.send();
+    }
+
+    self.retrieve_table_filter = self.table_filter;
+    if(self.sort_column !== null && self.sort_order !== null) {
+      // Need to retrieve the sorted_table_filter synchronously because everything else relies on it.
+      self.get_indices("sorted", self.table_filter, self.sort_column, self.sort_order, function(sorted_rows){
+        sorted_rows = Array.apply( [], sorted_rows );
+        sorted_rows.sort(function (a, b) { return a - b });
+        self.retrieve_table_filter = sorted_rows;
+        self.pages = {};
+      }, false);
+    }
+
+    self.setGrid = function(grid)
+    {
+      self.grid = grid;
+    }
+
+    self.getLength = function()
+    {
+      return self.row_count;
+    }
+
+    self.getItem = function(index)
+    {
+      var column_begin = 0;
+      var column_end = self.metadata["column-count"];
+      var page = Math.floor(index / self.page_size);
+      var page_begin = page * self.page_size;
+
+      if(!(page in self.pages))
+      {
+        var row_begin = page_begin;
+        var row_end = (page + 1) * self.page_size;
+
+        var sort = "";
+        if(self.sort_column !== null && self.sort_order !== null) {
+          sort = "&sort=" + self.sort_column + ":" + self.sort_order;
+        }
+        
+        var rowsToRetrieve = self.retrieve_table_filter.slice(row_begin, row_end ).join(',');
+
+        $.ajax(
+        {
+          type : "GET",
+          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          async : false,
+          success : function(data)
+          {
+            self.pages[page] = data;
+          },
+          error: function(request, status, reason_phrase)
+          {
+            console.log("error", request, status, reason_phrase);
+          }
+        });
+      }
+
+      result = {};
+      for(var i = column_begin; i != column_end; ++i)
+        result[i] = self.pages[page].data[i][index - page_begin];
+      return result;
+    }
+
+    self.getItemMetadata = function(index)
+    {
+      return null;
+    }
+
+    self.set_sort = function(column, order)
+    {
+      if(column == self.sort_column && order == self.sort_order)
+        return;
+      self.sort_column = column;
+      self.sort_order = order;
+      self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
+        sorted_rows = Array.apply( [], sorted_rows );
+        sorted_rows.sort(function (a, b) { return a - b });
+        self.retrieve_table_filter = sorted_rows;
+        self.pages = {};
+        self.grid.invalidate();
+      });
     }
   },
 
