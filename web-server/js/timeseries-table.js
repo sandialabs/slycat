@@ -83,29 +83,18 @@ $.widget("timeseries.table",
 
     function set_sort(column, order)
     {
-      //self.data.set_sort(column, order);
-      // self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
-      // {
-      //   self.grid.invalidate();
-      //   self.trigger_row_selection = false;
-      //   self.grid.setSelectedRows(sorted_rows);
-      //   self.element.trigger("variable-sort-changed", [column, order]);
-      // });
-
       self.options["sort-variable"] = column;
       self.options["sort-order"] = order;
-      self.data.set_sort(column, order);
+      self.data.set_sort(column, order, function(){
+        if(self.options["row-selection"].length > 0){
+          var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
+          self.trigger_row_selection = false;
+          self.grid.setSelectedRows(selectedRows);
+          if(selectedRows.length)
+            self.grid.scrollRowToTop(selectedRows[0]);
+        }
+      });
       self.element.trigger("variable-sort-changed", [column, order]);
-      //self.grid.invalidate();
-      // self.data.get_indices("sorted", self.options["table_filter"], column, order ,function(sorted_rows)
-      // {
-      //   //self.options.sorted_table_filter = sorted_rows;
-      //   self.data.set_sort(column, order, sorted_rows);
-      //   self.grid.invalidate();
-      //   //self.trigger_row_selection = false;
-      //   //self.grid.setSelectedRows(sorted_rows);
-      //   //self.element.trigger("variable-sort-changed", [column, order]);
-      // });
     }
 
     var self = this;
@@ -117,13 +106,11 @@ $.widget("timeseries.table",
 
       self.options[key] = value;
 
-      var selected_rows = [];
-      for(var i=0; i<value.length; i++) {
-        selected_rows.push( self.options.table_filter.indexOf(value[i]) );
-      }
-      self.grid.setSelectedRows(selected_rows);
-      if(selected_rows.length)
-        self.grid.scrollRowToTop(selected_rows[0]);
+      var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
+      self.grid.setSelectedRows(selectedRows);
+      
+      if(selectedRows.length)
+        self.grid.scrollRowToTop(selectedRows[0]);
     }
     else if(key == "row-selection-silent")
     {
@@ -180,14 +167,11 @@ $.widget("timeseries.table",
         self.data.setGrid(self.grid);
         self.grid.invalidate();
         if(self.options["row-selection"].length > 0){
-
-          var selected_rows = [];
-          for(var i=0; i<self.options["row-selection"].length; i++) {
-            selected_rows.push( self.options.table_filter.indexOf(self.options["row-selection"][i]) );
-          }
-
+          var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
-          self.grid.setSelectedRows(selected_rows);
+          self.grid.setSelectedRows(selectedRows);
+          if(selectedRows.length)
+            self.grid.scrollRowToTop(selectedRows[0]);
         }
       }
       else {
@@ -260,14 +244,11 @@ $.widget("timeseries.table",
         self._color_variables(self.options["variable-selection"]);
 
         if(self.options["row-selection"].length > 0){
-
-          var selected_rows = [];
-          for(var i=0; i<self.options["row-selection"].length; i++) {
-            selected_rows.push( self.options.table_filter.indexOf(self.options["row-selection"][i]) );
-          }
-
+          var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
-          self.grid.setSelectedRows(selected_rows);
+          self.grid.setSelectedRows(selectedRows);
+          if(selectedRows.length)
+            self.grid.scrollRowToTop(selectedRows[0]);
         }
         
         self.grid.init();
@@ -319,8 +300,8 @@ $.widget("timeseries.table",
     self.sort_column = parameters.sort_column;
     self.sort_order = parameters.sort_order;
     self.table_filter = parameters.table_filter;
-    self.sorted_table_filter = null;
-    self.retrieve_table_filter = null;
+    self.sorted_table_filter = parameters.table_filter;
+    self.retrieve_table_filter = parameters.table_filter;
     self.row_count = parameters.row_count;
 
     self.pages = {};
@@ -386,13 +367,11 @@ $.widget("timeseries.table",
       }
     }
 
-    self.retrieve_table_filter = self.table_filter;
     if(self.sort_column !== null && self.sort_order !== null) {
       // Need to retrieve the sorted_table_filter synchronously because everything else relies on it.
       self.get_indices("sorted", self.table_filter, self.sort_column, self.sort_order, function(sorted_rows){
-        sorted_rows = Array.apply( [], sorted_rows );
-        sorted_rows.sort(function (a, b) { return a - b });
-        self.retrieve_table_filter = sorted_rows;
+        self.sorted_table_filter = Array.apply( [], sorted_rows );;
+        self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
         self.pages = {};
       }, false);
     }
@@ -453,19 +432,35 @@ $.widget("timeseries.table",
       return null;
     }
 
-    self.set_sort = function(column, order)
+    self.set_sort = function(column, order, callback)
     {
       if(column == self.sort_column && order == self.sort_order)
         return;
       self.sort_column = column;
       self.sort_order = order;
       self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
-        sorted_rows = Array.apply( [], sorted_rows );
-        sorted_rows.sort(function (a, b) { return a - b });
-        self.retrieve_table_filter = sorted_rows;
+        var array = Array.apply( [], sorted_rows );
+        self.sorted_table_filter = Array.apply( [], sorted_rows );;
+        self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
         self.pages = {};
         self.grid.invalidate();
+        callback();
       });
+    }
+
+    self.getSimulationRowIndexes = function(simulation_indexes)
+    {
+      var table_filter_index, sorted_table_filter_element, retrieve_table_filter_index;
+      var result = [];
+      for(var i=0; i<simulation_indexes.length; i++) {
+        table_filter_index = self.table_filter.indexOf(simulation_indexes[i]);
+        if(table_filter_index > -1){
+          sorted_table_filter_element = self.sorted_table_filter[table_filter_index];
+          retrieve_table_filter_index = self.retrieve_table_filter.indexOf(sorted_table_filter_element);
+          result.push(retrieve_table_filter_index);
+        }
+      }
+      return result;
     }
   },
 
