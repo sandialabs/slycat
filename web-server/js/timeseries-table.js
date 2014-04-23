@@ -243,6 +243,8 @@ $.widget("timeseries.table",
 
         self._color_variables(self.options["variable-selection"]);
 
+        self.grid.init();
+
         if(self.options["row-selection"].length > 0){
           var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
@@ -250,8 +252,6 @@ $.widget("timeseries.table",
           if(selectedRows.length)
             self.grid.scrollRowToTop(selectedRows[0]);
         }
-        
-        self.grid.init();
       }
     }
   },
