@@ -80,7 +80,6 @@ $.widget("timeseries.table",
 
   _setOption: function(key, value)
   {
-
     function set_sort(column, order)
     {
       self.options["sort-variable"] = column;
@@ -205,9 +204,16 @@ $.widget("timeseries.table",
           else if(command == "sort-descending")
           {
             button.cssClass = 'icon-sort-descending';
+            button.command = 'sort-off';
+            button.tooltip = 'Sort by dendrogram order';
+            set_sort(column.id, "descending");
+          }
+          else if(command == "sort-off")
+          {
+            button.cssClass = 'icon-sort-off';
             button.command = 'sort-ascending';
             button.tooltip = 'Sort ascending';
-            set_sort(column.id, "descending");
+            set_sort(null, null);
           }
         });
 
@@ -434,18 +440,30 @@ $.widget("timeseries.table",
 
     self.set_sort = function(column, order, callback)
     {
-      if(column == self.sort_column && order == self.sort_order)
+      if(column == self.sort_column && order == self.sort_order) {
         return;
-      self.sort_column = column;
-      self.sort_order = order;
-      self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
-        var array = Array.apply( [], sorted_rows );
-        self.sorted_table_filter = Array.apply( [], sorted_rows );;
-        self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
+      }
+      else if(column==null || order==null){
+        self.sort_column = column;
+        self.sort_order = order;
+        self.sorted_table_filter = self.table_filter;
+        self.retrieve_table_filter = self.table_filter;
         self.pages = {};
         self.grid.invalidate();
         callback();
-      });
+      }
+      else {
+        self.sort_column = column;
+        self.sort_order = order;
+        self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
+          var array = Array.apply( [], sorted_rows );
+          self.sorted_table_filter = Array.apply( [], sorted_rows );;
+          self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
+          self.pages = {};
+          self.grid.invalidate();
+          callback();
+        });
+      }
     }
 
     self.getSimulationRowIndexes = function(simulation_indexes)
