@@ -806,6 +806,12 @@ rights in this software.
             if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
               table_options["row-selection"] = bookmark[initial_cluster + "-selected-row-simulations"];
 
+            if("sort-variable" in bookmark && "sort-order" in bookmark)
+            {
+              table_options["sort-variable"] = bookmark["sort-variable"];
+              table_options["sort-order"] = bookmark["sort-order"];
+            }
+
             $("#table").table(table_options);
 
             // Changing the selected dendrogram node updates the table ...
@@ -833,6 +839,12 @@ rights in this software.
             $("#table").bind("row-selection-changed", function(event, selection)
             {
               selected_simulations_changed(selection);
+            });
+
+            // Log changes to the table sort order ...
+            $("#table").bind("variable-sort-changed", function(event, variable, order)
+            {
+              variable_sort_changed(variable, order);
             });
 
             // Changing the table variable selection logs it, updates the waveform plot and dendrogram...
@@ -975,6 +987,16 @@ rights in this software.
           var selected_variable = {};
           selected_variable[ $("#cluster-viewer").cluster("option", "cluster") + "-column-index"] = variable[0];
           bookmarker.updateState(selected_variable);
+        }
+
+        function variable_sort_changed(variable, order)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
+          });
+          bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
         }
 
         function expanded_collapsed_nodes_changed(nodes){

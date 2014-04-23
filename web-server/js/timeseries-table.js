@@ -95,6 +95,7 @@ $.widget("timeseries.table",
       self.options["sort-variable"] = column;
       self.options["sort-order"] = order;
       self.data.set_sort(column, order);
+      self.element.trigger("variable-sort-changed", [column, order]);
       //self.grid.invalidate();
       // self.data.get_indices("sorted", self.options["table_filter"], column, order ,function(sorted_rows)
       // {
@@ -379,7 +380,6 @@ $.widget("timeseries.table",
           callback : callback,
           success : function(data)
           {
-            console.log(data);
             this.callback(new Int32Array(data));
           },
         });
