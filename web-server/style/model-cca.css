@@ -19,119 +19,227 @@ rights in this software.
   width: 15em;
 }
 
-/* CCA table styles */
-#barplot-pane
+#table
 {
-  overflow: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 }
 
-#barplot
-{
-  margin: 2em;
-  border-collapse: collapse;
+/* New CCA table styles */
+#barplot-table {
+  /*height: 250px;*/
+  overflow: hidden;
 }
-
-#barplot td
+.barplotHeader {
+  /*overflow: hidden;*/
+  white-space: nowrap;
+}
+.barplotHeaderColumns {
+  /*outline: 1px solid blue;*/
+  white-space: nowrap;
+  display: inline-block;
+}
+.barplotHeaderColumn {
+  text-align: right !important;
+  display: inline-block;
+  /*padding: 3px;*/
+  cursor: pointer;
+  /*outline: 1px solid red;*/
+}
+.wrapper {
+  /*No longer using box-sizing since we are sizing cells based on an wrapper div inside them*/
+/*  box-sizing: border-box;
+  -moz-box-sizing: border-box;*/
+}
+.barplotHeaderColumn .wrapper {
+  padding: 3px;
+}
+.mask
 {
+  background-color: white;
+  position: relative; /* needed to get this cell to cover scrolling header row */
+  z-index: 1;
+}
+.mask .wrapper {
+  padding: 3px;
+}
+.barplotViewport {
+
+}
+.barplotGroup {
+  overflow: hidden;
+  width: auto !important; /* Need to force auto width since jQuery Resizable Widget sets static width on resize, which then breaks horizontal expansion/contraction on pane resize */
+}
+.barplotColumn {
+  float: left;
+  clear: left;
+}
+.barplotGroup.inputs,
+.barplotHeader,
+.barplotColumn,
+.mask,
+.inputs .ui-resizable-s
+{
+  border-color: #C0C0C0;
+  border-style: solid;
+  border-width: 0;
+}
+/*.barplotGroup.inputs,*/
+.barplotHeader
+{
+  border-bottom-width: 1px;
+}
+.barplotColumn,
+.mask
+{
+  border-right-width: 1px;
+}
+.inputs .ui-resizable-s {
+  bottom: 0;
+  height: 3px;
+  border-bottom-width: 1px;
+  border-top-width: 1px;
+  background-color: #DDDDCC;
+}
+.inputs .ui-resizable-s:hover {
+  background-color: #FFCC66;
+}
+.noVerticalResize .ui-resizable-s {
+  display: none !important;
+}
+/*.barplotGroup.inputs {
+  border-bottom: 7px solid red;
+}*/
+.barplotColumn .barplotCell {
+  display: block;
+}
+.barplotCanvas {
+  /*overflow: auto;*/
+  /*display: relative;*/ /* Only needed if using DOM's scrollIntoView() function instead of jQuery plugin */
+  height: 100%;
+}
+.barplotCanvas.input {
+  overflow-x: hidden;
+  /*overflow-y: auto;*/
+}
+.barplotRow {
+  white-space: nowrap;
+}
+.barplotCell {
+  display: inline-block;
   text-align: right;
 }
-
-#barplot td.value
-{
-  padding-right: 29px;
-  padding-left: 23px;
+#rsquared-label sup {
+  position: absolute;
+  margin-top: -3px;
 }
-
-#barplot .input th
+.rowInput,
+.rowOutput
+{
+  cursor: pointer;
+}
+#barplot-table .inputLabel .wrapper,
+#barplot-table .outputLabel .wrapper
+{
+  padding: 3px;
+}
+#barplot-table .inputLabel,
+#barplot-table .outputLabel,
+.barplotCell.col0,
+.barplotHeaderColumn
+{
+  font-weight: bold;
+  text-align: center;
+}
+#barplot-table .inputLabel
 {
   background: #eeffe0;
 }
-
-#barplot .input td
-{
-  background: #c7e9c0;
-}
-
-#barplot .output th
-{
-  background: #eeeeff;
-}
-
-#barplot .output td
-{
-  background: #dbd9eb;
-}
-
-#barplot .bar
-{
-  padding: 0;
-  margin: 0;
-}
-
-#barplot td.bar:last-child 
-{
-  padding-right: 20px;
-}
-#barplot td.bar:nth-child(2) 
-{
-  padding-left: 20px;
-}
-
-#barplot .negative div
-{
-  float: right;
-  background-color: blue;
-  border-top-left-radius: 2px;
-  border-bottom-left-radius: 2px;
-  height: 12px;
-  padding: 0;
-  margin: 0;
-}
-
-#barplot .positive div
-{
-  float: left;
-  background-color: red;
-  border-top-right-radius: 2px;
-  border-bottom-right-radius: 2px;
-  height: 12px;
-  padding: 0;
-  margin: 0;
-}
-
-#barplot th.label
-{
-  border: 1px solid transparent;
-  padding-left: 23px;
-}
-
-#barplot th.label:hover
-{
-  background: #ddd;
-  border: 1px solid gray;
-}
-
-#barplot tr.input.selected-variable th, #barplot tr.input.selected-variable td
+#barplot-table .inputLabel.selected-variable,
+#barplot-table .barplotRow.rowInput.selected-variable,
+#barplot-table .barplotCell.rowInput.selected-variable
 {
   background: #3ca654;
   color: white;
 }
-
-#barplot tr.output.selected-variable th, #barplot tr.output.selected-variable td
+#barplot-table .outputLabel
+{
+  background: #eeeeff;
+}
+#barplot-table .outputLabel.selected-variable,
+#barplot-table .barplotRow.rowOutput.selected-variable,
+#barplot-table .barplotCell.rowOutput.selected-variable
 {
   background: #7767b0;
   color: white;
 }
-
-#barplot th.label.selected-component, #barplot th.label.selected-component:hover
+.barplotHeaderColumnLabelWrapper,
+.selectCCAComponent,
+.wrapper,
+.barplotCellValue,
+.selected-component .spacer,
+.negative,
+.positive
 {
-  background: #ddd;
-  border-top: 1px solid gray;
-  border-left: 1px solid gray;
-  border-right: 1px solid gray;
-  border-bottom: 1px solid transparent;
+  display: inline-block;
 }
-#barplot th.label span.sortCCAComponent {
+.barplotCellValue
+{
+  padding: 3px 23px 3px 18px;
+  width: 40px;
+}
+.selected-component .barplotCellValue,
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
+{
+  background-color: #DDDDDD;
+  border-width: 0px 1px;
+  border-style: solid;
+  border-color: #808080;
+  color: #666655;
+}
+.barplotHeaderColumn.selected-component .wrapper {
+  padding: 0;
+}
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
+{
+  padding: 3px 3px 3px 3px;
+  width: 75px;
+}
+.spacer
+{
+  width: 100px;
+  display: none;
+}
+.negativeSpacer
+{
+  text-align: right;
+}
+.positiveSpacer
+{
+  text-align: left;
+}
+.negative,
+.positive
+{
+  height: 12px;
+}
+.negative
+{
+  background-color: blue;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+.positive
+{
+  background-color: red;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+#barplot-table span.sortCCAComponent 
+{
   width: 15px;
   height: 15px;
   display: inline-block;
@@ -141,11 +249,13 @@ rights in this software.
   top: 3px;
   margin-left: 3px;
 }
-#barplot th.label:hover .icon-sort-off,
-.icon-sort-off:hover {
+#barplot-table .barplotHeaderColumn:hover .icon-sort-off,
+.icon-sort-off:hover 
+{
   background: transparent url(sort-desc-light.png) no-repeat center center;
 }
-.icon-sort-off:hover {
+.icon-sort-off:hover 
+{
   border: 1px solid #C7C7C7 !important;
 }
 .icon-sort-ascending:hover,
@@ -153,19 +263,6 @@ rights in this software.
 {
   border: 1px solid #878787 !important;
 }
-
-#barplot td.value.selected-component
-{
-  background: #ddd;
-  border-left: 1px solid gray;
-  border-right: 1px solid gray;
-}
-
-#table
-{
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+.barplotHeaderColumn.mask.col0 {
+  vertical-align: top;
 }

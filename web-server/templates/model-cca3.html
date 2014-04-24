@@ -19,6 +19,8 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/cca-barplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.scrollintoview.min.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
@@ -106,8 +108,7 @@ rights in this software.
     <div id="cca-pane" class="ui-layout-center">
       <div id="barplot-pane" class="ui-layout-west">
         <div class="load-status"></div>
-        <table id="barplot">
-        </table>
+        <div id="barplot-table"></div>
       </div>
       <div id="scatterplot-pane" class="ui-layout-center">
         <div class="load-status"></div>
@@ -693,6 +694,8 @@ rights in this software.
           west:
           {
             size: $("#cca-pane").width() / 2,
+            resizeWhileDragging: false,
+            onresize: function() { $("#barplot-table").barplot("resize_canvas"); },
           },
           center:
           {
@@ -774,7 +777,7 @@ rights in this software.
 
             var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
-            $("#barplot").barplot({
+            $("#barplot-table").barplot({
               metadata: table_metadata,
               inputs: input_columns,
               outputs: output_columns,
@@ -787,27 +790,27 @@ rights in this software.
 
             if("variable-selection" in bookmark)
             {
-              $("#barplot").barplot("option", "variable", bookmark["variable-selection"]);
+              $("#barplot-table").barplot("option", "variable", bookmark["variable-selection"]);
             }
 
-            $("#barplot").bind("component-changed", function(event, component)
+            $("#barplot-table").bind("component-changed", function(event, component)
             {
               selected_component_changed(component);
             });
 
-            $("#barplot").bind("component-sort-changed", function(event, component, order)
+            $("#barplot-table").bind("component-sort-changed", function(event, component, order)
             {
               component_sort_changed(component, order);
             });
 
-            $("#barplot").bind("variable-changed", function(event, variable)
+            $("#barplot-table").bind("variable-changed", function(event, variable)
             {
               selected_variable_changed(variable);
             });
 
             if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
             {
-              $("#barplot").barplot("option",
+              $("#barplot-table").barplot("option",
               {
                 "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
               });
@@ -851,13 +854,13 @@ rights in this software.
             });
 
             // Changing the barplot component updates the scatterplot ...
-            $("#barplot").bind("component-changed", function(event, component)
+            $("#barplot-table").bind("component-changed", function(event, component)
             {
               $("#scatterplot").scatterplot("option", {x : x[component], y : y[component]});
             });
 
             // Changing the barplot variable updates the scatterplot ...
-            $("#barplot").bind("variable-changed", function(event, variable)
+            $("#barplot-table").bind("variable-changed", function(event, variable)
             {
               update_scatterplot_value(variable);
             });
@@ -941,7 +944,7 @@ rights in this software.
             });
 
             // Changing the barplot variable updates the table ...
-            $("#barplot").bind("variable-changed", function(event, variable)
+            $("#barplot-table").bind("variable-changed", function(event, variable)
             {
               $("#table").table("option", "variable-selection", [variable]);
             });
@@ -949,7 +952,7 @@ rights in this software.
             // Changing the table variable updates the barplot ...
             $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              $("#barplot").barplot("option", "variable", selection[0]);
+              $("#barplot-table").barplot("option", "variable", selection[0]);
             });
 
             // Changing the table variable updates the scatterplot ...
