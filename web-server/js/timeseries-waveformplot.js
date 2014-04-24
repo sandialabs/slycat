@@ -57,7 +57,7 @@ $.widget("timeseries.waveformplot",
       .attr("transform", "translate(" + this.padding + "," + this.padding + ")")
       ;
 
-    this.visualization.append("svg:rect")
+    this.rect = this.visualization.append("svg:rect")
       .attr("width", this.diagram_width)
       .attr("height", this.diagram_height)
       .attr("pointer-events", "all")

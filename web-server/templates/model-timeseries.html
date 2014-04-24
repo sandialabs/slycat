@@ -538,9 +538,19 @@ rights in this software.
           north:
           {
             initClosed : true,
+            resizeWhileDragging : false,
+            onresize: function()
+            {
+              console.log('resized bodyLayout north');
+            },
           },
           center:
           {
+            resizeWhileDragging : false,
+            onresize: function()
+            {
+              console.log('resized bodyLayout center');
+            },
           },
           south:
           {
@@ -549,6 +559,7 @@ rights in this software.
             onresize: function()
             {
               $("#table").table("resize_canvas");
+              console.log('resized bodyLayout south');
             },
           },
         });
@@ -557,11 +568,19 @@ rights in this software.
           north :
           {
             size: 45,
-            resizeWhileDragging : true
+            resizeWhileDragging : false,
+            onresize: function()
+            {
+              console.log('resized contentPaneLayout north');
+            },
           },
           center :
           {
-            resizeWhileDragging : true
+            resizeWhileDragging : false,
+            onresize: function()
+            {
+              console.log('resized contentPaneLayout center');
+            },
           },
         });
 
@@ -569,7 +588,17 @@ rights in this software.
           west :
           {
             size : $("#model-pane").width() / 2,
-            resizeWhileDragging : true
+            resizeWhileDragging : false,
+            onresize: function() { console.log("resized modelPaneLayout west "); },
+          },
+          center :
+          {
+            resizeWhileDragging: false,
+            onresize: function() 
+            { 
+              console.log("resized modelPaneLayout center");
+              $("#waveform-viewer").waveformplot("resize_canvas");
+            },
           }
         });
 
