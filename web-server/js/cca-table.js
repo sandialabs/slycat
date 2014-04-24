@@ -49,6 +49,8 @@ $.widget("cca.table",
         self.grid.invalidate();
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
+        if(sorted_rows.length)
+          self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
         self.element.trigger("variable-sort-changed", [column, order]);
       });
     }
@@ -160,13 +162,15 @@ $.widget("cca.table",
 
     self._color_variables(self.options["variable-selection"]);
 
+    self.grid.init();
+
     self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
     {
       self.trigger_row_selection = false;
       self.grid.setSelectedRows(sorted_rows);
+      if(sorted_rows.length)
+        self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
     });
-
-    self.grid.init();
   },
 
   resize_canvas: function()
@@ -190,7 +194,7 @@ $.widget("cca.table",
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
         if(sorted_rows.length)
-          self.grid.scrollRowToTop(sorted_rows[0]);
+          self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
       });
     }
     else if(key == "variable-selection")
