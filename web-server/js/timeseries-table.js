@@ -90,7 +90,7 @@ $.widget("timeseries.table",
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selectedRows);
           if(selectedRows.length)
-            self.grid.scrollRowToTop(selectedRows[0]);
+            self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }
       });
       self.element.trigger("variable-sort-changed", [column, order]);
@@ -109,7 +109,7 @@ $.widget("timeseries.table",
       self.grid.setSelectedRows(selectedRows);
       
       if(selectedRows.length)
-        self.grid.scrollRowToTop(selectedRows[0]);
+        self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
     }
     else if(key == "row-selection-silent")
     {
@@ -170,7 +170,7 @@ $.widget("timeseries.table",
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selectedRows);
           if(selectedRows.length)
-            self.grid.scrollRowToTop(selectedRows[0]);
+            self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }
       }
       else {
@@ -256,7 +256,7 @@ $.widget("timeseries.table",
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selectedRows);
           if(selectedRows.length)
-            self.grid.scrollRowToTop(selectedRows[0]);
+            self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }
       }
     }
