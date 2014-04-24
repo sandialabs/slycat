@@ -137,6 +137,7 @@ $.widget("timeseries.dendrogram",
           $.each(d._children, function(index, subtree) { select_subtree(subtree, selection); });
       }
 
+      context.options.selected_node_index = d["node-index"];
       var selection = []
       $.each(subtrees, function(index, subtree) { subtree.selected = false; });
       select_subtree(d, selection);
@@ -461,6 +462,8 @@ $.widget("timeseries.dendrogram",
           }
         }
         findExpandedAndCollapsedNodes(root);
+        self.options.expanded_nodes = expanded;
+        self.options.collapsed_nodes = collapsed;
         self.element.trigger("expanded-collapsed-nodes-changed", {expanded:expanded, collapsed:collapsed});
       }
     }
@@ -498,6 +501,11 @@ $.widget("timeseries.dendrogram",
           return "#C9C9C9";
       })
       ;
+  },
+
+  resize_canvas: function()
+  {
+    this._set_cluster();
   },
 
   _setOption: function(key, value)

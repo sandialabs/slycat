@@ -390,7 +390,6 @@ $.widget("timeseries.waveformplot",
 
   resize_canvas: function()
   {
-    console.log('inside resize_canvas in timeseries-waveformplot test3');
     this.width = $("#waveform-pane").width();
     this.height = $("#waveform-pane").height();
     this.diagram_width = this.width - this.padding - this.padding;

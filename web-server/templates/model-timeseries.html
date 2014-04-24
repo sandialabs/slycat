@@ -539,18 +539,18 @@ rights in this software.
           {
             initClosed : true,
             resizeWhileDragging : false,
-            onresize: function()
-            {
-              console.log('resized bodyLayout north');
-            },
+            // onresize: function()
+            // {
+            //   console.log('resized bodyLayout north');
+            // },
           },
           center:
           {
             resizeWhileDragging : false,
-            onresize: function()
-            {
-              console.log('resized bodyLayout center');
-            },
+            // onresize: function()
+            // {
+            //   console.log('resized bodyLayout center');
+            // },
           },
           south:
           {
@@ -559,7 +559,7 @@ rights in this software.
             onresize: function()
             {
               $("#table").table("resize_canvas");
-              console.log('resized bodyLayout south');
+              //console.log('resized bodyLayout south');
             },
           },
         });
@@ -569,18 +569,18 @@ rights in this software.
           {
             size: 45,
             resizeWhileDragging : false,
-            onresize: function()
-            {
-              console.log('resized contentPaneLayout north');
-            },
+            // onresize: function()
+            // {
+            //   console.log('resized contentPaneLayout north');
+            // },
           },
           center :
           {
             resizeWhileDragging : false,
-            onresize: function()
-            {
-              console.log('resized contentPaneLayout center');
-            },
+            // onresize: function()
+            // {
+            //   console.log('resized contentPaneLayout center');
+            // },
           },
         });
 
@@ -589,14 +589,16 @@ rights in this software.
           {
             size : $("#model-pane").width() / 2,
             resizeWhileDragging : false,
-            onresize: function() { console.log("resized modelPaneLayout west "); },
+            onresize: function() 
+            { 
+              $("#dendrogram-viewer").dendrogram("resize_canvas");
+            },
           },
           center :
           {
             resizeWhileDragging: false,
             onresize: function() 
             { 
-              console.log("resized modelPaneLayout center");
               $("#waveform-viewer").waveformplot("resize_canvas");
             },
           }
