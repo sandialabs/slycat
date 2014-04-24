@@ -42,17 +42,20 @@ $.widget("timeseries.dendrogram",
   	var mid = self.options.mid;
 
   	var linkage = cluster_data["linkage"];
-	  var waveforms = cluster_data["waveforms"];
+    // waveforms no longer exists in cluster data
+	  //var waveforms = cluster_data["waveforms"];
+    // instead we have input-indices
+    var input_indices = cluster_data["input-indices"];
 	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
 
-	  $.each(waveforms, function(index, waveform)
+	  $.each(input_indices, function(index, waveform)
     {
-      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : waveform["input-index"]});
+      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : input_indices[index]});
     });
     $.each(linkage, function(index, link)
     {
-      subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + waveforms.length], selected: false, "waveform-index" : null, "data-table-index" : null})
+      subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null})
     });
 
     var padding = 20;
@@ -115,34 +118,6 @@ $.widget("timeseries.dendrogram",
         return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + (diagram_width);
       }
       return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
-    }
-
-		// Helper function that renders a waveform as a sparkline.
-    function sparkline(d, i)
-    {
-      if(d.exemplar == undefined)
-        return "";
-
-      var waveform = waveforms[d.exemplar];
-      var values = waveform["values"];
-      var data = [];
-      for(var i = 0; i != values.length; ++i)
-        data.push(values[i]);
-
-      var width = 100;
-      var height = 15;
-      var min = d3.min(data);
-      var max = d3.max(data);
-      var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
-      var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
-
-      var path = d3.svg.line()
-        .x(function(d,i) { return x(i); })
-        .y(function(d) { return y(d); })
-        ;
-
-      return path(data);
-      return "M 0 0 L 50 0 L 100 -5";
     }
 
     var last_selected_node = null;
@@ -320,13 +295,14 @@ $.widget("timeseries.dendrogram",
         .style("display", "none")
         ;
 
-      node_sparkline.append("svg:path")
-        .attr("d", sparkline)
+      var node_sparkline_path = node_sparkline.append("svg:path")
+        // Can't set attr here because we download waveforms asynchronously. Instead doing this below.
+        //.attr("d", sparkline)
         .style("stroke", function(d, i){
-          if(self.options.data_table_index_array !== null && self.options.color_scale !== null && self.options.color_array != null){
-            var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
+          if(self.options.color_scale !== null && self.options.color_array != null){
+            var index = d["data-table-index"];
             if(index > -1)
-              return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["data-table-index"]) ] ); // This might be "input-index" instead
+              return self.options.color_scale( self.options.color_array[ d["data-table-index"] ] ); // This might be "input-index" instead
             else if (d.selected || (d.parent && d.parent.selected))
               return "black";
             else
@@ -337,6 +313,62 @@ $.widget("timeseries.dendrogram",
           
         })
         ;
+
+      get_model_arrayset_metadata({
+        server_root : self.options["server-root"],
+        mid : self.options.mid,
+        aid : "preview-" + self.options.clusters[self.options.cluster],
+        success : function(parameters)
+        {
+          node_sparkline_path.each(function(d,i){
+            if(d.exemplar == undefined) {
+              $(this).attr("d", "");
+            } else {
+              get_model_arrayset({
+                server_root : self.options["server-root"],
+                mid : self.options.mid,
+                aid : "preview-" + self.options.clusters[self.options.cluster],
+                arrays : d["exemplar"] + ":" + (d["exemplar"]+1),
+                element : this,
+                success : function(result, metadata, parameters)
+                {
+                  var values = result[0]["value"];
+                  var data = [];
+                  for(var i = 0; i != values.length; ++i) {
+                    data.push(values[i]);
+                  }
+
+                  var width = 100;
+                  var height = 15;
+                  var min = d3.min(data);
+                  var max = d3.max(data);
+                  var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
+                  var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
+
+                  var path = d3.svg.line()
+                    .x(function(d,i) { return x(i); })
+                    .y(function(d) { return y(d); })
+                    ;
+
+                  $(parameters.element).attr("d", path(data));
+                  //$(parameters.element).attr("d", "M 0 0 L 50 0 L 100 -5");
+                },
+              });
+            }
+          });
+        },
+      });
+      // Set the d attribute of each sparkline path. Currently doing this by downloading each waveform individually. In the future we might want to batch it up.
+
+
+      // If we ever get the ability to download arbitrary batches of waveforms using "GET Model Arrayset", this is a stub-out for doing so
+      // function getWaveforms(selection){
+      //   console.log(selection);
+      //   selection.each(function(d,i){
+      //     console.log("exemplar is " + d.exemplar);
+      //   });
+      // }
+      // node_enter.call(getWaveforms);
 
       // Transition new nodes to their final position.
       var node_update = node.transition()
@@ -457,9 +489,9 @@ $.widget("timeseries.dendrogram",
 
     this.container.selectAll("g.sparkline path")
       .style("stroke", function(d, i){
-        var index = self.options.data_table_index_array.indexOf(d["data-table-index"]);
+        var index = d["data-table-index"];
         if(index > -1)
-          return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["data-table-index"]) ] ); // This might be "input-index" instead
+          return self.options.color_scale( self.options.color_array[ d["data-table-index"] ] ); // This might be "input-index" instead
         else if (d.selected || (d.parent && d.parent.selected))
           return "black";
         else
@@ -470,18 +502,21 @@ $.widget("timeseries.dendrogram",
 
   _setOption: function(key, value)
   {
-    console.log("timeseries.dendrogram._setOption()", key, value);
+    //console.log("timeseries.dendrogram._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "cluster_data")
     {
       this._set_cluster();
     }
-    else if(key == "color-scale")
+    else if(key == "color-options")
     {
       this.options.color_array = value.color_array;
-      this.options.color_scale = value.colormap;
-      this.options.data_table_index_array = value.data_table_index_array;
+      this.options.color_scale = value.color_scale;
+      this._set_color();
+    }
+    else if(key == "color_scale")
+    {
       this._set_color();
     }
   },

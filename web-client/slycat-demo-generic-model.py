@@ -38,7 +38,7 @@ connection.start_array_set(mid, "data")
 connection.start_array(mid, "data", 0, ("range", "int64"), ("i", "int64", 0, 10))
 
 # Store values into an array attribute.
-connection.store_array_attribute(mid, "data", 0, 0, numpy.arange(10))
+connection.store_array_set_data(mid, "data", 0, 0, data=numpy.arange(10))
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web
 # Server know that it can perform any required computation.

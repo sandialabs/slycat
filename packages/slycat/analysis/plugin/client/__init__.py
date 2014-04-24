@@ -7,7 +7,7 @@ log = logging.getLogger("slycat.analysis.client")
 log.setLevel(logging.INFO)
 log.addHandler(handler)
 
-from slycat.data.array import *
+from slycat.array import *
 
 def require_attribute_names(names):
   if isinstance(names, basestring):

@@ -37,7 +37,7 @@ for index in range(len(columns)):
     columns[index] = numpy.array(columns[index], dtype="float64")
     column_types[index] = "float64"
   except:
-    pass
+    columns[index] = numpy.array(columns[index], dtype="string")
 
 # Sanity-check input arguments.
 try:
@@ -79,7 +79,7 @@ connection.start_array(mid, "data-table", 0, attributes, dimensions)
 # Upload data into the array.
 for index, data in enumerate(columns):
   slycat.web.client.log.info("Uploading column {} of {} ({})".format(index, len(columns), column_names[index]))
-  connection.store_array_attribute(mid, "data-table", 0, index, data)
+  connection.store_array_set_data(mid, "data-table", array=0, attribute=index, data=data)
 
 # Store the remaining parameters.
 connection.store_parameter(mid, "input-columns", inputs)

@@ -1,7 +1,7 @@
 import h5py
 import numpy
 import os
-import slycat.data.array
+import slycat.array
 
 def dtype(type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""
@@ -31,8 +31,8 @@ def start_array_set(path):
 
 def start_array(file, array_index, attributes, dimensions):
   """Add an array to an existing array set."""
-  attributes = slycat.data.array.require_attributes(attributes)
-  dimensions = slycat.data.array.require_dimensions(dimensions)
+  attributes = slycat.array.require_attributes(attributes)
+  dimensions = slycat.array.require_dimensions(dimensions)
   stored_types = [dtype(attribute["type"]) for attribute in attributes]
   shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
 
@@ -97,7 +97,7 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
     attribute.attrs["max"] = attribute_max
 
 def get_array_metadata(file, array_index):
-  """Return an (attributes, dimensions, statistics) tuple for an array."""
+  """Return an {attributes, dimensions, statistics} dict describing an array."""
   array_key = "array/{}".format(array_index)
   array_metadata = raw_array_metadata(file, array_index)
   attribute_names = array_metadata["attribute-names"]

@@ -22,7 +22,7 @@ import Queue
 import subprocess
 import stat
 import sys
-import slycat.data.hdf5
+import slycat.hdf5
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cache
@@ -185,15 +185,6 @@ def delete_project(pid):
   cleanup_arrays()
 
   cherrypy.response.status = "204 Project deleted."
-
-def get_project_design(pid):
-  database = slycat.web.server.database.couchdb.connect()
-  project = database.get("project", pid)
-  slycat.web.server.authentication.require_project_reader(project)
-  context = get_context()
-  context.update(project)
-  context["project-design"] = json.dumps(project, indent=2, sort_keys=True)
-  return slycat.web.server.template.render("project-design.html", context)
 
 @cherrypy.tools.json_out(on = True)
 def get_project_models(pid):
@@ -474,17 +465,41 @@ def put_model_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_attribute(mid, name, array, attribute, ranges=None, data=None, byteorder=None):
+def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=None, byteorder=None, data=None):
+  cherrypy.log.error("put data: arrayset %s array %s attribute %s hyperslice %s byteorder %s" % (name, array, attribute, hyperslice, byteorder))
+
+  # Sanity check inputs ...
+  try:
+    if array is not None:
+      array = [[None if index == "" else int(index) for index in item.split(":")] for item in array.split(",")]
+      array = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in array]
+  except:
+    raise cherrypy.HTTPError("400 optional array argument must be a comma-separated sequence of integers / slices.")
+
+  try:
+    if attribute is not None:
+      attribute = [[None if index == "" else int(index) for index in item.split(":")] for item in attribute.split(",")]
+      attribute = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in attribute]
+  except:
+    raise cherrypy.HTTPError("400 optional attribute argument must be a comma-separated sequence of integers / slices.")
+
+  try:
+    if hyperslice is not None:
+      hyperslice = [(int(begin), int(end)) for begin, end in [range.split(":") for range in hyperslice.split(",")]]
+  except:
+    raise cherrypy.HTTPError("400 optional hyperslice argument must be a comma-separated set of ranges.")
+
+  if byteorder is not None:
+    if byteorder not in ["big", "little"]:
+      raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
+
+  # Handle the request ...
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  # Sanity check inputs ...
-  array_index = int(array)
-  attribute_index = int(attribute)
-  ranges = [(int(begin), int(end)) for begin, end in json.load(ranges.file)]
-  slycat.web.server.model.store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder)
+  slycat.web.server.model.store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data)
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
@@ -497,20 +512,20 @@ def delete_model(mid):
 
   cherrypy.response.status = "204 Model deleted."
 
-def get_model_design(mid):
+def get_model_timeseries_performance_test(mid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
+
   context = get_context()
   context["full-project"] = project
   context.update(model)
   context["model-design"] = json.dumps(model, indent=2, sort_keys=True)
-
   marking = cherrypy.request.app.config["slycat"]["marking"]
   context["marking-html"] = marking.html(model["marking"])
 
-  return slycat.web.server.template.render("model-design.html", context)
+  return slycat.web.server.template.render("timeseries-performance-test.html", context)
 
 @cherrypy.tools.json_out(on = True)
 def get_model_array_metadata(mid, aid, array):
@@ -528,10 +543,10 @@ def get_model_array_metadata(mid, aid, array):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = slycat.data.hdf5.get_array_metadata(file, array)
+      metadata = slycat.hdf5.get_array_metadata(file, array)
   return metadata
 
-def get_model_array_chunk(mid, aid, array, attribute, **arguments):
+def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
   try:
     attribute = int(attribute)
   except:
@@ -567,7 +582,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      metadata = slycat.data.hdf5.get_array_metadata(file, array)
+      metadata = slycat.hdf5.get_array_metadata(file, array)
 
       if not(0 <= attribute and attribute < len(metadata["attributes"])):
         raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
@@ -579,7 +594,7 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
       index = tuple([slice(begin, end) for begin, end in ranges])
 
       attribute_type =  metadata["attributes"][attribute]["type"]
-      data = slycat.data.hdf5.get_array_attribute(file, array, attribute)[index]
+      data = slycat.hdf5.get_array_attribute(file, array, attribute)[index]
 
       if byteorder is None:
         return json.dumps(data.tolist())
@@ -588,6 +603,75 @@ def get_model_array_chunk(mid, aid, array, attribute, **arguments):
           return data.byteswap().tostring(order="C")
         else:
           return data.tostring(order="C")
+
+@cherrypy.tools.json_out(on = True)
+def get_model_arrayset_metadata(mid, aid, **arguments):
+  arrays = arguments.get("arrays", "::")
+  arrays = slice(*[int(value) if value != "" else None for value in arrays.split(":")])
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
+      results = []
+      for key in sorted([int(key) for key in file["array"].keys()])[arrays]:
+        array_metadata = slycat.hdf5.raw_array_metadata(file, key)
+        results.append({
+          "index" : int(key),
+          "attributes" : [{"name":name, "type":type} for name, type in zip(array_metadata["attribute-names"], array_metadata["attribute-types"])],
+          "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(array_metadata["dimension-names"], array_metadata["dimension-types"], array_metadata["dimension-begin"], array_metadata["dimension-end"])],
+          })
+      return results
+
+def get_model_arrayset(mid, aid, **arguments):
+  accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  cherrypy.response.headers["content-type"] = accept
+
+  byteorder = arguments.get("byteorder", None)
+  if byteorder is None:
+    raise cherrypy.HTTPError("400 byteorder parameter must be specified.")
+
+  if byteorder not in ["little", "big"]:
+    raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+
+  arrays = arguments.get("arrays", "::")
+  arrays = slice(*[int(value) if value != "" else None for value in arrays.split(":")])
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  def content():
+    with slycat.web.server.database.hdf5.lock:
+      with slycat.web.server.database.hdf5.open(artifact) as file:
+        for array_key in sorted([int(key) for key in file["array"].keys()])[arrays]:
+          for attribute_key in file["array/%s/attribute" % array_key].keys():
+            data = file["array/%s/attribute/%s" % (array_key, attribute_key)][...]
+            if sys.byteorder != byteorder:
+              yield data.byteswap().tostring(order="C")
+            else:
+              yield data.tostring(order="C")
+
+  return content()
+get_model_arrayset._cp_config = {"response.stream" : True}
 
 def validate_table_rows(rows):
   try:
@@ -662,7 +746,7 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
       index_key = "array/%s/index/%s" % (array_index, sort_column)
       if index_key not in file:
         cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
-        sort_index = numpy.argsort(slycat.data.hdf5.get_array_attribute(file, array_index, sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(slycat.hdf5.get_array_attribute(file, array_index, sort_column)[...], kind="mergesort")
         file[index_key] = sort_index
       else:
         cherrypy.log.error("Loading cached sort index.")
@@ -673,7 +757,7 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
 
 def get_table_metadata(file, array_index, index):
   """Return table-oriented metadata for a 1D array, plus an optional index column."""
-  metadata = slycat.data.hdf5.get_array_metadata(file, array_index)
+  metadata = slycat.hdf5.get_array_metadata(file, array_index)
   attributes = metadata["attributes"]
   dimensions = metadata["dimensions"]
   statistics = metadata["statistics"]
@@ -760,7 +844,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
         if index is not None and column == metadata["column-count"]-1:
           values = slice.tolist()
         else:
-          values = slycat.data.hdf5.get_array_attribute(file, array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+          values = slycat.hdf5.get_array_attribute(file, array, column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
           if type in ["float32", "float64"]:
             values = [None if numpy.isnan(value) else value for value in values]
         data.append(values)

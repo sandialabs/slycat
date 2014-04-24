@@ -6,6 +6,7 @@ import argparse
 import getpass
 import json
 import logging
+import numbers
 import numpy
 import os
 import requests
@@ -13,23 +14,18 @@ import shlex
 import sys
 import time
 
-from slycat.data.array import *
+try:
+  import cStringIO as StringIO
+except:
+  import StringIO
+
+from slycat.array import *
 
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
 log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 log.propagate = False
-
-def require_float(value):
-  if not isinstance(value, float):
-    raise Exception("Not a floating-point value.")
-  return value
-
-def require_string(value):
-  if not isinstance(value, basestring):
-    raise Exception("Not a string value.")
-  return value
 
 def require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
@@ -202,20 +198,84 @@ class connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_array_attribute(self, mid, name, array, attribute, data, ranges=None):
-    """Sends an array attribute (or a slice of an array attribute) to the server."""
-    ranges = require_array_ranges(ranges)
-    if isinstance(data, numpy.ndarray):
-      if ranges is None:
-        ranges = [(0, end) for end in data.shape]
-      if data.dtype.char == "S":
-        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data.tolist())})
+  def put_model_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
+    """Sends array data to the server."""
+    # Sanity check arguments
+    try:
+      if array is not None:
+        if isinstance(array, (numbers.Integral, slice)):
+          array = [array]
+        else:
+          array = list(array)
+          for item in array:
+            if not isinstance(item, (numbers.Integral, slice)):
+              raise Exception()
+    except:
+      raise Exception("array argument must be an integer, a slice, a sequence of integers/slices, or None.")
+
+    try:
+      if attribute is not None:
+        if isinstance(attribute, (numbers.Integral, slice)):
+          attribute = [attribute]
+        else:
+          attribute = list(attribute)
+          for item in attribute:
+            if not isinstance(item, (numbers.Integral, slice)):
+              raise Exception()
+    except:
+      raise Exception("attribute argument must be an integer, a slice, a sequence of integers/slices, or None.")
+
+    try:
+      if hyperslice is not None:
+        if isinstance(hyperslice, tuple):
+          begin, end = hyperslice
+          hyperslice = [(begin, end)]
+        else:
+          hyperslice = [(begin, end) for begin, end in hyperslice]
+    except:
+      raise Exception("hyperslice argument must be a 2-tuple, a sequence of 2-tuples, or None")
+
+    try:
+      if isinstance(data, numpy.ndarray):
+        data = [data]
       else:
-        self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={"byteorder":sys.byteorder}, files={"ranges" : json.dumps(ranges), "data":data.tostring(order="C")})
+        data = list(data)
+        for item in data:
+          if not isinstance(item, numpy.ndarray):
+            raise Exception()
+    except Exception as e:
+      raise Exception("data argument must be a numpy array or a sequence of numpy arrays.")
+
+    # Generate the request
+    all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
+
+    request_data = {}
+    request_buffer = StringIO.StringIO()
+
+    def format_spec(item):
+      if isinstance(item, numbers.Integral):
+        return str(item)
+      return "%s:%s:%s" % (item.start if item.start is not None else "", item.stop if item.stop is not None else "", item.step if item.step is not None else "")
+
+    if array is not None:
+      request_data["array"] = ",".join([format_spec(item) for item in array])
+
+    if attribute is not None:
+      request_data["attribute"] = ",".join([format_spec(item) for item in attribute])
+
+    if hyperslice is not None:
+      request_data["hyperslice"] = ",".join(["%s:%s" % (begin, end) for begin, end in hyperslice])
+
+    if all_numeric:
+      request_data["byteorder"] = sys.byteorder
+
+    if all_numeric:
+      for dataset in data:
+        request_buffer.write(dataset.tostring(order="C"))
     else:
-      if ranges is None:
-        ranges = [(0, len(data))]
-      self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s" % (mid, name, array, attribute), data={}, files={"ranges" : json.dumps(ranges), "data":json.dumps(data)})
+      request_buffer.write(json.dumps([dataset.tolist() for dataset in data]))
+
+    self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
 
   def put_model_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
@@ -275,9 +335,9 @@ class connection(object):
     """Starts a new array set array, ready to receive data."""
     self.put_model_array(mid, name, array, attributes, dimensions)
 
-  def store_array_attribute(self, mid, name, array, attribute, data, ranges=None):
+  def store_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
-    self.put_model_array_attribute(mid, name, array, attribute, data, ranges)
+    self.put_model_array_set_data(mid, name, array, attribute, hyperslice, data)
 
   def copy_inputs(self, source, target):
     self.put_model_inputs(source, target)

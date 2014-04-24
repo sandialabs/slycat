@@ -14,9 +14,10 @@ $.widget("timeseries.waveformplot",
   	"server-root" : "",
     mid : null,
     waveforms : null,
-    selection : null,
-    highlight : null,
-    color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    selection : undefined,
+    highlight : [],
+    color_array : null,
+    color_scale : null,
   },
 
   _create: function()
@@ -47,9 +48,8 @@ $.widget("timeseries.waveformplot",
     this.waveformProcessingTimeout = null;
     this.previewWaveformsTimeout = null;
     this.showWaveformPieContainerTimeout = null;
-    this.color_array = null;
-    this.color_scale = null;
-    this.data_table_index_array = null;
+    this.color_array = this.options.color_array;
+    this.color_scale = this.options.color_scale;
 
     this.container.selectAll("g").remove();
 
@@ -66,13 +66,26 @@ $.widget("timeseries.waveformplot",
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
 
+    // Set all waveforms to visible if this options has not been set
+    var visible = this.options.selection;
+    if(visible === undefined) {
+      visible = [];
+      for(var i=0; i<this.waveforms.length; i++) {
+        visible.push(this.waveforms[i]["input-index"]);
+      }
+      this.options.selection = visible;
+    }
+
+    this._set_visible();
+    this._select();
+
     function panel_selection_callback(context)
     {
       return function()
       {
-        var selection = [];
-        context._select(selection);
-        context.element.trigger("waveform-selection-changed", [selection]);
+        context.options.highlight = [];
+        context._select();
+        context.element.trigger("waveform-selection-changed", [context.options.highlight]);
       }
     }
   },
@@ -85,10 +98,10 @@ $.widget("timeseries.waveformplot",
     // Cancel any previously started work
     self._stopProcessingWaveforms();
 
-    var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["times"]); });
-    var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["times"]); });
-    var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["values"]); });
-    var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["values"]); });
+    var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["time"]); });
+    var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["time"]); });
+    var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["value"]); });
+    var y_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["value"]); });
 
     this.x = d3.scale.linear()
       .domain([x_min, x_max])
@@ -101,11 +114,15 @@ $.widget("timeseries.waveformplot",
       ;
 
     var waveform_subset = [];
-    $.each(visible, function(index, node)
-    {
-      if(node["waveform-index"] != null)
-        waveform_subset.push(self.waveforms[node["waveform-index"]]);
-    });
+    if(visible !== undefined) {
+      $.each(visible, function(index, waveform_index)
+      {
+        waveform_subset.push(self.waveforms[waveform_index]);
+      });
+    }
+    else {
+      waveform_subset = self.waveforms;
+    }
 
     this.container.selectAll("g.waveform").remove();
     this.container.selectAll("g.selection").remove();
@@ -165,7 +182,7 @@ $.widget("timeseries.waveformplot",
         .style("display", "none")
         .style("stroke", function(d, i) { 
           if(self.options.color_scale != null)
-            return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] ); 
+            return self.options.color_scale( self.options.color_array[ d["input-index"] ] ); 
           else
             return "white";
         })
@@ -177,9 +194,9 @@ $.widget("timeseries.waveformplot",
     function waveform_selection_callback(context){
       return function(d)
       {
-        var selection = [d['input-index']];
-        context._select(selection);
-        context.element.trigger("waveform-selection-changed", [selection]);
+        context.options.highlight = [d['input-index']];
+        context._select();
+        context.element.trigger("waveform-selection-changed", [context.options.highlight]);
         d3.event.stopPropagation();
       }
     }
@@ -223,14 +240,26 @@ $.widget("timeseries.waveformplot",
       {
 
         result = "";
-        for(var i = 0; i != d.times.length; ++i)
+
+  // Commenting out decimation while we wait to find a better approach to this 
+  var multiplier = 1;
+	// // Adding downsampling decimation based on panel width
+	// var samples = d["time"].length;
+	// var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
+	// var multiplier = Math.ceil( (samples / panelWidth) * 4 );
+	// if(multiplier < 1)
+  //   multiplier = 1;
+  
+	//console.log("multiplier: " + multiplier);
+        for(var i = 0; i != d["time"].length; ++i)
         {
-          result += "M" + self.x(d.times[i]) + "," + self.y(d.values[i]);
+          result += "M" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
           break;
         }
-        for(var i = 1; i < d.times.length; ++i)
+        //for(var i = 1; i < d["time"].length; ++i)
+        for(var i = 1; i < d["time"].length; i+=multiplier)
         {
-          result += "L" + self.x(d.times[i]) + "," + self.y(d.values[i]);
+          result += "L" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
         }
 
         return result;
@@ -238,22 +267,24 @@ $.widget("timeseries.waveformplot",
     }
   },
 
-  _select: function(selected)
+  /* Highlights waveforms */
+  _select: function()
   {
     var self = this;
 
     // Only highlight a waveform if it's part of the current selection
     var selection = self.options.selection;
+    var highlight = self.options.highlight;
     var inCurrentSelection = [];
-    for(var i=0; i<selection.length; i++){
-      if( selected.indexOf(self.options.selection[i]["data-table-index"]) > -1 ){
-        inCurrentSelection.push(self.options.selection[i]["waveform-index"]);
+    for(var i=0; i<highlight.length; i++){
+      if( selection.indexOf(highlight[i]) > -1 ){
+        inCurrentSelection.push(highlight[i]);
       }
     }
-    selected = inCurrentSelection;
+    highlight = inCurrentSelection;
 
     var waveform_subset = [];
-    $.each(selected, function(index, node_index)
+    $.each(highlight, function(index, node_index)
     {
       if(node_index < self.waveforms.length)
         waveform_subset.push(self.waveforms[node_index]);
@@ -262,7 +293,7 @@ $.widget("timeseries.waveformplot",
     this.container.selectAll("g.selection").remove();
     this.container.selectAll("rect.selectionMask").remove();
 
-    if(selected.length > 0) {
+    if(highlight.length > 0) {
       this.visualization.append("svg:rect")
         .attr("width", this.diagram_width)
         .attr("height", this.diagram_height)
@@ -289,8 +320,8 @@ $.widget("timeseries.waveformplot",
     waveforms.append("svg:path")
       .attr("d", this.make_sax_line())
       .style("stroke", function(d, i) { 
-        if (self.options.color_scale != null && self.options.color_array != null && self.options.data_table_index_array != null)
-          return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] );
+        if (self.options.color_scale != null && self.options.color_array != null)
+          return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
         else
           return "white";
       })
@@ -345,7 +376,7 @@ $.widget("timeseries.waveformplot",
 
     function colorWaveform(waveform){
       d3.select(waveform).style("stroke", function(d, i) { 
-        return self.options.color_scale( self.options.color_array[ self.options.data_table_index_array.indexOf(d["input-index"]) ] );
+        return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
       })
       ;
     }
@@ -359,7 +390,7 @@ $.widget("timeseries.waveformplot",
 
   _setOption: function(key, value)
   {
-    console.log("timeseries.waveform._setOption()", key, value);
+    //console.log("timeseries.waveform._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "selection")
@@ -368,14 +399,38 @@ $.widget("timeseries.waveformplot",
     }
     else if(key == "highlight")
     {
-      this._select(value);
+      this._select();
     }
-    else if(key == "color-scale")
+    else if(key == "color-options")
     {
       this.options.color_array = value.color_array;
-      this.options.color_scale = value.colormap;
-      this.options.data_table_index_array = value.data_table_index_array;
+      this.options.color_scale = value.color_scale;
       this._set_color();
+    }
+    else if(key == "color_scale")
+    {
+      this._set_color();
+    }
+    else if(key == "waveforms")
+    {
+      this.options.waveforms = value.waveforms;
+      // Setting selection to all if it's undefined
+      if(value.selection === undefined) {
+        visible = [];
+        for(var i=0; i<this.options.waveforms.length; i++) {
+          visible.push(this.options.waveforms[i]["input-index"]);
+        }
+        this.options.selection = visible;
+      } else {
+        this.options.selection = value.selection;
+      }
+
+      // Only setting new highlight if one was passed in. Otherwise, leaving the existing one, just like the table does.
+      if(value.highlight !== undefined)
+        this.options.highlight = value.highlight;
+
+      this._set_visible();
+      this._select();
     }
   },
 

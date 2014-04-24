@@ -74,7 +74,7 @@ connection.start_array(mid, "data-table", 0, attributes, dimensions)
 
 # Upload data into the array.
 for i in range(total_columns):
-  connection.store_array_attribute(mid, "data-table", 0, i, data.T[i])
+  connection.store_array_set_data(mid, "data-table", 0, i, data=data.T[i])
 
 # Store the remaining parameters.
 connection.store_parameter(mid, "input-columns", range(0, arguments.input_count))

@@ -52,18 +52,17 @@ $.widget("timeseries.table",
         headerCssClass : header_class,
         cssClass : cell_class,
         formatter : cell_formatter,
-        // Disabling sort controls from cca
-        // header :
-        // {
-        //   buttons :
-        //   [
-        //     {
-        //       cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-        //       tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-        //       command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
-        //     }
-        //   ]
-        // }
+        header :
+        {
+          buttons :
+          [
+            {
+              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
+            }
+          ]
+        }
       };
     }
 
@@ -71,8 +70,6 @@ $.widget("timeseries.table",
     self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId")); // Last column is added as simid
     for(var i = 0; i < self.options.metadata["column-count"]-1; i++) // rest of columns are added as inputs
       self.columns.push(make_column(i, "headerInput", "rowInput"));
-
-  	self.columns;
   },
 
   resize_canvas: function()
@@ -83,6 +80,22 @@ $.widget("timeseries.table",
 
   _setOption: function(key, value)
   {
+    function set_sort(column, order)
+    {
+      self.options["sort-variable"] = column;
+      self.options["sort-order"] = order;
+      self.data.set_sort(column, order, function(){
+        if(self.options["row-selection"].length > 0){
+          var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
+          self.trigger_row_selection = false;
+          self.grid.setSelectedRows(selectedRows);
+          if(selectedRows.length)
+            self.grid.scrollRowToTop(selectedRows[0]);
+        }
+      });
+      self.element.trigger("variable-sort-changed", [column, order]);
+    }
+
     var self = this;
 
     if(key == "row-selection")
@@ -92,13 +105,11 @@ $.widget("timeseries.table",
 
       self.options[key] = value;
 
-      var selected_rows = [];
-      for(var i=0; i<value.length; i++) {
-        selected_rows.push( self.options.table_filter.indexOf(value[i]) );
-      }
-      self.grid.setSelectedRows(selected_rows);
-      if(selected_rows.length)
-        self.grid.scrollRowToTop(selected_rows[0]);
+      var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
+      self.grid.setSelectedRows(selectedRows);
+      
+      if(selectedRows.length)
+        self.grid.scrollRowToTop(selectedRows[0]);
     }
     else if(key == "row-selection-silent")
     {
@@ -152,22 +163,63 @@ $.widget("timeseries.table",
 
       if(self.grid) {
         self.grid.setData(self.data);
+        self.data.setGrid(self.grid);
         self.grid.invalidate();
         if(self.options["row-selection"].length > 0){
-
-          var selected_rows = [];
-          for(var i=0; i<self.options["row-selection"].length; i++) {
-            selected_rows.push( self.options.table_filter.indexOf(self.options["row-selection"][i]) );
-          }
-
+          var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
-          self.grid.setSelectedRows(selected_rows);
+          self.grid.setSelectedRows(selectedRows);
+          if(selectedRows.length)
+            self.grid.scrollRowToTop(selectedRows[0]);
         }
-        self._trigger_color_scale_change();
       }
       else {
         self.trigger_row_selection = true;
         self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+        self.data.setGrid(self.grid);
+
+        var header_buttons = new Slick.Plugins.HeaderButtons();
+        header_buttons.onCommand.subscribe(function(e, args)
+        {
+          var column = args.column;
+          var button = args.button;
+          var command = args.command;
+          var grid = args.grid;
+
+          for(var i in self.columns)
+          {
+            self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+            self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+            self.columns[i].header.buttons[0].command = "sort-ascending";
+            grid.updateColumnHeader(self.columns[i].id);
+          }
+
+          if(command == "sort-ascending")
+          {
+            button.cssClass = 'icon-sort-ascending';
+            button.command = 'sort-descending';
+            button.tooltip = 'Sort descending';
+            set_sort(column.id, "ascending");
+          }
+          else if(command == "sort-descending")
+          {
+            button.cssClass = 'icon-sort-descending';
+            button.command = 'sort-off';
+            button.tooltip = 'Sort by dendrogram order';
+            set_sort(column.id, "descending");
+          }
+          else if(command == "sort-off")
+          {
+            button.cssClass = 'icon-sort-off';
+            button.command = 'sort-ascending';
+            button.tooltip = 'Sort ascending';
+            set_sort(null, null);
+          }
+        });
+
+        self.grid.registerPlugin(header_buttons);
+        self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+
         self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
         self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
@@ -197,19 +249,15 @@ $.widget("timeseries.table",
 
         self._color_variables(self.options["variable-selection"]);
 
-        if(self.options["row-selection"].length > 0){
-
-          var selected_rows = [];
-          for(var i=0; i<self.options["row-selection"].length; i++) {
-            selected_rows.push( self.options.table_filter.indexOf(self.options["row-selection"][i]) );
-          }
-
-          self.trigger_row_selection = false;
-          self.grid.setSelectedRows(selected_rows);
-        }
-        
         self.grid.init();
-        self._trigger_color_scale_change();
+
+        if(self.options["row-selection"].length > 0){
+          var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
+          self.trigger_row_selection = false;
+          self.grid.setSelectedRows(selectedRows);
+          if(selectedRows.length)
+            self.grid.scrollRowToTop(selectedRows[0]);
+        }
       }
     }
   },
@@ -235,9 +283,6 @@ $.widget("timeseries.table",
 
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
         column.highlighted = true;
-
-        self._trigger_color_scale_change(column.id, column.colormap);
-        
       }
       else
       {
@@ -248,47 +293,6 @@ $.widget("timeseries.table",
     }
 
     self.grid.invalidate();
-  },
-
-  _trigger_color_scale_change: function(variable, colormap)
-  {
-    var self = this;
-
-    if(variable === undefined)
-      variable = self.options["variable-selection"];
-    if(colormap === undefined) {
-      var columns = self.grid.getColumns();
-      for(var i in columns)
-      {
-        var column = columns[i];
-        if(column.highlighted) {
-          colormap = column.colormap;
-          break;
-        }
-      }
-    }
-
-    //Grabbing all filtered values for current column and index column, not just the ones visible in slickGrid's viewport
-    var columnsToRetrieve = [variable, self.options.metadata["column-count"]-1].join(',');
-    var rowsToRetrieve = self.options.table_filter.join(',');
-
-    $.ajax({
-      url : self.options["server-root"] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + columnsToRetrieve + "&index=Index",
-      async: true,
-      success: function(resp){
-        var color_array = resp["data"][0];
-        var data_table_index_array = resp["data"][1];
-        self.element.trigger("color-scale-changed", { 
-          variable:[variable], 
-          colormap:colormap,
-          color_array:color_array,
-          data_table_index_array:data_table_index_array,
-        });
-      },
-      error: function(request, status, reason_phrase){
-        window.alert("Error getting color coding values from table-chunker worker: " + reason_phrase);
-      }
-    });
   },
 
   _data_provider: function(parameters)
@@ -302,10 +306,86 @@ $.widget("timeseries.table",
     self.sort_column = parameters.sort_column;
     self.sort_order = parameters.sort_order;
     self.table_filter = parameters.table_filter;
+    self.sorted_table_filter = parameters.table_filter;
+    self.retrieve_table_filter = parameters.table_filter;
     self.row_count = parameters.row_count;
 
     self.pages = {};
     self.page_size = 50;
+
+    self.get_indices = function(sortedUnsorted, rows, sortColumn, sortOrder, callback, asynchronous)
+    {
+      if(asynchronous != false)
+        asynchronous = true;
+
+      if(rows.length == 0)
+      {
+        callback([]);
+        return;
+      }
+
+      var sort = "";
+      if(sortColumn !== null && sortOrder !== null)
+        sort = "&sort=" + sortColumn + ":" + sortOrder;
+
+      var row_string = "";
+      for(var i = 0; i < rows.length; ++i)
+      {
+        row_string += rows[i];
+        break
+      }
+      for(var i = 1; i < rows.length; ++i)
+      {
+        row_string += ",";
+        row_string += rows[i];
+      }
+
+      function is_little_endian()
+      {
+        if(this.result === undefined)
+          this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
+        return this.result;
+      }
+
+      // XMLHttpRequest does not support synchronous retrieval with arraybuffer, so falling back to ajax with no arraybuffer for initial synchronous sorted table filter retrieval.
+      if(asynchronous){
+        var request = new XMLHttpRequest();
+        request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+        request.responseType = "arraybuffer";
+        request.callback = callback;
+        request.onload = function(e)
+        {
+          this.callback(new Int32Array(this.response));
+        }
+        request.send();
+      } else {
+        $.ajax(
+        {
+          type : "GET",
+          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index" + sort,
+          async : false,
+          callback : callback,
+          success : function(data)
+          {
+            this.callback(new Int32Array(data));
+          },
+        });
+      }
+    }
+
+    if(self.sort_column !== null && self.sort_order !== null) {
+      // Need to retrieve the sorted_table_filter synchronously because everything else relies on it.
+      self.get_indices("sorted", self.table_filter, self.sort_column, self.sort_order, function(sorted_rows){
+        self.sorted_table_filter = Array.apply( [], sorted_rows );;
+        self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
+        self.pages = {};
+      }, false);
+    }
+
+    self.setGrid = function(grid)
+    {
+      self.grid = grid;
+    }
 
     self.getLength = function()
     {
@@ -325,10 +405,11 @@ $.widget("timeseries.table",
         var row_end = (page + 1) * self.page_size;
 
         var sort = "";
-        if(self.sort_column !== null && self.sort_order !== null)
+        if(self.sort_column !== null && self.sort_order !== null) {
           sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-
-        var rowsToRetrieve = self.table_filter.slice(row_begin, row_end ).join(',');
+        }
+        
+        var rowsToRetrieve = self.retrieve_table_filter.slice(row_begin, row_end ).join(',');
 
         $.ajax(
         {
@@ -357,55 +438,47 @@ $.widget("timeseries.table",
       return null;
     }
 
-    self.set_sort = function(column, order)
+    self.set_sort = function(column, order, callback)
     {
-      if(column == self.sort_column && order == self.sort_order)
-        return;
-      self.sort_column = column;
-      self.sort_order = order;
-      self.pages = {};
-    },
-
-    self.get_indices = function(direction, rows, callback)
-    {
-      if(rows.length == 0)
-      {
-        callback([]);
+      if(column == self.sort_column && order == self.sort_order) {
         return;
       }
-
-      var sort = "";
-      if(self.sort_column !== null && self.sort_order !== null)
-        sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-
-      var row_string = "";
-      for(var i = 0; i < rows.length; ++i)
-      {
-        row_string += rows[i];
-        break
+      else if(column==null || order==null){
+        self.sort_column = column;
+        self.sort_order = order;
+        self.sorted_table_filter = self.table_filter;
+        self.retrieve_table_filter = self.table_filter;
+        self.pages = {};
+        self.grid.invalidate();
+        callback();
       }
-      for(var i = 1; i < rows.length; ++i)
-      {
-        row_string += ",";
-        row_string += rows[i];
+      else {
+        self.sort_column = column;
+        self.sort_order = order;
+        self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
+          var array = Array.apply( [], sorted_rows );
+          self.sorted_table_filter = Array.apply( [], sorted_rows );;
+          self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
+          self.pages = {};
+          self.grid.invalidate();
+          callback();
+        });
       }
+    }
 
-      function is_little_endian()
-      {
-        if(this.result === undefined)
-          this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-        return this.result;
+    self.getSimulationRowIndexes = function(simulation_indexes)
+    {
+      var table_filter_index, sorted_table_filter_element, retrieve_table_filter_index;
+      var result = [];
+      for(var i=0; i<simulation_indexes.length; i++) {
+        table_filter_index = self.table_filter.indexOf(simulation_indexes[i]);
+        if(table_filter_index > -1){
+          sorted_table_filter_element = self.sorted_table_filter[table_filter_index];
+          retrieve_table_filter_index = self.retrieve_table_filter.indexOf(sorted_table_filter_element);
+          result.push(retrieve_table_filter_index);
+        }
       }
-
-      var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
-      request.responseType = "arraybuffer";
-      request.callback = callback;
-      request.onload = function(e)
-      {
-        this.callback(new Int32Array(this.response));
-      }
-      request.send();
+      return result;
     }
   },
 
