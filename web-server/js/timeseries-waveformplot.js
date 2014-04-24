@@ -388,6 +388,18 @@ $.widget("timeseries.waveformplot",
     }
   },
 
+  resize_canvas: function()
+  {
+    console.log('inside resize_canvas in timeseries-waveformplot test3');
+    this.width = $("#waveform-pane").width();
+    this.height = $("#waveform-pane").height();
+    this.diagram_width = this.width - this.padding - this.padding;
+    this.diagram_height = this.height - this.padding - this.padding;
+    this.rect.attr({width: this.diagram_width, height: this.diagram_height});
+    this._set_visible();
+    this._select();
+  },
+
   _setOption: function(key, value)
   {
     //console.log("timeseries.waveform._setOption()", key, value);
