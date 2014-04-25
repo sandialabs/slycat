@@ -22,6 +22,7 @@ $.widget("timeseries.dendrogram",
     color_array: null,
     color_scale: null,
     data_table_index_array: null,
+    dendrogram_sort_order: true,
   },
 
   _create: function()
@@ -68,6 +69,18 @@ $.widget("timeseries.dendrogram",
 	    ;
 
 	  self.container.selectAll("g").remove();
+
+    self.sortControl = $('<div id="dendrogram-sort-control">Sort</div>')
+      .appendTo('#dendrogram-pane')
+      .click(function() {
+        if(!$(this).hasClass("selected")){
+          self.options.dendrogram_sort_order = true;
+          self._set_dendrogram_sort_order_state();
+          self.element.trigger("sort-by-dendrogram-order");
+        }
+      })
+      ;
+    this._set_dendrogram_sort_order_state();
 
 	  var vis = self.container.append("svg:g")
       .attr("transform", "translate(" + padding + "," + padding + ")")
@@ -217,6 +230,8 @@ $.widget("timeseries.dendrogram",
         }
       }
 
+// // Click counter for code that tries to differentiate between single and double clicks better
+// var clickCount = 0;
       // Create new nodes at the parent's previous position.
       var node_enter = node.enter().append("svg:g")
         .attr("class", "node")
@@ -244,6 +259,34 @@ $.widget("timeseries.dendrogram",
             select_node(self, d);
           }
         })
+        // // Trying to differentiate better between single and double clicks
+        // .on("click", function(d){
+        //   clickCount++;
+        //   if (clickCount === 1) {
+        //     singleClickTimer = setTimeout(function() {
+        //       clickCount = 0;
+        //       // Shift+click expands current node
+        //       if(d3.event.shiftKey){
+        //         toggle(d); 
+        //         update_subtree(d);
+        //       } 
+        //       // Regular click just selects it
+        //       else {
+        //         select_node(self, d);
+        //       }
+        //     }, 400);
+        //   } else if (clickCount === 2) {
+        //     clearTimeout(singleClickTimer);
+        //     clickCount = 0;
+        //     select_node(self, d);
+        //     toggle(d);
+        //     if(d.children) {
+        //     var expandThisFar = 2;
+        //     expandUpToLevel(d, d.depth + expandThisFar);
+        //   }
+        //   update_subtree(d);
+        //   }
+        // })
         .style("opacity", 1e-6)
         ;
 
@@ -503,6 +546,15 @@ $.widget("timeseries.dendrogram",
       ;
   },
 
+  _set_dendrogram_sort_order_state: function()
+  {
+    var self = this;
+    self.sortControl
+      .attr("title", function(index, attr){return self.options.dendrogram_sort_order ? "Inputs are sorted in dendrogram order" : "Sort inputs in dendrogram order"})
+      .toggleClass("selected", self.options.dendrogram_sort_order)
+      ;
+  },
+
   resize_canvas: function()
   {
     this._set_cluster();
@@ -526,6 +578,10 @@ $.widget("timeseries.dendrogram",
     else if(key == "color_scale")
     {
       this._set_color();
+    }
+    else if(key == "dendrogram_sort_order")
+    {
+      this._set_dendrogram_sort_order_state();
     }
   },
 

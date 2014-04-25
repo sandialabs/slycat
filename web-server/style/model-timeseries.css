@@ -36,6 +36,23 @@ rights in this software.
 }
 
 /* dendrogram styles */
+#dendrogram-pane #dendrogram-sort-control 
+{
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  cursor: pointer;
+  background-color: #DBD9EB;
+  padding: 4px;
+  margin: 0 0 5px 18px;
+}
+
+#dendrogram-pane #dendrogram-sort-control.selected
+{
+  background-color: #7767B0;
+  color: #FFFFFF;
+  cursor: default;
+}
 
 #dendrogram-viewer .node .glyph circle
 {
