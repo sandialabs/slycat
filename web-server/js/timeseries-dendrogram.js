@@ -43,9 +43,6 @@ $.widget("timeseries.dendrogram",
   	var mid = self.options.mid;
 
   	var linkage = cluster_data["linkage"];
-    // waveforms no longer exists in cluster data
-	  //var waveforms = cluster_data["waveforms"];
-    // instead we have input-indices
     var input_indices = cluster_data["input-indices"];
 	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
@@ -70,7 +67,7 @@ $.widget("timeseries.dendrogram",
 
 	  self.container.selectAll("g").remove();
 
-    self.sortControl = $('<div id="dendrogram-sort-control">Sort</div>')
+    self.sortControl = $('<div id="dendrogram-sort-control"></div>')
       .appendTo('#dendrogram-pane')
       .click(function() {
         if(!$(this).hasClass("selected")){
