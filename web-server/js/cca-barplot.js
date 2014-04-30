@@ -294,7 +294,45 @@ $.widget("cca.barplot",
     // Shifting default resize handle to left to stop overlap over scrollbar.
     var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
     var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
-    $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
+    var resizeHandle = $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
+
+    // Adding hover class to resize handle
+    resizeHandle.hover(function(){$(this).addClass("ui-resizable-hover");}, function(){$(this).removeClass("ui-resizable-hover");});
+
+    // Adding toggle control to resize handle
+    var toggleControl = $("<div class='toggle-control-s' />").appendTo(resizeHandle);
+    toggleControl
+      .hover(
+        function(){
+          $(this).addClass("toggle-control-hover");
+          resizeHandle.removeClass("ui-resizable-hover");
+        }, 
+        function(){
+          $(this).removeClass("toggle-control-hover");
+          resizeHandle.addClass("ui-resizable-hover");
+        }
+      )
+      .click(
+        function(){
+          var barplotGroupInputsHeight = barplotGroupInputs.height();
+          var barplotGroupOutputsHeight = barplotGroupOutputs.height();
+          var expanded = barplotGroupInputsHeight >= barplotGroupInputs.resizable("option", "maxHeight") || barplotGroupOutputsHeight == 0;
+          if(expanded){
+            var amountToCollapse = barplotGroupOutputsOriginalHeight - barplotGroupOutputsHeight;
+            // In some edge cases, the amountToCollapse can come out to a negative number, in which case we don't want to expand
+            if(amountToCollapse < 0)
+              amountToCollapse = 0;
+            barplotGroupInputs.height(barplotGroupInputsHeight - amountToCollapse);
+            barplotGroupOutputs.height(barplotGroupOutputsHeight + amountToCollapse);
+          } else {
+            barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+            var inputsMaxHeight = self.options.inputsHeight;
+            var amountToExpand = Math.min(barplotGroupOutputsHeight, inputsMaxHeight-barplotGroupInputsHeight);
+            barplotGroupOutputs.height(barplotGroupOutputsHeight - amountToExpand);
+            barplotGroupInputs.height(barplotGroupInputsHeight + amountToExpand);
+          }
+        }
+      );
 
     // Can't figure out how to do this in CSS so setting explicit height here :(
     $(".barplotHeaderColumn.mask.col0").height( $(".barplotHeader .barplotRow:first-child").height() );

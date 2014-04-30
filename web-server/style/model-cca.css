@@ -104,11 +104,21 @@ rights in this software.
   border-top-width: 1px;
   background-color: #DDDDCC;
 }
-.inputs .ui-resizable-s:hover {
+.inputs .ui-resizable-s.ui-resizable-hover {
   background-color: #FFCC66;
 }
 .noVerticalResize .ui-resizable-s {
   display: none !important;
+}
+.toggle-control-s {
+  width: 50px;
+  height: 100%;
+  margin: 0 auto;
+  background-color: #CCCCBB;
+}
+.toggle-control-s.toggle-control-hover {
+  cursor: pointer;
+  background-color: #FFCC66;
 }
 /*.barplotGroup.inputs {
   border-bottom: 7px solid red;
