@@ -880,6 +880,11 @@ rights in this software.
               variable_sort_changed(variable, order);
             });
 
+            // Changing the sort order to dendrogram order updates the table ...
+            $("#dendrogram-viewer").bind("sort-by-dendrogram-order", function(event){
+              $("#table").table("option", "sort-variable", null);
+            });
+
             // Changing the table variable selection logs it, updates the waveform plot and dendrogram...
             $("#table").bind("variable-selection-changed", function(event, parameters)
             {

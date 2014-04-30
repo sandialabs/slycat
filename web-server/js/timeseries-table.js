@@ -204,16 +204,9 @@ $.widget("timeseries.table",
           else if(command == "sort-descending")
           {
             button.cssClass = 'icon-sort-descending';
-            button.command = 'sort-off';
-            button.tooltip = 'Sort by dendrogram order';
-            set_sort(column.id, "descending");
-          }
-          else if(command == "sort-off")
-          {
-            button.cssClass = 'icon-sort-off';
             button.command = 'sort-ascending';
             button.tooltip = 'Sort ascending';
-            set_sort(null, null);
+            set_sort(column.id, "descending");
           }
         });
 
@@ -258,6 +251,22 @@ $.widget("timeseries.table",
           if(selectedRows.length)
             self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }
+      }
+    }
+    else if(key == "sort-variable")
+    {
+      self.options[key] = value;
+      if(value === null) {
+        self.options["sort-order"] = null
+      }
+      set_sort(self.options["sort-variable"], self.options["sort-order"]);
+      // Set all column header buttons to "sort-off" state
+      for(var i in self.columns)
+      {
+        self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+        self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+        self.columns[i].header.buttons[0].command = "sort-ascending";
+        self.grid.updateColumnHeader(self.columns[i].id);
       }
     }
   },
