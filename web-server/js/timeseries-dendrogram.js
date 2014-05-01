@@ -19,6 +19,7 @@ $.widget("timeseries.dendrogram",
   	collapsed_nodes:null,
   	expanded_nodes:null,
   	selected_node_index:null,
+    selected_nodes:[],
     color_array: null,
     color_scale: null,
     data_table_index_array: null,
@@ -130,33 +131,85 @@ $.widget("timeseries.dendrogram",
       return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
     }
 
-    var last_selected_node = null;
+    function find_selected_nodes(d, selection)
+    {
+      if(d.selected){
+        selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
+      }
+      //d.selected = true;
+      if(d.children)
+        $.each(d.children, function(index, subtree) { find_selected_nodes(subtree, selection); });
+      if(d._children)
+        $.each(d._children, function(index, subtree) { find_selected_nodes(subtree, selection); });
+    }
+
+    // Keeping track of already selected nodes becomes too complicated with multi selection
+    //var last_selected_node = null;
     function select_node(context, d, skip_bookmarking)
     {
-      if(last_selected_node === d)
-        return;
-      last_selected_node = d;
+      // Keeping track of already selected nodes becomes too complicated with multi selection
+      // if(last_selected_node === d)
+      //   return;
+      // last_selected_node = d;
 
-      function select_subtree(d, selection)
+      function select_subtree(d)
       {
-        selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
+        //selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
         d.selected = true;
         if(d.children)
-          $.each(d.children, function(index, subtree) { select_subtree(subtree, selection); });
+          $.each(d.children, function(index, subtree) { select_subtree(subtree); });
         if(d._children)
-          $.each(d._children, function(index, subtree) { select_subtree(subtree, selection); });
+          $.each(d._children, function(index, subtree) { select_subtree(subtree); });
       }
 
       context.options.selected_node_index = d["node-index"];
-      var selection = []
-      $.each(subtrees, function(index, subtree) { subtree.selected = false; });
-      select_subtree(d, selection);
 
+      // Mark all nodes as unselected
+      //$.each(subtrees, function(index, subtree) { subtree.selected = false; });
+
+      // Mark this node and all its children as selected
+      select_subtree(d);
+
+      // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
       self.container.selectAll(".node")
         .classed("selected", function(d) { return d.selected; })
         ;
 
+      // Colors the lines between the nodes to show what's selected
       color_links();
+
+      // Find all selected nodes
+      var selection = []
+      find_selected_nodes(root, selection);
+      
+      context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
+    }
+
+    function unselect_node(context, d, skip_bookmarking)
+    {
+      function unselect_subtree(d)
+      {
+        d.selected = false;
+        if(d.children)
+          $.each(d.children, function(index, subtree) { unselect_subtree(subtree); });
+        if(d._children)
+          $.each(d._children, function(index, subtree) { unselect_subtree(subtree); });
+      }
+
+      // Mark this node and all its children as unselected
+      unselect_subtree(d);
+
+      // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
+      self.container.selectAll(".node")
+        .classed("selected", function(d) { return d.selected; })
+        ;
+
+      // Colors the lines between the nodes to show what's selected
+      color_links();
+
+      // Find all selected nodes
+      var selection = []
+      find_selected_nodes(root, selection);
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
@@ -247,12 +300,20 @@ $.widget("timeseries.dendrogram",
         })
         .on("click", function(d) {
           // Shift+click expands current node
-          if(d3.event.shiftKey){
-            toggle(d); 
-            update_subtree(d);
-          } 
-          // Regular click just selects it
-          else {
+          // if(d3.event.shiftKey){
+          //   toggle(d); 
+          //   update_subtree(d);
+          // } 
+          if(d3.event.ctrlKey) {
+            if(d.selected) {
+              console.log('you just Ctrl+clicked a selected node, we need to unselect it.');
+              unselect_node(self, d);
+            } else {
+              select_node(self, d);
+            }
+          } else {
+            // Clear previous selection if user didn't Ctrl+click
+            $.each(subtrees, function(index, subtree) { subtree.selected = false; });
             select_node(self, d);
           }
         })
