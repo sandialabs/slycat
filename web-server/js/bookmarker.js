@@ -73,7 +73,12 @@ function bookmark_manager(server_root, pid, mid)
         success: function(resp)
         {
           state = resp;
-        }
+        },
+        error: function()
+        {
+          // Assume no state when we can't retrieve a bid
+          state = {};
+        },
       });
     }
     return state;
@@ -93,7 +98,13 @@ function bookmark_manager(server_root, pid, mid)
         {
           state = resp;
           callback(state);
-        }
+        },
+        error: function()
+        {
+          // Assume no state when we can't retrieve a bid
+          state = {};
+          callback(state);
+        },
       });
     }
     else
