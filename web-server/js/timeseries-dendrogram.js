@@ -18,8 +18,7 @@ $.widget("timeseries.dendrogram",
   	cluster_data:null,
   	collapsed_nodes:null,
   	expanded_nodes:null,
-  	selected_node_index:null,
-    selected_nodes:[],
+    selected_nodes:null,
     color_array: null,
     color_scale: null,
     data_table_index_array: null,
@@ -39,7 +38,7 @@ $.widget("timeseries.dendrogram",
   	var cluster_data = this.options.cluster_data;
   	var collapsed_nodes = this.options.collapsed_nodes;
   	var expanded_nodes = this.options.expanded_nodes;
-  	var selected_node_index = this.options.selected_node_index;
+    var selected_nodes = this.options.selected_nodes;
   	var server_root = self.options["server-root"];
   	var mid = self.options.mid;
 
@@ -94,12 +93,18 @@ $.widget("timeseries.dendrogram",
     nodes.forEach(function(d) { max_depth = Math.max(max_depth, d.depth); });
 
     // We have collapse/expand/selected node data. Let's go ahead and apply it.
-    if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_node_index!=null) ){
+    if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_nodes!=null) ){
       nodes.forEach(function(d) { 
-        if(selected_node_index != undefined) {
-          if( d["node-index"] == selected_node_index ) {
-            select_node(self, d, true);
+        if(selected_nodes != null && selected_nodes.length>0) {
+          if( selected_nodes.indexOf(d["node-index"]) > -1 ) {
+            d.selected = true;
           }
+          style_selected_nodes();
+          color_links();
+          // Find all selected nodes
+          // var selection = []
+          // find_selected_nodes(root, selection);
+          // self.element.trigger("node-selection-changed", {node:null, skip_bookmarking:true, selection:selection});
         }
         if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
           toggle(d);
@@ -115,7 +120,7 @@ $.widget("timeseries.dendrogram",
       nodes.forEach(function(d) { if(d.depth == 3) toggle(d); });
     }
     // We have no selected node data. Let's select the root node.
-    if(selected_node_index == null){
+    if(selected_nodes == null){
       select_node(self, root, true);
     }
 
@@ -136,7 +141,6 @@ $.widget("timeseries.dendrogram",
       if(d.selected){
         selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
       }
-      //d.selected = true;
       if(d.children)
         $.each(d.children, function(index, subtree) { find_selected_nodes(subtree, selection); });
       if(d._children)
@@ -154,7 +158,6 @@ $.widget("timeseries.dendrogram",
 
       function select_subtree(d)
       {
-        //selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
         d.selected = true;
         if(d.children)
           $.each(d.children, function(index, subtree) { select_subtree(subtree); });
@@ -162,18 +165,11 @@ $.widget("timeseries.dendrogram",
           $.each(d._children, function(index, subtree) { select_subtree(subtree); });
       }
 
-      context.options.selected_node_index = d["node-index"];
-
-      // Mark all nodes as unselected
-      //$.each(subtrees, function(index, subtree) { subtree.selected = false; });
-
       // Mark this node and all its children as selected
       select_subtree(d);
 
       // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
-      self.container.selectAll(".node")
-        .classed("selected", function(d) { return d.selected; })
-        ;
+      style_selected_nodes();
 
       // Colors the lines between the nodes to show what's selected
       color_links();
@@ -181,6 +177,7 @@ $.widget("timeseries.dendrogram",
       // Find all selected nodes
       var selection = []
       find_selected_nodes(root, selection);
+      context.options.selected_nodes = selection;
       
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
@@ -203,9 +200,7 @@ $.widget("timeseries.dendrogram",
       prune_tree(root);
 
       // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
-      self.container.selectAll(".node")
-        .classed("selected", function(d) { return d.selected; })
-        ;
+      style_selected_nodes();
 
       // Colors the lines between the nodes to show what's selected
       color_links();
@@ -213,8 +208,15 @@ $.widget("timeseries.dendrogram",
       // Find all selected nodes
       var selection = []
       find_selected_nodes(root, selection);
+      context.options.selected_nodes = selection;
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
+    }
+
+    function style_selected_nodes(){
+      self.container.selectAll(".node")
+        .classed("selected", function(d) { return d.selected; })
+        ;
     }
 
 		function color_links(){

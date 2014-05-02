@@ -1006,7 +1006,7 @@ rights in this software.
           });
           if(parameters.skip_bookmarking != true) {
             var state = {};
-            state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index" ] = parameters.node["node-index"];
+            state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
             state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-waveform-indexes" ] = getWaveformIndexes(parameters.selection);
             bookmarker.updateState(state);
           }
@@ -1135,9 +1135,9 @@ rights in this software.
           {
             dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
           }
-          if(cluster + "-selected-node-index" in bookmark)
+          if(cluster + "-selected-nodes" in bookmark)
           {
-            dendrogram_options.selected_node_index = bookmark[cluster  + "-selected-node-index"];
+            dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
           }
 
           return dendrogram_options;
@@ -1156,6 +1156,21 @@ rights in this software.
           });
 
           return waveform_indexes;
+        }
+
+        function getNodeIndexes(nodes)
+        {
+          var node_indexes = [];
+          var node_index = null;
+
+          $.each(nodes, function(index, node)
+          {
+            node_index = node["node-index"];
+            if(node_index != null)
+              node_indexes.push(node_index);
+          });
+
+          return node_indexes;
         }
 
       });
