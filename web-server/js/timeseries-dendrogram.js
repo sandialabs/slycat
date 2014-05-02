@@ -199,6 +199,9 @@ $.widget("timeseries.dendrogram",
       // Mark this node and all its children as unselected
       unselect_subtree(d);
 
+      // Prunes selected nodes that have been orphaned
+      prune_tree(root);
+
       // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
       self.container.selectAll(".node")
         .classed("selected", function(d) { return d.selected; })
@@ -216,11 +219,11 @@ $.widget("timeseries.dendrogram",
 
 		function color_links(){
       self.container.selectAll("path.link").attr("style", function(d){
-        if(d.source.selected) {
-          return "stroke: black;";
-        }
-        else if(checkChildren(d.target)){
-          return "stroke: gray;";
+        if(checkChildren(d.target)){
+          if(d.source.selected)
+            return "stroke: black;"
+          else
+            return "stroke: gray;"
         }
       });
 
@@ -238,6 +241,58 @@ $.widget("timeseries.dendrogram",
           return false;
         }
       }
+    }
+
+    function prune_tree(d){
+      // if(d.selected && !hasSelectedLeaf(d))
+      //   d.selected = false
+
+
+      // // Checks if target has a selected leaf
+      // function hasSelectedLeaf(target){
+
+      // }
+
+      if(d.children || d._children) {
+        // This is a branch node
+        if(!d.selected){
+          // Branch node is unselected, so just process its children
+          if(d.children)
+            $.each(d.children,  function(index, subtree) { prune_tree(subtree); })
+          if(d._children)
+            $.each(d._children, function(index, subtree) { prune_tree(subtree); })
+          return false;
+        }
+        else {
+          // Branch node is selected, so process its children and set its selected state accordingly
+          var selected_state = false;
+          if(d.children)
+            $.each(d.children,  function(index, subtree) { 
+              var childState = prune_tree(subtree);
+              selected_state = selected_state || childState; 
+            })
+          if(d._children)
+            $.each(d._children, function(index, subtree) { 
+              var childState = prune_tree(subtree);
+              selected_state = selected_state || childState; 
+            })
+          d.selected = selected_state;
+          return selected_state;
+        }
+      }
+      else {
+        // This is a leaf node
+        if(d.selected)
+          return true;
+        else
+          return false;
+      }
+
+
+
+
+
+
     }
 
 		function update_subtree(source, skip_bookmarking)
