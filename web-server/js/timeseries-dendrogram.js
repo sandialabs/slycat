@@ -244,15 +244,6 @@ $.widget("timeseries.dendrogram",
     }
 
     function prune_tree(d){
-      // if(d.selected && !hasSelectedLeaf(d))
-      //   d.selected = false
-
-
-      // // Checks if target has a selected leaf
-      // function hasSelectedLeaf(target){
-
-      // }
-
       if(d.children || d._children) {
         // This is a branch node
         if(!d.selected){
@@ -264,17 +255,18 @@ $.widget("timeseries.dendrogram",
           return false;
         }
         else {
-          // Branch node is selected, so process its children and set its selected state accordingly
+          //Branch node is selected, so process its children and set its selected state accordingly
           var selected_state = false;
+          var child_selected_state = false;
           if(d.children)
             $.each(d.children,  function(index, subtree) { 
-              var childState = prune_tree(subtree);
-              selected_state = selected_state || childState; 
+              child_selected_state = prune_tree(subtree);
+              selected_state = selected_state || child_selected_state; 
             })
           if(d._children)
             $.each(d._children, function(index, subtree) { 
-              var childState = prune_tree(subtree);
-              selected_state = selected_state || childState; 
+              child_selected_state = prune_tree(subtree);
+              selected_state = selected_state || child_selected_state; 
             })
           d.selected = selected_state;
           return selected_state;
@@ -287,12 +279,6 @@ $.widget("timeseries.dendrogram",
         else
           return false;
       }
-
-
-
-
-
-
     }
 
 		function update_subtree(source, skip_bookmarking)
