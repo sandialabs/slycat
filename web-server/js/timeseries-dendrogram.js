@@ -47,14 +47,12 @@ $.widget("timeseries.dendrogram",
 	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
 
-	  $.each(input_indices, function(index, waveform)
-    {
-      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : input_indices[index]});
-    });
-    $.each(linkage, function(index, link)
-    {
-      subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null})
-    });
+    for(var i=0; i<input_indices.length; i++){
+      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[i], selected: false, "waveform-index" : i, "data-table-index" : input_indices[i]});
+    }
+    for(var i=0; i<linkage.length; i++){
+      subtrees.push({"node-index":subtrees.length, children:[subtrees[linkage[i][0]], subtrees[linkage[i][1]]], leaves:linkage[i][3], exemplar:exemplars[i + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null});
+    }
 
     var padding = 20;
     var diagram_width = this.element.parent().width() - padding - padding - 110;
@@ -140,23 +138,14 @@ $.widget("timeseries.dendrogram",
 
     function find_selected_nodes(d, selection)
     {
-      if(d.selected){
+      if(d.selected)
         selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
-      }
-      if(d.children) {
-        // The jQuery.each() function is 100x as slow as a native for loop, so using for instead
-        //$.each(d.children, function(index, subtree) { find_selected_nodes(subtree, selection); });
-        for(var i=0; i<d.children.length; i++){
+      if(d.children)
+        for(var i=0; i<d.children.length; i++)
           find_selected_nodes(d.children[i], selection);
-        }
-      }
-      if(d._children) {
-        // The jQuery.each() function is 100x as slow as a native for loop, so using for instead
-        //$.each(d._children, function(index, subtree) { find_selected_nodes(subtree, selection); });
-        for(var i=0; i<d._children.length; i++){
+      if(d._children)
+        for(var i=0; i<d._children.length; i++)
           find_selected_nodes(d._children[i], selection);
-        }
-      }
     }
 
     // Keeping track of already selected nodes becomes too complicated with multi selection
@@ -172,9 +161,11 @@ $.widget("timeseries.dendrogram",
       {
         d.selected = true;
         if(d.children)
-          $.each(d.children, function(index, subtree) { select_subtree(subtree); });
+          for(var i=0; i<d.children.length; i++)
+            select_subtree(d.children[i]);
         if(d._children)
-          $.each(d._children, function(index, subtree) { select_subtree(subtree); });
+          for(var i=0; i<d._children.length; i++)
+            select_subtree(d._children[i]);
       }
 
       // Mark this node and all its children as selected
@@ -200,9 +191,11 @@ $.widget("timeseries.dendrogram",
       {
         d.selected = false;
         if(d.children)
-          $.each(d.children, function(index, subtree) { unselect_subtree(subtree); });
+          for(var i=0; i<d.children.length; i++)
+            unselect_subtree(d.children[i]);
         if(d._children)
-          $.each(d._children, function(index, subtree) { unselect_subtree(subtree); });
+          for(var i=0; i<d._children.length; i++)
+            unselect_subtree(d._children[i]);
       }
 
       // Mark this node and all its children as unselected
@@ -335,8 +328,6 @@ $.widget("timeseries.dendrogram",
         }
       }
 
-// // Click counter for code that tries to differentiate between single and double clicks better
-// var clickCount = 0;
       // Create new nodes at the parent's previous position.
       var node_enter = node.enter().append("svg:g")
         .attr("class", "node")
@@ -355,11 +346,11 @@ $.widget("timeseries.dendrogram",
         })
         .on("click", function(d) {
           // Shift+click expands current node
-          // if(d3.event.shiftKey){
-          //   toggle(d); 
-          //   update_subtree(d);
-          // } 
-          if(d3.event.ctrlKey) {
+          if(d3.event.shiftKey){
+            toggle(d); 
+            update_subtree(d);
+          } 
+          else if(d3.event.ctrlKey) {
             if(d.selected) {
               unselect_node(self, d);
             } else {
@@ -367,38 +358,11 @@ $.widget("timeseries.dendrogram",
             }
           } else {
             // Clear previous selection if user didn't Ctrl+click
+            // 2-4ms
             $.each(subtrees, function(index, subtree) { subtree.selected = false; });
             select_node(self, d);
           }
         })
-        // // Trying to differentiate better between single and double clicks
-        // .on("click", function(d){
-        //   clickCount++;
-        //   if (clickCount === 1) {
-        //     singleClickTimer = setTimeout(function() {
-        //       clickCount = 0;
-        //       // Shift+click expands current node
-        //       if(d3.event.shiftKey){
-        //         toggle(d); 
-        //         update_subtree(d);
-        //       } 
-        //       // Regular click just selects it
-        //       else {
-        //         select_node(self, d);
-        //       }
-        //     }, 400);
-        //   } else if (clickCount === 2) {
-        //     clearTimeout(singleClickTimer);
-        //     clickCount = 0;
-        //     select_node(self, d);
-        //     toggle(d);
-        //     if(d.children) {
-        //     var expandThisFar = 2;
-        //     expandUpToLevel(d, d.depth + expandThisFar);
-        //   }
-        //   update_subtree(d);
-        //   }
-        // })
         .style("opacity", 1e-6)
         ;
 
@@ -469,7 +433,7 @@ $.widget("timeseries.dendrogram",
           
         })
         ;
-
+      
       get_model_arrayset_metadata({
         server_root : self.options["server-root"],
         mid : self.options.mid,
@@ -539,12 +503,12 @@ $.widget("timeseries.dendrogram",
         .style("opacity", function(d) { return d._children ? 1.0 : 1e-6; })
         .style("display", function(d) { return d._children ? "inline" : "none"; })
         ;
-
+      
       node_update.select(".sparkline")
         .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
         .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
         ;
-
+      
       // Transition exiting nodes to the parent's new position.
       var node_exit = node.exit().transition()
         .duration(duration)
@@ -552,11 +516,11 @@ $.widget("timeseries.dendrogram",
         .style("opacity", 1e-6)
         .remove()
         ;
-
+      
       node_exit.select(".sparkline")
         .each("start", function() { d3.select(this).style("display", "none"); })
         ;
-
+      
       // Update the links.
       var link = vis.selectAll("path.link")
         .data(layout.links(nodes), function(d) { return d.target["node-index"]; });
