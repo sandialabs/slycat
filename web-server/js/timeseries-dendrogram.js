@@ -333,36 +333,36 @@ $.widget("timeseries.dendrogram",
         .attr("class", "node")
         .classed("selected", function(d) { return d.selected; })
         .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-        .on("dblclick", function(d) { 
-          // Toggle the target node (expand if collapsed, collapse if expanded)
-          toggle(d);
-          // If target node is now expanded, expand its children up to a certain depth
-          if(d.children) {
-            // Change expandThisFar to however deep below the target node you want to expand
-            var expandThisFar = 2;
-            expandUpToLevel(d, d.depth + expandThisFar);
-          }
-          update_subtree(d);
-        })
-        .on("click", function(d) {
-          // Shift+click expands current node
-          if(d3.event.shiftKey){
-            toggle(d); 
-            update_subtree(d);
-          } 
-          else if(d3.event.ctrlKey) {
-            if(d.selected) {
-              unselect_node(self, d);
-            } else {
-              select_node(self, d);
-            }
-          } else {
-            // Clear previous selection if user didn't Ctrl+click
-            // 2-4ms
-            $.each(subtrees, function(index, subtree) { subtree.selected = false; });
-            select_node(self, d);
-          }
-        })
+        // .on("dblclick", function(d) { 
+        //   // Toggle the target node (expand if collapsed, collapse if expanded)
+        //   toggle(d);
+        //   // If target node is now expanded, expand its children up to a certain depth
+        //   if(d.children) {
+        //     // Change expandThisFar to however deep below the target node you want to expand
+        //     var expandThisFar = 2;
+        //     expandUpToLevel(d, d.depth + expandThisFar);
+        //   }
+        //   update_subtree(d);
+        // })
+        // .on("click", function(d) {
+        //   // Shift+click expands current node
+        //   if(d3.event.shiftKey){
+        //     toggle(d); 
+        //     update_subtree(d);
+        //   } 
+        //   else if(d3.event.ctrlKey) {
+        //     if(d.selected) {
+        //       unselect_node(self, d);
+        //     } else {
+        //       select_node(self, d);
+        //     }
+        //   } else {
+        //     // Clear previous selection if user didn't Ctrl+click
+        //     // 2-4ms
+        //     $.each(subtrees, function(index, subtree) { subtree.selected = false; });
+        //     select_node(self, d);
+        //   }
+        // })
         .style("opacity", 1e-6)
         ;
 
@@ -371,6 +371,10 @@ $.widget("timeseries.dendrogram",
         .attr("class", "subtree")
         .style("opacity", 1e-6)
         .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
+        .on("click", function(d) {
+          toggle(d); 
+          update_subtree(d);
+        })
         ;
 
       node_subtree.append("svg:path")
@@ -394,9 +398,38 @@ $.widget("timeseries.dendrogram",
         .text(function(d) { return d.leaves; })
         ;
 
+      node_subtree.append("svg:text")
+        .attr("x", -9)
+        .attr("dy", -5)
+        .attr("text-anchor", "middle")
+        .text("+")
+        .style("fill", "black")
+        .on("click", function(d) {
+          toggle(d);
+          // Change expandThisFar to however deep below the target node you want to expand
+          var expandThisFar = 2;
+          expandUpToLevel(d, d.depth + expandThisFar);
+          update_subtree(d);
+          d3.event.stopPropagation();
+        })
+        ;
+
       // Circle
       var node_glyph = node_enter.append("svg:g")
         .attr("class", "glyph")
+        .on("click", function(d) {
+          if(d3.event.ctrlKey) {
+            if(d.selected) {
+              unselect_node(self, d);
+            } else {
+              select_node(self, d);
+            }
+          } else {
+            // Clear previous selection if user didn't Ctrl+click
+            $.each(subtrees, function(index, subtree) { subtree.selected = false; });
+            select_node(self, d);
+          }
+        })
         ;
 
       node_glyph.append("svg:circle")
@@ -405,6 +438,20 @@ $.widget("timeseries.dendrogram",
         //.style("cursor", function(d) { return d.children || d._children ? "pointer" : ""; })
         .style("cursor", "pointer")
         .style("fill", function(d) { return d.children || d._children ? "#dbd9eb" : "white"; })
+        ;
+
+      node_glyph.append("svg:text")
+        .attr("x", -9)
+        .attr("dy", 13)
+        .attr("text-anchor", "middle")
+        .text("-")
+        .style("fill", "black")
+        .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
+        .on("click", function(d) {
+          toggle(d);
+          update_subtree(d);
+          d3.event.stopPropagation();
+        })
         ;
 
       // Sparkline

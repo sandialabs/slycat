@@ -385,7 +385,10 @@ $.widget("timeseries.table",
     if(self.sort_column !== null && self.sort_order !== null) {
       // Need to retrieve the sorted_table_filter synchronously because everything else relies on it.
       self.get_indices("sorted", self.table_filter, self.sort_column, self.sort_order, function(sorted_rows){
-        self.sorted_table_filter = Array.apply( [], sorted_rows );;
+        if(sorted_rows.length > 1)
+          self.sorted_table_filter = Array.apply( [], sorted_rows );
+        else
+          self.sorted_table_filter = [sorted_rows[0]];
         self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
         self.pages = {};
       }, false);
@@ -465,8 +468,10 @@ $.widget("timeseries.table",
         self.sort_column = column;
         self.sort_order = order;
         self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
-          var array = Array.apply( [], sorted_rows );
-          self.sorted_table_filter = Array.apply( [], sorted_rows );;
+          if(sorted_rows.length > 1)
+            self.sorted_table_filter = Array.apply( [], sorted_rows );
+          else
+            self.sorted_table_filter = [sorted_rows[0]];
           self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
           self.pages = {};
           self.grid.invalidate();
