@@ -99,12 +99,6 @@ $.widget("timeseries.dendrogram",
           if( selected_nodes.indexOf(d["node-index"]) > -1 ) {
             d.selected = true;
           }
-          style_selected_nodes();
-          color_links();
-          // Find all selected nodes
-          // var selection = []
-          // find_selected_nodes(root, selection);
-          // self.element.trigger("node-selection-changed", {node:null, skip_bookmarking:true, selection:selection});
         }
         if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
           toggle(d);
@@ -122,6 +116,14 @@ $.widget("timeseries.dendrogram",
     // We have no selected node data. Let's select the root node.
     if(selected_nodes == null){
       select_node(self, root, true);
+    } else {
+      // We had selected node data, so let's style them and trigger the node-selection-changed event
+      style_selected_nodes();
+      color_links();
+      // Find all selected nodes
+      var selection = [];
+      find_selected_nodes(root, selection);
+      self.element.trigger("node-selection-changed", {node:null, skip_bookmarking:true, selection:selection});
     }
 
     // Initial update for the diagram ...
@@ -141,10 +143,20 @@ $.widget("timeseries.dendrogram",
       if(d.selected){
         selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
       }
-      if(d.children)
-        $.each(d.children, function(index, subtree) { find_selected_nodes(subtree, selection); });
-      if(d._children)
-        $.each(d._children, function(index, subtree) { find_selected_nodes(subtree, selection); });
+      if(d.children) {
+        // The jQuery.each() function is 100x as slow as a native for loop, so using for instead
+        //$.each(d.children, function(index, subtree) { find_selected_nodes(subtree, selection); });
+        for(var i=0; i<d.children.length; i++){
+          find_selected_nodes(d.children[i], selection);
+        }
+      }
+      if(d._children) {
+        // The jQuery.each() function is 100x as slow as a native for loop, so using for instead
+        //$.each(d._children, function(index, subtree) { find_selected_nodes(subtree, selection); });
+        for(var i=0; i<d._children.length; i++){
+          find_selected_nodes(d._children[i], selection);
+        }
+      }
     }
 
     // Keeping track of already selected nodes becomes too complicated with multi selection
@@ -175,7 +187,7 @@ $.widget("timeseries.dendrogram",
       color_links();
 
       // Find all selected nodes
-      var selection = []
+      var selection = [];
       find_selected_nodes(root, selection);
       context.options.selected_nodes = selection;
       
@@ -206,7 +218,7 @@ $.widget("timeseries.dendrogram",
       color_links();
 
       // Find all selected nodes
-      var selection = []
+      var selection = [];
       find_selected_nodes(root, selection);
       context.options.selected_nodes = selection;
 
@@ -349,7 +361,6 @@ $.widget("timeseries.dendrogram",
           // } 
           if(d3.event.ctrlKey) {
             if(d.selected) {
-              console.log('you just Ctrl+clicked a selected node, we need to unselect it.');
               unselect_node(self, d);
             } else {
               select_node(self, d);
