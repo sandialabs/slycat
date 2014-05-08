@@ -415,7 +415,7 @@ $.widget("timeseries.dendrogram",
         .attr("x", -9)
         .attr("dy", 13)
         .attr("text-anchor", "middle")
-        .text("-")
+        .text("–")
         .style("fill", "black")
         .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
         .on("click", function(d) {
