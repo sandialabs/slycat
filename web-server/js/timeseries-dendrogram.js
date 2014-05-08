@@ -333,36 +333,6 @@ $.widget("timeseries.dendrogram",
         .attr("class", "node")
         .classed("selected", function(d) { return d.selected; })
         .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-        // .on("dblclick", function(d) { 
-        //   // Toggle the target node (expand if collapsed, collapse if expanded)
-        //   toggle(d);
-        //   // If target node is now expanded, expand its children up to a certain depth
-        //   if(d.children) {
-        //     // Change expandThisFar to however deep below the target node you want to expand
-        //     var expandThisFar = 2;
-        //     expandUpToLevel(d, d.depth + expandThisFar);
-        //   }
-        //   update_subtree(d);
-        // })
-        // .on("click", function(d) {
-        //   // Shift+click expands current node
-        //   if(d3.event.shiftKey){
-        //     toggle(d); 
-        //     update_subtree(d);
-        //   } 
-        //   else if(d3.event.ctrlKey) {
-        //     if(d.selected) {
-        //       unselect_node(self, d);
-        //     } else {
-        //       select_node(self, d);
-        //     }
-        //   } else {
-        //     // Clear previous selection if user didn't Ctrl+click
-        //     // 2-4ms
-        //     $.each(subtrees, function(index, subtree) { subtree.selected = false; });
-        //     select_node(self, d);
-        //   }
-        // })
         .style("opacity", 1e-6)
         ;
 
@@ -437,8 +407,6 @@ $.widget("timeseries.dendrogram",
 
       node_glyph.append("svg:circle")
         .attr("r", 4.5)
-        // All circles are clickable so all should use a pointer cursor
-        //.style("cursor", function(d) { return d.children || d._children ? "pointer" : ""; })
         .style("cursor", "pointer")
         .style("fill", function(d) { return d.children || d._children ? "#dbd9eb" : "white"; })
         ;
@@ -552,6 +520,12 @@ $.widget("timeseries.dendrogram",
       node_update.select(".subtree")
         .style("opacity", function(d) { return d._children ? 1.0 : 1e-6; })
         .style("display", function(d) { return d._children ? "inline" : "none"; })
+        ;
+
+      // Need to re-assign fill style to get around this firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=652991
+      // It only seems to affect fill gradients and only when the URI changes, like it does for us with bookmarking.
+      node_update.select(".subtree-glyph")
+        .style("fill", "url(#subtree-gradient)")
         ;
       
       node_update.select(".sparkline")
