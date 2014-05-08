@@ -999,11 +999,12 @@ rights in this software.
 
         function selected_node_changed(parameters)
         {
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
-          });
+          if(parameters.node != null && parameters.node["node-index"] != null)
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
+            });
           if(parameters.skip_bookmarking != true) {
             var state = {};
             state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
@@ -1127,18 +1128,9 @@ rights in this software.
             cluster: cluster,
           };
           
-          if(cluster + "-collapsed-nodes" in bookmark)
-          {
-            dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
-          }
-          if(cluster + "-expanded-nodes" in bookmark)
-          {
-            dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
-          }
-          if(cluster + "-selected-nodes" in bookmark)
-          {
-            dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
-          }
+          dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
+          dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
+          dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
 
           return dendrogram_options;
         }
