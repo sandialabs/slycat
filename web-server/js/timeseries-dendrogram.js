@@ -373,6 +373,9 @@ $.widget("timeseries.dendrogram",
         .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
         .on("click", function(d) {
           toggle(d); 
+          // Change expandThisFar to however deep below the target node you want to expand
+          var expandThisFar = 9999;
+          expandUpToLevel(d, d.depth + expandThisFar);
           update_subtree(d);
         })
         ;
@@ -554,6 +557,10 @@ $.widget("timeseries.dendrogram",
       node_update.select(".sparkline")
         .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
         .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
+        ;
+
+      node_update.select(".glyph text")
+        .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
         ;
       
       // Transition exiting nodes to the parent's new position.
