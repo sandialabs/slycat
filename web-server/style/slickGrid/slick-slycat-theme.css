@@ -123,3 +123,21 @@ rights in this software.
 {
 	border: 1px solid #878787;
 }
+
+/* Alex making buttons always have space */
+.slick-column-name, 
+.slick-sort-indicator
+{
+	display: inline;
+	float: none;
+	margin-bottom: 0px;
+}
+.slick-header-button {
+	float: none;
+	position: absolute;
+	top: 3px;
+  right: 3px;
+}
+.slick-header-column {
+	padding-right: 23px !important;
+}

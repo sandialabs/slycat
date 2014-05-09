@@ -1,22 +1,17 @@
-.slick-column-name {
+.slick-column-name,
+.slick-sort-indicator {
   /**
    * This makes all "float:right" elements after it that spill over to the next line
    * display way below the lower boundary of the column thus hiding them.
    */
-  /*Alex making buttons always have space
   display: inline-block;
   float: left;
-  margin-bottom: 100px;*/
+  margin-bottom: 100px;
 }
 
 .slick-header-button {
-  /* Alex making buttons always have space
   display: inline-block;
-  float: right;*/
-  position: absolute;
-  top: 3px;
-  right: 3px;
-
+  float: right;
   vertical-align: top;
   margin: 1px;
   /**
@@ -41,8 +36,4 @@
 
 .slick-header-column:hover > .slick-header-button {
   width: 15px;
-}
-
-.slick-header-column {
-  padding-right: 23px !important;
 }
