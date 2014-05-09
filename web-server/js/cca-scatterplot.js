@@ -201,7 +201,7 @@ $.widget("cca.scatterplot",
 
   _update: function()
   {
-    console.log("cca.scatterplot._update()", this.updates);
+    //console.log("cca.scatterplot._update()", this.updates);
     this.update_timer = null;
 
     if(this.updates["update_width"])

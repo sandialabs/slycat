@@ -754,10 +754,10 @@ rights in this software.
             var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max)
 
             $("#waveform-pane").css({
-              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
               });
             $("#waveform-viewer rect.selectionMask").css({
-              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
               "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
               });
 
@@ -800,10 +800,10 @@ rights in this software.
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
               $("#waveform-pane").css({
-                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
                 });
               $("#waveform-viewer rect.selectionMask").css({
-                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
                 "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
                 });
               $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));

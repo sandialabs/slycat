@@ -829,7 +829,7 @@ rights in this software.
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
 
-            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
+            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
             $("#scatterplot").scatterplot({
               indices: indices,
@@ -850,7 +850,7 @@ rights in this software.
             // Changing the color map updates the scatterplot ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
+              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
               $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
 

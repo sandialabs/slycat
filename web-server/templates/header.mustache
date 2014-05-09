@@ -85,12 +85,14 @@
         {
           $.ajax(
           {
-            dataType : "json",
+            dataType : "text",
             type : "GET",
             cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
             url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
-            success : function(results)
+            success : function(text)
             {
+              // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
+              var results = text? $.parseJSON(text) : null;
               if(results != null)
               {
                 current_revision = results.revision;
