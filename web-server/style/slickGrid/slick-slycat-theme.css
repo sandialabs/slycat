@@ -72,6 +72,9 @@ rights in this software.
 .slick-row[row$="1"], .slick-row[row$="3"], .slick-row[row$="5"], .slick-row[row$="7"], .slick-row[row$="9"] {
     background-color: transparent;
 }
+.slick-row.odd {
+	background-color: white;
+}
 
 .slick-cell,
 .slick-header-column
@@ -89,6 +92,13 @@ rights in this software.
 .highlightWrapper {
   color: white;
 	padding: 2px 4px 3px 4px;
+}
+/* Stripe backgrounds generated using http://www.stripegenerator.com */
+.highlightWrapper.null {
+	background: #DDDDDD url(../stripe2.png) !important;
+}
+.selected .highlightWrapper.null {
+	background-image: url(../stripe1.png) !important;
 }
 
 /* Removing borders around cells */

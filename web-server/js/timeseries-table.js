@@ -38,7 +38,7 @@ $.widget("timeseries.table",
   	function cell_formatter(row, cell, value, columnDef, dataContext)
     {
       if(columnDef.colormap)
-        return "<div class='highlightWrapper' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
     }
 
