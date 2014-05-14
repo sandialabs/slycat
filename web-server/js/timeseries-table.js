@@ -100,8 +100,8 @@ $.widget("timeseries.table",
 
     if(key == "row-selection")
     {
-      if(self._array_equal(self.options[key], value))
-        return;
+      //if(self._array_equal(self.options[key], value))
+      //  return;
 
       self.options[key] = value;
 
