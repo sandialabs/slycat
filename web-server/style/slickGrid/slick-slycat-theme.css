@@ -96,9 +96,17 @@ rights in this software.
 /* Stripe backgrounds generated using http://www.stripegenerator.com */
 .highlightWrapper.null {
 	background: #DDDDDD url(../stripe2.png) !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 }
 .selected .highlightWrapper.null {
 	background-image: url(../stripe1.png) !important;
+}
+.highlight .highlightWrapper.null {
+	position: static;
 }
 
 /* Removing borders around cells */
@@ -150,4 +158,16 @@ rights in this software.
 }
 .slick-header-column {
 	padding-right: 23px !important;
+}
+.slick-row.nullRow .slick-cell,
+.slick-row.nullRow .slick-cell .highlightWrapper
+{
+	background-color: white !important;
+	color: #666655 !important;
+}
+.slick-row.nullRow .slick-cell.selected,
+.slick-row.nullRow .slick-cell.selected .highlightWrapper
+{
+	background-color: #DDDDDD !important;
+	color: #666655 !important;
 }

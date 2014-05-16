@@ -38,6 +38,8 @@ $.widget("cca.table",
     {
       if(columnDef.colormap)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      else if(value==null)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
     }
 
@@ -302,6 +304,13 @@ $.widget("cca.table",
 
     self.getItemMetadata = function(index)
     {
+      var row = this.getItem(index);
+      var column_end = self.metadata["column-count"];
+      for(var i=0; i != column_end; i++) {
+        if(row[i]==null) {
+          return {"cssClasses" : "nullRow"};
+        }
+      }
       return null;
     }
 
