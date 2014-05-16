@@ -28,6 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
 parser.add_argument("--input-variable-prefix", default="X", help="Input variable prefix.  Default: %(default)s")
 parser.add_argument("--seed", type=int, default=12345, help="Random seed.  Default: %(default)s")
+parser.add_argument("--nan-count", type=int, default=10, help="Number of input NaNs.  Default: %(default)s")
 parser.add_argument("--timeseries-count", type=int, default=10, help="Number of timeseries.  Default: %(default)s")
 parser.add_argument("--timeseries-samples", type=int, default=15000, help="Number of samples in each timeseries.  Default: %(default)s")
 parser.add_argument("--timeseries-variable-prefix", default="Y", help="Timeseries variable prefix.  Default: %(default)s")
@@ -56,11 +57,6 @@ jobs = [(
   numpy.split(coefficients, arguments.timeseries_variables),
   ) for index, coefficients in enumerate(inputs)]
 
-with slycat.hdf5.start_array_set(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
-  slycat.hdf5.start_array(file, 0, input_attributes, input_dimensions)
-  for attribute, data in enumerate(inputs.T):
-    slycat.hdf5.store_array_attribute(file, 0, attribute, [(0, inputs.shape[0])], data)
-
 # Generate a collection of "output" timeseries.
 def generate_timeseries(job):
   import numpy
@@ -88,4 +84,15 @@ def generate_timeseries(job):
 client = IPython.parallel.Client()
 workers = client.load_balanced_view()
 workers.map_sync(generate_timeseries, jobs)
+
+# Add some NaNs to our random coefficients just to make things interesting ...
+i = numpy.random.choice(inputs.shape[0], arguments.nan_count)
+j = numpy.random.choice(inputs.shape[1], arguments.nan_count)
+inputs[i, j] = numpy.nan
+
+# Store the random coefficients as our "inputs".
+with slycat.hdf5.start_array_set(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
+  slycat.hdf5.start_array(file, 0, input_attributes, input_dimensions)
+  for attribute, data in enumerate(inputs.T):
+    slycat.hdf5.store_array_attribute(file, 0, attribute, [(0, inputs.shape[0])], data)
 
