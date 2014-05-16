@@ -45,7 +45,7 @@ $.widget("cca.scatterplot",
 
     this.element.mousedown(function(e)
     {
-      self.start_drag = [e.layerX, e.layerY];
+      self.start_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
       self.end_drag = null;
     });
 
@@ -55,7 +55,7 @@ $.widget("cca.scatterplot",
       {
         if(self.end_drag) // Already dragging ...
         {
-          self.end_drag = [e.layerX, e.layerY];
+          self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
 
           var width = self.element.width();
           var height = self.element.height();
@@ -71,9 +71,9 @@ $.widget("cca.scatterplot",
         }
         else
         {
-          if(Math.abs(e.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
+          if(Math.abs(e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
           {
-            self.end_drag = [e.layerX, e.layerY];
+            self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
           }
         }
       }
@@ -110,10 +110,10 @@ $.widget("cca.scatterplot",
         var width = self.element.width();
         var height = self.element.height();
 
-        var x1 = self.x_scale.invert(e.layerX - self.options.pick_distance);
-        var y1 = self.y_scale.invert(e.layerY + self.options.pick_distance);
-        var x2 = self.x_scale.invert(e.layerX + self.options.pick_distance);
-        var y2 = self.y_scale.invert(e.layerY - self.options.pick_distance);
+        var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
+        var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
+        var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
+        var y2 = self.y_scale.invert(e.originalEvent.layerY - self.options.pick_distance);
 
         for(var i = 0; i != count; ++i)
         {
@@ -201,7 +201,7 @@ $.widget("cca.scatterplot",
 
   _update: function()
   {
-    console.log("cca.scatterplot._update()", this.updates);
+    //console.log("cca.scatterplot._update()", this.updates);
     this.update_timer = null;
 
     if(this.updates["update_width"])

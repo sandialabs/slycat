@@ -1,6 +1,6 @@
     <script src="{{server-root}}js/jquery.knob.js"></script>
     <script src="{{server-root}}js/jquery.qtip.min.js"></script>
-    <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.css" />
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.min.css" />
     <div id="workers">
       <div id="workers-close" style="display: none;">Close</div>
       <div id="workers-container" class="workersCompact">
@@ -25,7 +25,8 @@
       {
         var current_revision = null;
 
-        var newWebkit = $.browser.webkit && parseFloat($.browser.version) >= 534.53;
+        var newWebkit  = $.browser.webkit  && parseFloat($.browser.version) >= 534.53;
+        var newChrome  = $.browser.chrome  && parseFloat($.browser.version) >= 17;
         var newMozilla = $.browser.mozilla && parseFloat($.browser.version) >= 10;
         // Warn IE8- users they need a better browser
         if ($.browser.msie && parseInt($.browser.version,10)<9)
@@ -37,8 +38,8 @@
         // {
         //   alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
         // }
-        // Warn everyone other than Chrome 17+ (i.e., WebKit 535+) or FF10+ they might need to upgrade
-        else if ( !(newWebkit || newMozilla) ) {
+        // Warn everyone other than WebKit 534.53+ or Chrome 17+ or FF10+ they might need to upgrade
+        else if ( !(newWebkit || newChrome || newMozilla) ) {
           alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
         }
 
@@ -85,12 +86,14 @@
         {
           $.ajax(
           {
-            dataType : "json",
+            dataType : "text",
             type : "GET",
             cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
             url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
-            success : function(results)
+            success : function(text)
             {
+              // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
+              var results = text? $.parseJSON(text) : null;
               if(results != null)
               {
                 current_revision = results.revision;

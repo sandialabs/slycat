@@ -10,9 +10,9 @@ rights in this software.
   <head>
 {{> head}}
     <title>{{name}} - Slycat Time Series Model</title>
-    <script type="text/javascript" src="{{server-root}}js/jquery-layout.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.layout-latest.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.ba-bbq.min.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/d3.v2.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/d3.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
@@ -22,8 +22,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/timeseries-table.js"></script>
 
     <!-- SlickGrid sources -->
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.2.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
@@ -36,8 +35,8 @@ rights in this software.
     <!-- SlickGrid styles -->
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css" type="text/css"/>
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.headerbuttons.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
   </head>
 
   <body class="timeseries">
@@ -753,10 +752,10 @@ rights in this software.
             var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max)
 
             $("#waveform-pane").css({
-              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
               });
             $("#waveform-viewer rect.selectionMask").css({
-              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+              "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
               "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
               });
 
@@ -799,10 +798,10 @@ rights in this software.
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
               $("#waveform-pane").css({
-                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap),
+                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
                 });
               $("#waveform-viewer rect.selectionMask").css({
-                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap),
+                "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
                 "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
                 });
               $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
@@ -999,14 +998,15 @@ rights in this software.
 
         function selected_node_changed(parameters)
         {
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
-          });
+          if(parameters.node != null && parameters.node["node-index"] != null)
+            $.ajax(
+            {
+              type : "POST",
+              url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
+            });
           if(parameters.skip_bookmarking != true) {
             var state = {};
-            state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-node-index" ] = parameters.node["node-index"];
+            state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
             state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-waveform-indexes" ] = getWaveformIndexes(parameters.selection);
             bookmarker.updateState(state);
           }
@@ -1127,18 +1127,9 @@ rights in this software.
             cluster: cluster,
           };
           
-          if(cluster + "-collapsed-nodes" in bookmark)
-          {
-            dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
-          }
-          if(cluster + "-expanded-nodes" in bookmark)
-          {
-            dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
-          }
-          if(cluster + "-selected-node-index" in bookmark)
-          {
-            dendrogram_options.selected_node_index = bookmark[cluster  + "-selected-node-index"];
-          }
+          dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
+          dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
+          dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
 
           return dendrogram_options;
         }
@@ -1156,6 +1147,21 @@ rights in this software.
           });
 
           return waveform_indexes;
+        }
+
+        function getNodeIndexes(nodes)
+        {
+          var node_indexes = [];
+          var node_index = null;
+
+          $.each(nodes, function(index, node)
+          {
+            node_index = node["node-index"];
+            if(node_index != null)
+              node_indexes.push(node_index);
+          });
+
+          return node_indexes;
         }
 
       });

@@ -10,9 +10,9 @@ rights in this software.
   <head>
 {{> head}}
     <title>{{name}} - Slycat CCA Model (canvas)</title>
-    <script type="text/javascript" src="{{server-root}}js/jquery-layout.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.layout-latest.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.ba-bbq.min.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/d3.v2.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/d3.min.js"></script>
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
@@ -23,8 +23,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/jquery.scrollintoview.min.js"></script>
 
     <!-- SlickGrid sources -->
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.0.min.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.jsonp-1.1.0.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.2.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
@@ -37,8 +36,8 @@ rights in this software.
     <!-- SlickGrid styles -->
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css" type="text/css"/>
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
     <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.headerbuttons.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
 
   </head>
 
@@ -828,7 +827,7 @@ rights in this software.
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
 
-            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
+            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
             $("#scatterplot").scatterplot({
               indices: indices,
@@ -849,7 +848,7 @@ rights in this software.
             // Changing the color map updates the scatterplot ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap));
+              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
               $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
 

@@ -13,8 +13,8 @@ $.widget("timeseries.waveformplot",
   {
   	"server-root" : "",
     mid : null,
-    waveforms : null,
-    selection : undefined,
+    waveforms : null, // Time & value data for all waveforms, not just the visible ones
+    selection : undefined, // Array of ids of waveforms that are visible
     highlight : [],
     color_array : null,
     color_scale : null,
@@ -62,7 +62,15 @@ $.widget("timeseries.waveformplot",
       .attr("height", this.diagram_height)
       .attr("pointer-events", "all")
       .style("fill", "transparent")
-      .on("click", panel_selection_callback(self)) // unselect all the waveforms when someone clicks in the panel but not on a waveform
+      .on("click", function(d){
+        // unselect all the waveforms when someone clicks in the panel but not on a waveform. 
+        // But only if they are regular clicking. Ctrl+click probably means they're trying to select another waveform.
+        if(!d3.event.ctrlKey) {
+          self.options.highlight = [];
+          self._select();
+          self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+        }
+      }) 
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
 
@@ -78,18 +86,9 @@ $.widget("timeseries.waveformplot",
 
     this._set_visible();
     this._select();
-
-    function panel_selection_callback(context)
-    {
-      return function()
-      {
-        context.options.highlight = [];
-        context._select();
-        context.element.trigger("waveform-selection-changed", [context.options.highlight]);
-      }
-    }
   },
 
+  // Renders waveforms
   _set_visible: function(){
     var self = this;
     var visible = this.options.selection;
@@ -187,18 +186,17 @@ $.widget("timeseries.waveformplot",
             return "white";
         })
         .attr("class", "unselected")
-        .on("click", waveform_selection_callback(self))
+        .on("click", function(d){
+          if(d3.event.ctrlKey) {
+            self.options.highlight.push(d['input-index']);
+          } else {
+            self.options.highlight = [d['input-index']];
+          }
+          self._select();
+          self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+          d3.event.stopPropagation();
+        })
         ;
-    }
-
-    function waveform_selection_callback(context){
-      return function(d)
-      {
-        context.options.highlight = [d['input-index']];
-        context._select();
-        context.element.trigger("waveform-selection-changed", [context.options.highlight]);
-        d3.event.stopPropagation();
-      }
     }
 
     function finishedProcessingWaveforms(){
@@ -298,7 +296,7 @@ $.widget("timeseries.waveformplot",
         .attr("width", this.diagram_width)
         .attr("height", this.diagram_height)
         .attr("pointer-events", "none")
-        .style("fill", $("#color-switcher").colorswitcher("get_background") )
+        .style("fill", $("#color-switcher").colorswitcher("get_background").toString() )
         .style("fill-opacity", $("#color-switcher").colorswitcher("get_opacity") )
         .attr("class", "selectionMask")
         ;
@@ -326,6 +324,19 @@ $.widget("timeseries.waveformplot",
           return "white";
       })
       .attr("class", "highlight")
+      .on("click", function(d){
+        if(d3.event.ctrlKey) {
+          var index = self.options.highlight.indexOf(d['input-index']);
+          if (index > -1) {
+            self.options.highlight.splice(index, 1);
+          }
+        } else {
+          self.options.highlight = [d['input-index']];
+        }
+        self._select();
+        self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+        d3.event.stopPropagation();
+      })
       ;
   },
 

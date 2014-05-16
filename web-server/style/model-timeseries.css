@@ -67,6 +67,11 @@ rights in this software.
   stroke: black;
 }
 
+#dendrogram-viewer .node .glyph text
+{
+  cursor: pointer;
+}
+
 #dendrogram-viewer .node .subtree
 {
   cursor: pointer;

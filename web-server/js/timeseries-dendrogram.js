@@ -18,7 +18,7 @@ $.widget("timeseries.dendrogram",
   	cluster_data:null,
   	collapsed_nodes:null,
   	expanded_nodes:null,
-  	selected_node_index:null,
+    selected_nodes:null,
     color_array: null,
     color_scale: null,
     data_table_index_array: null,
@@ -38,7 +38,7 @@ $.widget("timeseries.dendrogram",
   	var cluster_data = this.options.cluster_data;
   	var collapsed_nodes = this.options.collapsed_nodes;
   	var expanded_nodes = this.options.expanded_nodes;
-  	var selected_node_index = this.options.selected_node_index;
+    var selected_nodes = this.options.selected_nodes;
   	var server_root = self.options["server-root"];
   	var mid = self.options.mid;
 
@@ -47,14 +47,12 @@ $.widget("timeseries.dendrogram",
 	  var exemplars = cluster_data["exemplars"];
 	  var subtrees = [];
 
-	  $.each(input_indices, function(index, waveform)
-    {
-      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[index], selected: false, "waveform-index" : index, "data-table-index" : input_indices[index]});
-    });
-    $.each(linkage, function(index, link)
-    {
-      subtrees.push({"node-index":subtrees.length, children:[subtrees[link[0]], subtrees[link[1]]], leaves:link[3], exemplar:exemplars[index + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null})
-    });
+    for(var i=0; i<input_indices.length; i++){
+      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[i], selected: false, "waveform-index" : i, "data-table-index" : input_indices[i]});
+    }
+    for(var i=0; i<linkage.length; i++){
+      subtrees.push({"node-index":subtrees.length, children:[subtrees[linkage[i][0]], subtrees[linkage[i][1]]], leaves:linkage[i][3], exemplar:exemplars[i + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null});
+    }
 
     var padding = 20;
     var diagram_width = this.element.parent().width() - padding - padding - 110;
@@ -93,11 +91,11 @@ $.widget("timeseries.dendrogram",
     nodes.forEach(function(d) { max_depth = Math.max(max_depth, d.depth); });
 
     // We have collapse/expand/selected node data. Let's go ahead and apply it.
-    if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_node_index!=null) ){
+    if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_nodes!=null) ){
       nodes.forEach(function(d) { 
-        if(selected_node_index != undefined) {
-          if( d["node-index"] == selected_node_index ) {
-            select_node(self, d, true);
+        if(selected_nodes != null && selected_nodes.length>0) {
+          if( selected_nodes.indexOf(d["node-index"]) > -1 ) {
+            d.selected = true;
           }
         }
         if( collapsed_nodes && (collapsed_nodes.indexOf(d["node-index"]) > -1) && d.children ) {
@@ -114,8 +112,16 @@ $.widget("timeseries.dendrogram",
       nodes.forEach(function(d) { if(d.depth == 3) toggle(d); });
     }
     // We have no selected node data. Let's select the root node.
-    if(selected_node_index == null){
+    if(selected_nodes == null){
       select_node(self, root, true);
+    } else {
+      // We had selected node data, so let's style them and trigger the node-selection-changed event
+      style_selected_nodes();
+      color_links();
+      // Find all selected nodes
+      var selection = [];
+      find_selected_nodes(root, selection);
+      self.element.trigger("node-selection-changed", {node:null, skip_bookmarking:true, selection:selection});
     }
 
     // Initial update for the diagram ...
@@ -130,44 +136,101 @@ $.widget("timeseries.dendrogram",
       return "M" + d.source.y + "," + d.source.x + "V" + d.target.x + "H" + d.target.y;
     }
 
-    var last_selected_node = null;
+    function find_selected_nodes(d, selection)
+    {
+      if(d.selected)
+        selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
+      if(d.children)
+        for(var i=0; i<d.children.length; i++)
+          find_selected_nodes(d.children[i], selection);
+      if(d._children)
+        for(var i=0; i<d._children.length; i++)
+          find_selected_nodes(d._children[i], selection);
+    }
+
+    // Keeping track of already selected nodes becomes too complicated with multi selection
+    //var last_selected_node = null;
     function select_node(context, d, skip_bookmarking)
     {
-      if(last_selected_node === d)
-        return;
-      last_selected_node = d;
+      // Keeping track of already selected nodes becomes too complicated with multi selection
+      // if(last_selected_node === d)
+      //   return;
+      // last_selected_node = d;
 
-      function select_subtree(d, selection)
+      function select_subtree(d)
       {
-        selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
         d.selected = true;
         if(d.children)
-          $.each(d.children, function(index, subtree) { select_subtree(subtree, selection); });
+          for(var i=0; i<d.children.length; i++)
+            select_subtree(d.children[i]);
         if(d._children)
-          $.each(d._children, function(index, subtree) { select_subtree(subtree, selection); });
+          for(var i=0; i<d._children.length; i++)
+            select_subtree(d._children[i]);
       }
 
-      context.options.selected_node_index = d["node-index"];
-      var selection = []
-      $.each(subtrees, function(index, subtree) { subtree.selected = false; });
-      select_subtree(d, selection);
+      // Mark this node and all its children as selected
+      select_subtree(d);
 
-      self.container.selectAll(".node")
-        .classed("selected", function(d) { return d.selected; })
-        ;
+      // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
+      style_selected_nodes();
 
+      // Colors the lines between the nodes to show what's selected
       color_links();
+
+      // Find all selected nodes
+      var selection = [];
+      find_selected_nodes(root, selection);
+      context.options.selected_nodes = selection;
+      
+      context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
+    }
+
+    function unselect_node(context, d, skip_bookmarking)
+    {
+      function unselect_subtree(d)
+      {
+        d.selected = false;
+        if(d.children)
+          for(var i=0; i<d.children.length; i++)
+            unselect_subtree(d.children[i]);
+        if(d._children)
+          for(var i=0; i<d._children.length; i++)
+            unselect_subtree(d._children[i]);
+      }
+
+      // Mark this node and all its children as unselected
+      unselect_subtree(d);
+
+      // Prunes selected nodes that have been orphaned
+      prune_tree(root);
+
+      // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
+      style_selected_nodes();
+
+      // Colors the lines between the nodes to show what's selected
+      color_links();
+
+      // Find all selected nodes
+      var selection = [];
+      find_selected_nodes(root, selection);
+      context.options.selected_nodes = selection;
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
 
+    function style_selected_nodes(){
+      self.container.selectAll(".node")
+        .classed("selected", function(d) { return d.selected; })
+        ;
+    }
+
 		function color_links(){
       self.container.selectAll("path.link").attr("style", function(d){
-        if(d.source.selected) {
-          return "stroke: black;";
-        }
-        else if(checkChildren(d.target)){
-          return "stroke: gray;";
+        if(checkChildren(d.target)){
+          if(d.source.selected)
+            return "stroke: black;"
+          else
+            return "stroke: gray;"
         }
       });
 
@@ -184,6 +247,44 @@ $.widget("timeseries.dendrogram",
           }
           return false;
         }
+      }
+    }
+
+    function prune_tree(d){
+      if(d.children || d._children) {
+        // This is a branch node
+        if(!d.selected){
+          // Branch node is unselected, so just process its children
+          if(d.children)
+            $.each(d.children,  function(index, subtree) { prune_tree(subtree); })
+          if(d._children)
+            $.each(d._children, function(index, subtree) { prune_tree(subtree); })
+          return false;
+        }
+        else {
+          //Branch node is selected, so process its children and set its selected state accordingly
+          var selected_state = false;
+          var child_selected_state = false;
+          if(d.children)
+            $.each(d.children,  function(index, subtree) { 
+              child_selected_state = prune_tree(subtree);
+              selected_state = selected_state || child_selected_state; 
+            })
+          if(d._children)
+            $.each(d._children, function(index, subtree) { 
+              child_selected_state = prune_tree(subtree);
+              selected_state = selected_state || child_selected_state; 
+            })
+          d.selected = selected_state;
+          return selected_state;
+        }
+      }
+      else {
+        // This is a leaf node
+        if(d.selected)
+          return true;
+        else
+          return false;
       }
     }
 
@@ -227,63 +328,11 @@ $.widget("timeseries.dendrogram",
         }
       }
 
-// // Click counter for code that tries to differentiate between single and double clicks better
-// var clickCount = 0;
       // Create new nodes at the parent's previous position.
       var node_enter = node.enter().append("svg:g")
         .attr("class", "node")
         .classed("selected", function(d) { return d.selected; })
         .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-        .on("dblclick", function(d) { 
-          // Toggle the target node (expand if collapsed, collapse if expanded)
-          toggle(d);
-          // If target node is now expanded, expand its children up to a certain depth
-          if(d.children) {
-            // Change expandThisFar to however deep below the target node you want to expand
-            var expandThisFar = 2;
-            expandUpToLevel(d, d.depth + expandThisFar);
-          }
-          update_subtree(d);
-        })
-        .on("click", function(d) {
-          // Shift+click expands current node
-          if(d3.event.shiftKey){
-            toggle(d); 
-            update_subtree(d);
-          } 
-          // Regular click just selects it
-          else {
-            select_node(self, d);
-          }
-        })
-        // // Trying to differentiate better between single and double clicks
-        // .on("click", function(d){
-        //   clickCount++;
-        //   if (clickCount === 1) {
-        //     singleClickTimer = setTimeout(function() {
-        //       clickCount = 0;
-        //       // Shift+click expands current node
-        //       if(d3.event.shiftKey){
-        //         toggle(d); 
-        //         update_subtree(d);
-        //       } 
-        //       // Regular click just selects it
-        //       else {
-        //         select_node(self, d);
-        //       }
-        //     }, 400);
-        //   } else if (clickCount === 2) {
-        //     clearTimeout(singleClickTimer);
-        //     clickCount = 0;
-        //     select_node(self, d);
-        //     toggle(d);
-        //     if(d.children) {
-        //     var expandThisFar = 2;
-        //     expandUpToLevel(d, d.depth + expandThisFar);
-        //   }
-        //   update_subtree(d);
-        //   }
-        // })
         .style("opacity", 1e-6)
         ;
 
@@ -292,6 +341,13 @@ $.widget("timeseries.dendrogram",
         .attr("class", "subtree")
         .style("opacity", 1e-6)
         .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
+        .on("click", function(d) {
+          toggle(d); 
+          // Change expandThisFar to however deep below the target node you want to expand
+          var expandThisFar = 9999;
+          expandUpToLevel(d, d.depth + expandThisFar);
+          update_subtree(d);
+        })
         ;
 
       node_subtree.append("svg:path")
@@ -315,17 +371,58 @@ $.widget("timeseries.dendrogram",
         .text(function(d) { return d.leaves; })
         ;
 
+      node_subtree.append("svg:text")
+        .attr("x", -9)
+        .attr("dy", -5)
+        .attr("text-anchor", "middle")
+        .text("+")
+        .style("fill", "black")
+        .on("click", function(d) {
+          toggle(d);
+          // Change expandThisFar to however deep below the target node you want to expand
+          var expandThisFar = 2;
+          expandUpToLevel(d, d.depth + expandThisFar);
+          update_subtree(d);
+          d3.event.stopPropagation();
+        })
+        ;
+
       // Circle
       var node_glyph = node_enter.append("svg:g")
         .attr("class", "glyph")
+        .on("click", function(d) {
+          if(d3.event.ctrlKey) {
+            if(d.selected) {
+              unselect_node(self, d);
+            } else {
+              select_node(self, d);
+            }
+          } else {
+            // Clear previous selection if user didn't Ctrl+click
+            $.each(subtrees, function(index, subtree) { subtree.selected = false; });
+            select_node(self, d);
+          }
+        })
         ;
 
       node_glyph.append("svg:circle")
         .attr("r", 4.5)
-        // All circles are clickable so all should use a pointer cursor
-        //.style("cursor", function(d) { return d.children || d._children ? "pointer" : ""; })
         .style("cursor", "pointer")
         .style("fill", function(d) { return d.children || d._children ? "#dbd9eb" : "white"; })
+        ;
+
+      node_glyph.append("svg:text")
+        .attr("x", -9)
+        .attr("dy", 13)
+        .attr("text-anchor", "middle")
+        .text("–")
+        .style("fill", "black")
+        .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
+        .on("click", function(d) {
+          toggle(d);
+          update_subtree(d);
+          d3.event.stopPropagation();
+        })
         ;
 
       // Sparkline
@@ -354,7 +451,7 @@ $.widget("timeseries.dendrogram",
           
         })
         ;
-
+      
       get_model_arrayset_metadata({
         server_root : self.options["server-root"],
         mid : self.options.mid,
@@ -425,11 +522,21 @@ $.widget("timeseries.dendrogram",
         .style("display", function(d) { return d._children ? "inline" : "none"; })
         ;
 
+      // Need to re-assign fill style to get around this firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=652991
+      // It only seems to affect fill gradients and only when the URI changes, like it does for us with bookmarking.
+      node_update.select(".subtree-glyph")
+        .style("fill", "url(#subtree-gradient)")
+        ;
+      
       node_update.select(".sparkline")
         .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
         .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
         ;
 
+      node_update.select(".glyph text")
+        .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
+        ;
+      
       // Transition exiting nodes to the parent's new position.
       var node_exit = node.exit().transition()
         .duration(duration)
@@ -437,11 +544,11 @@ $.widget("timeseries.dendrogram",
         .style("opacity", 1e-6)
         .remove()
         ;
-
+      
       node_exit.select(".sparkline")
         .each("start", function() { d3.select(this).style("display", "none"); })
         ;
-
+      
       // Update the links.
       var link = vis.selectAll("path.link")
         .data(layout.links(nodes), function(d) { return d.target["node-index"]; });

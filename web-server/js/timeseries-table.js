@@ -38,7 +38,7 @@ $.widget("timeseries.table",
   	function cell_formatter(row, cell, value, columnDef, dataContext)
     {
       if(columnDef.colormap)
-        return "<div class='highlightWrapper' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
     }
 
@@ -100,8 +100,8 @@ $.widget("timeseries.table",
 
     if(key == "row-selection")
     {
-      if(self._array_equal(self.options[key], value))
-        return;
+      //if(self._array_equal(self.options[key], value))
+      //  return;
 
       self.options[key] = value;
 
@@ -385,7 +385,10 @@ $.widget("timeseries.table",
     if(self.sort_column !== null && self.sort_order !== null) {
       // Need to retrieve the sorted_table_filter synchronously because everything else relies on it.
       self.get_indices("sorted", self.table_filter, self.sort_column, self.sort_order, function(sorted_rows){
-        self.sorted_table_filter = Array.apply( [], sorted_rows );;
+        if(sorted_rows.length > 1)
+          self.sorted_table_filter = Array.apply( [], sorted_rows );
+        else
+          self.sorted_table_filter = [sorted_rows[0]];
         self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
         self.pages = {};
       }, false);
@@ -465,8 +468,10 @@ $.widget("timeseries.table",
         self.sort_column = column;
         self.sort_order = order;
         self.get_indices("sorted", self.table_filter, column, order ,function(sorted_rows){
-          var array = Array.apply( [], sorted_rows );
-          self.sorted_table_filter = Array.apply( [], sorted_rows );;
+          if(sorted_rows.length > 1)
+            self.sorted_table_filter = Array.apply( [], sorted_rows );
+          else
+            self.sorted_table_filter = [sorted_rows[0]];
           self.retrieve_table_filter = self.sorted_table_filter.slice(0).sort(function (a, b) { return a - b });
           self.pages = {};
           self.grid.invalidate();

@@ -416,10 +416,12 @@ $.widget("cca.barplot",
     // Resetting the inputs resizer max height after table resize
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
     var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
-    $(".barplotGroup.inputs").resizable("option", {
-      minHeight: Math.max(4, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
-      maxHeight: this.options.inputsHeight,
-    });
+    // Making sure widget exists before calling methods on it.
+    if($(".barplotGroup.inputs").data("ui-resizable"))
+      $(".barplotGroup.inputs").resizable("option", {
+        minHeight: Math.max(4, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
+        maxHeight: this.options.inputsHeight,
+      });
     // Shifting default resize handle to left to stop overlap over scrollbar.
     var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
     var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
