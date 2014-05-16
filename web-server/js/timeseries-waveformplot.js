@@ -13,8 +13,8 @@ $.widget("timeseries.waveformplot",
   {
   	"server-root" : "",
     mid : null,
-    waveforms : null,
-    selection : undefined,
+    waveforms : null, // Time & value data for all waveforms, not just the visible ones
+    selection : undefined, // Array of ids of waveforms that are visible
     highlight : [],
     color_array : null,
     color_scale : null,
@@ -88,6 +88,7 @@ $.widget("timeseries.waveformplot",
     this._select();
   },
 
+  // Renders waveforms
   _set_visible: function(){
     var self = this;
     var visible = this.options.selection;
