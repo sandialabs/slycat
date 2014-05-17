@@ -449,13 +449,6 @@ $.widget("timeseries.table",
 
     self.getItemMetadata = function(index)
     {
-      var row = this.getItem(index);
-      var column_end = self.metadata["column-count"];
-      for(var i=0; i != column_end; i++) {
-        if(row[i]==null) {
-          return {"cssClasses" : "nullRow"};
-        }
-      }
       return null;
     }
 

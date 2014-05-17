@@ -18,6 +18,8 @@ $.widget("timeseries.waveformplot",
     highlight : [],
     color_array : null,
     color_scale : null,
+    nullWaveformColor: "#666655",
+    nullWaveformDasharray: "5,5",
   },
 
   _create: function()
@@ -180,10 +182,16 @@ $.widget("timeseries.waveformplot",
         //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
         .style("display", "none")
         .style("stroke", function(d, i) { 
-          if(self.options.color_scale != null)
-            return self.options.color_scale( self.options.color_array[ d["input-index"] ] ); 
+          if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
+            return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
           else
-            return "white";
+            return self.options.nullWaveformColor;
+        })
+        .style("stroke-dasharray", function(d,i){
+          if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
+            return null;
+          else
+            return self.options.nullWaveformDasharray;
         })
         .attr("class", "unselected")
         .on("click", function(d){
@@ -318,10 +326,16 @@ $.widget("timeseries.waveformplot",
     waveforms.append("svg:path")
       .attr("d", this.make_sax_line())
       .style("stroke", function(d, i) { 
-        if (self.options.color_scale != null && self.options.color_array != null)
+        if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
           return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
         else
-          return "white";
+          return self.options.nullWaveformColor;
+      })
+      .style("stroke-dasharray", function(d,i){
+        if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
+          return null;
+        else
+          return self.options.nullWaveformDasharray;
       })
       .attr("class", "highlight")
       .on("click", function(d){
@@ -386,9 +400,19 @@ $.widget("timeseries.waveformplot",
     }
 
     function colorWaveform(waveform){
-      d3.select(waveform).style("stroke", function(d, i) { 
-        return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
-      })
+      d3.select(waveform)
+        .style("stroke", function(d, i) { 
+          if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
+            return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
+          else
+            return self.options.nullWaveformColor;
+        })
+        .style("stroke-dasharray", function(d,i){
+          if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
+            return null;
+          else
+            return self.options.nullWaveformDasharray;
+        })
       ;
     }
 
