@@ -97,6 +97,15 @@ rights in this software.
                 <p><input id="rerun-cca-scale-inputs" type="checkbox"></input>Scale inputs to unit variance.</p>
               </div>
             </div>
+
+            <div id="rerun-cca-running">
+              <p>Your model is being generated.</p>
+              <div id="model-progress">
+                <input class="modelPie" value="1" />
+              </div>
+              <p>You can close this dialog and watch top status bar for a green checkmark to see when it completes.</p>
+              <p>If you leave this dialog open, we will take you to the model as soon as it's generated.</p>
+            </div>
           </div>
 
 
@@ -468,6 +477,7 @@ rights in this software.
           {
             $("#rerun-cca-basics").css("display", "block");
             $("#rerun-cca-parameters").css("display", "none");
+            $("#rerun-cca-running").css("display", "none");
             $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
             $(".ui-dialog-buttonpane button:contains('Next')").button("enable");
             $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
@@ -627,9 +637,21 @@ rights in this software.
                 url : "{{server-root}}models/" + rerun_cca_model + "/finish",
                 success: function(result)
                 {
+                  var mid = rerun_cca_model;
                   rerun_cca_model = null;
-                  window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
-                  $("#rerun-cca-form").dialog("close");
+                  $(".ui-dialog-buttonpane button:contains('Next')").button("disable");
+                  $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
+                  $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
+                  $(".ui-dialog-buttonpane button:contains('Cancel')").button({ label: "Close" });
+                  $("#rerun-cca-basics").css("display", "none");
+                  $("#rerun-cca-parameters").css("display", "none");
+
+                  window.modelGenerationTimeout = setTimeout(function(){
+                    get_model_status(mid, process_model_status);
+                  }, 1000);
+
+                  //window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
+                  //$("#rerun-cca-form").dialog("close");
                 },
                 error: function(request, status, reason_phrase)
                 {
@@ -638,10 +660,56 @@ rights in this software.
               });
             },
             Cancel : function(){
+              clearTimeout(window.modelGenerationTimeout);
               $(this).dialog("close");
-            }
-          }
+            },
+          },
         });
+
+        function process_model_status(results) {
+          if(results.finished === null) {
+            $("#rerun-cca-running").css("display", "block");
+            var modelPie = $("#model-progress .modelPie");
+            modelPie.knob({
+                  'min':0,
+                  'max':1,
+                  'readOnly':true,
+                  'displayInput':false,
+                  'fgColor':'#4D720C',
+                  'bgColor':'#D7D7D6',
+                  'width':200,
+                  'height':200,
+                  'thickness':0.35,
+                  'step':0.01,
+                });
+            modelPie.val(results["progress"]).trigger('change');
+            window.modelGenerationTimeout = setTimeout(function(){
+              get_model_status(results._id, process_model_status);
+            }, 1000);
+          }
+          else {
+            window.location = "{{server-root}}models/" + results._id;
+          }
+        }
+
+        function get_model_status(mid, callback)
+        {
+          $.ajax(
+          {
+            dataType : "json",
+            type : "GET",
+            cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
+            url : "{{server-root}}models/" + mid,
+            success : function(results)
+            {
+              callback(results);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              callback(reason_phrase);
+            },
+          });
+        }
 
         $("#rerun-cca-all-inputs-on").button().click(function()
         {

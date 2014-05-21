@@ -18,7 +18,7 @@ $.widget("timeseries.waveformplot",
     highlight : [],
     color_array : null,
     color_scale : null,
-    nullWaveformColor: "#666655",
+    nullWaveformColor: "gray",
     nullWaveformDasharray: "5,5",
   },
 
@@ -185,7 +185,7 @@ $.widget("timeseries.waveformplot",
           if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
             return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
           else
-            return self.options.nullWaveformColor;
+            return $("#color-switcher").colorswitcher("get_null_color");
         })
         .style("stroke-dasharray", function(d,i){
           if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
@@ -329,7 +329,7 @@ $.widget("timeseries.waveformplot",
         if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
           return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
         else
-          return self.options.nullWaveformColor;
+          return $("#color-switcher").colorswitcher("get_null_color");
       })
       .style("stroke-dasharray", function(d,i){
         if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
@@ -405,7 +405,7 @@ $.widget("timeseries.waveformplot",
           if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
             return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
           else
-            return self.options.nullWaveformColor;
+            return $("#color-switcher").colorswitcher("get_null_color");
         })
         .style("stroke-dasharray", function(d,i){
           if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)

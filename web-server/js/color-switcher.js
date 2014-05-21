@@ -21,6 +21,7 @@ $.widget("slycat.colorswitcher",
       {
         "label": "Night",
         "background": d3.rgb("#333333"),
+        "null_color": "gray",
         "opacity": "0.5",
         "colors":
         [
@@ -63,6 +64,7 @@ $.widget("slycat.colorswitcher",
       {
         "label": "Day",
         "background": d3.rgb(255, 255, 255),
+        "null_color": "gray",
         "opacity": "0.7",
         "colors":
         [
@@ -105,6 +107,7 @@ $.widget("slycat.colorswitcher",
       {
         "label": "Rainbow",
         "background": d3.rgb(128, 128, 128),
+        "null_color": "rgb(75,75,75)",
         "opacity": "0.6",
         "colors":
         [
@@ -162,6 +165,14 @@ $.widget("slycat.colorswitcher",
     if(name === undefined)
       name = this.options.colormap;
     return this.color_maps[name].background;
+  },
+
+  // Return the null color value for the given color map.
+  get_null_color: function(name)
+  {
+    if(name === undefined)
+      name = this.options.colormap;
+    return this.color_maps[name]["null_color"];
   },
 
   // Return the suggested opacity value for the given color map.
