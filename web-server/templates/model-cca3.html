@@ -969,7 +969,12 @@ rights in this software.
             // Changing the table row selection updates the scatterplot ...
             $("#table").bind("row-selection-changed", function(event, selection)
             {
-              $("#scatterplot").scatterplot("option", "selection",  selection);
+              // The table selection is an array buffer, so convert it to an array.
+              var temp = [];
+              for(var i = 0; i != selection.length; ++i)
+                temp.push(selection[i]);
+
+              $("#scatterplot").scatterplot("option", "selection",  temp);
             });
           }
         }

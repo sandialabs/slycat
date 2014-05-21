@@ -187,8 +187,9 @@ $.widget("cca.table",
 
     if(key == "row-selection")
     {
-      if(self._array_equal(self.options[key], value))
-        return;
+      // Unexpectedly at this point self.options[key] has already been set to value, so this always returns even when the row-selection is unique
+      // if(self._array_equal(self.options[key], value))
+      //   return;
 
       self.options[key] = value;
       self.data.get_indices("sorted", value, function(sorted_rows)

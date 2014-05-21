@@ -81,7 +81,8 @@ $.widget("cca.scatterplot",
 
     this.element.mouseup(function(e)
     {
-      self.options.selection = [];
+      if(!e.ctrlKey)
+        self.options.selection = [];
 
       var x = self.options.x;
       var y = self.options.y;
@@ -89,9 +90,6 @@ $.widget("cca.scatterplot",
 
       if(self.start_drag && self.end_drag) // Rubber-band selection ...
       {
-        var width = self.element.width();
-        var height = self.element.height();
-
         var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
         var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
         var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
@@ -101,15 +99,14 @@ $.widget("cca.scatterplot",
         {
           if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
           {
-            self.options.selection.push(self.options.indices[i]);
+            var index = self.options.selection.indexOf(self.options.indices[i]);
+            if(index == -1)
+              self.options.selection.push(self.options.indices[i]);
           }
         }
       }
       else // Pick selection ...
       {
-        var width = self.element.width();
-        var height = self.element.height();
-
         var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
         var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
         var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
@@ -119,7 +116,12 @@ $.widget("cca.scatterplot",
         {
           if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
           {
-            self.options.selection.push(self.options.indices[i]);
+            var index = self.options.selection.indexOf(self.options.indices[i]);
+            if(index == -1)
+              self.options.selection.push(self.options.indices[i]);
+            else
+              self.options.selection.splice(index, 1);
+
             break;
           }
         }

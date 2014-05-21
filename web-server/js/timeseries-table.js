@@ -102,6 +102,7 @@ $.widget("timeseries.table",
 
     if(key == "row-selection")
     {
+      // Unexpectedly at this point self.options[key] has already been set to value, so this always returns even when the row-selection is unique
       //if(self._array_equal(self.options[key], value))
       //  return;
 
