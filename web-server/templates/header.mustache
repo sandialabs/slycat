@@ -123,8 +123,8 @@
                 {
                   return $("<div class='worker'>")
                     .attr('id', model["_id"])
-                    .append($("<div>").addClass("message"))
-                    .append($("<div>").addClass("name"))
+                    .append($("<div>").addClass("message").click(function(e){window.location= "{{server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("name").click(function(e){window.location= "{{server-root}}models/" + model["_id"];}))
                     .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(close_model.bind(this, model["_id"]))))
                     .qtip({
                       position: {
