@@ -127,6 +127,21 @@ $.widget("timeseries.dendrogram",
     // Initial update for the diagram ...
   	update_subtree(root, true);
 
+    function getNodeIndexes(nodes)
+    {
+      var node_indexes = [];
+      var node_index = null;
+
+      for(var i=0; i<nodes.length; i++)
+      {
+        node_index = nodes[i]["node-index"];
+        if(node_index != null)
+          node_indexes.push(node_index);
+      }
+
+      return node_indexes;
+    }
+
 		// Helper function that draws dendrogram links with right-angles.
     function path(d, i)
     {
@@ -180,7 +195,7 @@ $.widget("timeseries.dendrogram",
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
-      context.options.selected_nodes = selection;
+      context.options.selected_nodes = getNodeIndexes(selection);
       
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
@@ -213,7 +228,7 @@ $.widget("timeseries.dendrogram",
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
-      context.options.selected_nodes = selection;
+      context.options.selected_nodes = getNodeIndexes(selection);
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
