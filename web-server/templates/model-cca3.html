@@ -484,6 +484,22 @@ rights in this software.
           },
           close : function()
           {
+            clearTimeout(window.modelGenerationTimeout);
+            if(rerun_cca_model!=null) {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}models/" + rerun_cca_model,
+                success : function(details)
+                {
+                  console.log("successfuly deleted unfinished model");
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  console.log("problems deleting unfinished model");
+                }
+              });
+            }
             rerun_cca_model = null;
           },
           buttons:
@@ -659,7 +675,6 @@ rights in this software.
             },
           },
         });
-        $("#rerun-cca-form").on( "dialogclose", function( event, ui ) { clearTimeout(window.modelGenerationTimeout); } );
 
         function process_model_status(results) {
           if(results.finished === null) {

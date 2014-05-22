@@ -409,6 +409,22 @@ rights in this software.
           },
           close : function()
           {
+            clearTimeout(window.modelGenerationTimeout);
+            if(local_cca_model != null) {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}models/" + local_cca_model,
+                success : function(details)
+                {
+                  console.log("successfuly deleted unfinished model");
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  console.log("problems deleting unfinished model");
+                }
+              });
+            }
             local_cca_model = null;
           }
         });
@@ -595,7 +611,6 @@ rights in this software.
         {
           $("#local-cca-form").dialog("open");
         });
-        $("#local-cca-form").on( "dialogclose", function( event, ui ) { clearTimeout(window.modelGenerationTimeout); } );
 
         /* Remote CCA  user interface */
 
@@ -617,6 +632,22 @@ rights in this software.
           },
           close : function()
           {
+            clearTimeout(window.modelGenerationTimeout);
+            if(remote_cca_model != null) {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}models/" + remote_cca_model,
+                success : function(details)
+                {
+                  console.log("successfuly deleted unfinished model");
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  console.log("problems deleting unfinished model");
+                }
+              });
+            }
             remote_cca_model = null;
 
             // Clear password field
@@ -835,7 +866,6 @@ rights in this software.
         {
           $("#remote-cca-form").dialog("open");
         });
-        $("#remote-cca-form").on( "dialogclose", function( event, ui ) { clearTimeout(window.modelGenerationTimeout); } );
 
         function process_model_status(results) {
           if(results.finished === null) {
