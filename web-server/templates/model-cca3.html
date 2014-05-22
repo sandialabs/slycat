@@ -655,11 +655,11 @@ rights in this software.
               });
             },
             Cancel : function(){
-              clearTimeout(window.modelGenerationTimeout);
               $(this).dialog("close");
             },
           },
         });
+        $("#rerun-cca-form").on( "dialogclose", function( event, ui ) { clearTimeout(window.modelGenerationTimeout); } );
 
         function process_model_status(results) {
           if(results.finished === null) {
