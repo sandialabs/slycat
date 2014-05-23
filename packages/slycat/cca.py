@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import numbers
 import numpy
 import scipy.linalg
 import scipy.stats
@@ -26,8 +27,14 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   for column in numpy.column_stack((X, Y)).T:
     if column.min() == column.max():
       raise ValueError("Columns in X and Y cannot be constant.")
+  if not isinstance(scale_inputs, bool):
+    raise TypeError("scale_inputs must be a boolean.")
+  if not isinstance(force_positive, (type(None), numbers.Integral)):
+    raise TypeError("force_positive must be an integer or None.")
   if force_positive is not None and (force_positive < 0 or force_positive >= Y.shape[1]):
-    raise ValueError("force_positive out-of-range.")
+    raise ValueError("force_positive must be in the range [0, number of Y columns).")
+  if not isinstance(significant_digits, (type(None), numbers.Integral)):
+    raise TypeError("significant_digits must be an integer or None.")
 
   eps = numpy.finfo("double").eps
   if significant_digits is None or significant_digits > numpy.abs(numpy.log10(eps)):
