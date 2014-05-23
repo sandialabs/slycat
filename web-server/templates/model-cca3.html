@@ -546,7 +546,15 @@ rights in this software.
                             var row = $("<tr>").appendTo($("#rerun-cca-variables tbody"));
                             $("<td>").text(column).appendTo(row);
 
-                            if(table["column-types"][index] != "string")
+                            if(table["column-types"][index] == "string")
+                            {
+                              $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
+                            }
+                            else if(table["column-min"][index] == table["column-max"][index])
+                            {
+                              $("<td colspan='2' title='Cannot analyze constant data.'>").appendTo(row);
+                            }
+                            else
                             {
                               var input = $("<input type='checkbox' name='inputs' class='rerun-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                               var output = $("<input type='checkbox' name='outputs' class='rerun-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
@@ -558,10 +566,6 @@ rights in this software.
 
                               input.click(deselect_companion(output));
                               output.click(deselect_companion(input));
-                            }
-                            else
-                            {
-                              $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
                             }
                           });
                           if(scale_inputs)
@@ -629,7 +633,7 @@ rights in this software.
 
               store_parameter("input-columns", selected_input_columns);
               store_parameter("output-columns", selected_output_columns);
-              store_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked"));
+              store_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked") == "checked" ? true : false);
 
               $.ajax(
               {

@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import numbers
 import numpy
 import scipy.linalg
 import scipy.stats
@@ -13,14 +14,27 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   """
 
   # Validate our inputs ...
+  if not isinstance(X, numpy.ndarray) or not isinstance(Y, numpy.ndarray):
+    raise TypeError("X and Y must be numpy.ndarray instances.")
   if X.ndim != 2 or Y.ndim != 2:
-    raise Exception("X and Y must have two dimensions.")
+    raise ValueError("X and Y must have two dimensions.")
   if X.shape[0] != Y.shape[0]:
-    raise Exception("X and Y must contain the same number of rows.")
+    raise ValueError("X and Y must contain the same number of rows.")
   if X.shape[0] < 2:
-    raise Exception("X and Y must contain two-or-more rows.")
+    raise ValueError("X and Y must contain two-or-more rows.")
+  if X.shape[1] < 1 or Y.shape[1] < 1:
+    raise ValueError("X and Y must contain one-or-more columns.")
+  for column in numpy.column_stack((X, Y)).T:
+    if column.min() == column.max():
+      raise ValueError("Columns in X and Y cannot be constant.")
+  if not isinstance(scale_inputs, bool):
+    raise TypeError("scale_inputs must be a boolean.")
+  if not isinstance(force_positive, (type(None), numbers.Integral)):
+    raise TypeError("force_positive must be an integer or None.")
   if force_positive is not None and (force_positive < 0 or force_positive >= Y.shape[1]):
-    raise Exception("force_positive out-of-range.")
+    raise ValueError("force_positive must be in the range [0, number of Y columns).")
+  if not isinstance(significant_digits, (type(None), numbers.Integral)):
+    raise TypeError("significant_digits must be an integer or None.")
 
   eps = numpy.finfo("double").eps
   if significant_digits is None or significant_digits > numpy.abs(numpy.log10(eps)):
@@ -43,16 +57,16 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
 
-  if Xrank == 0:
-    raise Exception("X must contain at least one non-constant column.")
-  if Xrank < p1:
-    Q1 = Q1[:,:Xrank]
-    R1 = R1[:Xrank,:Xrank]
-  if Yrank == 0:
-    raise Exception("Y must contain at least one non-constant column.")
-  if Yrank < p2:
-    Q2 = Q2[:,:Yrank]
-    R2 = R2[:Yrank,:Yrank]
+#  if Xrank == 0:
+#    raise Exception("X must contain at least one non-constant column.")
+#  if Xrank < p1:
+#    Q1 = Q1[:,:Xrank]
+#    R1 = R1[:Xrank,:Xrank]
+#  if Yrank == 0:
+#    raise Exception("Y must contain at least one non-constant column.")
+#  if Yrank < p2:
+#    Q2 = Q2[:,:Yrank]
+#    R2 = R2[:Yrank,:Yrank]
 
   L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)
 
@@ -66,8 +80,8 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   A *= numpy.sqrt(n - 1)
   B *= numpy.sqrt(n - 1)
 
-  A = numpy.row_stack((A, numpy.zeros((p1 - Xrank, d))))
-  B = numpy.row_stack((B, numpy.zeros((p2 - Yrank, d))))
+#  A = numpy.row_stack((A, numpy.zeros((p1 - Xrank, d))))
+#  B = numpy.row_stack((B, numpy.zeros((p2 - Yrank, d))))
 
   A[P1] = numpy.copy(A)
   B[P2] = numpy.copy(B)

@@ -457,7 +457,15 @@ rights in this software.
                     var row = $("<tr>").appendTo($("#local-cca-variables tbody"));
                     $("<td>").text(column).appendTo(row);
 
-                    if(table["column-types"][index] != "string")
+                    if(table["column-types"][index] == "string")
+                    {
+                      $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
+                    }
+                    else if(table["column-min"][index] == table["column-max"][index])
+                    {
+                      $("<td colspan='2' title='Cannot analyze constant data.'>").appendTo(row);
+                    }
+                    else
                     {
                       var input = $("<input type='checkbox' name='inputs' class='local-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                       var output = $("<input type='checkbox' name='outputs' class='local-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
@@ -465,10 +473,6 @@ rights in this software.
                       input.attr("checked", "checked");
                       input.click(deselect_companion(output));
                       output.click(deselect_companion(input));
-                    }
-                    else
-                    {
-                      $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
                     }
                   });
 
@@ -543,7 +547,7 @@ rights in this software.
 
           store_parameter("input-columns", input_columns);
           store_parameter("output-columns", output_columns);
-          store_parameter("scale-inputs", $("#local-cca-scale-inputs").attr("checked"));
+          store_parameter("scale-inputs", $("#local-cca-scale-inputs").attr("checked") == "checked" ? true : false);
 
           $.ajax(
           {
@@ -685,7 +689,15 @@ rights in this software.
                     var row = $("<tr>").appendTo($("#remote-cca-variables tbody"));
                     $("<td>").text(column).appendTo(row);
 
-                    if(table["column-types"][index] != "string")
+                    if(table["column-types"][index] == "string")
+                    {
+                      $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
+                    }
+                    else if(table["column-min"][index] == table["column-max"][index])
+                    {
+                      $("<td colspan='2' title='Cannot analyze constant data.'>").appendTo(row);
+                    }
+                    else
                     {
                       var input = $("<input type='checkbox' name='inputs' class='remote-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                       var output = $("<input type='checkbox' name='outputs' class='remote-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
@@ -693,10 +705,6 @@ rights in this software.
                       input.attr("checked", "checked");
                       input.click(deselect_companion(output));
                       output.click(deselect_companion(input));
-                    }
-                    else
-                    {
-                      $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
                     }
                   });
                   $("#remote-cca-scale-inputs").attr("checked", "checked");
