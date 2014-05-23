@@ -4,4 +4,4 @@ packages/cherrypy/test/session-*
 packages/cherrypy/test/test_misc_tools.log
 *.pyc
 .ipynb_checkpoints
-
+.DS_Store
