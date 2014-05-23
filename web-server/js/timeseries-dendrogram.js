@@ -245,7 +245,7 @@ $.widget("timeseries.dendrogram",
           if(d.source.selected)
             return "stroke: black;"
           else
-            return "stroke: gray;"
+            return "stroke: #646464;"
         }
       });
 
@@ -253,15 +253,19 @@ $.widget("timeseries.dendrogram",
       function checkChildren(target){
         if(target.selected)
           return true;
-        else if(!target.children)
-          return false;
-        else {
+        else if(target.children){
           for(var i=0; i<target.children.length; i++){
             if(checkChildren(target.children[i]))
               return true
           }
-          return false;
         }
+        else if(target._children){
+          for(var i=0; i<target._children.length; i++){
+            if(checkChildren(target._children[i]))
+              return true
+          }
+        }
+        return false;
       }
     }
 
