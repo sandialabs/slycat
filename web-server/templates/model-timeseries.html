@@ -1154,12 +1154,12 @@ rights in this software.
           var node_indexes = [];
           var node_index = null;
 
-          $.each(nodes, function(index, node)
+          for(var i=0; i<nodes.length; i++)
           {
-            node_index = node["node-index"];
+            node_index = nodes[i]["node-index"];
             if(node_index != null)
               node_indexes.push(node_index);
-          });
+          }
 
           return node_indexes;
         }

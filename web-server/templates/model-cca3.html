@@ -98,7 +98,7 @@ rights in this software.
               </div>
             </div>
 
-            <div id="rerun-cca-running">
+            <div id="rerun-cca-running" class="runningModel">
               <p>Your model is being generated.</p>
               <div id="model-progress">
                 <input class="modelPie" value="1" />
@@ -484,6 +484,22 @@ rights in this software.
           },
           close : function()
           {
+            clearTimeout(window.modelGenerationTimeout);
+            if(rerun_cca_model!=null) {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}models/" + rerun_cca_model,
+                success : function(details)
+                {
+                  console.log("successfuly deleted unfinished model");
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  console.log("problems deleting unfinished model");
+                }
+              });
+            }
             rerun_cca_model = null;
           },
           buttons:
@@ -647,15 +663,10 @@ rights in this software.
                   $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
                   $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
                   $(".ui-dialog-buttonpane button:contains('Cancel')").button({ label: "Close" });
-                  $("#rerun-cca-basics").css("display", "none");
-                  $("#rerun-cca-parameters").css("display", "none");
 
                   window.modelGenerationTimeout = setTimeout(function(){
                     get_model_status(mid, process_model_status);
                   }, 1000);
-
-                  //window.alert("Model scheduled for generation.  Watch the worker pane to see when it completes.");
-                  //$("#rerun-cca-form").dialog("close");
                 },
                 error: function(request, status, reason_phrase)
                 {
@@ -664,7 +675,6 @@ rights in this software.
               });
             },
             Cancel : function(){
-              clearTimeout(window.modelGenerationTimeout);
               $(this).dialog("close");
             },
           },
@@ -672,6 +682,7 @@ rights in this software.
 
         function process_model_status(results) {
           if(results.finished === null) {
+            $("#rerun-cca-parameters").css("display", "none");
             $("#rerun-cca-running").css("display", "block");
             var modelPie = $("#model-progress .modelPie");
             modelPie.knob({

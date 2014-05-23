@@ -125,7 +125,12 @@
                     .attr('id', model["_id"])
                     .append($("<div>").addClass("message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
                     .append($("<div>").addClass("name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                    .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(close_model.bind(this, model["_id"]))))
+                    .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(
+                      function(e){
+                        close_model(model["_id"]);
+                        e.stopPropagation();
+                      }
+                    )))
                     .qtip({
                       position: {
                         adjust: {
@@ -173,7 +178,12 @@
                   }
                   line.find(".message").text(model["message"] || "");
                   line.find(".name").text(model["name"] || "");
-                  line.find(".close button").unbind('click').click(close_model.bind(this, model_id));
+                  line.find(".close button").unbind('click').click(
+                    function(e){
+                      close_model(model_id);
+                      e.stopPropagation();
+                    }
+                  );
 
                   // Set up progress indicator for workers with progress
                   if(model.hasOwnProperty("progress")) {

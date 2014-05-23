@@ -127,6 +127,21 @@ $.widget("timeseries.dendrogram",
     // Initial update for the diagram ...
   	update_subtree(root, true);
 
+    function getNodeIndexes(nodes)
+    {
+      var node_indexes = [];
+      var node_index = null;
+
+      for(var i=0; i<nodes.length; i++)
+      {
+        node_index = nodes[i]["node-index"];
+        if(node_index != null)
+          node_indexes.push(node_index);
+      }
+
+      return node_indexes;
+    }
+
 		// Helper function that draws dendrogram links with right-angles.
     function path(d, i)
     {
@@ -180,7 +195,7 @@ $.widget("timeseries.dendrogram",
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
-      context.options.selected_nodes = selection;
+      context.options.selected_nodes = getNodeIndexes(selection);
       
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
@@ -213,7 +228,7 @@ $.widget("timeseries.dendrogram",
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
-      context.options.selected_nodes = selection;
+      context.options.selected_nodes = getNodeIndexes(selection);
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
@@ -230,7 +245,7 @@ $.widget("timeseries.dendrogram",
           if(d.source.selected)
             return "stroke: black;"
           else
-            return "stroke: gray;"
+            return "stroke: #646464;"
         }
       });
 
@@ -238,15 +253,19 @@ $.widget("timeseries.dendrogram",
       function checkChildren(target){
         if(target.selected)
           return true;
-        else if(!target.children)
-          return false;
-        else {
+        else if(target.children){
           for(var i=0; i<target.children.length; i++){
             if(checkChildren(target.children[i]))
               return true
           }
-          return false;
         }
+        else if(target._children){
+          for(var i=0; i<target._children.length; i++){
+            if(checkChildren(target._children[i]))
+              return true
+          }
+        }
+        return false;
       }
     }
 
