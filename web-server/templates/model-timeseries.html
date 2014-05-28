@@ -938,6 +938,9 @@ rights in this software.
               dendrogram_options.dendrogram_sort_order = false;
             }
 
+            if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
+              dendrogram_options["highlight"] = bookmark[initial_cluster + "-selected-row-simulations"];
+
             $("#dendrogram-viewer").dendrogram(dendrogram_options);
 
             // Log changes to the node selection ...
@@ -968,6 +971,12 @@ rights in this software.
             $("#table").bind("variable-sort-changed", function(event, variable, order)
             {
               $("#dendrogram-viewer").dendrogram("option", "dendrogram_sort_order", variable == null && order == null ? true : false);
+            });
+
+            // Changing the table row selection updates the waveform plot ...
+            $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+            {
+              $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
             });
           }
         }
@@ -1130,6 +1139,7 @@ rights in this software.
           dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
           dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
           dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
+          dendrogram_options.highlight = bookmark[cluster  + "-selected-row-simulations"];
 
           return dendrogram_options;
         }

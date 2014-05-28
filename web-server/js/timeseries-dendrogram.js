@@ -24,6 +24,7 @@ $.widget("timeseries.dendrogram",
     data_table_index_array: null,
     dendrogram_sort_order: true,
     nullWaveformDasharray: "3,3",
+    highlight: [],
   },
 
   _create: function()
@@ -478,6 +479,12 @@ $.widget("timeseries.dendrogram",
           else
             return self.options.nullWaveformDasharray;
         })
+        .style("stroke-width", function(d, i){
+          var index = d["data-table-index"];
+          if(self.options.highlight.indexOf(index) > -1)
+            return "4px";
+          return "1px";
+        })
         ;
       
       get_model_arrayset_metadata({
@@ -687,6 +694,20 @@ $.widget("timeseries.dendrogram",
       ;
   },
 
+  _set_highlight: function()
+  {
+    var self = this;
+
+    this.container.selectAll("g.sparkline path")
+      .style("stroke-width", function(d, i){
+        var index = d["data-table-index"];
+        if(self.options.highlight.indexOf(index) > -1)
+          return "4px";
+        return "1px";
+      })
+      ;
+  },
+
   _set_dendrogram_sort_order_state: function()
   {
     var self = this;
@@ -723,6 +744,10 @@ $.widget("timeseries.dendrogram",
     else if(key == "dendrogram_sort_order")
     {
       this._set_dendrogram_sort_order_state();
+    }
+    else if(key == "highlight")
+    {
+      this._set_highlight();
     }
   },
 
