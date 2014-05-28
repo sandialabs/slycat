@@ -116,10 +116,10 @@ $.widget("timeseries.waveformplot",
 
     var waveform_subset = [];
     if(visible !== undefined) {
-      $.each(visible, function(index, waveform_index)
+      for(var i=0; i<visible.length; i++)
       {
-        waveform_subset.push(self.waveforms[waveform_index]);
-      });
+        waveform_subset.push(self.waveforms[visible[i]])
+      }
     }
     else {
       waveform_subset = self.waveforms;
@@ -136,8 +136,6 @@ $.widget("timeseries.waveformplot",
       .enter()
       .append("svg:g")
       .attr("class", "waveform")
-      //.style("visibility", "hidden")
-      //.style("display", "none")
       ;
 
     var waveformsLength = waveforms[0].length;
@@ -179,7 +177,6 @@ $.widget("timeseries.waveformplot",
     function processWaveform(waveform){
       d3.select(waveform).append("svg:path")
         .attr("d", self.make_sax_line())
-        //.style("visibility", "hidden") // paths are added in a hidden state, otherwise the browser chokes trying to render them as they are being added
         .style("display", "none")
         .style("stroke", function(d, i) { 
           if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
@@ -247,16 +244,16 @@ $.widget("timeseries.waveformplot",
 
         result = "";
 
-  // Commenting out decimation while we wait to find a better approach to this 
-  var multiplier = 1;
-	// // Adding downsampling decimation based on panel width
-	// var samples = d["time"].length;
-	// var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
-	// var multiplier = Math.ceil( (samples / panelWidth) * 4 );
-	// if(multiplier < 1)
-  //   multiplier = 1;
-  
-	//console.log("multiplier: " + multiplier);
+        // Commenting out decimation while we wait to find a better approach to this 
+        var multiplier = 1;
+      	// // Adding downsampling decimation based on panel width
+      	// var samples = d["time"].length;
+      	// var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
+      	// var multiplier = Math.ceil( (samples / panelWidth) * 4 );
+      	// if(multiplier < 1)
+        //   multiplier = 1;
+        
+      	//console.log("multiplier: " + multiplier);
         for(var i = 0; i != d["time"].length; ++i)
         {
           result += "M" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
@@ -290,11 +287,12 @@ $.widget("timeseries.waveformplot",
     highlight = inCurrentSelection;
 
     var waveform_subset = [];
-    $.each(highlight, function(index, node_index)
+    for(var i=0; i<highlight.length; i++)
     {
+      var node_index = highlight[i];
       if(node_index < self.waveforms.length)
         waveform_subset.push(self.waveforms[node_index]);
-    });
+    }
 
     this.container.selectAll("g.selection").remove();
     this.container.selectAll("rect.selectionMask").remove();
@@ -314,14 +312,6 @@ $.widget("timeseries.waveformplot",
       .data(waveform_subset)
     .enter().append("svg:g")
       .attr("class", "selection");
-
-    // Turning off yellow highlighting now that the background waveforms are faded out.
-    // waveforms.append("svg:path")
-    //   .attr("d", this.make_sax_line())
-    //   .style("fill", "none")
-    //   .style("stroke", "yellow")
-    //   .style("stroke-width", 5.0)
-    //   ;
 
     waveforms.append("svg:path")
       .attr("d", this.make_sax_line())
@@ -367,12 +357,6 @@ $.widget("timeseries.waveformplot",
   _set_color: function()
   {
     var self = this;
-
-    // this.container.selectAll("g.waveform path")
-    //   .style("stroke", function(d, i) { 
-    //     return color_scale(color_array[i]); 
-    //   })
-    //   ;
 
     // No use coloring waveforms if none exist, for example, during initial creation of waveform plot
     if(this.container.selectAll("g.waveform path, g.selection path.highlight").pop().length > 0){
