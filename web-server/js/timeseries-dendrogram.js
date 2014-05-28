@@ -23,6 +23,7 @@ $.widget("timeseries.dendrogram",
     color_scale: null,
     data_table_index_array: null,
     dendrogram_sort_order: true,
+    nullWaveformDasharray: "3,3",
   },
 
   _create: function()
@@ -458,16 +459,24 @@ $.widget("timeseries.dendrogram",
         .style("stroke", function(d, i){
           if(self.options.color_scale !== null && self.options.color_array != null){
             var index = d["data-table-index"];
-            if(index > -1)
-              return self.options.color_scale( self.options.color_array[ d["data-table-index"] ] ); // This might be "input-index" instead
-            else if (d.selected || (d.parent && d.parent.selected))
-              return "black";
+            if(index != null) {
+              var value = self.options.color_array[index];
+              if(value != null)
+                return self.options.color_scale(value);
+              else
+                return $("#color-switcher").colorswitcher("get_null_color");
+            }
             else
-              return "#C9C9C9";
+              return "black";
           } else {
             return "black";
           }
-          
+        })
+        .style("stroke-dasharray", function(d, i){
+          if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
+            return null;
+          else
+            return self.options.nullWaveformDasharray;
         })
         ;
       
@@ -659,12 +668,21 @@ $.widget("timeseries.dendrogram",
     this.container.selectAll("g.sparkline path")
       .style("stroke", function(d, i){
         var index = d["data-table-index"];
-        if(index > -1)
-          return self.options.color_scale( self.options.color_array[ d["data-table-index"] ] ); // This might be "input-index" instead
-        else if (d.selected || (d.parent && d.parent.selected))
-          return "black";
+        if(index != null) {
+          var value = self.options.color_array[index];
+          if(value != null)
+            return self.options.color_scale(value);
+          else
+            return $("#color-switcher").colorswitcher("get_null_color");
+        }
         else
-          return "#C9C9C9";
+          return "black";
+      })
+      .style("stroke-dasharray", function(d, i){
+        if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
+          return null;
+        else
+          return self.options.nullWaveformDasharray;
       })
       ;
   },
