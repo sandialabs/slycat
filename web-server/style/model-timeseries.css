@@ -174,3 +174,10 @@ rights in this software.
   right: 0;
   bottom: 0;
 }
+#dendrogram-sparkline-backdrop {
+  height: 100%;
+  width: 130px;
+  position: absolute;
+  right: 0;
+  z-index: -1;
+}

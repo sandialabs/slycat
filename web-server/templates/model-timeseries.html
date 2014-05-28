@@ -110,6 +110,7 @@ rights in this software.
       </div>
       <div id="model-pane" class="ui-layout-center">
         <div id="dendrogram-pane" class="ui-layout-west">
+          <div id="dendrogram-sparkline-backdrop"></div>
           <div class="load-status"></div>
           <svg id="dendrogram-viewer" width="100%" height="100%">
             <defs>
@@ -749,7 +750,7 @@ rights in this software.
             // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
             //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var colormap = $("#color-switcher").colorswitcher("option", "colormap");
-            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max)
+            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max);
 
             $("#waveform-pane").css({
               "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
@@ -926,6 +927,11 @@ rights in this software.
             var colormap = $("#color-switcher").colorswitcher("option", "colormap");
             var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max);
 
+
+            $("#dendrogram-sparkline-backdrop").css({
+              "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+              });
+
             var dendrogram_options = build_dendrogram_node_options(initial_cluster);
             dendrogram_options["server-root"]="{{server-root}}";
             dendrogram_options.mid="{{_id}}";
@@ -964,6 +970,9 @@ rights in this software.
             // Changing the color map updates the dendrogram ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
+              $("#dendrogram-sparkline-backdrop").css({
+                "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+                });
               $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
             });
 
