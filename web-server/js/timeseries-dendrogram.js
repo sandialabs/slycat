@@ -23,7 +23,6 @@ $.widget("timeseries.dendrogram",
     color_scale: null,
     data_table_index_array: null,
     dendrogram_sort_order: true,
-    nullWaveformDasharray: "3,3",
     highlight: [],
   },
 
@@ -84,6 +83,7 @@ $.widget("timeseries.dendrogram",
       ;
 
     var root = subtrees[subtrees.length - 1];
+    self.root = root;
     root.x0 = diagram_height / 2;
     root.y0 = 0;
 
@@ -449,7 +449,7 @@ $.widget("timeseries.dendrogram",
       // Sparkline
       var node_sparkline = node_enter.append("svg:g")
         .attr("class", "sparkline")
-        .attr("transform", function(d) { return d.leaves > 1 ? "translate(45, 0)" : "translate(10, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
+        .attr("transform", function(d) { return d.leaves > 1 ? "translate(55, 0)" : "translate(15, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
         .style("opacity", 1e-6)
         .style("display", "none")
         ;
@@ -473,19 +473,14 @@ $.widget("timeseries.dendrogram",
             return "black";
           }
         })
-        .style("stroke-dasharray", function(d, i){
+        .classed("nullValue", function(d, i){
           if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
-            return null;
+            return false;
           else
-            return self.options.nullWaveformDasharray;
-        })
-        .style("stroke-width", function(d, i){
-          var index = d["data-table-index"];
-          if(self.options.highlight.indexOf(index) > -1)
-            return "4px";
-          return "1px";
+            return true;
         })
         ;
+      self._set_highlight();
       
       get_model_arrayset_metadata({
         server_root : self.options["server-root"],
@@ -547,7 +542,7 @@ $.widget("timeseries.dendrogram",
       var node_update = node.transition()
         .duration(duration)
         .attr("transform", function(d) { 
-          return "translate(" + (d._children ? (diagram_width - 35) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
+          return "translate(" + (d._children ? (diagram_width - 40) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
         })
         .style("opacity", 1.0)
         ;
@@ -685,11 +680,11 @@ $.widget("timeseries.dendrogram",
         else
           return "black";
       })
-      .style("stroke-dasharray", function(d, i){
+      .classed("nullValue", function(d, i){
         if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
-          return null;
+          return false;
         else
-          return self.options.nullWaveformDasharray;
+          return true;
       })
       ;
   },
@@ -698,14 +693,46 @@ $.widget("timeseries.dendrogram",
   {
     var self = this;
 
+    checkChildren(self.root);
+
     this.container.selectAll("g.sparkline path")
-      .style("stroke-width", function(d, i){
-        var index = d["data-table-index"];
-        if(self.options.highlight.indexOf(index) > -1)
-          return "4px";
-        return "1px";
+      .classed("highlight", function(d, i){
+        if(d.highlight)
+          return true;
+        else
+          return false;
       })
       ;
+
+    // Checks if target or any of its children are highlighted
+    function checkChildren(target){
+      var highlight = false;
+      if(target.children){
+        for(var i=0; i<target.children.length; i++){
+          if(checkChildren(target.children[i])){
+            highlight = true;
+          }
+        }
+        target.highlight = highlight;
+      }
+      else if(target._children){
+        for(var i=0; i<target._children.length; i++){
+          if(checkChildren(target._children[i])){
+            highlight = true;
+          }
+        }
+        target.highlight = highlight;
+      }
+      else if((target["data-table-index"] != null) && (self.options.highlight.indexOf(target["data-table-index"]) > -1)){
+        target.highlight = true;
+        highlight = true;
+      }
+      else {
+        target.highlight = false;
+        highlight = false;
+      }
+      return highlight;
+    }
   },
 
   _set_dendrogram_sort_order_state: function()

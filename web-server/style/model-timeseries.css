@@ -181,3 +181,15 @@ rights in this software.
   right: 0;
   z-index: -1;
 }
+#dendrogram-viewer g.sparkline path {
+  stroke-linecap: round;
+}
+#dendrogram-viewer g.sparkline path.highlight {
+  stroke-width: 4px;
+}
+#dendrogram-viewer g.sparkline path.nullValue {
+  stroke-dasharray: 2px, 2px;
+}
+#dendrogram-viewer g.sparkline path.highlight.nullValue {
+  stroke-dasharray: 2px, 5px;
+}
