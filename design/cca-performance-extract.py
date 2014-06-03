@@ -6,10 +6,11 @@ import slycat.web.client
 import toyplot, toyplot.browser, toyplot.pdf
 
 parser = slycat.web.client.option_parser()
+parser.add_argument("--project", default="cca-performance", help="Test project name.  Default: %(default)s")
 arguments = parser.parse_args()
 connection = slycat.web.client.connect(arguments)
 
-project = connection.find_project("cca-performance")
+project = connection.find_project(arguments.project)
 models = connection.get_project_models(project["_id"])
 
 times = []
@@ -28,3 +29,4 @@ for model in models:
 times = numpy.array(times, dtype={"names":["rows", "columns", "ingestion", "compute"], "formats":["int64", "int64", "float64", "float64"]})
 pickle.dump(times, open("cca-performance.pickle", "w"))
 
+print times

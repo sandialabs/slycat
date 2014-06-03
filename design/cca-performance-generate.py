@@ -25,11 +25,15 @@ def create_model(rows, columns, repetition):
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
+parser.add_argument("--start-columns", type=int, default=4, help="Start index.  Default: %(default)s")
+parser.add_argument("--start-rows", type=int, default=10, help="Start index.  Default: %(default)s")
 arguments = parser.parse_args()
 connection = slycat.web.client.connect(arguments)
 
 for columns in [4, 8, 16, 32, 64, 128, 256, 512, 1024]:
   for rows in [10, 100, 1000, 10000, 100000, 1000000]:
+    if columns < arguments.start_columns or (columns == arguments.start_columns and rows < arguments.start_rows):
+      continue
     if rows <= columns:
       continue
     if columns == 512 and rows > 100000:
