@@ -559,16 +559,22 @@ rights in this software.
                           $("#rerun-cca-variables tbody").empty();
                           $.each(table["column-names"], function(index, column)
                           {
-                            var row = $("<tr>").appendTo($("#rerun-cca-variables tbody"));
+                            var row = $("<tr>")
+                              .addClass(function(){
+                                if( (table["column-types"][index] == "string") || (table["column-min"][index] == table["column-max"][index]) )
+                                  return "disabled ui-state-default";
+                              })
+                              .appendTo($("#rerun-cca-variables tbody"))
+                              ;
                             $("<td>").text(column).appendTo(row);
 
                             if(table["column-types"][index] == "string")
                             {
-                              $("<td colspan='2' title='Cannot analyze non-numeric data.'>").appendTo(row);
+                              $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze non-numeric data.</td>").appendTo(row);
                             }
                             else if(table["column-min"][index] == table["column-max"][index])
                             {
-                              $("<td colspan='2' title='Cannot analyze constant data.'>").appendTo(row);
+                              $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze constant data.</td>").appendTo(row);
                             }
                             else
                             {

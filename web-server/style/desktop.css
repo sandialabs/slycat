@@ -1011,3 +1011,22 @@ select
   text-align: center;
   margin-top: 20px;
 }
+#rerun-cca-variables .disabled.ui-state-default,
+#remote-cca-variables .disabled.ui-state-default,
+#local-cca-variables .disabled.ui-state-default
+{
+  background: none;
+}
+#rerun-cca-variables .disabled td,
+#remote-cca-variables .disabled td,
+#local-cca-variables .disabled td
+{
+  color: gray;
+}
+#rerun-cca-variables .disabled .ui-icon,
+#remote-cca-variables .disabled .ui-icon,
+#local-cca-variables .disabled .ui-icon 
+{
+  float: left;
+  margin-right: 2px;
+}
