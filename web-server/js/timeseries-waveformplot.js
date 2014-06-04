@@ -131,32 +131,37 @@ $.widget("timeseries.waveformplot",
 
     waveformsContainer = this.visualization;
 
-    waveforms = waveformsContainer.selectAll("g.waveform")
+    var waveforms_update = waveformsContainer.selectAll("g.waveform")
       .data(waveform_subset, function(d){ return d["input-index"]; });
 
-    waveforms.enter()
+    var waveforms_exit = waveforms_update.exit().remove();
+
+    var waveforms_enter = waveforms_update.enter()
       .append("svg:g")
       .attr("class", "waveform")
       ;
 
-    waveforms.exit().remove();
+    var waveformsLength = waveforms_enter.size();
+    if(waveformsLength > 0){
+      self.waveformPie.trigger(
+        'configure',
+        {
+          "max":waveformsLength,
+        }
+      );
 
-    var waveformsLength = waveforms.enter()[0].length;
-    self.waveformPie.trigger(
-      'configure',
-      {
-        "max":waveformsLength,
-      }
-    );
+      // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
+      self.showWaveformPieContainerTimeout = setTimeout(function(){
+        self.waveformPieContainer.show(0);
+      }, 1000);
 
-    // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
-    self.showWaveformPieContainerTimeout = setTimeout(function(){
-      self.waveformPieContainer.show(0);
-    }, 1000);
-
-    //timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
-    timedProcessArray(waveforms.enter()[0], processWaveform, finishedProcessingWaveforms);
-    previewWaveforms();
+      timedProcessArray(
+        waveforms_enter.filter('g.waveform')[0], // Filtering out nulls and undefineds elements by selecting only g.waveforms
+        processWaveform, 
+        finishedProcessingWaveforms
+        );
+      previewWaveforms();
+    }
 
     function timedProcessArray(items, process, callback){
       var timeout = 100; //how long to yield control to UI thread
@@ -447,6 +452,10 @@ $.widget("timeseries.waveformplot",
     }
     else if(key == "waveforms")
     {
+      this.container.selectAll("g.waveform").remove();
+      this.container.selectAll("g.selection").remove();
+      this.container.selectAll("rect.selectionMask").remove();
+      
       this.options.waveforms = value.waveforms;
       // Setting selection to all if it's undefined
       if(value.selection === undefined) {

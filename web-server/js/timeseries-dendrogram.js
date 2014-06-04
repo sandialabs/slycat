@@ -774,6 +774,8 @@ $.widget("timeseries.dendrogram",
     }
     else if(key == "highlight")
     {
+      if(value == undefined)
+        this.options.highlight = [];
       this._set_highlight();
     }
   },
