@@ -97,6 +97,8 @@ $.widget("cca.table",
       metadata : self.options.metadata,
       sort_column : self.options["sort-variable"],
       sort_order : self.options["sort-order"],
+      inputs : self.options.inputs,
+      outputs : self.options.outputs,
       });
 
     self.trigger_row_selection = true;
@@ -256,6 +258,9 @@ $.widget("cca.table",
     self.metadata = parameters.metadata;
     self.sort_column = parameters.sort_column;
     self.sort_order = parameters.sort_order;
+    self.inputs = parameters.inputs;
+    self.outputs = parameters.outputs;
+    self.analysis_columns = self.inputs.concat(self.outputs);
 
     self.pages = {};
     self.page_size = 50;
@@ -306,9 +311,9 @@ $.widget("cca.table",
     self.getItemMetadata = function(index)
     {
       var row = this.getItem(index);
-      var column_end = self.metadata["column-count"];
+      var column_end = self.analysis_columns.length;
       for(var i=0; i != column_end; i++) {
-        if(row[i]==null) {
+        if(row[ self.analysis_columns[i] ]==null) {
           return {"cssClasses" : "nullRow"};
         }
       }
