@@ -125,20 +125,23 @@ $.widget("timeseries.waveformplot",
       waveform_subset = self.waveforms;
     }
 
-    this.container.selectAll("g.waveform").remove();
-    this.container.selectAll("g.selection").remove();
-    this.container.selectAll("rect.selectionMask").remove();
+    // this.container.selectAll("g.waveform").remove();
+    // this.container.selectAll("g.selection").remove();
+    // this.container.selectAll("rect.selectionMask").remove();
 
     waveformsContainer = this.visualization;
 
     waveforms = waveformsContainer.selectAll("g.waveform")
-      .data(waveform_subset)
-      .enter()
+      .data(waveform_subset, function(d){ return d["input-index"]; });
+
+    waveforms.enter()
       .append("svg:g")
       .attr("class", "waveform")
       ;
 
-    var waveformsLength = waveforms[0].length;
+    waveforms.exit().remove();
+
+    var waveformsLength = waveforms.enter()[0].length;
     self.waveformPie.trigger(
       'configure',
       {
@@ -151,7 +154,8 @@ $.widget("timeseries.waveformplot",
       self.waveformPieContainer.show(0);
     }, 1000);
 
-    timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
+    //timedProcessArray(waveforms[0], processWaveform, finishedProcessingWaveforms);
+    timedProcessArray(waveforms.enter()[0], processWaveform, finishedProcessingWaveforms);
     previewWaveforms();
 
     function timedProcessArray(items, process, callback){
@@ -309,7 +313,7 @@ $.widget("timeseries.waveformplot",
     }
 
     var waveforms = this.visualization.selectAll("g.selection")
-      .data(waveform_subset)
+      .data(waveform_subset, function(d){ return d["input-index"]; })
     .enter().append("svg:g")
       .attr("class", "selection");
 
