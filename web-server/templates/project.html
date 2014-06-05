@@ -220,9 +220,10 @@ rights in this software.
         {{#models}}
           <li>
             <div class="main-item">
+              <a class="clicker" href="{{server-root}}models/{{_id}}"></a>
               <h3 class="main-title"><a class="model-link" href="{{server-root}}models/{{_id}}">{{name}}</a></h3>
-              <a class="main-tag model" href="{{server-root}}models/{{_id}}">Model</a>
-              <div class="main-type">{{model-type}}</div>
+              <a class="main-tag model" href="{{server-root}}models/{{_id}}">{{model-type}}</a>
+              <!-- <div class="main-type">{{model-type}}</div> -->
               <div class="main-created">Created {{created}} by {{creator}}</div>
               <div class="main-marking">{{{marking-html}}}</div>
               <p class="main-description">{{description}}</p>

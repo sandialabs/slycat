@@ -454,6 +454,11 @@ a#title-link h1:hover
   padding: 12px;
 }
 
+.main-list .main-item:hover
+{
+  background-color: white;
+}
+
 .main-list .main-title
 {
   float: left;
@@ -1029,4 +1034,11 @@ select
 {
   float: left;
   margin-right: 2px;
+}
+a.clicker {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
