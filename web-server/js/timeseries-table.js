@@ -37,8 +37,9 @@ $.widget("timeseries.table",
 
   	function cell_formatter(row, cell, value, columnDef, dataContext)
     {
-      if(columnDef.colormap)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      if(columnDef.colormap) {
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      }
       else if(value==null)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);

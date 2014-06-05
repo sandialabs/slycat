@@ -418,6 +418,10 @@ $.widget("timeseries.waveformplot",
 
   resize_canvas: function()
   {
+    this.container.selectAll("g.waveform").remove();
+    this.container.selectAll("g.selection").remove();
+    this.container.selectAll("rect.selectionMask").remove();
+      
     this.width = $("#waveform-pane").width();
     this.height = $("#waveform-pane").height();
     this.diagram_width = this.width - this.padding - this.padding;
@@ -455,7 +459,7 @@ $.widget("timeseries.waveformplot",
       this.container.selectAll("g.waveform").remove();
       this.container.selectAll("g.selection").remove();
       this.container.selectAll("rect.selectionMask").remove();
-      
+
       this.options.waveforms = value.waveforms;
       // Setting selection to all if it's undefined
       if(value.selection === undefined) {

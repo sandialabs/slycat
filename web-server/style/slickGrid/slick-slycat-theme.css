@@ -93,6 +93,10 @@ rights in this software.
   color: white;
 	padding: 2px 4px 3px 4px;
 }
+.highlightWrapper.light {
+	/*color: #666655;*/
+	color: black;
+}
 /* Stripe backgrounds generated using http://www.stripegenerator.com */
 .highlightWrapper.null {
 	background: #DDDDDD url(../stripe2.png) !important;
