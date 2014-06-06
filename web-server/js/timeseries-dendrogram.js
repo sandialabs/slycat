@@ -479,6 +479,9 @@ $.widget("timeseries.dendrogram",
           else
             return true;
         })
+        .on("click", function(d){
+          self._handle_highlight(d, d3.event, this);
+        })
         ;
       self._set_highlight();
       
@@ -732,6 +735,58 @@ $.widget("timeseries.dendrogram",
         highlight = false;
       }
       return highlight;
+    }
+  },
+
+  _handle_highlight: function(d, event, element)
+  {
+    var self = this;
+    var data_table_indexes = getDataTableIndexesFromChildren(d);
+
+    if(!event.ctrlKey){
+      self.options.highlight = data_table_indexes;
+    }
+    else {
+      if(d.highlight){
+        for(var i=0; i < data_table_indexes.length; i++){
+          var index = self.options.highlight.indexOf(data_table_indexes[i]);
+          if (index > -1) {
+            self.options.highlight.splice(index, 1);
+          }
+        }
+      }
+      else {
+        for(var i=0; i < data_table_indexes.length; i++){
+          if(self.options.highlight.indexOf(data_table_indexes[i]) == -1)
+            self.options.highlight.push(data_table_indexes[i]);
+        }
+      }
+    }
+
+    self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+
+    function getDataTableIndexesFromChildren(target){
+      var data_table_indexes = [];
+      if(target.children){
+        for(var i=0; i<target.children.length; i++){
+          if(target.children[i]["data-table-index"] != null)
+            data_table_indexes.push(target.children[i]["data-table-index"]);
+          else
+            data_table_indexes = data_table_indexes.concat(getDataTableIndexesFromChildren(target.children[i]));
+        }
+      }
+      else if(target._children){
+        for(var i=0; i<target._children.length; i++){
+          if(target._children[i]["data-table-index"] != null)
+            data_table_indexes.push(target._children[i]["data-table-index"]);
+          else
+            data_table_indexes = data_table_indexes.concat(getDataTableIndexesFromChildren(target._children[i]));
+        }
+      }
+      else if(target["data-table-index"] != null)
+        data_table_indexes.push(target["data-table-index"]);
+
+      return data_table_indexes;
     }
   },
 

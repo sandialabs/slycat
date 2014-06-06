@@ -862,6 +862,12 @@ rights in this software.
               $("#table").table("option", "row-selection", waveform_indexes);
             });
 
+            // Changing the waveform selection updates the table row selection ...
+            $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+            {
+              $("#table").table("option", "row-selection", waveform_indexes);
+            });
+
             // Changing the colormap updates the table ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
