@@ -20,8 +20,8 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
     raise ValueError("X and Y must have two dimensions.")
   if X.shape[0] != Y.shape[0]:
     raise ValueError("X and Y must contain the same number of rows.")
-  if X.shape[0] < 2:
-    raise ValueError("X and Y must contain two-or-more rows.")
+  if X.shape[0] <= X.shape[1] + Y.shape[1]:
+    raise ValueError("Number of rows must be greater-than the number of columns.")
   if X.shape[1] < 1 or Y.shape[1] < 1:
     raise ValueError("X and Y must contain one-or-more columns.")
   for column in numpy.column_stack((X, Y)).T:

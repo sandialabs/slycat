@@ -50,6 +50,7 @@ class option_parser(argparse.ArgumentParser):
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
     self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
     self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
+    self.add_argument("--password", default=None)
     self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
     self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
@@ -349,6 +350,17 @@ class connection(object):
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
 
+  def find_project(self, name):
+    """Return a project by name."""
+    projects = [project for project in self.get_projects() if project["name"] == name]
+
+    if len(projects) > 1:
+      raise Exception("More than one project matched the given name.")
+    elif len(projects) == 1:
+      return projects[0]
+    else:
+      raise Exception("No project matched the given name.")
+
   def find_or_create_project(self, name, description=""):
     """Looks-up a project by name, creating it if it doesn't already exist."""
     projects = [project for project in self.get_projects() if project["name"] == name]
@@ -379,5 +391,5 @@ def connect(arguments, **keywords):
     keywords["verify"] = False
   elif arguments.verify is not None:
     keywords["verify"] = arguments.verify
-  return connection(auth=(arguments.user, getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
+  return connection(auth=(arguments.user, arguments.password if arguments.password is not None else getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 
