@@ -110,6 +110,7 @@ $.widget("timeseries.table",
       self.options[key] = value;
 
       var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
+      self.trigger_row_selection = false;
       self.grid.setSelectedRows(selectedRows);
       
       if(selectedRows.length)

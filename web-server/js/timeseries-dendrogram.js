@@ -768,7 +768,7 @@ $.widget("timeseries.dendrogram",
         }
       }
     }
-
+    self._set_highlight();
     self.element.trigger("waveform-selection-changed", [self.options.highlight]);
 
     function getDataTableIndexesFromChildren(target){

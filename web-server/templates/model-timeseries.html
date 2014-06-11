@@ -795,6 +795,12 @@ rights in this software.
               $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
             });
 
+            // Changing the dendrogram waveform selection updates the waveform plot ...
+            $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+            {
+              $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+            });
+
             // Changing the color map updates the waveform plot ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
@@ -806,6 +812,12 @@ rights in this software.
                 "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
                 });
               $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
+            });
+
+            // Log changes to the waveform selection
+            $("#waveform-viewer").bind("waveform-selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
             });
           }
 
@@ -973,6 +985,12 @@ rights in this software.
               node_toggled(node);
             });
 
+            // Log changes to the waveform selection
+            $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
+            });
+
             // Changing the color map updates the dendrogram ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
@@ -988,8 +1006,14 @@ rights in this software.
               $("#dendrogram-viewer").dendrogram("option", "dendrogram_sort_order", variable == null && order == null ? true : false);
             });
 
-            // Changing the table row selection updates the waveform plot ...
+            // Changing the table row selection updates the dendrogram ...
             $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+            {
+              $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
+            });
+
+            // Changing the waveform selection updates the dendrogram ...
+            $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
             {
               $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
             });
