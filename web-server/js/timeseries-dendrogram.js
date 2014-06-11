@@ -373,6 +373,8 @@ $.widget("timeseries.dendrogram",
 
       node_subtree.append("svg:path")
         .attr("class", "subtree-glyph")
+        .attr("title", "Expand all")
+        .attr("alt", "Expand all")
         .attr("d", "M 0 0 L 40 -13 L 40 13 Z")
         .style("fill", "url(#subtree-gradient)")
         ;
@@ -381,6 +383,8 @@ $.widget("timeseries.dendrogram",
       // Instead we'll use css to display and hide this path.filled-glyph
       node_subtree.append("svg:path")
         .attr("class", "filled-glyph")
+        .attr("title", "Expand all")
+        .attr("alt", "Expand all")
         .attr("d", "M 0 0 L 40 -13 L 40 13 Z")
         .style("fill", "#7767b0")
         ;
@@ -389,6 +393,8 @@ $.widget("timeseries.dendrogram",
         .attr("x", 28)
         .attr("dy", ".4em")
         .attr("text-anchor", "middle")
+        .attr("title", "Expand all")
+        .attr("alt", "Expand all")
         .text(function(d) { return d.leaves; })
         ;
 
