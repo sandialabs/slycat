@@ -20,8 +20,8 @@ $.widget("slycat.colorswitcher",
       "night":
       {
         "label": "Night",
-        "background": d3.rgb("#333333"),
-        "null_color": "gray",
+        "background": d3.rgb(128, 128, 128),
+        "null_color": "rgb(75,75,75)",
         "opacity": "0.5",
         "colors":
         [
