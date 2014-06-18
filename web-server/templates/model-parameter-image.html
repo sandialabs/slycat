@@ -16,7 +16,6 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/cca-barplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-scatterplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/cca-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.js"></script>
@@ -50,7 +49,6 @@ rights in this software.
           <div class="marking">{{{marking-html}}}</div>
           {{#can-write}}
           <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
-          <button id="rerun-cca-button" title="Rerun this model using different parameters.">Rerun Model</button>
           {{/can-write}}
           <div id="breadcrumbs">
             <a href="{{server-root}}projects">Projects</a> &rarr;
@@ -69,46 +67,6 @@ rights in this software.
               <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
             </div>
           </div>
-
-          <!-- Rerun CCA user interface -->
-          <div id="rerun-cca-form" class="dialog" title="Rerun CCA Model">
-            <div id="rerun-cca-basics">
-              <label for="rerun-cca-name">Model Name</label>
-              <input id="rerun-cca-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
-              <label for="rerun-cca-description">Description</label>
-              <textarea id="rerun-cca-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
-            </div>
-
-            <div id="rerun-cca-parameters">
-              <table id="rerun-cca-variables">
-                <thead>
-                  <tr><th>Variable</th><th>Input</th><th>Output</th></tr>
-                  <tr>
-                    <td></td>
-                    <td><button id="rerun-cca-all-inputs-on" title="Turn all inputs on.">On</button><button id="rerun-cca-all-inputs-off" title="Turn all inputs off.">Off</button></td>
-                    <td><button id="rerun-cca-all-outputs-on" title="Turn all outputs on.">On</button><button id="rerun-cca-all-outputs-off" title="Turn all outputs off.">Off</button></td>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
-
-              <div>
-                <p><input id="rerun-cca-scale-inputs" type="checkbox"></input>Scale inputs to unit variance.</p>
-              </div>
-            </div>
-
-            <div id="rerun-cca-running" class="runningModel">
-              <p>Your model is being generated.</p>
-              <div id="model-progress">
-                <input class="modelPie" value="1" />
-              </div>
-              <p>You can close this dialog and watch top status bar for a green checkmark to see when it completes.</p>
-              <p>If you leave this dialog open, we will take you to the model as soon as it's generated.</p>
-            </div>
-          </div>
-
-
         </div>
       </div>
     </div>
@@ -140,23 +98,17 @@ rights in this software.
         var model = null;
         var input_columns = null;
         var output_columns = null;
-        var scale_inputs = null;
 
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
 
-        var x_loadings = null;
-        var y_loadings = null;
         var indices = null;
         var x = null;
         var y = null;
         var v = null;
-        var r2 = null;
-        var wilks = null;
         var table_metadata = null;
 
         var generate_indices = false;
-        var barplot_ready = false;
         var scatterplot_ready = false;
         var table_ready = false;
 
@@ -173,7 +125,6 @@ rights in this software.
             model = result;
             input_columns = model["artifact:input-columns"];
             output_columns = model["artifact:output-columns"];
-            scale_inputs = model["artifact:scale-inputs"];
             setup_page();
           },
           error: function(request, status, reason_phrase)
@@ -226,114 +177,6 @@ rights in this software.
                 "state" : "closed"
               }),
               processData : false
-            });
-
-            // Load the x_loadings artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "input-structure-correlation",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                x_loadings = result;
-                setup_widgets();
-              },
-              error : artifact_missing
-            });
-
-            // Load the y_loadings artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "output-structure-correlation",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                y_loadings = result;
-                setup_widgets();
-              },
-              error : artifact_missing
-            });
-
-            // Load the r^2 statistics artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "cca-statistics",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                r2 = result;
-                setup_widgets();
-              },
-              error : artifact_missing
-            });
-
-            // Load the Wilks statistics artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "cca-statistics",
-              array : 0,
-              attribute : 1,
-              success : function(result)
-              {
-                wilks = result;
-                setup_widgets();
-              },
-              error : artifact_missing
-            });
-
-            // Load the canonical-indices artifact.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "canonical-indices",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                indices = result;
-                setup_widgets();
-              },
-              error : function()
-              {
-                generate_indices = true;
-                setup_indices();
-              }
-            });
-
-            // Load the canonical-variables artifacts.
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "canonical-variables",
-              array : 0,
-              attribute : 0,
-              success : function(result)
-              {
-                x = result;
-                setup_widgets();
-              },
-              error : artifact_missing
-            });
-
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "canonical-variables",
-              array : 0,
-              attribute : 1,
-              success : function(result)
-              {
-                y = result;
-                setup_widgets();
-              },
-              error : artifact_missing
             });
 
             // Load data table metadata.
@@ -463,227 +306,6 @@ rights in this software.
         {
           $("#edit-model-form").dialog("open");
           $("#edit-model-name").focus();
-        });
-
-        // Setup the Rerun Model form ...
-        rerun_cca_model = null;
-        $("#rerun-cca-form").dialog(
-        {
-          autoOpen: false,
-          width: 700,
-          height: 700,
-          modal: true,
-          open : function()
-          {
-            $("#rerun-cca-basics").css("display", "block");
-            $("#rerun-cca-parameters").css("display", "none");
-            $("#rerun-cca-running").css("display", "none");
-            $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
-            $(".ui-dialog-buttonpane button:contains('Next')").button("enable");
-            $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
-          },
-          close : function()
-          {
-            clearTimeout(window.modelGenerationTimeout);
-            if(rerun_cca_model!=null) {
-              $.ajax(
-              {
-                type : "DELETE",
-                url : "{{server-root}}models/" + rerun_cca_model,
-                success : function(details)
-                {
-                  console.log("successfuly deleted unfinished model");
-                },
-                error : function(request, status, reason_phrase)
-                {
-                  console.log("problems deleting unfinished model");
-                }
-              });
-            }
-            rerun_cca_model = null;
-          },
-          buttons:
-          {
-            "Previous" : function(){
-              $("#rerun-cca-basics").css("display", "block");
-              $("#rerun-cca-parameters").css("display", "none");
-              $(".ui-dialog-buttonpane button:contains('Next')").button("enable");
-              $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
-              $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
-            },
-            "Next" : function(){
-              $(".ui-dialog-buttonpane button:contains('Next')").button("disable");
-              $(".ui-dialog-buttonpane button:contains('Run')").button("enable");
-              $(".ui-dialog-buttonpane button:contains('Previous')").button("enable");
-              $.ajax(
-              {
-                type : "POST",
-                url : "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}/models",
-                contentType : "application/json",
-                data: $.toJSON(
-                {
-                  "model-type" : "cca",
-                  "name" : $("#rerun-cca-name").val(),
-                  "marking" : "{{marking}}",
-                  "description" : $("#rerun-cca-description").val()
-                }),
-                processData: false,
-                success: function(result)
-                {
-                  rerun_cca_model = result["id"];
-                  $.ajax(
-                  {
-                    type : "PUT",
-                    url : "{{server-root}}models/" + rerun_cca_model + "/inputs",
-                    data : $.toJSON(
-                    {
-                      "sid" : "{{_id}}",
-                    }),
-                    processData: false,
-                    contentType: "application/json",
-                    success: function(result)
-                    {
-                      $.ajax(
-                      {
-                        type : "GET",
-                        url : "{{server-root}}models/" + rerun_cca_model + "/tables/data-table/arrays/0/metadata",
-                        success : function(table)
-                        {
-                          function deselect_companion(companion)
-                          {
-                            return function()
-                            {
-                              companion.removeAttr("checked");
-                            }
-                          }
-                          $("#rerun-cca-variables tbody").empty();
-                          $.each(table["column-names"], function(index, column)
-                          {
-                            var row = $("<tr>")
-                              .addClass(function(){
-                                if( (table["column-types"][index] == "string") || (table["column-min"][index] == table["column-max"][index]) )
-                                  return "disabled ui-state-default";
-                              })
-                              .appendTo($("#rerun-cca-variables tbody"))
-                              ;
-                            $("<td>").text(column).appendTo(row);
-
-                            if(table["column-types"][index] == "string")
-                            {
-                              $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze non-numeric data.</td>").appendTo(row);
-                            }
-                            else if(table["column-min"][index] == table["column-max"][index])
-                            {
-                              $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze constant data.</td>").appendTo(row);
-                            }
-                            else
-                            {
-                              var input = $("<input type='checkbox' name='inputs' class='rerun-cca-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-                              var output = $("<input type='checkbox' name='outputs' class='rerun-cca-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-
-                              if(jQuery.inArray(index, input_columns) != -1)
-                                input.attr("checked", "checked");
-                              if(jQuery.inArray(index, output_columns) != -1)
-                                output.attr("checked", "checked");
-
-                              input.click(deselect_companion(output));
-                              output.click(deselect_companion(input));
-                            }
-                          });
-                          if(scale_inputs)
-                            $("#rerun-cca-scale-inputs").attr("checked", "checked");
-                          else
-                            $("#rerun-cca-scale-inputs").removeAttr("checked");
-                          $("#rerun-cca-basics").css("display", "none");
-                          $("#rerun-cca-parameters").css("display", "block");
-                        },
-                        error: function(request, status, reason_phrase)
-                        {
-                          window.alert("Error creating model: " + reason_phrase);
-                        }
-                      });
-                    },
-                    error: function(request, status, reason_phrase)
-                    {
-                      window.alert("Error creating model: " + reason_phrase);
-                    }
-                  });
-                },
-                error: function(request, status, reason_phrase)
-                {
-                  window.alert("Error creating model: " + reason_phrase);
-                }
-              });
-            },
-            "Run" : function(){
-              function store_parameter(name, value)
-              {
-                $.ajax(
-                {
-                  async : false,
-                  type : "PUT",
-                  url : "{{server-root}}models/" + rerun_cca_model + "/parameters/" + name,
-                  contentType : "application/json",
-                  data: $.toJSON(
-                  {
-                    input : true,
-                    value : value,
-                  }),
-                  processData : false,
-                  error: function(request, status, reason_phrase)
-                  {
-                    window.alert("Error setting model parameter: " + reason_phrase);
-                  }
-                });
-              }
-
-              var selected_input_columns = [];
-              $(".rerun-cca-input-variable:checked").each(function(index, element) { selected_input_columns.push(Number($(element).val())); });
-              if(selected_input_columns.length < 1)
-              {
-                window.alert("You must select at least one input column.");
-                return;
-              }
-
-              var selected_output_columns = [];
-              $(".rerun-cca-output-variable:checked").each(function(index, element) { selected_output_columns.push(Number($(element).val())); });
-              if(selected_output_columns.length < 1)
-              {
-                window.alert("You must select at least one output column.");
-                return;
-              }
-
-              store_parameter("input-columns", selected_input_columns);
-              store_parameter("output-columns", selected_output_columns);
-              store_parameter("scale-inputs", $("#rerun-cca-scale-inputs").attr("checked") == "checked" ? true : false);
-
-              $.ajax(
-              {
-                type : "POST",
-                url : "{{server-root}}models/" + rerun_cca_model + "/finish",
-                success: function(result)
-                {
-                  var mid = rerun_cca_model;
-                  rerun_cca_model = null;
-                  $(".ui-dialog-buttonpane button:contains('Next')").button("disable");
-                  $(".ui-dialog-buttonpane button:contains('Run')").button("disable");
-                  $(".ui-dialog-buttonpane button:contains('Previous')").button("disable");
-                  $(".ui-dialog-buttonpane button:contains('Cancel')").button({ label: "Close" });
-
-                  window.modelGenerationTimeout = setTimeout(function(){
-                    get_model_status(mid, process_model_status);
-                  }, 1000);
-                },
-                error: function(request, status, reason_phrase)
-                {
-                  window.alert("Error creating model: " + reason_phrase);
-                }
-              });
-            },
-            Cancel : function(){
-              $(this).dialog("close");
-            },
-          },
         });
 
         function process_model_status(results) {
@@ -856,55 +478,6 @@ rights in this software.
 
         function setup_widgets()
         {
-          // Setup the barplot ...
-          if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings)
-          {
-            barplot_ready = true;
-
-            $("#barplot-pane .load-status").css("display", "none");
-
-            var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
-
-            $("#barplot-table").barplot({
-              metadata: table_metadata,
-              inputs: input_columns,
-              outputs: output_columns,
-              r2: r2,
-              wilks: wilks,
-              x_loadings: x_loadings,
-              y_loadings: y_loadings,
-              component: component,
-            });
-
-            if("variable-selection" in bookmark)
-            {
-              $("#barplot-table").barplot("option", "variable", bookmark["variable-selection"]);
-            }
-
-            $("#barplot-table").bind("component-changed", function(event, component)
-            {
-              selected_component_changed(component);
-            });
-
-            $("#barplot-table").bind("component-sort-changed", function(event, component, order)
-            {
-              component_sort_changed(component, order);
-            });
-
-            $("#barplot-table").bind("variable-changed", function(event, variable)
-            {
-              selected_variable_changed(variable);
-            });
-
-            if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
-            {
-              $("#barplot-table").barplot("option",
-              {
-                "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
-              });
-            }
-          }
-
           // Setup the scatterplot ...
           if(!scatterplot_ready && bookmark && indices && x && y && v)
           {
@@ -1080,26 +653,6 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
           });
           bookmarker.updateState({"colormap" : colormap});
-        }
-
-        function selected_component_changed(component)
-        {
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/select/component/" + component
-          });
-          bookmarker.updateState({"cca-component" : component});
-        }
-
-        function component_sort_changed(component, order)
-        {
-          $.ajax(
-          {
-            type : "POST",
-            url : "{{server-root}}events/models/{{_id}}/sort/component/" + component + "/" + order
-          });
-          bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
         }
 
         function selected_variable_changed(variable)
