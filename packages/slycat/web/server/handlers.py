@@ -25,7 +25,6 @@ import sys
 import slycat.hdf5
 import slycat.web.server
 import slycat.web.server.authentication
-import slycat.web.server.cache
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.model.cca
@@ -428,7 +427,7 @@ def put_model_table(mid, name, input=None, file=None, username=None, hostname=No
     filename = file.filename
   elif file is None and username is not None and hostname is not None and password is not None and path is not None:
     filename = "%s@%s:%s" % (username, hostname, path)
-    session = slycat.web.server.cache.ssh_session(hostname, username, password)
+    session = slycat.web.server.ssh.session(hostname, username, password)
     if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
       raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
     data = session["sftp"].file(path).read()
@@ -992,7 +991,7 @@ def post_browse():
   path = cherrypy.request.json["path"]
   password = cherrypy.request.json["password"]
 
-  session = slycat.web.server.cache.ssh_session(hostname, username, password)
+  session = slycat.web.server.ssh.session(hostname, username, password)
 
   try:
     attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
