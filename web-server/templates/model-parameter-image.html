@@ -98,22 +98,22 @@ rights in this software.
         var model = null;
         var input_columns = null;
         var output_columns = null;
+        var image_columns = null;
 
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
 
+        var table_metadata = null;
         var indices = null;
         var x = null;
         var y = null;
         var v = null;
-        var table_metadata = null;
 
-        var generate_indices = false;
-        var scatterplot_ready = false;
         var table_ready = false;
+        var scatterplot_ready = false;
 
         //////////////////////////////////////////////////////////////////////////////////////////
-        // Get the model
+        // Load the model
         //////////////////////////////////////////////////////////////////////////////////////////
 
         $.ajax(
@@ -125,7 +125,8 @@ rights in this software.
             model = result;
             input_columns = model["artifact:input-columns"];
             output_columns = model["artifact:output-columns"];
-            setup_page();
+            image_columns = model["artifact:image-columns"];
+            model_loaded();
           },
           error: function(request, status, reason_phrase)
           {
@@ -134,10 +135,10 @@ rights in this software.
         });
 
         //////////////////////////////////////////////////////////////////////////////////////////
-        // If the model is ready, start retrieving data, including bookmarked state.
+        // Once the model has been loaded, retrieve metadata / bookmarked state
         //////////////////////////////////////////////////////////////////////////////////////////
 
-        function setup_page()
+        function model_loaded()
         {
           if(model["state"] == "waiting" || model["state"] == "running")
           {
@@ -186,10 +187,7 @@ rights in this software.
               success: function(metadata)
               {
                 table_metadata = metadata;
-
-                setup_indices();
-                setup_v();
-                setup_widgets();
+                metadata_loaded();
               },
               error: artifact_missing
             });
@@ -199,8 +197,7 @@ rights in this software.
             {
               bookmark = state;
               setup_colorswitcher();
-              setup_v();
-              setup_widgets();
+              metadata_loaded();
             });
           }
         }
@@ -394,53 +391,6 @@ rights in this software.
         // Setup the rest of the UI as data is received.
         //////////////////////////////////////////////////////////////////////////////////////////
 
-        function setup_indices()
-        {
-          if(generate_indices && table_metadata)
-          {
-            var count = table_metadata["row-count"];
-            indices = new Int32Array(count);
-            for(var i = 0; i != count; ++i)
-              indices[i] = i;
-            setup_widgets();
-          }
-        }
-
-        function setup_v()
-        {
-          if(bookmark && table_metadata)
-          {
-            var index = table_metadata["column-count"] - 1;
-            if("variable-selection" in bookmark)
-              index = bookmark["variable-selection"];
-
-            if(index == table_metadata["column-count"] - 1)
-            {
-              var count = table_metadata["row-count"];
-              v = new Float64Array(count);
-              for(var i = 0; i != count; ++i)
-                v[i] = i;
-              setup_widgets();
-            }
-            else
-            {
-              get_model_array_attribute({
-                server_root : "{{server-root}}",
-                mid : "{{_id}}",
-                aid : "data-table",
-                array : 0,
-                attribute : index,
-                success : function(result)
-                {
-                  v = result;
-                  setup_widgets();
-                },
-                error : artifact_missing
-              });
-            }
-          }
-        }
-
         function setup_colorswitcher()
         {
           var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -452,46 +402,88 @@ rights in this software.
           });
         }
 
-        function setup_widgets()
+        function metadata_loaded()
         {
-          // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v)
+          setup_table();
+
+          if(!indices && table_metadata)
           {
-            scatterplot_ready = true;
-
-            $("#scatterplot-pane .load-status").css("display", "none");
-
-            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
-
-            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-
-            $("#scatterplot").scatterplot({
-              indices: indices,
-              x: x[component],
-              y: y[component],
-              v: v,
-              width: $("#scatterplot-pane").width(),
-              height: $("#scatterplot-pane").height(),
-              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
-              selection: selection,
-              });
-
-            $("#scatterplot").bind("selection-changed", function(event, selection)
-            {
-              selected_simulations_changed(selection);
-            });
-
-            // Changing the color map updates the scatterplot ...
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-              $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
-            });
+            var count = table_metadata["row-count"];
+            indices = new Int32Array(count);
+            for(var i = 0; i != count; ++i)
+              indices[i] = i;
           }
 
-          // Setup the table ...
-          if(!table_ready && bookmark && table_metadata)
+          if(table_metadata && bookmark)
+          {
+            var x_index = input_columns[0];
+            if("x-selection" in bookmark)
+              x_index = bookmark["x-selection"];
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              array : 0,
+              attribute : x_index,
+              success : function(result)
+              {
+                x = result;
+                setup_scatterplot();
+              },
+              error : artifact_missing
+            });
+
+            var y_index = input_columns[1];
+            if("y-selection" in bookmark)
+              y_index = bookmark["y-selection"];
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              array : 0,
+              attribute : y_index,
+              success : function(result)
+              {
+                y = result;
+                setup_scatterplot();
+              },
+              error : artifact_missing
+            });
+
+            var v_index = table_metadata["column-count"] - 1;
+            if("variable-selection" in bookmark)
+              v_index = bookmark["variable-selection"];
+
+            if(v_index == table_metadata["column-count"] - 1)
+            {
+              var count = table_metadata["row-count"];
+              v = new Float64Array(count);
+              for(var i = 0; i != count; ++i)
+                v[i] = i;
+              setup_scatterplot();
+            }
+            else
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : v_index,
+                success : function(result)
+                {
+                  v = result;
+                  setup_scatterplot();
+                },
+                error : artifact_missing
+              });
+            }
+          }
+        }
+
+        function setup_table()
+        {
+          if(!table_ready && table_metadata && bookmark)
           {
             table_ready = true;
 
@@ -588,6 +580,45 @@ rights in this software.
                 temp.push(selection[i]);
 
               $("#scatterplot").scatterplot("option", "selection",  temp);
+            });
+          }
+        }
+
+        function setup_scatterplot()
+        {
+          // Setup the scatterplot ...
+          if(!scatterplot_ready && bookmark && indices && x && y && v)
+          {
+            scatterplot_ready = true;
+
+            $("#scatterplot-pane .load-status").css("display", "none");
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
+
+            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+
+            $("#scatterplot").scatterplot({
+              indices: indices,
+              x: x,
+              y: y,
+              v: v,
+              width: $("#scatterplot-pane").width(),
+              height: $("#scatterplot-pane").height(),
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+              selection: selection,
+              });
+
+            $("#scatterplot").bind("selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
+            });
+
+            // Changing the color map updates the scatterplot ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+              $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
           }
         }
