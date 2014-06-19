@@ -72,10 +72,6 @@ rights in this software.
     </div>
 
     <div id="model-pane" class="ui-layout-center">
-      <div id="image-pane" class="ui-layout-west">
-        <!--<div class="load-status"></div> -->
-        <div id="image-viewer"></div>
-      </div>
       <div id="scatterplot-pane" class="ui-layout-center">
         <div class="load-status"></div>
         <canvas id="scatterplot" width="300" height="300" style="width: 300px; height: 300px;"></canvas>
@@ -374,12 +370,6 @@ rights in this software.
 
         $("#model-pane").layout(
         {
-          west:
-          {
-            size: $("#model-pane").width() / 2,
-            resizeWhileDragging: false,
-            onresize: function() { $("#image-viewer").barplot("resize_canvas"); },
-          },
           center:
           {
             resizeWhileDragging: false,
