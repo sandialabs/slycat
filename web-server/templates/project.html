@@ -693,21 +693,40 @@ rights in this software.
         });
         $("#remote-cca-connection-next").button().click(function()
         {
-          if( $("#remote-cca-browser").data("slycat-browser") )
-            $("#remote-cca-browser").browser("destroy"); // Need to destroy the browser instead of just emptying it, otherwise it does not come up on 2nd invocation.
-          $("#remote-cca-browser").empty().browser({
-            server_root : "{{server-root}}",
-            root_label : $("#remote-cca-hostname").val() + "//",
-            root_path : "/",
-            hostname : $("#remote-cca-hostname").val(),
-            username : $("#remote-cca-username").val(),
-            password : $("#remote-cca-password").val(),
-            directory_selection : false,
-            multiple_selection : false,
-            hide_dotfiles : false
-            });
-          $("#remote-cca-connection").css("display", "none");
-          $("#remote-cca-browse").css("display", "block");
+          $.ajax(
+          {
+            async : false,
+            type : "POST",
+            url : "{{server-root}}remote",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+              hostname : $("#remote-cca-hostname").val(),
+              username : $("#remote-cca-username").val(),
+              password : $("#remote-cca-password").val(),
+            }),
+            processData : false,
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error connecting to remote system: " + reason_phrase);
+            },
+            success: function(results)
+            {
+              if( $("#remote-cca-browser").data("slycat-browser") )
+                $("#remote-cca-browser").browser("destroy"); // Need to destroy the browser instead of just emptying it, otherwise it does not come up on 2nd invocation.
+              $("#remote-cca-browser").empty().browser({
+                server_root : "{{server-root}}",
+                root_label : $("#remote-cca-hostname").val() + "//",
+                root_path : "/",
+                session: results.sid,
+                directory_selection : false,
+                multiple_selection : false,
+                hide_dotfiles : false
+                });
+              $("#remote-cca-connection").css("display", "none");
+              $("#remote-cca-browse").css("display", "block");
+            }
+          });
         });
         $("#remote-cca-hide-dotfiles").click(function()
         {

@@ -985,14 +985,21 @@ def get_user(uid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_browse():
+def post_remote():
+  client = cherrypy.request.remote.ip
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
-  path = cherrypy.request.json["path"]
   password = cherrypy.request.json["password"]
+  return {"sid":slycat.web.server.ssh.create_session(client, hostname, username, password)}
 
-  session = slycat.web.server.ssh.session(hostname, username, password)
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_remote_browse():
+  client = cherrypy.request.remote.ip
+  sid = cherrypy.request.json["sid"]
+  path = cherrypy.request.json["path"]
 
+  session = slycat.web.server.ssh.get_session(client, sid)
   try:
     attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
     names = [attribute.filename for attribute in attributes]

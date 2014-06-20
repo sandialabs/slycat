@@ -5,16 +5,14 @@ rights in this software.
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// Remote file browser widget, for use with the Slycat /browse API.
+// Remote file browser widget, for use with the Slycat /remote API.
 
 $.widget("slycat.browser",
 {
   options:
   {
     server_root : "",
-    hostname : "",
-    username : "",
-    password : "",
+    session : "",
     root_path : "/",
     root_label : "foo",
     multiple_selection : false,
@@ -76,14 +74,12 @@ $.widget("slycat.browser",
           {
             context : this,
             type : "POST",
-            url : self.options.server_root + "browse",
+            url : self.options.server_root + "remote/browse",
             contentType : "application/json",
             processData : false,
             data : $.toJSON({
-              username : self.options.username,
-              hostname : self.options.hostname,
-              password : self.options.password,
-              path : $(this).data("path")
+              sid : self.options.session,
+              path : $(this).data("path"),
             }),
             success : function(result)
             {
@@ -128,6 +124,11 @@ $.widget("slycat.browser",
             },
             statusCode :
             {
+              401 : function()
+              {
+                alert("The remote session timed-out.");
+              },
+
               403 : function()
               {
                 $(this).removeClass("open");
