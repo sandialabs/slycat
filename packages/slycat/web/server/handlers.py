@@ -1011,6 +1011,20 @@ def post_remote_browse():
   except IOError:
     raise cherrypy.HTTPError("403 Forbidden")
 
+def get_remote_file(sid, path):
+  #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
+  #cherrypy.response.headers["content-type"] = accept
+
+  client = cherrypy.request.remote.ip
+  session = slycat.web.server.ssh.get_session(client, sid)
+
+  try:
+    if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
+      raise cherrypy.HTTPError("400 Cannot retrieve directory %s." % path)
+    return session["sftp"].file(path).read()
+  except IOError as e:
+    raise cherrypy.HTTPError("400 " + e.strerror)
+
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
   cherrypy.response.status = "204 Event logged."

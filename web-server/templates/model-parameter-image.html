@@ -67,6 +67,17 @@ rights in this software.
               <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
             </div>
           </div>
+          <div id="remote-login" title="Remote Login">
+            <p id="remote-login-host"></p>
+            <form>
+              <fieldset>
+                <label for="remote-username">Username</label>
+                <input id="remote-username" type="text" class="text ui-widget-content ui-corner-all"/>
+                <label for="remote-password">Password</label>
+                <input id="remote-password" type="password" value="" class="text ui-widget-content ui-corner-all"/>
+              </fieldset>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -107,6 +118,9 @@ rights in this software.
 
         var table_ready = false;
         var scatterplot_ready = false;
+
+        var session_cache = {};
+        var image_uri = document.createElement("a");
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Load the model
@@ -301,51 +315,50 @@ rights in this software.
           $("#edit-model-name").focus();
         });
 
-        function process_model_status(results) {
-          if(results.finished === null) {
-            $("#rerun-cca-parameters").css("display", "none");
-            $("#rerun-cca-running").css("display", "block");
-            var modelPie = $("#model-progress .modelPie");
-            modelPie.knob({
-                  'min':0,
-                  'max':1,
-                  'readOnly':true,
-                  'displayInput':false,
-                  'fgColor':'#4D720C',
-                  'bgColor':'#D7D7D6',
-                  'width':200,
-                  'height':200,
-                  'thickness':0.35,
-                  'step':0.01,
-                });
-            modelPie.val(results["progress"]).trigger('change');
-            window.modelGenerationTimeout = setTimeout(function(){
-              get_model_status(results._id, process_model_status);
-            }, 1000);
-          }
-          else {
-            window.location = "{{server-root}}models/" + results._id;
-          }
-        }
-
-        function get_model_status(mid, callback)
+        // Setup the remote login form ...
+        $("#remote-login").dialog(
         {
-          $.ajax(
+          autoOpen: false,
+          width: 700,
+          height: 300,
+          modal: true,
+          open: function()
           {
-            dataType : "json",
-            type : "GET",
-            cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-            url : "{{server-root}}models/" + mid,
-            success : function(results)
+            $("#remote-login-host").text("Login to retrieve " + image_uri.pathname + " from " + image_uri.hostname);
+          },
+          buttons:
+          {
+            "Login": function()
             {
-              callback(results);
+              $.ajax(
+              {
+                type : "POST",
+                url : "{{server-root}}remote",
+                contentType : "application/json",
+                data : $.toJSON({"hostname":"localhost", "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
+                processData : false,
+                success : function(result)
+                {
+                  session_cache[image_uri.hostname] = result.sid;
+                  load_image();
+                  $("#remote-login").dialog("close");
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error opening remote session: " + reason_phrase);
+                }
+              });
             },
-            error : function(request, status, reason_phrase)
+            Cancel: function()
             {
-              callback(reason_phrase);
-            },
-          });
-        }
+              $(this).dialog("close");
+            }
+          },
+          close: function()
+          {
+            $("#remote-password").val("");
+          }
+        });
 
         // Layout resizable panels ...
         $("body").layout(
@@ -610,6 +623,9 @@ rights in this software.
               $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
               $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
             });
+
+            // This is just for testing
+            display_image("file://localhost/home/slycat/src/slycat-steve/artwork/slycat-logo.jpg");
           }
         }
 
@@ -684,7 +700,29 @@ rights in this software.
             });
           }
         }
+
+        function display_image(uri)
+        {
+          image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+          if(image_uri.hostname in session_cache)
+            load_image();
+          else
+            $("#remote-login").dialog("open");
+        }
+
+        function load_image()
+        {
+          var sid = session_cache[image_uri.hostname];
+          image = document.createElement("img");
+          image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
+          image.width = 100;
+          image.style.position="absolute";
+          image.style.left=10;
+          image.style.top=10;
+          $("#scatterplot-pane").prepend(image);
+        }
       });
+
     </script>
   </body>
 </html>
