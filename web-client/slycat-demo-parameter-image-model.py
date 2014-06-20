@@ -21,7 +21,7 @@ arguments = parser.parse_args()
 # Create some random data ...
 numpy.random.seed(arguments.seed)
 numeric_data = numpy.random.random((arguments.row_count, arguments.input_count + arguments.output_count + arguments.unused_count))
-string_data = numpy.column_stack((numpy.tile("metadata", (arguments.row_count, arguments.metadata_count)), numpy.tile("file://localhost/home/slycat/artwork/logo.jpg", (arguments.row_count, arguments.image_count))))
+string_data = numpy.column_stack((numpy.tile("metadata", (arguments.row_count, arguments.metadata_count)), numpy.tile("file://localhost/home/slycat/src/slycat-steve/artwork/slycat-logo.jpg", (arguments.row_count, arguments.image_count))))
 
 # Setup a connection to the Slycat Web Server.
 connection = slycat.web.client.connect(arguments)

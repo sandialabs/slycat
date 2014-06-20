@@ -115,6 +115,7 @@ rights in this software.
         var x = null;
         var y = null;
         var v = null;
+        var images = null;
 
         var table_ready = false;
         var scatterplot_ready = false;
@@ -481,6 +482,21 @@ rights in this software.
                 error : artifact_missing
               });
             }
+
+            var images_index = image_columns[0];
+            if("images-selection" in bookmark)
+              images_index = bookmark["images-selection"];
+            $.ajax(
+            {
+              type : "GET",
+              url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+              success : function(result)
+              {
+                images = result;
+                setup_scatterplot();
+              },
+              error: artifact_missing
+            });
           }
         }
 
@@ -590,7 +606,7 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v)
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images)
           {
             scatterplot_ready = true;
 
@@ -606,10 +622,12 @@ rights in this software.
               x: x,
               y: y,
               v: v,
+              images: images,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
               selection: selection,
+              server_root: "{{server-root}}",
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)

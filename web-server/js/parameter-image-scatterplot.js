@@ -19,9 +19,12 @@ $.widget("parameter_image.scatterplot",
     x : [],
     y : [],
     v : [],
+    images : [],
     selection : [],
+    visible_images : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     border : 25,
+    server_root : "",
   },
 
   _create: function()
@@ -33,6 +36,9 @@ $.widget("parameter_image.scatterplot",
     this.datum_layer = this.svg.append("g");
     this.selected_layer = this.svg.append("g");
     this.selection_layer = this.svg.append("g");
+    this.image_layer = this.svg.append("g");
+
+    this.session_cache = {};
 
     this.updates = {};
     this.update_timer = null;
@@ -123,11 +129,28 @@ $.widget("parameter_image.scatterplot",
         {
           if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
           {
+            // Update the list of selected points ...
             var index = self.options.selection.indexOf(self.options.indices[i]);
             if(index == -1)
+            {
+              // Selecting a new point.
               self.options.selection.push(self.options.indices[i]);
+            }
             else
+            {
+              // Deselecting an existing point.
               self.options.selection.splice(index, 1);
+            }
+
+            // Update the list of visible images ...
+            var index = self.options.visible_images.indexOf(self.options.indices[i]);
+            if(index == -1)
+            {
+              // Make the image visible ...
+              self.options.visible_images.push(self.options.indices[i]);
+              self._schedule_update({render_images:[self.options.images[self.options.indices[i]]]});
+              self.element.trigger("visible-images-changed", [self.options.visible_images]);
+            }
 
             break;
           }
@@ -167,6 +190,10 @@ $.widget("parameter_image.scatterplot",
       this._schedule_update({update_color_domain:true, render_data:true, render_selection:true});
     }
 
+    else if(key == "images")
+    {
+    }
+
     else if(key == "selection")
     {
       this._schedule_update({render_selection:true});
@@ -196,10 +223,7 @@ $.widget("parameter_image.scatterplot",
   _schedule_update: function(updates)
   {
     for(var key in updates)
-    {
-      if(updates[key] == true)
-        this.updates[key] = true
-    }
+      this.updates[key] = updates[key];
 
     if(this.update_timer)
       return;
@@ -315,7 +339,49 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
+    if(this.updates["render_images"])
+    {
+      var parser = document.createElement("a");
+      this.updates["render_images"].forEach(function(uri)
+      {
+        parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+        console.log(parser.hostname, parser.pathname, this.session_cache);
+        if(!(parser.hostname in this.session_cache))
+        {
+          var username = window.prompt(parser.hostname + " username");
+          var password = window.prompt(parser.hostname + " password");
+
+          $.ajax(
+          {
+            context: this,
+            async : false,
+            type : "POST",
+            url : this.options.server_root + "remote",
+            contentType : "application/json",
+            data : $.toJSON({"hostname":parser.hostname, "username":username, "password":password}),
+            processData : false,
+            success : function(result)
+            {
+              this.session_cache[parser.hostname] = result.sid;
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error opening remote session: " + reason_phrase);
+            }
+          });
+        }
+
+      this.image_layer.append("image")
+        .attr("xlink:href", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname)
+        .attr("x", 10 * this.image_layer.selectAll("image").size())
+        .attr("y", 10 * this.image_layer.selectAll("image").size())
+        .attr("width", 100)
+        .attr("height", 100)
+        ;
+      }, this);
+    }
+
     this.updates = {}
-  }
+  },
 });
 
