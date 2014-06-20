@@ -734,9 +734,7 @@ rights in this software.
         });
         $("#remote-cca-browse-next").button().click(function()
         {
-          var username = $("#remote-cca-browser").browser("option", "username");
-          var hostname = $("#remote-cca-browser").browser("option", "hostname");
-          var password = $("#remote-cca-browser").browser("option", "password");
+          var session = $("#remote-cca-browser").browser("option", "session");
           var selection = $("#remote-cca-browser").browser("selection");
           if(selection.length != 1)
           {
@@ -746,9 +744,7 @@ rights in this software.
           path = selection[0];
 
           var data = new FormData();
-          data.append("username", username);
-          data.append("hostname", hostname);
-          data.append("password", password);
+          data.append("sid", session);
           data.append("path", path);
           data.append("input", true);
 
@@ -875,7 +871,7 @@ rights in this software.
 
           store_parameter("input-columns", input_columns);
           store_parameter("output-columns", output_columns);
-          store_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked"));
+          store_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked") == "checked" ? true : false);
 
           $.ajax(
           {

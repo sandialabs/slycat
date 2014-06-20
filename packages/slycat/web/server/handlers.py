@@ -412,7 +412,7 @@ def put_model_inputs(mid):
 
   slycat.web.server.model.copy_model_inputs(database, source, model)
 
-def put_model_table(mid, name, input=None, file=None, username=None, hostname=None, password=None, path=None):
+def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -422,17 +422,18 @@ def put_model_table(mid, name, input=None, file=None, username=None, hostname=No
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
   input = True if input == "true" else False
 
-  if file is not None and username is None and hostname is None and password is None and path is None:
+  if file is not None and sid is None and path is None:
     data = file.file.read()
     filename = file.filename
-  elif file is None and username is not None and hostname is not None and password is not None and path is not None:
-    filename = "%s@%s:%s" % (username, hostname, path)
-    session = slycat.web.server.ssh.session(hostname, username, password)
+  elif file is None and sid is not None and path is not None:
+    client = cherrypy.request.remote.ip
+    session = slycat.web.server.ssh.get_session(client, sid)
+    filename = "%s@%s:%s" % (session["username"], session["hostname"], path)
     if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
       raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
     data = session["sftp"].file(path).read()
   else:
-    raise cherrypy.HTTPError("400 Must supply a file parameter, or username, hostname, password, and path parameters.")
+    raise cherrypy.HTTPError("400 Must supply a file parameter, or sid and path parameters.")
   slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=input)
 
 @cherrypy.tools.json_in(on = True)
