@@ -3,10 +3,16 @@
 # rights in this software.
 
 import numpy
+import numpy.core.defchararray
+import os
 import slycat.web.client
+import PIL.Image, PIL.ImageDraw, PIL.ImageFont
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("--image-count", type=int, default=3, help="Image column count.  Default: %(default)s")
+parser.add_argument("--image-width", type=int, default=1000, help="Image width.  Default: %(default)s")
+parser.add_argument("--image-height", type=int, default=1000, help="Image height.  Default: %(default)s")
+parser.add_argument("--image-directory", default="images", help="Image directory.  Default: %(default)s")
 parser.add_argument("--input-count", type=int, default=3, help="Input column count.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--metadata-count", type=int, default=3, help="Metadata column count.  Default: %(default)s")
@@ -21,7 +27,17 @@ arguments = parser.parse_args()
 # Create some random data ...
 numpy.random.seed(arguments.seed)
 numeric_data = numpy.random.random((arguments.row_count, arguments.input_count + arguments.output_count + arguments.unused_count))
-string_data = numpy.column_stack((numpy.tile("metadata", (arguments.row_count, arguments.metadata_count)), numpy.tile("file://localhost/home/slycat/src/slycat-steve/artwork/slycat-logo.jpg", (arguments.row_count, arguments.image_count))))
+metadata_data = numpy.core.defchararray.add("metadata ", numpy.arange(arguments.row_count * arguments.metadata_count).reshape(arguments.row_count, arguments.metadata_count).astype("string"))
+image_data = numpy.core.defchararray.mod("file://localhost%s/%%s.jpg" % os.path.abspath(arguments.image_directory), numpy.arange(arguments.row_count * arguments.image_count).reshape(arguments.row_count, arguments.image_count).astype("string"))
+string_data = numpy.column_stack((metadata_data, image_data))
+
+font = PIL.ImageFont.truetype("/usr/share/fonts/dejavu/DejaVuSerif-BoldItalic.ttf", 200)
+os.mkdir(arguments.image_directory)
+for index in numpy.arange(arguments.row_count * arguments.image_count):
+  image = PIL.Image.new("RGB", (arguments.image_width, arguments.image_height), "white")
+  draw = PIL.ImageDraw.Draw(image)
+  draw.text((100, 100), "%s" % index, "black", font)
+  image.save(os.path.join(arguments.image_directory, "%s.jpg" % index))
 
 # Setup a connection to the Slycat Web Server.
 connection = slycat.web.client.connect(arguments)
