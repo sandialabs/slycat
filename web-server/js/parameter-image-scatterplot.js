@@ -341,47 +341,90 @@ $.widget("parameter_image.scatterplot",
 
     if(this.updates["render_images"])
     {
-      var parser = document.createElement("a");
+      // Ensure there's a session for every image ...
       this.updates["render_images"].forEach(function(uri)
       {
-        parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
-        console.log(parser.hostname, parser.pathname, this.session_cache);
-        if(!(parser.hostname in this.session_cache))
-        {
-          var username = window.prompt(parser.hostname + " username");
-          var password = window.prompt(parser.hostname + " password");
+        this._session_prompt(uri);
+      }, this);
 
-          $.ajax(
-          {
-            context: this,
-            async : false,
-            type : "POST",
-            url : this.options.server_root + "remote",
-            contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":username, "password":password}),
-            processData : false,
-            success : function(result)
-            {
-              this.session_cache[parser.hostname] = result.sid;
-            },
-            error : function(request, status, reason_phrase)
-            {
-              window.alert("Error opening remote session: " + reason_phrase);
-            }
-          });
-        }
-
-      this.image_layer.append("image")
-        .attr("xlink:href", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname)
-        .attr("x", 10 * this.image_layer.selectAll("image").size())
-        .attr("y", 10 * this.image_layer.selectAll("image").size())
-        .attr("width", 100)
-        .attr("height", 100)
-        ;
+      // Display images ...
+      this.updates["render_images"].forEach(function(uri)
+      {
+        this._add_image(uri);
       }, this);
     }
 
     this.updates = {}
+  },
+
+  _session_prompt: function(uri)
+  {
+    var parser = document.createElement("a");
+    parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+    if(parser.hostname in this.session_cache)
+      return;
+
+    var username = window.prompt(parser.hostname + " username");
+    var password = window.prompt(parser.hostname + " password");
+
+    $.ajax(
+    {
+      context: this,
+      async : false,
+      type : "POST",
+      url : this.options.server_root + "remote",
+      contentType : "application/json",
+      data : $.toJSON({"hostname":parser.hostname, "username":username, "password":password}),
+      processData : false,
+      success : function(result)
+      {
+        this.session_cache[parser.hostname] = result.sid;
+      },
+      error : function(request, status, reason_phrase)
+      {
+        window.alert("Error opening remote session: " + reason_phrase);
+      }
+    });
+  },
+
+  _add_image: function(uri)
+  {
+    var self = this;
+    var parser = document.createElement("a");
+    parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function(e)
+    {
+      var array_buffer_view = new Uint8Array(this.response);
+      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
+      var url_creator = window.URL || window.webkitURL;
+      var image_url = url_creator.createObjectURL(blob);
+
+      self.image_layer.append("image")
+        .attr("xlink:href", image_url)
+        .attr("x", 10 * self.image_layer.selectAll("image").size())
+        .attr("y", 10 * self.image_layer.selectAll("image").size())
+        .attr("width", 200)
+        .attr("height", 200)
+        ;
+    }
+    xhr.onerror = function()
+    {
+      console.log("Error retrieving image.");
+    }
+    xhr.send();
+/*
+    this.image_layer.append("image")
+      .attr("xlink:href", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname)
+      .attr("x", 10 * this.image_layer.selectAll("image").size())
+      .attr("y", 10 * this.image_layer.selectAll("image").size())
+      .attr("width", 200)
+      .attr("height", 200)
+      ;
+*/
   },
 });
 

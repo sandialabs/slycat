@@ -30,7 +30,7 @@ def connect(hostname, username, password):
 
 session_lock = threading.Lock()
 session_cache = {}
-session_access_timeout = datetime.timedelta(minutes=5)
+session_access_timeout = datetime.timedelta(minutes=1)
 
 def create_session(client, hostname, username, password):
   """Create a cached ssh + sftp session for the given host."""
