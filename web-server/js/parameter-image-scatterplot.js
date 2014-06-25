@@ -142,6 +142,7 @@ $.widget("parameter_image.scatterplot",
             }
 
             // Make the image visible ...
+            self._hide_hover_image();
             self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"visible-image"});
             break;
           }
