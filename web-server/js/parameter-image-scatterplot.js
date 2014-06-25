@@ -233,12 +233,13 @@ $.widget("parameter_image.scatterplot",
 
     if(this.updates["update_width"])
     {
-      this.element.attr("width", this.options.width).css("width", this.options.width);
+      this.element.attr("width", this.options.width);
     }
 
     if(this.updates["update_height"])
     {
-      this.element.attr("height", this.options.height).css("height", this.options.height);
+      console.log("update_height");
+      this.element.attr("height", this.options.height);
     }
 
     if(this.updates["update_indices"])
@@ -256,6 +257,7 @@ $.widget("parameter_image.scatterplot",
 
     if(this.updates["update_y"])
     {
+      console.log(this.element.attr("height"));
       this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([this.element.attr("height") - this.options.border, 0 + this.options.border]);
     }
 
@@ -279,11 +281,6 @@ $.widget("parameter_image.scatterplot",
       var x = this.options.x;
       var y = this.options.y;
       var v = this.options.v;
-      var indices = this.options.indices;
-      var color = this.options.color;
-
-      var x_scale = this.x_scale;
-      var y_scale = this.y_scale;
 
       // Draw points ...
       this.datum_layer.selectAll(".datum")
@@ -296,7 +293,7 @@ $.widget("parameter_image.scatterplot",
         .on("mouseover", function(d, i)
           {
             self._hide_hover_image();
-            self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"hover-image", x:x_scale(x[i]) + 10, y:y_scale(y[i]) + 10});
+            self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"hover-image", x:self.x_scale(x[i]) + 10, y:self.y_scale(y[i]) + 10});
           })
         .on("mouseout", function(d, i)
           {
@@ -305,9 +302,9 @@ $.widget("parameter_image.scatterplot",
         ;
 
       this.datum_layer.selectAll(".datum")
-        .attr("cx", function(d, i) { return x_scale(x[i]); })
-        .attr("cy", function(d, i) { return y_scale(y[i]); })
-        .attr("fill", function(d, i) { return color(v[indices[i]]); })
+        .attr("cx", function(d, i) { return self.x_scale(x[i]); })
+        .attr("cy", function(d, i) { return self.y_scale(y[i]); })
+        .attr("fill", function(d, i) { return self.options.color(v[self.options.indices[i]]); })
         ;
     }
 
