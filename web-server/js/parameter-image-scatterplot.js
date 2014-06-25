@@ -21,7 +21,6 @@ $.widget("parameter_image.scatterplot",
     v : [],
     images : [],
     selection : [],
-    visible_images : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     border : 25,
     server_root : "",
@@ -142,16 +141,8 @@ $.widget("parameter_image.scatterplot",
               self.options.selection.splice(index, 1);
             }
 
-            // Update the list of visible images ...
-            var index = self.options.visible_images.indexOf(self.options.indices[i]);
-            if(index == -1)
-            {
-              // Make the image visible ...
-              self.options.visible_images.push(self.options.indices[i]);
-              self._schedule_update({render_images:[self.options.images[self.options.indices[i]]]});
-              self.element.trigger("visible-images-changed", [self.options.visible_images]);
-            }
-
+            // Make the image visible ...
+            self._show_image(self.options.images[self.options.indices[i]], "visible-image");
             break;
           }
         }
@@ -234,6 +225,8 @@ $.widget("parameter_image.scatterplot",
 
   _update: function()
   {
+    var self = this;
+
     //console.log("parameter_image.scatterplot._update()", this.updates);
     this.update_timer = null;
 
@@ -299,6 +292,14 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 4)
         .attr("stroke", "black")
         .attr("linewidth", 1)
+        .on("mouseover", function(d, i)
+          {
+            self._show_image(self.options.images[self.options.indices[i]], "hover-image");
+          })
+        .on("mouseout", function(d, i)
+          {
+            self._hide_hover_image();
+          })
         ;
 
       this.datum_layer.selectAll(".datum")
@@ -339,22 +340,47 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
-    if(this.updates["render_images"])
-    {
-      // Ensure there's a session for every image ...
-      this.updates["render_images"].forEach(function(uri)
-      {
-        this._session_prompt(uri);
-      }, this);
-
-      // Display images ...
-      this.updates["render_images"].forEach(function(uri)
-      {
-        this._add_image(uri);
-      }, this);
-    }
-
     this.updates = {}
+  },
+
+  _show_image: function(uri, image_class)
+  {
+    var self = this;
+
+    this._session_prompt(uri);
+
+    var parser = document.createElement("a");
+    parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function(e)
+    {
+      // If the remote session timed-out, prompt the user for credentials again and start over.
+      if(this.status == 404)
+      {
+        delete self.session_cache[parser.hostname];
+        self._session_prompt(uri);
+        self._show_image(uri);
+        return;
+      }
+
+      var array_buffer_view = new Uint8Array(this.response);
+      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
+      var url_creator = window.URL || window.webkitURL;
+      var image_url = url_creator.createObjectURL(blob);
+
+      self.image_layer.append("image")
+        .attr("class", image_class)
+        .attr("xlink:href", image_url)
+        .attr("x", 10 * self.image_layer.selectAll("image").size())
+        .attr("y", 10 * self.image_layer.selectAll("image").size())
+        .attr("width", 200)
+        .attr("height", 200)
+        ;
+    }
+    xhr.send();
   },
 
   _session_prompt: function(uri)
@@ -387,49 +413,9 @@ $.widget("parameter_image.scatterplot",
     });
   },
 
-  _add_image: function(uri)
+  _hide_hover_image: function()
   {
-    var self = this;
-    var parser = document.createElement("a");
-    parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
-      // If the remote session timed-out, prompt the user for credentials again and start over.
-      if(this.status == 404)
-      {
-        delete self.session_cache[parser.hostname];
-        self._session_prompt(uri);
-        self._add_image(uri);
-        return;
-      }
-
-      var array_buffer_view = new Uint8Array(this.response);
-      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(blob);
-
-      self.image_layer.append("image")
-        .attr("xlink:href", image_url)
-        .attr("x", 10 * self.image_layer.selectAll("image").size())
-        .attr("y", 10 * self.image_layer.selectAll("image").size())
-        .attr("width", 200)
-        .attr("height", 200)
-        ;
-    }
-    xhr.send();
-/*
-    this.image_layer.append("image")
-      .attr("xlink:href", this.options.server_root + "remote/" + this.session_cache[parser.hostname] + "/file" + parser.pathname)
-      .attr("x", 10 * this.image_layer.selectAll("image").size())
-      .attr("y", 10 * this.image_layer.selectAll("image").size())
-      .attr("width", 200)
-      .attr("height", 200)
-      ;
-*/
+    this.image_layer.selectAll(".hover-image").remove();
   },
 });
 
