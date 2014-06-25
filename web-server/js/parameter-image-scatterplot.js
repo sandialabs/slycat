@@ -32,6 +32,8 @@ $.widget("parameter_image.scatterplot",
     this.end_drag = null;
 
     this.svg = d3.select(this.element.get(0));
+    this.x_axis_layer = this.svg.append("g").attr("class", "x-axis");
+    this.y_axis_layer = this.svg.append("g").attr("class", "y-axis");
     this.datum_layer = this.svg.append("g");
     this.selected_layer = this.svg.append("g");
     this.selection_layer = this.svg.append("g");
@@ -253,17 +255,35 @@ $.widget("parameter_image.scatterplot",
     if(this.updates["update_x"])
     {
       var total_width = this.element.attr("width");
+      var total_height = this.element.attr("height");
       var width = Math.min(this.element.attr("width"), this.element.attr("height"));
-      var offset = (total_width - width) / 2
-      this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + offset + this.options.border, total_width - offset - this.options.border]);
+      var height = Math.min(this.element.attr("width"), this.element.attr("height"));
+      var width_offset = (total_width - width) / 2
+      var height_offset = (total_height - height) / 2
+
+      this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + width_offset + this.options.border, total_width - width_offset - this.options.border]);
+      this.x_axis = d3.svg.axis().scale(this.x_scale).orient("bottom");
+      this.x_axis_layer
+        .attr("transform", "translate(0," + (total_height - height_offset - this.options.border) + ")")
+        .call(this.x_axis)
+        ;
     }
 
     if(this.updates["update_y"])
     {
+      var total_width = this.element.attr("width");
       var total_height = this.element.attr("height");
+      var width = Math.min(this.element.attr("width"), this.element.attr("height"));
       var height = Math.min(this.element.attr("width"), this.element.attr("height"));
-      var offset = (total_height - height) / 2
-      this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([total_height - offset - this.options.border, 0 + offset + this.options.border]);
+      var width_offset = (total_width - width) / 2
+      var height_offset = (total_height - height) / 2
+
+      this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([total_height - height_offset - this.options.border, 0 + height_offset + this.options.border]);
+      this.y_axis = d3.svg.axis().scale(this.y_scale).orient("left");
+      this.y_axis_layer
+        .attr("transform", "translate(" + (0 + width_offset + this.options.border) + ",0)")
+        .call(this.y_axis)
+        ;
     }
 
     if(this.updates["update_color_domain"])
