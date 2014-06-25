@@ -30,7 +30,9 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    self.state = "";
     self.start_drag = null;
+    self.current_drag = null;
     self.end_drag = null;
 
     self.svg = d3.select(self.element.get(0));
@@ -75,6 +77,7 @@ $.widget("parameter_image.scatterplot",
         {
           if(Math.abs(e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
           {
+            self.state = "rubber-band";
             self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
             self.selection_layer.append("rect")
               .attr("class", "rubberband")
@@ -100,7 +103,7 @@ $.widget("parameter_image.scatterplot",
       var y = self.options.y;
       var count = x.length;
 
-      if(self.start_drag && self.end_drag) // Rubber-band selection ...
+      if(self.state == "rubber-band") // Rubber-band selection ...
       {
         self.selection_layer.selectAll(".rubberband").remove();
 
@@ -153,6 +156,7 @@ $.widget("parameter_image.scatterplot",
 
       self.start_drag = null;
       self.end_drag = null;
+      self.state = "";
 
       self._schedule_update({render_selection:true});
       self.element.trigger("selection-changed", [self.options.selection]);
@@ -319,7 +323,7 @@ $.widget("parameter_image.scatterplot",
         .attr("linewidth", 1)
         .on("mouseover", function(d, i)
           {
-            if(self.start_drag && self.end_drag) // Rubber-band selection ...
+            if(self.state == "rubber-band") // Rubber-band selection ...
               return;
 
             self._hide_hover_image();
@@ -419,17 +423,30 @@ $.widget("parameter_image.scatterplot",
         .attr("height", 200)
         .on("mousedown", function()
           {
-            console.log("mousedown");
+            var mouse = d3.mouse(self.element.get(0));
+            self.state = "drag-image";
+            self.start_drag = mouse;
+            self.end_drag = self.start_drag;
             d3.event.stopPropagation();
           })
         .on("mousemove", function()
           {
-            console.log("mousemove");
-            d3.event.stopPropagation();
+            if(self.state == "drag-image")
+            {
+              var image = d3.select(d3.event.target);
+              var mouse = d3.mouse(self.element.get(0));
+              var dx = mouse[0] - self.end_drag[0];
+              var dy = mouse[1] - self.end_drag[1];
+              self.end_drag = mouse;
+              d3.event.stopPropagation();
+
+              image.attr("x", Number(image.attr("x")) + dx);
+              image.attr("y", Number(image.attr("y")) + dy);
+            }
           })
         .on("mouseup", function()
           {
-            console.log("mouseup");
+            self.state = "";
             d3.event.stopPropagation();
           })
         ;
