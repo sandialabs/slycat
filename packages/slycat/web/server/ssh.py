@@ -74,7 +74,7 @@ def get_session(client, sid):
     expire_session(sid)
     validate_client(client, sid)
     if sid not in session_cache:
-      raise cherrypy.HTTPError("401 Unauthorized")
+      raise cherrypy.HTTPError("404")
     session = session_cache[sid]
     session["accessed"] = datetime.datetime.utcnow()
     return session

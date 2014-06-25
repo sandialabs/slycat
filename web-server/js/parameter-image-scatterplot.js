@@ -398,6 +398,15 @@ $.widget("parameter_image.scatterplot",
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
+      // If the remote session timed-out, prompt the user for credentials again and start over.
+      if(this.status == 404)
+      {
+        delete self.session_cache[parser.hostname];
+        self._session_prompt(uri);
+        self._add_image(uri);
+        return;
+      }
+
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
       var url_creator = window.URL || window.webkitURL;
@@ -410,10 +419,6 @@ $.widget("parameter_image.scatterplot",
         .attr("width", 200)
         .attr("height", 200)
         ;
-    }
-    xhr.onerror = function()
-    {
-      console.log("Error retrieving image.");
     }
     xhr.send();
 /*
