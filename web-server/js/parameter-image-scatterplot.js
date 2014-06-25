@@ -142,7 +142,7 @@ $.widget("parameter_image.scatterplot",
             }
 
             // Make the image visible ...
-            self._show_image(self.options.images[self.options.indices[i]], "visible-image");
+            self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"visible-image"});
             break;
           }
         }
@@ -294,7 +294,8 @@ $.widget("parameter_image.scatterplot",
         .attr("linewidth", 1)
         .on("mouseover", function(d, i)
           {
-            self._show_image(self.options.images[self.options.indices[i]], "hover-image");
+            self._hide_hover_image();
+            self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"hover-image", x:x_scale(x[i]) + 10, y:y_scale(y[i]) + 10});
           })
         .on("mouseout", function(d, i)
           {
@@ -343,9 +344,19 @@ $.widget("parameter_image.scatterplot",
     this.updates = {}
   },
 
-  _show_image: function(uri, image_class)
+  _show_image: function(options)
   {
     var self = this;
+    var uri = options.uri;
+    var image_class = options.image_class;
+    var x = options.x;
+    if(x === undefined)
+      x = 10 * this.image_layer.selectAll("image").size();
+    var y = options.y;
+    if(y === undefined)
+      y = 10 * this.image_layer.selectAll("image").size();
+
+    console.log(uri, image_class, x, y);
 
     this._session_prompt(uri);
 
@@ -374,8 +385,8 @@ $.widget("parameter_image.scatterplot",
       self.image_layer.append("image")
         .attr("class", image_class)
         .attr("xlink:href", image_url)
-        .attr("x", 10 * self.image_layer.selectAll("image").size())
-        .attr("y", 10 * self.image_layer.selectAll("image").size())
+        .attr("x", x)
+        .attr("y", y)
         .attr("width", 200)
         .attr("height", 200)
         ;
