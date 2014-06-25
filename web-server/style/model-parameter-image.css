@@ -20,6 +20,15 @@ rights in this software.
 	bottom: 0;
 }
 
+.x-axis,
+.y-axis
+{
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 .x-axis path,
 .y-axis path
 {
