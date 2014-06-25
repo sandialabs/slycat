@@ -252,13 +252,18 @@ $.widget("parameter_image.scatterplot",
 
     if(this.updates["update_x"])
     {
-      this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + this.options.border, this.element.attr("width") - this.options.border]);
+      var total_width = this.element.attr("width");
+      var width = Math.min(this.element.attr("width"), this.element.attr("height"));
+      var offset = (total_width - width) / 2
+      this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + offset + this.options.border, total_width - offset - this.options.border]);
     }
 
     if(this.updates["update_y"])
     {
-      console.log(this.element.attr("height"));
-      this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([this.element.attr("height") - this.options.border, 0 + this.options.border]);
+      var total_height = this.element.attr("height");
+      var height = Math.min(this.element.attr("width"), this.element.attr("height"));
+      var offset = (total_height - height) / 2
+      this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([total_height - offset - this.options.border, 0 + offset + this.options.border]);
     }
 
     if(this.updates["update_color_domain"])
