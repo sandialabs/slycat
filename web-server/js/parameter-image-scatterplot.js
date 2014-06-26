@@ -467,6 +467,8 @@ $.widget("parameter_image.scatterplot",
           self.state = "drag-image";
           self.start_drag = mouse;
           self.end_drag = self.start_drag;
+          if(d3.event.preventDefault)
+            d3.event.preventDefault(); // Disable image dragging in Firefox
           d3.event.stopPropagation();
         })
         .on("mousemove", function()
