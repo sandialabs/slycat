@@ -7,6 +7,65 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
+/*
+  <div id="remote-login" title="Remote Login">
+    <p id="remote-login-host"></p>
+    <form>
+      <fieldset>
+        <label for="remote-username">Username</label>
+        <input id="remote-username" type="text" class="text ui-widget-content ui-corner-all"/>
+        <label for="remote-password">Password</label>
+        <input id="remote-password" type="password" value="" class="text ui-widget-content ui-corner-all"/>
+      </fieldset>
+    </form>
+  </div>
+
+// Setup the remote login form ...
+$("#remote-login").dialog(
+{
+  autoOpen: false,
+  width: 700,
+  height: 300,
+  modal: true,
+  open: function()
+  {
+    $("#remote-login-host").text("Login to retrieve " + image_uri.pathname + " from " + image_uri.hostname);
+  },
+  buttons:
+  {
+    "Login": function()
+    {
+      $.ajax(
+      {
+        type : "POST",
+        url : "{{server-root}}remote",
+        contentType : "application/json",
+        data : $.toJSON({"hostname":"localhost", "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
+        processData : false,
+        success : function(result)
+        {
+          session_cache[image_uri.hostname] = result.sid;
+          load_image();
+          $("#remote-login").dialog("close");
+        },
+        error : function(request, status, reason_phrase)
+        {
+          window.alert("Error opening remote session: " + reason_phrase);
+        }
+      });
+    },
+    Cancel: function()
+    {
+      $(this).dialog("close");
+    }
+  },
+  close: function()
+  {
+    $("#remote-password").val("");
+  }
+});
+*/
+
 $.widget("parameter_image.scatterplot",
 {
   options:
@@ -37,7 +96,7 @@ $.widget("parameter_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
 
-    self.svg = d3.select(self.element.get(0));
+    self.svg = d3.select(self.element.get(0)).append("svg");
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.datum_layer = self.svg.append("g");
