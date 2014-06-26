@@ -434,7 +434,8 @@ $.widget("parameter_image.scatterplot",
         .attr("class", image_class)
         ;
 
-      var leader = frame.append("line")
+      // Create the leader line ...
+      frame.append("line")
         .attr("class", "leader")
         .attr("x1", x + (width / 2))
         .attr("y1", y + (height / 2))
@@ -444,47 +445,96 @@ $.widget("parameter_image.scatterplot",
         .style("stroke-width", 1.0)
         ;
 
-      var image = frame.append("image")
+      // Create the image ...
+      frame.append("image")
         .attr("class", "image")
         .attr("xlink:href", image_url)
         .attr("x", x)
         .attr("y", y)
         .attr("width", width)
         .attr("height", height)
+/*
+        .on("mouseover", function()
+        {
+          var frame = d3.select(d3.event.target.parentNode);
+          frame.select(".close-button").style("visibility","visible");
+        })
+        .on("mouseout", function()
+        {
+          var frame = d3.select(d3.event.target.parentNode);
+          frame.select(".close-button").style("visibility","hidden");
+        })
+*/
         .on("mousedown", function()
+        {
+          var mouse = d3.mouse(self.element.get(0));
+          self.state = "drag-image";
+          self.start_drag = mouse;
+          self.end_drag = self.start_drag;
+          d3.event.stopPropagation();
+        })
+        .on("mousemove", function()
+        {
+          if(self.state == "drag-image")
           {
             var mouse = d3.mouse(self.element.get(0));
-            self.state = "drag-image";
-            self.start_drag = mouse;
-            self.end_drag = self.start_drag;
+            var dx = mouse[0] - self.end_drag[0];
+            var dy = mouse[1] - self.end_drag[1];
+            self.end_drag = mouse;
             d3.event.stopPropagation();
-          })
-        .on("mousemove", function()
-          {
-            if(self.state == "drag-image")
-            {
-              var mouse = d3.mouse(self.element.get(0));
-              var dx = mouse[0] - self.end_drag[0];
-              var dy = mouse[1] - self.end_drag[1];
-              self.end_drag = mouse;
-              d3.event.stopPropagation();
 
-              var frame = d3.select(d3.event.target.parentNode);
-              var image = frame.select("image");
-              var leader = frame.select("line");
+            var frame = d3.select(d3.event.target.parentNode);
 
-              image.attr("x", Number(image.attr("x")) + dx);
-              image.attr("y", Number(image.attr("y")) + dy);
+            var image = frame.select("image");
+            image.attr("x", Number(image.attr("x")) + dx);
+            image.attr("y", Number(image.attr("y")) + dy);
 
-              leader.attr("x1", Number(leader.attr("x1")) + dx);
-              leader.attr("y1", Number(leader.attr("y1")) + dy);
-            }
-          })
+            var leader = frame.select(".leader");
+            leader.attr("x1", Number(leader.attr("x1")) + dx);
+            leader.attr("y1", Number(leader.attr("y1")) + dy);
+
+            var close_button = frame.select(".close-button rect");
+            close_button.attr("x", Number(close_button.attr("x")) + dx);
+            close_button.attr("y", Number(close_button.attr("y")) + dy);
+
+            var close_button_label = frame.select(".close-button path");
+            close_button_label.attr("d", "M" + (Number(close_button.attr("x"))+3) + " " + (Number(close_button.attr("y"))+3) + " l10 10 m0 -10 l-10 10")
+          }
+        })
         .on("mouseup", function()
-          {
-            self.state = "";
-            d3.event.stopPropagation();
-          })
+        {
+          self.state = "";
+          d3.event.stopPropagation();
+        })
+        ;
+
+      // Create a close button ...
+      var close_button = frame.append("g")
+        .attr("class", "close-button")
+        .style("visibility", "visible")
+        ;
+
+      close_button.append("rect")
+        .attr("x", x + 5)
+        .attr("y", y + 5)
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr("rx", 2)
+        .attr("ry", 2)
+        .style("fill", "rgba(0%,0%,0%,0.2)")
+        .on("click", function()
+        {
+          var frame = d3.select(d3.event.target.parentNode.parentNode);
+          console.log(frame);
+          frame.remove();
+        })
+        ;
+
+      close_button.append("path")
+        .attr("d", "M" + (x+8) + " " + (y+8) + " l10 10 m0 -10 l-10 10")
+        .style("stroke", "rgba(100%,100%,100%, 0.8)")
+        .style("stroke-width", 3)
+        .style("pointer-events", "none")
         ;
     }
     xhr.send();
