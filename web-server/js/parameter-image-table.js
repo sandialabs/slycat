@@ -79,7 +79,7 @@ $.widget("parameter_image.table",
             {
               cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
               tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
+              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending",
             },
           ]
         }
@@ -89,9 +89,9 @@ $.widget("parameter_image.table",
         column.headerCssClass += " headerImage";
         column.header.buttons.push(
           {
-            cssClass : "image-test-class",
-            tooltip : "image-test-tooltip",
-            command : "image-text-command",
+            cssClass : self.options["image-variable"] == column_index ? "icon-image-on" : "icon-image-off",
+            tooltip :  self.options["image-variable"] == column_index ? "Current image variable" : "Set as image variable",
+            command :  self.options["image-variable"] == column_index ? "" : "image-on",
           }
         );
       }
@@ -100,14 +100,14 @@ $.widget("parameter_image.table",
         column.headerCssClass += " headerNumeric";
         column.header.buttons.push(
           {
-            cssClass : "x-test-class",
-            tooltip : "x-test-tooltip",
-            command : "x-text-command",
+            cssClass : self.options["x-variable"] == column_index ? "icon-x-on" : "icon-x-off",
+            tooltip :  self.options["x-variable"] == column_index ? "Current x variable" : "Set as x variable",
+            command :  self.options["x-variable"] == column_index ? "" : "x-on",
           },
           {
-            cssClass : "y-test-class",
-            tooltip : "y-test-tooltip",
-            command : "y-text-command",
+            cssClass : self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
+            tooltip :  self.options["y-variable"] == column_index ? "Current y variable" : "Set as y variable",
+            command :  self.options["y-variable"] == column_index ? "" : "y-on",
           }
         );
       }
