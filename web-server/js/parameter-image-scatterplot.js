@@ -7,64 +7,6 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-/*
-  <div id="remote-login" title="Remote Login">
-    <p id="remote-login-host"></p>
-    <form>
-      <fieldset>
-        <label for="remote-username">Username</label>
-        <input id="remote-username" type="text" class="text ui-widget-content ui-corner-all"/>
-        <label for="remote-password">Password</label>
-        <input id="remote-password" type="password" value="" class="text ui-widget-content ui-corner-all"/>
-      </fieldset>
-    </form>
-  </div>
-
-// Setup the remote login form ...
-$("#remote-login").dialog(
-{
-  autoOpen: false,
-  width: 700,
-  height: 300,
-  modal: true,
-  open: function()
-  {
-    $("#remote-login-host").text("Login to retrieve " + image_uri.pathname + " from " + image_uri.hostname);
-  },
-  buttons:
-  {
-    "Login": function()
-    {
-      $.ajax(
-      {
-        type : "POST",
-        url : "{{server-root}}remote",
-        contentType : "application/json",
-        data : $.toJSON({"hostname":"localhost", "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
-        processData : false,
-        success : function(result)
-        {
-          session_cache[image_uri.hostname] = result.sid;
-          load_image();
-          $("#remote-login").dialog("close");
-        },
-        error : function(request, status, reason_phrase)
-        {
-          window.alert("Error opening remote session: " + reason_phrase);
-        }
-      });
-    },
-    Cancel: function()
-    {
-      $(this).dialog("close");
-    }
-  },
-  close: function()
-  {
-    $("#remote-password").val("");
-  }
-});
-*/
 
 $.widget("parameter_image.scatterplot",
 {
@@ -96,6 +38,22 @@ $.widget("parameter_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
 
+    // Setup the login dialog ...
+    self.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
+    self.login.appendTo(self.element);
+    self.login.dialog(
+    {
+      autoOpen: false,
+      width: 700,
+      height: 300,
+      modal: true,
+      close: function()
+      {
+        $("#remote-password").val("");
+      }
+    });
+
+    // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0)).append("svg");
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
@@ -434,40 +392,41 @@ $.widget("parameter_image.scatterplot",
 
   _open_image: function(options)
   {
+    console.log("_open_image", options);
     var self = this;
-    var uri = options.uri;
-    var image_class = options.image_class;
-    var x = options.x;
-    if(x === undefined)
-      x = 10 + (10 * self.image_layer.selectAll("image").size());
-    var y = options.y;
-    if(y === undefined)
-      y = 10 + (10 * self.image_layer.selectAll("image").size());
-    var target_x = options.target_x;
-    var target_y = options.target_y;
-    var width = 200;
-    var height = 200;
-
-    console.log(uri, image_class, x, y);
-
-    self._session_prompt(uri);
 
     var parser = document.createElement("a");
-    parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+    parser.href = options.uri.substr(0, 5) == "file:" ? options.uri.substr(5) : options.uri;
+
+    if(!(parser.hostname in self.session_cache))
+    {
+      self._open_session(options);
+      return;
+    }
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
-      // If the remote session timed-out, prompt the user for credentials again and start over.
+      // If the remote session doesn't exist, prompt the user for credentials again and start over.
       if(this.status == 404)
       {
         delete self.session_cache[parser.hostname];
-        self._session_prompt(uri);
-        self._open_image(uri);
+        self._open_session(options);
         return;
       }
+
+      console.log("_display_image", options);
+
+      if(options.x === undefined)
+        options.x = 10 + (10 * self.image_layer.selectAll("image").size());
+      if(options.y === undefined)
+        options.y = 10 + (10 * self.image_layer.selectAll("image").size());
+      if(options.width === undefined)
+        options.width = 200;
+      if(options.height === undefined)
+        options.height = 200;
 
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
@@ -475,28 +434,31 @@ $.widget("parameter_image.scatterplot",
       var image_url = url_creator.createObjectURL(blob);
 
       var frame = self.image_layer.append("g")
-        .attr("class", image_class)
+        .attr("class", options.image_class)
         ;
 
       // Create the leader line ...
-      frame.append("line")
-        .attr("class", "leader")
-        .attr("x1", x + (width / 2))
-        .attr("y1", y + (height / 2))
-        .attr("x2", target_x)
-        .attr("y2", target_y)
-        .style("stroke", "black")
-        .style("stroke-width", 1.0)
-        ;
+      if("target_x" in options && "target_y" in options)
+      {
+        frame.append("line")
+          .attr("class", "leader")
+          .attr("x1", options.x + (options.width / 2))
+          .attr("y1", options.y + (options.height / 2))
+          .attr("x2", options.target_x)
+          .attr("y2", options.target_y)
+          .style("stroke", "black")
+          .style("stroke-width", 1.0)
+          ;
+      }
 
       // Create the image ...
       frame.append("image")
         .attr("class", "image")
         .attr("xlink:href", image_url)
-        .attr("x", x)
-        .attr("y", y)
-        .attr("width", width)
-        .attr("height", height)
+        .attr("x", options.x)
+        .attr("y", options.y)
+        .attr("width", options.width)
+        .attr("height", options.height)
         .on("mousedown", function()
         {
           var mouse = d3.mouse(self.element.get(0));
@@ -547,8 +509,8 @@ $.widget("parameter_image.scatterplot",
         ;
 
       close_button.append("rect")
-        .attr("x", x + 5)
-        .attr("y", y + 5)
+        .attr("x", options.x + 5)
+        .attr("y", options.y + 5)
         .attr("width", 16)
         .attr("height", 16)
         .attr("rx", 2)
@@ -557,13 +519,12 @@ $.widget("parameter_image.scatterplot",
         .on("click", function()
         {
           var frame = d3.select(d3.event.target.parentNode.parentNode);
-          console.log(frame);
           frame.remove();
         })
         ;
 
       close_button.append("path")
-        .attr("d", "M" + (x+8) + " " + (y+8) + " l10 10 m0 -10 l-10 10")
+        .attr("d", "M" + (options.x+8) + " " + (options.y+8) + " l10 10 m0 -10 l-10 10")
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
         .style("stroke-width", 3)
         .style("pointer-events", "none")
@@ -572,35 +533,50 @@ $.widget("parameter_image.scatterplot",
     xhr.send();
   },
 
-  _session_prompt: function(uri)
+  _open_session: function(options)
   {
+    console.log("_open_session", options);
     var self = this;
 
     var parser = document.createElement("a");
-    parser.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
-    if(parser.hostname in self.session_cache)
-      return;
+    parser.href = options.uri.substr(0, 5) == "file:" ? options.uri.substr(5) : options.uri;
 
-    var username = window.prompt(parser.hostname + " username");
-    var password = window.prompt(parser.hostname + " password");
-
-    $.ajax(
+    $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+    $("#remote-error").text(options.last_error).css("display", options.last_error ? "block" : "none");
+    self.login.dialog(
     {
-      async : false,
-      type : "POST",
-      url : self.options.server_root + "remote",
-      contentType : "application/json",
-      data : $.toJSON({"hostname":parser.hostname, "username":username, "password":password}),
-      processData : false,
-      success : function(result)
+      buttons:
       {
-        self.session_cache[parser.hostname] = result.sid;
+        "Login": function()
+        {
+          $.ajax(
+          {
+            async : true,
+            type : "POST",
+            url : self.options.server_root + "remote",
+            contentType : "application/json",
+            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
+            processData : false,
+            success : function(result)
+            {
+              self.session_cache[parser.hostname] = result.sid;
+              self._open_image(options);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              options.last_error = "Error opening remote session: " + reason_phrase;
+              self._open_session(options);
+            }
+          });
+          $(this).dialog("close");
+        },
+        Cancel: function()
+        {
+          $(this).dialog("close");
+        }
       },
-      error : function(request, status, reason_phrase)
-      {
-        window.alert("Error opening remote session: " + reason_phrase);
-      }
     });
+    self.login.dialog("open");
   },
 
   _schedule_hover: function(image_index)
@@ -638,8 +614,6 @@ $.widget("parameter_image.scatterplot",
       image_class : "hover-image",
       x : self.x_scale(self.options.x[image_index]) + 10,
       y : self.y_scale(self.options.y[image_index]) + 10,
-      target_x : self.x_scale(self.options.x[image_index]),
-      target_y : self.y_scale(self.options.y[image_index]),
       });
   },
 

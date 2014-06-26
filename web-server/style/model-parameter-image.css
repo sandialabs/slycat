@@ -36,6 +36,13 @@ rights in this software.
   stroke: black;
 }
 
+#remote-error
+{
+  background-color: red;
+  color: yellow;
+  padding: 1em;
+}
+
 /* New CCA table styles */
 #barplot-table {
   /*height: 250px;*/
