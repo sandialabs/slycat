@@ -160,8 +160,14 @@ rights in this software.
 	top: 3px;
   right: 3px;
 }
+.slick-header-button.image-test-class {
+  right: 20px;
+}
 .slick-header-column {
-	padding-right: 23px !important;
+	padding-right: 43px !important;
+}
+.slick-header-column.headerImage {
+	padding-right: 43px !important;
 }
 .slick-row.nullRow .slick-cell,
 .slick-row.nullRow .slick-cell .highlightWrapper

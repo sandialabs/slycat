@@ -18,10 +18,14 @@ $.widget("parameter_image.table",
     inputs : [],
     outputs : [],
     others : [],
+    images : [],
     "row-selection" : [],
     "variable-selection": [],
     "sort-variable" : null,
     "sort-order" : null,
+    "image-variable" : null,
+    "x-variable" : null,
+    "y-variable" : null,
     colormap : null,
   },
 
@@ -59,7 +63,7 @@ $.widget("parameter_image.table",
 
     function make_column(column_index, header_class, cell_class)
     {
-      return {
+      var column = {
         id : column_index,
         field : column_index,
         name : self.options.metadata["column-names"][column_index],
@@ -67,6 +71,7 @@ $.widget("parameter_image.table",
         headerCssClass : header_class,
         cssClass : cell_class,
         formatter : cell_formatter,
+        width: 100,
         header :
         {
           buttons :
@@ -75,10 +80,38 @@ $.widget("parameter_image.table",
               cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
               tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
               command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
-            }
+            },
           ]
         }
       };
+      // Special options for image columns
+      if( self.options.images.indexOf(column_index) > -1 ) {
+        column.headerCssClass += " headerImage";
+        column.header.buttons.push(
+          {
+            cssClass : "image-test-class",
+            tooltip : "image-test-tooltip",
+            command : "image-text-command",
+          }
+        );
+      }
+      // Special options for numeric columns
+      if( self.options.metadata["column-types"][column_index] != "string" ) {
+        column.headerCssClass += " headerNumeric";
+        column.header.buttons.push(
+          {
+            cssClass : "x-test-class",
+            tooltip : "x-test-tooltip",
+            command : "x-text-command",
+          },
+          {
+            cssClass : "y-test-class",
+            tooltip : "y-test-tooltip",
+            command : "y-text-command",
+          }
+        );
+      }
+      return column;
     }
 
     self.columns = [];
