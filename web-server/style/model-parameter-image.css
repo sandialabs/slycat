@@ -274,20 +274,61 @@ rights in this software.
   top: 3px;
   margin-left: 3px;
 }
-#barplot-table .barplotHeaderColumn:hover .icon-sort-off,
-.icon-sort-off:hover 
-{
-  background: transparent url(sort-desc-light.png) no-repeat center center;
+.barplotHeaderColumn.mask.col0 {
+  vertical-align: top;
 }
-.icon-sort-off:hover 
-{
-  border: 1px solid #C7C7C7 !important;
+.icon-sort-off {
+  border: 1px solid transparent;
+  background: transparent url(sort-asc-light.png) no-repeat center center;
+}
+.icon-sort-off:hover {
+  border: 1px solid transparent !important;
+  background: transparent url(sort-asc-gray.png) no-repeat center center !important;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover
 {
-  border: 1px solid #878787 !important;
+  border: 1px solid transparent;
 }
-.barplotHeaderColumn.mask.col0 {
-  vertical-align: top;
+.slick-header-button.icon-image-on,
+.slick-header-button.icon-image-off
+{
+  right: 16px;
+  top: 4px;
+}
+.slick-header-button.icon-image-off {
+  background: transparent url(image-light.png) no-repeat center center;
+}
+.slick-header-button.icon-image-on,
+.slick-header-button.icon-image-off:hover 
+{
+  background: transparent url(image-gray.png) no-repeat center center;
+}
+.slick-header-button.icon-y-on,
+.slick-header-button.icon-y-off 
+{
+  right: 16px;
+  top: 4px;
+}
+.slick-header-button.icon-y-off {
+  background: transparent url(y-light.png) no-repeat center center;
+}
+.slick-header-button.icon-y-on,
+.slick-header-button.icon-y-off:hover 
+{
+  background: transparent url(y-gray.png) no-repeat center center;
+}
+.slick-header-button.icon-x-on,
+.slick-header-button.icon-x-off 
+{
+  right: 24px;
+  top: 4px;
+}
+.slick-header-button.icon-x-off {
+  background: transparent url(x-light.png) no-repeat center center;
+}
+.slick-header-button.icon-x-on,
+.slick-header-button.icon-x-off:hover 
+{
+  background: transparent url(x-gray.png) no-repeat center center;
 }
