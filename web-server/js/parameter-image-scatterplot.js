@@ -438,18 +438,6 @@ $.widget("parameter_image.scatterplot",
         .attr("y", y)
         .attr("width", width)
         .attr("height", height)
-/*
-        .on("mouseover", function()
-        {
-          var frame = d3.select(d3.event.target.parentNode);
-          frame.select(".close-button").style("visibility","visible");
-        })
-        .on("mouseout", function()
-        {
-          var frame = d3.select(d3.event.target.parentNode);
-          frame.select(".close-button").style("visibility","hidden");
-        })
-*/
         .on("mousedown", function()
         {
           var mouse = d3.mouse(self.element.get(0));
