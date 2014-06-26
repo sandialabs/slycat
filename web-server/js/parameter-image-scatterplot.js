@@ -30,6 +30,8 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    self.hover_timer = null;
+
     self.state = "";
     self.start_drag = null;
     self.current_drag = null;
@@ -77,7 +79,7 @@ $.widget("parameter_image.scatterplot",
         {
           if(Math.abs(e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
           {
-            self.state = "rubber-band";
+            self.state = "rubber-band-drag";
             self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
             self.selection_layer.append("rect")
               .attr("class", "rubberband")
@@ -103,7 +105,7 @@ $.widget("parameter_image.scatterplot",
       var y = self.options.y;
       var count = x.length;
 
-      if(self.state == "rubber-band") // Rubber-band selection ...
+      if(self.state == "rubber-band-drag") // Rubber-band selection ...
       {
         self.selection_layer.selectAll(".rubberband").remove();
 
@@ -147,8 +149,8 @@ $.widget("parameter_image.scatterplot",
             }
 
             // Make the image visible ...
-            self._hide_hover_image();
-            self._show_image({
+            self._close_hover();
+            self._open_image({
               uri : self.options.images[self.options.indices[i]],
               image_class : "visible-image",
               target_x : self.x_scale(self.options.x[i]),
@@ -326,25 +328,8 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 4)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .on("mouseover", function(d, i)
-          {
-            if(self.state == "rubber-band") // Rubber-band selection ...
-              return;
-
-            self._hide_hover_image();
-            self._show_image({
-              uri : self.options.images[self.options.indices[i]],
-              image_class : "hover-image",
-              x : self.x_scale(x[i]) + 10,
-              y : self.y_scale(y[i]) + 10,
-              target_x : self.x_scale(x[i]),
-              target_y : self.y_scale(y[i]),
-              });
-          })
-        .on("mouseout", function(d, i)
-          {
-            self._hide_hover_image();
-          })
+        .on("mouseover", function(d, i) { self._schedule_hover(i); })
+        .on("mouseout", function(d, i) { self._close_hover(); })
         ;
 
       self.datum_layer.selectAll(".datum")
@@ -388,7 +373,7 @@ $.widget("parameter_image.scatterplot",
     self.updates = {}
   },
 
-  _show_image: function(options)
+  _open_image: function(options)
   {
     var self = this;
     var uri = options.uri;
@@ -421,7 +406,7 @@ $.widget("parameter_image.scatterplot",
       {
         delete self.session_cache[parser.hostname];
         self._session_prompt(uri);
-        self._show_image(uri);
+        self._open_image(uri);
         return;
       }
 
@@ -571,9 +556,54 @@ $.widget("parameter_image.scatterplot",
     });
   },
 
-  _hide_hover_image: function()
+  _schedule_hover: function(image_index)
   {
     var self = this;
+
+    // Disable hovering whenever anything else is going on ...
+    if(self.state != "")
+      return;
+
+    // Cancel any pending hover ...
+    self._cancel_hover();
+
+    // Start the timer for the new hover ...
+    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 500);
+  },
+
+  _cancel_hover: function()
+  {
+    var self = this;
+    if(self.hover_timer)
+    {
+      window.clearTimeout(self.hover_timer);
+      self.hover_timer = null;
+    }
+  },
+
+  _open_hover: function(image_index)
+  {
+    var self = this;
+
+    self._close_hover();
+    self._open_image({
+      uri : self.options.images[self.options.indices[image_index]],
+      image_class : "hover-image",
+      x : self.x_scale(self.options.x[image_index]) + 10,
+      y : self.y_scale(self.options.y[image_index]) + 10,
+      target_x : self.x_scale(self.options.x[image_index]),
+      target_y : self.y_scale(self.options.y[image_index]),
+      });
+  },
+
+  _close_hover: function()
+  {
+    var self = this;
+
+    // Cancel any pending hover ...
+    self._cancel_hover();
+
+    // Close any current hover images ...
     self.image_layer.selectAll(".hover-image").remove();
   },
 });
