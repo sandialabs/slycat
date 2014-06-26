@@ -283,27 +283,45 @@ rights in this software.
 {
   border: 1px solid transparent;
 }
-.slick-header-button.icon-image-off {
-  background: transparent url(image-light.png) no-repeat center center;
+.slick-header-button.icon-image-on,
+.slick-header-button.icon-image-off
+{
   right: 16px;
   top: 4px;
 }
-.slick-header-button.icon-image-off:hover {
+.slick-header-button.icon-image-off {
+  background: transparent url(image-light.png) no-repeat center center;
+}
+.slick-header-button.icon-image-on,
+.slick-header-button.icon-image-off:hover 
+{
   background: transparent url(image-gray.png) no-repeat center center;
+}
+.slick-header-button.icon-y-on,
+.slick-header-button.icon-y-off 
+{
+  right: 16px;
+  top: 4px;
 }
 .slick-header-button.icon-y-off {
   background: transparent url(y-light.png) no-repeat center center;
-  right: 16px;
-  top: 4px;
 }
-.slick-header-button.icon-y-off:hover {
+.slick-header-button.icon-y-on,
+.slick-header-button.icon-y-off:hover 
+{
   background: transparent url(y-gray.png) no-repeat center center;
 }
-.slick-header-button.icon-x-off {
-  background: transparent url(x-light.png) no-repeat center center;
+.slick-header-button.icon-x-on,
+.slick-header-button.icon-x-off 
+{
   right: 24px;
   top: 4px;
 }
-.slick-header-button.icon-x-off:hover {
+.slick-header-button.icon-x-off {
+  background: transparent url(x-light.png) no-repeat center center;
+}
+.slick-header-button.icon-x-on,
+.slick-header-button.icon-x-off:hover 
+{
   background: transparent url(x-gray.png) no-repeat center center;
 }
