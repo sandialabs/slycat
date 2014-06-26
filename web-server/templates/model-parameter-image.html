@@ -67,17 +67,6 @@ rights in this software.
               <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
             </div>
           </div>
-          <div id="remote-login" title="Remote Login">
-            <p id="remote-login-host"></p>
-            <form>
-              <fieldset>
-                <label for="remote-username">Username</label>
-                <input id="remote-username" type="text" class="text ui-widget-content ui-corner-all"/>
-                <label for="remote-password">Password</label>
-                <input id="remote-password" type="password" value="" class="text ui-widget-content ui-corner-all"/>
-              </fieldset>
-            </form>
-          </div>
         </div>
       </div>
     </div>
@@ -85,7 +74,7 @@ rights in this software.
     <div id="model-pane" class="ui-layout-center">
       <div id="scatterplot-pane" class="ui-layout-center">
         <div class="load-status"></div>
-        <svg id="scatterplot" width="300" height="300"></canvas>
+        <div id="scatterplot"></div>
       </div>
     </div>
 
@@ -316,50 +305,6 @@ rights in this software.
           $("#edit-model-name").focus();
         });
 
-        // Setup the remote login form ...
-        $("#remote-login").dialog(
-        {
-          autoOpen: false,
-          width: 700,
-          height: 300,
-          modal: true,
-          open: function()
-          {
-            $("#remote-login-host").text("Login to retrieve " + image_uri.pathname + " from " + image_uri.hostname);
-          },
-          buttons:
-          {
-            "Login": function()
-            {
-              $.ajax(
-              {
-                type : "POST",
-                url : "{{server-root}}remote",
-                contentType : "application/json",
-                data : $.toJSON({"hostname":"localhost", "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
-                processData : false,
-                success : function(result)
-                {
-                  session_cache[image_uri.hostname] = result.sid;
-                  load_image();
-                  $("#remote-login").dialog("close");
-                },
-                error : function(request, status, reason_phrase)
-                {
-                  window.alert("Error opening remote session: " + reason_phrase);
-                }
-              });
-            },
-            Cancel: function()
-            {
-              $(this).dialog("close");
-            }
-          },
-          close: function()
-          {
-            $("#remote-password").val("");
-          }
-        });
 
         // Layout resizable panels ...
         $("body").layout(

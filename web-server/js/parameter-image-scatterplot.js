@@ -7,6 +7,65 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
+/*
+  <div id="remote-login" title="Remote Login">
+    <p id="remote-login-host"></p>
+    <form>
+      <fieldset>
+        <label for="remote-username">Username</label>
+        <input id="remote-username" type="text" class="text ui-widget-content ui-corner-all"/>
+        <label for="remote-password">Password</label>
+        <input id="remote-password" type="password" value="" class="text ui-widget-content ui-corner-all"/>
+      </fieldset>
+    </form>
+  </div>
+
+// Setup the remote login form ...
+$("#remote-login").dialog(
+{
+  autoOpen: false,
+  width: 700,
+  height: 300,
+  modal: true,
+  open: function()
+  {
+    $("#remote-login-host").text("Login to retrieve " + image_uri.pathname + " from " + image_uri.hostname);
+  },
+  buttons:
+  {
+    "Login": function()
+    {
+      $.ajax(
+      {
+        type : "POST",
+        url : "{{server-root}}remote",
+        contentType : "application/json",
+        data : $.toJSON({"hostname":"localhost", "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
+        processData : false,
+        success : function(result)
+        {
+          session_cache[image_uri.hostname] = result.sid;
+          load_image();
+          $("#remote-login").dialog("close");
+        },
+        error : function(request, status, reason_phrase)
+        {
+          window.alert("Error opening remote session: " + reason_phrase);
+        }
+      });
+    },
+    Cancel: function()
+    {
+      $(this).dialog("close");
+    }
+  },
+  close: function()
+  {
+    $("#remote-password").val("");
+  }
+});
+*/
+
 $.widget("parameter_image.scatterplot",
 {
   options:
@@ -30,12 +89,14 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    self.hover_timer = null;
+
     self.state = "";
     self.start_drag = null;
     self.current_drag = null;
     self.end_drag = null;
 
-    self.svg = d3.select(self.element.get(0));
+    self.svg = d3.select(self.element.get(0)).append("svg");
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.datum_layer = self.svg.append("g");
@@ -77,7 +138,7 @@ $.widget("parameter_image.scatterplot",
         {
           if(Math.abs(e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
           {
-            self.state = "rubber-band";
+            self.state = "rubber-band-drag";
             self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
             self.selection_layer.append("rect")
               .attr("class", "rubberband")
@@ -103,7 +164,7 @@ $.widget("parameter_image.scatterplot",
       var y = self.options.y;
       var count = x.length;
 
-      if(self.state == "rubber-band") // Rubber-band selection ...
+      if(self.state == "rubber-band-drag") // Rubber-band selection ...
       {
         self.selection_layer.selectAll(".rubberband").remove();
 
@@ -147,8 +208,8 @@ $.widget("parameter_image.scatterplot",
             }
 
             // Make the image visible ...
-            self._hide_hover_image();
-            self._show_image({
+            self._close_hover();
+            self._open_image({
               uri : self.options.images[self.options.indices[i]],
               image_class : "visible-image",
               target_x : self.x_scale(self.options.x[i]),
@@ -326,25 +387,8 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 4)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .on("mouseover", function(d, i)
-          {
-            if(self.state == "rubber-band") // Rubber-band selection ...
-              return;
-
-            self._hide_hover_image();
-            self._show_image({
-              uri : self.options.images[self.options.indices[i]],
-              image_class : "hover-image",
-              x : self.x_scale(x[i]) + 10,
-              y : self.y_scale(y[i]) + 10,
-              target_x : self.x_scale(x[i]),
-              target_y : self.y_scale(y[i]),
-              });
-          })
-        .on("mouseout", function(d, i)
-          {
-            self._hide_hover_image();
-          })
+        .on("mouseover", function(d, i) { self._schedule_hover(i); })
+        .on("mouseout", function(d, i) { self._close_hover(); })
         ;
 
       self.datum_layer.selectAll(".datum")
@@ -388,7 +432,7 @@ $.widget("parameter_image.scatterplot",
     self.updates = {}
   },
 
-  _show_image: function(options)
+  _open_image: function(options)
   {
     var self = this;
     var uri = options.uri;
@@ -421,7 +465,7 @@ $.widget("parameter_image.scatterplot",
       {
         delete self.session_cache[parser.hostname];
         self._session_prompt(uri);
-        self._show_image(uri);
+        self._open_image(uri);
         return;
       }
 
@@ -453,18 +497,6 @@ $.widget("parameter_image.scatterplot",
         .attr("y", y)
         .attr("width", width)
         .attr("height", height)
-/*
-        .on("mouseover", function()
-        {
-          var frame = d3.select(d3.event.target.parentNode);
-          frame.select(".close-button").style("visibility","visible");
-        })
-        .on("mouseout", function()
-        {
-          var frame = d3.select(d3.event.target.parentNode);
-          frame.select(".close-button").style("visibility","hidden");
-        })
-*/
         .on("mousedown", function()
         {
           var mouse = d3.mouse(self.element.get(0));
@@ -571,9 +603,54 @@ $.widget("parameter_image.scatterplot",
     });
   },
 
-  _hide_hover_image: function()
+  _schedule_hover: function(image_index)
   {
     var self = this;
+
+    // Disable hovering whenever anything else is going on ...
+    if(self.state != "")
+      return;
+
+    // Cancel any pending hover ...
+    self._cancel_hover();
+
+    // Start the timer for the new hover ...
+    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 500);
+  },
+
+  _cancel_hover: function()
+  {
+    var self = this;
+    if(self.hover_timer)
+    {
+      window.clearTimeout(self.hover_timer);
+      self.hover_timer = null;
+    }
+  },
+
+  _open_hover: function(image_index)
+  {
+    var self = this;
+
+    self._close_hover();
+    self._open_image({
+      uri : self.options.images[self.options.indices[image_index]],
+      image_class : "hover-image",
+      x : self.x_scale(self.options.x[image_index]) + 10,
+      y : self.y_scale(self.options.y[image_index]) + 10,
+      target_x : self.x_scale(self.options.x[image_index]),
+      target_y : self.y_scale(self.options.y[image_index]),
+      });
+  },
+
+  _close_hover: function()
+  {
+    var self = this;
+
+    // Cancel any pending hover ...
+    self._cancel_hover();
+
+    // Close any current hover images ...
     self.image_layer.selectAll(".hover-image").remove();
   },
 });
