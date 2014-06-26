@@ -148,7 +148,12 @@ $.widget("parameter_image.scatterplot",
 
             // Make the image visible ...
             self._hide_hover_image();
-            self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"visible-image"});
+            self._show_image({
+              uri : self.options.images[self.options.indices[i]],
+              image_class : "visible-image",
+              target_x : self.x_scale(self.options.x[i]),
+              target_y : self.y_scale(self.options.y[i]),
+              });
             break;
           }
         }
@@ -327,7 +332,14 @@ $.widget("parameter_image.scatterplot",
               return;
 
             self._hide_hover_image();
-            self._show_image({uri:self.options.images[self.options.indices[i]], image_class:"hover-image", x:self.x_scale(x[i]) + 10, y:self.y_scale(y[i]) + 10});
+            self._show_image({
+              uri : self.options.images[self.options.indices[i]],
+              image_class : "hover-image",
+              x : self.x_scale(x[i]) + 10,
+              y : self.y_scale(y[i]) + 10,
+              target_x : self.x_scale(x[i]),
+              target_y : self.y_scale(y[i]),
+              });
           })
         .on("mouseout", function(d, i)
           {
@@ -383,10 +395,14 @@ $.widget("parameter_image.scatterplot",
     var image_class = options.image_class;
     var x = options.x;
     if(x === undefined)
-      x = 10 * self.image_layer.selectAll("image").size();
+      x = 10 + (10 * self.image_layer.selectAll("image").size());
     var y = options.y;
     if(y === undefined)
-      y = 10 * self.image_layer.selectAll("image").size();
+      y = 10 + (10 * self.image_layer.selectAll("image").size());
+    var target_x = options.target_x;
+    var target_y = options.target_y;
+    var width = 200;
+    var height = 200;
 
     console.log(uri, image_class, x, y);
 
@@ -414,13 +430,27 @@ $.widget("parameter_image.scatterplot",
       var url_creator = window.URL || window.webkitURL;
       var image_url = url_creator.createObjectURL(blob);
 
-      self.image_layer.append("image")
+      var frame = self.image_layer.append("g")
         .attr("class", image_class)
+        ;
+
+      var leader = frame.append("line")
+        .attr("class", "leader")
+        .attr("x1", x + (width / 2))
+        .attr("y1", y + (height / 2))
+        .attr("x2", target_x)
+        .attr("y2", target_y)
+        .style("stroke", "black")
+        .style("stroke-width", 1.0)
+        ;
+
+      var image = frame.append("image")
+        .attr("class", "image")
         .attr("xlink:href", image_url)
         .attr("x", x)
         .attr("y", y)
-        .attr("width", 200)
-        .attr("height", 200)
+        .attr("width", width)
+        .attr("height", height)
         .on("mousedown", function()
           {
             var mouse = d3.mouse(self.element.get(0));
@@ -433,15 +463,21 @@ $.widget("parameter_image.scatterplot",
           {
             if(self.state == "drag-image")
             {
-              var image = d3.select(d3.event.target);
               var mouse = d3.mouse(self.element.get(0));
               var dx = mouse[0] - self.end_drag[0];
               var dy = mouse[1] - self.end_drag[1];
               self.end_drag = mouse;
               d3.event.stopPropagation();
 
+              var frame = d3.select(d3.event.target.parentNode);
+              var image = frame.select("image");
+              var leader = frame.select("line");
+
               image.attr("x", Number(image.attr("x")) + dx);
               image.attr("y", Number(image.attr("y")) + dy);
+
+              leader.attr("x1", Number(leader.attr("x1")) + dx);
+              leader.attr("y1", Number(leader.attr("y1")) + dy);
             }
           })
         .on("mouseup", function()
