@@ -267,11 +267,13 @@ $.widget("parameter_image.scatterplot",
     if(self.updates["update_width"])
     {
       self.element.attr("width", self.options.width);
+      self.svg.attr("width", self.options.width);
     }
 
     if(self.updates["update_height"])
     {
       self.element.attr("height", self.options.height);
+      self.svg.attr("height", self.options.height);
     }
 
     if(self.updates["update_indices"])
