@@ -101,6 +101,9 @@ rights in this software.
 
         var table_metadata = null;
         var indices = null;
+        var x_index = null;
+        var y_index = null;
+        var images_index = null;
         var x = null;
         var y = null;
         var v = null;
@@ -365,7 +368,7 @@ rights in this software.
 
           if(table_metadata && bookmark)
           {
-            var x_index = input_columns[0];
+            x_index = input_columns[0];
             if("x-selection" in bookmark)
               x_index = bookmark["x-selection"];
             get_model_array_attribute({
@@ -378,11 +381,12 @@ rights in this software.
               {
                 x = result;
                 setup_scatterplot();
+                setup_table();
               },
               error : artifact_missing
             });
 
-            var y_index = input_columns[1];
+            y_index = input_columns[1];
             if("y-selection" in bookmark)
               y_index = bookmark["y-selection"];
             get_model_array_attribute({
@@ -395,6 +399,7 @@ rights in this software.
               {
                 y = result;
                 setup_scatterplot();
+                setup_table();
               },
               error : artifact_missing
             });
@@ -428,7 +433,7 @@ rights in this software.
               });
             }
 
-            var images_index = image_columns[0];
+            images_index = image_columns[0];
             if("images-selection" in bookmark)
               images_index = bookmark["images-selection"];
             $.ajax(
@@ -439,6 +444,7 @@ rights in this software.
               {
                 images = result;
                 setup_scatterplot();
+                setup_table();
               },
               error: artifact_missing
             });
@@ -447,7 +453,7 @@ rights in this software.
 
         function setup_table()
         {
-          if(!table_ready && table_metadata && bookmark)
+          if( !table_ready && table_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) )
           {
             table_ready = true;
 
@@ -470,6 +476,9 @@ rights in this software.
               outputs : output_columns,
               others : other_columns,
               images : image_columns,
+              "image-variable" : images_index,
+              "x-variable" : x_index,
+              "y-variable" : y_index,
             };
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -499,6 +508,24 @@ rights in this software.
             $("#table").bind("variable-sort-changed", function(event, variable, order)
             {
               variable_sort_changed(variable, order);
+            });
+
+            // Log changes to the x variable ...
+            $("#table").bind("x-selection-changed", function(event, variable)
+            {
+              x_selection_changed(variable);
+            });
+
+            // Log changes to the y variable ...
+            $("#table").bind("y-selection-changed", function(event, variable)
+            {
+              y_selection_changed(variable);
+            });
+
+            // Log changes to the images variable ...
+            $("#table").bind("images-selection-changed", function(event, variable)
+            {
+              images_selection_changed(variable);
             });
 
             // Log changes to the table variable selection ...
@@ -636,6 +663,36 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
           });
           bookmarker.updateState( {"simulation-selection" : selection} );
+        }
+
+        function x_selection_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
+          });
+          bookmarker.updateState( {"x-selection" : variable} );
+        }
+
+        function y_selection_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/y/" + variable
+          });
+          bookmarker.updateState( {"y-selection" : variable} );
+        }
+
+        function images_selection_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/images/" + variable
+          });
+          bookmarker.updateState( {"images-selection" : variable} );
         }
 
         function update_scatterplot_value(attribute)
