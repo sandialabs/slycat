@@ -159,6 +159,20 @@ $.widget("parameter_image.scatterplot",
             {
               // Selecting a new point.
               self.options.selection.push(self.options.indices[i]);
+
+              // If the URI for this point isn't already open, open it.
+              var uri = self.options.images[self.options.indices[i]];
+              if($(".open-image[data-uri='" + uri + "']").size() == 0)
+              {
+                self._close_hover();
+                self._open_images([{
+                  index : self.options.indices[i],
+                  uri : self.options.images[self.options.indices[i]],
+                  image_class : "open-image",
+                  target_x : self.x_scale(self.options.x[i]),
+                  target_y : self.y_scale(self.options.y[i]),
+                  }]);
+              }
             }
             else
             {
@@ -166,14 +180,6 @@ $.widget("parameter_image.scatterplot",
               self.options.selection.splice(index, 1);
             }
 
-            // Make the image visible ...
-            self._close_hover();
-            self._open_images([{
-              uri : self.options.images[self.options.indices[i]],
-              image_class : "open-image",
-              target_x : self.x_scale(self.options.x[i]),
-              target_y : self.y_scale(self.options.y[i]),
-              }]);
             break;
           }
         }
@@ -202,12 +208,12 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "x")
     {
-      self._schedule_update({update_x:true, render_data:true, render_selection:true});
+      self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "y")
     {
-      self._schedule_update({update_y:true, render_data:true, render_selection:true});
+      self._schedule_update({update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "v")
@@ -231,17 +237,17 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, render_data:true, render_selection:true});
+      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "border")
     {
-      self._schedule_update({update_x:true, update_y:true, render_data:true, render_selection:true});
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
   },
 
@@ -387,8 +393,21 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
+    // Used to open an initial list of images at startup only
     if(self.updates["open_images"])
     {
+      // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
+      self.options.open_images.forEach(function(image)
+      {
+        if(image.uri === undefined)
+          image.uri = self.options.images[image.index];
+        if(image.width === undefined)
+          image.width = 200;
+        if(image.height === undefined)
+          image.height = 200;
+      });
+
+      // Transform the list of initial images so we can pass them to _open_images()
       var width = Number(self.svg.attr("width"));
       var height = Number(self.svg.attr("height"));
 
@@ -396,10 +415,13 @@ $.widget("parameter_image.scatterplot",
       self.options.open_images.forEach(function(image, index)
       {
         images.push({
-          uri : image.uri ? image.uri : self.options.images[image.index],
+          index : image.index,
+          uri : image.uri,
           image_class : "open-image",
           x : width * image.relx,
           y : height * image.rely,
+          width : image.width,
+          height : image.height,
           target_x : self.x_scale(self.options.x[image.index]),
           target_y : self.y_scale(self.options.y[image.index]),
           });
@@ -407,12 +429,50 @@ $.widget("parameter_image.scatterplot",
       self._open_images(images);
     }
 
+    // Update leader targets anytime we resize or change our axes ...
+    if(self.updates["update_leaders"])
+    {
+      $(".open-image").each(function(index, frame)
+      {
+        var frame = $(frame);
+        var image_index = Number(frame.attr("data-index"));
+        frame.find(".leader")
+          .attr("x2", self.x_scale(self.options.x[image_index]))
+          .attr("y2", self.y_scale(self.options.y[image_index]))
+          ;
+      });
+    }
+
     self.updates = {}
+  },
+
+  _sync_open_images: function()
+  {
+    var self = this;
+
+    // Get the scatterplot width so we can convert absolute to relative coordinates.
+    var width = Number(self.svg.attr("width"));
+    var height = Number(self.svg.attr("height"));
+    var open_images = [];
+    $(".open-image").each(function(index, frame)
+    {
+      var frame = $(frame);
+      var image = frame.find("image");
+      open_images.push({
+        index : Number(frame.attr("data-index")),
+        uri : frame.attr("data-uri"),
+        relx : image.attr("x") / width,
+        rely : image.attr("y") / height,
+        width : Number(image.attr("width")),
+        height : Number(image.attr("height")),
+        });
+    });
+    console.log("_sync_open_images", open_images);
+    self.element.trigger("open-images-changed", [open_images]);
   },
 
   _open_images: function(images)
   {
-    console.log("_open_images", images);
     var self = this;
 
     if(images.length == 0)
@@ -441,17 +501,32 @@ $.widget("parameter_image.scatterplot",
         return;
       }
 
-      console.log("_display_image", images);
-      console.log();
-
-      if(image.x === undefined)
-        image.x = 10 + (10 * self.image_layer.selectAll("image").size());
-      if(image.y === undefined)
-        image.y = 10 + (10 * self.image_layer.selectAll("image").size());
+      // Define a default size for every image.
       if(image.width === undefined)
         image.width = 200;
       if(image.height === undefined)
         image.height = 200;
+
+      // Define a default position for every image.
+      if(image.x === undefined)
+      {
+        // We force the image to the left or right side of the screen, based on the target point position.
+        var width = self.svg.attr("width");
+        var range = self.x_scale.range();
+        var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
+        console.log(relx);
+
+        if(relx < 0.5)
+          image.x = relx * range[0];
+        else
+          image.x = width - ((width - range[1]) * (1.0 - relx)) - image.width;
+      }
+      if(image.y === undefined)
+      {
+        var height = self.svg.attr("height");
+        var target_y = self.y_scale(self.options.y[image.index]);
+        image.y = (target_y / height) * (height - image.height);
+      }
 
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
@@ -460,6 +535,8 @@ $.widget("parameter_image.scatterplot",
 
       var frame = self.image_layer.append("g")
         .attr("class", image.image_class)
+        .attr("data-index", image.index)
+        .attr("data-uri", image.uri)
         ;
 
       // Create the leader line ...
@@ -493,6 +570,9 @@ $.widget("parameter_image.scatterplot",
           if(d3.event.preventDefault)
             d3.event.preventDefault(); // Disable image dragging in Firefox
           d3.event.stopPropagation();
+
+          // Move this image to the top of the Z order ...
+          $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
         })
         .on("mousemove", function()
         {
@@ -520,12 +600,17 @@ $.widget("parameter_image.scatterplot",
 
             var close_button_label = frame.select(".close-button path");
             close_button_label.attr("d", "M" + (Number(close_button.attr("x"))+3) + " " + (Number(close_button.attr("y"))+3) + " l10 10 m0 -10 l-10 10")
+
+            var outline = frame.select(".outline");
+            outline.attr("x", Number(outline.attr("x")) + dx);
+            outline.attr("y", Number(outline.attr("y")) + dy);
           }
         })
         .on("mouseup", function()
         {
           self.state = "";
           d3.event.stopPropagation();
+          self._sync_open_images();
         })
         ;
 
@@ -547,6 +632,7 @@ $.widget("parameter_image.scatterplot",
         {
           var frame = d3.select(d3.event.target.parentNode.parentNode);
           frame.remove();
+          self._sync_open_images();
         })
         ;
 
@@ -557,6 +643,19 @@ $.widget("parameter_image.scatterplot",
         .style("pointer-events", "none")
         ;
 
+      // Create an outline ...
+      var outline = frame.append("rect")
+        .attr("class", "outline")
+        .attr("x", image.x)
+        .attr("y", image.y)
+        .attr("width", image.width)
+        .attr("height", image.height)
+        .style("stroke", "black")
+        .style("fill", "none")
+        ;
+
+      if(!image.no_sync)
+        self._sync_open_images();
       self._open_images(images.slice(1));
     }
     xhr.send();
@@ -564,7 +663,6 @@ $.widget("parameter_image.scatterplot",
 
   _open_session: function(images)
   {
-    console.log("_open_session", images);
     var self = this;
 
     if(images.length == 0)
@@ -641,12 +739,20 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    var hover_width = 100;
+    var hover_height = 100;
+
     self._close_hover();
+
     self._open_images([{
+      index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]],
       image_class : "hover-image",
       x : self.x_scale(self.options.x[image_index]) + 10,
-      y : self.y_scale(self.options.y[image_index]) + 10,
+      y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
+      width : hover_width,
+      height : hover_height,
+      no_sync : true,
       }]);
   },
 
