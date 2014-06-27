@@ -159,6 +159,20 @@ $.widget("parameter_image.scatterplot",
             {
               // Selecting a new point.
               self.options.selection.push(self.options.indices[i]);
+
+              // If the URI for this point isn't already open, open it.
+              var uri = self.options.images[self.options.indices[i]];
+              if($(".open-image[data-uri='" + uri + "']").size() == 0)
+              {
+                self._close_hover();
+                self._open_images([{
+                  index : self.options.indices[i],
+                  uri : self.options.images[self.options.indices[i]],
+                  image_class : "open-image",
+                  target_x : self.x_scale(self.options.x[i]),
+                  target_y : self.y_scale(self.options.y[i]),
+                  }]);
+              }
             }
             else
             {
@@ -166,15 +180,6 @@ $.widget("parameter_image.scatterplot",
               self.options.selection.splice(index, 1);
             }
 
-            // Make the image visible ...
-            self._close_hover();
-            self._open_images([{
-              index : self.options.indices[i],
-              uri : self.options.images[self.options.indices[i]],
-              image_class : "open-image",
-              target_x : self.x_scale(self.options.x[i]),
-              target_y : self.y_scale(self.options.y[i]),
-              }]);
             break;
           }
         }
