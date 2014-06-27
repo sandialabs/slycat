@@ -580,6 +580,7 @@ $.widget("parameter_image.scatterplot",
         {
           self.state = "";
           d3.event.stopPropagation();
+          self._sync_open_images();
         })
         ;
 
