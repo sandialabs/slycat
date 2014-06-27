@@ -307,7 +307,7 @@ $.widget("parameter_image.table",
     for(var i in columns)
     {
       var column = columns[i];
-      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
+      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
       {
         // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
         column.colormap = self.options.colormap.copy();
