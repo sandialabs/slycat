@@ -277,6 +277,9 @@ rights in this software.
 .barplotHeaderColumn.mask.col0 {
   vertical-align: top;
 }
+.slick-header-column {
+  padding-right: 41px !important;
+}
 .icon-sort-off {
   border: 1px solid transparent;
   background: transparent url(sort-asc-light.png) no-repeat center center;
@@ -289,6 +292,11 @@ rights in this software.
 .icon-sort-descending:hover
 {
   border: 1px solid transparent;
+}
+.slick-header-button,
+.slick-header-column:hover > .slick-header-button
+{
+  width: 10px;
 }
 .slick-header-button.icon-image-on,
 .slick-header-button.icon-image-off
@@ -321,7 +329,7 @@ rights in this software.
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off 
 {
-  right: 24px;
+  right: 26px;
   top: 4px;
 }
 .slick-header-button.icon-x-off {
