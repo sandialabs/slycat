@@ -183,7 +183,7 @@ $.widget("parameter_image.table",
         button.cssClass = 'icon-image-on';
         button.command = '';
         button.tooltip = 'Current image variable';
-        //set_sort(column.id, "descending");
+        self.element.trigger("images-selection-changed", column.id);
       }
       else if(command == "x-on")
       {
@@ -199,7 +199,7 @@ $.widget("parameter_image.table",
         button.cssClass = 'icon-x-on';
         button.command = '';
         button.tooltip = 'Current x variable';
-        //set_sort(column.id, "descending");
+        self.element.trigger("x-selection-changed", column.id);
       }
       else if(command == "y-on")
       {
@@ -215,7 +215,7 @@ $.widget("parameter_image.table",
         button.cssClass = 'icon-y-on';
         button.command = '';
         button.tooltip = 'Current y variable';
-        //set_sort(column.id, "descending");
+        self.element.trigger("y-selection-changed", column.id);
       }
     });
 
