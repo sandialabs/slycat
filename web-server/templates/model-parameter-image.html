@@ -574,6 +574,7 @@ rights in this software.
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
               selection: selection,
               server_root: "{{server-root}}",
+              open_images: [{index:0,relx:0.1,rely:0.1},{index:1,relx:0.1,rely:0.5},{index:2,relx:0.8,rely:0.2}, {index:3,relx:0.8,rely:0.6}],
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
