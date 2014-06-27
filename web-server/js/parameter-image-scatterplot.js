@@ -552,6 +552,9 @@ $.widget("parameter_image.scatterplot",
           if(d3.event.preventDefault)
             d3.event.preventDefault(); // Disable image dragging in Firefox
           d3.event.stopPropagation();
+
+          // Move this image to the top of the Z order ...
+          $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
         })
         .on("mousemove", function()
         {
