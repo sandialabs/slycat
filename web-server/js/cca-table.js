@@ -156,7 +156,7 @@ $.widget("cca.table",
     });
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if(!self._array_equal([args.column.field], self.options["variable-selection"]))
+      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
       {
         self.options["variable-selection"] = [args.column.field];
         self._color_variables(self.options["variable-selection"]);
