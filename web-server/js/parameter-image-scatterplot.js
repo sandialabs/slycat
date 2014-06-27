@@ -169,6 +169,7 @@ $.widget("parameter_image.scatterplot",
             // Make the image visible ...
             self._close_hover();
             self._open_images([{
+              index : self.options.indices[i],
               uri : self.options.images[self.options.indices[i]],
               image_class : "open-image",
               target_x : self.x_scale(self.options.x[i]),
@@ -387,8 +388,20 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
-    if(self.updates["open_images"])
+    if(self.updates["open_images"]) // Used to open an initial list of images at startup only
     {
+      // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
+      self.options.open_images.forEach(function(image)
+      {
+        if(image.uri === undefined)
+          image.uri = self.options.images[image.index];
+        if(image.width === undefined)
+          image.width = 200;
+        if(image.height === undefined)
+          image.height = 200;
+      });
+
+      // Transform the list of initial images so we can pass them to _open_images()
       var width = Number(self.svg.attr("width"));
       var height = Number(self.svg.attr("height"));
 
@@ -396,10 +409,13 @@ $.widget("parameter_image.scatterplot",
       self.options.open_images.forEach(function(image, index)
       {
         images.push({
-          uri : image.uri ? image.uri : self.options.images[image.index],
+          index : image.index,
+          uri : image.uri,
           image_class : "open-image",
           x : width * image.relx,
           y : height * image.rely,
+          width : image.width,
+          height : image.height,
           target_x : self.x_scale(self.options.x[image.index]),
           target_y : self.y_scale(self.options.y[image.index]),
           });
@@ -408,6 +424,31 @@ $.widget("parameter_image.scatterplot",
     }
 
     self.updates = {}
+  },
+
+  _sync_open_images: function()
+  {
+    var self = this;
+
+    // Get the scatterplot width so we can convert absolute to relative coordinates.
+    var width = Number(self.svg.attr("width"));
+    var height = Number(self.svg.attr("height"));
+    var open_images = [];
+    $(".open-image").each(function(index, frame)
+    {
+      var frame = $(frame);
+      var image = frame.find("image");
+      open_images.push({
+        index : Number(frame.attr("data-index")),
+        uri : frame.attr("data-uri"),
+        relx : image.attr("x") / width,
+        rely : image.attr("y") / height,
+        width : Number(image.attr("width")),
+        height : Number(image.attr("height")),
+        });
+    });
+    console.log("_sync_open_images", open_images);
+    self.element.trigger("open-images-changed", [open_images]);
   },
 
   _open_images: function(images)
@@ -460,6 +501,8 @@ $.widget("parameter_image.scatterplot",
 
       var frame = self.image_layer.append("g")
         .attr("class", image.image_class)
+        .attr("data-index", image.index)
+        .attr("data-uri", image.uri)
         ;
 
       // Create the leader line ...
@@ -547,6 +590,7 @@ $.widget("parameter_image.scatterplot",
         {
           var frame = d3.select(d3.event.target.parentNode.parentNode);
           frame.remove();
+          self._sync_open_images();
         })
         ;
 
@@ -557,6 +601,8 @@ $.widget("parameter_image.scatterplot",
         .style("pointer-events", "none")
         ;
 
+      if(!image.no_sync)
+        self._sync_open_images();
       self._open_images(images.slice(1));
     }
     xhr.send();
@@ -643,10 +689,12 @@ $.widget("parameter_image.scatterplot",
 
     self._close_hover();
     self._open_images([{
+      index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]],
       image_class : "hover-image",
       x : self.x_scale(self.options.x[image_index]) + 10,
       y : self.y_scale(self.options.y[image_index]) + 10,
+      no_sync : true,
       }]);
   },
 
