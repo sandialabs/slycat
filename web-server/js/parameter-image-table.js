@@ -189,7 +189,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string"){
+          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
             self.columns[i].header.buttons[1].tooltip = "Set as x variable";
             self.columns[i].header.buttons[1].command = "x-on";
@@ -205,7 +205,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string"){
+          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
             self.columns[i].header.buttons[2].tooltip = "Set as y variable";
             self.columns[i].header.buttons[2].command = "y-on";
