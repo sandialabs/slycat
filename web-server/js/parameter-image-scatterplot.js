@@ -501,14 +501,32 @@ $.widget("parameter_image.scatterplot",
         return;
       }
 
-      if(image.x === undefined)
-        image.x = 10 + (10 * self.image_layer.selectAll("image").size());
-      if(image.y === undefined)
-        image.y = 10 + (10 * self.image_layer.selectAll("image").size());
+      // Define a default size for every image.
       if(image.width === undefined)
         image.width = 200;
       if(image.height === undefined)
         image.height = 200;
+
+      // Define a default position for every image.
+      if(image.x === undefined)
+      {
+        // We force the image to the left or right side of the screen, based on the target point position.
+        var width = self.svg.attr("width");
+        var range = self.x_scale.range();
+        var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
+        console.log(relx);
+
+        if(relx < 0.5)
+          image.x = relx * range[0];
+        else
+          image.x = width - ((width - range[1]) * (1.0 - relx)) - image.width;
+      }
+      if(image.y === undefined)
+      {
+        var height = self.svg.attr("height");
+        var target_y = self.y_scale(self.options.y[image.index]);
+        image.y = (target_y / height) * (height - image.height);
+      }
 
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
