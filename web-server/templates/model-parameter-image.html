@@ -590,6 +590,10 @@ rights in this software.
 
             $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
+            var open_images = [];
+            if("open-images-selection" in bookmark)
+              open_images = bookmark["open-images-selection"];
+
             $("#scatterplot").scatterplot({
               indices: indices,
               x: x,
@@ -601,7 +605,7 @@ rights in this software.
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
               selection: selection,
               server_root: "{{server-root}}",
-              open_images: [{index:0,relx:0.1,rely:0.1,width:150,height:150},{index:1,relx:0.1,rely:0.5},{index:2,relx:0.8,rely:0.2}, {index:3,relx:0.8,rely:0.6}],
+              open_images: open_images,
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -664,6 +668,13 @@ rights in this software.
                 error: artifact_missing
               });
             });
+
+            // Log changes to open images ...
+            $("#scatterplot").bind("open-images-changed", function(event, selection)
+            {
+              open_images_changed(selection);
+            });
+            
 
             // This is just for testing
             //display_image("file://localhost/home/slycat/src/slycat-steve/artwork/slycat-logo.jpg");
@@ -743,6 +754,17 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/images/" + variable
           });
           bookmarker.updateState( {"images-selection" : variable} );
+        }
+
+        function open_images_changed(selection)
+        {
+          // Logging every open image is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/openimages/count/" + selection.length
+          });
+          bookmarker.updateState( {"open-images-selection" : selection} );
         }
 
         function update_scatterplot_value(attribute)
