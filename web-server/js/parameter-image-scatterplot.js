@@ -25,6 +25,7 @@ $.widget("parameter_image.scatterplot",
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     border : 25,
     server_root : "",
+    open_images : [],
   },
 
   _create: function()
@@ -66,7 +67,7 @@ $.widget("parameter_image.scatterplot",
 
     self.updates = {};
     self.update_timer = null;
-    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true});
+    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true, open_images:true});
 
     self.element.mousedown(function(e)
     {
@@ -167,12 +168,12 @@ $.widget("parameter_image.scatterplot",
 
             // Make the image visible ...
             self._close_hover();
-            self._open_image({
+            self._open_images([{
               uri : self.options.images[self.options.indices[i]],
-              image_class : "visible-image",
+              image_class : "open-image",
               target_x : self.x_scale(self.options.x[i]),
               target_y : self.y_scale(self.options.y[i]),
-              });
+              }]);
             break;
           }
         }
@@ -329,9 +330,6 @@ $.widget("parameter_image.scatterplot",
       self.options.color.domain(domain);
     }
 
-    var width = self.element.attr("width");
-    var height = self.element.attr("height");
-
     if(self.updates["render_data"])
     {
       var count = self.options.x.length;
@@ -389,20 +387,44 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
+    if(self.updates["open_images"])
+    {
+      var width = Number(self.svg.attr("width"));
+      var height = Number(self.svg.attr("height"));
+
+      var images = [];
+      self.options.open_images.forEach(function(image, index)
+      {
+        images.push({
+          uri : image.uri ? image.uri : self.options.images[image.index],
+          image_class : "open-image",
+          x : width * image.relx,
+          y : height * image.rely,
+          target_x : self.x_scale(self.options.x[image.index]),
+          target_y : self.y_scale(self.options.y[image.index]),
+          });
+      });
+      self._open_images(images);
+    }
+
     self.updates = {}
   },
 
-  _open_image: function(options)
+  _open_images: function(images)
   {
-    console.log("_open_image", options);
+    console.log("_open_images", images);
     var self = this;
 
+    if(images.length == 0)
+      return;
+    var image = images[0];
+
     var parser = document.createElement("a");
-    parser.href = options.uri.substr(0, 5) == "file:" ? options.uri.substr(5) : options.uri;
+    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
 
     if(!(parser.hostname in self.session_cache))
     {
-      self._open_session(options);
+      self._open_session(images);
       return;
     }
 
@@ -415,20 +437,21 @@ $.widget("parameter_image.scatterplot",
       if(this.status == 404)
       {
         delete self.session_cache[parser.hostname];
-        self._open_session(options);
+        self._open_session(images);
         return;
       }
 
-      console.log("_display_image", options);
+      console.log("_display_image", images);
+      console.log();
 
-      if(options.x === undefined)
-        options.x = 10 + (10 * self.image_layer.selectAll("image").size());
-      if(options.y === undefined)
-        options.y = 10 + (10 * self.image_layer.selectAll("image").size());
-      if(options.width === undefined)
-        options.width = 200;
-      if(options.height === undefined)
-        options.height = 200;
+      if(image.x === undefined)
+        image.x = 10 + (10 * self.image_layer.selectAll("image").size());
+      if(image.y === undefined)
+        image.y = 10 + (10 * self.image_layer.selectAll("image").size());
+      if(image.width === undefined)
+        image.width = 200;
+      if(image.height === undefined)
+        image.height = 200;
 
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
@@ -436,18 +459,18 @@ $.widget("parameter_image.scatterplot",
       var image_url = url_creator.createObjectURL(blob);
 
       var frame = self.image_layer.append("g")
-        .attr("class", options.image_class)
+        .attr("class", image.image_class)
         ;
 
       // Create the leader line ...
-      if("target_x" in options && "target_y" in options)
+      if("target_x" in image && "target_y" in image)
       {
         frame.append("line")
           .attr("class", "leader")
-          .attr("x1", options.x + (options.width / 2))
-          .attr("y1", options.y + (options.height / 2))
-          .attr("x2", options.target_x)
-          .attr("y2", options.target_y)
+          .attr("x1", image.x + (image.width / 2))
+          .attr("y1", image.y + (image.height / 2))
+          .attr("x2", image.target_x)
+          .attr("y2", image.target_y)
           .style("stroke", "black")
           .style("stroke-width", 1.0)
           ;
@@ -457,10 +480,10 @@ $.widget("parameter_image.scatterplot",
       frame.append("image")
         .attr("class", "image")
         .attr("xlink:href", image_url)
-        .attr("x", options.x)
-        .attr("y", options.y)
-        .attr("width", options.width)
-        .attr("height", options.height)
+        .attr("x", image.x)
+        .attr("y", image.y)
+        .attr("width", image.width)
+        .attr("height", image.height)
         .on("mousedown", function()
         {
           var mouse = d3.mouse(self.element.get(0));
@@ -513,8 +536,8 @@ $.widget("parameter_image.scatterplot",
         ;
 
       close_button.append("rect")
-        .attr("x", options.x + 5)
-        .attr("y", options.y + 5)
+        .attr("x", image.x + 5)
+        .attr("y", image.y + 5)
         .attr("width", 16)
         .attr("height", 16)
         .attr("rx", 2)
@@ -528,25 +551,31 @@ $.widget("parameter_image.scatterplot",
         ;
 
       close_button.append("path")
-        .attr("d", "M" + (options.x+8) + " " + (options.y+8) + " l10 10 m0 -10 l-10 10")
+        .attr("d", "M" + (image.x+8) + " " + (image.y+8) + " l10 10 m0 -10 l-10 10")
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
         .style("stroke-width", 3)
         .style("pointer-events", "none")
         ;
+
+      self._open_images(images.slice(1));
     }
     xhr.send();
   },
 
-  _open_session: function(options)
+  _open_session: function(images)
   {
-    console.log("_open_session", options);
+    console.log("_open_session", images);
     var self = this;
 
+    if(images.length == 0)
+      return;
+    var image = images[0];
+
     var parser = document.createElement("a");
-    parser.href = options.uri.substr(0, 5) == "file:" ? options.uri.substr(5) : options.uri;
+    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
 
     $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error").text(options.last_error).css("display", options.last_error ? "block" : "none");
+    $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
     self.login.dialog(
     {
       buttons:
@@ -564,12 +593,12 @@ $.widget("parameter_image.scatterplot",
             success : function(result)
             {
               self.session_cache[parser.hostname] = result.sid;
-              self._open_image(options);
+              self._open_images(images);
             },
             error : function(request, status, reason_phrase)
             {
-              options.last_error = "Error opening remote session: " + reason_phrase;
-              self._open_session(options);
+              image.last_error = "Error opening remote session: " + reason_phrase;
+              self._open_session(images);
             }
           });
           $(this).dialog("close");
@@ -613,12 +642,12 @@ $.widget("parameter_image.scatterplot",
     var self = this;
 
     self._close_hover();
-    self._open_image({
+    self._open_images([{
       uri : self.options.images[self.options.indices[image_index]],
       image_class : "hover-image",
       x : self.x_scale(self.options.x[image_index]) + 10,
       y : self.y_scale(self.options.y[image_index]) + 10,
-      });
+      }]);
   },
 
   _close_hover: function()
