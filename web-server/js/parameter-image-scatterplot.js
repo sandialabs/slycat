@@ -203,12 +203,12 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "x")
     {
-      self._schedule_update({update_x:true, render_data:true, render_selection:true});
+      self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "y")
     {
-      self._schedule_update({update_y:true, render_data:true, render_selection:true});
+      self._schedule_update({update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "v")
@@ -232,17 +232,17 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, render_data:true, render_selection:true});
+      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "border")
     {
-      self._schedule_update({update_x:true, update_y:true, render_data:true, render_selection:true});
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
   },
 
@@ -388,7 +388,8 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
-    if(self.updates["open_images"]) // Used to open an initial list of images at startup only
+    // Used to open an initial list of images at startup only
+    if(self.updates["open_images"])
     {
       // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
       self.options.open_images.forEach(function(image)
@@ -423,6 +424,20 @@ $.widget("parameter_image.scatterplot",
       self._open_images(images);
     }
 
+    // Update leader targets anytime we resize or change our axes ...
+    if(self.updates["update_leaders"])
+    {
+      $(".open-image").each(function(index, frame)
+      {
+        var frame = $(frame);
+        var image_index = Number(frame.attr("data-index"));
+        frame.find(".leader")
+          .attr("x2", self.x_scale(self.options.x[image_index]))
+          .attr("y2", self.y_scale(self.options.y[image_index]))
+          ;
+      });
+    }
+
     self.updates = {}
   },
 
@@ -453,7 +468,6 @@ $.widget("parameter_image.scatterplot",
 
   _open_images: function(images)
   {
-    console.log("_open_images", images);
     var self = this;
 
     if(images.length == 0)
@@ -481,9 +495,6 @@ $.widget("parameter_image.scatterplot",
         self._open_session(images);
         return;
       }
-
-      console.log("_display_image", images);
-      console.log();
 
       if(image.x === undefined)
         image.x = 10 + (10 * self.image_layer.selectAll("image").size());
@@ -610,7 +621,6 @@ $.widget("parameter_image.scatterplot",
 
   _open_session: function(images)
   {
-    console.log("_open_session", images);
     var self = this;
 
     if(images.length == 0)
