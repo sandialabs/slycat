@@ -856,7 +856,7 @@ rights in this software.
 
           store_parameter("input-columns", input_columns);
           store_parameter("output-columns", output_columns);
-          store_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked"));
+          store_parameter("scale-inputs", $("#remote-cca-scale-inputs").attr("checked") == "checked" ? true : false);
 
           $.ajax(
           {
