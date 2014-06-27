@@ -739,13 +739,19 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    var hover_width = 100;
+    var hover_height = 100;
+
     self._close_hover();
+
     self._open_images([{
       index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]],
       image_class : "hover-image",
       x : self.x_scale(self.options.x[image_index]) + 10,
-      y : self.y_scale(self.options.y[image_index]) + 10,
+      y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
+      width : hover_width,
+      height : hover_height,
       no_sync : true,
       }]);
   },
