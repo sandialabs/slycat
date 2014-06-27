@@ -579,6 +579,10 @@ $.widget("parameter_image.scatterplot",
 
             var close_button_label = frame.select(".close-button path");
             close_button_label.attr("d", "M" + (Number(close_button.attr("x"))+3) + " " + (Number(close_button.attr("y"))+3) + " l10 10 m0 -10 l-10 10")
+
+            var outline = frame.select(".outline");
+            outline.attr("x", Number(outline.attr("x")) + dx);
+            outline.attr("y", Number(outline.attr("y")) + dy);
           }
         })
         .on("mouseup", function()
@@ -616,6 +620,17 @@ $.widget("parameter_image.scatterplot",
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
         .style("stroke-width", 3)
         .style("pointer-events", "none")
+        ;
+
+      // Create an outline ...
+      var outline = frame.append("rect")
+        .attr("class", "outline")
+        .attr("x", image.x)
+        .attr("y", image.y)
+        .attr("width", image.width)
+        .attr("height", image.height)
+        .style("stroke", "black")
+        .style("fill", "none")
         ;
 
       if(!image.no_sync)
