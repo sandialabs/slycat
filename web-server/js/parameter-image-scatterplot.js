@@ -438,6 +438,8 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 8)
         .attr("stroke", "black")
         .attr("linewidth", 1)
+        .on("mouseover", function(d, i) { self._schedule_hover(selection[i]); })
+        .on("mouseout", function(d, i) { self._close_hover(); })
         ;
 
       self.selected_layer.selectAll(".selection")
