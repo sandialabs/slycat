@@ -17,6 +17,8 @@ $.widget("parameter_image.scatterplot",
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
+    x_label : "X Label",
+    y_label : "Y Label",
     x : [],
     y : [],
     v : [],
@@ -68,7 +70,7 @@ $.widget("parameter_image.scatterplot",
 
     self.updates = {};
     self.update_timer = null;
-    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true, open_images:true});
+    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x_label:true, update_y_label:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true, open_images:true});
 
     self.element.mousedown(function(e)
     {
@@ -215,6 +217,16 @@ $.widget("parameter_image.scatterplot",
       self._schedule_update({update_indices:true, render_selection:true});
     }
 
+    else if(key == "x_label")
+    {
+      self._schedule_update({update_x_label:true});
+    }
+
+    else if(key == "y_label")
+    {
+      self._schedule_update({update_y_label:true});
+    }
+
     else if(key == "x")
     {
       self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
@@ -246,12 +258,12 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "border")
@@ -300,6 +312,39 @@ $.widget("parameter_image.scatterplot",
         self.inverse_indices[self.options.indices[i]] = i;
     }
 
+    if(self.updates["update_x_label"])
+    {
+      var x = self.svg.attr("width") / 2;
+      var y = 40;
+
+      self.x_axis_layer.selectAll(".label").remove()
+      self.x_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.x_label)
+        ;
+    }
+
+    if(self.updates["update_y_label"])
+    {
+      var x = -40;
+      var y = self.svg.attr("height") / 2;
+
+      self.y_axis_layer.selectAll(".label").remove()
+      self.y_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("transform", "rotate(-90," + x +"," + y + ")")
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.y_label)
+        ;
+    }
+
     if(self.updates["update_x"])
     {
       var total_width = self.element.attr("width");
@@ -312,7 +357,7 @@ $.widget("parameter_image.scatterplot",
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
-        .attr("transform", "translate(0," + (total_height - height_offset - self.options.border) + ")")
+        .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
         .call(self.x_axis)
         ;
     }
@@ -326,7 +371,7 @@ $.widget("parameter_image.scatterplot",
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
 
-      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border, 0 + height_offset + self.options.border]);
+      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + (0 + width_offset + self.options.border) + ",0)")

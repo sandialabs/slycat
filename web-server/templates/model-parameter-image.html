@@ -596,6 +596,8 @@ rights in this software.
 
             $("#scatterplot").scatterplot({
               indices: indices,
+              x_label: table_metadata["column-names"][x_index],
+              y_label: table_metadata["column-names"][y_index],
               x: x,
               y: y,
               v: v,
@@ -631,7 +633,7 @@ rights in this software.
                 attribute : variable,
                 success : function(result)
                 {
-                  $("#scatterplot").scatterplot("option", "x", result);
+                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
                 },
                 error : artifact_missing
               });
@@ -648,7 +650,7 @@ rights in this software.
                 attribute : variable,
                 success : function(result)
                 {
-                  $("#scatterplot").scatterplot("option", "y", result);
+                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
                 },
                 error : artifact_missing
               });
@@ -674,10 +676,6 @@ rights in this software.
             {
               open_images_changed(selection);
             });
-            
-
-            // This is just for testing
-            //display_image("file://localhost/home/slycat/src/slycat-steve/artwork/slycat-logo.jpg");
           }
         }
 
