@@ -711,8 +711,10 @@ $.widget("parameter_image.scatterplot",
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
-      // If the remote session doesn't exist, it must have timed-out, so prompt the user for credentials again and start over.
-      if(this.status == 404)
+      // If we get 404, the remote session no longer exists because it timed-out.
+      // If we get 500, there was an internal error communicating to the remote host.
+      // Either way, delete the cached session and create a new one.
+      if(this.status == 404 || this.status == 500)
       {
         delete self.session_cache[parser.hostname];
         self._open_session(images);
