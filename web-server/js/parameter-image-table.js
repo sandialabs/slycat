@@ -96,7 +96,7 @@ $.widget("parameter_image.table",
         );
       }
       // Special options for numeric columns
-      if( self.options.metadata["column-types"][column_index] != "string" ) {
+      if( self.options.metadata["column-types"][column_index] != "string" && self.options.metadata["column-count"]-1 != column_index ) {
         column.headerCssClass += " headerNumeric";
         column.header.buttons.push(
           {
@@ -189,7 +189,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string"){
+          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
             self.columns[i].header.buttons[1].tooltip = "Set as x variable";
             self.columns[i].header.buttons[1].command = "x-on";
@@ -205,7 +205,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string"){
+          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
             self.columns[i].header.buttons[2].tooltip = "Set as y variable";
             self.columns[i].header.buttons[2].command = "y-on";
@@ -238,7 +238,7 @@ $.widget("parameter_image.table",
     });
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if(!self._array_equal([args.column.field], self.options["variable-selection"]))
+      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
       {
         self.options["variable-selection"] = [args.column.field];
         self._color_variables(self.options["variable-selection"]);
@@ -307,7 +307,7 @@ $.widget("parameter_image.table",
     for(var i in columns)
     {
       var column = columns[i];
-      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
+      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
       {
         // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
         column.colormap = self.options.colormap.copy();

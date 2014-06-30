@@ -17,6 +17,8 @@ $.widget("parameter_image.scatterplot",
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
+    x_label : "X Label",
+    y_label : "Y Label",
     x : [],
     y : [],
     v : [],
@@ -64,10 +66,11 @@ $.widget("parameter_image.scatterplot",
     self.image_layer = self.svg.append("g");
 
     self.session_cache = {};
+    self.image_cache = {};
 
     self.updates = {};
     self.update_timer = null;
-    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true, open_images:true});
+    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x_label:true, update_y_label:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true, open_images:true});
 
     self.element.mousedown(function(e)
     {
@@ -165,12 +168,20 @@ $.widget("parameter_image.scatterplot",
               if($(".open-image[data-uri='" + uri + "']").size() == 0)
               {
                 self._close_hover();
+
+                var width = self.svg.attr("width");
+                var height = self.svg.attr("height");
+                var open_width = Math.min(width, height) / 3;
+                var open_height = Math.min(width, height) / 3;
+
                 self._open_images([{
                   index : self.options.indices[i],
                   uri : self.options.images[self.options.indices[i]],
                   image_class : "open-image",
                   target_x : self.x_scale(self.options.x[i]),
                   target_y : self.y_scale(self.options.y[i]),
+                  width: open_width,
+                  height : open_height,
                   }]);
               }
             }
@@ -206,6 +217,16 @@ $.widget("parameter_image.scatterplot",
       self._schedule_update({update_indices:true, render_selection:true});
     }
 
+    else if(key == "x_label")
+    {
+      self._schedule_update({update_x_label:true});
+    }
+
+    else if(key == "y_label")
+    {
+      self._schedule_update({update_y_label:true});
+    }
+
     else if(key == "x")
     {
       self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
@@ -237,12 +258,12 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "border")
@@ -291,6 +312,39 @@ $.widget("parameter_image.scatterplot",
         self.inverse_indices[self.options.indices[i]] = i;
     }
 
+    if(self.updates["update_x_label"])
+    {
+      var x = self.svg.attr("width") / 2;
+      var y = 40;
+
+      self.x_axis_layer.selectAll(".label").remove()
+      self.x_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.x_label)
+        ;
+    }
+
+    if(self.updates["update_y_label"])
+    {
+      var x = -40;
+      var y = self.svg.attr("height") / 2;
+
+      self.y_axis_layer.selectAll(".label").remove()
+      self.y_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("transform", "rotate(-90," + x +"," + y + ")")
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.y_label)
+        ;
+    }
+
     if(self.updates["update_x"])
     {
       var total_width = self.element.attr("width");
@@ -303,7 +357,7 @@ $.widget("parameter_image.scatterplot",
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
-        .attr("transform", "translate(0," + (total_height - height_offset - self.options.border) + ")")
+        .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
         .call(self.x_axis)
         ;
     }
@@ -317,7 +371,7 @@ $.widget("parameter_image.scatterplot",
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
 
-      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border, 0 + height_offset + self.options.border]);
+      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + (0 + width_offset + self.options.border) + ",0)")
@@ -384,6 +438,8 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 8)
         .attr("stroke", "black")
         .attr("linewidth", 1)
+        .on("mouseover", function(d, i) { self._schedule_hover(selection[i]); })
+        .on("mouseout", function(d, i) { self._close_hover(); })
         ;
 
       self.selected_layer.selectAll(".selection")
@@ -467,7 +523,6 @@ $.widget("parameter_image.scatterplot",
         height : Number(image.attr("height")),
         });
     });
-    console.log("_sync_open_images", open_images);
     self.element.trigger("open-images-changed", [open_images]);
   },
 
@@ -475,31 +530,17 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    // If the list of images is empty, we're done.
     if(images.length == 0)
       return;
+
+    // If the image is already in the cache, display it.
     var image = images[0];
-
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-
-    if(!(parser.hostname in self.session_cache))
+    if(image.uri in self.image_cache)
     {
-      self._open_session(images);
-      return;
-    }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
-      // If the remote session doesn't exist, prompt the user for credentials again and start over.
-      if(this.status == 404)
-      {
-        delete self.session_cache[parser.hostname];
-        self._open_session(images);
-        return;
-      }
+      console.log("Displaying image " + image.uri + " from cache");
+      var url_creator = window.URL || window.webkitURL;
+      var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
 
       // Define a default size for every image.
       if(image.width === undefined)
@@ -514,7 +555,6 @@ $.widget("parameter_image.scatterplot",
         var width = self.svg.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
-        console.log(relx);
 
         if(relx < 0.5)
           image.x = relx * range[0];
@@ -527,11 +567,6 @@ $.widget("parameter_image.scatterplot",
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = (target_y / height) * (height - image.height);
       }
-
-      var array_buffer_view = new Uint8Array(this.response);
-      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(blob);
 
       var frame = self.image_layer.append("g")
         .attr("class", image.image_class)
@@ -657,6 +692,41 @@ $.widget("parameter_image.scatterplot",
       if(!image.no_sync)
         self._sync_open_images();
       self._open_images(images.slice(1));
+      return;
+    }
+
+    // If we don't have a session for the image hostname, create one.
+    var parser = document.createElement("a");
+    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+    if(!(parser.hostname in self.session_cache))
+    {
+      self._open_session(images);
+      return;
+    }
+
+    // Retrieve the image.
+    console.log("Loading image " + image.uri + " from server");
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function(e)
+    {
+      // If we get 404, the remote session no longer exists because it timed-out.
+      // If we get 500, there was an internal error communicating to the remote host.
+      // Either way, delete the cached session and create a new one.
+      if(this.status == 404 || this.status == 500)
+      {
+        delete self.session_cache[parser.hostname];
+        self._open_session(images);
+        return;
+      }
+
+      // We received the image, so put it in the cache and start-over.
+      var array_buffer_view = new Uint8Array(this.response);
+      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
+      self.image_cache[image.uri] = blob;
+      self._open_images(images);
+      return;
     }
     xhr.send();
   },
@@ -722,7 +792,7 @@ $.widget("parameter_image.scatterplot",
     self._cancel_hover();
 
     // Start the timer for the new hover ...
-    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 500);
+    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 250);
   },
 
   _cancel_hover: function()
@@ -739,10 +809,12 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
-    var hover_width = 100;
-    var hover_height = 100;
-
     self._close_hover();
+
+    var width = self.svg.attr("width");
+    var height = self.svg.attr("height");
+    var hover_width = Math.min(width, height) * 0.85;
+    var hover_height = Math.min(width, height) * 0.85;
 
     self._open_images([{
       index : self.options.indices[image_index],

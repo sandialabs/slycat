@@ -16,6 +16,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/variable-switcher.js"></script>v
     <script type="text/javascript" src="{{server-root}}js/parameter-image-scatterplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/parameter-image-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.js"></script>
@@ -57,6 +58,7 @@ rights in this software.
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
           <div id="color-switcher"></div>
+          <div id="variable-switcher"></div>
           <div id="status-messages" style="display: none;"></div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
@@ -111,6 +113,7 @@ rights in this software.
 
         var table_ready = false;
         var scatterplot_ready = false;
+        var variableswitcher_ready = false;
 
         var session_cache = {};
         var image_uri = document.createElement("a");
@@ -448,6 +451,7 @@ rights in this software.
               },
               error: artifact_missing
             });
+            setup_variableswitcher();
           }
         }
 
@@ -590,8 +594,14 @@ rights in this software.
 
             $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
+            var open_images = [];
+            if("open-images-selection" in bookmark)
+              open_images = bookmark["open-images-selection"];
+
             $("#scatterplot").scatterplot({
               indices: indices,
+              x_label: table_metadata["column-names"][x_index],
+              y_label: table_metadata["column-names"][y_index],
               x: x,
               y: y,
               v: v,
@@ -601,7 +611,7 @@ rights in this software.
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
               selection: selection,
               server_root: "{{server-root}}",
-              open_images: [{index:0,relx:0.1,rely:0.1,width:150,height:150},{index:1,relx:0.1,rely:0.5},{index:2,relx:0.8,rely:0.2}, {index:3,relx:0.8,rely:0.6}],
+              open_images: open_images,
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -627,7 +637,22 @@ rights in this software.
                 attribute : variable,
                 success : function(result)
                 {
-                  $("#scatterplot").scatterplot("option", "x", result);
+                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
                 },
                 error : artifact_missing
               });
@@ -644,7 +669,22 @@ rights in this software.
                 attribute : variable,
                 success : function(result)
                 {
-                  $("#scatterplot").scatterplot("option", "y", result);
+                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
                 },
                 error : artifact_missing
               });
@@ -664,9 +704,50 @@ rights in this software.
                 error: artifact_missing
               });
             });
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", "images", result);
+                },
+                error: artifact_missing
+              });
+            });
 
-            // This is just for testing
-            //display_image("file://localhost/home/slycat/src/slycat-steve/artwork/slycat-logo.jpg");
+            // Log changes to open images ...
+            $("#scatterplot").bind("open-images-changed", function(event, selection)
+            {
+              open_images_changed(selection);
+            });
+          }
+        }
+
+        function setup_variableswitcher()
+        {
+          if( !variableswitcher_ready && table_metadata && (image_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
+          {
+            variableswitcher_ready = true;
+            var numeric_variables = [];
+
+            for(var i = 0; i < table_metadata["column-count"]-1; i++)
+            {
+              if(table_metadata["column-types"][i] != 'string')
+                numeric_variables.push(i)
+            }
+
+            $("#variable-switcher").variableswitcher({
+              metadata: table_metadata,
+              x_variables: numeric_variables,
+              y_variables: numeric_variables,
+              image_variables: image_columns,
+              "x-variable" : x_index,
+              "y-variable" : y_index,
+              "image-variable" : images_index,
+            });
           }
         }
 
@@ -743,6 +824,17 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/images/" + variable
           });
           bookmarker.updateState( {"images-selection" : variable} );
+        }
+
+        function open_images_changed(selection)
+        {
+          // Logging every open image is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/openimages/count/" + selection.length
+          });
+          bookmarker.updateState( {"open-images-selection" : selection} );
         }
 
         function update_scatterplot_value(attribute)

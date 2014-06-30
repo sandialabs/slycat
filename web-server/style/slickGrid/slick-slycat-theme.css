@@ -164,10 +164,7 @@ rights in this software.
   right: 20px;
 }
 .slick-header-column {
-	padding-right: 43px !important;
-}
-.slick-header-column.headerImage {
-	padding-right: 43px !important;
+	padding-right: 23px !important;
 }
 .slick-row.nullRow .slick-cell,
 .slick-row.nullRow .slick-cell .highlightWrapper

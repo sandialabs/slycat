@@ -156,7 +156,7 @@ $.widget("cca.table",
     });
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if(!self._array_equal([args.column.field], self.options["variable-selection"]))
+      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
       {
         self.options["variable-selection"] = [args.column.field];
         self._color_variables(self.options["variable-selection"]);
@@ -225,7 +225,7 @@ $.widget("cca.table",
     for(var i in columns)
     {
       var column = columns[i];
-      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1 && $.inArray(column.id, self.options.others) == -1)
+      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
       {
         // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
         column.colormap = self.options.colormap.copy();

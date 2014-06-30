@@ -260,7 +260,7 @@ $.widget("cca.scatterplot",
       // Draw labels ...
       this.data_context.font = "10pt Arial";
       this.data_context.textAlign = "center";
-      this.data_context.fillStyle = "gray";
+      this.data_context.fillStyle = "black";
 
       this.data_context.save();
       this.data_context.textBaseline = "alphabetic";
