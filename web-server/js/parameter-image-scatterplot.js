@@ -792,7 +792,7 @@ $.widget("parameter_image.scatterplot",
     self._cancel_hover();
 
     // Start the timer for the new hover ...
-    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 500);
+    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 250);
   },
 
   _cancel_hover: function()
