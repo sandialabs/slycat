@@ -165,12 +165,20 @@ $.widget("parameter_image.scatterplot",
               if($(".open-image[data-uri='" + uri + "']").size() == 0)
               {
                 self._close_hover();
+
+                var width = self.svg.attr("width");
+                var height = self.svg.attr("height");
+                var open_width = Math.min(width, height) / 3;
+                var open_height = Math.min(width, height) / 3;
+
                 self._open_images([{
                   index : self.options.indices[i],
                   uri : self.options.images[self.options.indices[i]],
                   image_class : "open-image",
                   target_x : self.x_scale(self.options.x[i]),
                   target_y : self.y_scale(self.options.y[i]),
+                  width: open_width,
+                  height : open_height,
                   }]);
               }
             }
@@ -739,10 +747,12 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
-    var hover_width = 100;
-    var hover_height = 100;
-
     self._close_hover();
+
+    var width = self.svg.attr("width");
+    var height = self.svg.attr("height");
+    var hover_width = Math.min(width, height) * 2 / 3;
+    var hover_height = Math.min(width, height) * 2 / 3;
 
     self._open_images([{
       index : self.options.indices[image_index],
