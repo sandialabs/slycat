@@ -385,7 +385,6 @@ rights in this software.
                 x = result;
                 setup_scatterplot();
                 setup_table();
-                setup_variableswitcher();
               },
               error : artifact_missing
             });
@@ -403,7 +402,6 @@ rights in this software.
               {
                 y = result;
                 setup_scatterplot();
-                setup_variableswitcher();
                 setup_table();
               },
               error : artifact_missing
@@ -450,10 +448,10 @@ rights in this software.
                 images = result;
                 setup_scatterplot();
                 setup_table();
-                setup_variableswitcher();
               },
               error: artifact_missing
             });
+            setup_variableswitcher();
           }
         }
 
@@ -687,14 +685,22 @@ rights in this software.
 
         function setup_variableswitcher()
         {
-          if( !variableswitcher_ready && x && y && images && (x_index != null) && (y_index != null) && (images_index != null) )
+          if( !variableswitcher_ready && table_metadata && (image_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
           {
             variableswitcher_ready = true;
+            var numeric_variables = [];
+
+            for(var i = 0; i < table_metadata["column-count"]-1; i++)
+            {
+              if(table_metadata["column-types"][i] != 'string')
+                numeric_variables.push(i)
+            }
 
             $("#variable-switcher").variableswitcher({
-              x: x,
-              y: y,
-              images: images,
+              metadata: table_metadata,
+              x_variables: numeric_variables,
+              y_variables: numeric_variables,
+              image_variables: image_columns,
               "x-variable" : x_index,
               "y-variable" : y_index,
               "image-variable" : images_index,

@@ -8,12 +8,14 @@ $.widget("parameter_image.variableswitcher",
 {
   options:
   {
+    metadata : null,
     "x-variable" : null,
     "y-variable" : null,
     "image-variable" : null,
-    x : [],
-    y : [],
-    images : [],
+    x_variables : [],
+    y_variables : [],
+    image_variables : [],
+
   },
 
   _create: function()
@@ -40,6 +42,11 @@ $.widget("parameter_image.variableswitcher",
     this.images_select = $("<select id='images-switcher' name='images-switcher' />")
       .appendTo(this.element)
       ;
+
+    self._set_x();
+    self._set_y();
+    self._set_images();
+
     // $.each(this.color_maps, function(key, value)
     // {
     //   var button = $("<span>")
@@ -63,20 +70,44 @@ $.widget("parameter_image.variableswitcher",
     // });
   },
 
+  _set_x: function()
+  { 
+    this.x_select.empty();
+    for(var i = 0; i < this.options.x_variables.length; i++) {
+      $("<option />").text(this.options.metadata['column-names'][this.options.x_variables[i]]).appendTo(this.x_select);
+    }
+  },
+
+  _set_y: function()
+  { 
+    this.y_select.empty();
+    for(var i = 0; i < this.options.y_variables.length; i++) {
+      $("<option />").text(this.options.metadata['column-names'][this.options.y_variables[i]]).appendTo(this.y_select);
+    }
+  },
+
+  _set_images: function()
+  { 
+    this.images_select.empty();
+    for(var i = 0; i < this.options.image_variables.length; i++) {
+      $("<option />").text(this.options.metadata['column-names'][this.options.image_variables[i]]).appendTo(this.images_select);
+    }
+  },
+
   _setOption: function(key, value)
   {
     //console.log("sparameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
 
-    if(key == "images")
+    if(key == "image_variables")
     {
       
     }
-    else if(key == 'x')
+    else if(key == 'x_variables')
     {
 
     }
-    else if(key == 'y')
+    else if(key == 'y_variables')
     {
 
     }
