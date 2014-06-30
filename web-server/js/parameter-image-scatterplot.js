@@ -517,8 +517,8 @@ $.widget("parameter_image.scatterplot",
       open_images.push({
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
-        relx : image.attr("x") / width,
-        rely : image.attr("y") / height,
+        relx : Number(frame.attr("data-transx")) / width,
+        rely : Number(frame.attr("data-transy")) / height,
         width : Number(image.attr("width")),
         height : Number(image.attr("height")),
         });
@@ -569,9 +569,35 @@ $.widget("parameter_image.scatterplot",
       }
 
       var frame = self.image_layer.append("g")
+        .attr("data-transx", image.x)
+        .attr("data-transy", image.y)
+        .attr('transform', "translate(" + image.x + ", " + image.y + ")")
         .attr("class", image.image_class)
         .attr("data-index", image.index)
         .attr("data-uri", image.uri)
+        .call(
+          d3.behavior.drag()
+            .on('drag', function(){
+              var theElement = d3.select(this);
+              var transx = Number(theElement.attr("data-transx"));
+              var transy = Number(theElement.attr("data-transy"));
+              transx += d3.event.dx;
+              transy += d3.event.dy;
+              theElement.attr("data-transx", transx);
+              theElement.attr("data-transy", transy);
+              theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+
+              var leader = theElement.select(".leader");
+              leader.attr("x2", Number(leader.attr("data-targetx")) - transx);
+              leader.attr("y2", Number(leader.attr("data-targety")) - transy);
+            })
+            .on("dragstart", function() {
+              d3.event.sourceEvent.stopPropagation(); // silence other listeners
+            })
+            .on("dragend", function() {
+              self._sync_open_images();
+            })
+        )
         ;
 
       // Create the leader line ...
@@ -579,10 +605,12 @@ $.widget("parameter_image.scatterplot",
       {
         frame.append("line")
           .attr("class", "leader")
-          .attr("x1", image.x + (image.width / 2))
-          .attr("y1", image.y + (image.height / 2))
-          .attr("x2", image.target_x)
-          .attr("y2", image.target_y)
+          .attr("x1", (image.width / 2))
+          .attr("y1", (image.height / 2))
+          .attr("x2", image.target_x - Number(frame.attr("data-transx")))
+          .attr("y2", image.target_y - Number(frame.attr("data-transy")))
+          .attr("data-targetx", image.target_x)
+          .attr("data-targety", image.target_y)
           .style("stroke", "black")
           .style("stroke-width", 1.0)
           ;
@@ -592,61 +620,61 @@ $.widget("parameter_image.scatterplot",
       frame.append("image")
         .attr("class", "image")
         .attr("xlink:href", image_url)
-        .attr("x", image.x)
-        .attr("y", image.y)
+        .attr("x", 0)
+        .attr("y", 0)
         .attr("width", image.width)
         .attr("height", image.height)
-        .on("mousedown", function()
-        {
-          var mouse = d3.mouse(self.element.get(0));
-          self.state = "drag-image";
-          self.start_drag = mouse;
-          self.end_drag = self.start_drag;
-          if(d3.event.preventDefault)
-            d3.event.preventDefault(); // Disable image dragging in Firefox
-          d3.event.stopPropagation();
+        // .on("mousedown", function()
+        // {
+        //   var mouse = d3.mouse(self.element.get(0));
+        //   self.state = "drag-image";
+        //   self.start_drag = mouse;
+        //   self.end_drag = self.start_drag;
+        //   if(d3.event.preventDefault)
+        //     d3.event.preventDefault(); // Disable image dragging in Firefox
+        //   d3.event.stopPropagation();
 
-          // Move this image to the top of the Z order ...
-          $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
-        })
-        .on("mousemove", function()
-        {
-          if(self.state == "drag-image")
-          {
-            var mouse = d3.mouse(self.element.get(0));
-            var dx = mouse[0] - self.end_drag[0];
-            var dy = mouse[1] - self.end_drag[1];
-            self.end_drag = mouse;
-            d3.event.stopPropagation();
+        //   // Move this image to the top of the Z order ...
+        //   $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
+        // })
+        // .on("mousemove", function()
+        // {
+        //   if(self.state == "drag-image")
+        //   {
+        //     var mouse = d3.mouse(self.element.get(0));
+        //     var dx = mouse[0] - self.end_drag[0];
+        //     var dy = mouse[1] - self.end_drag[1];
+        //     self.end_drag = mouse;
+        //     d3.event.stopPropagation();
 
-            var frame = d3.select(d3.event.target.parentNode);
+        //     var frame = d3.select(d3.event.target.parentNode);
 
-            var image = frame.select("image");
-            image.attr("x", Number(image.attr("x")) + dx);
-            image.attr("y", Number(image.attr("y")) + dy);
+        //     var image = frame.select("image");
+        //     image.attr("x", Number(image.attr("x")) + dx);
+        //     image.attr("y", Number(image.attr("y")) + dy);
 
-            var leader = frame.select(".leader");
-            leader.attr("x1", Number(leader.attr("x1")) + dx);
-            leader.attr("y1", Number(leader.attr("y1")) + dy);
+        //     var leader = frame.select(".leader");
+        //     leader.attr("x1", Number(leader.attr("x1")) + dx);
+        //     leader.attr("y1", Number(leader.attr("y1")) + dy);
 
-            var close_button = frame.select(".close-button rect");
-            close_button.attr("x", Number(close_button.attr("x")) + dx);
-            close_button.attr("y", Number(close_button.attr("y")) + dy);
+        //     var close_button = frame.select(".close-button rect");
+        //     close_button.attr("x", Number(close_button.attr("x")) + dx);
+        //     close_button.attr("y", Number(close_button.attr("y")) + dy);
 
-            var close_button_label = frame.select(".close-button path");
-            close_button_label.attr("d", "M" + (Number(close_button.attr("x"))+3) + " " + (Number(close_button.attr("y"))+3) + " l10 10 m0 -10 l-10 10")
+        //     var close_button_label = frame.select(".close-button path");
+        //     close_button_label.attr("d", "M" + (Number(close_button.attr("x"))+3) + " " + (Number(close_button.attr("y"))+3) + " l10 10 m0 -10 l-10 10")
 
-            var outline = frame.select(".outline");
-            outline.attr("x", Number(outline.attr("x")) + dx);
-            outline.attr("y", Number(outline.attr("y")) + dy);
-          }
-        })
-        .on("mouseup", function()
-        {
-          self.state = "";
-          d3.event.stopPropagation();
-          self._sync_open_images();
-        })
+        //     var outline = frame.select(".outline");
+        //     outline.attr("x", Number(outline.attr("x")) + dx);
+        //     outline.attr("y", Number(outline.attr("y")) + dy);
+        //   }
+        // })
+        // .on("mouseup", function()
+        // {
+        //   self.state = "";
+        //   d3.event.stopPropagation();
+        //   self._sync_open_images();
+        // })
         ;
 
       // Create a close button ...
@@ -656,8 +684,8 @@ $.widget("parameter_image.scatterplot",
         ;
 
       close_button.append("rect")
-        .attr("x", image.x + 5)
-        .attr("y", image.y + 5)
+        .attr("x", 5)
+        .attr("y", 5)
         .attr("width", 16)
         .attr("height", 16)
         .attr("rx", 2)
@@ -672,7 +700,7 @@ $.widget("parameter_image.scatterplot",
         ;
 
       close_button.append("path")
-        .attr("d", "M" + (image.x+8) + " " + (image.y+8) + " l10 10 m0 -10 l-10 10")
+        .attr("d", "M" + (8) + " " + (8) + " l10 10 m0 -10 l-10 10")
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
         .style("stroke-width", 3)
         .style("pointer-events", "none")
@@ -681,8 +709,8 @@ $.widget("parameter_image.scatterplot",
       // Create an outline ...
       var outline = frame.append("rect")
         .attr("class", "outline")
-        .attr("x", image.x)
-        .attr("y", image.y)
+        .attr("x", 0)
+        .attr("y", 0)
         .attr("width", image.width)
         .attr("height", image.height)
         .style("stroke", "black")

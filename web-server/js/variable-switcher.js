@@ -58,28 +58,6 @@ $.widget("parameter_image.variableswitcher",
     self._set_x();
     self._set_y();
     self._set_images();
-
-    // $.each(this.color_maps, function(key, value)
-    // {
-    //   var button = $("<span>")
-    //     .addClass("color")
-    //     .toggleClass("selected", key == self.options.colormap)
-    //     .appendTo(self.container)
-    //     .attr("data-colormap", key)
-    //     .html(value.label)
-    //     .click(function()
-    //     {
-    //       if($(this).hasClass("selected"))
-    //         return;
-
-    //       self.options.colormap = this.getAttribute("data-colormap");
-    //       self.container.find(".color").removeClass("selected");
-    //       $(this).addClass("selected");
-
-    //       self.element.trigger("colormap-changed", [self.options.colormap]);
-    //     })
-    //     ;
-    // });
   },
 
   _set_x: function()
@@ -137,15 +115,15 @@ $.widget("parameter_image.variableswitcher",
 
     if(key == "image_variables")
     {
-      
+      self._set_images();
     }
     else if(key == 'x_variables')
     {
-
+      self._set_x();
     }
     else if(key == 'y_variables')
     {
-
+      self._set_y();
     }
   },
 
