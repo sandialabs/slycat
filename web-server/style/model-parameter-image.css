@@ -340,3 +340,16 @@ rights in this software.
 {
   background: transparent url(x-gray.png) no-repeat center center;
 }
+#color-switcher {
+  margin: -10px 0 0 0;
+}
+#variable-switcher {
+  float: left;
+}
+#variable-switcher label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+#variable-switcher select {
+  margin-right: 10px;
+}
