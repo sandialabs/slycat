@@ -841,8 +841,8 @@ $.widget("parameter_image.scatterplot",
 
     var width = self.svg.attr("width");
     var height = self.svg.attr("height");
-    var hover_width = Math.min(width, height) * 2 / 3;
-    var hover_height = Math.min(width, height) * 2 / 3;
+    var hover_width = Math.min(width, height) * 0.85;
+    var hover_height = Math.min(width, height) * 0.85;
 
     self._open_images([{
       index : self.options.indices[image_index],
