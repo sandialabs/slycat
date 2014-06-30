@@ -642,6 +642,21 @@ rights in this software.
                 error : artifact_missing
               });
             });
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
 
             // Changing the y variable updates the scatterplot ...
             $("#table").bind("y-selection-changed", function(event, variable)
@@ -659,9 +674,37 @@ rights in this software.
                 error : artifact_missing
               });
             });
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
 
             // Changing the images variable updates the scatterplot ...
             $("#table").bind("images-selection-changed", function(event, variable)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", "images", result);
+                },
+                error: artifact_missing
+              });
+            });
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
             {
               $.ajax(
               {

@@ -345,6 +345,7 @@ rights in this software.
 }
 #variable-switcher {
   float: left;
+  margin-top: -3px;
 }
 #variable-switcher label {
   font-weight: bold;
@@ -352,4 +353,5 @@ rights in this software.
 }
 #variable-switcher select {
   margin-right: 10px;
+  padding: 2px 4px;
 }
