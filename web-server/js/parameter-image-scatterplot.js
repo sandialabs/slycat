@@ -64,6 +64,7 @@ $.widget("parameter_image.scatterplot",
     self.image_layer = self.svg.append("g");
 
     self.session_cache = {};
+    self.image_cache = {};
 
     self.updates = {};
     self.update_timer = null;
@@ -475,7 +476,6 @@ $.widget("parameter_image.scatterplot",
         height : Number(image.attr("height")),
         });
     });
-    console.log("_sync_open_images", open_images);
     self.element.trigger("open-images-changed", [open_images]);
   },
 
@@ -483,31 +483,17 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    // If the list of images is empty, we're done.
     if(images.length == 0)
       return;
+
+    // If the image is already in the cache, display it.
     var image = images[0];
-
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-
-    if(!(parser.hostname in self.session_cache))
+    if(image.uri in self.image_cache)
     {
-      self._open_session(images);
-      return;
-    }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
-      // If the remote session doesn't exist, prompt the user for credentials again and start over.
-      if(this.status == 404)
-      {
-        delete self.session_cache[parser.hostname];
-        self._open_session(images);
-        return;
-      }
+      console.log("Displaying image " + image.uri + " from cache");
+      var url_creator = window.URL || window.webkitURL;
+      var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
 
       // Define a default size for every image.
       if(image.width === undefined)
@@ -522,7 +508,6 @@ $.widget("parameter_image.scatterplot",
         var width = self.svg.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
-        console.log(relx);
 
         if(relx < 0.5)
           image.x = relx * range[0];
@@ -535,11 +520,6 @@ $.widget("parameter_image.scatterplot",
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = (target_y / height) * (height - image.height);
       }
-
-      var array_buffer_view = new Uint8Array(this.response);
-      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(blob);
 
       var frame = self.image_layer.append("g")
         .attr("class", image.image_class)
@@ -665,6 +645,39 @@ $.widget("parameter_image.scatterplot",
       if(!image.no_sync)
         self._sync_open_images();
       self._open_images(images.slice(1));
+      return;
+    }
+
+    // If we don't have a session for the image hostname, create one.
+    var parser = document.createElement("a");
+    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+    if(!(parser.hostname in self.session_cache))
+    {
+      self._open_session(images);
+      return;
+    }
+
+    // Retrieve the image.
+    console.log("Loading image " + image.uri + " from server");
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function(e)
+    {
+      // If the remote session doesn't exist, it must have timed-out, so prompt the user for credentials again and start over.
+      if(this.status == 404)
+      {
+        delete self.session_cache[parser.hostname];
+        self._open_session(images);
+        return;
+      }
+
+      // We received the image, so put it in the cache and start-over.
+      var array_buffer_view = new Uint8Array(this.response);
+      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
+      self.image_cache[image.uri] = blob;
+      self._open_images(images);
+      return;
     }
     xhr.send();
   },
