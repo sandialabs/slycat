@@ -577,6 +577,24 @@ rights in this software.
 
               $("#scatterplot").scatterplot("option", "selection",  temp);
             });
+
+            // Changing the x variable updates the table ...
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "x-variable", variable);
+            });
+
+            // Changing the y variable updates the table ...
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "y-variable", variable);
+            });
+
+            // Changing the image variable updates the table ...
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "image-variable", variable);
+            });
           }
         }
 
@@ -747,6 +765,42 @@ rights in this software.
               "x-variable" : x_index,
               "y-variable" : y_index,
               "image-variable" : images_index,
+            });
+
+            // Changing the x variable updates the variable switcher ...
+            $("#table").bind("x-selection-changed", function(event, variable)
+            {
+              $("#variable-switcher").variableswitcher("option", "x-variable", variable);
+            });
+
+            // Changing the y variable updates the variable switcher ...
+            $("#table").bind("y-selection-changed", function(event, variable)
+            {
+              $("#variable-switcher").variableswitcher("option", "y-variable", variable);
+            });
+
+            // Changing the image variable updates the variable switcher ...
+            $("#table").bind("images-selection-changed", function(event, variable)
+            {
+              $("#variable-switcher").variableswitcher("option", "image-variable", variable);
+            });
+
+            // Log changes to the x variable ...
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              x_selection_changed(variable);
+            });
+
+            // Log changes to the y variable ...
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              y_selection_changed(variable);
+            });
+
+            // Log changes to the images variable ...
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            {
+              images_selection_changed(variable);
             });
           }
         }

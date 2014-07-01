@@ -28,7 +28,6 @@ $.widget("parameter_image.variableswitcher",
     this.x_select = $("<select id='x-axis-switcher' name='x-axis-switcher' />")
       .change(function(){
         self.element.trigger("x-selection-changed", this.value);
-        console.log("x change to " + this.value);
       })
       .appendTo(this.element)
       ;
@@ -39,7 +38,6 @@ $.widget("parameter_image.variableswitcher",
     this.y_select = $("<select id='y-axis-switcher' name='y-axis-switcher' />")
       .change(function(){
         self.element.trigger("y-selection-changed", this.value);
-        console.log("y change to " + this.value);
       })
       .appendTo(this.element)
       ;
@@ -50,17 +48,16 @@ $.widget("parameter_image.variableswitcher",
     this.images_select = $("<select id='images-switcher' name='images-switcher' />")
       .change(function(){
         self.element.trigger("images-selection-changed", this.value);
-        console.log("image change to " + this.value);
       })
       .appendTo(this.element)
       ;
 
-    self._set_x();
-    self._set_y();
-    self._set_images();
+    self._set_x_variables();
+    self._set_y_variables();
+    self._set_image_variables();
   },
 
-  _set_x: function()
+  _set_x_variables: function()
   { 
     var self = this;
     this.x_select.empty();
@@ -76,7 +73,7 @@ $.widget("parameter_image.variableswitcher",
     }
   },
 
-  _set_y: function()
+  _set_y_variables: function()
   { 
     var self = this;
     this.y_select.empty();
@@ -92,7 +89,7 @@ $.widget("parameter_image.variableswitcher",
     }
   },
 
-  _set_images: function()
+  _set_image_variables: function()
   { 
     var self = this;
     this.images_select.empty();
@@ -108,22 +105,54 @@ $.widget("parameter_image.variableswitcher",
     }
   },
 
+  _set_selected_x: function()
+  {
+    var self = this;
+    this.x_select.val(self.options["x-variable"]);
+  },
+
+  _set_selected_y: function()
+  {
+    var self = this;
+    this.y_select.val(self.options["y-variable"]);
+  },
+
+  _set_selected_image: function()
+  {
+    var self = this;
+    this.images_select.val(self.options["image-variable"]);
+  },
+
   _setOption: function(key, value)
   {
+    var self = this;
+
     //console.log("sparameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
 
-    if(key == "image_variables")
+    if(key == "x-variable")
     {
-      self._set_images();
+      self._set_selected_x();
+    }
+    else if(key == "y-variable")
+    {
+      self._set_selected_y();
+    }
+    else if(key == "image-variable")
+    {
+      self._set_selected_image();
+    }
+    else if(key == "image_variables")
+    {
+      self._set_image_variables();
     }
     else if(key == 'x_variables')
     {
-      self._set_x();
+      self._set_x_variables();
     }
     else if(key == 'y_variables')
     {
-      self._set_y();
+      self._set_y_variables();
     }
   },
 

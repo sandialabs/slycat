@@ -297,6 +297,66 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"])
     }
+    else if(key == "x-variable")
+    {
+      self.options[key] = value;
+      self._set_selected_x();
+    }
+    else if(key == "y-variable")
+    {
+      self.options[key] = value;
+      self._set_selected_y();
+    }
+    else if(key == "image-variable")
+    {
+      self.options[key] = value;
+      self._set_selected_image();
+    }
+  },
+
+  _set_selected_x: function()
+  {
+    var self = this;
+    for(var i in self.columns)
+    {
+      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+        if( self.columns[i].id == self.options["x-variable"]){
+          self.columns[i].header.buttons[1].cssClass = "icon-x-on";
+          self.columns[i].header.buttons[1].tooltip = "Current x variable";
+          self.columns[i].header.buttons[1].command = "";
+        } else {
+          self.columns[i].header.buttons[1].cssClass = "icon-x-off";
+          self.columns[i].header.buttons[1].tooltip = "Set as x variable";
+          self.columns[i].header.buttons[1].command = "x-on";
+        }
+        self.grid.updateColumnHeader(self.columns[i].id);
+      }
+    }
+  },
+
+  _set_selected_y: function()
+  {
+    var self = this;
+    //this.y_select.val(self.options["y-variable"]);
+  },
+
+  _set_selected_image: function()
+  {
+    var self = this;
+    for(var i=0; i < self.options.images.length; i++)
+    {
+      var index = self.grid.getColumnIndex(self.options.images[i]);
+      if(self.columns[index].id == self.options["image-variable"]){
+        self.columns[index].header.buttons[1].cssClass = "icon-image-on";
+        self.columns[index].header.buttons[1].tooltip = "Current image variable";
+        self.columns[index].header.buttons[1].command = "";
+      } else {
+        self.columns[index].header.buttons[1].cssClass = "icon-image-off";
+        self.columns[index].header.buttons[1].tooltip = "Set as image variable";
+        self.columns[index].header.buttons[1].command = "image-on";
+      }
+      self.grid.updateColumnHeader(self.columns[index].id);
+    }
   },
 
   _color_variables: function(variables)
