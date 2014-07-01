@@ -493,8 +493,10 @@ $.widget("parameter_image.scatterplot",
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
         frame.find(".leader")
-          .attr("x2", self.x_scale(self.options.x[image_index]))
-          .attr("y2", self.y_scale(self.options.y[image_index]))
+          .attr("x2", self.x_scale(self.options.x[image_index])-Number(frame.attr("data-transx")) )
+          .attr("y2", self.y_scale(self.options.y[image_index])-Number(frame.attr("data-transy")) )
+          .attr("data-targetx", self.x_scale(self.options.x[image_index]))
+          .attr("data-targety", self.y_scale(self.options.y[image_index]))
           ;
       });
     }
