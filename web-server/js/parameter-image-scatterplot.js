@@ -604,8 +604,12 @@ $.widget("parameter_image.scatterplot",
             })
         )
         .on("mousedown", function(){
-          // Move this image to the top of the Z order ...
-          $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
+          // Verify that click is on image, not something else like the close button
+          if(d3.event.target.classList.contains("image"))
+          {
+            // Move this image to the top of the Z order ...
+            $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
+          }
         })
         ;
 
