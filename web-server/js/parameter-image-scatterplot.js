@@ -580,18 +580,21 @@ $.widget("parameter_image.scatterplot",
         .call(
           d3.behavior.drag()
             .on('drag', function(){
-              var theElement = d3.select(this);
-              var transx = Number(theElement.attr("data-transx"));
-              var transy = Number(theElement.attr("data-transy"));
-              transx += d3.event.dx;
-              transy += d3.event.dy;
-              theElement.attr("data-transx", transx);
-              theElement.attr("data-transy", transy);
-              theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+              // Make sure mouse is inside svg element
+              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+                var theElement = d3.select(this);
+                var transx = Number(theElement.attr("data-transx"));
+                var transy = Number(theElement.attr("data-transy"));
+                transx += d3.event.dx;
+                transy += d3.event.dy;
+                theElement.attr("data-transx", transx);
+                theElement.attr("data-transy", transy);
+                theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
 
-              var leader = theElement.select(".leader");
-              leader.attr("x2", Number(leader.attr("data-targetx")) - transx);
-              leader.attr("y2", Number(leader.attr("data-targety")) - transy);
+                var leader = theElement.select(".leader");
+                leader.attr("x2", Number(leader.attr("data-targetx")) - transx);
+                leader.attr("y2", Number(leader.attr("data-targety")) - transy);
+              }
             })
             .on("dragstart", function() {
               d3.event.sourceEvent.stopPropagation(); // silence other listeners
