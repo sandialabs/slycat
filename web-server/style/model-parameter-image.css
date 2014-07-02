@@ -355,3 +355,9 @@ rights in this software.
   margin-right: 10px;
   padding: 2px 4px;
 }
+#scatterplot .resize-handle:hover {
+  cursor: nwse-resize;
+}
+#scatterplot g.open-image image.image {
+  
+}

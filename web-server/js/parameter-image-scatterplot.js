@@ -637,6 +637,70 @@ $.widget("parameter_image.scatterplot",
         .attr("y", 0)
         .attr("width", image.width)
         .attr("height", image.height)
+        .attr("data-ratio", image.width / image.height)
+        ;
+
+      // Create a resize handle
+      var resize_handle = frame.append("g")
+        .attr("class", "resize-handle")
+        .attr('transform', "translate(" + (image.width-10) + ", " + (image.height-10) + ")")
+        .call(
+          d3.behavior.drag()
+            .on('drag', function(){
+              // Make sure mouse is inside svg element
+              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+                var theImage = d3.select(this.parentNode).select("image.image");
+                var width = Number(theImage.attr("width"));
+                var height = Number(theImage.attr("height"));
+                var theRectangle = d3.select(this.parentNode).select("rect.outline");
+                var theHandle = d3.select(this);
+                var theLine = d3.select(this.parentNode).select("line.leader");
+                var ratio = Number(theImage.attr("data-ratio"));
+                var newWidth, newHeight;
+                var x = d3.event.x;
+                var y = d3.event.y;
+                var min = 50;
+                if(x < min)
+                  x = min;
+                if(y < min)
+                  y = min;
+                newWidth = x;
+                newHeight = newWidth / ratio;
+                if(newHeight > y) {
+                  newHeight = y;
+                  newWidth = newHeight * ratio;
+                }
+                theImage.attr("width", newWidth);
+                theImage.attr("height", newHeight);
+                theRectangle.attr("width", newWidth);
+                theRectangle.attr("height", newHeight);
+                theHandle.attr('transform', "translate(" + (newWidth-10) + ", " + (newHeight-10) + ")");
+                theLine.attr("x1", (newWidth / 2));
+                theLine.attr("y1", (newHeight / 2));
+                  
+              }
+            })
+            .on("dragstart", function() {
+              d3.event.sourceEvent.stopPropagation(); // silence other listeners
+            })
+            .on("dragend", function() {
+              self._sync_open_images();
+            })
+        )
+        ;
+
+      resize_handle.append("path")
+        .attr("d", "M0,8 L8,0 M4,8 L8,4")
+        .style("stroke", "black")
+        .style("stroke-width", 1)
+        .style("pointer-events", "none")
+        ;
+
+      resize_handle.append("rect")
+        .attr("class", "resize-handle-mousetarget")
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", "transparent")
         ;
 
       // Create a close button ...
