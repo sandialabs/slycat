@@ -371,9 +371,21 @@ rights in this software.
 
           if(table_metadata && bookmark)
           {
-            x_index = input_columns[0];
+            // Choose some columns for the X and Y axes.
+            var numeric_variables = [];
+            for(var i = 0; i < table_metadata["column-count"]-1; i++)
+            {
+              if(table_metadata["column-types"][i] != 'string')
+                numeric_variables.push(i);
+            }
+
+            x_index = numeric_variables[0];
+            y_index = numeric_variables[1 % numeric_variables.length];
             if("x-selection" in bookmark)
               x_index = bookmark["x-selection"];
+            if("y-selection" in bookmark)
+              y_index = bookmark["y-selection"];
+
             get_model_array_attribute({
               server_root : "{{server-root}}",
               mid : "{{_id}}",
@@ -389,9 +401,6 @@ rights in this software.
               error : artifact_missing
             });
 
-            y_index = input_columns[1];
-            if("y-selection" in bookmark)
-              y_index = bookmark["y-selection"];
             get_model_array_attribute({
               server_root : "{{server-root}}",
               mid : "{{_id}}",
