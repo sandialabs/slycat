@@ -46,27 +46,31 @@ if arguments.auto_image_columns:
 # Optionally replace image URI hostnames ...
 
 if arguments.image_hostname is not None:
-  for name, column in columns:
+  for index, (name, column) in enumerate(columns):
     if name in arguments.image_columns and column.dtype != "float64":
-      for index, uri in enumerate(column):
+      modified = []
+      for uri in column:
         uri = urlparse.urlparse(uri)
         hostname = uri.netloc if arguments.image_hostname is None else arguments.image_hostname
         path = uri.path
         uri = "file://%s%s" % (hostname, path)
-        column[index] = uri
+        modified.append(uri)
+      columns[index] = (name, numpy.array(modified))
 
 ###########################################################################################
 # Optionally strip prefix directories from the image URIs and replace them  ...
 
 if arguments.strip is not None:
-  for name, column in columns:
+  for index, (name, column) in enumerate(columns):
     if name in arguments.image_columns and column.dtype != "float64":
-      for index, uri in enumerate(column):
+      modified = []
+      for uri in column:
         uri = urlparse.urlparse(uri)
         hostname = uri.netloc
         path = os.path.join(*([os.path.abspath(os.path.dirname(arguments.input))] + uri.path.split(os.sep)[arguments.strip + 1:]))
         uri = "file://%s%s" % (hostname, path)
-        column[index] = uri
+        modified.append(uri)
+      columns[index] = (name, numpy.array(modified))
 
 ###########################################################################################
 # Ingest the data into Slycat.
