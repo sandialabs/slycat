@@ -355,9 +355,22 @@ rights in this software.
   margin-right: 10px;
   padding: 2px 4px;
 }
+#scatterplot.resizing,
 #scatterplot .resize-handle:hover {
   cursor: nwse-resize;
 }
 #scatterplot g.open-image image.image {
-  
+
+}
+#scatterplot .close-button,
+#scatterplot .resize-handle
+{
+  visibility: hidden;
+}
+#scatterplot g.open-image:hover .close-button,
+#scatterplot g.open-image.resizing .close-button,
+#scatterplot g.open-image:hover .resize-handle,
+#scatterplot g.open-image.resizing .resize-handle
+{
+  visibility: visible;
 }

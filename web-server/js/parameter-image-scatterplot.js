@@ -681,9 +681,11 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragstart", function() {
+              d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
               d3.event.sourceEvent.stopPropagation(); // silence other listeners
             })
             .on("dragend", function() {
+              d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
               self._sync_open_images();
             })
         )
@@ -691,7 +693,7 @@ $.widget("parameter_image.scatterplot",
 
       resize_handle.append("path")
         .attr("d", "M0,8 L8,0 M4,8 L8,4")
-        .style("stroke", "black")
+        .style("stroke", "#878787")
         .style("stroke-width", 1)
         .style("pointer-events", "none")
         ;
@@ -706,7 +708,6 @@ $.widget("parameter_image.scatterplot",
       // Create a close button ...
       var close_button = frame.append("g")
         .attr("class", "close-button")
-        .style("visibility", "visible")
         ;
 
       close_button.append("rect")
