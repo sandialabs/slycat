@@ -604,6 +604,12 @@ rights in this software.
             {
               $("#table").table("option", "image-variable", variable);
             });
+
+            // Changing the color variable updates the table ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "variable-selection", [Number(variable)]);
+            });
           }
         }
 
@@ -760,20 +766,28 @@ rights in this software.
             variableswitcher_ready = true;
             var numeric_variables = [];
 
-            for(var i = 0; i < table_metadata["column-count"]-1; i++)
+            for(var i = 0; i < table_metadata["column-count"]; i++)
             {
               if(table_metadata["column-types"][i] != 'string')
-                numeric_variables.push(i)
+                numeric_variables.push(i);
+            }
+
+            var color_variable = table_metadata["column-count"] - 1;
+            if("variable-selection" in bookmark)
+            {
+              color_variable = [bookmark["variable-selection"]];
             }
 
             $("#variable-switcher").variableswitcher({
               metadata: table_metadata,
-              x_variables: numeric_variables,
-              y_variables: numeric_variables,
+              x_variables: numeric_variables.slice(0, numeric_variables.length-1),
+              y_variables: numeric_variables.slice(0, numeric_variables.length-1),
               image_variables: image_columns,
+              color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
               "x-variable" : x_index,
               "y-variable" : y_index,
               "image-variable" : images_index,
+              "color-variable" : color_variable,
             });
 
             // Changing the x variable updates the variable switcher ...
@@ -794,6 +808,20 @@ rights in this software.
               $("#variable-switcher").variableswitcher("option", "image-variable", variable);
             });
 
+            // Changing the table variable updates the variable switcher ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              $("#variable-switcher").variableswitcher("option", "color-variable", selection[0]);
+            });
+
+            // Changing the color variable updates the scatterplot ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              update_scatterplot_value(variable);
+            });
+
+
+
             // Log changes to the x variable ...
             $("#variable-switcher").bind("x-selection-changed", function(event, variable)
             {
@@ -810,6 +838,12 @@ rights in this software.
             $("#variable-switcher").bind("images-selection-changed", function(event, variable)
             {
               images_selection_changed(variable);
+            });
+
+            // Log changes to the color variable ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              selected_variable_changed(Number(variable));
             });
           }
         }
