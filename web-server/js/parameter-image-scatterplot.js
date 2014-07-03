@@ -515,7 +515,7 @@ $.widget("parameter_image.scatterplot",
     $(".open-image").each(function(index, frame)
     {
       var frame = $(frame);
-      var image = frame.find("image");
+      var image = frame.find("image.image");
       open_images.push({
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
@@ -637,6 +637,16 @@ $.widget("parameter_image.scatterplot",
         .attr("height", image.height)
         .style("stroke", "black")
         .style("fill", "white")
+        ;
+
+      // Create the loading image ...
+      frame.append("image")
+        .attr("class", "loading-image")
+        .attr("xlink:href", "/style/ajax-loader.gif")
+        .attr("x", (image.width / 2)-16)
+        .attr("y", (image.height / 2)-16)
+        .attr("width", 32)
+        .attr("height", 32)
         ;
     }
     
