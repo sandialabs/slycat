@@ -639,15 +639,15 @@ $.widget("parameter_image.scatterplot",
         .style("fill", "white")
         ;
 
-      // Create the loading image ...
-      var timeout_image = frame.append("image")
-        .attr("class", "loading-image")
-        .attr("xlink:href", "/style/ajax-loader.gif")
-        .attr("x", (image.width / 2)-16)
-        .attr("y", (image.height / 2)-16)
-        .attr("width", 32)
-        .attr("height", 32)
-        ;
+      // // Create the loading image ...
+      // var timeout_image = frame.append("image")
+      //   .attr("class", "loading-image")
+      //   .attr("xlink:href", "/style/ajax-loader.gif")
+      //   .attr("x", (image.width / 2)-16)
+      //   .attr("y", (image.height / 2)-16)
+      //   .attr("width", 32)
+      //   .attr("height", 32)
+      //   ;
     }
     
     // If the image is already in the cache, display it.
