@@ -640,7 +640,7 @@ $.widget("parameter_image.scatterplot",
         ;
 
       // Create the loading image ...
-      frame.append("image")
+      var timeout_image = frame.append("image")
         .attr("class", "loading-image")
         .attr("xlink:href", "/style/ajax-loader.gif")
         .attr("x", (image.width / 2)-16)
