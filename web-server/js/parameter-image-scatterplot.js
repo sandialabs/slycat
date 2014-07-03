@@ -536,13 +536,11 @@ $.widget("parameter_image.scatterplot",
     if(images.length == 0)
       return;
 
-    // If the image is already in the cache, display it.
     var image = images[0];
-    if(image.uri in self.image_cache)
-    {
-      console.log("Displaying image " + image.uri + " from cache");
-      var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
+
+    // Create scaffolding and status indicator if we already don't have one
+    if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
+      console.log("Creating scaffolding and status indicator.")
 
       // Define a default size for every image.
       if(image.width === undefined)
@@ -571,10 +569,11 @@ $.widget("parameter_image.scatterplot",
       }
 
       var frame = self.image_layer.append("g")
+        .attr("data-uri", image.uri)
         .attr("data-transx", image.x)
         .attr("data-transy", image.y)
         .attr('transform', "translate(" + image.x + ", " + image.y + ")")
-        .attr("class", image.image_class)
+        .attr("class", image.image_class + " image-frame")
         .attr("data-index", image.index)
         .attr("data-uri", image.uri)
         .call(
@@ -628,6 +627,53 @@ $.widget("parameter_image.scatterplot",
           .style("stroke-width", 1.0)
           ;
       }
+
+      // Create an outline ...
+      var outline = frame.append("rect")
+        .attr("class", "outline")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", image.width)
+        .attr("height", image.height)
+        .style("stroke", "black")
+        .style("fill", "white")
+        ;
+    }
+    
+    // If the image is already in the cache, display it.
+    if(image.uri in self.image_cache)
+    {
+      console.log("Displaying image " + image.uri + " from cache");
+      var url_creator = window.URL || window.webkitURL;
+      var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
+
+      // Define a default size for every image.
+      if(image.width === undefined)
+        image.width = 200;
+      if(image.height === undefined)
+        image.height = 200;
+
+      // Define a default position for every image.
+      if(image.x === undefined)
+      {
+        // We force the image to the left or right side of the screen, based on the target point position.
+        var width = self.svg.attr("width");
+        var range = self.x_scale.range();
+        var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
+
+        if(relx < 0.5)
+          image.x = relx * range[0];
+        else
+          image.x = width - ((width - range[1]) * (1.0 - relx)) - image.width;
+      }
+      if(image.y === undefined)
+      {
+        var height = self.svg.attr("height");
+        var target_y = self.y_scale(self.options.y[image.index]);
+        image.y = (target_y / height) * (height - image.height);
+      }
+
+      var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
 
       // Create the image ...
       frame.append("image")
@@ -731,17 +777,6 @@ $.widget("parameter_image.scatterplot",
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
         .style("stroke-width", 3)
         .style("pointer-events", "none")
-        ;
-
-      // Create an outline ...
-      var outline = frame.append("rect")
-        .attr("class", "outline")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", image.width)
-        .attr("height", image.height)
-        .style("stroke", "black")
-        .style("fill", "none")
         ;
 
       if(!image.no_sync)
