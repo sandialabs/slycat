@@ -861,15 +861,16 @@ $.widget("parameter_image.scatterplot",
             success : function(result)
             {
               self.session_cache[parser.hostname] = result.sid;
+              self.login.dialog("close");
               self._open_images(images);
             },
             error : function(request, status, reason_phrase)
             {
               image.last_error = "Error opening remote session: " + reason_phrase;
+              self.login.dialog("close");
               self._open_session(images);
             }
           });
-          $(this).dialog("close");
         },
         Cancel: function()
         {
