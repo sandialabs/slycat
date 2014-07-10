@@ -12,10 +12,11 @@ $.widget("parameter_image.variableswitcher",
     "x-variable" : null,
     "y-variable" : null,
     "image-variable" : null,
+    "color-variable" : null,
     x_variables : [],
     y_variables : [],
     image_variables : [],
-
+    color_variables : [],
   },
 
   _create: function()
@@ -52,9 +53,20 @@ $.widget("parameter_image.variableswitcher",
       .appendTo(this.element)
       ;
 
+    this.color_label = $("<label for='color-variable-switcher'>Point Color:</label>")
+      .appendTo(this.element)
+      ;
+    this.color_select = $("<select id='color-variable-switcher' name='color-variable-switcher' />")
+      .change(function(){
+        self.element.trigger("color-selection-changed", this.value);
+      })
+      .appendTo(this.element)
+      ;
+
     self._set_x_variables();
     self._set_y_variables();
     self._set_image_variables();
+    self._set_color_variables();
   },
 
   _set_x_variables: function()
@@ -105,6 +117,22 @@ $.widget("parameter_image.variableswitcher",
     }
   },
 
+  _set_color_variables: function()
+  { 
+    var self = this;
+    this.color_select.empty();
+    for(var i = 0; i < this.options.color_variables.length; i++) {
+      $("<option />")
+        .text(this.options.metadata['column-names'][this.options.color_variables[i]])
+        .attr("value", this.options.color_variables[i])
+        .attr("selected", function(){
+          return self.options["color-variable"] == self.options.color_variables[i] ? "selected" : false;
+        })
+        .appendTo(this.color_select)
+        ;
+    }
+  },
+
   _set_selected_x: function()
   {
     var self = this;
@@ -121,6 +149,12 @@ $.widget("parameter_image.variableswitcher",
   {
     var self = this;
     this.images_select.val(self.options["image-variable"]);
+  },
+
+  _set_selected_color: function()
+  {
+    var self = this;
+    this.color_select.val(self.options["color-variable"]);
   },
 
   _setOption: function(key, value)
@@ -142,6 +176,10 @@ $.widget("parameter_image.variableswitcher",
     {
       self._set_selected_image();
     }
+    else if(key == "color-variable")
+    {
+      self._set_selected_color();
+    }
     else if(key == "image_variables")
     {
       self._set_image_variables();
@@ -153,6 +191,10 @@ $.widget("parameter_image.variableswitcher",
     else if(key == 'y_variables')
     {
       self._set_y_variables();
+    }
+    else if(key == 'color_variables')
+    {
+      self._set_color_variables();
     }
   },
 

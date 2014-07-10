@@ -9,8 +9,7 @@ import slycat.web.client
 import urlparse
 
 parser = slycat.web.client.option_parser()
-parser.add_argument("--auto-image-columns", action="store_true", help="Automatically generate the list of image columns based on their contents.")
-parser.add_argument("--image-columns", default=[], nargs="*", help="Image column names.")
+parser.add_argument("--image-columns", default=None, nargs="*", help="Image column names.")
 parser.add_argument("--image-hostname", default=None, help="Optionally override the hostname where images are stored.")
 parser.add_argument("--input-columns", default=[], nargs="*", help="Input column names.")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
@@ -33,8 +32,16 @@ for column in zip(*rows):
     columns.append((column[0], numpy.array(column[1:])))
 
 ###########################################################################################
-# Identify which columns are image columns ...
-if arguments.auto_image_columns:
+# The input must contain a minimum of one numeric column, so we can display a scatterplot.
+
+numeric_columns = [name for name, column in columns if column.dtype == "float64"]
+if len(numeric_columns) < 1:
+  raise Exception("You must supply at least one numeric column in the input data.")
+
+###########################################################################################
+# Optionally automatically identify which columns are image columns.
+if arguments.image_columns is None:
+  arguments.image_columns = []
   expression = re.compile("file://")
   search = numpy.vectorize(lambda x:bool(expression.search(x)))
   for name, column in columns:
@@ -43,7 +50,7 @@ if arguments.auto_image_columns:
         arguments.image_columns.append(name)
 
 ###########################################################################################
-# Optionally replace image URI hostnames ...
+# Optionally replace image URI hostnames.
 
 if arguments.image_hostname is not None:
   for index, (name, column) in enumerate(columns):
@@ -58,7 +65,7 @@ if arguments.image_hostname is not None:
       columns[index] = (name, numpy.array(modified))
 
 ###########################################################################################
-# Optionally strip prefix directories from the image URIs and replace them  ...
+# Optionally strip prefix directories from the image URIs and replace them.
 
 if arguments.strip is not None:
   for index, (name, column) in enumerate(columns):
