@@ -124,16 +124,16 @@ $.widget("slycat.browser",
             },
             statusCode :
             {
-              401 : function()
+              404 : function()
               {
                 alert("The remote session timed-out.");
               },
 
-              403 : function()
+              400 : function()
               {
                 $(this).removeClass("open");
                 $(this).addClass("forbidden");
-                alert("The folder " + $(this).data("path") + " can't be opened because you don't have permission to see its contents.");
+                alert("The folder " + $(this).data("path") + " can't be opened, probably because you don't have permission to see its contents.");
               }
             }
           });

@@ -827,6 +827,7 @@ $.widget("parameter_image.scatterplot",
     // Retrieve the image.
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
+    xhr.image = image;
     xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
@@ -838,6 +839,15 @@ $.widget("parameter_image.scatterplot",
       {
         delete self.session_cache[parser.hostname];
         self._open_session(images);
+        return;
+      }
+      // If we get 400, it means that the session is good and we're
+      // communicating with the remote host, but something else went wrong
+      // (probably file permissions issues).
+      if(this.status == 400)
+      {
+	console.log(this);
+        window.alert("Couldn't load image " + this.image.uri + ": " + this.statusText);
         return;
       }
 
