@@ -37,6 +37,7 @@ $.widget("parameter_image.scatterplot",
     self.hover_timer = null;
     self.close_hover_timer = null;
 
+    self.opening_image = null;
     self.state = "";
     self.start_drag = null;
     self.current_drag = null;
@@ -420,8 +421,12 @@ $.widget("parameter_image.scatterplot",
         .attr("stroke", "black")
         .attr("linewidth", 1)
         .attr("data-index", function(d, i) { return i; })
-        .on("mouseover", function(d, i) { self._schedule_hover(i); })
-        .on("mouseout", function(d, i) { self._cancel_hover(); })
+        .on("mouseover", function(d, i) { 
+          self._schedule_hover(i);
+        })
+        .on("mouseout", function(d, i) { 
+          self._cancel_hover(); 
+        })
         ;
 
       self.datum_layer.selectAll(".datum")
@@ -454,8 +459,12 @@ $.widget("parameter_image.scatterplot",
         .attr("stroke", "black")
         .attr("linewidth", 1)
         .attr("data-index", function(d, i) { return selection[i]; })
-        .on("mouseover", function(d, i) { self._schedule_hover(selection[i]); })
-        .on("mouseout", function(d, i) { self._cancel_hover(); })
+        .on("mouseover", function(d, i) { 
+          self._schedule_hover(selection[i]); 
+        })
+        .on("mouseout", function(d, i) { 
+          self._cancel_hover(); 
+        })
         ;
 
       self.selected_layer.selectAll(".selection")
@@ -553,6 +562,12 @@ $.widget("parameter_image.scatterplot",
       return;
 
     var image = images[0];
+
+    // If image is hover and mouse is no longer over associated point, we're done.
+    if( image.image_class == "hover-image" && (self.datum_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty() && self.selected_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty()) )
+    {
+      return;
+    }
 
     // Create scaffolding and status indicator if we already don't have one
     if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
@@ -653,9 +668,10 @@ $.widget("parameter_image.scatterplot",
         .attr("class", "outline")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("width", image.width)
-        .attr("height", image.height)
+        .attr("width", image.width + 1)
+        .attr("height", image.height + 1)
         .style("stroke", "black")
+        .style("stroke-width", "1px")
         .style("fill", "white")
         ;
 
@@ -668,6 +684,9 @@ $.widget("parameter_image.scatterplot",
       //   .attr("width", 32)
       //   .attr("height", 32)
       //   ;
+
+      // Schedule timeout for hover
+      self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
     }
     
     // If the image is already in the cache, display it.
@@ -706,11 +725,11 @@ $.widget("parameter_image.scatterplot",
       var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
 
       // Create the image ...
-      frame.append("image")
+      var svgImage = frame.append("image")
         .attr("class", "image")
         .attr("xlink:href", image_url)
-        .attr("x", 0)
-        .attr("y", 0)
+        .attr("x", 0.5)
+        .attr("y", 0.5)
         .attr("width", image.width)
         .attr("height", image.height)
         .attr("data-ratio", image.width / image.height)
@@ -719,7 +738,7 @@ $.widget("parameter_image.scatterplot",
       // Create a resize handle
       var resize_handle = frame.append("g")
         .attr("class", "resize-handle")
-        .attr('transform', "translate(" + (image.width-10) + ", " + (image.height-10) + ")")
+        .attr('transform', "translate(" + (image.width-9) + ", " + (image.height-9) + ")")
         .call(
           d3.behavior.drag()
             .on('drag', function(){
@@ -748,9 +767,9 @@ $.widget("parameter_image.scatterplot",
                 }
                 theImage.attr("width", newWidth);
                 theImage.attr("height", newHeight);
-                theRectangle.attr("width", newWidth);
-                theRectangle.attr("height", newHeight);
-                theHandle.attr('transform', "translate(" + (newWidth-10) + ", " + (newHeight-10) + ")");
+                theRectangle.attr("width", newWidth+1);
+                theRectangle.attr("height", newHeight+1);
+                theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
                 theLine.attr("x1", (newWidth / 2));
                 theLine.attr("y1", (newHeight / 2));
                   
@@ -846,7 +865,7 @@ $.widget("parameter_image.scatterplot",
       // (probably file permissions issues).
       if(this.status == 400)
       {
-	console.log(this);
+	      console.log(this);
         window.alert("Couldn't load image " + this.image.uri + ": " + this.statusText);
         return;
       }
@@ -961,7 +980,7 @@ $.widget("parameter_image.scatterplot",
         no_sync : true,
         }]);
 
-      self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image_index, 0);}, 1000);
+      // self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image_index, 0);}, 1000);
     }
   },
 
