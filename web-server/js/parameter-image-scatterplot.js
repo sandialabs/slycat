@@ -35,6 +35,7 @@ $.widget("parameter_image.scatterplot",
     var self = this;
 
     self.hover_timer = null;
+    self.close_hover_timer = null;
 
     self.state = "";
     self.start_drag = null;
@@ -60,6 +61,7 @@ $.widget("parameter_image.scatterplot",
     self.svg = d3.select(self.element.get(0)).append("svg");
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
+    self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.datum_layer = self.svg.append("g");
     self.selected_layer = self.svg.append("g");
     self.selection_layer = self.svg.append("g");
@@ -70,7 +72,19 @@ $.widget("parameter_image.scatterplot",
 
     self.updates = {};
     self.update_timer = null;
-    self._schedule_update({update_indices:true, update_width:true, update_height:true, update_x_label:true, update_y_label:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true, open_images:true});
+    self._schedule_update({
+      update_indices:true, 
+      update_width:true, 
+      update_height:true, 
+      update_x_label:true, 
+      update_y_label:true, 
+      update_x:true, 
+      update_y:true, 
+      update_color_domain:true, 
+      render_data:true, 
+      render_selection:true, 
+      open_images:true,
+    });
 
     self.element.mousedown(function(e)
     {
@@ -405,8 +419,9 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 4)
         .attr("stroke", "black")
         .attr("linewidth", 1)
+        .attr("data-index", function(d, i) { return i; })
         .on("mouseover", function(d, i) { self._schedule_hover(i); })
-        .on("mouseout", function(d, i) { self._close_hover(); })
+        .on("mouseout", function(d, i) { self._cancel_hover(); })
         ;
 
       self.datum_layer.selectAll(".datum")
@@ -438,8 +453,9 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 8)
         .attr("stroke", "black")
         .attr("linewidth", 1)
+        .attr("data-index", function(d, i) { return selection[i]; })
         .on("mouseover", function(d, i) { self._schedule_hover(selection[i]); })
-        .on("mouseout", function(d, i) { self._close_hover(); })
+        .on("mouseout", function(d, i) { self._cancel_hover(); })
         ;
 
       self.selected_layer.selectAll(".selection")
@@ -540,7 +556,6 @@ $.widget("parameter_image.scatterplot",
 
     // Create scaffolding and status indicator if we already don't have one
     if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
-      console.log("Creating scaffolding and status indicator.")
 
       // Define a default size for every image.
       if(image.width === undefined)
@@ -567,6 +582,11 @@ $.widget("parameter_image.scatterplot",
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = (target_y / height) * (height - image.height);
       }
+
+      // Tag associated point with class 
+      self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
+        .classed("openHover", true)
+        ;
 
       var frame = self.image_layer.append("g")
         .attr("data-uri", image.uri)
@@ -910,34 +930,81 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
-    self._close_hover();
+    // Verify that we don't already have an open hover for the associated point
+    if( self.datum_layer.select("circle.openHover[data-index='" + image_index + "']").empty() )
+    {
+      self._close_hover();
 
-    var width = self.svg.attr("width");
-    var height = self.svg.attr("height");
-    var hover_width = Math.min(width, height) * 0.85;
-    var hover_height = Math.min(width, height) * 0.85;
+      var width = self.svg.attr("width");
+      var height = self.svg.attr("height");
+      var hover_width = Math.min(width, height) * 0.85;
+      var hover_height = Math.min(width, height) * 0.85;
 
-    self._open_images([{
-      index : self.options.indices[image_index],
-      uri : self.options.images[self.options.indices[image_index]],
-      image_class : "hover-image",
-      x : self.x_scale(self.options.x[image_index]) + 10,
-      y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
-      width : hover_width,
-      height : hover_height,
-      no_sync : true,
-      }]);
+      self._open_images([{
+        index : self.options.indices[image_index],
+        uri : self.options.images[self.options.indices[image_index]],
+        image_class : "hover-image",
+        x : self.x_scale(self.options.x[image_index]) + 10,
+        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
+        width : hover_width,
+        height : hover_height,
+        no_sync : true,
+        }]);
+
+      self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image_index, 0);}, 1000);
+    }
+  },
+
+  _hover_timeout: function(image_index, time)
+  {
+    var self = this;
+    var checkInterval = 50;
+    var cutoff = 1000;
+
+    if(time > cutoff)
+    {
+      self._close_hover();
+      return;
+    }
+    else if(self._is_hovering(image_index))
+    {
+      self.close_hover_timer = window.setTimeout(function(){self._hover_timeout(image_index, 0);}, checkInterval);
+    }
+    else
+    {
+      self.close_hover_timer = window.setTimeout(function(){self._hover_timeout(image_index, time+checkInterval);}, checkInterval);
+    }
+  },
+
+  _is_hovering: function(image_index)
+  {
+    var self = this;
+    var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
+    var circleEmpty = self.datum_layer.selectAll("circle[data-index='" + image_index + "']:hover").empty();
+    var selectedCircleEmpty = self.selected_layer.selectAll("circle[data-index='" + image_index + "']:hover").empty();
+
+    return !(hoverEmpty && circleEmpty && selectedCircleEmpty);
   },
 
   _close_hover: function()
   {
     var self = this;
+    if(self.close_hover_timer)
+    {
+      window.clearTimeout(self.close_hover_timer);
+      self.close_hover_timer = null;
+    }
 
     // Cancel any pending hover ...
     self._cancel_hover();
 
     // Close any current hover images ...
     self.image_layer.selectAll(".hover-image").remove();
+
+    // Remove openHover class tag from any points that might have it
+    self.datum_layer.selectAll("circle.openHover")
+      .classed("openHover", false)
+      ;
   },
 });
 
