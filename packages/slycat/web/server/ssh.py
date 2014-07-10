@@ -18,15 +18,12 @@ def connect(hostname, username, password):
     connection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     connection.connect(hostname=hostname, username=username, password=password)
     return connection
-  except paramiko.AuthenticationException:
+  except paramiko.AuthenticationException as e:
+    cherrypy.log.error("%s %s" % (type(e), str(e)))
     raise cherrypy.HTTPError("403 Remote authentication failed.")
-  except socket.gaierror as e:
-    cherrypy.log.error("%s %s" % (type(e), e))
-    raise cherrypy.HTTPError("400 %s" % e.strerror)
   except Exception as e:
-    import traceback
-    cherrypy.log.error("%s %s" % (type(e), e))
-    raise cherrypy.HTTPError("500 Remote connection failed.")
+    cherrypy.log.error("%s %s" % (type(e), str(e)))
+    raise cherrypy.HTTPError("500 Remote connection failed: %s" % str(e))
 
 session_lock = threading.Lock()
 session_cache = {}
@@ -57,24 +54,22 @@ def expire_session(sid):
       cherrypy.log.error("Timing-out ssh session for %s@%s from %s" % (session["username"], session["hostname"], session["client"]))
       del session_cache[sid]
 
-def validate_client(client, sid):
-  """Test an existing session to verify that it matches the given client.
-
-  Assumes that the caller already holds the session lock."""
-  if sid in session_cache:
-    session = session_cache[sid]
-    if client != session["client"]:
-      cherrypy.log.error("Client %s attempted to access ssh session for %s@%s from %s" % (client, session["username"], session["hostname"], session["client"]))
-      del session_cache[sid]
-      raise cherrypy.HTTPError("403 Forbidden.")
-
 def get_session(client, sid):
   """Returns a cached ssh + sftp session."""
   with session_lock:
     expire_session(sid)
-    validate_client(client, sid)
+
+    # Only the original client can access a session.
+    if sid in session_cache:
+      session = session_cache[sid]
+      if client != session["client"]:
+        cherrypy.log.error("Client %s attempted to access ssh session for %s@%s from %s" % (client, session["username"], session["hostname"], session["client"]))
+        del session_cache[sid]
+        raise cherrypy.HTTPError("404")
+
     if sid not in session_cache:
       raise cherrypy.HTTPError("404")
+
     session = session_cache[sid]
     session["accessed"] = datetime.datetime.utcnow()
     return session
