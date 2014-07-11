@@ -281,12 +281,12 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true});
     }
 
     else if(key == "border")
     {
-      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true});
     }
 
     else if(key == "gradient")
