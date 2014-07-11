@@ -1001,16 +1001,17 @@ def post_remote_browse():
   path = cherrypy.request.json["path"]
 
   session = slycat.web.server.ssh.get_session(client, sid)
-  try:
-    attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
-    names = [attribute.filename for attribute in attributes]
-    sizes = [attribute.st_size for attribute in attributes]
-    types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
-    response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
-    return response
-  except Exception as e:
-    cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
-    raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+  with session["lock"]:
+    try:
+      attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
+      names = [attribute.filename for attribute in attributes]
+      sizes = [attribute.st_size for attribute in attributes]
+      types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
+      response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
+      return response
+    except Exception as e:
+      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
+      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def get_remote_file(sid, path):
   #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
@@ -1018,16 +1019,16 @@ def get_remote_file(sid, path):
 
   client = cherrypy.request.remote.ip
   session = slycat.web.server.ssh.get_session(client, sid)
-
-  try:
-    if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
-      raise cherrypy.HTTPError("400 Can't read directory.")
-    return session["sftp"].file(path).read()
-  except Exception as e:
-    cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
-    if str(e) == "Garbage packet received":
-      raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
-    raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+  with session["lock"]:
+    try:
+      if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
+        raise cherrypy.HTTPError("400 Can't read directory.")
+      return session["sftp"].file(path).read()
+    except Exception as e:
+      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
+      if str(e) == "Garbage packet received":
+        raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
+      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
