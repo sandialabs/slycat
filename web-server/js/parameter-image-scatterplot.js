@@ -85,6 +85,7 @@ $.widget("parameter_image.scatterplot",
       render_data:true, 
       render_selection:true, 
       open_images:true,
+      render_legend:true,
     });
 
     self.element.mousedown(function(e)
@@ -526,6 +527,18 @@ $.widget("parameter_image.scatterplot",
       });
     }
 
+    if(self.updates["render_legend"])
+    {
+      // console.log("rendering legend");
+      // var colorbar = self.legend_layer.append("rect")
+      //   .attr("width", 30)
+      //   .attr("height", 200)
+      //   .attr("x", 50)
+      //   .attr("y", 50)
+      //   .style("fill", "white")
+      //   ;
+    }
+
     self.updates = {}
   },
 
@@ -563,8 +576,20 @@ $.widget("parameter_image.scatterplot",
 
     var image = images[0];
 
-    // If image is hover and mouse is no longer over associated point, we're done.
-    if( image.image_class == "hover-image" && (self.datum_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty() && self.selected_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty()) )
+    // // If image is hover and mouse is no longer over associated point, we're done.
+    // if( image.image_class == "hover-image" && 
+    //     self.datum_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty() && 
+    //     self.selected_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty() &&
+    //     self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty()
+    //   )
+    // {
+    //   return;
+    // }
+
+    // If image is hover and we are no longer loading this image, we're done.
+    if( image.image_class == "hover-image" && 
+        self.opening_image != image.index
+      )
     {
       return;
     }
@@ -963,6 +988,7 @@ $.widget("parameter_image.scatterplot",
     if( self.datum_layer.select("circle.openHover[data-index='" + image_index + "']").empty() )
     {
       self._close_hover();
+      self.opening_image = image_index;
 
       var width = self.svg.attr("width");
       var height = self.svg.attr("height");
@@ -1018,6 +1044,9 @@ $.widget("parameter_image.scatterplot",
   _close_hover: function()
   {
     var self = this;
+
+    self.opening_image = null;
+
     if(self.close_hover_timer)
     {
       window.clearTimeout(self.close_hover_timer);

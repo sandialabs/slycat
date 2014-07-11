@@ -340,12 +340,21 @@ rights in this software.
 {
   background: transparent url(x-gray.png) no-repeat center center;
 }
+#page-title {
+  padding-top: 5px;
+  padding-bottom: 35px;
+}
 #color-switcher {
-  margin: -10px 0 0 0;
+  margin: -16px 0 0 0;
 }
 #variable-switcher {
-  float: left;
-  margin-top: -3px;
+  /*float: left;
+  margin-top: -3px;*/
+  position: absolute;
+  width: 100%;
+  left: 0;
+  text-align: center;
+  bottom: 0;
 }
 #variable-switcher label {
   font-weight: bold;
