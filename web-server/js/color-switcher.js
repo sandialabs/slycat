@@ -200,6 +200,28 @@ $.widget("slycat.colorswitcher",
     return result;
   },
 
+  get_svg_gradient: function(name)
+  {
+    if(name === undefined)
+      name = this.options.colormap;
+
+    // var gradient = d3.select()
+    // d3.svg.append("linearGradient")
+    //   .attr("id", "temperature-gradient")
+    //   .attr("gradientUnits", "userSpaceOnUse")
+    //   .attr("x1", 0).attr("y1", y(50))
+    //   .attr("x2", 0).attr("y2", y(60))
+    // .selectAll("stop")
+    //   .data([
+    //     {offset: "0%", color: "steelblue"},
+    //     {offset: "50%", color: "gray"},
+    //     {offset: "100%", color: "red"}
+    //   ])
+    // .enter().append("stop")
+    //   .attr("offset", function(d) { return d.offset; })
+    //   .attr("stop-color", function(d) { return d.color; });
+  },
+
   setUpColorMapsForAllColumns: function(name, columns)
   {
     for(var j = 0; j != columns.length; ++j)
