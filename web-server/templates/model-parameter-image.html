@@ -645,6 +645,7 @@ rights in this software.
               selection: selection,
               server_root: "{{server-root}}",
               open_images: open_images,
+              gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -656,7 +657,10 @@ rights in this software.
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
               $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-              $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_map", colormap)});
+              $("#scatterplot").scatterplot("option", {
+                color:    $("#color-switcher").colorswitcher("get_color_map", colormap),
+                gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+              });
             });
 
             // Changing the x variable updates the scatterplot ...

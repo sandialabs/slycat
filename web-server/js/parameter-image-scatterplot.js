@@ -28,6 +28,7 @@ $.widget("parameter_image.scatterplot",
     border : 25,
     server_root : "",
     open_images : [],
+    gradient : null,
   },
 
   _create: function()
@@ -86,6 +87,7 @@ $.widget("parameter_image.scatterplot",
       render_selection:true, 
       open_images:true,
       render_legend:true,
+      update_legend_position:true,
     });
 
     self.element.mousedown(function(e)
@@ -285,6 +287,11 @@ $.widget("parameter_image.scatterplot",
     else if(key == "border")
     {
       self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true});
+    }
+
+    else if(key == "gradient")
+    {
+      self._schedule_update({update_legend:true, });
     }
   },
 
@@ -529,14 +536,56 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_legend"])
     {
-      // console.log("rendering legend");
-      // var colorbar = self.legend_layer.append("rect")
-      //   .attr("width", 30)
-      //   .attr("height", 200)
-      //   .attr("x", 50)
-      //   .attr("y", 50)
-      //   .style("fill", "white")
-      //   ;
+      var gradient = self.legend_layer.append("linearGradient");
+      gradient.attr("id", "color-gradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%")
+        .selectAll("stop")
+        .data(self.options.gradient)
+        .enter().append("stop")
+        .attr("offset", function(d) { return d.offset + "%"; })
+        .attr("stop-color", function(d) { return d.color; })
+        ;
+
+      var colorbar = self.legend_layer.append("rect")
+        .classed("color", true)
+        .attr("width", 10)
+        .attr("height", 200)
+        .attr("x", 0)
+        .attr("y", 0)
+        .style("fill", "url(#color-gradient)")
+        ;
+    }
+
+    if(self.updates["update_legend"])
+    {
+      var gradient = self.legend_layer.select("linearGradient");
+      var stop = gradient.selectAll("stop").data(self.options.gradient);
+      stop.exit().remove();
+      stop.enter().append("stop");
+      stop
+        .attr("offset", function(d) { return d.offset + "%"; })
+        .attr("stop-color", function(d) { return d.color; })
+        ;
+      
+    }
+
+    if(self.updates["update_legend_position"])
+    {
+      var total_width = Number(self.element.attr("width"));
+      var total_height = Number(self.element.attr("height"));
+      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var width_offset = (total_width + width) / 2;
+      var height_offset = (total_height - height) / 2;
+
+      self.legend_layer
+        .attr("transform", "translate(" + (0 + width_offset + self.options.border) + "," + self.options.border + ")")
+        ;
+
+      self.legend_layer.select("rect.color")
+        .attr("height", height - self.options.border - 40)
+        ;
     }
 
     self.updates = {}

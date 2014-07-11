@@ -200,26 +200,20 @@ $.widget("slycat.colorswitcher",
     return result;
   },
 
-  get_svg_gradient: function(name)
+  get_gradient_data: function(name)
   {
+    var self = this;
+
     if(name === undefined)
       name = this.options.colormap;
 
-    // var gradient = d3.select()
-    // d3.svg.append("linearGradient")
-    //   .attr("id", "temperature-gradient")
-    //   .attr("gradientUnits", "userSpaceOnUse")
-    //   .attr("x1", 0).attr("y1", y(50))
-    //   .attr("x2", 0).attr("y2", y(60))
-    // .selectAll("stop")
-    //   .data([
-    //     {offset: "0%", color: "steelblue"},
-    //     {offset: "50%", color: "gray"},
-    //     {offset: "100%", color: "red"}
-    //   ])
-    // .enter().append("stop")
-    //   .attr("offset", function(d) { return d.offset; })
-    //   .attr("stop-color", function(d) { return d.color; });
+    var colors = self.color_maps[name]["colors"];
+    var length = colors.length;
+    var data = [];
+    for(var i=0; i < length; i++){
+      data.push({offset: i*(100/(length-1)), color: colors[i],});
+    }
+    return data;
   },
 
   setUpColorMapsForAllColumns: function(name, columns)
