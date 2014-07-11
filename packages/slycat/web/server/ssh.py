@@ -25,8 +25,8 @@ def connect(hostname, username, password):
     cherrypy.log.error("%s %s" % (type(e), str(e)))
     raise cherrypy.HTTPError("500 Remote connection failed: %s" % str(e))
 
-session_lock = threading.Lock()
 session_cache = {}
+session_cache_lock = threading.Lock()
 session_access_timeout = datetime.timedelta(minutes=15)
 
 def create_session(client, hostname, username, password):
@@ -37,15 +37,15 @@ def create_session(client, hostname, username, password):
   sftp = ssh.open_sftp()
   sid = uuid.uuid4().hex
   now = datetime.datetime.utcnow()
-  session = {"started":now, "accessed":now, "ssh":ssh, "sftp":sftp, "username":username, "hostname":hostname, "client":client}
-  with session_lock:
+  session = {"started":now, "accessed":now, "ssh":ssh, "sftp":sftp, "username":username, "hostname":hostname, "client":client, "lock":threading.Lock()}
+  with session_cache_lock:
     session_cache[sid] = session
   return sid
 
 def expire_session(sid):
   """Test an existing session to see if it is expired.
 
-  Assumes that the caller already holds the session lock.
+  Assumes that the caller already holds session_cache_lock.
   """
   if sid in session_cache:
     now = datetime.datetime.utcnow()
@@ -56,10 +56,10 @@ def expire_session(sid):
 
 def get_session(client, sid):
   """Returns a cached ssh + sftp session."""
-  with session_lock:
+  with session_cache_lock:
     expire_session(sid)
 
-    # Only the original client can access a session.
+    # Only the originating client can access a session.
     if sid in session_cache:
       session = session_cache[sid]
       if client != session["client"]:
@@ -76,7 +76,7 @@ def get_session(client, sid):
 
 def session_monitor():
   while True:
-    with session_lock:
+    with session_cache_lock:
       for sid in list(session_cache.keys()): # We make an explicit copy of the keys because we may be modifying the dict contents
         expire_session(sid)
     time.sleep(5)
