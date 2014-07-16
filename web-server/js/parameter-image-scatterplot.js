@@ -64,6 +64,7 @@ $.widget("parameter_image.scatterplot",
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
+    self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.datum_layer = self.svg.append("g");
     self.selected_layer = self.svg.append("g");
     self.selection_layer = self.svg.append("g");
@@ -87,8 +88,36 @@ $.widget("parameter_image.scatterplot",
       render_selection:true, 
       open_images:true,
       render_legend:true,
+      update_legend_colors:true,
       update_legend_position:true,
+      update_legend_axis:true,
     });
+
+    self.legend_layer
+      .call(
+        d3.behavior.drag()
+          .on('drag', function(){
+            // Make sure mouse is inside svg element
+            if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+              var theElement = d3.select(this);
+              var transx = Number(theElement.attr("data-transx"));
+              var transy = Number(theElement.attr("data-transy"));
+              transx += d3.event.dx;
+              transy += d3.event.dy;
+              theElement.attr("data-transx", transx);
+              theElement.attr("data-transy", transy);
+              theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+            }
+          })
+          .on("dragstart", function() {
+            d3.event.sourceEvent.stopPropagation(); // silence other listeners
+          })
+          .on("dragend", function() {
+            // self._sync_open_images();
+            d3.select(this).attr("data-status", "moved");
+          })
+      )
+      ;
 
     self.element.mousedown(function(e)
     {
@@ -257,7 +286,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "v")
     {
-      self._schedule_update({update_color_domain:true, render_data:true, render_selection:true});
+      self._schedule_update({update_color_domain:true, render_data:true, render_selection:true, update_legend_axis:true});
     }
 
     else if(key == "images")
@@ -281,7 +310,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true});
+      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true});
     }
 
     else if(key == "border")
@@ -291,7 +320,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "gradient")
     {
-      self._schedule_update({update_legend:true, });
+      self._schedule_update({update_legend_colors:true, });
     }
   },
 
@@ -540,11 +569,6 @@ $.widget("parameter_image.scatterplot",
       gradient.attr("id", "color-gradient")
         .attr("x1", "0%").attr("y1", "0%")
         .attr("x2", "0%").attr("y2", "100%")
-        .selectAll("stop")
-        .data(self.options.gradient)
-        .enter().append("stop")
-        .attr("offset", function(d) { return d.offset + "%"; })
-        .attr("stop-color", function(d) { return d.color; })
         ;
 
       var colorbar = self.legend_layer.append("rect")
@@ -557,7 +581,7 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
-    if(self.updates["update_legend"])
+    if(self.updates["update_legend_colors"])
     {
       var gradient = self.legend_layer.select("linearGradient");
       var stop = gradient.selectAll("stop").data(self.options.gradient);
@@ -567,7 +591,6 @@ $.widget("parameter_image.scatterplot",
         .attr("offset", function(d) { return d.offset + "%"; })
         .attr("stop-color", function(d) { return d.color; })
         ;
-      
     }
 
     if(self.updates["update_legend_position"])
@@ -578,13 +601,29 @@ $.widget("parameter_image.scatterplot",
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
       var width_offset = (total_width + width) / 2;
       var height_offset = (total_height - height) / 2;
-
-      self.legend_layer
-        .attr("transform", "translate(" + (0 + width_offset + self.options.border) + "," + self.options.border + ")")
-        ;
+      if( self.legend_layer.attr("data-status") != "moved" )
+      {
+        var transx = parseInt(0 + width_offset + self.options.border);
+        var transy = parseInt(self.options.border);
+         self.legend_layer
+          .attr("transform", "translate(" + transx + "," + transy + ")")
+          .attr("data-transx", transx)
+          .attr("data-transy", transy)
+          ;
+      }
 
       self.legend_layer.select("rect.color")
-        .attr("height", height - self.options.border - 40)
+        .attr("height", parseInt((height - self.options.border - 40)/2))
+        ;
+    }
+
+    if(self.updates["update_legend_axis"])
+    {
+      self.legend_scale = d3.scale.linear().domain([d3.min(self.options.v), d3.max(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+      self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
+      self.legend_axis_layer
+        .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
+        .call(self.legend_axis)
         ;
     }
 
@@ -661,15 +700,15 @@ $.widget("parameter_image.scatterplot",
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
         if(relx < 0.5)
-          image.x = relx * range[0];
+          image.x = parseInt(relx * range[0]);
         else
-          image.x = width - ((width - range[1]) * (1.0 - relx)) - image.width;
+          image.x = parseInt(width - ((width - range[1]) * (1.0 - relx)) - image.width);
       }
       if(image.y === undefined)
       {
         var height = self.svg.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
-        image.y = (target_y / height) * (height - image.height);
+        image.y = parseInt((target_y / height) * (height - image.height));
       }
 
       // Tag associated point with class 

@@ -368,6 +368,11 @@ rights in this software.
 #scatterplot .resize-handle:hover {
   cursor: nwse-resize;
 }
+#scatterplot rect.outline:hover,
+#scatterplot g.image-frame image.image
+{
+  cursor: move;
+}
 #scatterplot g.open-image image.image {
 
 }
@@ -382,4 +387,13 @@ rights in this software.
 #scatterplot g.open-image.resizing .resize-handle
 {
   visibility: visible;
+}
+#scatterplot g.legend:hover {
+  cursor: move;
+}
+.legend-axis path,
+.legend-axis line
+{
+  fill: none;
+  stroke: black;
 }
