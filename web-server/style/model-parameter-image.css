@@ -388,6 +388,9 @@ rights in this software.
 {
   visibility: visible;
 }
+#scatterplot g.open-image g.pin-button {
+  display: none;
+}
 #scatterplot g.legend:hover {
   cursor: move;
 }

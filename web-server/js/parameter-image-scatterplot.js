@@ -941,6 +941,72 @@ $.widget("parameter_image.scatterplot",
         .style("pointer-events", "none")
         ;
 
+      // Create a pin button ...
+      var pin_button = frame.append("g")
+        .attr("class", "pin-button")
+        ;
+
+      pin_button.append("image")
+        .attr("class", "pin-icon")
+        .attr("x", 2)
+        .attr("y", 2)
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr("xlink:href", "/style/pin.png")
+        .on("click", function()
+        {
+          var frame = d3.select(d3.event.target.parentNode.parentNode);
+          var theImage = frame.select("image.image");
+          var theRectangle = frame.select("rect.outline");
+          var theHandle = frame.select("g.resize-handle");
+          var theLine = frame.select("line.leader");
+          frame.classed("hover-image", false)
+            .classed("open-image", true)
+            ;
+
+          // Adjust image position
+          var imageHeight = 200;
+          var imageWidth = 200;
+
+          var width = self.svg.attr("width");
+          var range = self.x_scale.range();
+          var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
+          var x, y;
+
+          if(relx < 0.5)
+            x = relx * range[0];
+          else
+            x = width - ((width - range[1]) * (1.0 - relx)) - imageWidth;
+
+          var height = self.svg.attr("height");
+          var target_y = self.y_scale(self.options.y[image.index]);
+          y = (target_y / height) * (height - imageHeight);
+
+          frame
+            .attr("data-transx", x)
+            .attr("data-transy", y)
+            .attr('transform', "translate(" + x + ", " + y + ")")
+            ;
+
+          // Adjust image size
+          theImage.attr("width", imageWidth);
+          theImage.attr("height", imageHeight);
+          theRectangle.attr("width", imageWidth+1);
+          theRectangle.attr("height", imageHeight+1);
+          theHandle.attr('transform', "translate(" + (imageWidth-9) + ", " + (imageHeight-9) + ")");
+
+          // Adjust line
+          theLine
+            .attr("x1", (imageWidth / 2))
+            .attr("y1", (imageHeight / 2))
+            .attr("x2", image.target_x - Number(frame.attr("data-transx")))
+            .attr("y2", image.target_y - Number(frame.attr("data-transy")))
+            ;
+
+          self._sync_open_images();
+        })
+        ;
+
       if(!image.no_sync)
         self._sync_open_images();
       self._open_images(images.slice(1));
@@ -1091,6 +1157,8 @@ $.widget("parameter_image.scatterplot",
         y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
         width : hover_width,
         height : hover_height,
+        target_x : self.x_scale(self.options.x[image_index]),
+        target_y : self.y_scale(self.options.y[image_index]),
         no_sync : true,
         }]);
 
