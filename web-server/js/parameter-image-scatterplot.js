@@ -601,10 +601,11 @@ $.widget("parameter_image.scatterplot",
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
       var width_offset = (total_width + width) / 2;
       var height_offset = (total_height - height) / 2;
+      var rectHeight = parseInt((height - self.options.border - 40)/2);
       if( self.legend_layer.attr("data-status") != "moved" )
       {
         var transx = parseInt(0 + width_offset + self.options.border);
-        var transy = parseInt(self.options.border);
+        var transy = parseInt((total_height/2)-(rectHeight/2));
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
@@ -613,7 +614,7 @@ $.widget("parameter_image.scatterplot",
       }
 
       self.legend_layer.select("rect.color")
-        .attr("height", parseInt((height - self.options.border - 40)/2))
+        .attr("height", rectHeight)
         ;
     }
 
