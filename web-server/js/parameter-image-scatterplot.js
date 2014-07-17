@@ -110,9 +110,11 @@ $.widget("parameter_image.scatterplot",
             }
           })
           .on("dragstart", function() {
+            self.state = "moving";
             d3.event.sourceEvent.stopPropagation(); // silence other listeners
           })
           .on("dragend", function() {
+            self.state = "";
             // self._sync_open_images();
             d3.select(this).attr("data-status", "moved");
           })
@@ -121,12 +123,14 @@ $.widget("parameter_image.scatterplot",
 
     self.element.mousedown(function(e)
     {
+      //console.log("#scatterplot mousedown");
       self.start_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
       self.end_drag = null;
     });
 
     self.element.mousemove(function(e)
     {
+      //console.log("#scatterplot mousemove");
       if(self.start_drag) // Mouse is down ...
       {
         if(self.end_drag) // Already dragging ...
@@ -166,6 +170,10 @@ $.widget("parameter_image.scatterplot",
 
     self.element.mouseup(function(e)
     {
+      if(self.state == "resizing" || self.state == "moving")
+        return;
+      
+      //console.log("#scatterplot mouseup");
       if(!e.ctrlKey)
         self.options.selection = [];
 
@@ -718,6 +726,7 @@ $.widget("parameter_image.scatterplot",
         .call(
           d3.behavior.drag()
             .on('drag', function(){
+              //console.log("frame drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
                 var theElement = d3.select(this);
@@ -735,6 +744,8 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragstart", function() {
+              //console.log("frame dragstart");
+              self.state = "moving";
               // Verify source event target
               var sourceEventTarget = d3.select(d3.event.sourceEvent.target);
               if(sourceEventTarget.classed("outline") || sourceEventTarget.classed("image"))
@@ -759,10 +770,14 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragend", function() {
+              //console.log("frame dragend");
+              self.state = "";
               self._sync_open_images();
             })
         )
         .on("mousedown", function(){
+          //console.log("frame mousedown");
+          //d3.event.stopPropagation();
           // Verify that click is on image, not something else like the close button
           if(d3.event.target.classList.contains("image"))
           {
@@ -771,7 +786,8 @@ $.widget("parameter_image.scatterplot",
           }
         })
         .on("mouseup", function(){
-          d3.event.stopPropagation();
+          //console.log("frame mouseup");
+          //d3.event.stopPropagation();
         })
         ;
 
@@ -870,6 +886,7 @@ $.widget("parameter_image.scatterplot",
         .call(
           d3.behavior.drag()
             .on('drag', function(){
+              //console.log("resize drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
                 var theImage = d3.select(this.parentNode).select("image.image");
@@ -904,6 +921,7 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragstart", function() {
+              //console.log("resize dragstart");
               self.state = "resizing";
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
               d3.event.sourceEvent.stopPropagation(); // silence other listeners
@@ -926,11 +944,20 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragend", function() {
+              //console.log("resize dragend");
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
               self.state = "";
               self._sync_open_images();
             })
         )
+        .on("mousedown", function(){
+          //console.log("resize mousedown");
+          //d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          //console.log("resize mouseup");
+          //d3.event.stopPropagation(); // silence other listeners
+        })
         ;
 
       resize_handle.append("path")
@@ -960,8 +987,17 @@ $.widget("parameter_image.scatterplot",
         .attr("rx", 2)
         .attr("ry", 2)
         .style("fill", "rgba(0%,0%,0%,0.2)")
+        .on("mousedown", function(){
+          //console.log("close button mousedown");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          //console.log("close button mouseup");
+          d3.event.stopPropagation(); // silence other listeners
+        })
         .on("click", function()
         {
+          //console.log("close button click");
           d3.event.stopPropagation(); // silence other listeners
           var frame = d3.select(d3.event.target.parentNode.parentNode);
           frame.remove();
@@ -988,6 +1024,14 @@ $.widget("parameter_image.scatterplot",
         .attr("width", 16)
         .attr("height", 16)
         .attr("xlink:href", "/style/pin.png")
+        .on("mousedown", function(){
+          //console.log("pin button mousedown");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          //console.log("pin button mouseup");
+          d3.event.stopPropagation(); // silence other listeners
+        })
         .on("click", function()
         {
           d3.event.stopPropagation(); // silence other listeners
