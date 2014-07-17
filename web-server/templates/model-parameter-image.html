@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+{{> head}}
+    <title>{{name}} - Slycat CCA Model (canvas)</title>
+    <script type="text/javascript" src="{{server-root}}js/jquery.layout-latest.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.ba-bbq.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/d3.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/variable-switcher.js"></script>v
+    <script type="text/javascript" src="{{server-root}}js/parameter-image-scatterplot.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/parameter-image-table.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.scrollintoview.min.js"></script>
+
+    <!-- SlickGrid sources -->
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.2.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.core.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.grid.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.rowselectionmodel.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.headerbuttons.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
+
+    <!-- SlickGrid styles -->
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.headerbuttons.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
+
+    <!-- Page styles -->
+    <link rel="stylesheet" href="{{server-root}}style/model-parameter-image.css" type="text/css">
+
+  </head>
+
+  <body class="parameter-image">
+    <div class="ui-layout-north">
+{{> header}}
+
+      <div id="page-title">
+        <div class="width-wrapper">
+          <div class="marking">{{{marking-html}}}</div>
+          {{#can-write}}
+          <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
+          {{/can-write}}
+          <div id="breadcrumbs">
+            <a href="{{server-root}}projects">Projects</a> &rarr;
+            {{#full-project}}<a href="{{server-root}}projects/{{_id}}" id="project-link">{{name}}</a> &rarr;{{/full-project}}
+          </div>
+          <h2>{{name}}</h2>
+          <div id="model-desc">{{description}}</div>
+          <div id="color-switcher"></div>
+          <div id="variable-switcher"></div>
+          <div id="status-messages" style="display: none;"></div>
+          <div id="edit-model">
+            <div id="edit-model-form" class="dialog" title="Edit Model">
+              <button id="delete-model-link">Delete Model</button>
+              <label for="edit-model-name">Model Name</label>
+              <input id="edit-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
+              <label for="edit-model-description">Description</label>
+              <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="model-pane" class="ui-layout-center">
+      <div id="scatterplot-pane" class="ui-layout-center">
+        <div class="load-status"></div>
+        <div id="scatterplot"></div>
+      </div>
+    </div>
+
+    <div id="table-pane" class="ui-layout-south">
+      <div class="load-status"></div>
+      <div id="table">
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup global variables.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        var model = null;
+        var input_columns = null;
+        var output_columns = null;
+        var image_columns = null;
+
+        var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+        var bookmark = null;
+
+        var table_metadata = null;
+        var indices = null;
+        var x_index = null;
+        var y_index = null;
+        var images_index = null;
+        var x = null;
+        var y = null;
+        var v = null;
+        var images = null;
+
+        var table_ready = false;
+        var scatterplot_ready = false;
+        var variableswitcher_ready = false;
+
+        var session_cache = {};
+        var image_uri = document.createElement("a");
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Load the model
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}models/{{_id}}",
+          success : function(result)
+          {
+            model = result;
+            input_columns = model["artifact:input-columns"];
+            output_columns = model["artifact:output-columns"];
+            image_columns = model["artifact:image-columns"];
+            model_loaded();
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error retrieving model: " + reason_phrase);
+          }
+        });
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Once the model has been loaded, retrieve metadata / bookmarked state
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        function model_loaded()
+        {
+          if(model["state"] == "waiting" || model["state"] == "running")
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
+              "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
+            show_status_messages();
+          }
+          else if(model["state"] == "closed" && model["result"] === null)
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
+              "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
+              "<pre>" + model["message"] + "</pre>");
+            show_status_messages();
+          }
+          else if(model["result"] == "failed")
+          {
+            $("#status-messages").empty().html(
+              "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
+              "<div class='error-description'>Here's what was happening when it ended:</div>" +
+              "<pre>" + model["message"] + "</pre>");
+            show_status_messages();
+          }
+          else
+          {
+            // Display progress as the load happens ...
+            $(".load-status").text("Loading data.");
+
+            // Mark this model as closed, so it doesn't show-up in the header anymore.
+            $.ajax(
+            {
+              type : "PUT",
+              url : "{{server-root}}models/{{_id}}",
+              contentType : "application/json",
+              data : $.toJSON({
+                "state" : "closed"
+              }),
+              processData : false
+            });
+
+            // Load data table metadata.
+            $.ajax({
+              url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
+              contentType : "application/json",
+              success: function(metadata)
+              {
+                table_metadata = metadata;
+                metadata_loaded();
+              },
+              error: artifact_missing
+            });
+
+            // Retrieve bookmarked state information ...
+            bookmarker.get_state(function(state)
+            {
+              bookmark = state;
+              setup_colorswitcher();
+              metadata_loaded();
+            });
+          }
+        }
+
+        function show_status_messages()
+        {
+          $("#status-messages").dialog(
+          {
+            autoOpen: true,
+            width: 500,
+            height: 300,
+            modal: false,
+            buttons:
+            {
+              OK: function()
+              {
+                $("#status-messages").dialog("close");
+              }
+            }
+          });
+        }
+
+        function artifact_missing()
+        {
+          $(".load-status").css("display", "none");
+
+          $("#status-messages").empty().html(
+            "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
+            "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
+            "<pre>" + model["message"] + "</pre>");
+
+          show_status_messages();
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup page layout and forms.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        // Setup the edit model form ...
+        $("#edit-model-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 300,
+          modal: true,
+          buttons:
+          {
+            "Save Changes": function()
+            {
+              var model =
+              {
+                "name" : $("#edit-model-name").val(),
+                "description" : $("#edit-model-description").val()
+              };
+
+              $.ajax(
+              {
+                type : "PUT",
+                url : "{{server-root}}models/{{_id}}",
+                contentType : "application/json",
+                data : $.toJSON(model),
+                processData : false,
+                success : function()
+                {
+                  window.location.reload();
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error updating model: " + reason_phrase);
+                }
+              });
+            },
+            Cancel: function()
+            {
+              $(this).dialog("close");
+            }
+          },
+          close: function()
+          {
+          }
+        });
+
+        $("#delete-model-link").click(function(){
+          if(!window.confirm("Delete model {{name}}?  This cannot be undone."))
+            return false;
+
+          $.ajax(
+          {
+            type : "DELETE",
+            url : "{{server-root}}models/{{_id}}",
+            success : function(details)
+            {
+              window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error deleting model: " + reason_phrase);
+            }
+          });
+        });
+
+        $("#edit-model-button").button().click(function()
+        {
+          $("#edit-model-form").dialog("open");
+          $("#edit-model-name").focus();
+        });
+
+
+        // Layout resizable panels ...
+        $("body").layout(
+        {
+          north:
+          {
+          },
+          center:
+          {
+          },
+          south:
+          {
+            size: $("body").height() / 2,
+            resizeWhileDragging: false,
+            onresize: function()
+            {
+              $("#table").css("height", $("#table-pane").height());
+              $("#table").table("resize_canvas");
+            }
+          },
+        });
+
+        $("#model-pane").layout(
+        {
+          center:
+          {
+            resizeWhileDragging: false,
+            onresize: function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); },
+          }
+        });
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Setup the rest of the UI as data is received.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        function setup_colorswitcher()
+        {
+          var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+          $("#color-switcher").colorswitcher({colormap:colormap});
+          $("#color-switcher").bind("colormap-changed", function(event, colormap)
+          {
+            selected_colormap_changed(colormap);
+          });
+        }
+
+        function metadata_loaded()
+        {
+          setup_table();
+
+          if(!indices && table_metadata)
+          {
+            var count = table_metadata["row-count"];
+            indices = new Int32Array(count);
+            for(var i = 0; i != count; ++i)
+              indices[i] = i;
+          }
+
+          if(table_metadata && bookmark)
+          {
+            // Choose some columns for the X and Y axes.
+            var numeric_variables = [];
+            for(var i = 0; i < table_metadata["column-count"]-1; i++)
+            {
+              if(table_metadata["column-types"][i] != 'string')
+                numeric_variables.push(i);
+            }
+
+            x_index = numeric_variables[0];
+            y_index = numeric_variables[1 % numeric_variables.length];
+            if("x-selection" in bookmark)
+              x_index = bookmark["x-selection"];
+            if("y-selection" in bookmark)
+              y_index = bookmark["y-selection"];
+
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              array : 0,
+              attribute : x_index,
+              success : function(result)
+              {
+                x = result;
+                setup_scatterplot();
+                setup_table();
+              },
+              error : artifact_missing
+            });
+
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              array : 0,
+              attribute : y_index,
+              success : function(result)
+              {
+                y = result;
+                setup_scatterplot();
+                setup_table();
+              },
+              error : artifact_missing
+            });
+
+            var v_index = table_metadata["column-count"] - 1;
+            if("variable-selection" in bookmark)
+              v_index = bookmark["variable-selection"];
+
+            if(v_index == table_metadata["column-count"] - 1)
+            {
+              var count = table_metadata["row-count"];
+              v = new Float64Array(count);
+              for(var i = 0; i != count; ++i)
+                v[i] = i;
+              setup_scatterplot();
+            }
+            else
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : v_index,
+                success : function(result)
+                {
+                  v = result;
+                  setup_scatterplot();
+                },
+                error : artifact_missing
+              });
+            }
+
+            images_index = image_columns[0];
+            if("images-selection" in bookmark)
+              images_index = bookmark["images-selection"];
+            $.ajax(
+            {
+              type : "GET",
+              url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+              success : function(result)
+              {
+                images = result;
+                setup_scatterplot();
+                setup_table();
+              },
+              error: artifact_missing
+            });
+            setup_variableswitcher();
+          }
+        }
+
+        function setup_table()
+        {
+          if( !table_ready && table_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) )
+          {
+            table_ready = true;
+
+            $("#table-pane .load-status").css("display", "none");
+
+            var other_columns = [];
+            for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
+            {
+              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1)
+                other_columns.push(i);
+            }
+
+            var table_options =
+            {
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              metadata : table_metadata,
+              inputs : input_columns,
+              outputs : output_columns,
+              others : other_columns,
+              images : image_columns,
+              "image-variable" : images_index,
+              "x-variable" : x_index,
+              "y-variable" : y_index,
+            };
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+
+            if("sort-variable" in bookmark && "sort-order" in bookmark)
+            {
+              table_options["sort-variable"] = bookmark["sort-variable"];
+              table_options["sort-order"] = bookmark["sort-order"];
+            }
+
+            if("variable-selection" in bookmark)
+            {
+              table_options["variable-selection"] = [bookmark["variable-selection"]];
+            }
+            else
+            {
+              table_options["variable-selection"] = [table_metadata["column-count"] - 1];
+            }
+
+            if(bookmark["simulation-selection"] !== undefined)
+              table_options["row-selection"] = bookmark["simulation-selection"];
+
+            $("#table").table(table_options);
+
+            // Log changes to the table sort order ...
+            $("#table").bind("variable-sort-changed", function(event, variable, order)
+            {
+              variable_sort_changed(variable, order);
+            });
+
+            // Log changes to the x variable ...
+            $("#table").bind("x-selection-changed", function(event, variable)
+            {
+              x_selection_changed(variable);
+            });
+
+            // Log changes to the y variable ...
+            $("#table").bind("y-selection-changed", function(event, variable)
+            {
+              y_selection_changed(variable);
+            });
+
+            // Log changes to the images variable ...
+            $("#table").bind("images-selection-changed", function(event, variable)
+            {
+              images_selection_changed(variable);
+            });
+
+            // Log changes to the table variable selection ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              selected_variable_changed(selection[0]);
+            });
+
+            // Log changes to the table row selection ...
+            $("#table").bind("row-selection-changed", function(event, selection)
+            {
+              // The table selection is an array buffer which can't be
+              // serialized as JSON, so convert it to an array.
+              var temp = [];
+              for(var i = 0; i != selection.length; ++i)
+                temp.push(selection[i]);
+              selected_simulations_changed(temp);
+            });
+
+            // Changing the colormap updates the table ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
+            });
+
+            // Changing the table variable updates the scatterplot ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              update_scatterplot_value(selection[0]);
+            });
+
+            // Changing the scatterplot selection updates the table row selection ..
+            $("#scatterplot").bind("selection-changed", function(event, selection)
+            {
+              $("#table").table("option", "row-selection", selection);
+            });
+
+            // Changing the table row selection updates the scatterplot ...
+            $("#table").bind("row-selection-changed", function(event, selection)
+            {
+              // The table selection is an array buffer, so convert it to an array.
+              var temp = [];
+              for(var i = 0; i != selection.length; ++i)
+                temp.push(selection[i]);
+
+              $("#scatterplot").scatterplot("option", "selection",  temp);
+            });
+
+            // Changing the x variable updates the table ...
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "x-variable", variable);
+            });
+
+            // Changing the y variable updates the table ...
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "y-variable", variable);
+            });
+
+            // Changing the image variable updates the table ...
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "image-variable", variable);
+            });
+
+            // Changing the color variable updates the table ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              $("#table").table("option", "variable-selection", [Number(variable)]);
+            });
+          }
+        }
+
+        function setup_scatterplot()
+        {
+          // Setup the scatterplot ...
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images)
+          {
+            scatterplot_ready = true;
+
+            $("#scatterplot-pane .load-status").css("display", "none");
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
+
+            $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+
+            var open_images = [];
+            if("open-images-selection" in bookmark)
+              open_images = bookmark["open-images-selection"];
+
+            $("#scatterplot").scatterplot({
+              indices: indices,
+              x_label: table_metadata["column-names"][x_index],
+              y_label: table_metadata["column-names"][y_index],
+              x: x,
+              y: y,
+              v: v,
+              images: images,
+              width: $("#scatterplot-pane").width(),
+              height: $("#scatterplot-pane").height(),
+              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+              selection: selection,
+              server_root: "{{server-root}}",
+              open_images: open_images,
+              gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+              });
+
+            $("#scatterplot").bind("selection-changed", function(event, selection)
+            {
+              selected_simulations_changed(selection);
+            });
+
+            // Changing the color map updates the scatterplot ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+              $("#scatterplot").scatterplot("option", {
+                color:    $("#color-switcher").colorswitcher("get_color_map", colormap),
+                gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+              });
+            });
+
+            // Changing the x variable updates the scatterplot ...
+            $("#table").bind("x-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
+
+            // Changing the y variable updates the scatterplot ...
+            $("#table").bind("y-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              get_model_array_attribute({
+                server_root : "{{server-root}}",
+                mid : "{{_id}}",
+                aid : "data-table",
+                array : 0,
+                attribute : variable,
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+                },
+                error : artifact_missing
+              });
+            });
+
+            // Changing the images variable updates the scatterplot ...
+            $("#table").bind("images-selection-changed", function(event, variable)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", "images", result);
+                },
+                error: artifact_missing
+              });
+            });
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                success : function(result)
+                {
+                  $("#scatterplot").scatterplot("option", "images", result);
+                },
+                error: artifact_missing
+              });
+            });
+
+            // Log changes to open images ...
+            $("#scatterplot").bind("open-images-changed", function(event, selection)
+            {
+              open_images_changed(selection);
+            });
+          }
+        }
+
+        function setup_variableswitcher()
+        {
+          if( !variableswitcher_ready && table_metadata && (image_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
+          {
+            variableswitcher_ready = true;
+            var numeric_variables = [];
+
+            for(var i = 0; i < table_metadata["column-count"]; i++)
+            {
+              if(table_metadata["column-types"][i] != 'string')
+                numeric_variables.push(i);
+            }
+
+            var color_variable = table_metadata["column-count"] - 1;
+            if("variable-selection" in bookmark)
+            {
+              color_variable = [bookmark["variable-selection"]];
+            }
+
+            $("#variable-switcher").variableswitcher({
+              metadata: table_metadata,
+              x_variables: numeric_variables.slice(0, numeric_variables.length-1),
+              y_variables: numeric_variables.slice(0, numeric_variables.length-1),
+              image_variables: image_columns,
+              color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
+              "x-variable" : x_index,
+              "y-variable" : y_index,
+              "image-variable" : images_index,
+              "color-variable" : color_variable,
+            });
+
+            // Changing the x variable updates the variable switcher ...
+            $("#table").bind("x-selection-changed", function(event, variable)
+            {
+              $("#variable-switcher").variableswitcher("option", "x-variable", variable);
+            });
+
+            // Changing the y variable updates the variable switcher ...
+            $("#table").bind("y-selection-changed", function(event, variable)
+            {
+              $("#variable-switcher").variableswitcher("option", "y-variable", variable);
+            });
+
+            // Changing the image variable updates the variable switcher ...
+            $("#table").bind("images-selection-changed", function(event, variable)
+            {
+              $("#variable-switcher").variableswitcher("option", "image-variable", variable);
+            });
+
+            // Changing the table variable updates the variable switcher ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              $("#variable-switcher").variableswitcher("option", "color-variable", selection[0]);
+            });
+
+            // Changing the color variable updates the scatterplot ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              update_scatterplot_value(variable);
+            });
+
+
+
+            // Log changes to the x variable ...
+            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            {
+              x_selection_changed(variable);
+            });
+
+            // Log changes to the y variable ...
+            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            {
+              y_selection_changed(variable);
+            });
+
+            // Log changes to the images variable ...
+            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            {
+              images_selection_changed(variable);
+            });
+
+            // Log changes to the color variable ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              selected_variable_changed(Number(variable));
+            });
+          }
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // Event handlers.
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        function selected_colormap_changed(colormap)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
+          });
+          bookmarker.updateState({"colormap" : colormap});
+        }
+
+        function selected_variable_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+          });
+          bookmarker.updateState({"variable-selection" : variable});
+        }
+
+        function variable_sort_changed(variable, order)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
+          });
+          bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
+        }
+
+        function selected_simulations_changed(selection)
+        {
+          // Logging every selected item is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+          });
+          bookmarker.updateState( {"simulation-selection" : selection} );
+        }
+
+        function x_selection_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
+          });
+          bookmarker.updateState( {"x-selection" : variable} );
+        }
+
+        function y_selection_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/y/" + variable
+          });
+          bookmarker.updateState( {"y-selection" : variable} );
+        }
+
+        function images_selection_changed(variable)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/images/" + variable
+          });
+          bookmarker.updateState( {"images-selection" : variable} );
+        }
+
+        function open_images_changed(selection)
+        {
+          // Logging every open image is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/select/openimages/count/" + selection.length
+          });
+          bookmarker.updateState( {"open-images-selection" : selection} );
+        }
+
+        function update_scatterplot_value(attribute)
+        {
+          if(attribute == table_metadata["column-count"] - 1)
+          {
+            var count = v.length;
+            for(var i = 0; i != count; ++i)
+              v[i] = i;
+            $("#scatterplot").scatterplot("option", {v : v});
+          }
+          else
+          {
+            get_model_array_attribute({
+              server_root : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
+              array : 0,
+              attribute : attribute,
+              success : function(result)
+              {
+                v = result;
+                $("#scatterplot").scatterplot("option", {v : v});
+              },
+              error : artifact_missing
+            });
+          }
+        }
+
+        function display_image(uri)
+        {
+          image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
+          if(image_uri.hostname in session_cache)
+            load_image();
+          else
+            $("#remote-login").dialog("open");
+        }
+
+        function load_image()
+        {
+          var sid = session_cache[image_uri.hostname];
+          image = document.createElement("img");
+          image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
+          image.width = 100;
+          image.style.position="absolute";
+          image.style.left=10;
+          image.style.top=10;
+          $("#scatterplot-pane").prepend(image);
+        }
+      });
+
+    </script>
+  </body>
+</html>

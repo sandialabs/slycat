@@ -26,6 +26,8 @@ def compute(mid):
     output_columns = load_json_artifact(model, "output-columns")
     scale_inputs = load_json_artifact(model, "scale-inputs")
 
+    cherrypy.log.error("scale_inputs: %s" % scale_inputs)
+
     if len(input_columns) < 1:
       raise Exception("CCA model requires at least one input column.")
     if len(output_columns) < 1:

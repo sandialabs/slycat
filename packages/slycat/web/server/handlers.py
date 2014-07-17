@@ -25,11 +25,11 @@ import sys
 import slycat.hdf5
 import slycat.web.server
 import slycat.web.server.authentication
-import slycat.web.server.cache
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.model.cca
 import slycat.web.server.model.generic
+import slycat.web.server.model.parameter_image
 import slycat.web.server.model.timeseries
 import slycat.web.server.ssh
 import slycat.web.server.template
@@ -208,8 +208,9 @@ def post_project_models(pid):
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
   model_type = cherrypy.request.json["model-type"]
-  if model_type not in ["generic", "cca", "timeseries"]:
-    raise cherrypy.HTTPError("400 Allowed model types: generic, cca, timeseries")
+  allowed_model_types = ["generic", "cca", "timeseries", "parameter-image"]
+  if model_type not in allowed_model_types:
+    raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
   if marking not in cherrypy.request.app.config["slycat"]["marking"].types():
     raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(["'%s'" % type for type in cherrypy.request.app.config["slycat"]["marking"].types()]))
@@ -332,6 +333,9 @@ def get_model(mid, **kwargs):
     if "model-type" in model and model["model-type"] in ["cca", "cca3"]:
       return slycat.web.server.template.render("model-cca3.html", context)
 
+    if "model-type" in model and model["model-type"] == "parameter-image":
+      return slycat.web.server.template.render("model-parameter-image.html", context)
+
     return slycat.web.server.template.render("model-generic.html", context)
 
 @cherrypy.tools.json_in(on = True)
@@ -361,7 +365,7 @@ def post_model_finish(mid):
 
   if model["state"] != "waiting":
     raise cherrypy.HTTPError("400 Only waiting models can be finished.")
-  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries"]:
+  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries", "parameter-image"]:
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
   slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
@@ -371,6 +375,8 @@ def post_model_finish(mid):
     slycat.web.server.model.cca.finish(database, model)
   elif model["model-type"] == "timeseries":
     slycat.web.server.model.timeseries.finish(database, model)
+  elif model["model-type"] == "parameter-image":
+    slycat.web.server.model.parameter_image.finish(database, model)
   cherrypy.response.status = "202 Finishing model."
 
 def put_model_file(mid, name, input=None, file=None):
@@ -406,7 +412,7 @@ def put_model_inputs(mid):
 
   slycat.web.server.model.copy_model_inputs(database, source, model)
 
-def put_model_table(mid, name, input=None, file=None, username=None, hostname=None, password=None, path=None):
+def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -416,17 +422,18 @@ def put_model_table(mid, name, input=None, file=None, username=None, hostname=No
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
   input = True if input == "true" else False
 
-  if file is not None and username is None and hostname is None and password is None and path is None:
+  if file is not None and sid is None and path is None:
     data = file.file.read()
     filename = file.filename
-  elif file is None and username is not None and hostname is not None and password is not None and path is not None:
-    filename = "%s@%s:%s" % (username, hostname, path)
-    session = slycat.web.server.cache.ssh_session(hostname, username, password)
+  elif file is None and sid is not None and path is not None:
+    client = cherrypy.request.remote.ip
+    session = slycat.web.server.ssh.get_session(client, sid)
+    filename = "%s@%s:%s" % (session["username"], session["hostname"], path)
     if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
       raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
     data = session["sftp"].file(path).read()
   else:
-    raise cherrypy.HTTPError("400 Must supply a file parameter, or username, hostname, password, and path parameters.")
+    raise cherrypy.HTTPError("400 Must supply a file parameter, or sid and path parameters.")
   slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=input)
 
 @cherrypy.tools.json_in(on = True)
@@ -979,23 +986,49 @@ def get_user(uid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_browse():
+def post_remote():
+  client = cherrypy.request.remote.ip
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
-  path = cherrypy.request.json["path"]
   password = cherrypy.request.json["password"]
+  return {"sid":slycat.web.server.ssh.create_session(client, hostname, username, password)}
 
-  session = slycat.web.server.cache.ssh_session(hostname, username, password)
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_remote_browse():
+  client = cherrypy.request.remote.ip
+  sid = cherrypy.request.json["sid"]
+  path = cherrypy.request.json["path"]
 
-  try:
-    attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
-    names = [attribute.filename for attribute in attributes]
-    sizes = [attribute.st_size for attribute in attributes]
-    types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
-    response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
-    return response
-  except IOError:
-    raise cherrypy.HTTPError("403 Forbidden")
+  session = slycat.web.server.ssh.get_session(client, sid)
+  with session["lock"]:
+    try:
+      attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
+      names = [attribute.filename for attribute in attributes]
+      sizes = [attribute.st_size for attribute in attributes]
+      types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
+      response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
+      return response
+    except Exception as e:
+      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
+      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+
+def get_remote_file(sid, path):
+  #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
+  #cherrypy.response.headers["content-type"] = accept
+
+  client = cherrypy.request.remote.ip
+  session = slycat.web.server.ssh.get_session(client, sid)
+  with session["lock"]:
+    try:
+      if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
+        raise cherrypy.HTTPError("400 Can't read directory.")
+      return session["sftp"].file(path).read()
+    except Exception as e:
+      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
+      if str(e) == "Garbage packet received":
+        raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
+      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.

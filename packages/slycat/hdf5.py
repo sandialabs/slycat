@@ -77,19 +77,43 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
   index = tuple([slice(begin, end) for begin, end in ranges])
   attribute[index] = data
 
+  #########################################################################
   # Update attribute min/max statistics ...
-  if data.dtype.char not in ["O", "S"]:
-    data = data[numpy.invert(numpy.isnan(data))]
-  data_min = numpy.asscalar(numpy.min(data)) if len(data) else None
-  data_max = numpy.asscalar(numpy.max(data)) if len(data) else None
 
+  is_string = data.dtype.char in ["O", "S", "U"]
+
+  # If the data is numeric, filter-out NaNs so we can ignore them ...
+  if not is_string:
+    data = data[numpy.invert(numpy.isnan(data))]
+
+  # Calculate the min/max of whatever data remains ...
+  if len(data):
+    data_min = numpy.amin(data)
+    data_max = numpy.amax(data)
+  else:
+    data_min = None
+    data_max = None
+
+  # Merge the min/max into any existing min/max data ...
   attribute_min = attribute.attrs["min"] if "min" in attribute.attrs else None
   attribute_max = attribute.attrs["max"] if "max" in attribute.attrs else None
 
   if data_min is not None:
-    attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+    attribute_min = data_min if attribute_min is None else numpy.amin([data_min, attribute_min])
   if data_max is not None:
-    attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+    attribute_max = data_max if attribute_max is None else numpy.amax([data_max, attribute_max])
+
+  # The type returned by numpy.amin/amax can be tricky ... coerce it into a "normal" Python type.
+  if attribute_min is not None:
+    if is_string:
+      attribute_min = str(attribute_min)
+    else:
+      attribute_min = numpy.asscalar(attribute_min)
+  if attribute_max is not None:
+    if is_string:
+      attribute_max = str(attribute_max)
+    else:
+      attribute_max = numpy.asscalar(attribute_max)
 
   if attribute_min is not None:
     attribute.attrs["min"] = attribute_min

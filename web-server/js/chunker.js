@@ -183,12 +183,11 @@ function get_model_array_attribute(parameters)
   {
     parameters.metadataSuccess = retrieve_model_array_attribute;
     get_model_array_attribute_metadata(parameters);
-  } 
+  }
   else
   {
     retrieve_model_array_attribute(parameters);
-  } 
-
+  }
 }
 
 // Retrieve an arrayset asynchronously, calling a callback when it's ready ...

@@ -160,6 +160,9 @@ rights in this software.
 	top: 3px;
   right: 3px;
 }
+.slick-header-button.image-test-class {
+  right: 20px;
+}
 .slick-header-column {
 	padding-right: 23px !important;
 }

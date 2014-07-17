@@ -7,7 +7,7 @@ rights in this software.
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
 
-$.widget("cca.table",
+$.widget("parameter_image.table",
 {
   options:
   {
@@ -18,10 +18,14 @@ $.widget("cca.table",
     inputs : [],
     outputs : [],
     others : [],
+    images : [],
     "row-selection" : [],
     "variable-selection": [],
     "sort-variable" : null,
     "sort-order" : null,
+    "image-variable" : null,
+    "x-variable" : null,
+    "y-variable" : null,
     colormap : null,
   },
 
@@ -59,7 +63,7 @@ $.widget("cca.table",
 
     function make_column(column_index, header_class, cell_class)
     {
-      return {
+      var column = {
         id : column_index,
         field : column_index,
         name : self.options.metadata["column-names"][column_index],
@@ -67,6 +71,7 @@ $.widget("cca.table",
         headerCssClass : header_class,
         cssClass : cell_class,
         formatter : cell_formatter,
+        width: 100,
         header :
         {
           buttons :
@@ -74,11 +79,39 @@ $.widget("cca.table",
             {
               cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
               tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
-            }
+              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending",
+            },
           ]
         }
       };
+      // Special options for image columns
+      if( self.options.images.indexOf(column_index) > -1 ) {
+        column.headerCssClass += " headerImage";
+        column.header.buttons.push(
+          {
+            cssClass : self.options["image-variable"] == column_index ? "icon-image-on" : "icon-image-off",
+            tooltip :  self.options["image-variable"] == column_index ? "Current image variable" : "Set as image variable",
+            command :  self.options["image-variable"] == column_index ? "" : "image-on",
+          }
+        );
+      }
+      // Special options for numeric columns
+      if( self.options.metadata["column-types"][column_index] != "string" && self.options.metadata["column-count"]-1 != column_index ) {
+        column.headerCssClass += " headerNumeric";
+        column.header.buttons.push(
+          {
+            cssClass : self.options["x-variable"] == column_index ? "icon-x-on" : "icon-x-off",
+            tooltip :  self.options["x-variable"] == column_index ? "Current x variable" : "Set as x variable",
+            command :  self.options["x-variable"] == column_index ? "" : "x-on",
+          },
+          {
+            cssClass : self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
+            tooltip :  self.options["y-variable"] == column_index ? "Current y variable" : "Set as y variable",
+            command :  self.options["y-variable"] == column_index ? "" : "y-on",
+          }
+        );
+      }
+      return column;
     }
 
     self.columns = [];
@@ -113,12 +146,14 @@ $.widget("cca.table",
       var command = args.command;
       var grid = args.grid;
 
-      for(var i in self.columns)
-      {
-        self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
-        self.columns[i].header.buttons[0].tooltip = "Sort ascending";
-        self.columns[i].header.buttons[0].command = "sort-ascending";
-        grid.updateColumnHeader(self.columns[i].id);
+      if(command == "sort-ascending" || command == "sort-descending"){
+        for(var i in self.columns)
+        {
+          self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+          self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+          self.columns[i].header.buttons[0].command = "sort-ascending";
+          grid.updateColumnHeader(self.columns[i].id);
+        }
       }
 
       if(command == "sort-ascending")
@@ -134,6 +169,53 @@ $.widget("cca.table",
         button.command = 'sort-ascending';
         button.tooltip = 'Sort ascending';
         set_sort(column.id, "descending");
+      }
+      else if(command == "image-on")
+      {
+        for(var i=0; i < self.options.images.length; i++)
+        {
+          var index = grid.getColumnIndex(self.options.images[i]);
+          self.columns[index].header.buttons[1].cssClass = "icon-image-off";
+          self.columns[index].header.buttons[1].tooltip = "Set as image variable";
+          self.columns[index].header.buttons[1].command = "image-on";
+          grid.updateColumnHeader(self.columns[index].id);
+        }
+        button.cssClass = 'icon-image-on';
+        button.command = '';
+        button.tooltip = 'Current image variable';
+        self.element.trigger("images-selection-changed", column.id);
+      }
+      else if(command == "x-on")
+      {
+        for(var i in self.columns)
+        {
+          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+            self.columns[i].header.buttons[1].cssClass = "icon-x-off";
+            self.columns[i].header.buttons[1].tooltip = "Set as x variable";
+            self.columns[i].header.buttons[1].command = "x-on";
+            grid.updateColumnHeader(self.columns[i].id);
+          }
+        }
+        button.cssClass = 'icon-x-on';
+        button.command = '';
+        button.tooltip = 'Current x variable';
+        self.element.trigger("x-selection-changed", column.id);
+      }
+      else if(command == "y-on")
+      {
+        for(var i in self.columns)
+        {
+          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+            self.columns[i].header.buttons[2].cssClass = "icon-y-off";
+            self.columns[i].header.buttons[2].tooltip = "Set as y variable";
+            self.columns[i].header.buttons[2].command = "y-on";
+            grid.updateColumnHeader(self.columns[i].id);
+          }
+        }
+        button.cssClass = 'icon-y-on';
+        button.command = '';
+        button.tooltip = 'Current y variable';
+        self.element.trigger("y-selection-changed", column.id);
       }
     });
 
@@ -214,6 +296,66 @@ $.widget("cca.table",
     {
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"])
+    }
+    else if(key == "x-variable")
+    {
+      self.options[key] = value;
+      self._set_selected_x();
+    }
+    else if(key == "y-variable")
+    {
+      self.options[key] = value;
+      self._set_selected_y();
+    }
+    else if(key == "image-variable")
+    {
+      self.options[key] = value;
+      self._set_selected_image();
+    }
+  },
+
+  _set_selected_x: function()
+  {
+    var self = this;
+    for(var i in self.columns)
+    {
+      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+        if( self.columns[i].id == self.options["x-variable"]){
+          self.columns[i].header.buttons[1].cssClass = "icon-x-on";
+          self.columns[i].header.buttons[1].tooltip = "Current x variable";
+          self.columns[i].header.buttons[1].command = "";
+        } else {
+          self.columns[i].header.buttons[1].cssClass = "icon-x-off";
+          self.columns[i].header.buttons[1].tooltip = "Set as x variable";
+          self.columns[i].header.buttons[1].command = "x-on";
+        }
+        self.grid.updateColumnHeader(self.columns[i].id);
+      }
+    }
+  },
+
+  _set_selected_y: function()
+  {
+    var self = this;
+    //this.y_select.val(self.options["y-variable"]);
+  },
+
+  _set_selected_image: function()
+  {
+    var self = this;
+    for(var i=0; i < self.options.images.length; i++)
+    {
+      var index = self.grid.getColumnIndex(self.options.images[i]);
+      if(self.columns[index].id == self.options["image-variable"]){
+        self.columns[index].header.buttons[1].cssClass = "icon-image-on";
+        self.columns[index].header.buttons[1].tooltip = "Current image variable";
+        self.columns[index].header.buttons[1].command = "";
+      } else {
+        self.columns[index].header.buttons[1].cssClass = "icon-image-off";
+        self.columns[index].header.buttons[1].tooltip = "Set as image variable";
+        self.columns[index].header.buttons[1].command = "image-on";
+      }
+      self.grid.updateColumnHeader(self.columns[index].id);
     }
   },
 
