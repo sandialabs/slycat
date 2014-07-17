@@ -383,7 +383,7 @@ rights in this software.
 }
 #scatterplot g.open-image:hover .close-button,
 #scatterplot g.open-image.resizing .close-button,
-#scatterplot g.open-image:hover .resize-handle,
+#scatterplot g.image-frame:hover .resize-handle,
 #scatterplot g.open-image.resizing .resize-handle
 {
   visibility: visible;

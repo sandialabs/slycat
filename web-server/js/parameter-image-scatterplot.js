@@ -210,27 +210,27 @@ $.widget("parameter_image.scatterplot",
               // Selecting a new point.
               self.options.selection.push(self.options.indices[i]);
 
-              // If the URI for this point isn't already open, open it.
-              var uri = self.options.images[self.options.indices[i]];
-              if($(".open-image[data-uri='" + uri + "']").size() == 0)
-              {
-                self._close_hover();
+              // // If the URI for this point isn't already open, open it.
+              // var uri = self.options.images[self.options.indices[i]];
+              // if($(".open-image[data-uri='" + uri + "']").size() == 0)
+              // {
+              //   self._close_hover();
 
-                var width = self.svg.attr("width");
-                var height = self.svg.attr("height");
-                var open_width = Math.min(width, height) / 3;
-                var open_height = Math.min(width, height) / 3;
+              //   var width = self.svg.attr("width");
+              //   var height = self.svg.attr("height");
+              //   var open_width = Math.min(width, height) / 3;
+              //   var open_height = Math.min(width, height) / 3;
 
-                self._open_images([{
-                  index : self.options.indices[i],
-                  uri : self.options.images[self.options.indices[i]],
-                  image_class : "open-image",
-                  target_x : self.x_scale(self.options.x[i]),
-                  target_y : self.y_scale(self.options.y[i]),
-                  width: open_width,
-                  height : open_height,
-                  }]);
-              }
+              //   self._open_images([{
+              //     index : self.options.indices[i],
+              //     uri : self.options.images[self.options.indices[i]],
+              //     image_class : "open-image",
+              //     target_x : self.x_scale(self.options.x[i]),
+              //     target_y : self.y_scale(self.options.y[i]),
+              //     width: open_width,
+              //     height : open_height,
+              //     }]);
+              // }
             }
             else
             {
@@ -665,16 +665,6 @@ $.widget("parameter_image.scatterplot",
 
     var image = images[0];
 
-    // // If image is hover and mouse is no longer over associated point, we're done.
-    // if( image.image_class == "hover-image" && 
-    //     self.datum_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty() && 
-    //     self.selected_layer.selectAll("circle[data-index='" + image.index + "']:hover").empty() &&
-    //     self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty()
-    //   )
-    // {
-    //   return;
-    // }
-
     // If image is hover and we are no longer loading this image, we're done.
     if( image.image_class == "hover-image" && 
         self.opening_image != image.index
@@ -745,7 +735,28 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragstart", function() {
-              d3.event.sourceEvent.stopPropagation(); // silence other listeners
+              // Verify source event target
+              var sourceEventTarget = d3.select(d3.event.sourceEvent.target);
+              if(sourceEventTarget.classed("outline") || sourceEventTarget.classed("image"))
+              {
+                d3.event.sourceEvent.stopPropagation(); // silence other listeners
+                // Reset tracking of hover image if we are starting to drag a hover image
+                var frame = d3.select(this);
+                if(frame.classed("hover-image"))
+                {
+                  self.opening_image = null;
+                  if(self.close_hover_timer)
+                  {
+                    window.clearTimeout(self.close_hover_timer);
+                    self.close_hover_timer = null;
+                  }
+                  frame.classed("hover-image", false).classed("open-image", true);
+                  // Remove openHover class tag from any points that might have it
+                  self.datum_layer.selectAll("circle.openHover")
+                    .classed("openHover", false)
+                    ;
+                }
+              }
             })
             .on("dragend", function() {
               self._sync_open_images();
@@ -758,6 +769,9 @@ $.widget("parameter_image.scatterplot",
             // Move this image to the top of the Z order ...
             $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
           }
+        })
+        .on("mouseup", function(){
+          d3.event.stopPropagation();
         })
         ;
 
@@ -890,11 +904,30 @@ $.widget("parameter_image.scatterplot",
               }
             })
             .on("dragstart", function() {
+              self.state = "resizing";
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
               d3.event.sourceEvent.stopPropagation(); // silence other listeners
+              // Reset tracking of hover image if we are starting to drag a hover image
+              var frame = d3.select(this.parentNode);
+              if(frame.classed("hover-image"))
+              {
+                self.opening_image = null;
+                if(self.close_hover_timer)
+                {
+                  window.clearTimeout(self.close_hover_timer);
+                  self.close_hover_timer = null;
+                }
+                frame.classed("hover-image", false).classed("open-image", true);
+
+                // Remove openHover class tag from any points that might have it
+                self.datum_layer.selectAll("circle.openHover")
+                  .classed("openHover", false)
+                  ;
+              }
             })
             .on("dragend", function() {
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
+              self.state = "";
               self._sync_open_images();
             })
         )
@@ -929,6 +962,7 @@ $.widget("parameter_image.scatterplot",
         .style("fill", "rgba(0%,0%,0%,0.2)")
         .on("click", function()
         {
+          d3.event.stopPropagation(); // silence other listeners
           var frame = d3.select(d3.event.target.parentNode.parentNode);
           frame.remove();
           self._sync_open_images();
@@ -956,6 +990,20 @@ $.widget("parameter_image.scatterplot",
         .attr("xlink:href", "/style/pin.png")
         .on("click", function()
         {
+          d3.event.stopPropagation(); // silence other listeners
+          // Reset tracking of hover image
+          self.opening_image = null;
+          if(self.close_hover_timer)
+          {
+            window.clearTimeout(self.close_hover_timer);
+            self.close_hover_timer = null;
+          }
+
+          // Remove openHover class tag from any points that might have it
+          self.datum_layer.selectAll("circle.openHover")
+            .classed("openHover", false)
+            ;
+
           var frame = d3.select(d3.event.target.parentNode.parentNode);
           var theImage = frame.select("image.image");
           var theRectangle = frame.select("rect.outline");
@@ -1117,6 +1165,11 @@ $.widget("parameter_image.scatterplot",
     // Disable hovering whenever anything else is going on ...
     if(self.state != "")
       return;
+
+    // // Disable hovering on points that already have open imges ...
+    // var uri = self.options.images[self.options.indices[image_index]];
+    // if($(".open-image[data-uri='" + uri + "']").size() != 0)
+    //   return;
 
     // Cancel any pending hover ...
     self._cancel_hover();
