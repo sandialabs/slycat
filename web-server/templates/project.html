@@ -90,6 +90,14 @@ rights in this software.
     <div id="content">
       <div class="width-wrapper">
 
+        <div class="buttonBar">
+          {{#can-write}}
+          <button id="local-cca-button" title="Compute a CCA model using a local file.">Local CCA</button>
+          <button id="remote-cca-button" title="Compute a CCA model using a remote file.">Remote CCA</button>
+          <button id="remote-pi-button" title="Load a parameter image model from a remote CSV file.">Remote PI</button>
+          {{/can-write}}
+        </div>
+
         <!-- Local CCA user interface -->
         <div id="local-cca-form" class="dialog" title="Local File CCA Model">
           <div id="local-cca-basics">
@@ -141,13 +149,6 @@ rights in this software.
             <p>If you leave this dialog open, we will take you to the model as soon as it's generated.</p>
             <button id="local-cca-running-close">Close</button>
           </div>
-        </div>
-
-        <div class="buttonBar">
-          {{#can-write}}
-          <button id="local-cca-button" title="Compute a CCA model using a local file.">Local CCA</button>
-          <button id="remote-cca-button" title="Compute a CCA model using a remote file.">Remote CCA</button>
-          {{/can-write}}
         </div>
 
         <!-- Remote CCA user interface -->
@@ -215,6 +216,72 @@ rights in this software.
             <button id="remote-cca-running-close">Close</button>
           </div>
         </div>
+
+        <!-- Remote PI user interface -->
+        <div id="remote-pi-form" class="dialog" title="Remote File Parameter Image Model">
+          <div id="remote-pi-basics">
+            <label for="remote-pi-name">Model Name</label>
+            <input id="remote-pi-name" class="text ui-widget-content ui-corner-all" value="{{new-model-name}}" />
+            <label for="remote-pi-description">Description</label>
+            <textarea id="remote-pi-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20"></textarea>
+            <select id="remote-pi-marking">
+              {{#marking-types}}
+              <option value='{{type}}'>{{label}}</option>
+              {{/marking-types}}
+            </select>
+            <button id="remote-pi-basics-next">Next</button>
+          </div>
+
+          <div id="remote-pi-connection">
+            <p>Select the remote host where your data is located:
+              <select id="remote-pi-hostname">
+                {{#remote-hosts}}
+                <option value="{{name}}">{{name}}</option>
+                {{/remote-hosts}}
+              </select>
+            </p>
+            <p><label for="remote-pi-username">Username</label><input id="remote-pi-username" name="remote-pi-username" type="input"/></p>
+            <p><label for="remote-pi-password">Password</label><input id="remote-pi-password" name="remote-pi-password" type="password"/></p>
+            <button id="remote-pi-connection-next">Next</button>
+          </div>
+
+          <div id="remote-pi-browse">
+            <p>Highlight the file to be analyzed:</p>
+            <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+            <div id="remote-pi-browser"></div>
+            <button id="remote-pi-browse-next">Next</button>
+          </div>
+
+          <div id="remote-pi-parameters">
+            <table id="remote-pi-variables">
+              <thead>
+                <tr><th>Variable</th><th>Input</th><th>Output</th><th>Image</th></tr>
+                <tr>
+                  <td></td>
+                  <td><button id="remote-pi-all-inputs-on" title="Turn all inputs on.">On</button><button id="remote-pi-all-inputs-off" title="Turn all inputs off.">Off</button></td>
+                  <td><button id="remote-pi-all-outputs-on" title="Turn all outputs on.">On</button><button id="remote-pi-all-outputs-off" title="Turn all outputs off.">Off</button></td>
+                  <td><button id="remote-pi-all-images-on" title="Turn all images on.">On</button><button id="remote-pi-all-images-off" title="Turn all images off.">Off</button></td>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+            <button id="remote-pi-parameters-next">Run</button>
+          </div>
+
+          <div id="remote-pi-running" class="runningModel">
+            <p>Your model is being generated.</p>
+            <div id="model-progress">
+              <input class="modelPie" value="1" />
+            </div>
+            <p>You can close this dialog and watch top status bar for a green checkmark to see when it completes.</p>
+            <p>If you leave this dialog open, we will take you to the model as soon as it's generated.</p>
+            <button id="remote-pi-running-close">Close</button>
+          </div>
+        </div>
+
+
+
 
         <ul id="models" class="main-list">
         {{#models}}
@@ -623,7 +690,6 @@ rights in this software.
         });
 
         /* Remote CCA  user interface */
-
         remote_cca_model = null;
         $("#remote-cca-form").dialog(
         {
@@ -931,6 +997,337 @@ rights in this software.
           }
         }
 
+        /* Remote PI  user interface */
+        remote_pi_model = null;
+        $("#remote-pi-form").dialog(
+        {
+          autoOpen: false,
+          width: 700,
+          height: 700,
+          modal: true,
+          open : function()
+          {
+            $("#remote-pi-basics").css("display", "block");
+            $("#remote-pi-connection").css("display", "none");
+            $("#remote-pi-browse").css("display", "none");
+            $("#remote-pi-parameters").css("display", "none");
+            $("#remote-pi-running").css("display", "none");
+            $("#remote-pi-parameters-next").button("enable");
+          },
+          close : function()
+          {
+            clearTimeout(window.modelGenerationTimeout);
+            if(remote_pi_model != null) {
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}models/" + remote_pi_model,
+                success : function(details)
+                {
+                  console.log("successfuly deleted unfinished model");
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  console.log("problems deleting unfinished model");
+                }
+              });
+            }
+            remote_pi_model = null;
+
+            // Clear password field
+            $("#remote-pi-password").val("");
+          }
+        });
+        $("#remote-pi-basics-next").button().click(function()
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}projects/{{_id}}/models",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+              "model-type" : "parameter-image",
+              "name" : $("#remote-pi-name").val(),
+              "marking" : $("#remote-pi-marking").val(),
+              "description" : $("#remote-pi-description").val()
+            }),
+            processData: false,
+            success: function(result)
+            {
+              remote_pi_model = result["id"];
+              $("#remote-pi-basics").css("display", "none");
+              $("#remote-pi-connection").css("display", "block");
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error creating model: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-pi-connection-next").button().click(function()
+        {
+          $.ajax(
+          {
+            async : false,
+            type : "POST",
+            url : "{{server-root}}remote",
+            contentType : "application/json",
+            data: $.toJSON(
+            {
+              hostname : $("#remote-pi-hostname").val(),
+              username : $("#remote-pi-username").val(),
+              password : $("#remote-pi-password").val(),
+            }),
+            processData : false,
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error connecting to remote system: " + reason_phrase);
+            },
+            success: function(results)
+            {
+              if( $("#remote-pi-browser").data("slycat-browser") )
+                $("#remote-pi-browser").browser("destroy"); // Need to destroy the browser instead of just emptying it, otherwise it does not come up on 2nd invocation.
+              $("#remote-pi-browser").empty().browser({
+                server_root : "{{server-root}}",
+                root_label : $("#remote-pi-hostname").val() + "//",
+                root_path : "/",
+                session: results.sid,
+                directory_selection : false,
+                multiple_selection : false,
+                hide_dotfiles : false
+                });
+              $("#remote-pi-connection").css("display", "none");
+              $("#remote-pi-browse").css("display", "block");
+            }
+          });
+        });
+        $("#remote-pi-hide-dotfiles").click(function()
+        {
+          $("#remote-pi-browser").browser("option", "hide_dotfiles", $(this).attr("checked"));
+        });
+        $("#remote-pi-browse-next").button().click(function()
+        {
+          var session = $("#remote-pi-browser").browser("option", "session");
+          var selection = $("#remote-pi-browser").browser("selection");
+          if(selection.length != 1)
+          {
+            window.alert("You must select exactly one file to index.");
+            return;
+          }
+          path = selection[0];
+
+          var data = new FormData();
+          data.append("sid", session);
+          data.append("path", path);
+          data.append("input", true);
+
+          $.ajax(
+          {
+            type : "PUT",
+            contentType : false,
+            processData : false,
+            url : "{{server-root}}models/" + remote_pi_model + "/tables/data-table",
+            data : data,
+            success : function(result)
+            {
+              $.ajax(
+              {
+                type : "GET",
+                url : "{{server-root}}models/" + remote_pi_model + "/tables/data-table/arrays/0/metadata",
+                success : function(table)
+                {
+                  function deselect_companion(companion)
+                  {
+                    return function()
+                    {
+                      companion.removeAttr("checked");
+                    }
+                  }
+                  $("#remote-pi-variables tbody").empty();
+                  $.each(table["column-names"], function(index, column)
+                  {
+                    var row = $("<tr>")
+                      .appendTo($("#remote-pi-variables tbody"))
+                      ;
+                    $("<td>").text(column).appendTo(row);
+
+                    if(table["column-types"][index] != "string" && table["column-min"][index] != table["column-max"][index])
+                    {
+                      var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                    }
+                    else
+                    {
+                      $("<td>").appendTo(row);
+                    }
+
+                    if(table["column-types"][index] != "string" && table["column-min"][index] != table["column-max"][index])
+                    {
+                      var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                    }
+                    else
+                    {
+                      $("<td>").appendTo(row);
+                    }
+
+                    if(table["column-types"][index] == "string")
+                    {
+                      var image = $("<input type='checkbox' name='images' class='remote-pi-image-variable' title='Treat variable as an image for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                    }
+                    else
+                    {
+                      $("<td>").appendTo(row);
+                    }
+/*
+                    if(table["column-types"][index] == "string")
+                    {
+                      $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze non-numeric data.</td>").appendTo(row);
+                    }
+                    else if(table["column-min"][index] == table["column-max"][index])
+                    {
+                      $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze constant data.</td>").appendTo(row);
+                    }
+                    else
+                    {
+                      var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                      var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+
+                      input.attr("checked", "checked");
+                      input.click(deselect_companion(output));
+                      output.click(deselect_companion(input));
+                    }
+*/
+                  });
+                  $("#remote-pi-browse").css("display", "none");
+                  $("#remote-pi-parameters").css("display", "block");
+                }
+              });
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error setting-up remote connection: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-pi-all-inputs-on").button().click(function()
+        {
+          $(".remote-pi-input-variable").attr("checked", "checked");
+          $(".remote-pi-output-variable").removeAttr("checked");
+        });
+        $("#remote-pi-all-inputs-off").button().click(function()
+        {
+          $(".remote-pi-input-variable").removeAttr("checked");
+        });
+        $("#remote-pi-all-outputs-on").button().click(function()
+        {
+          $(".remote-pi-output-variable").attr("checked", "checked");
+          $(".remote-pi-input-variable").removeAttr("checked");
+        });
+        $("#remote-pi-all-outputs-off").button().click(function()
+        {
+          $(".remote-pi-output-variable").removeAttr("checked");
+        });
+        $("#remote-pi-all-images-on").button().click(function()
+        {
+          $(".remote-pi-image-variable").attr("checked", "checked");
+          $(".remote-pi-input-variable").removeAttr("checked");
+          $(".remote-pi-output-variable").removeAttr("checked");
+        });
+        $("#remote-pi-all-images-off").button().click(function()
+        {
+          $(".remote-pi-image-variable").removeAttr("checked");
+        });
+        $("#remote-pi-parameters-next").button().click(function()
+        {
+          function store_parameter(name, value)
+          {
+            $.ajax(
+            {
+              async : false,
+              type : "PUT",
+              url : "{{server-root}}models/" + remote_pi_model + "/parameters/" + name,
+              contentType : "application/json",
+              data: $.toJSON(
+              {
+                input : true,
+                value : value,
+              }),
+              processData : false,
+              error: function(request, status, reason_phrase)
+              {
+                window.alert("Error setting model parameter: " + reason_phrase);
+              }
+            });
+          }
+
+          input_columns = [];
+          output_columns = [];
+          image_columns = [];
+          $(".remote-pi-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
+          $(".remote-pi-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
+          $(".remote-pi-image-variable:checked").each(function(index, element) { image_columns.push(Number($(element).val())); });
+
+          store_parameter("input-columns", input_columns);
+          store_parameter("output-columns", output_columns);
+          store_parameter("image-columns", image_columns);
+
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}models/" + remote_pi_model + "/finish",
+            success: function(result)
+            {
+              var mid = remote_pi_model;
+              remote_pi_model = null;
+              $("#remote-pi-parameters-next").button("disable");
+
+              window.modelGenerationTimeout = setTimeout(function(){
+                get_model_status(mid, process_model_status);
+              }, 1000);
+            },
+            error: function(request, status, reason_phrase)
+            {
+              window.alert("Error creating model: " + reason_phrase);
+            }
+          });
+        });
+        $("#remote-pi-running-close").button().click(function()
+        {
+          $("#remote-pi-form").dialog("close");
+        });
+        $("#remote-pi-button").button().click(function()
+        {
+          $("#remote-pi-form").dialog("open");
+        });
+
+        function process_model_status(results) {
+          if(results.finished === null) {
+            $("#local-pi-parameters").css("display", "none");
+            $("#local-pi-running").css("display", "block");
+            $("#remote-pi-parameters").css("display", "none");
+            $("#remote-pi-running").css("display", "block");
+            var modelPie = $("#model-progress .modelPie");
+            modelPie.knob({
+                  'min':0,
+                  'max':1,
+                  'readOnly':true,
+                  'displayInput':false,
+                  'fgColor':'#4D720C',
+                  'bgColor':'#D7D7D6',
+                  'width':200,
+                  'height':200,
+                  'thickness':0.35,
+                  'step':0.01,
+                });
+            modelPie.val(results["progress"]).trigger('change');
+            window.modelGenerationTimeout = setTimeout(function(){
+              get_model_status(results._id, process_model_status);
+            }, 1000);
+          }
+          else {
+            window.location = "{{server-root}}models/" + results._id;
+          }
+        }
         function get_model_status(mid, callback)
         {
           $.ajax(
