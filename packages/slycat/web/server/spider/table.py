@@ -36,6 +36,9 @@ class data_accumulator:
 
     skip_row = False
 
+    # Strip whitespace
+    fields = [field.strip() for field in fields]
+
     # Extract string-based per-column min and max ...
     self.column_min = [fields[i] if self.column_min[i] is None else min(self.column_min[i], fields[i]) for i in range(len(fields))]
     self.column_max = [fields[i] if self.column_max[i] is None else max(self.column_max[i], fields[i]) for i in range(len(fields))]
