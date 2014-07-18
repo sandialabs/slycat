@@ -105,6 +105,7 @@ rights in this software.
         var indices = null;
         var x_index = null;
         var y_index = null;
+        var v_index = null;
         var images_index = null;
         var x = null;
         var y = null;
@@ -416,7 +417,7 @@ rights in this software.
               error : artifact_missing
             });
 
-            var v_index = table_metadata["column-count"] - 1;
+            v_index = table_metadata["column-count"] - 1;
             if("variable-selection" in bookmark)
               v_index = bookmark["variable-selection"];
 
@@ -635,6 +636,7 @@ rights in this software.
               indices: indices,
               x_label: table_metadata["column-names"][x_index],
               y_label: table_metadata["column-names"][y_index],
+              v_label: table_metadata["column-names"][v_index],
               x: x,
               y: y,
               v: v,
@@ -818,13 +820,23 @@ rights in this software.
               $("#variable-switcher").variableswitcher("option", "color-variable", selection[0]);
             });
 
+            // Changing the table variable updates the legend label ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][selection[0]]});
+            });
+
             // Changing the color variable updates the scatterplot ...
             $("#variable-switcher").bind("color-selection-changed", function(event, variable)
             {
               update_scatterplot_value(variable);
             });
 
-
+            // Changing the color variable updates the legend label ...
+            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            {
+              $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][variable]});
+            });
 
             // Log changes to the x variable ...
             $("#variable-switcher").bind("x-selection-changed", function(event, variable)

@@ -19,6 +19,7 @@ $.widget("parameter_image.scatterplot",
     indices : [],
     x_label : "X Label",
     y_label : "Y Label",
+    v_label : "V Label",
     x : [],
     y : [],
     v : [],
@@ -91,6 +92,7 @@ $.widget("parameter_image.scatterplot",
       update_legend_colors:true,
       update_legend_position:true,
       update_legend_axis:true,
+      update_v_label:true,
     });
 
     self.legend_layer
@@ -280,6 +282,11 @@ $.widget("parameter_image.scatterplot",
     else if(key == "y_label")
     {
       self._schedule_update({update_y_label:true});
+    }
+
+    else if(key == "v_label")
+    {
+      self._schedule_update({update_v_label:true});
     }
 
     else if(key == "x")
@@ -636,6 +643,29 @@ $.widget("parameter_image.scatterplot",
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
         .call(self.legend_axis)
+        ;
+    }
+
+    if(self.updates["update_v_label"])
+    {
+      console.log("updating v label.");
+      self.legend_layer.selectAll(".label").remove();
+
+      // var y_axis_width = self.y_axis_layer.node().getBBox().width;
+      // var x = -(y_axis_width+15);
+      // var y = self.svg.attr("height") / 2;
+      var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
+      var x = -15;
+      var y = rectHeight/2;
+      
+      self.legend_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("transform", "rotate(-90," + x +"," + y + ")")
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.v_label)
         ;
     }
 
