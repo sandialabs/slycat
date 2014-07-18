@@ -66,7 +66,7 @@ $.widget("parameter_image.scatterplot",
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
-    self.datum_layer = self.svg.append("g");
+    self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
     self.selected_layer = self.svg.append("g");
     self.selection_layer = self.svg.append("g");
     self.image_layer = self.svg.append("g");
@@ -325,12 +325,12 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, update_y_label:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true});
+      self._schedule_update({update_height:true, update_y:true, update_y_label:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
     }
 
     else if(key == "border")
     {
-      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true});
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_v_label:true,});
     }
 
     else if(key == "gradient")
@@ -617,12 +617,14 @@ $.widget("parameter_image.scatterplot",
       var total_height = Number(self.element.attr("height"));
       var width = Math.min(self.element.attr("width"), self.element.attr("height"));
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var width_offset = (total_width + width) / 2;
-      var height_offset = (total_height - height) / 2;
       var rectHeight = parseInt((height - self.options.border - 40)/2);
+      var datum_layer_width = self.datum_layer.node().getBBox().width;
+      var width_offset = (total_width + datum_layer_width) / 2;
+      var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
+
       if( self.legend_layer.attr("data-status") != "moved" )
       {
-        var transx = parseInt(0 + width_offset + self.options.border);
+        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
         var transy = parseInt((total_height/2)-(rectHeight/2));
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
