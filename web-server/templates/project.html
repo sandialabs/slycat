@@ -1170,6 +1170,19 @@ rights in this software.
                     if(table["column-types"][index] == "string")
                     {
                       var image = $("<input type='checkbox' name='images' class='remote-pi-image-variable' title='Treat variable as an image for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+
+                      $.ajax(
+                      {
+                        type : "GET",
+                        url : "{{server-root}}models/" + remote_pi_model + "/tables/data-table/arrays/0/chunk?rows=0&columns=" + index,
+                        success : function(columns)
+                        {
+                          if(columns.data[0][0].slice(0, 7) == "file://")
+                          {
+                            image.attr("checked", "checked");
+                          }
+                        }
+                      });
                     }
                     else
                     {
