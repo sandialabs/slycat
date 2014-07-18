@@ -1155,18 +1155,15 @@ rights in this software.
                     if(table["column-types"][index] != "string" && table["column-min"][index] != table["column-max"][index])
                     {
                       var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                      var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+
+                      input.attr("checked", "checked");
+                      input.click(deselect_companion(output));
+                      output.click(deselect_companion(input));
                     }
                     else
                     {
                       $("<td>").appendTo(row);
-                    }
-
-                    if(table["column-types"][index] != "string" && table["column-min"][index] != table["column-max"][index])
-                    {
-                      var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-                    }
-                    else
-                    {
                       $("<td>").appendTo(row);
                     }
 
@@ -1178,25 +1175,6 @@ rights in this software.
                     {
                       $("<td>").appendTo(row);
                     }
-/*
-                    if(table["column-types"][index] == "string")
-                    {
-                      $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze non-numeric data.</td>").appendTo(row);
-                    }
-                    else if(table["column-min"][index] == table["column-max"][index])
-                    {
-                      $("<td colspan='2'><span class='ui-icon ui-icon-info'></span>Cannot analyze constant data.</td>").appendTo(row);
-                    }
-                    else
-                    {
-                      var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-                      var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-
-                      input.attr("checked", "checked");
-                      input.click(deselect_companion(output));
-                      output.click(deselect_companion(input));
-                    }
-*/
                   });
                   $("#remote-pi-browse").css("display", "none");
                   $("#remote-pi-parameters").css("display", "block");
@@ -1230,8 +1208,6 @@ rights in this software.
         $("#remote-pi-all-images-on").button().click(function()
         {
           $(".remote-pi-image-variable").attr("checked", "checked");
-          $(".remote-pi-input-variable").removeAttr("checked");
-          $(".remote-pi-output-variable").removeAttr("checked");
         });
         $("#remote-pi-all-images-off").button().click(function()
         {
