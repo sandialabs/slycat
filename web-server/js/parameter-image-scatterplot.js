@@ -573,7 +573,7 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_legend"])
     {
-      var gradient = self.legend_layer.append("linearGradient");
+      var gradient = self.legend_layer.append("defs").append("linearGradient");
       gradient.attr("id", "color-gradient")
         .attr("x1", "0%").attr("y1", "0%")
         .attr("x2", "0%").attr("y2", "100%")
@@ -591,7 +591,7 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["update_legend_colors"])
     {
-      var gradient = self.legend_layer.select("linearGradient");
+      var gradient = self.legend_layer.select("#color-gradient");
       var stop = gradient.selectAll("stop").data(self.options.gradient);
       stop.exit().remove();
       stop.enter().append("stop");
