@@ -53,14 +53,14 @@ mid = connection.create_model(pid, "parameter-image", arguments.model_name, argu
 connection.start_array_set(mid, "data-table")
 
 # Start our single "data-table" array.
-attributes = [("n%s" % column, "float64") for column in range(numeric_data.shape[1])] + [("s%s" % column, "string") for column in range(string_data.shape[1])]
+attributes = [("thisisalonglabelforn%s" % column, "float64") for column in range(numeric_data.shape[1])] + [("s%s" % column, "string") for column in range(string_data.shape[1])]
 dimensions = [("row", "int64", 0, arguments.row_count)]
 connection.start_array(mid, "data-table", 0, attributes, dimensions)
 
 # Upload data into the array.
 index = 0
 for column in numeric_data.T:
-  connection.store_array_set_data(mid, "data-table", 0, index, data=column)
+  connection.store_array_set_data(mid, "data-table", 0, index, data=column*100000000)
   index += 1
 for column in string_data.T:
   connection.store_array_set_data(mid, "data-table", 0, index, data=column)

@@ -79,10 +79,10 @@ $.widget("parameter_image.scatterplot",
       update_indices:true, 
       update_width:true, 
       update_height:true, 
-      update_x_label:true, 
-      update_y_label:true, 
       update_x:true, 
       update_y:true, 
+      update_x_label:true, 
+      update_y_label:true, 
       update_color_domain:true, 
       render_data:true, 
       render_selection:true, 
@@ -318,7 +318,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y_label:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true});
+      self._schedule_update({update_height:true, update_y:true, update_y_label:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true});
     }
 
     else if(key == "border")
@@ -372,39 +372,6 @@ $.widget("parameter_image.scatterplot",
         self.inverse_indices[self.options.indices[i]] = i;
     }
 
-    if(self.updates["update_x_label"])
-    {
-      var x = self.svg.attr("width") / 2;
-      var y = 40;
-
-      self.x_axis_layer.selectAll(".label").remove()
-      self.x_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.x_label)
-        ;
-    }
-
-    if(self.updates["update_y_label"])
-    {
-      var x = -40;
-      var y = self.svg.attr("height") / 2;
-
-      self.y_axis_layer.selectAll(".label").remove()
-      self.y_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.y_label)
-        ;
-    }
-
     if(self.updates["update_x"])
     {
       var total_width = self.element.attr("width");
@@ -430,12 +397,48 @@ $.widget("parameter_image.scatterplot",
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
+      self.y_axis_offset = 0 + width_offset + self.options.border;
 
       self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
-        .attr("transform", "translate(" + (0 + width_offset + self.options.border) + ",0)")
+        .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
+        ;
+    }
+
+    if(self.updates["update_x_label"])
+    {
+      var x = self.svg.attr("width") / 2;
+      var y = 40;
+
+      self.x_axis_layer.selectAll(".label").remove()
+      self.x_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.x_label)
+        ;
+    }
+
+    if(self.updates["update_y_label"])
+    {
+      self.y_axis_layer.selectAll(".label").remove();
+
+      var y_axis_width = self.y_axis_layer.node().getBBox().width;
+      var x = -(y_axis_width+15);
+      var y = self.svg.attr("height") / 2;
+      
+      self.y_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("transform", "rotate(-90," + x +"," + y + ")")
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.y_label)
         ;
     }
 
