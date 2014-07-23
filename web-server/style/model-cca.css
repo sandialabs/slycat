@@ -276,3 +276,9 @@ rights in this software.
 .barplotHeaderColumn.mask.col0 {
   vertical-align: top;
 }
+.legend-axis path,
+.legend-axis line
+{
+  fill: none;
+  stroke: black;
+}

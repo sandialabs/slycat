@@ -800,6 +800,7 @@ rights in this software.
           {
             size: 150,
             resizeWhileDragging: false,
+            onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
           },
         });
 
@@ -872,23 +873,52 @@ rights in this software.
           {
             legend_ready = true;
 
+            $("#legend-pane .load-status").css("display", "none");
+
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+            $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
             var v_index = table_metadata["column-count"] - 1;
             if("variable-selection" in bookmark)
               v_index = bookmark["variable-selection"];
 
             $("#legend").legend({
+              width: $("#legend-pane").width(),
+              height: $("#legend-pane").height(),
               gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
               label: table_metadata["column-names"][v_index],
               min: table_metadata["column-min"][v_index],
               max: table_metadata["column-max"][v_index],
             });
-            // $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            // {
-            //   selected_colormap_changed(colormap);
-            // });
+
+            // Changing the color map updates the legend ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+              $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
+            });
+
+            // Changing the table variable selection updates the legend ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              $("#legend").legend("option", {
+                min: table_metadata["column-min"][selection[0]],
+                max: table_metadata["column-max"][selection[0]],
+              });
+            });
+
+            // Changing the barplot variable updates the legend ...
+            $("#barplot-table").bind("variable-changed", function(event, v_index)
+            {
+              $("#legend").legend("option", {
+                min: table_metadata["column-min"][v_index],
+                max: table_metadata["column-max"][v_index],
+              });
+            });
+
           }
+
           // Setup the barplot ...
           if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings)
           {

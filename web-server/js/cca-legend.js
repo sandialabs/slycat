@@ -8,10 +8,13 @@ $.widget("cca.legend",
 {
   options:
   {
+    width: 300,
+    height: 300,
     metadata : null,
     label : "Label",
     min : null,
     max : null,
+    border : 25,
   },
 
   _create: function()
@@ -53,6 +56,16 @@ $.widget("cca.legend",
     else if(key == "height")
     {
       self._schedule_update({update_height:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
+    }
+
+    else if(key == "gradient")
+    {
+      self._schedule_update({update_legend_colors:true, });
+    }
+
+    else if(key == "min" || key == "max")
+    {
+      self._schedule_update({update_legend_axis:true, });
     }
   },
 
@@ -120,25 +133,17 @@ $.widget("cca.legend",
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.element.attr("width"));
-      var total_height = Number(self.element.attr("height"));
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var rectHeight = parseInt((height - self.options.border - 40)/2);
-      var datum_layer_width = self.datum_layer.node().getBBox().width;
-      var width_offset = (total_width + datum_layer_width) / 2;
-      var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
+      var total_width = self.element.width();
+      var total_height = self.element.height();
+      var rectHeight = parseInt(total_height - (self.options.border * 2));
 
-      if( self.legend_layer.attr("data-status") != "moved" )
-      {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
-         self.legend_layer
-          .attr("transform", "translate(" + transx + "," + transy + ")")
-          .attr("data-transx", transx)
-          .attr("data-transy", transy)
-          ;
-      }
+      var transx = self.options.border;
+      var transy = self.options.border;
+       self.legend_layer
+        .attr("transform", "translate(" + transx + "," + transy + ")")
+        .attr("data-transx", transx)
+        .attr("data-transy", transy)
+        ;
 
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
@@ -147,7 +152,7 @@ $.widget("cca.legend",
 
     if(self.updates["update_legend_axis"])
     {
-      self.legend_scale = d3.scale.linear().domain([d3.min(self.options.v), d3.max(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+      self.legend_scale = d3.scale.linear().domain([self.options.min, self.options.max]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
@@ -157,25 +162,25 @@ $.widget("cca.legend",
 
     if(self.updates["update_v_label"])
     {
-      console.log("updating v label.");
-      self.legend_layer.selectAll(".label").remove();
+      // console.log("updating v label.");
+      // self.legend_layer.selectAll(".label").remove();
 
-      // var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      // var x = -(y_axis_width+15);
-      // var y = self.svg.attr("height") / 2;
-      var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
-      var x = -15;
-      var y = rectHeight/2;
+      // // var y_axis_width = self.y_axis_layer.node().getBBox().width;
+      // // var x = -(y_axis_width+15);
+      // // var y = self.svg.attr("height") / 2;
+      // var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
+      // var x = -15;
+      // var y = rectHeight/2;
       
-      self.legend_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.v_label)
-        ;
+      // self.legend_layer.append("text")
+      //   .attr("class", "label")
+      //   .attr("x", x)
+      //   .attr("y", y)
+      //   .attr("transform", "rotate(-90," + x +"," + y + ")")
+      //   .style("text-anchor", "middle")
+      //   .style("font-weight", "bold")
+      //   .text(self.options.v_label)
+      //   ;
     }
 
     self.updates = {}
