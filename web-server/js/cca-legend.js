@@ -36,7 +36,7 @@ $.widget("cca.legend",
       update_legend_colors:true,
       update_legend_position:true,
       update_legend_axis:true,
-      update_v_label:true,
+      update_label:true,
     });
     
   },
@@ -53,9 +53,14 @@ $.widget("cca.legend",
       self._schedule_update({update_color_domain:true, render_data:true, render_selection:true, update_legend_axis:true});
     }
 
+    else if(key == "width")
+    {
+      self._schedule_update({update_width:true, });
+    }
+
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
+      self._schedule_update({update_height:true, update_legend_position:true, update_legend_axis:true, update_label:true,});
     }
 
     else if(key == "gradient")
@@ -66,6 +71,11 @@ $.widget("cca.legend",
     else if(key == "min" || key == "max")
     {
       self._schedule_update({update_legend_axis:true, });
+    }
+
+    else if(key == "label")
+    {
+      self._schedule_update({update_label:true, })
     }
   },
 
@@ -137,7 +147,7 @@ $.widget("cca.legend",
       var total_height = self.element.height();
       var rectHeight = parseInt(total_height - (self.options.border * 2));
 
-      var transx = self.options.border;
+      var transx = self.options.border + 28; // 28 is height of label
       var transy = self.options.border;
        self.legend_layer
         .attr("transform", "translate(" + transx + "," + transy + ")")
@@ -160,27 +170,23 @@ $.widget("cca.legend",
         ;
     }
 
-    if(self.updates["update_v_label"])
+    if(self.updates["update_label"])
     {
-      // console.log("updating v label.");
-      // self.legend_layer.selectAll(".label").remove();
+      self.legend_layer.selectAll(".label").remove();
 
-      // // var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      // // var x = -(y_axis_width+15);
-      // // var y = self.svg.attr("height") / 2;
-      // var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
-      // var x = -15;
-      // var y = rectHeight/2;
+      var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
+      var x = -15;
+      var y = rectHeight/2;
       
-      // self.legend_layer.append("text")
-      //   .attr("class", "label")
-      //   .attr("x", x)
-      //   .attr("y", y)
-      //   .attr("transform", "rotate(-90," + x +"," + y + ")")
-      //   .style("text-anchor", "middle")
-      //   .style("font-weight", "bold")
-      //   .text(self.options.v_label)
-      //   ;
+      self.legend_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("transform", "rotate(-90," + x +"," + y + ")")
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.label)
+        ;
     }
 
     self.updates = {}

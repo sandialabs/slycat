@@ -798,7 +798,7 @@ rights in this software.
           },
           east:
           {
-            size: 150,
+            size: 130,
             resizeWhileDragging: false,
             onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
           },
@@ -905,6 +905,7 @@ rights in this software.
               $("#legend").legend("option", {
                 min: table_metadata["column-min"][selection[0]],
                 max: table_metadata["column-max"][selection[0]],
+                label: table_metadata["column-names"][selection[0]],
               });
             });
 
@@ -914,6 +915,7 @@ rights in this software.
               $("#legend").legend("option", {
                 min: table_metadata["column-min"][v_index],
                 max: table_metadata["column-max"][v_index],
+                label: table_metadata["column-names"][v_index],
               });
             });
 
