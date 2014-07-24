@@ -115,6 +115,33 @@ $.widget("parameter_image.table",
     }
 
     self.columns = [];
+
+    // Adding rating column
+    self.columns.push(
+      {
+        id : "rating",
+        field : "rating",
+        name : "Rating",
+        sortable : false,
+        headerCssClass : "headerRating",
+        cssClass : "rowRating",
+        formatter : cell_formatter,
+        width: 100,
+        editor: Slick.Slycateditors.Text,
+        header :
+        {
+          buttons :
+          [
+            {
+              cssClass : self.options["sort-variable"] == "rating" ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+              tooltip : self.options["sort-variable"] == "rating" ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+              command : self.options["sort-variable"] == "rating" ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending",
+            },
+          ]
+        }
+      }
+    );
+    
     self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
     for(var i in self.options.inputs)
       self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
@@ -136,7 +163,12 @@ $.widget("parameter_image.table",
 
     self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+    self.grid = new Slick.Grid(self.element, self.data, self.columns, {
+      explicitInitialization : true, 
+      enableColumnReorder : false, 
+      editable : true, 
+      editCommandHandler : self._editCommandHandler,
+    });
 
     var header_buttons = new Slick.Plugins.HeaderButtons();
     header_buttons.onCommand.subscribe(function(e, args)
@@ -390,6 +422,13 @@ $.widget("parameter_image.table",
     self.grid.invalidate();
   },
 
+  _editCommandHandler: function (item,column,editCommand) {
+    console.log("editCommandHandler called");
+    editCommand.execute();
+    // To Do: Attempt to save edit and undo it if Ajax call returns error
+    //editCommand.undo();
+  },
+
   _data_provider: function(parameters)
   {
     var self = this;
@@ -435,7 +474,15 @@ $.widget("parameter_image.table",
           async : false,
           success : function(data)
           {
-            self.pages[page] = data;
+            self.pages[page] = [];
+            for(var i=0; i < data.rows.length; i++)
+            {
+              result = {};
+              result["rating"] = 'blah';
+              for(var j = column_begin; j != column_end; ++j)
+                result[j] = data.data[j][i];
+              self.pages[page].push(result);
+            }
           },
           error: function(request, status, reason_phrase)
           {
@@ -444,10 +491,7 @@ $.widget("parameter_image.table",
         });
       }
 
-      result = {};
-      for(var i = column_begin; i != column_end; ++i)
-        result[i] = self.pages[page].data[i][index - page_begin];
-      return result;
+      return self.pages[page][index - page_begin];
     }
 
     self.getItemMetadata = function(index)
