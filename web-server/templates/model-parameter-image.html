@@ -113,6 +113,8 @@ rights in this software.
         var v = null;
         var images = null;
 
+        var rating_metadata = null;
+
         var table_ready = false;
         var scatterplot_ready = false;
         var variableswitcher_ready = false;
@@ -198,6 +200,60 @@ rights in this software.
                 metadata_loaded();
               },
               error: artifact_missing
+            });
+
+            // Load rating table metadata. Create rating table if it doesn't exist already.
+            $.ajax({
+              url : "{{server-root}}models/{{_id}}/tables/rating-table/arrays/0/metadata?index=Index",
+              contentType : "application/json",
+              success: function(metadata)
+              {
+                rating_metadata = metadata;
+                metadata_loaded();
+              },
+              error: function(jqXHR, textStatus, errorThrown)
+              {
+                console.log("No rating table.");
+                // Initialize a new arrayset
+                if(jqXHR.status == 404){
+                  $.ajax({
+                    type : "PUT",
+                    url : "{{server-root}}models/{{_id}}/array-sets/rating-table",
+                    contentType : "application/json",
+                    data : $.toJSON({
+                      "input" : false
+                    }),
+                    success: function(result)
+                    {
+                      console.log("Hurray, we created the rating-table arrayset.");
+                      // Add an array to the new arrayset, ready to upload data.
+                      $.ajax({
+                        type : "PUT",
+                        url : "{{server-root}}models/{{_id}}/array-sets/rating-table/arrays/0",
+                        contentType : "application/json",
+                        data : $.toJSON({
+                          "attributes": [
+                            {"type": "int64", "name": "index"},
+                            {"type": "float64", "name": "rating"},
+                            ],
+                         "dimensions": [
+                            {"end": 10, "begin": 0, "type": "int64", "name": "row"}]
+                        }),
+                        success: function(result)
+                        {
+                          console.log("Hurray, we created a new array inside the rating-table arrayset.");
+                          /models/(mid)/array-sets/(name)/arrays/(array)
+
+                        },
+                          error: artifact_missing
+                        });
+                    },
+                    error: artifact_missing
+                  });
+                } else {
+                  artifact_missing();
+                }
+              }
             });
 
             // Retrieve bookmarked state information ...
