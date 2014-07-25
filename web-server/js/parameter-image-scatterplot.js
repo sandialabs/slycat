@@ -640,7 +640,7 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["update_legend_axis"])
     {
-      self.legend_scale = d3.scale.linear().domain([d3.min(self.options.v), d3.max(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+      self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
