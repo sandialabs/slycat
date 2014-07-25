@@ -197,64 +197,71 @@ rights in this software.
               success: function(metadata)
               {
                 table_metadata = metadata;
+                loadRatingMetadata();
                 metadata_loaded();
               },
               error: artifact_missing
             });
 
-            // Load rating table metadata. Create rating table if it doesn't exist already.
-            $.ajax({
-              url : "{{server-root}}models/{{_id}}/tables/rating-table/arrays/0/metadata?index=Index",
-              contentType : "application/json",
-              success: function(metadata)
-              {
-                rating_metadata = metadata;
-                metadata_loaded();
-              },
-              error: function(jqXHR, textStatus, errorThrown)
-              {
-                console.log("No rating table.");
-                // Initialize a new arrayset
-                if(jqXHR.status == 404){
-                  $.ajax({
-                    type : "PUT",
-                    url : "{{server-root}}models/{{_id}}/array-sets/rating-table",
-                    contentType : "application/json",
-                    data : $.toJSON({
-                      "input" : false
-                    }),
-                    success: function(result)
-                    {
-                      console.log("Hurray, we created the rating-table arrayset.");
-                      // Add an array to the new arrayset, ready to upload data.
-                      $.ajax({
-                        type : "PUT",
-                        url : "{{server-root}}models/{{_id}}/array-sets/rating-table/arrays/0",
-                        contentType : "application/json",
-                        data : $.toJSON({
-                          "attributes": [
-                            {"type": "int64", "name": "index"},
-                            {"type": "float64", "name": "rating"},
-                            ],
-                         "dimensions": [
-                            {"end": 10, "begin": 0, "type": "int64", "name": "row"}]
-                        }),
-                        success: function(result)
-                        {
-                          console.log("Hurray, we created a new array inside the rating-table arrayset.");
-                          /models/(mid)/array-sets/(name)/arrays/(array)
+            function loadRatingMetadata() {
+              $.ajax({
+                url : "{{server-root}}models/{{_id}}/tables/rating-table/arrays/0/metadata?index=Index",
+                contentType : "application/json",
+                success: function(metadata)
+                {
+                  console.log("loadRatingMetadata success");
+                  rating_metadata = metadata;
+                  metadata_loaded();
+                },
+                error: function(jqXHR, textStatus, errorThrown)
+                {
+                  console.log("loadRatingMetadata error");
+                  initializeRatingArrayset();
+                },
+              });
+            }
 
-                        },
-                          error: artifact_missing
-                        });
-                    },
-                    error: artifact_missing
-                  });
-                } else {
-                  artifact_missing();
-                }
-              }
-            });
+            function initializeRatingArrayset() {
+              $.ajax({
+                type : "PUT",
+                url : "{{server-root}}models/{{_id}}/array-sets/rating-table",
+                contentType : "application/json",
+                data : $.toJSON({
+                  "input" : false
+                }),
+                success: function(result)
+                { 
+                  console.log("initializeRatingArrayset success");
+                  addArrayToRatingArrayset();
+                },
+                error: function(){
+                  console.log("initializeRatingArrayset error");
+                  addArrayToRatingArrayset();
+                },
+              });
+            }
+
+            function addArrayToRatingArrayset() {
+              $.ajax({
+                type : "PUT",
+                url : "{{server-root}}models/{{_id}}/array-sets/rating-table/arrays/0",
+                contentType : "application/json",
+                data : $.toJSON({
+                  "attributes": [
+                    {"type": "int64", "name": "index"},
+                    {"type": "float64", "name": "rating"},
+                    ],
+                 "dimensions": [
+                    {"end": table_metadata["row-count"], "begin": 0, "type": "int64", "name": "row"}]
+                }),
+                success: function(result)
+                {
+                  console.log("addArrayToRatingArrayset success");
+                  loadRatingMetadata();
+                },
+                error: artifact_missing,
+              });
+            }
 
             // Retrieve bookmarked state information ...
             bookmarker.get_state(function(state)
@@ -524,7 +531,7 @@ rights in this software.
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) )
+          if( !table_ready && table_metadata && rating_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) )
           {
             table_ready = true;
 
