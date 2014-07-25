@@ -211,7 +211,7 @@ $.widget("slycat.colorswitcher",
     var length = colors.length;
     var data = [];
     for(var i=0; i < length; i++){
-      data.push({offset: i*(100/(length-1)), color: colors[i],});
+      data.push({offset: i*(100/(length-1)), color: colors[length-1-i],});
     }
     return data;
   },
