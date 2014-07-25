@@ -47,6 +47,18 @@ $.widget("parameter_image.table",
       return value_formatter(value);
     }
 
+    function rating_cell_formatter(row, cell, value, columnDef, dataContext)
+    {
+      return '<input type="radio" name="rating" value="0.33"><input type="radio" name="rating" value="0.66"><input type="radio" name="rating" value="1">';
+
+
+      if(columnDef.colormap)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      else if(value==null)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
+      return value_formatter(value);
+    }
+
     function set_sort(column, order)
     {
       self.data.set_sort(column, order);
@@ -125,7 +137,7 @@ $.widget("parameter_image.table",
         sortable : false,
         headerCssClass : "headerRating",
         cssClass : "rowRating",
-        formatter : cell_formatter,
+        formatter : rating_cell_formatter,
         width: 100,
         editor: Slick.Slycateditors.Text,
         header :
@@ -277,6 +289,19 @@ $.widget("parameter_image.table",
         self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
       }
     });
+
+    // self.grid.onMouseEnter.subscribe(function (e, args)
+    // {
+    //   console.log("mouse enter grid");
+    //   var cell = self.grid.getCellFromEvent(e);
+    //   //self.grid.setActiveCell(cell.row, cell.cell);
+    //   self.grid.gotoCell(cell.row, cell.cell, true);
+    // });
+
+    // self.grid.onMouseLeave.subscribe(function (e, args)
+    // {
+    //   console.log("mouse leave grid");
+    // });
 
     self._color_variables(self.options["variable-selection"]);
 
