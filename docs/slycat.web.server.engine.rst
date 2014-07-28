@@ -1,5 +1,5 @@
-slycat.web.server.engine module
-===============================
+slycat.web.server.engine
+========================
 
 .. automodule:: slycat.web.server.engine
     :members:

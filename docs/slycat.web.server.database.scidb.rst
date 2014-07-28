@@ -1,5 +1,5 @@
-slycat.web.server.database.scidb module
-=======================================
+slycat.web.server.database.scidb
+================================
 
 .. automodule:: slycat.web.server.database.scidb
     :members:

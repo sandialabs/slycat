@@ -1,5 +1,5 @@
-slycat.web.server.spider.byte_indexer module
-============================================
+slycat.web.server.spider.byte_indexer
+=====================================
 
 .. automodule:: slycat.web.server.spider.byte_indexer
     :members:

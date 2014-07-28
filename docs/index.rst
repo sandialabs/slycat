@@ -6,6 +6,31 @@
 Welcome!
 ========
 
+Slycat™ is a web-based system for analysis of large, high-dimensional
+data, developed to provide a collaborative platform for remote analysis
+of data ensembles. An *ensemble* is a collection of data sets, typically
+produced through a series of related simulation runs. More generally, an
+ensemble is a set of samples, each consisting of the same set of
+variables, over a shared high-dimensional space describing a particular
+problem domain. Ensemble analysis is a form of meta-analysis that looks
+at the combined behaviors and features of a group of simulations in an
+effort to understand and describe the underlying domain space. For
+instance, sensitivity analysis uses ensembles to examine how simulation
+input parameters and simulation results are correlated. By looking at
+groups of runs as a whole, higher level patterns can be seen despite
+variations in the individual runs.
+
+The Slycat system integrates data management, scalable analysis, and
+visualization via commodity web clients using a multi-tiered hierarchy
+of computation and data storage. Analysis models are computed local or
+on the Slycat server, and model artifacts are stored in a project
+database. These artifacts are the basis for visualizations that are
+delivered to users’ desktops through ordinary web browsers. Slycat
+currently provides two types of analysis: canonical correlation analysis
+(CCA) to model relationships between inputs and output metrics, and time
+series analysis featuring clustering and comparative visualization of
+waveforms. [[Install Slycat]] to try it for yourself!
+
 This is Slycat - a web-based data science analysis and visualization platform,
 created at [Sandia National Laboratories](http://www.sandia.gov).
 
@@ -30,7 +55,10 @@ Documentation:
 .. toctree::
    :maxdepth: 2
 
-   slycat
+   installation.rst
+   create-cca.rst
+   create-timeseries.rst
+   reference.rst
 
 
 Indices and tables

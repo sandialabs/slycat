@@ -1,5 +1,5 @@
-slycat.web.server.model.generic module
-======================================
+slycat.web.server.model.generic
+===============================
 
 .. automodule:: slycat.web.server.model.generic
     :members:

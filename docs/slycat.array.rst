@@ -1,5 +1,5 @@
-slycat.array module
-===================
+slycat.array
+============
 
 .. automodule:: slycat.array
     :members:

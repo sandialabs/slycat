@@ -1,5 +1,5 @@
-slycat.web.server.spider.table module
-=====================================
+slycat.web.server.spider.table
+==============================
 
 .. automodule:: slycat.web.server.spider.table
     :members:

@@ -1,16 +1,5 @@
-slycat.web package
-==================
-
-Subpackages
------------
-
-.. toctree::
-
-    slycat.web.client
-    slycat.web.server
-
-Module contents
----------------
+slycat.web
+==========
 
 .. automodule:: slycat.web
     :members:

@@ -1,5 +1,5 @@
-slycat.hdf5 module
-==================
+slycat.hdf5
+===========
 
 .. automodule:: slycat.hdf5
     :members:

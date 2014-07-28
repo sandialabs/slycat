@@ -1,5 +1,5 @@
-slycat.web.server.spider.delimited_file_indexer module
-======================================================
+slycat.web.server.spider.delimited_file_indexer
+===============================================
 
 .. automodule:: slycat.web.server.spider.delimited_file_indexer
     :members:

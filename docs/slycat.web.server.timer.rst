@@ -1,5 +1,5 @@
-slycat.web.server.timer module
-==============================
+slycat.web.server.timer
+=======================
 
 .. automodule:: slycat.web.server.timer
     :members:

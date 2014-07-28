@@ -1,5 +1,5 @@
-slycat.web.server.authentication module
-=======================================
+slycat.web.server.authentication
+================================
 
 .. automodule:: slycat.web.server.authentication
     :members:

@@ -1,5 +1,5 @@
-slycat.web.server.marking module
-================================
+slycat.web.server.marking
+=========================
 
 .. automodule:: slycat.web.server.marking
     :members:

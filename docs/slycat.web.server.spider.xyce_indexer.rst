@@ -1,5 +1,5 @@
-slycat.web.server.spider.xyce_indexer module
-============================================
+slycat.web.server.spider.xyce_indexer
+=====================================
 
 .. automodule:: slycat.web.server.spider.xyce_indexer
     :members:

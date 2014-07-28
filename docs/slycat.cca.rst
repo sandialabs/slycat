@@ -1,5 +1,5 @@
-slycat.cca module
-=================
+slycat.cca
+==========
 
 .. automodule:: slycat.cca
     :members:

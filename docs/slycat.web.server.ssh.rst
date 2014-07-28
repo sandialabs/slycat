@@ -1,5 +1,5 @@
-slycat.web.server.ssh module
-============================
+slycat.web.server.ssh
+=====================
 
 .. automodule:: slycat.web.server.ssh
     :members:

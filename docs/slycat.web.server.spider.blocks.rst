@@ -1,5 +1,5 @@
-slycat.web.server.spider.blocks module
-======================================
+slycat.web.server.spider.blocks
+===============================
 
 .. automodule:: slycat.web.server.spider.blocks
     :members:

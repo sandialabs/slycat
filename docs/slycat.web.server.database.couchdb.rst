@@ -1,5 +1,5 @@
-slycat.web.server.database.couchdb module
-=========================================
+slycat.web.server.database.couchdb
+==================================
 
 .. automodule:: slycat.web.server.database.couchdb
     :members:

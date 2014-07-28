@@ -1,8 +1,5 @@
-slycat.web.client package
-=========================
-
-Module contents
----------------
+slycat.web.client
+=================
 
 .. automodule:: slycat.web.client
     :members:

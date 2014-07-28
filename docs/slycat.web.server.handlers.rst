@@ -1,5 +1,5 @@
-slycat.web.server.handlers module
-=================================
+slycat.web.server.handlers
+==========================
 
 .. automodule:: slycat.web.server.handlers
     :members:

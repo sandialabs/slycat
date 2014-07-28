@@ -1,5 +1,5 @@
-slycat.web.server.model.cca module
-==================================
+slycat.web.server.model.cca
+===========================
 
 .. automodule:: slycat.web.server.model.cca
     :members:
