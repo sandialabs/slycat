@@ -2,6 +2,8 @@
 .ipynb_checkpoints
 .DS_Store
 
+docs/_build
+
 packages/cherrypy/test/access.log
 packages/cherrypy/test/error.log
 packages/cherrypy/test/session-*
