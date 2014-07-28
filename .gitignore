@@ -14,3 +14,4 @@ packages/cherrypy/test/test.access.log
 packages/cherrypy/test/test.conf
 packages/cherrypy/test/test.error.log
 
+slycat.egg-info
