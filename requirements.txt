@@ -1,3 +1,8 @@
-sphinxcontrib-napoleon
+cherrypy
+couchdb
+h5py
+numpy
+paramiko
+pystache
 sphinx_rtd_theme
-
+sphinxcontrib-napoleon
