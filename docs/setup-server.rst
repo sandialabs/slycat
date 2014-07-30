@@ -50,8 +50,8 @@ As user root:
        $ yum install ncurses-devel
        $ yum install blas-devel
        $ yum install lapack-devel
-       $ yum install openldap-devel 
-       $ yum install readline-devel 
+       $ yum install openldap-devel
+       $ yum install readline-devel
        $ yum install tk-devel
        $ yum install gcc-c++
        $ yum install libpng-devel
@@ -98,6 +98,7 @@ As user "slycat":
 
    ::
 
+       $ pip install cherrypy==3.2.6
        $ pip install couchdb
        $ pip install paramiko
        $ pip install routes
