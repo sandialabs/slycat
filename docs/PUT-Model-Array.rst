@@ -79,5 +79,5 @@ See Also
 --------
 
 -  :ref:`PUT Model Arrayset`
--  :ref:`PUT Model Array Attribute`
+-  :ref:`PUT Model Arrayset Data`
 

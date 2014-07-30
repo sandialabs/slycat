@@ -59,5 +59,5 @@ See Also
 --------
 
 -  :ref:`PUT Model Array`
--  :ref:`PUT Model Array Attribute`
+-  :ref:`PUT Model Arrayset Data`
 

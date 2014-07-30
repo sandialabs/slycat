@@ -6,7 +6,10 @@
 Welcome!
 ========
 
-Slycat™ is a web-based system for analysis of large, high-dimensional
+This is Slycat - a web-based data science analysis and visualization platform,
+created at `Sandia National Laboratories <http://www.sandia.gov>`_.
+
+Slycat is a web-based system for analysis of large, high-dimensional
 data, developed to provide a collaborative platform for remote analysis
 of data ensembles. An *ensemble* is a collection of data sets, typically
 produced through a series of related simulation runs. More generally, an
@@ -31,14 +34,8 @@ currently provides two types of analysis: canonical correlation analysis
 series analysis featuring clustering and comparative visualization of
 waveforms. [[Install Slycat]] to try it for yourself!
 
-This is Slycat - a web-based data science analysis and visualization platform,
-created at [Sandia National Laboratories](http://www.sandia.gov).
-
-The goal of the Slycat project is to develop the processes, tools and
-techniques to support data science, particularly analysis of large,
-high-dimensional data.
-
-# Design
+Design
+------
 
 Slycat incorporates several components:
 
