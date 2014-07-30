@@ -58,6 +58,7 @@ Documentation:
    installation.rst
    create-cca.rst
    create-timeseries.rst
+   restful-api.rst
    reference.rst
 
 
