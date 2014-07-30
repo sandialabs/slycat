@@ -10,7 +10,29 @@ import scipy.stats
 def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   """Compute Canonical Correlation Analysis (CCA).
 
-  Returns: x, y, x_loadings, y_loadings, r, wilks
+  Parameters
+  ----------
+  X : numpy.ndarray
+    :math:`M \\times I` matrix containing :math:`M` observations and :math:`I` input features.
+  Y : numpy.ndarray
+    :math:`M \\times O` matrix containing :math:`M` observations and :math:`O` output features.
+  scale_inputs : bool, optional
+    Scale input and output features to unit variance.
+
+  Returns
+  -------
+  x : numpy.ndarray
+    :math:`M \\times C` matrix containing input metavariable values for :math:`M` observations and :math:`C` CCA components.
+  y : numpy.ndarray
+    :math:`M \\times C` matrix containing output metavariable values for :math:`M` observations and :math:`C` CCA components.
+  x_loadings : numpy.ndarray
+    :math:`I \\times C` matrix containing weights for :math:`I` input variables and :math:`C` CCA components.
+  y_loadings : numpy.ndarray
+    :math:`O \\times C` matrix containing weights for :math:`O` output variables and :math:`C` CCA components.
+  r2 : numpy.ndarray
+    length-:math:`C` vector containing :math:`r^2` values for :math:`C` CCA components.
+  wilks : numpy.ndarray
+    length-:math:`C` vector containing the likelihood-ratio for :math:`C` CCA components.
   """
 
   # Validate our inputs ...
