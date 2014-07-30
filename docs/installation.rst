@@ -1,3 +1,5 @@
+.. _Installing Slycat:
+
 Installing Slycat
 =================
 
@@ -5,7 +7,7 @@ As a convenience, we provide the Slycat Virtual Machine, a complete
 virtual machine image that has Slycat and all its dependencies
 preinstalled. Using the Slycat VM, you can quickly begin exploring
 Slycat, try some tutorials, and run modest-size analyses on your own
-data. Eventually you might want to [[Setup Slycat Web Server]] on your
+data. Eventually you might want to :ref:`Setup Slycat Web Server` on your
 own hardware to perform large-scale analyses.
 
 Install the Virtual Machine
@@ -74,6 +76,5 @@ Connect to Slycat with a Web Browser
 Next Steps
 ----------
 
--  That's it! Now that you're up-and-running, it's time to [[Create a
-   CCA Model]].
+-  That's it! Now that you're up-and-running, it's time to :ref:`Create a CCA Model`.
 
