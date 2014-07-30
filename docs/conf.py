@@ -74,7 +74,7 @@ master_doc = 'index'
 project = u'Slycat'
 copyright = u"""2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software."""
+rights in this software"""
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
