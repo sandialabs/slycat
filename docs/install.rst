@@ -13,12 +13,11 @@ own hardware to perform large-scale analyses.
 Install the Virtual Machine
 ---------------------------
 
-You will need to install a hypervisor on the host where you plan to run
-the Slycat VM. The Slycat VM image is ready-to-use with [VirtualBox]
-(https://www.virtualbox.org), an open-source hypervisor that runs well
-on Windows, Linux, Mac, and most flavors of Unix. Once you've installed
-VirtualBox on your host, you're ready to download the Slycat VM and get
-started:
+You will need to install a hypervisor on the host where you plan to run the
+Slycat VM. The Slycat VM image is ready-to-use with `VirtualBox
+<https://www.virtualbox.org>`_, an open-source hypervisor that runs well on
+Windows, Linux, Mac, and most flavors of Unix. Once you've installed VirtualBox
+on your host, you're ready to download the Slycat VM and get started:
 
 -  Download the `Slycat VM image <http://sourceforge.net/projects/slycat/files/virtual-machines/slycatvm-20140402.ova/download>`__.
 -  Start VirtualBox.
