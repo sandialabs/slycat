@@ -33,7 +33,6 @@ import slycat.web.server.model.parameter_image
 import slycat.web.server.model.timeseries
 import slycat.web.server.ssh
 import slycat.web.server.template
-import slycat.web.server.timer
 import threading
 import time
 import traceback

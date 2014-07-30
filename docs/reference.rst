@@ -42,4 +42,3 @@ Contents:
    slycat.web.server.spider.xyce_indexer.rst
    slycat.web.server.ssh.rst
    slycat.web.server.template.rst
-   slycat.web.server.timer.rst
