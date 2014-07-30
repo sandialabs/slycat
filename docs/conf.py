@@ -35,7 +35,7 @@ class module_proxy(object):
     else:
       return module_proxy()
 
-for module_name in ["couchdb", "couchdb.client", "h5py", "numpy", "paramiko", "pystache", "scipy", "scipy.linalg", "scipy.cluster", "scipy.cluster.hierarchy", "scipy.spatial", "scipy.spatial.distance", "scipy.stats"]:
+for module_name in ["couchdb", "couchdb.client", "h5py", "numpy", "paramiko", "pystache", "requests", "scipy", "scipy.linalg", "scipy.cluster", "scipy.cluster.hierarchy", "scipy.spatial", "scipy.spatial.distance", "scipy.stats", "OpenSSL", "OpenSSL.SSL"]:
   sys.modules[module_name] = module_proxy()
 
 # If extensions (or modules to document with autodoc) are in another directory,
