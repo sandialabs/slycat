@@ -4,7 +4,7 @@ Setup Slycat Web Server
 =======================
 
 Note: If you're new to Slycat and are here give it a try, please see
-:ref:`Installing Slycat` instead. The following outlines how we setup the
+:ref:`Install Slycat` instead. The following outlines how we setup the
 Slycat Web Server when we build the a custom Slycat virtual machine.
 It's intended as a guide for advanced users who are interested in
 setting-up Slycat Web Server on their own hardware.  Of course,

@@ -1,6 +1,6 @@
-.. _Installing Slycat:
+.. _Install Slycat:
 
-Installing Slycat
+Install Slycat
 =================
 
 As a convenience, we provide the Slycat Virtual Machine, a complete
