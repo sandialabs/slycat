@@ -10,6 +10,7 @@ Contents:
    slycat.array.rst
    slycat.cca.rst
    slycat.hdf5.rst
+   slycat.table.rst
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
    slycat.web.rst
