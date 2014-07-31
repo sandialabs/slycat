@@ -16,7 +16,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/bookmarker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/variable-switcher.js"></script>v
+    <script type="text/javascript" src="{{server-root}}js/parameter-controls.js"></script>v
     <script type="text/javascript" src="{{server-root}}js/parameter-image-scatterplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/parameter-image-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.js"></script>
@@ -59,7 +59,7 @@ rights in this software.
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
           <div id="color-switcher"></div>
-          <div id="variable-switcher"></div>
+          <div id="controls"></div>
           <div id="status-messages" style="display: none;"></div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">
@@ -98,6 +98,8 @@ rights in this software.
         var input_columns = null;
         var output_columns = null;
         var image_columns = null;
+        var rating_columns = null;
+        var category_columns = null;
 
         var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
         var bookmark = null;
@@ -117,7 +119,7 @@ rights in this software.
 
         var table_ready = false;
         var scatterplot_ready = false;
-        var variableswitcher_ready = false;
+        var controls_ready = false;
 
         var session_cache = {};
         var image_uri = document.createElement("a");
@@ -136,6 +138,8 @@ rights in this software.
             input_columns = model["artifact:input-columns"];
             output_columns = model["artifact:output-columns"];
             image_columns = model["artifact:image-columns"];
+            rating_columns = model["artifact:rating-columns"];
+            category_columns = model["artifact:category-columns"];
             model_loaded();
           },
           error: function(request, status, reason_phrase)
@@ -440,7 +444,8 @@ rights in this software.
             var numeric_variables = [];
             for(var i = 0; i < table_metadata["column-count"]-1; i++)
             {
-              if(table_metadata["column-types"][i] != 'string')
+              // Only use non-string columns that are not used for ratings or categories
+              if(table_metadata["column-types"][i] != 'string' && rating_columns.indexOf(i) == -1 && category_columns.indexOf(i) == -1)
                 numeric_variables.push(i);
             }
 
@@ -525,7 +530,7 @@ rights in this software.
               },
               error: artifact_missing
             });
-            setup_variableswitcher();
+            setup_controls();
           }
         }
 
@@ -540,7 +545,7 @@ rights in this software.
             var other_columns = [];
             for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
             {
-              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1)
+              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
                 other_columns.push(i);
             }
 
@@ -554,6 +559,8 @@ rights in this software.
               outputs : output_columns,
               others : other_columns,
               images : image_columns,
+              ratings : rating_columns,
+              categories : category_columns,
               "image-variable" : images_index,
               "x-variable" : x_index,
               "y-variable" : y_index,
@@ -653,25 +660,25 @@ rights in this software.
             });
 
             // Changing the x variable updates the table ...
-            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            $("#controls").bind("x-selection-changed", function(event, variable)
             {
               $("#table").table("option", "x-variable", variable);
             });
 
             // Changing the y variable updates the table ...
-            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            $("#controls").bind("y-selection-changed", function(event, variable)
             {
               $("#table").table("option", "y-variable", variable);
             });
 
             // Changing the image variable updates the table ...
-            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            $("#controls").bind("images-selection-changed", function(event, variable)
             {
               $("#table").table("option", "image-variable", variable);
             });
 
             // Changing the color variable updates the table ...
-            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            $("#controls").bind("color-selection-changed", function(event, variable)
             {
               $("#table").table("option", "variable-selection", [Number(variable)]);
             });
@@ -745,7 +752,7 @@ rights in this software.
                 error : artifact_missing
               });
             });
-            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            $("#controls").bind("x-selection-changed", function(event, variable)
             {
               get_model_array_attribute({
                 server_root : "{{server-root}}",
@@ -777,7 +784,7 @@ rights in this software.
                 error : artifact_missing
               });
             });
-            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            $("#controls").bind("y-selection-changed", function(event, variable)
             {
               get_model_array_attribute({
                 server_root : "{{server-root}}",
@@ -807,7 +814,7 @@ rights in this software.
                 error: artifact_missing
               });
             });
-            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            $("#controls").bind("images-selection-changed", function(event, variable)
             {
               $.ajax(
               {
@@ -829,11 +836,11 @@ rights in this software.
           }
         }
 
-        function setup_variableswitcher()
+        function setup_controls()
         {
-          if( !variableswitcher_ready && table_metadata && (image_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
+          if( !controls_ready && table_metadata && (image_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
           {
-            variableswitcher_ready = true;
+            controls_ready = true;
             var numeric_variables = [];
 
             for(var i = 0; i < table_metadata["column-count"]; i++)
@@ -848,40 +855,42 @@ rights in this software.
               color_variable = [bookmark["variable-selection"]];
             }
 
-            $("#variable-switcher").variableswitcher({
+            $("#controls").controls({
               metadata: table_metadata,
               x_variables: numeric_variables.slice(0, numeric_variables.length-1),
               y_variables: numeric_variables.slice(0, numeric_variables.length-1),
               image_variables: image_columns,
               color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
+              ratings : rating_columns,
+              categories : category_columns,
               "x-variable" : x_index,
               "y-variable" : y_index,
               "image-variable" : images_index,
               "color-variable" : color_variable,
             });
 
-            // Changing the x variable updates the variable switcher ...
+            // Changing the x variable updates the controls ...
             $("#table").bind("x-selection-changed", function(event, variable)
             {
-              $("#variable-switcher").variableswitcher("option", "x-variable", variable);
+              $("#controls").controls("option", "x-variable", variable);
             });
 
-            // Changing the y variable updates the variable switcher ...
+            // Changing the y variable updates the controls ...
             $("#table").bind("y-selection-changed", function(event, variable)
             {
-              $("#variable-switcher").variableswitcher("option", "y-variable", variable);
+              $("#controls").controls("option", "y-variable", variable);
             });
 
-            // Changing the image variable updates the variable switcher ...
+            // Changing the image variable updates the controls ...
             $("#table").bind("images-selection-changed", function(event, variable)
             {
-              $("#variable-switcher").variableswitcher("option", "image-variable", variable);
+              $("#controls").controls("option", "image-variable", variable);
             });
 
-            // Changing the table variable updates the variable switcher ...
+            // Changing the table variable updates the controls ...
             $("#table").bind("variable-selection-changed", function(event, selection)
             {
-              $("#variable-switcher").variableswitcher("option", "color-variable", selection[0]);
+              $("#controls").controls("option", "color-variable", selection[0]);
             });
 
             // Changing the table variable updates the legend label ...
@@ -891,37 +900,37 @@ rights in this software.
             });
 
             // Changing the color variable updates the scatterplot ...
-            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            $("#controls").bind("color-selection-changed", function(event, variable)
             {
               update_scatterplot_value(variable);
             });
 
             // Changing the color variable updates the legend label ...
-            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            $("#controls").bind("color-selection-changed", function(event, variable)
             {
               $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][variable]});
             });
 
             // Log changes to the x variable ...
-            $("#variable-switcher").bind("x-selection-changed", function(event, variable)
+            $("#controls").bind("x-selection-changed", function(event, variable)
             {
               x_selection_changed(variable);
             });
 
             // Log changes to the y variable ...
-            $("#variable-switcher").bind("y-selection-changed", function(event, variable)
+            $("#controls").bind("y-selection-changed", function(event, variable)
             {
               y_selection_changed(variable);
             });
 
             // Log changes to the images variable ...
-            $("#variable-switcher").bind("images-selection-changed", function(event, variable)
+            $("#controls").bind("images-selection-changed", function(event, variable)
             {
               images_selection_changed(variable);
             });
 
             // Log changes to the color variable ...
-            $("#variable-switcher").bind("color-selection-changed", function(event, variable)
+            $("#controls").bind("color-selection-changed", function(event, variable)
             {
               selected_variable_changed(Number(variable));
             });

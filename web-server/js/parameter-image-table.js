@@ -19,6 +19,8 @@ $.widget("parameter_image.table",
     outputs : [],
     others : [],
     images : [],
+    ratings : [],
+    categories : [],
     "row-selection" : [],
     "variable-selection": [],
     "sort-variable" : null,
@@ -47,11 +49,8 @@ $.widget("parameter_image.table",
       return value_formatter(value);
     }
 
-    function rating_cell_formatter(row, cell, value, columnDef, dataContext)
+    function editable_cell_formatter(row, cell, value, columnDef, dataContext)
     {
-      return '<input type="radio" name="rating" value="0.33"><input type="radio" name="rating" value="0.66"><input type="radio" name="rating" value="1">';
-
-
       if(columnDef.colormap)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
       else if(value==null)
@@ -73,7 +72,7 @@ $.widget("parameter_image.table",
       });
     }
 
-    function make_column(column_index, header_class, cell_class)
+    function make_column(column_index, header_class, cell_class, formatter)
     {
       var column = {
         id : column_index,
@@ -82,7 +81,7 @@ $.widget("parameter_image.table",
         sortable : false,
         headerCssClass : header_class,
         cssClass : cell_class,
-        formatter : cell_formatter,
+        formatter : formatter,
         width: 100,
         header :
         {
@@ -127,40 +126,18 @@ $.widget("parameter_image.table",
     }
 
     self.columns = [];
-
-    // Adding rating column
-    self.columns.push(
-      {
-        id : "rating",
-        field : "rating",
-        name : "Rating",
-        sortable : false,
-        headerCssClass : "headerRating",
-        cssClass : "rowRating",
-        formatter : rating_cell_formatter,
-        width: 100,
-        editor: Slick.Slycateditors.Text,
-        header :
-        {
-          buttons :
-          [
-            {
-              cssClass : self.options["sort-variable"] == "rating" ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-              tooltip : self.options["sort-variable"] == "rating" ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-              command : self.options["sort-variable"] == "rating" ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending",
-            },
-          ]
-        }
-      }
-    );
     
-    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
+    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId", cell_formatter));
     for(var i in self.options.inputs)
-      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
+      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter));
     for(var i in self.options.outputs)
-      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
+      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter));
+    for(var i in self.options.ratings)
+      self.columns.push(make_column(self.options.ratings[i], "headerRating", "rowRating", editable_cell_formatter));
+    for(var i in self.options.categories)
+      self.columns.push(make_column(self.options.categories[i], "headerCategory", "rowCategory", editable_cell_formatter));
     for(var i in self.options.others)
-      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
+      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter));
 
     self.data = new self._data_provider({
       server_root : self.options["server-root"],
@@ -290,19 +267,6 @@ $.widget("parameter_image.table",
       }
     });
 
-    // self.grid.onMouseEnter.subscribe(function (e, args)
-    // {
-    //   console.log("mouse enter grid");
-    //   var cell = self.grid.getCellFromEvent(e);
-    //   //self.grid.setActiveCell(cell.row, cell.cell);
-    //   self.grid.gotoCell(cell.row, cell.cell, true);
-    // });
-
-    // self.grid.onMouseLeave.subscribe(function (e, args)
-    // {
-    //   console.log("mouse leave grid");
-    // });
-
     self._color_variables(self.options["variable-selection"]);
 
     self.grid.init();
@@ -394,7 +358,21 @@ $.widget("parameter_image.table",
   _set_selected_y: function()
   {
     var self = this;
-    //this.y_select.val(self.options["y-variable"]);
+    for(var i in self.columns)
+    {
+      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+        if( self.columns[i].id == self.options["y-variable"]){
+          self.columns[i].header.buttons[0].cssClass = "icon-y-on";
+          self.columns[i].header.buttons[0].tooltip = "Current y variable";
+          self.columns[i].header.buttons[0].command = "";
+        } else {
+          self.columns[i].header.buttons[0].cssClass = "icon-y-off";
+          self.columns[i].header.buttons[0].tooltip = "Set as y variable";
+          self.columns[i].header.buttons[0].command = "y-on";
+        }
+        self.grid.updateColumnHeader(self.columns[i].id);
+      }
+    }
   },
 
   _set_selected_image: function()

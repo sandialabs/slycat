@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-$.widget("parameter_image.variableswitcher",
+$.widget("parameter_image.controls",
 {
   options:
   {
@@ -17,6 +17,8 @@ $.widget("parameter_image.variableswitcher",
     y_variables : [],
     image_variables : [],
     color_variables : [],
+    rating_variables : [],
+    category_variables : [],
   },
 
   _create: function()
@@ -63,10 +65,21 @@ $.widget("parameter_image.variableswitcher",
       .appendTo(this.element)
       ;
 
+    this.selection_label = $("<label for='selection-control'>Selection:</label>")
+      .appendTo(this.element)
+      ;
+    this.selection_select = $("<select id='selection-control' name='selection-control' />")
+      .change(function(){
+        self.element.trigger("selection-control-changed", this.value);
+      })
+      .appendTo(this.element)
+      ;
+
     self._set_x_variables();
     self._set_y_variables();
     self._set_image_variables();
     self._set_color_variables();
+    self._set_selection_control();
   },
 
   _set_x_variables: function()
@@ -131,6 +144,48 @@ $.widget("parameter_image.variableswitcher",
         .appendTo(this.color_select)
         ;
     }
+  },
+
+  _set_selection_control: function()
+  { 
+    var self = this;
+    this.selection_select.empty();
+    // Start with empty option
+    $("<option />")
+      .appendTo(this.selection_select)
+      ;
+    // Add options for ratings and categories
+    // for(var i = 0; i < this.options.color_variables.length; i++) {
+    //   $("<option />")
+    //     .text(this.options.metadata['column-names'][this.options.color_variables[i]])
+    //     .attr("value", this.options.color_variables[i])
+    //     .attr("selected", function(){
+    //       return self.options["color-variable"] == self.options.color_variables[i] ? "selected" : false;
+    //     })
+    //     .appendTo(this.color_select)
+    //     ;
+    // }
+    // Finish with global actions
+    $("<option />")
+      .text("Open")
+      .attr("value", "open")
+      .appendTo(this.selection_select)
+      ;
+    $("<option />")
+      .text("Close")
+      .attr("value", "close")
+      .appendTo(this.selection_select)
+      ;
+    $("<option />")
+      .text("Show")
+      .attr("value", "show")
+      .appendTo(this.selection_select)
+      ;
+    $("<option />")
+      .text("Hide")
+      .attr("value", "hide")
+      .appendTo(this.selection_select)
+      ;
   },
 
   _set_selected_x: function()
