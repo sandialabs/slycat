@@ -255,13 +255,7 @@ rights in this software.
           <div id="remote-pi-parameters">
             <table id="remote-pi-variables">
               <thead>
-                <tr><th>Variable</th><th>Input</th><th>Output</th><th>Image</th></tr>
-                <tr>
-                  <td></td>
-                  <td><button id="remote-pi-all-inputs-on" title="Turn all inputs on.">On</button><button id="remote-pi-all-inputs-off" title="Turn all inputs off.">Off</button></td>
-                  <td><button id="remote-pi-all-outputs-on" title="Turn all outputs on.">On</button><button id="remote-pi-all-outputs-off" title="Turn all outputs off.">Off</button></td>
-                  <td><button id="remote-pi-all-images-on" title="Turn all images on.">On</button><button id="remote-pi-all-images-off" title="Turn all images off.">Off</button></td>
-                </tr>
+                <tr><th>Variable</th><th>Input</th><th>Output</th><th>Rating</th><th>Category</th><th>Image</th></tr>
               </thead>
               <tbody>
               </tbody>
@@ -1137,11 +1131,14 @@ rights in this software.
                 url : "{{server-root}}models/" + remote_pi_model + "/tables/data-table/arrays/0/metadata",
                 success : function(table)
                 {
-                  function deselect_companion(companion)
+                  function deselect_companions(companions)
                   {
                     return function()
                     {
-                      companion.removeAttr("checked");
+                      $.each(companions, function(index, companion)
+                      {
+                        companion.removeAttr("checked");
+                      });
                     }
                   }
                   $("#remote-pi-variables tbody").empty();
@@ -1156,13 +1153,19 @@ rights in this software.
                     {
                       var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                       var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                      var rating = $("<input type='checkbox' name='outputs' class='remote-pi-rating-variable' title='Treat variable as rating for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                      var category = $("<input type='checkbox' name='outputs' class='remote-pi-category-variable' title='Treat variable as a category for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
 
                       input.attr("checked", "checked");
-                      input.click(deselect_companion(output));
-                      output.click(deselect_companion(input));
+                      input.click(deselect_companions([output, rating, category]));
+                      output.click(deselect_companions([input, rating, category]));
+                      rating.click(deselect_companions([input, output, category]));
+                      category.click(deselect_companions([input, output, rating]));
                     }
                     else
                     {
+                      $("<td>").appendTo(row);
+                      $("<td>").appendTo(row);
                       $("<td>").appendTo(row);
                       $("<td>").appendTo(row);
                     }
@@ -1200,32 +1203,6 @@ rights in this software.
             }
           });
         });
-        $("#remote-pi-all-inputs-on").button().click(function()
-        {
-          $(".remote-pi-input-variable").attr("checked", "checked");
-          $(".remote-pi-output-variable").removeAttr("checked");
-        });
-        $("#remote-pi-all-inputs-off").button().click(function()
-        {
-          $(".remote-pi-input-variable").removeAttr("checked");
-        });
-        $("#remote-pi-all-outputs-on").button().click(function()
-        {
-          $(".remote-pi-output-variable").attr("checked", "checked");
-          $(".remote-pi-input-variable").removeAttr("checked");
-        });
-        $("#remote-pi-all-outputs-off").button().click(function()
-        {
-          $(".remote-pi-output-variable").removeAttr("checked");
-        });
-        $("#remote-pi-all-images-on").button().click(function()
-        {
-          $(".remote-pi-image-variable").attr("checked", "checked");
-        });
-        $("#remote-pi-all-images-off").button().click(function()
-        {
-          $(".remote-pi-image-variable").removeAttr("checked");
-        });
         $("#remote-pi-parameters-next").button().click(function()
         {
           function store_parameter(name, value)
@@ -1251,13 +1228,19 @@ rights in this software.
 
           input_columns = [];
           output_columns = [];
+          rating_columns = [];
+          category_columns = [];
           image_columns = [];
           $(".remote-pi-input-variable:checked").each(function(index, element) { input_columns.push(Number($(element).val())); });
           $(".remote-pi-output-variable:checked").each(function(index, element) { output_columns.push(Number($(element).val())); });
+          $(".remote-pi-rating-variable:checked").each(function(index, element) { rating_columns.push(Number($(element).val())); });
+          $(".remote-pi-category-variable:checked").each(function(index, element) { category_columns.push(Number($(element).val())); });
           $(".remote-pi-image-variable:checked").each(function(index, element) { image_columns.push(Number($(element).val())); });
 
           store_parameter("input-columns", input_columns);
           store_parameter("output-columns", output_columns);
+          store_parameter("rating-columns", rating_columns);
+          store_parameter("category-columns", category_columns);
           store_parameter("image-columns", image_columns);
 
           $.ajax(

@@ -1,14 +1,17 @@
-*.pyc
-.ipynb_checkpoints
+build
+.cover
+.coverage
+docs/_build
 .DS_Store
-
+.ipynb_checkpoints
 packages/cherrypy/test/access.log
 packages/cherrypy/test/error.log
 packages/cherrypy/test/session-*
-packages/cherrypy/test/test_misc_tools.log
 packages/cherrypy/test/static/bigfile.log
 packages/cherrypy/test/static/has space.html
 packages/cherrypy/test/test.access.log
 packages/cherrypy/test/test.conf
 packages/cherrypy/test/test.error.log
-
+packages/cherrypy/test/test_misc_tools.log
+*.pyc
+slycat.egg-info

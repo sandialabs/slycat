@@ -10,7 +10,7 @@ def test_slycat_cca_preconditions():
     slycat.cca.cca(numpy.random.random(10), numpy.random.random(10))
   with nose.tools.assert_raises_regexp(ValueError, "X and Y must contain the same number of rows."):
     slycat.cca.cca(numpy.random.random((10, 4)), numpy.random.random((11, 3)))
-  with nose.tools.assert_raises_regexp(ValueError, "X and Y must contain two-or-more rows."):
+  with nose.tools.assert_raises_regexp(ValueError, "Number of rows must be greater-than the number of columns."):
     slycat.cca.cca(numpy.random.random((1, 4)), numpy.random.random((1, 3)))
   with nose.tools.assert_raises_regexp(ValueError, "X and Y must contain one-or-more columns."):
     slycat.cca.cca(numpy.random.random((10, 0)), numpy.random.random((10, 0)))

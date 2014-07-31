@@ -4,11 +4,11 @@
 
 import argparse
 import numpy
-import numpy.core.defchararray
 import os
 import PIL.Image, PIL.ImageDraw, PIL.ImageFont
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--category-count", type=int, default=2, help="Category column count.  Default: %(default)s")
 parser.add_argument("--data-file", default="images.csv", help="Output data file.  Default: %(default)s")
 parser.add_argument("--image-count", type=int, default=3, help="Image column count.  Default: %(default)s")
 parser.add_argument("--image-directory", default="images", help="Image directory.  Default: %(default)s")
@@ -18,23 +18,49 @@ parser.add_argument("--image-width", type=int, default=1000, help="Image width. 
 parser.add_argument("--input-count", type=int, default=3, help="Input column count.  Default: %(default)s")
 parser.add_argument("--metadata-count", type=int, default=3, help="Metadata column count.  Default: %(default)s")
 parser.add_argument("--output-count", type=int, default=3, help="Output column count.  Default: %(default)s")
+parser.add_argument("--rating-count", type=int, default=2, help="Rating column count.  Default: %(default)s")
 parser.add_argument("--row-count", type=int, default=100, help="Row count.  Default: %(default)s")
 parser.add_argument("--seed", type=int, default=12345, help="Random seed.  Default: %(default)s")
 parser.add_argument("--unused-count", type=int, default=3, help="Unused column count.  Default: %(default)s")
 arguments = parser.parse_args()
 
 # Create some random data ...
-numpy.random.seed(arguments.seed)
-numeric_data = numpy.random.random((arguments.row_count, arguments.input_count + arguments.output_count + arguments.unused_count))
-metadata_data = numpy.core.defchararray.add("metadata ", numpy.arange(arguments.row_count * arguments.metadata_count).reshape(arguments.row_count, arguments.metadata_count).astype("string"))
-image_data = numpy.core.defchararray.mod("file://%s%s/%%s.jpg" % (arguments.image_hostname, os.path.abspath(arguments.image_directory)), numpy.arange(arguments.row_count * arguments.image_count).reshape(arguments.row_count, arguments.image_count).astype("string"))
-string_data = numpy.column_stack((metadata_data, image_data))
+names = []
+columns = []
 
-columns = [column for column in numeric_data.T] + [column for column in string_data.T]
+numpy.random.seed(arguments.seed)
+
+for i in range(arguments.category_count):
+  names.append("category%s" % i)
+  columns.append(numpy.random.randint(5, size=arguments.row_count))
+
+for i in range(arguments.rating_count):
+  names.append("rating%s" % i)
+  columns.append(numpy.random.uniform(-1, 1, size=arguments.row_count))
+
+for i in range(arguments.input_count):
+  names.append("input%s" % i)
+  columns.append(numpy.random.random(arguments.row_count))
+
+for i in range(arguments.output_count):
+  names.append("output%s" % i)
+  columns.append(numpy.random.random(arguments.row_count))
+
+for i in range(arguments.unused_count):
+  names.append("unused%s" % i)
+  columns.append(numpy.random.random(arguments.row_count))
+
+for i in range(arguments.metadata_count):
+  names.append("metadata%s" % i)
+  columns.append(numpy.array(["metadata"] * arguments.row_count))
+
+for i in range(arguments.image_count):
+  names.append("image%s" % i)
+  columns.append(numpy.array(["file://%s%s/%s.jpg" % (arguments.image_hostname, os.path.abspath(arguments.image_directory), (arguments.row_count * i) + j) for j in range(arguments.row_count)]))
 
 with open(arguments.data_file, "w") as file:
-  file.write(",".join(["n%s" % column for column in range(numeric_data.shape[1])] + ["s%s" % column for column in range(string_data.shape[1])]) + "\n")
-  for row in range(numeric_data.shape[0]):
+  file.write(",".join(names) + "\n")
+  for row in range(arguments.row_count):
     file.write(",".join([str(column[row]) for column in columns]) + "\n")
 
 # Generate random images ...
