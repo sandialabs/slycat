@@ -2,8 +2,16 @@ import nose.tools
 import numpy.testing
 
 import slycat.cca
+import slycat.table
+import sys
 
-def test_slycat_cca_preconditions():
+def assert_table(array, dimensions, attributes, data):
+  nose.tools.assert_equal(array[0], dimensions)
+  nose.tools.assert_equal(array[1], attributes)
+  for a, b in zip(array[2], data):
+    numpy.testing.assert_array_equal(a, b)
+
+def test_slycat_cca_cca_preconditions():
   with nose.tools.assert_raises_regexp(TypeError, "X and Y must be numpy.ndarray instances."):
     slycat.cca.cca([], [])
   with nose.tools.assert_raises_regexp(ValueError, "X and Y must have two dimensions."):
@@ -24,3 +32,26 @@ def test_slycat_cca_preconditions():
     slycat.cca.cca(numpy.random.random((10, 4)), numpy.random.random((10, 3)), force_positive=5)
   with nose.tools.assert_raises_regexp(TypeError, "significant_digits must be an integer or None."):
     slycat.cca.cca(numpy.random.random((10, 4)), numpy.random.random((10, 3)), significant_digits=3.4)
+
+def test_slycat_table_parse_unknown_row_delimiter():
+  data = """a,b|1,2|3,4"""
+  with nose.tools.assert_raises_regexp(ValueError, "Delimited text file must contain CR, LF, or CRLF row delimiters."):
+    slycat.table.parse(data)
+
+def test_slycat_table_parse_unknown_field_delimiter():
+  data = """a|b\n1|2\n3|4"""
+  with nose.tools.assert_raises_regexp(ValueError, "Delimited text file must contain comma, tab, or whitespace field delimiters."):
+    slycat.table.parse(data)
+
+def test_slycat_table_parse_basic():
+  def basic_table_parse(row_delimiter, field_delimiter, terminate):
+    rows = [["a", "b", "c"], [1, 2, 3], [4, 5, "six"], [7, 8, 9]]
+    data = row_delimiter.join([field_delimiter.join([str(value) for value in row]) for row in rows]) + (row_delimiter if terminate else "")
+    array = slycat.table.parse(data)
+    assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, 5, 8], ["3", "six", "9"]])
+
+  for row_delimiter in ["\r", "\n", "\r\n"]:
+    for field_delimiter in [",", "\t", " "]:
+      for terminate in [True, False]:
+        yield basic_table_parse, row_delimiter, field_delimiter, terminate
+
