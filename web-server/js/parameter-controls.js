@@ -19,6 +19,7 @@ $.widget("parameter_image.controls",
     color_variables : [],
     rating_variables : [],
     category_variables : [],
+    selection : [],
   },
 
   _create: function()
@@ -154,17 +155,48 @@ $.widget("parameter_image.controls",
     $("<option />")
       .appendTo(this.selection_select)
       ;
+
     // Add options for ratings and categories
-    // for(var i = 0; i < this.options.color_variables.length; i++) {
-    //   $("<option />")
-    //     .text(this.options.metadata['column-names'][this.options.color_variables[i]])
-    //     .attr("value", this.options.color_variables[i])
-    //     .attr("selected", function(){
-    //       return self.options["color-variable"] == self.options.color_variables[i] ? "selected" : false;
-    //     })
-    //     .appendTo(this.color_select)
-    //     ;
-    // }
+    for(var i = 0; i < this.options.rating_variables.length; i++)
+    {
+      var optgroup = $("<optgroup />")
+        .attr("label", this.options.metadata['column-names'][this.options.rating_variables[i]])
+        .appendTo(this.selection_select)
+        ;
+      $("<option />")
+        .text("Set")
+        .attr("value", this.options.rating_variables[i])
+        .attr("label", "set")
+        .appendTo(optgroup)
+        ;
+      $("<option />")
+        .text("Clear")
+        .attr("value", this.options.rating_variables[i])
+        .attr("label", "clear")
+        .appendTo(optgroup)
+        ;
+    }
+
+    for(var i = 0; i < this.options.category_variables.length; i++)
+    {
+      var optgroup = $("<optgroup />")
+        .attr("label", this.options.metadata['column-names'][this.options.category_variables[i]])
+        .appendTo(this.selection_select)
+        ;
+      $("<option />")
+        .text("Set")
+        .attr("value", this.options.category_variables[i])
+        .attr("label", "set")
+        .appendTo(optgroup)
+        ;
+      $("<option />")
+        .text("Clear")
+        .attr("value", this.options.category_variables[i])
+        .attr("label", "clear")
+        .appendTo(optgroup)
+        ;
+    }
+      
     // Finish with global actions
     $("<option />")
       .text("Open")
@@ -186,6 +218,10 @@ $.widget("parameter_image.controls",
       .attr("value", "hide")
       .appendTo(this.selection_select)
       ;
+
+    // Set state
+    this.selection_select.prop("disabled", this.options.selection.length == 0);
+    this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
   },
 
   _set_selected_x: function()
@@ -210,6 +246,13 @@ $.widget("parameter_image.controls",
   {
     var self = this;
     this.color_select.val(self.options["color-variable"]);
+  },
+
+  _set_selection: function()
+  {
+    var self = this;
+    this.selection_select.prop("disabled", this.options.selection.length == 0);
+    this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
   },
 
   _setOption: function(key, value)
@@ -250,6 +293,10 @@ $.widget("parameter_image.controls",
     else if(key == 'color_variables')
     {
       self._set_color_variables();
+    }
+    else if(key == 'selection')
+    {
+      self._set_selection();
     }
   },
 

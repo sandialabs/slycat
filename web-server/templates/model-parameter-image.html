@@ -646,9 +646,10 @@ rights in this software.
             $("#scatterplot").bind("selection-changed", function(event, selection)
             {
               $("#table").table("option", "row-selection", selection);
+              $("#controls").controls("option", "selection", selection);
             });
 
-            // Changing the table row selection updates the scatterplot ...
+            // Changing the table row selection updates the scatterplot and controls ...
             $("#table").bind("row-selection-changed", function(event, selection)
             {
               // The table selection is an array buffer, so convert it to an array.
@@ -657,6 +658,7 @@ rights in this software.
                 temp.push(selection[i]);
 
               $("#scatterplot").scatterplot("option", "selection",  temp);
+              $("#controls").controls("option", "selection",  temp);
             });
 
             // Changing the x variable updates the table ...
@@ -838,7 +840,7 @@ rights in this software.
 
         function setup_controls()
         {
-          if( !controls_ready && table_metadata && (image_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
+          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) && (category_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -855,14 +857,17 @@ rights in this software.
               color_variable = [bookmark["variable-selection"]];
             }
 
+            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
+
             $("#controls").controls({
               metadata: table_metadata,
               x_variables: numeric_variables.slice(0, numeric_variables.length-1),
               y_variables: numeric_variables.slice(0, numeric_variables.length-1),
               image_variables: image_columns,
               color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
-              ratings : rating_columns,
-              categories : category_columns,
+              rating_variables : rating_columns,
+              category_variables : category_columns,
+              selection : selection,
               "x-variable" : x_index,
               "y-variable" : y_index,
               "image-variable" : images_index,
