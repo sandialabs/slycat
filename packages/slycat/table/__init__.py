@@ -8,6 +8,15 @@ import sys
 def parse(data):
   """Parse a delimited text file and return a 1D array with an attribute for each table column.
 
+  The input file must be formatted as follows:
+
+  * Rows must be separated or terminated by CR, LF, or CR + LF.
+  * A single header row containing column names is required.
+  * Fields must be separated by a comma or a tab.
+  * Each column will be converted to a floating-point type if possible, or remain a string type.
+  * Empty fields are allowed, but cause the column to remain a string type.
+  * "Nan" is allowed in numeric columns.
+
   Arguments
   ---------
   data : string
@@ -33,10 +42,10 @@ def parse(data):
   rows = [row for row in data.split(row_delimiter) if len(row)]
 
   # Identify a column delimiter for the file.
-  delimiter_counts = [(numpy.array([len(row.split(delimiter)) for row in rows]), delimiter) for delimiter in [",", "\t", None]]
+  delimiter_counts = [(numpy.array([len(row.split(delimiter)) for row in rows]), delimiter) for delimiter in [",", "\t"]]
   delimiter_counts = [(counts[0], delimiter) for counts, delimiter in delimiter_counts if counts.var() == 0 and counts[0] > 1]
   if len(delimiter_counts) == 0:
-    raise ValueError("Delimited text file must contain comma, tab, or whitespace field delimiters.")
+    raise ValueError("Delimited text file must contain consistent comma or tab field delimiters.")
   field_delimiter = sorted(delimiter_counts)[-1][1]
 
   # Split data into fields.
@@ -48,13 +57,13 @@ def parse(data):
   # Generate final outputs.
   dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
   attributes = []
-  data = []
+  content = []
   for column in columns:
     try:
-      data.append(numpy.array(column[1:]).astype("float64"))
+      content.append(numpy.array(column[1:]).astype("float64"))
       attributes.append({"name":column[0], "type":"float64"})
     except:
-      data.append(numpy.array(column[1:]))
+      content.append(numpy.array(column[1:]))
       attributes.append({"name":column[0], "type":"string"})
 
-  return dimensions, attributes, data
+  return dimensions, attributes, content
