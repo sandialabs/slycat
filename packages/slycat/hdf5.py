@@ -2,6 +2,79 @@ import h5py
 import numpy
 import os
 import slycat.array
+import slycat.darray
+
+class darray(slycat.darray.prototype):
+  """Slycat darray implementation that stores data in an HDF5 file."""
+  def __init__(self, file, index):
+    self._storage = file["array/%s" % index]
+
+class arrayset(object):
+  def __init__(self, file):
+    if not isinstance(file, h5py.File):
+      raise ValueError("An open h5py.File is required.")
+    self._storage = file
+
+  def start_array(self, array_index, dimensions, attributes):
+    """Add an uninitialized darray to the arrayset.
+
+    Any existing array with the same index will be overwritten.
+    """
+    dimensions = slycat.array.require_dimensions(dimensions)
+    attributes = slycat.array.require_attributes(attributes)
+    shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
+    stored_types = [dtype(attribute["type"]) for attribute in attributes]
+
+    # Allocate space for the coming data ...
+    array_key = "array/%s" % array_index
+    if array_key in self._storage:
+      del self._storage[array_key]
+    for attribute_index, stored_type in enumerate(stored_types):
+      self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
+
+    # Store array metadata ...
+    array_metadata = self._storage[array_key].create_group("metadata")
+    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in dimensions], dtype="int64")
+    array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
+
+    return darray(self._storage, array_index)
+
+  def store_array(self, array_index, array):
+    """Add an existing darray to the arrayset.
+
+    Any existing array with the same index will be overwritten.
+
+    Parameters
+    ----------
+    array_index : integer
+      The index of the array to be created / overwritten.
+    array : :class:`slycat.darray.prototype`
+      Existing darray to be stored.
+    """
+    if not isinstance(array, slycat.darray.prototype):
+      raise ValueError("A slycat.darray is required.")
+
+    index = tuple([slice(dimension["begin"], dimension["end"]) for dimension in array.dimensions])
+
+    self.start_array(array_index, array.dimensions, array.attributes)
+    for attribute_index, attribute in enumerate(array.attributes):
+      stored_type = dtype(attribute["type"])
+      data = array.get(attribute_index)
+      statistics = array.statistics[attribute_index]
+
+      # Store the data ...
+      attribute_key = "array/%s/attribute/%s" % (array_index, attribute_index)
+      hdf5_attribute = self._storage[attribute_key]
+      hdf5_attribute[index] = data
+      hdf5_attribute.attrs["min"] = statistics["min"]
+      hdf5_attribute.attrs["max"] = statistics["max"]
+
+###############################################################################################################################################3
+# Legacy functionality - these functions shouldn't be necessary in new code.
 
 def dtype(type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""

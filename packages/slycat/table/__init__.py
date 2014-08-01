@@ -13,8 +13,8 @@ def parse(data):
   * Rows must be separated or terminated by CR, LF, or CR + LF.
   * A single header row containing column names is required.
   * Fields must be separated by a comma or a tab.
-  * Each column will be converted to a floating-point type if possible, or remain a string type.
-  * Empty fields are allowed, but cause the column to remain a string type.
+  * Each column will be converted to a floating-point type if possible.  Otherwise, it will be treated as a string type.
+  * Empty fields are allowed, but will force the column to be treated as a string type.
   * "Nan" is allowed in numeric columns.
 
   Arguments
@@ -24,7 +24,7 @@ def parse(data):
 
   Returns
   -------
-  darray : :class:`slycat.darray.darray`
+  darray : :class:`slycat.darray.memarray`
     In-memory representation of the table.
   """
   # Identify a row delimiter for the file.
