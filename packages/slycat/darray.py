@@ -83,7 +83,11 @@ class memarray(prototype):
       if attribute.dtype.char in ["O", "S", "U"]:
         statistics.append(dict(min=min(attribute), max=max(attribute)))
       else:
-        statistics.append(dict(min=attribute.min(), max=attribute.max()))
+        attribute = attribute[numpy.invert(numpy.isnan(attribute))]
+        if len(attribute):
+          statistics.append(dict(min=attribute.min(), max=attribute.max()))
+        else:
+          statistics.append(dict(min=None, max=None))
     return statistics
 
   @property

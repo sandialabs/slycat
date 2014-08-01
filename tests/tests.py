@@ -88,6 +88,16 @@ def test_slycat_darray_memarray_string():
   nose.tools.assert_equal(array.statistics[0]["min"], "a")
   nose.tools.assert_equal(array.statistics[0]["max"], "foo")
 
+def test_slycat_darray_memarray_nan_statistics():
+  array = slycat.darray.memarray([dict(name="i", end=4)], [dict(name="val", type="float64")], [[1, 2, numpy.nan, 5]])
+  nose.tools.assert_equal(array.statistics[0]["min"], 1)
+  nose.tools.assert_equal(array.statistics[0]["max"], 5)
+
+def test_slycat_darray_memarray_empty_statistics():
+  array = slycat.darray.memarray([dict(name="i", end=4)], [dict(name="val", type="float64")], [[numpy.nan, numpy.nan, numpy.nan, numpy.nan]])
+  nose.tools.assert_equal(array.statistics[0]["min"], None)
+  nose.tools.assert_equal(array.statistics[0]["max"], None)
+
 def test_slycat_table_parse_basic():
   def basic_table_parse(row_delimiter, field_delimiter, terminate):
     rows = [["a", "b", "c"], [1, 2, 3], [4, 5, "six"], [7, 8, 9]]
