@@ -76,6 +76,17 @@ class memarray(prototype):
     return self._dimensions
 
   @property
+  def statistics(self):
+    """Return statistics for each array attribute."""
+    statistics = []
+    for attribute in self._data:
+      if attribute.dtype.char in ["O", "S", "U"]:
+        statistics.append(dict(min=min(attribute), max=max(attribute)))
+      else:
+        statistics.append(dict(min=attribute.min(), max=attribute.max()))
+    return statistics
+
+  @property
   def attributes(self):
     """Return a description of the array attributes."""
     return self._attributes
