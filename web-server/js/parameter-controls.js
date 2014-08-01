@@ -71,7 +71,6 @@ $.widget("parameter_image.controls",
       ;
     this.selection_select = $("<select id='selection-control' name='selection-control' />")
       .change(function(){
-        self.element.trigger("selection-control-changed", this.value);
 
         var selectedOption = $('option:selected', this)
         var label = selectedOption.attr("label");
@@ -103,7 +102,7 @@ $.widget("parameter_image.controls",
           //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
           var variableIndex = $('input#variable-index', this).val();
           var value = $('input#value', this).val();
-          console.log("Setting value for: " + variableIndex + " to: " + value);
+          self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : value});
           $(this).dialog('close');
         },
         'Cancel': function() {
@@ -119,7 +118,7 @@ $.widget("parameter_image.controls",
         'Clear': function() {
           //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
           var variableIndex = $('input#variable-index', this).val();
-          console.log("Clearing value for: " + variableIndex);
+          self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : null});
           $(this).dialog('close');
         },
         'Cancel': function() {
