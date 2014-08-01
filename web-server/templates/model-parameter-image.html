@@ -70,6 +70,19 @@ rights in this software.
               <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
             </div>
           </div>
+          <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
+            <p>
+               <label for="value">Set values for <span id="set-value-form-variable">variable</span>:</label>
+               <input type="text" id="value" />
+               <input type="hidden" id="variable-index" />
+            </p>
+          </div>
+          <div id="clear-value-form" class="dialog" title="Clear Values" style="display: none;">
+            <p>
+               <label for="variableIndex">Clear values for <span id="clear-value-form-variable">variable</span>?</label>
+               <input type="hidden" id="variable-index" />
+            </p>
+          </div>
         </div>
       </div>
     </div>

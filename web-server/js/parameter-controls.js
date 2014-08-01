@@ -72,9 +72,75 @@ $.widget("parameter_image.controls",
     this.selection_select = $("<select id='selection-control' name='selection-control' />")
       .change(function(){
         self.element.trigger("selection-control-changed", this.value);
+
+        var selectedOption = $('option:selected', this)
+        var label = selectedOption.attr("label");
+        var text = selectedOption.text();
+        var value = this.value;
+        if(label == 'set' || label == 'clear')
+        {
+          var variableLabel = selectedOption.parent().attr('label');
+          if(label == 'set')
+          {
+            openSetValueDialog(variableLabel, value);
+          }
+          else if(label == 'clear')
+          {
+            openClearValueDialog(variableLabel, value);
+          }
+
+        }
+        this.selectedIndex = 0;
       })
       .appendTo(this.element)
       ;
+
+    $('#set-value-form').dialog({
+      modal: true,
+      autoOpen: false,
+      buttons: {
+        'Apply': function() {
+          //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
+          var variableIndex = $('input#variable-index', this).val();
+          var value = $('input#value', this).val();
+          console.log("Setting value for: " + variableIndex + " to: " + value);
+          $(this).dialog('close');
+        },
+        'Cancel': function() {
+          $(this).dialog('close');
+        },
+      },
+    });
+
+    $('#clear-value-form').dialog({
+      modal: true,
+      autoOpen: false,
+      buttons: {
+        'Clear': function() {
+          //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
+          var variableIndex = $('input#variable-index', this).val();
+          console.log("Clearing value for: " + variableIndex);
+          $(this).dialog('close');
+        },
+        'Cancel': function() {
+          $(this).dialog('close');
+        },
+      },
+    });
+
+
+    function openSetValueDialog(variable, variableIndex){
+      $("#set-value-form #set-value-form-variable").text(variable);
+      $("#set-value-form input").attr('value','');
+      $("#set-value-form input#variable-index").attr('value', variableIndex);
+      $("#set-value-form").dialog("open");
+    }
+    function openClearValueDialog(variable, variableIndex){
+      $("#clear-value-form #clear-value-form-variable").text(variable);
+      $("#set-value-form input").attr('value','');
+      $("#clear-value-form input#variable-index").attr('value', variableIndex);
+      $("#clear-value-form").dialog("open");
+    }
 
     self._set_x_variables();
     self._set_y_variables();
