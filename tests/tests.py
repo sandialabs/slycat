@@ -2,15 +2,16 @@ import nose.tools
 import numpy.testing
 
 import slycat.cca
+import slycat.darray
 import slycat.table
-import sys
 
 def assert_table(array, dimensions, attributes, data=None):
-  nose.tools.assert_equal(array[0], dimensions)
-  nose.tools.assert_equal(array[1], attributes)
+  nose.tools.assert_is_instance(array, slycat.darray.prototype)
+  nose.tools.assert_equal(array.dimensions, dimensions)
+  nose.tools.assert_equal(array.attributes, attributes)
   if data is not None:
-    for a, b in zip(array[2], data):
-      numpy.testing.assert_array_equal(a, b)
+    for attribute, b in enumerate(data):
+      numpy.testing.assert_array_equal(array.get(attribute), b)
 
 def test_slycat_cca_cca_preconditions():
   with nose.tools.assert_raises_regexp(TypeError, "X and Y must be numpy.ndarray instances."):

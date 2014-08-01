@@ -3,7 +3,7 @@
 # rights in this software.
 
 import numpy
-import sys
+import slycat.darray
 
 def parse(data):
   """Parse a delimited text file and return a 1D array with an attribute for each table column.
@@ -24,12 +24,8 @@ def parse(data):
 
   Returns
   -------
-  dimensions : sequence
-    A description of the array dimensions.
-  attributes : sequence
-    A description of the array attributes.
-  content : sequence
-    A sequence of numpy.ndarray instances containing the contents of each array attribute.
+  darray : :class:`slycat.darray.darray`
+    In-memory representation of the table.
   """
   # Identify a row delimiter for the file.
   delimiter_counts = [(data.count(delimiter), delimiter) for delimiter in ["\r\n", "\r", "\n"]]
@@ -57,13 +53,13 @@ def parse(data):
   # Generate final outputs.
   dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
   attributes = []
-  content = []
+  data = []
   for column in columns:
     try:
-      content.append(numpy.array(column[1:]).astype("float64"))
+      data.append(numpy.array(column[1:]).astype("float64"))
       attributes.append({"name":column[0], "type":"float64"})
     except:
-      content.append(numpy.array(column[1:]))
+      data.append(numpy.array(column[1:]))
       attributes.append({"name":column[0], "type":"string"})
 
-  return dimensions, attributes, content
+  return slycat.darray.memarray(dimensions, attributes, data)

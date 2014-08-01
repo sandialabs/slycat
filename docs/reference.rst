@@ -9,6 +9,7 @@ Contents:
    slycat.rst
    slycat.array.rst
    slycat.cca.rst
+   slycat.darray.rst
    slycat.hdf5.rst
    slycat.table.rst
    slycat.timeseries.rst
