@@ -33,16 +33,6 @@ def test_slycat_cca_cca_preconditions():
   with nose.tools.assert_raises_regexp(TypeError, "significant_digits must be an integer or None."):
     slycat.cca.cca(numpy.random.random((10, 4)), numpy.random.random((10, 3)), significant_digits=3.4)
 
-def test_slycat_table_parse_unknown_row_delimiter():
-  data = """a,b|1,2|3,4"""
-  with nose.tools.assert_raises_regexp(ValueError, "Delimited text file must contain CR, LF, or CRLF row delimiters."):
-    slycat.table.parse(data)
-
-def test_slycat_table_parse_unknown_field_delimiter():
-  data = """a|b\n1|2\n3|4"""
-  with nose.tools.assert_raises_regexp(ValueError, "Delimited text file must contain comma, tab, or whitespace field delimiters."):
-    slycat.table.parse(data)
-
 def test_slycat_table_parse_basic():
   def basic_table_parse(row_delimiter, field_delimiter, terminate):
     rows = [["a", "b", "c"], [1, 2, 3], [4, 5, "six"], [7, 8, 9]]
@@ -51,7 +41,27 @@ def test_slycat_table_parse_basic():
     assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, 5, 8], ["3", "six", "9"]])
 
   for row_delimiter in ["\r", "\n", "\r\n"]:
-    for field_delimiter in [",", "\t", " "]:
+    for field_delimiter in [",", "\t"]:
       for terminate in [True, False]:
         yield basic_table_parse, row_delimiter, field_delimiter, terminate
+
+def test_slycat_table_parse_unknown_row_delimiter():
+  data = "a,b|1,2|3,4"
+  with nose.tools.assert_raises_regexp(ValueError, "Delimited text file must contain CR, LF, or CRLF row delimiters."):
+    slycat.table.parse(data)
+
+def test_slycat_table_parse_unknown_field_delimiter():
+  data = "a|b\n1|2\n3|4"
+  with nose.tools.assert_raises_regexp(ValueError, "Delimited text file must contain consistent comma or tab field delimiters."):
+    slycat.table.parse(data)
+
+def test_slycat_table_parse_empty_string_field():
+  data = "a,b,c\n1,2,3\n4,5,six\n7,8,"
+  array = slycat.table.parse(data)
+  assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, 5, 8], ["3", "six", ""]])
+
+def test_slycat_table_parse_nan_numeric_field():
+  data = "a,b,c\n1,2,3\n4,nan,six\n7,8,9"
+  array = slycat.table.parse(data)
+  assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, numpy.nan, 8], ["3", "six", "9"]])
 
