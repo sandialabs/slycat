@@ -31,29 +31,59 @@ import numpy
 import slycat.array
 
 class prototype(object):
-  pass
+  """Abstract interface for all darray implementations."""
+  @property
+  def ndim(self):
+    """Return the number of dimensions in the array."""
+    raise NotImplementedError()
 
-class memarray(prototype):
-  """darray implementation that holds the full array contents in memory."""
-  def __init__(self, dimensions, attributes, data):
+  @property
+  def shape(self):
+    """Return the shape (size along each dimension) of the array."""
+    raise NotImplementedError()
+
+  @property
+  def size(self):
+    """Return the size (total number of elements) of the array."""
+    raise NotImplementedError()
+
+  @property
+  def dimensions(self):
+    """Return a description of the array dimensions."""
+    raise NotImplementedError()
+
+  @property
+  def attributes(self):
+    """Return a description of the array attributes."""
+    raise NotImplementedError()
+
+  @property
+  def statistics(self):
+    """Return statistics for each array attribute."""
+    raise NotImplementedError()
+
+  def get(self, attribute=0, slice=None):
+    """Return a data slice from one attribute."""
+    raise NotImplementedError()
+
+  def set(self, attribute, slice, data):
+    """Write a data slice to one attribute."""
+    raise NotImplementedError()
+
+class stub(prototype):
+  """darray implementation that only stores array metadata (dimensions and attributes)."""
+  def __init__(self, dimensions, attributes):
     if len(dimensions) < 1:
       raise ValueError("At least one dimension is required.")
     if len(attributes) < 1:
       raise ValueError("At least one attribute is required.")
-    if len(attributes) != len(data):
-      raise ValueError("Attribute and data counts must match.")
 
     self._dimensions = [dict(name=slycat.array.require_dimension_name(dimension["name"]), type=slycat.array.require_dimension_type(dimension.get("type", "int64")), begin=slycat.array.require_dimension_bound(dimension.get("begin", 0)), end=slycat.array.require_dimension_bound(dimension["end"])) for dimension in dimensions]
     self._attributes = [dict(name=slycat.array.require_attribute_name(attribute["name"]), type=slycat.array.require_attribute_type(attribute["type"])) for attribute in attributes]
-    self._data = [numpy.array(attribute) for attribute in data]
 
     for dimension in self._dimensions:
       if dimension["begin"] != 0:
         raise ValueError("Dimension range must begin with 0.")
-
-    for attribute in self._data:
-      if attribute.shape != self.shape:
-        raise ValueError("Attribute data must match array shape.")
 
   @property
   def ndim(self):
@@ -76,6 +106,25 @@ class memarray(prototype):
     return self._dimensions
 
   @property
+  def attributes(self):
+    """Return a description of the array attributes."""
+    return self._attributes
+
+class memarray(stub):
+  """darray implementation that holds the full array contents in memory."""
+  def __init__(self, dimensions, attributes, data):
+    stub.__init__(self, dimensions, attributes)
+
+    if len(attributes) != len(data):
+      raise ValueError("Attribute and data counts must match.")
+
+    self._data = [numpy.array(attribute) for attribute in data]
+
+    for attribute in self._data:
+      if attribute.shape != self.shape:
+        raise ValueError("Attribute data must match array shape.")
+
+  @property
   def statistics(self):
     """Return statistics for each array attribute."""
     statistics = []
@@ -89,11 +138,6 @@ class memarray(prototype):
         else:
           statistics.append(dict(min=None, max=None))
     return statistics
-
-  @property
-  def attributes(self):
-    """Return a description of the array attributes."""
-    return self._attributes
 
   def get(self, attribute=0, slice=None):
     """Return a data slice from one attribute."""
