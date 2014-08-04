@@ -14,8 +14,8 @@ def parse(data):
   * A single header row containing column names is required.
   * Fields must be separated by a comma or a tab.
   * Each column will be converted to a floating-point type if possible.  Otherwise, it will be treated as a string type.
-  * Empty fields are allowed, but will force the column to be treated as a string type.
-  * "Nan" is allowed in numeric columns.
+  * Empty fields are allowed, but columns containing empty fields cannot be converted to floating-point.
+  * Numeric columns may contain "nan", "Nan", "NaN", or "NAN" fields.
 
   Arguments
   ---------

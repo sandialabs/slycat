@@ -197,9 +197,13 @@ def test_slycat_table_parse_empty_string_field():
   assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, 5, 8], ["3", "six", ""]])
 
 def test_slycat_table_parse_nan_numeric_field():
-  data = "a,b,c\n1,2,3\n4,nan,six\n7,8,9"
-  array = slycat.table.parse(data)
-  assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, numpy.nan, 8], ["3", "six", "9"]])
+  def basic_nan_parse(nan):
+    data = "a,b,c\n1,2,3\n4,%s,six\n7,8,9" % nan
+    array = slycat.table.parse(data)
+    assert_table(array, [{"name":"row", "type":"int64", "begin":0, "end":3}], [{"name":"a", "type":"float64"}, {"name":"b", "type":"float64"}, {"name":"c", "type":"string"}], [[1, 4, 7], [2, numpy.nan, 8], ["3", "six", "9"]])
+
+  for nan in ["nan", "Nan", "NaN", "NAN"]:
+    yield basic_nan_parse, nan
 
 def test_slycat_table_parse_cars():
   data = open("data/cars.csv", "r").read()
