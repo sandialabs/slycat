@@ -35,19 +35,19 @@ def compute(mid):
 
     # Transform the input data table to a form usable with our cca() function ...
     with slycat.web.server.database.hdf5.open(data_table) as file:
-      arrayset = slycat.hdf5.ArraySet(file)
-      row_count = arrayset.array(0).shape[0]
+      array = slycat.hdf5.ArraySet(file)[0]
+      row_count = array.shape[0]
       indices = numpy.arange(row_count, dtype="int32")
 
       X = numpy.empty((row_count, len(input_columns)))
       for j, input in enumerate(input_columns):
         update(database, model, progress=mix(0.0, 0.25, float(j) / float(len(input_columns))))
-        X[:,j] = slycat.hdf5.get_array_attribute(file, 0, input)[...]
+        X[:,j] = array.get(input)[...]
 
       Y = numpy.empty((row_count, len(output_columns)))
       for j, output in enumerate(output_columns):
         update(database, model, progress=mix(0.25, 0.50, float(j) / float(len(output_columns))))
-        Y[:,j] = slycat.hdf5.get_array_attribute(file, 0, output)[...]
+        Y[:,j] = array.get(output)[...]
 
     # Remove rows containing NaNs ...
     good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))
@@ -66,30 +66,30 @@ def compute(mid):
 
     # Store canonical variable indices (scatterplot indices) as a |sample| vector of indices ...
     start_array_set(database, model, "canonical-indices")
-    start_array(database, model, "canonical-indices", 0, [("index", "int32")],[("sample", "int64", 0, sample_count)])
+    start_array(database, model, "canonical-indices", 0, [dict(name="index", type="int32")],[dict(name="sample", end=sample_count)])
     store_array_attribute(database, model, "canonical-indices", 0, 0, [(0, sample_count)], indices)
 
     # Store canonical variables (scatterplot data) as a component x sample matrix of x/y attributes ...
     start_array_set(database, model, "canonical-variables")
-    start_array(database, model, "canonical-variables", 0, [("input", "float64"), ("output", "float64")], [("component", "int64", 0, component_count), ("sample", "int64", 0, sample_count)])
+    start_array(database, model, "canonical-variables", 0, [dict(name="input", type="float64"), dict(name="output", type="float64")], [dict(name="component", end=component_count), dict(name="sample", end=sample_count)])
     store_array_attribute(database, model, "canonical-variables", 0, 0, [(0, component_count), (0, sample_count)], x.T)
     store_array_attribute(database, model, "canonical-variables", 0, 1, [(0, component_count), (0, sample_count)], y.T)
     update(database, model, progress=0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
     start_array_set(database, model, "input-structure-correlation")
-    start_array(database, model, "input-structure-correlation", 0, [("correlation", "float64")], [("component", "int64", 0, component_count), ("input", "int64", 0, len(input_columns))])
+    start_array(database, model, "input-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="input", end=len(input_columns))])
     store_array_attribute(database, model, "input-structure-correlation", 0, 0, [(0, component_count), (0, len(input_columns))], x_loadings.T)
     update(database, model, progress=0.85)
 
     start_array_set(database, model, "output-structure-correlation")
-    start_array(database, model, "output-structure-correlation", 0, [("correlation", "float64")], [("component", "int64", 0, component_count), ("output", "int64", 0, len(output_columns))])
+    start_array(database, model, "output-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="output", end=len(output_columns))])
     store_array_attribute(database, model, "output-structure-correlation", 0, 0, [(0, component_count), (0, len(output_columns))], y_loadings.T)
     update(database, model, progress=0.90)
 
     # Store statistics as a vector of component r2/p attributes
     start_array_set(database, model, "cca-statistics")
-    start_array(database, model, "cca-statistics", 0, [("r2", "float64"), ("p", "float64")], [("component", "int64", 0, component_count)])
+    start_array(database, model, "cca-statistics", 0, [dict(name="r2", type="float64"), dict(name="p", type="float64")], [dict(name="component", end=component_count)])
     store_array_attribute(database, model, "cca-statistics", 0, 0, [(0, component_count)], r)
     store_array_attribute(database, model, "cca-statistics", 0, 1, [(0, component_count)], wilks)
 

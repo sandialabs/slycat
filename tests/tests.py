@@ -110,18 +110,24 @@ def test_slycat_darray_memarray_empty_statistics():
 
 def test_slycat_hdf5_array_basic():
   with h5py.File(os.path.join(tempfile.mkdtemp(), "test.hdf5"), "w") as file:
-    arrayset = slycat.hdf5.ArraySet(file)
+    arrayset = slycat.hdf5.start_arrayset(file)
     nose.tools.assert_equal(len(arrayset), 0)
     nose.tools.assert_equal(arrayset.keys(), [])
 
     array = arrayset.start_array(1, [dict(name="i", end=10)], [dict(name="a", type="float64"), dict(name="b", type="string")])
     nose.tools.assert_equal(len(arrayset), 1)
     nose.tools.assert_equal(arrayset.keys(), [1])
+    nose.tools.assert_equal(array.ndim, 1)
+    nose.tools.assert_equal(array.shape, (10,))
+    nose.tools.assert_equal(array.size, 10)
     nose.tools.assert_equal(array.dimensions, [{"name":"i", "type":"int64", "begin":0, "end":10}])
     nose.tools.assert_equal(array.attributes, [{"name":"a", "type":"float64"}, {"name":"b", "type":"string"}])
     nose.tools.assert_equal(array.statistics, [{"min":None, "max":None}, {"min":None, "max":None}])
 
-    array = arrayset.array(1)
+    array = arrayset[1]
+    nose.tools.assert_equal(array.ndim, 1)
+    nose.tools.assert_equal(array.shape, (10,))
+    nose.tools.assert_equal(array.size, 10)
     nose.tools.assert_equal(array.dimensions, [{"name":"i", "type":"int64", "begin":0, "end":10}])
     nose.tools.assert_equal(array.attributes, [{"name":"a", "type":"float64"}, {"name":"b", "type":"string"}])
     nose.tools.assert_equal(array.statistics, [{"min":None, "max":None}, {"min":None, "max":None}])

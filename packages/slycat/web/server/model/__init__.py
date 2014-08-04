@@ -148,6 +148,7 @@ def start_array_set(database, model, name, input=False):
   update(database, model, message="Starting array set %s." % (name))
   storage = uuid.uuid4().hex
   with slycat.web.server.database.hdf5.create(storage) as file:
+    arrayset = slycat.hdf5.start_arrayset(file)
     database.save({"_id" : storage, "type" : "hdf5"})
     model["artifact:%s" % name] = storage
     model["artifact-types"][name] = "hdf5"
@@ -160,13 +161,13 @@ def start_array(database, model, name, array_index, attributes, dimensions):
   storage = model["artifact:%s" % name]
 
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    slycat.hdf5.start_array(file, array_index, attributes, dimensions)
+    slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder=None):
   update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    hdf5_array = slycat.hdf5.ArraySet(file).array(array_index)
+    hdf5_array = slycat.hdf5.ArraySet(file)[array_index]
     stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
 
     # Convert data to an array ...
@@ -206,17 +207,17 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
       array = numpy.array([index for item in array for index in expand(item, len(file["array"]))])
 
     for array_index in array:
-      array_metadata = slycat.hdf5.raw_array_metadata(file, array_index)
+      hdf5_array = slycat.hdf5.ArraySet(file)[array_index]
       if attribute is None:
-        attribute = numpy.arange(len(array_metadata["attribute-names"]))
+        attribute = numpy.arange(len(hdf5_array.attributes))
       elif isinstance(attribute, numbers.Integral):
         attribute = numpy.array([attribute])
       elif isinstance(attribute, slice):
-        attribute = attribute.indices(len(array_metadata["attribute-names"]))
+        attribute = attribute.indices(len(hdf5_array.attributes))
         attribute = numpy.arange(attribute[0], attribute[1], attribute[2])
 
       if hyperslice is None:
-        array_hyperslice = [(begin, end) for begin, end in zip(array_metadata["dimension-begin"], array_metadata["dimension-end"])]
+        array_hyperslice = [(dimension["begin"], dimension["end"]) for dimension in hdf5_array.dimensions]
       else:
         array_hyperslice = [(begin, end) for begin, end in hyperslice]
       array_shape = [(end - begin) for begin, end in array_hyperslice]
@@ -225,7 +226,7 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
         #update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
 
         # Convert data to an array ...
-        stored_type = slycat.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+        stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
         if byteorder is None:
           attribute_data = numpy.array(data_iterator.next(), dtype=stored_type).reshape(array_shape)
         elif byteorder == sys.byteorder:

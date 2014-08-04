@@ -37,37 +37,24 @@ class DArray(slycat.darray.Prototype):
     attributes = [self._storage["attribute/%s" % attribute].attrs for attribute in range(len(self._metadata["attribute-names"]))]
     return [dict(min=attribute.get("min", None), max=attribute.get("max", None)) for attribute in attributes]
 
+  def get(self, attribute=0, slice=None):
+    if slice is None:
+      return self._storage["attribute/%s" % attribute]
+    return self._storage["attribute/%s" % attribute][slice]
+
 class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
   def __init__(self, file):
-    if not isinstance(file, h5py.File):
-      raise ValueError("An open h5py.File is required.")
     self._storage = file
 
   def __len__(self):
-    return len(self._storage["array"]) if "array" in self._storage else 0
+    return len(self._storage["array"])
+
+  def __getitem__(self, key):
+    return DArray(self._storage["array/%s" % key])
 
   def keys(self):
-    return [int(key) for key in self._storage["array"].keys()] if "array" in self._storage else []
-
-#  def __iter__(self):
-#    if "array" self._storage:
-#      for 
-#    for key in sorted([int(key) for key in file["array"].keys()])[arrays]:
-
-  def array(self, array_index):
-    """Access an existing array.
-
-    Parameters
-    ----------
-    array_index : integer
-      Zero-based index of the array to retrieve.
-
-    Returns
-    -------
-    array : :class:`slycat.hdf5.DArray`
-    """
-    return DArray(self._storage["array/%s" % array_index])
+    return [int(key) for key in self._storage["array"].keys()]
 
   def start_array(self, array_index, dimensions, attributes):
     """Add an uninitialized darray to the arrayset.
@@ -145,6 +132,13 @@ class ArraySet(object):
 
     return DArray(self._storage["array/%s" % array_index])
 
+def start_arrayset(file):
+  """Create a new array set."""
+  if not isinstance(file, h5py.File):
+    raise ValueError("An open h5py.File is required.")
+  file.create_group("array")
+  return ArraySet(file)
+
 ###############################################################################################################################################3
 # Legacy functionality - don't use these in new code.
 
@@ -166,36 +160,6 @@ def raw_array_metadata(file, array_index):
   if metadata is None:
     metadata = file["array/%s" % array_index].attrs
   return metadata
-
-def start_array_set(path):
-  """Create a new array set.
-
-  Returns a newly opened instance of h5py.File.
-  """
-  return h5py.File(path, "w")
-
-def start_array(file, array_index, attributes, dimensions):
-  """Add an array to an existing array set."""
-  attributes = slycat.array.require_attributes(attributes)
-  dimensions = slycat.array.require_dimensions(dimensions)
-  stored_types = [dtype(attribute["type"]) for attribute in attributes]
-  shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
-
-  # Allocate space for the coming data ...
-  array_key = "array/{}".format(array_index)
-  if array_key in file:
-    del file[array_key]
-  for attribute_index, stored_type in enumerate(stored_types):
-    file.create_dataset("array/{}/attribute/{}".format(array_index, attribute_index), shape, dtype=stored_type)
-
-  # Store array metadata ...
-  array_metadata = file[array_key].create_group("metadata")
-  array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
-  array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
-  array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-  array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-  array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in dimensions], dtype="int64")
-  array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
 
 def store_array_attribute(file, array_index, attribute_index, ranges, data):
   """Store attribute data in an existing array."""
@@ -265,6 +229,3 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
   if attribute_max is not None:
     attribute.attrs["max"] = attribute_max
 
-def get_array_attribute(file, array_index, attribute_index):
-  """Return attribute data from an array."""
-  return file["array/{}/attribute/{}".format(array_index, attribute_index)]
