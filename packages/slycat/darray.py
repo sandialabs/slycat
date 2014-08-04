@@ -62,12 +62,12 @@ class Prototype(object):
     """Return statistics for each array attribute."""
     raise NotImplementedError()
 
-  def get(self, attribute=0, slice=None):
-    """Return a data slice from one attribute."""
+  def get(self, attribute=0):
+    """Return data from one attribute."""
     raise NotImplementedError()
 
   def set(self, attribute, slice, data):
-    """Write a data slice to one attribute."""
+    """Write data to one attribute."""
     raise NotImplementedError()
 
 class Stub(Prototype):
@@ -139,11 +139,9 @@ class MemArray(Stub):
           statistics.append(dict(min=None, max=None))
     return statistics
 
-  def get(self, attribute=0, slice=None):
+  def get(self, attribute=0):
     """Return a data slice from one attribute."""
-    if slice is None:
-      return self._data[attribute]
-    return self._data[attribute][slice]
+    return self._data[attribute]
 
   def set(self, attribute, slice, data):
     """Write a data slice to one attribute."""

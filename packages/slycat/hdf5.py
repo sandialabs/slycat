@@ -37,10 +37,8 @@ class DArray(slycat.darray.Prototype):
     attributes = [self._storage["attribute/%s" % attribute].attrs for attribute in range(len(self._metadata["attribute-names"]))]
     return [dict(min=attribute.get("min", None), max=attribute.get("max", None)) for attribute in attributes]
 
-  def get(self, attribute=0, slice=None):
-    if slice is None:
-      return self._storage["attribute/%s" % attribute]
-    return self._storage["attribute/%s" % attribute][slice]
+  def get(self, attribute=0):
+    return self._storage["attribute/%s" % attribute]
 
 class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
