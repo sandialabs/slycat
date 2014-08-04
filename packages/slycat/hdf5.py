@@ -40,6 +40,34 @@ class DArray(slycat.darray.Prototype):
   def get(self, attribute=0):
     return self._storage["attribute/%s" % attribute]
 
+  def set(self, attribute, slice, data):
+    if not (0 <= attribute and attribute < len(self.attributes)):
+      raise ValueError("Attribute index %s out-of-range." % attribute)
+
+    # Store the data ...
+    attribute = self._storage["attribute/%s" % attribute]
+    attribute[slice] = data
+
+    # Update attribute min/max statistics ...
+    attribute_min = attribute.attrs.get("min", None)
+    attribute_max = attribute.attrs.get("max", None)
+    if data.dtype.char in ["O", "S", "U"]:
+      data_min = min(data)
+      data_max = max(data)
+      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+    else:
+      data = data[numpy.invert(numpy.isnan(data))]
+      data_min = data.min() if len(data) else None
+      data_max = data.max() if len(data) else None
+      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+
+    if attribute_min is not None:
+      attribute.attrs["min"] = attribute_min
+    if attribute_max is not None:
+      attribute.attrs["max"] = attribute_max
+
 class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
   def __init__(self, file):
