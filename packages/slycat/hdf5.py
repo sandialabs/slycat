@@ -54,14 +54,15 @@ class DArray(slycat.darray.Prototype):
     if data.dtype.char in ["O", "S", "U"]:
       data_min = min(data)
       data_max = max(data)
-      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
-      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+      attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
+      attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
     else:
       data = data[numpy.invert(numpy.isnan(data))]
-      data_min = data.min() if len(data) else None
-      data_max = data.max() if len(data) else None
-      attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
-      attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+      if len(data):
+        data_min = numpy.asscalar(data.min())
+        data_max = numpy.asscalar(data.max())
+        attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+        attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
 
     if attribute_min is not None:
       attribute.attrs["min"] = attribute_min
