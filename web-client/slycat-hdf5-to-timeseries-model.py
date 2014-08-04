@@ -270,8 +270,8 @@ try:
     connection.start_array_set(mid, "preview-%s" % name)
     for index, waveform in enumerate(waveforms):
       slycat.web.client.log.info("Creating preview %s" % index)
-      attributes = [("time", "float64"), ("value", "float64")]
-      dimensions = [("sample", "int64", 0, len(waveform["times"]))]
+      attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
+      dimensions = [dict(name="sample", end=len(waveform["times"]))]
       connection.start_array(mid, "preview-%s" % name, index, attributes, dimensions)
 
     slycat.web.client.log.info("Storing previews")
