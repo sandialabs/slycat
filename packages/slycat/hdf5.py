@@ -4,10 +4,10 @@ import os
 import slycat.array
 import slycat.darray
 
-class darray(slycat.darray.prototype):
+class DArray(slycat.darray.Prototype):
   """Slycat darray implementation that stores data in an HDF5 file."""
-  def __init__(self, file, index):
-    self._storage = file["array/%s" % index]
+  def __init__(self, storage):
+    self._storage = storage
     self._metadata = self._storage.get("metadata", None)
     if self._metadata is None:
       self._metadata = self._storage.attrs
@@ -37,12 +37,23 @@ class darray(slycat.darray.prototype):
     attributes = [self._storage["attribute/%s" % attribute].attrs for attribute in range(len(self._metadata["attribute-names"]))]
     return [dict(min=attribute.get("min", None), max=attribute.get("max", None)) for attribute in attributes]
 
-class arrayset(object):
+class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
   def __init__(self, file):
     if not isinstance(file, h5py.File):
       raise ValueError("An open h5py.File is required.")
     self._storage = file
+
+  def __len__(self):
+    return len(self._storage["array"]) if "array" in self._storage else 0
+
+  def keys(self):
+    return [int(key) for key in self._storage["array"].keys()] if "array" in self._storage else []
+
+#  def __iter__(self):
+#    if "array" self._storage:
+#      for 
+#    for key in sorted([int(key) for key in file["array"].keys()])[arrays]:
 
   def array(self, array_index):
     """Access an existing array.
@@ -54,9 +65,9 @@ class arrayset(object):
 
     Returns
     -------
-    array : :class:`slycat.hdf5.darray`
+    array : :class:`slycat.hdf5.DArray`
     """
-    return darray(self._storage, array_index)
+    return DArray(self._storage["array/%s" % array_index])
 
   def start_array(self, array_index, dimensions, attributes):
     """Add an uninitialized darray to the arrayset.
@@ -74,12 +85,11 @@ class arrayset(object):
 
     Returns
     -------
-    array : :class:`slycat.hdf5.darray`
+    array : :class:`slycat.hdf5.DArray`
     """
-    dimensions = slycat.array.require_dimensions(dimensions)
-    attributes = slycat.array.require_attributes(attributes)
-    shape = [dimension["end"] - dimension["begin"] for dimension in dimensions]
-    stored_types = [dtype(attribute["type"]) for attribute in attributes]
+    stub = slycat.darray.Stub(dimensions, attributes)
+    shape = [dimension["end"] - dimension["begin"] for dimension in stub.dimensions]
+    stored_types = [dtype(attribute["type"]) for attribute in stub.attributes]
 
     # Allocate space for the coming data ...
     array_key = "array/%s" % array_index
@@ -90,17 +100,17 @@ class arrayset(object):
 
     # Store array metadata ...
     array_metadata = self._storage[array_key].create_group("metadata")
-    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in dimensions], dtype="int64")
-    array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in dimensions], dtype="int64")
+    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in stub.dimensions], dtype="int64")
+    array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in stub.dimensions], dtype="int64")
 
-    return darray(self._storage, array_index)
+    return DArray(self._storage[array_key])
 
   def store_array(self, array_index, array):
-    """Store a :class:`slycat.darray.prototype` in the arrayset.
+    """Store a :class:`slycat.darray.Prototype` in the arrayset.
 
     An existing array with the same index will be overwritten.
 
@@ -108,14 +118,14 @@ class arrayset(object):
     ----------
     array_index : integer
       The index of the array to be created / overwritten.
-    array : :class:`slycat.darray.prototype`
+    array : :class:`slycat.darray.Prototype`
       Existing darray to be stored.
 
     Returns
     -------
-    array : :class:`slycat.hdf5.darray`
+    array : :class:`slycat.hdf5.DArray`
     """
-    if not isinstance(array, slycat.darray.prototype):
+    if not isinstance(array, slycat.darray.Prototype):
       raise ValueError("A slycat.darray is required.")
 
     index = tuple([slice(dimension["begin"], dimension["end"]) for dimension in array.dimensions])
@@ -133,7 +143,7 @@ class arrayset(object):
       hdf5_attribute.attrs["min"] = statistics["min"]
       hdf5_attribute.attrs["max"] = statistics["max"]
 
-    return darray(self._storage, array_index)
+    return DArray(self._storage["array/%s" % array_index])
 
 ###############################################################################################################################################3
 # Legacy functionality - don't use these in new code.

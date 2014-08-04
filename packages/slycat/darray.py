@@ -30,7 +30,7 @@ their size.
 import numpy
 import slycat.array
 
-class prototype(object):
+class Prototype(object):
   """Abstract interface for all darray implementations."""
   @property
   def ndim(self):
@@ -70,7 +70,7 @@ class prototype(object):
     """Write a data slice to one attribute."""
     raise NotImplementedError()
 
-class stub(prototype):
+class Stub(Prototype):
   """darray implementation that only stores array metadata (dimensions and attributes)."""
   def __init__(self, dimensions, attributes):
     if len(dimensions) < 1:
@@ -110,10 +110,10 @@ class stub(prototype):
     """Return a description of the array attributes."""
     return self._attributes
 
-class memarray(stub):
+class MemArray(Stub):
   """darray implementation that holds the full array contents in memory."""
   def __init__(self, dimensions, attributes, data):
-    stub.__init__(self, dimensions, attributes)
+    Stub.__init__(self, dimensions, attributes)
 
     if len(attributes) != len(data):
       raise ValueError("Attribute and data counts must match.")

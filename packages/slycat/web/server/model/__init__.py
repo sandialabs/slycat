@@ -120,7 +120,7 @@ def store_table_file(database, model, name, data, filename, nan_row_filtering, i
     if input:
       model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
     database.save(model)
-    arrayset = slycat.hdf5.arrayset(file)
+    arrayset = slycat.hdf5.ArraySet(file)
     arrayset.store_array(0, array)
 
 def store_parameter(database, model, name, value, input=False):
@@ -166,7 +166,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
   update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    hdf5_array = slycat.hdf5.arrayset(file).array(array_index)
+    hdf5_array = slycat.hdf5.ArraySet(file).array(array_index)
     stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
 
     # Convert data to an array ...

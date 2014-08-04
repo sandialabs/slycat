@@ -24,7 +24,7 @@ def parse(data):
 
   Returns
   -------
-  darray : :class:`slycat.darray.memarray`
+  darray : :class:`slycat.darray.MemArray`
     In-memory representation of the table.
   """
   # Identify a row delimiter for the file.
@@ -62,4 +62,4 @@ def parse(data):
       data.append(numpy.array(column[1:]))
       attributes.append({"name":column[0], "type":"string"})
 
-  return slycat.darray.memarray(dimensions, attributes, data)
+  return slycat.darray.MemArray(dimensions, attributes, data)

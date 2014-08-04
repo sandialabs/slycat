@@ -35,7 +35,7 @@ def compute(mid):
 
     # Transform the input data table to a form usable with our cca() function ...
     with slycat.web.server.database.hdf5.open(data_table) as file:
-      arrayset = slycat.hdf5.arrayset(file)
+      arrayset = slycat.hdf5.ArraySet(file)
       row_count = arrayset.array(0).shape[0]
       indices = numpy.arange(row_count, dtype="int32")
 

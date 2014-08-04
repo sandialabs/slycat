@@ -549,7 +549,7 @@ def get_model_array_metadata(mid, aid, array):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      hdf5_arrayset = slycat.hdf5.arrayset(file)
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
       hdf5_array = hdf5_arrayset.array(array)
       metadata = dict(dimensions=hdf5_array.dimensions, attributes=hdf5_array.attributes, statistics=hdf5_array.statistics)
   return metadata
@@ -590,7 +590,7 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
 
   with slycat.web.server.database.hdf5.lock:
     with slycat.web.server.database.hdf5.open(artifact) as file:
-      hdf5_arrayset = slycat.hdf5.arrayset(file)
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
       hdf5_array = hdf5_arrayset.array(array)
 
       if not(0 <= attribute and attribute < len(hdf5_array.attributes)):
@@ -766,7 +766,7 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
 
 def get_table_metadata(file, array_index, index):
   """Return table-oriented metadata for a 1D array, plus an optional index column."""
-  arrayset = slycat.hdf5.arrayset(file)
+  arrayset = slycat.hdf5.ArraySet(file)
   array = arrayset.array(array_index)
 
   if array.ndim != 1:
