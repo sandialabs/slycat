@@ -8,17 +8,73 @@ class darray(slycat.darray.prototype):
   """Slycat darray implementation that stores data in an HDF5 file."""
   def __init__(self, file, index):
     self._storage = file["array/%s" % index]
+    self._metadata = self._storage.get("metadata", None)
+    if self._metadata is None:
+      self._metadata = self._storage.attrs
+
+  @property
+  def ndim(self):
+    return len(self._metadata["dimension-names"])
+
+  @property
+  def shape(self):
+    return tuple([end - begin for begin, end in zip(self._metadata["dimension-begin"], self._metadata["dimension-end"])])
+
+  @property
+  def size(self):
+    return numpy.prod(self.shape)
+
+  @property
+  def dimensions(self):
+    return [dict(name=name, type=type, begin=begin, end=end) for name, type, begin, end in zip(self._metadata["dimension-names"], self._metadata["dimension-types"], self._metadata["dimension-begin"], self._metadata["dimension-end"])]
+
+  @property
+  def attributes(self):
+    return [dict(name=name, type=type) for name, type in zip(self._metadata["attribute-names"], self._metadata["attribute-types"])]
+
+  @property
+  def statistics(self):
+    attributes = [self._storage["attribute/%s" % attribute].attrs for attribute in range(len(self._metadata["attribute-names"]))]
+    return [dict(min=attribute.get("min", None), max=attribute.get("max", None)) for attribute in attributes]
 
 class arrayset(object):
+  """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
   def __init__(self, file):
     if not isinstance(file, h5py.File):
       raise ValueError("An open h5py.File is required.")
     self._storage = file
 
+  def array(self, array_index):
+    """Access an existing array.
+
+    Parameters
+    ----------
+    array_index : integer
+      Zero-based index of the array to retrieve.
+
+    Returns
+    -------
+    array : :class:`slycat.hdf5.darray`
+    """
+    return darray(self._storage, array_index)
+
   def start_array(self, array_index, dimensions, attributes):
     """Add an uninitialized darray to the arrayset.
 
-    Any existing array with the same index will be overwritten.
+    An existing array with the same index will be overwritten.
+
+    Parameters
+    ----------
+    array_index : integer
+      Zero-based index of the array to create.
+    dimensions : list of dicts
+      Description of the new array dimensions.
+    attributes : list of dicts
+      Description of the new array attributes.
+
+    Returns
+    -------
+    array : :class:`slycat.hdf5.darray`
     """
     dimensions = slycat.array.require_dimensions(dimensions)
     attributes = slycat.array.require_attributes(attributes)
@@ -44,9 +100,9 @@ class arrayset(object):
     return darray(self._storage, array_index)
 
   def store_array(self, array_index, array):
-    """Add an existing darray to the arrayset.
+    """Store a :class:`slycat.darray.prototype` in the arrayset.
 
-    Any existing array with the same index will be overwritten.
+    An existing array with the same index will be overwritten.
 
     Parameters
     ----------
@@ -54,6 +110,10 @@ class arrayset(object):
       The index of the array to be created / overwritten.
     array : :class:`slycat.darray.prototype`
       Existing darray to be stored.
+
+    Returns
+    -------
+    array : :class:`slycat.hdf5.darray`
     """
     if not isinstance(array, slycat.darray.prototype):
       raise ValueError("A slycat.darray is required.")
@@ -73,8 +133,10 @@ class arrayset(object):
       hdf5_attribute.attrs["min"] = statistics["min"]
       hdf5_attribute.attrs["max"] = statistics["max"]
 
+    return darray(self._storage, array_index)
+
 ###############################################################################################################################################3
-# Legacy functionality - these functions shouldn't be necessary in new code.
+# Legacy functionality - don't use these in new code.
 
 def dtype(type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""
@@ -192,34 +254,6 @@ def store_array_attribute(file, array_index, attribute_index, ranges, data):
     attribute.attrs["min"] = attribute_min
   if attribute_max is not None:
     attribute.attrs["max"] = attribute_max
-
-def get_array_metadata(file, array_index):
-  """Return an {attributes, dimensions, statistics} dict describing an array."""
-  array_key = "array/{}".format(array_index)
-  array_metadata = raw_array_metadata(file, array_index)
-  attribute_names = array_metadata["attribute-names"]
-  attribute_types = array_metadata["attribute-types"]
-  dimension_names = array_metadata["dimension-names"]
-  dimension_types = array_metadata["dimension-types"]
-  dimension_begin = array_metadata["dimension-begin"]
-  dimension_end = array_metadata["dimension-end"]
-  statistics = []
-  for attribute_index in range(len(attribute_types)):
-    attribute_metadata = file["array/{}/attribute/{}".format(array_index, attribute_index)].attrs
-    statistics.append({"min":attribute_metadata.get("min", None), "max":attribute_metadata.get("max", None)})
-
-  return {
-    "attributes" : [{"name":name, "type":type} for name, type in zip(attribute_names, attribute_types)],
-    "dimensions" : [{"name":name, "type":type, "begin":begin, "end":end} for name, type, begin, end in zip(dimension_names, dimension_types, dimension_begin, dimension_end)],
-    "statistics" : statistics,
-    }
-
-def get_array_shape(file, array_index):
-  array_key = "array/{}".format(array_index)
-  array_metadata = raw_array_metadata(file, array_index)
-  dimension_begin = array_metadata["dimension-begin"]
-  dimension_end = array_metadata["dimension-end"]
-  return tuple([end - begin for begin, end in zip(dimension_begin, dimension_end)])
 
 def get_array_attribute(file, array_index, attribute_index):
   """Return attribute data from an array."""

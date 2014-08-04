@@ -166,8 +166,8 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
   update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
-    array_metadata = slycat.hdf5.raw_array_metadata(file, array_index)
-    stored_type = slycat.hdf5.dtype(array_metadata["attribute-types"][attribute_index])
+    hdf5_array = slycat.hdf5.arrayset(file).array(array_index)
+    stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
 
     # Convert data to an array ...
     if isinstance(data, numpy.ndarray):

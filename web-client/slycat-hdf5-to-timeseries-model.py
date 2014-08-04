@@ -82,11 +82,9 @@ try:
   connection.update_model(mid, message="Storing input table.")
 
   with slycat.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
-    metadata = slycat.hdf5.get_array_metadata(file, 0)
-    attributes = metadata["attributes"]
-    dimensions = metadata["dimensions"]
-    attributes = slycat.array.require_attributes(attributes)
-    dimensions = slycat.array.require_dimensions(dimensions)
+    array = slycat.hdf5.arrayset(file).array(0)
+    dimensions = array.dimensions
+    attributes = array.attributes
     if len(attributes) < 1:
       raise Exception("Inputs table must have at least one attribute.")
     if len(dimensions) != 1:
@@ -106,8 +104,7 @@ try:
   clusters = collections.defaultdict(list)
   for timeseries_index in range(timeseries_count):
     with slycat.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
-      metadata = slycat.hdf5.get_array_metadata(file, 0)
-    attributes = slycat.array.require_attributes(metadata["attributes"][1:]) # Skip the timestamps
+      attributes = slycat.hdf5.arrayset(file).array(0).attributes[1:] # Skip the timestamps
     if len(attributes) < 1:
       raise Exception("A timeseries must have at least one attribute.")
     for attribute_index, attribute in enumerate(attributes):
@@ -121,8 +118,8 @@ try:
     import os
     import slycat.hdf5
     with slycat.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
-      metadata = slycat.hdf5.get_array_metadata(file, 0)
-    return metadata["statistics"][0]["min"], metadata["statistics"][0]["max"]
+      statistics = slycat.hdf5.arrayset(file).array(0).statistics
+    return statistics[0]["min"], statistics[0]["max"]
 
   connection.update_model(mid, message="Collecting timeseries statistics.")
   slycat.web.client.log.info("Collecting timeseries statistics.")
