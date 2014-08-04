@@ -289,7 +289,7 @@ def test_empty_model_arrays():
   mid = connection.create_model(pid, "generic", "empty-arrays-model")
 
   connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, [("integer", "int64"), ("float", "float64"), ("string", "string")], ("row", "int64", 0, size))
+  connection.start_array(mid, "test-array-set", 0, [dict(name="integer", type="int64"), dict(name="float", type="float64"), dict(name="string", type="string")], [dict(name="row", end=size)])
 
   connection.finish_model(mid)
   connection.join_model(mid)
@@ -312,7 +312,7 @@ def test_model_array_ranges():
   mid = connection.create_model(pid, "generic", "array-ranges-model")
 
   connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, ("value", "int64"), ("row", "int64", 0, 10))
+  connection.start_array(mid, "test-array-set", 0, [dict(name="value", type="int64")], [dict(name="row", end=10)])
   connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10))
   connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5), hyperslice=(0, 5))
   connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5, 8), hyperslice=(5, 8))
@@ -338,7 +338,7 @@ def test_model_array_string_attributes():
 
   size = 10
   connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, [("v1", "string"), ("v2", "string")], ("row", "int64", 0, size))
+  connection.start_array(mid, "test-array-set", 0, [dict(name="v1", type="string"), dict(name="v2", type="string")], [dict(name="row", end=size)])
   connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(size).astype("string"))
 
   connection.finish_model(mid)
@@ -358,8 +358,8 @@ def test_model_array_1d():
   attribute_names = attribute_types
   attribute_data = [numpy.arange(size).astype(type) for type in attribute_types]
 
-  attributes = zip(attribute_names, attribute_types)
-  dimensions = [("row", "int64", 0, size)]
+  attributes = [dict(name=name, type=type) for name, type in zip(attribute_names, attribute_types)]
+  dimensions = [dict(name="row", end=size)]
 
   pid = connection.create_project("1d-array-project")
   mid = connection.create_model(pid, "generic", "1d-array-model")
@@ -598,14 +598,14 @@ def test_api():
 
   # Any project writer can start an array.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+    server_outsider.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+    project_outsider.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
-  project_writer.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
-  project_admin.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
-  server_admin.start_array(models[0], "data", 0, ("value", "int64"), ("i", "int64", 0, 10))
+    project_reader.start_array(models[0], "data", 0, [dict(name="value", type="int64")],[dict(name="i", end=10)])
+  project_writer.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
+  project_admin.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
+  server_admin.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
 
   # Any project writer can store an array attribute.
   with nose.tools.assert_raises_regexp(Exception, "^401"):

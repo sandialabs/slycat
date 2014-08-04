@@ -1,7 +1,6 @@
 import h5py
 import numpy
 import os
-import slycat.array
 import slycat.darray
 
 class DArray(slycat.darray.Prototype):

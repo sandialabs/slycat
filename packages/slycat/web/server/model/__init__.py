@@ -8,7 +8,6 @@ import json
 import numbers
 import numpy
 import os
-import slycat.array
 import slycat.hdf5
 import slycat.table
 import slycat.web.server.database.couchdb

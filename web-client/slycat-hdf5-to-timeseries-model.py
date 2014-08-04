@@ -22,7 +22,6 @@ import numpy
 import os
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
-import slycat.array
 import slycat.hdf5
 import slycat.web.client
 

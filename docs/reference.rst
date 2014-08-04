@@ -5,7 +5,6 @@ The Slycat Reference
    :maxdepth: 2
 
    slycat.rst
-   slycat.array.rst
    slycat.cca.rst
    slycat.darray.rst
    slycat.hdf5.rst

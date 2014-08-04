@@ -28,7 +28,6 @@ their size.
 """
 
 import numpy
-import slycat.array
 
 class Prototype(object):
   """Abstract interface for all darray implementations."""
@@ -78,8 +77,8 @@ class Stub(Prototype):
     if len(attributes) < 1:
       raise ValueError("At least one attribute is required.")
 
-    self._dimensions = [dict(name=slycat.array.require_dimension_name(dimension["name"]), type=slycat.array.require_dimension_type(dimension.get("type", "int64")), begin=slycat.array.require_dimension_bound(dimension.get("begin", 0)), end=slycat.array.require_dimension_bound(dimension["end"])) for dimension in dimensions]
-    self._attributes = [dict(name=slycat.array.require_attribute_name(attribute["name"]), type=slycat.array.require_attribute_type(attribute["type"])) for attribute in attributes]
+    self._dimensions = [dict(name=_require_dimension_name(dimension["name"]), type=_require_dimension_type(dimension.get("type", "int64")), begin=_require_dimension_bound(dimension.get("begin", 0)), end=_require_dimension_bound(dimension["end"])) for dimension in dimensions]
+    self._attributes = [dict(name=_require_attribute_name(attribute["name"]), type=_require_attribute_type(attribute["type"])) for attribute in attributes]
 
     for dimension in self._dimensions:
       if dimension["begin"] != 0:
@@ -146,4 +145,31 @@ class MemArray(Stub):
   def set(self, attribute, slice, data):
     """Write a data slice to one attribute."""
     self._data[attribute][slice] = data
+
+def _require_attribute_name(name):
+  if not isinstance(name, basestring):
+    raise ValueError("Attribute name must be a string.")
+  return name
+
+def _require_attribute_type(type):
+  if type not in _require_attribute_type.allowed_types:
+    raise ValueError("Attribute type must be one of %s" % ",".join(_require_attribute_type.allowed_types))
+  return type
+_require_attribute_type.allowed_types = set(["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "bool"])
+
+def _require_dimension_name(name):
+  if not isinstance(name, basestring):
+    raise ValueError("Dimension name must be a string.")
+  return name
+
+def _require_dimension_type(type):
+  if type not in _require_dimension_type.allowed_types:
+    raise ValueError("Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
+  return type
+_require_dimension_type.allowed_types = set(["int64"])
+
+def _require_dimension_bound(bound):
+  if not isinstance(bound, int):
+    raise ValueError("Dimension bound must be an integer.")
+  return bound
 
