@@ -178,9 +178,6 @@ dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int6
 def path(array, directory):
   return os.path.join(directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")
 
-def open(path, mode="r"):
-  return h5py.File(path, mode)
-
 def raw_array_metadata(file, array_index):
   metadata = file["array/%s" % array_index].get("metadata", None)
   if metadata is None:
