@@ -118,7 +118,7 @@ $.widget("parameter_image.controls",
         'Clear': function() {
           //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
           var variableIndex = $('input#variable-index', this).val();
-          self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : null});
+          self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : NaN});
           $(this).dialog('close');
         },
         'Cancel': function() {

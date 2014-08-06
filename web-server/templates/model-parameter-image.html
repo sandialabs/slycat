@@ -869,27 +869,40 @@ rights in this software.
             // Changing the value of a variable updates the database
             $("#controls").bind("set-value", function(event, arguments)
             {
+              console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
               var selection = arguments.selection;
               var variable = arguments.variable;
-              var value = arguments.value;
-              console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
-              $.ajax({
-                type: "PUT",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/data?array=0&attribute=" + variable + "&hyperslice=4:5",
-                contentType : "application/json",
-                data : $.toJSON({
-                  "file" : 0,
-                }),
-                processData : true,
-                success : function(results)
-                {
-                  console.log("writing array data SUCCESS");
-                },
-                error : function(jqXHR, textStatus, errorThrown)
-                {
-                  console.log("writing array data error");
-                },
-              });
+              var myBlob = new Blob(['[' + arguments.value + ']'], {type: "text/html"});
+
+              var hyperslice = "";
+              writeData(selection, variable, myBlob, 0);
+
+              function writeData(selection, variable, blob, iterator){
+                hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
+                var formdata = new FormData();
+                formdata.append("array", 0);
+                formdata.append("attribute", variable);
+                formdata.append("data", blob);
+                formdata.append("hyperslice", hyperslice);
+                $.ajax({
+                  type: "PUT",
+                  url : "{{server-root}}models/{{_id}}/array-sets/data-table/data",
+                  data : formdata,
+                  processData: false,
+                  contentType: false,
+                  success : function(results)
+                  {
+                    console.log("writing array data SUCCESS");
+                    iterator++;
+                    if(iterator<selection.length)
+                      writeData(selection, variable, blob, iterator);
+                  },
+                  error : function(jqXHR, textStatus, errorThrown)
+                  {
+                    console.log("writing array data error");
+                  },
+                });
+              }
 
             });
 
