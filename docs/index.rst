@@ -52,9 +52,7 @@ Documentation:
 .. toctree::
    :maxdepth: 2
 
-   install.rst
-   create-cca.rst
-   create-timeseries.rst
+   tutorial.rst
    setup-clients.rst
    setup-server.rst
    restful-api.rst

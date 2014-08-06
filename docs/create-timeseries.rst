@@ -93,3 +93,7 @@ Interact with a Timeseries Model
 -  Double-click nodes in the dendrogram to expand / collapse their
    children.
 
+Next Steps
+----------
+
+Next, let's move on to :ref:`Create a Parameter Image Model`.

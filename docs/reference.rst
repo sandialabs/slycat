@@ -1,5 +1,5 @@
-The Slycat Reference
-=====================
+Reference Documentation
+=======================
 
 .. toctree::
    :maxdepth: 2
