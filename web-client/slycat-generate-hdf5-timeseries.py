@@ -16,14 +16,15 @@ files, which you will have to provide in your own scripts:
    timeseries-N.hdf5          A set of M 1D arrays, each containing one time variable and V output variables (array attributes).
 """
 
+
 import argparse
+import h5py
 import IPython.parallel
 import itertools
 import numpy
 import os
 import shutil
 import slycat.hdf5
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
 parser.add_argument("--input-variable-prefix", default="X", help="Input variable prefix.  Default: %(default)s")
@@ -46,8 +47,8 @@ os.makedirs(arguments.output_directory)
 # Generate a set of random coefficients that we'll use later to synthesize timeseries.
 numpy.random.seed(arguments.seed)
 inputs = numpy.hstack([numpy.sort(numpy.random.random((arguments.timeseries_count, arguments.timeseries_waves)) * 8 + 1) for output_variable in range(arguments.timeseries_variables)])
-input_attributes = [("%s%s" % (arguments.input_variable_prefix, attribute), "float64") for attribute in range(inputs.shape[1])]
-input_dimensions = [("row", "int64", 0, inputs.shape[0])]
+input_dimensions = [dict(name="row", end=inputs.shape[0])]
+input_attributes = [dict(name="%s%s" % (arguments.input_variable_prefix, attribute), type="float64") for attribute in range(inputs.shape[1])]
 
 jobs = [(
   index,
@@ -59,25 +60,28 @@ jobs = [(
 
 # Generate a collection of "output" timeseries.
 def generate_timeseries(job):
+  import h5py
   import numpy
   import slycat.hdf5
+  import sys
 
   timeseries_index, filename, prefix, samples, variables = job
 
-  with slycat.hdf5.start_array_set(filename) as file:
-    timeseries_attributes = [("time", "float64")] + [("%s%s" % (prefix, attribute), "float64") for attribute in range(len(variables))]
-    timeseries_dimensions = [("row", "int64", 0, samples)]
-    slycat.hdf5.start_array(file, 0, timeseries_attributes, timeseries_dimensions)
+  with h5py.File(filename, "w") as file:
+    timeseries_dimensions = [dict(name="row", end=samples)]
+    timeseries_attributes = [dict(name="time", type="float64")] + [dict(name="%s%s" % (prefix, attribute), type="float64") for attribute in range(len(variables))]
+    arrayset = slycat.hdf5.start_arrayset(file)
+    array = arrayset.start_array(0, timeseries_dimensions, timeseries_attributes)
 
     times = numpy.linspace(0, 2 * numpy.pi, samples)
-    slycat.hdf5.store_array_attribute(file, 0, 0, [(0, times.shape[0])], times)
+    array.set(0, slice(0, times.shape[0]), times)
 
     for variable_index, coefficients in enumerate(variables):
       print "Generating timeseries %s variable %s" % (timeseries_index, variable_index)
       values = numpy.zeros((samples))
       for k in coefficients:
         values += numpy.sin(times * k) / k
-      slycat.hdf5.store_array_attribute(file, 0, variable_index + 1, [(0, values.shape[0])], values)
+      array.set(variable_index + 1, slice(0, values.shape[0]), values)
 
   return timeseries_index
 
@@ -91,8 +95,9 @@ j = numpy.random.choice(inputs.shape[1], arguments.nan_count)
 inputs[i, j] = numpy.nan
 
 # Store the random coefficients as our "inputs".
-with slycat.hdf5.start_array_set(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
-  slycat.hdf5.start_array(file, 0, input_attributes, input_dimensions)
+with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
+  arrayset = slycat.hdf5.start_arrayset(file)
+  array = arrayset.start_array(0, input_dimensions, input_attributes)
   for attribute, data in enumerate(inputs.T):
-    slycat.hdf5.store_array_attribute(file, 0, attribute, [(0, inputs.shape[0])], data)
+    array.set(attribute, slice(0, inputs.shape[0]), data)
 

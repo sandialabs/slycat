@@ -15,6 +15,7 @@ This script loads data from a directory containing:
 
 import collections
 import datetime
+import h5py
 import IPython.parallel
 import itertools
 import json
@@ -22,7 +23,6 @@ import numpy
 import os
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
-import slycat.array
 import slycat.hdf5
 import slycat.web.client
 
@@ -81,12 +81,10 @@ try:
 
   connection.update_model(mid, message="Storing input table.")
 
-  with slycat.hdf5.open(os.path.join(arguments.directory, "inputs.hdf5")) as file:
-    metadata = slycat.hdf5.get_array_metadata(file, 0)
-    attributes = metadata["attributes"]
-    dimensions = metadata["dimensions"]
-    attributes = slycat.array.require_attributes(attributes)
-    dimensions = slycat.array.require_dimensions(dimensions)
+  with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
+    array = slycat.hdf5.ArraySet(file)[0]
+    dimensions = array.dimensions
+    attributes = array.attributes
     if len(attributes) < 1:
       raise Exception("Inputs table must have at least one attribute.")
     if len(dimensions) != 1:
@@ -97,7 +95,7 @@ try:
     connection.start_array(mid, "inputs", 0, attributes, dimensions)
     for attribute in range(len(attributes)):
       slycat.web.client.log.info("Storing input table attribute %s", attribute)
-      data = slycat.hdf5.get_array_attribute(file, 0, attribute)[...]
+      data = array.get(attribute)[...]
       connection.store_array_set_data(mid, "inputs", 0, attribute, data=data)
 
   # Create a mapping from unique cluster names to timeseries attributes.
@@ -105,9 +103,8 @@ try:
 
   clusters = collections.defaultdict(list)
   for timeseries_index in range(timeseries_count):
-    with slycat.hdf5.open(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
-      metadata = slycat.hdf5.get_array_metadata(file, 0)
-    attributes = slycat.array.require_attributes(metadata["attributes"][1:]) # Skip the timestamps
+    with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+      attributes = slycat.hdf5.ArraySet(file)[0].attributes[1:] # Skip the timestamps
     if len(attributes) < 1:
       raise Exception("A timeseries must have at least one attribute.")
     for attribute_index, attribute in enumerate(attributes):
@@ -118,11 +115,12 @@ try:
 
   # Get the minimum and maximum times for every timeseries.
   def get_time_range(directory, timeseries_index):
+    import h5py
     import os
     import slycat.hdf5
-    with slycat.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
-      metadata = slycat.hdf5.get_array_metadata(file, 0)
-    return metadata["statistics"][0]["min"], metadata["statistics"][0]["max"]
+    with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+      statistics = slycat.hdf5.ArraySet(file)[0].statistics
+    return statistics[0]["min"], statistics[0]["max"]
 
   connection.update_model(mid, message="Collecting timeseries statistics.")
   slycat.web.client.log.info("Collecting timeseries statistics.")
@@ -144,15 +142,16 @@ try:
 
     if arguments.cluster_sample_type == "uniform-pla":
       def uniform_pla(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
+        import h5py
         import numpy
         import os
         import slycat.hdf5
 
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
-        with slycat.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
-          original_times = slycat.hdf5.get_array_attribute(file, 0, 0)[:]
-          original_values = slycat.hdf5.get_array_attribute(file, 0, attribute_index + 1)[:]
+        with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+          original_times = slycat.hdf5.ArraySet(file)[0].get(0)[:]
+          original_values = slycat.hdf5.ArraySet(file)[0].get(attribute_index + 1)[:]
         bin_values = numpy.interp(bin_times, original_times, original_values)
         return {
           "input-index" : timeseries_index,
@@ -168,15 +167,16 @@ try:
       waveforms = pool[:].map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
     elif arguments.cluster_sample_type == "uniform-paa":
       def uniform_paa(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
+        import h5py
         import numpy
         import os
         import slycat.hdf5
 
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
-        with slycat.hdf5.open(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index)) as file:
-          original_times = slycat.hdf5.get_array_attribute(file, 0, 0)[:]
-          original_values = slycat.hdf5.get_array_attribute(file, 0, attribute_index + 1)[:]
+        with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+          original_times = slycat.hdf5.ArraySet(file)[0].get(0)[:]
+          original_values = slycat.hdf5.ArraySet(file)[0].get(attribute_index + 1)[:]
         bin_indices = numpy.digitize(original_times, bin_edges)
         bin_indices[-1] -= 1
         bin_counts = numpy.bincount(bin_indices)[1:]
@@ -274,8 +274,8 @@ try:
     connection.start_array_set(mid, "preview-%s" % name)
     for index, waveform in enumerate(waveforms):
       slycat.web.client.log.info("Creating preview %s" % index)
-      attributes = [("time", "float64"), ("value", "float64")]
-      dimensions = [("sample", "int64", 0, len(waveform["times"]))]
+      attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
+      dimensions = [dict(name="sample", end=len(waveform["times"]))]
       connection.start_array(mid, "preview-%s" % name, index, attributes, dimensions)
 
     slycat.web.client.log.info("Storing previews")

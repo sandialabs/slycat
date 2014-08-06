@@ -2,9 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-"""Functionality for working with the Python representation of a darray.
-
-Slycat makes extensive use of `darray` objects - dense, multi-dimension,
+"""Slycat makes extensive use of `darray` objects - dense, multi-dimension,
 multi-attribute arrays - as its fundamental unit of storage and organization.
 In the abstract, a darray can be modeled as follows:
 
@@ -17,20 +15,21 @@ This definition allows darrays to be flexible and efficient - for example, a
 darray with multiple attributes, while a "matrix" would be stored as a 2D darray
 with a single floating-point attribute.
 
-Note that darrays are an abstract concept that can have multiple concrete
+Note that darrays are an abstract concept with multiple concrete
 representations.  This module defines an abstract interface for manipulating
-darrays from Python and a concrete implementation with in-memory storage, but
-other representations are possible.  For example, :py:mod:`slycat.hdf5` defines
-functionality for manipulating darrays stored in HDF5 files on disk.
+Python darrays, and a concrete implementation with in-memory storage.  The
+:py:mod:`slycat.hdf5` module defines functionality for manipulating darrays
+stored in HDF5 files on disk, and the :ref:`RESTful API` defines functionality
+for working with darrays using HTTP.
 
 Note that it is rare to manipulate entire darrays in memory at once, due to
-their size.
+their size - most applications will work with *slices* of a darray to keep
+memory use manageable.
 """
 
 import numpy
-import slycat.array
 
-class prototype(object):
+class Prototype(object):
   """Abstract interface for all darray implementations."""
   @property
   def ndim(self):
@@ -62,15 +61,15 @@ class prototype(object):
     """Return statistics for each array attribute."""
     raise NotImplementedError()
 
-  def get(self, attribute=0, slice=None):
-    """Return a data slice from one attribute."""
+  def get(self, attribute=0):
+    """Return data from one attribute."""
     raise NotImplementedError()
 
   def set(self, attribute, slice, data):
-    """Write a data slice to one attribute."""
+    """Write data to one attribute."""
     raise NotImplementedError()
 
-class stub(prototype):
+class Stub(Prototype):
   """darray implementation that only stores array metadata (dimensions and attributes)."""
   def __init__(self, dimensions, attributes):
     if len(dimensions) < 1:
@@ -78,8 +77,8 @@ class stub(prototype):
     if len(attributes) < 1:
       raise ValueError("At least one attribute is required.")
 
-    self._dimensions = [dict(name=slycat.array.require_dimension_name(dimension["name"]), type=slycat.array.require_dimension_type(dimension.get("type", "int64")), begin=slycat.array.require_dimension_bound(dimension.get("begin", 0)), end=slycat.array.require_dimension_bound(dimension["end"])) for dimension in dimensions]
-    self._attributes = [dict(name=slycat.array.require_attribute_name(attribute["name"]), type=slycat.array.require_attribute_type(attribute["type"])) for attribute in attributes]
+    self._dimensions = [dict(name=_require_dimension_name(dimension["name"]), type=_require_dimension_type(dimension.get("type", "int64")), begin=_require_dimension_bound(dimension.get("begin", 0)), end=_require_dimension_bound(dimension["end"])) for dimension in dimensions]
+    self._attributes = [dict(name=_require_attribute_name(attribute["name"]), type=_require_attribute_type(attribute["type"])) for attribute in attributes]
 
     for dimension in self._dimensions:
       if dimension["begin"] != 0:
@@ -110,10 +109,10 @@ class stub(prototype):
     """Return a description of the array attributes."""
     return self._attributes
 
-class memarray(stub):
+class MemArray(Stub):
   """darray implementation that holds the full array contents in memory."""
   def __init__(self, dimensions, attributes, data):
-    stub.__init__(self, dimensions, attributes)
+    Stub.__init__(self, dimensions, attributes)
 
     if len(attributes) != len(data):
       raise ValueError("Attribute and data counts must match.")
@@ -139,13 +138,38 @@ class memarray(stub):
           statistics.append(dict(min=None, max=None))
     return statistics
 
-  def get(self, attribute=0, slice=None):
+  def get(self, attribute=0):
     """Return a data slice from one attribute."""
-    if slice is None:
-      return self._data[attribute]
-    return self._data[attribute][slice]
+    return self._data[attribute]
 
   def set(self, attribute, slice, data):
     """Write a data slice to one attribute."""
     self._data[attribute][slice] = data
+
+def _require_attribute_name(name):
+  if not isinstance(name, basestring):
+    raise ValueError("Attribute name must be a string.")
+  return name
+
+def _require_attribute_type(type):
+  if type not in _require_attribute_type.allowed_types:
+    raise ValueError("Attribute type must be one of %s" % ",".join(_require_attribute_type.allowed_types))
+  return type
+_require_attribute_type.allowed_types = set(["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "bool"])
+
+def _require_dimension_name(name):
+  if not isinstance(name, basestring):
+    raise ValueError("Dimension name must be a string.")
+  return name
+
+def _require_dimension_type(type):
+  if type not in _require_dimension_type.allowed_types:
+    raise ValueError("Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
+  return type
+_require_dimension_type.allowed_types = set(["int64"])
+
+def _require_dimension_bound(bound):
+  if not isinstance(bound, int):
+    raise ValueError("Dimension bound must be an integer.")
+  return bound
 

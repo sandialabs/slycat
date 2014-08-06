@@ -35,7 +35,7 @@ series analysis featuring clustering and comparative visualization of
 waveforms. :ref:`Install Slycat` to try it for yourself!
 
 Design
-------
+======
 
 Slycat incorporates several components:
 
@@ -52,11 +52,10 @@ Documentation:
 .. toctree::
    :maxdepth: 2
 
-   install.rst
-   create-cca.rst
-   create-timeseries.rst
+   tutorial.rst
    setup-clients.rst
    setup-server.rst
+   models.rst
    restful-api.rst
    reference.rst
 

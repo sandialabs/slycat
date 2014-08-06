@@ -6,16 +6,16 @@ import numpy
 import slycat.darray
 
 def parse(data):
-  """Parse a delimited text file and return a 1D array with an attribute for each table column.
+  """Parse a delimited text file and return a 1D :py:mod:`darray<slycat.darray>` with an attribute for each table column.
 
   The input file must be formatted as follows:
 
-  * Rows must be separated or terminated by CR, LF, or CR + LF.
+  * Rows must be separated or terminated by CR, LF, or CR + LF.  The delimiter choice must be consistent throughout the file.
   * A single header row containing column names is required.
-  * Fields must be separated by a comma or a tab.
+  * Fields must be separated by a comma or a tab.  The delimiter choice must be consistent throughout the file.
   * Each column will be converted to a floating-point type if possible.  Otherwise, it will be treated as a string type.
-  * Empty fields are allowed, but will force the column to be treated as a string type.
-  * "Nan" is allowed in numeric columns.
+  * Empty fields are allowed, but columns containing empty fields cannot be converted to floating-point.
+  * Numeric columns may contain "nan" fields.  Capitalization of nan fields is ignored, so "nan", "Nan", "NaN", "NAN", etc. are all allowed.
 
   Arguments
   ---------
@@ -24,7 +24,7 @@ def parse(data):
 
   Returns
   -------
-  darray : :class:`slycat.darray.memarray`
+  darray : :class:`slycat.darray.MemArray`
     In-memory representation of the table.
   """
   # Identify a row delimiter for the file.
@@ -62,4 +62,4 @@ def parse(data):
       data.append(numpy.array(column[1:]))
       attributes.append({"name":column[0], "type":"string"})
 
-  return slycat.darray.memarray(dimensions, attributes, data)
+  return slycat.darray.MemArray(dimensions, attributes, data)

@@ -19,8 +19,6 @@ try:
 except:
   import StringIO
 
-from slycat.array import *
-
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
@@ -280,7 +278,7 @@ class connection(object):
 
   def put_model_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":require_attributes(attributes), "dimensions":require_dimensions(dimensions)}))
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":attributes, "dimensions":dimensions}))
 
   def put_model_array_set(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
