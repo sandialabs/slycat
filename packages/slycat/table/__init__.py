@@ -6,7 +6,7 @@ import numpy
 import slycat.darray
 
 def parse(data):
-  """Parse a delimited text file and return a 1D array with an attribute for each table column.
+  """Parse a delimited text file and return a 1D :py:mod:`darray<slycat.darray>` with an attribute for each table column.
 
   The input file must be formatted as follows:
 

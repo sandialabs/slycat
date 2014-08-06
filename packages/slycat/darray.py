@@ -2,9 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-"""Functionality for working with the Python representation of a darray.
-
-Slycat makes extensive use of `darray` objects - dense, multi-dimension,
+"""Slycat makes extensive use of `darray` objects - dense, multi-dimension,
 multi-attribute arrays - as its fundamental unit of storage and organization.
 In the abstract, a darray can be modeled as follows:
 
@@ -17,14 +15,16 @@ This definition allows darrays to be flexible and efficient - for example, a
 darray with multiple attributes, while a "matrix" would be stored as a 2D darray
 with a single floating-point attribute.
 
-Note that darrays are an abstract concept that can have multiple concrete
+Note that darrays are an abstract concept with multiple concrete
 representations.  This module defines an abstract interface for manipulating
-darrays from Python and a concrete implementation with in-memory storage, but
-other representations are possible.  For example, :py:mod:`slycat.hdf5` defines
-functionality for manipulating darrays stored in HDF5 files on disk.
+Python darrays, and a concrete implementation with in-memory storage.  The
+:py:mod:`slycat.hdf5` module defines functionality for manipulating darrays
+stored in HDF5 files on disk, and the :ref:`RESTful API` defines functionality
+for working with darrays using HTTP.
 
 Note that it is rare to manipulate entire darrays in memory at once, due to
-their size.
+their size - most applications will work with *slices* of a darray to keep
+memory use manageable.
 """
 
 import numpy
