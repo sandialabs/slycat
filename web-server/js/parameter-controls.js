@@ -231,6 +231,7 @@ $.widget("parameter_image.controls",
     this.selection_select.empty();
     // Start with empty option
     $("<option />")
+      .text("Pick Action")
       .appendTo(this.selection_select)
       ;
 

@@ -360,8 +360,13 @@ rights in this software.
   font-weight: bold;
   margin-right: 5px;
 }
-#controls label.disabled {
+#controls label.disabled,
+#controls select:disabled
+{
   color: gray;
+}
+#controls select:disabled {
+  
 }
 #controls select {
   margin-right: 10px;
