@@ -855,12 +855,26 @@ rights in this software.
                       writeData(selection, variable, blob, iterator);
                     } 
                     else {
+                      // Finished writing data, need to update widgets
+                      // Load data table metadata.
+                      // $.ajax({
+                      //   url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
+                      //   contentType : "application/json",
+                      //   success: function(metadata)
+                      //   {
+                      //     table_metadata = metadata;
+                      //     $("#table").table("option", "metadata", metadata);
+                      //   },
+                      //   error: artifact_missing
+                      // });
+
                       $("#table").table("update_data");
+                      
                       if(variable == x_index)
                         update_scatterplot_x(variable);
-                      else if(variable == y_index)
+                      if(variable == y_index)
                         update_scatterplot_y(variable);
-                      else if(variable == v_index)
+                      if(variable == v_index)
                         update_scatterplot_value(variable);
                     }
 

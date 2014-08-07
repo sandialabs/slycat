@@ -323,7 +323,7 @@ $.widget("parameter_image.table",
     else if(key == "colormap")
     {
       self.options[key] = value;
-      self._color_variables(self.options["variable-selection"])
+      self._color_variables(self.options["variable-selection"]);
     }
     else if(key == "x-variable")
     {
@@ -339,6 +339,11 @@ $.widget("parameter_image.table",
     {
       self.options[key] = value;
       self._set_selected_image();
+    }
+    else if(key == "metadata")
+    {
+      self.options[key] = value;
+      self._color_variables(self.options["variable-selection"]);
     }
   },
 
