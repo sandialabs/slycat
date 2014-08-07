@@ -162,14 +162,14 @@ def start_array(database, model, name, array_index, attributes, dimensions):
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
-def store_array_attribute(database, model, name, array_index, attribute_index, ranges, data, byteorder=None):
+def store_array_attribute(database, model, name, array_index, attribute_index, hyperslice, data, byteorder=None):
   update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     hdf5_array = slycat.hdf5.ArraySet(file)[array_index]
-    stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
 
     # Convert data to an array ...
+    stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
     if isinstance(data, numpy.ndarray):
       pass
     elif isinstance(data, list):
@@ -182,7 +182,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, r
       else:
         raise NotImplementedError()
 
-    slycat.hdf5.store_array_attribute(file, array_index, attribute_index, ranges, data)
+    hdf5_array.set(attribute_index, hyperslice, data)
 
 def store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data):
   update(database, model, message="Storing data to array set %s." % (name))
