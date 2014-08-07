@@ -44,10 +44,12 @@ class DArray(slycat.darray.Prototype):
       raise ValueError("Attribute index %s out-of-range." % attribute)
     if isinstance(hyperslice, slice):
       pass
-    elif isinstance(hyperslice, (list, tuple)):
+    elif isinstance(hyperslice, tuple):
       for i in hyperslice:
         if not isinstance(i, slice):
-          raise ValueError("Hyperslice must be a slice object or sequence of slice objects.")
+          raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
+    else:
+      raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
     # Store the data ...
     attribute = self._storage["attribute/%s" % attribute]
     attribute[hyperslice] = data
