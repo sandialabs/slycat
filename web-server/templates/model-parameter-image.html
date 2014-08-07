@@ -403,9 +403,9 @@ rights in this software.
             x_index = numeric_variables[0];
             y_index = numeric_variables[1 % numeric_variables.length];
             if("x-selection" in bookmark)
-              x_index = bookmark["x-selection"];
+              x_index = Number(bookmark["x-selection"]);
             if("y-selection" in bookmark)
-              y_index = bookmark["y-selection"];
+              y_index = Number(bookmark["y-selection"]);
 
             get_model_array_attribute({
               server_root : "{{server-root}}",
@@ -439,7 +439,7 @@ rights in this software.
 
             v_index = table_metadata["column-count"] - 1;
             if("variable-selection" in bookmark)
-              v_index = bookmark["variable-selection"];
+              v_index = Number(bookmark["variable-selection"]);
 
             if(v_index == table_metadata["column-count"] - 1)
             {
@@ -692,65 +692,21 @@ rights in this software.
             // Changing the x variable updates the scatterplot ...
             $("#table").bind("x-selection-changed", function(event, variable)
             {
-              get_model_array_attribute({
-                server_root : "{{server-root}}",
-                mid : "{{_id}}",
-                aid : "data-table",
-                array : 0,
-                attribute : variable,
-                success : function(result)
-                {
-                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
-                },
-                error : artifact_missing
-              });
+              update_scatterplot_x(variable);
             });
             $("#controls").bind("x-selection-changed", function(event, variable)
             {
-              get_model_array_attribute({
-                server_root : "{{server-root}}",
-                mid : "{{_id}}",
-                aid : "data-table",
-                array : 0,
-                attribute : variable,
-                success : function(result)
-                {
-                  $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
-                },
-                error : artifact_missing
-              });
+              update_scatterplot_x(variable);
             });
 
             // Changing the y variable updates the scatterplot ...
             $("#table").bind("y-selection-changed", function(event, variable)
             {
-              get_model_array_attribute({
-                server_root : "{{server-root}}",
-                mid : "{{_id}}",
-                aid : "data-table",
-                array : 0,
-                attribute : variable,
-                success : function(result)
-                {
-                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
-                },
-                error : artifact_missing
-              });
+              update_scatterplot_y(variable);
             });
             $("#controls").bind("y-selection-changed", function(event, variable)
             {
-              get_model_array_attribute({
-                server_root : "{{server-root}}",
-                mid : "{{_id}}",
-                aid : "data-table",
-                array : 0,
-                attribute : variable,
-                success : function(result)
-                {
-                  $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
-                },
-                error : artifact_missing
-              });
+              update_scatterplot_y(variable);
             });
 
             // Changing the images variable updates the scatterplot ...
@@ -900,6 +856,12 @@ rights in this software.
                     } 
                     else {
                       $("#table").table("update_data");
+                      if(variable == x_index)
+                        update_scatterplot_x(variable);
+                      else if(variable == y_index)
+                        update_scatterplot_y(variable);
+                      else if(variable == v_index)
+                        update_scatterplot_value(variable);
                     }
 
                   },
@@ -960,6 +922,7 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
           });
           bookmarker.updateState({"variable-selection" : variable});
+          v_index = Number(variable);
         }
 
         function variable_sort_changed(variable, order)
@@ -991,6 +954,7 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
           });
           bookmarker.updateState( {"x-selection" : variable} );
+          x_index = Number(variable);
         }
 
         function y_selection_changed(variable)
@@ -1011,6 +975,7 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/images/" + variable
           });
           bookmarker.updateState( {"images-selection" : variable} );
+          y_index = Number(variable);
         }
 
         function open_images_changed(selection)
@@ -1049,6 +1014,38 @@ rights in this software.
               error : artifact_missing
             });
           }
+        }
+
+        function update_scatterplot_x(variable)
+        {
+          get_model_array_attribute({
+            server_root : "{{server-root}}",
+            mid : "{{_id}}",
+            aid : "data-table",
+            array : 0,
+            attribute : variable,
+            success : function(result)
+            {
+              $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+            },
+            error : artifact_missing
+          });
+        }
+
+        function update_scatterplot_y(variable)
+        {
+          get_model_array_attribute({
+            server_root : "{{server-root}}",
+            mid : "{{_id}}",
+            aid : "data-table",
+            array : 0,
+            attribute : variable,
+            success : function(result)
+            {
+              $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+            },
+            error : artifact_missing
+          });
         }
 
         function display_image(uri)
