@@ -403,3 +403,6 @@ rights in this software.
   fill: none;
   stroke: black;
 }
+.dialogErrorMessage {
+  color: red;
+}

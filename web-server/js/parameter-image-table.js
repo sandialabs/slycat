@@ -286,6 +286,13 @@ $.widget("parameter_image.table",
     self.grid.resizeCanvas();
   },
 
+  update_data: function()
+  {
+    var self = this;
+    self.data.invalidate();
+    self.grid.invalidate();
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
@@ -516,7 +523,7 @@ $.widget("parameter_image.table",
       self.sort_column = column;
       self.sort_order = order;
       self.pages = {};
-    },
+    }
 
     self.get_indices = function(direction, rows, callback)
     {
@@ -558,6 +565,12 @@ $.widget("parameter_image.table",
         this.callback(new Int32Array(this.response));
       }
       request.send();
+    }
+
+    self.invalidate = function()
+    {
+      self.pages = {};
+
     }
   },
 

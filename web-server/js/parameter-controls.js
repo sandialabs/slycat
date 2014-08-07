@@ -101,9 +101,22 @@ $.widget("parameter_image.controls",
         'Apply': function() {
           //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
           var variableIndex = $('input#variable-index', this).val();
-          var value = $('input#value', this).val();
-          self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : value});
-          $(this).dialog('close');
+          var value = $('input#value', this).val().trim();
+          var numeric = self.options.metadata["column-types"][variableIndex] != "string";
+          var valueValid = value.length > 0;
+          if( valueValid && numeric && Number.isNaN(Number(value)) ) {
+            valueValid = false;
+          }
+          if(valueValid) {
+            self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : value});
+            $(this).dialog('close');
+          } else {
+            var message = "Please enter a value.";
+            if(numeric)
+              message = "Please enter a numeric value.";
+            $('.dialogErrorMessage', this).text(message);
+          }
+          
         },
         'Cancel': function() {
           $(this).dialog('close');
@@ -116,7 +129,6 @@ $.widget("parameter_image.controls",
       autoOpen: false,
       buttons: {
         'Clear': function() {
-          //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
           var variableIndex = $('input#variable-index', this).val();
           self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : NaN});
           $(this).dialog('close');
@@ -132,6 +144,7 @@ $.widget("parameter_image.controls",
       $("#set-value-form #set-value-form-variable").text(variable);
       $("#set-value-form input").attr('value','');
       $("#set-value-form input#variable-index").attr('value', variableIndex);
+      $("#set-value-form .dialogErrorMessage").empty();
       $("#set-value-form").dialog("open");
     }
     function openClearValueDialog(variable, variableIndex){

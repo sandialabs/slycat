@@ -75,6 +75,7 @@ rights in this software.
                <label for="value">Set values for <span id="set-value-form-variable">variable</span>:</label>
                <input type="text" id="value" />
                <input type="hidden" id="variable-index" />
+               <div class='dialogErrorMessage'></div>
             </p>
           </div>
           <div id="clear-value-form" class="dialog" title="Clear Values" style="display: none;">
@@ -866,7 +867,7 @@ rights in this software.
               $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][variable]});
             });
 
-            // Changing the value of a variable updates the database
+            // Changing the value of a variable updates the database, table, and scatterplot ...
             $("#controls").bind("set-value", function(event, arguments)
             {
               console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
@@ -894,8 +895,13 @@ rights in this software.
                   {
                     console.log("writing array data SUCCESS");
                     iterator++;
-                    if(iterator<selection.length)
+                    if(iterator<selection.length) {
                       writeData(selection, variable, blob, iterator);
+                    } 
+                    else {
+                      $("#table").table("update_data");
+                    }
+
                   },
                   error : function(jqXHR, textStatus, errorThrown)
                   {
