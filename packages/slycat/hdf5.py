@@ -39,13 +39,18 @@ class DArray(slycat.darray.Prototype):
   def get(self, attribute=0):
     return self._storage["attribute/%s" % attribute]
 
-  def set(self, attribute, slice, data):
+  def set(self, attribute, hyperslice, data):
     if not (0 <= attribute and attribute < len(self.attributes)):
       raise ValueError("Attribute index %s out-of-range." % attribute)
-
+    if isinstance(hyperslice, slice):
+      pass
+    elif isinstance(hyperslice, (list, tuple)):
+      for i in hyperslice:
+        if not isinstance(i, slice):
+          raise ValueError("Hyperslice must be a slice object or sequence of slice objects.")
     # Store the data ...
     attribute = self._storage["attribute/%s" % attribute]
-    attribute[slice] = data
+    attribute[hyperslice] = data
 
     # Update attribute min/max statistics ...
     attribute_min = attribute.attrs.get("min", None)
