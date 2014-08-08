@@ -216,10 +216,10 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
         attribute = numpy.arange(attribute[0], attribute[1], attribute[2])
 
       if hyperslice is None:
-        array_hyperslice = [(dimension["begin"], dimension["end"]) for dimension in hdf5_array.dimensions]
+        array_hyperslice = tuple((slice(dimension["begin"], dimension["end"]) for dimension in hdf5_array.dimensions))
       else:
-        array_hyperslice = [(begin, end) for begin, end in hyperslice]
-      array_shape = [(end - begin) for begin, end in array_hyperslice]
+        array_hyperslice = tuple((slice(begin, end) for begin, end in hyperslice))
+      array_shape = [(i.stop - i.start) for i in array_hyperslice]
 
       for attribute_index in attribute:
         #update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
@@ -229,10 +229,10 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
         if byteorder is None:
           attribute_data = numpy.array(data_iterator.next(), dtype=stored_type).reshape(array_shape)
         elif byteorder == sys.byteorder:
-          count = numpy.prod([(end - begin) for begin, end in array_hyperslice])
+          count = numpy.prod([(i.stop - i.start) for i in array_hyperslice])
           attribute_data = numpy.fromfile(data.file, dtype=stored_type, count=count).reshape(array_shape)
         else:
           raise NotImplementedError()
 
-        slycat.hdf5.store_array_attribute(file, array_index, attribute_index, array_hyperslice, attribute_data)
+        hdf5_array.set(attribute_index, array_hyperslice, attribute_data)
 
