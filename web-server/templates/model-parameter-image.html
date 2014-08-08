@@ -128,6 +128,8 @@ rights in this software.
         var y = null;
         var v = null;
         var images = null;
+        var selected_simulations = null;
+        var hidden_simulations = null;
 
         var table_ready = false;
         var scatterplot_ready = false;
@@ -407,6 +409,14 @@ rights in this software.
             if("y-selection" in bookmark)
               y_index = Number(bookmark["y-selection"]);
 
+            // Set state of selected and hidden simulations
+            selected_simulations = [];
+            if("simulation-selection" in bookmark)
+              selected_simulations = bookmark["simulation-selection"];
+            hidden_simulations = [];
+            if("hidden-simulations" in bookmark)
+              hidden_simulations = bookmark["hidden-simulations"];
+
             get_model_array_attribute({
               server_root : "{{server-root}}",
               mid : "{{_id}}",
@@ -487,7 +497,7 @@ rights in this software.
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) )
+          if( !table_ready && table_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null) )
           {
             table_ready = true;
 
@@ -515,6 +525,8 @@ rights in this software.
               "image-variable" : images_index,
               "x-variable" : x_index,
               "y-variable" : y_index,
+              "row-selection" : selected_simulations,
+              hidden_simulations : hidden_simulations,
             };
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -534,9 +546,6 @@ rights in this software.
             {
               table_options["variable-selection"] = [table_metadata["column-count"] - 1];
             }
-
-            if(bookmark["simulation-selection"] !== undefined)
-              table_options["row-selection"] = bookmark["simulation-selection"];
 
             $("#table").table(table_options);
 
@@ -593,7 +602,7 @@ rights in this software.
               update_scatterplot_value(selection[0]);
             });
 
-            // Changing the scatterplot selection updates the table row selection ..
+            // Changing the scatterplot selection updates the table row selection and controls ..
             $("#scatterplot").bind("selection-changed", function(event, selection)
             {
               $("#table").table("option", "row-selection", selection);
@@ -641,14 +650,13 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images)
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images && (selected_simulations != null))
           {
             scatterplot_ready = true;
 
             $("#scatterplot-pane .load-status").css("display", "none");
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
 
             $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
@@ -668,7 +676,7 @@ rights in this software.
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
-              selection: selection,
+              selection: selected_simulations,
               server_root: "{{server-root}}",
               open_images: open_images,
               gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
@@ -747,7 +755,7 @@ rights in this software.
 
         function setup_controls()
         {
-          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) && (category_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) )
+          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) && (category_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) )
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -764,8 +772,6 @@ rights in this software.
               color_variable = [bookmark["variable-selection"]];
             }
 
-            var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
-
             $("#controls").controls({
               metadata: table_metadata,
               x_variables: numeric_variables.slice(0, numeric_variables.length-1),
@@ -774,7 +780,7 @@ rights in this software.
               color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
               rating_variables : rating_columns,
               category_variables : category_columns,
-              selection : selection,
+              selection : selected_simulations,
               "x-variable" : x_index,
               "y-variable" : y_index,
               "image-variable" : images_index,
@@ -869,7 +875,7 @@ rights in this software.
                       // });
 
                       $("#table").table("update_data");
-                      
+
                       if(variable == x_index)
                         update_scatterplot_x(variable);
                       if(variable == y_index)
@@ -910,6 +916,31 @@ rights in this software.
             $("#controls").bind("color-selection-changed", function(event, variable)
             {
               selected_variable_changed(Number(variable));
+            });
+
+            // Log changes to hidden selection ...
+            $("#controls").bind("hide-selection", function(event, selection)
+            {
+              for(var i=0; i<selected_simulations.length; i++){
+                if($.inArray(selected_simulations[i], hidden_simulations) == -1) {
+                  hidden_simulations.push(selected_simulations[i]);
+                }
+              }
+              hidden_simulations_changed();
+              $("#table").table("option", "hidden_simulations", hidden_simulations);
+            });
+
+            // Log changes to hidden selection ...
+            $("#controls").bind("show-selection", function(event, selection)
+            {
+              for(var i=0; i<selected_simulations.length; i++){
+                var index = $.inArray(selected_simulations[i], hidden_simulations);
+                if(index != -1) {
+                  hidden_simulations.splice(index, 1);
+                }
+              }
+              hidden_simulations_changed();
+              $("#table").table("option", "hidden_simulations", hidden_simulations);
             });
           }
         }
@@ -958,6 +989,7 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
           });
           bookmarker.updateState( {"simulation-selection" : selection} );
+          selected_simulations = selection;
         }
 
         function x_selection_changed(variable)
@@ -1001,6 +1033,17 @@ rights in this software.
             url : "{{server-root}}events/models/{{_id}}/select/openimages/count/" + selection.length
           });
           bookmarker.updateState( {"open-images-selection" : selection} );
+        }
+
+        function hidden_simulations_changed()
+        {
+          // Logging every hidden simulation is too slow, so just log the count instead.
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/hidden/count/" + hidden_simulations.length
+          });
+          bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
         }
 
         function update_scatterplot_value(attribute)

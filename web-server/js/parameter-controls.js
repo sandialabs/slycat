@@ -72,7 +72,7 @@ $.widget("parameter_image.controls",
     this.selection_select = $("<select id='selection-control' name='selection-control' />")
       .change(function(){
 
-        var selectedOption = $('option:selected', this)
+        var selectedOption = $('option:selected', this);
         var label = selectedOption.attr("label");
         var text = selectedOption.text();
         var value = this.value;
@@ -88,6 +88,14 @@ $.widget("parameter_image.controls",
             openClearValueDialog(variableLabel, value);
           }
 
+        }
+        else if(value == 'hide')
+        {
+          self.element.trigger("hide-selection", self.options.selection);
+        }
+        else if(value == 'show')
+        {
+          self.element.trigger("show-selection", self.options.selection);
         }
         this.selectedIndex = 0;
       })
@@ -277,26 +285,36 @@ $.widget("parameter_image.controls",
     }
       
     // Finish with global actions
-    $("<option />")
-      .text("Open")
-      .attr("value", "open")
-      .appendTo(this.selection_select)
-      ;
-    $("<option />")
-      .text("Close")
-      .attr("value", "close")
-      .appendTo(this.selection_select)
-      ;
-    $("<option />")
-      .text("Show")
-      .attr("value", "show")
+    var scatterplotOptgroup = $("<optgroup />")
+      .attr("label", "Scatterplot Points")
       .appendTo(this.selection_select)
       ;
     $("<option />")
       .text("Hide")
       .attr("value", "hide")
+      .appendTo(scatterplotOptgroup)
+      ;
+    $("<option />")
+      .text("Show")
+      .attr("value", "show")
+      .appendTo(scatterplotOptgroup)
+      ;
+
+    var imagesOptgroup = $("<optgroup />")
+      .attr("label", "Images")
       .appendTo(this.selection_select)
       ;
+    $("<option />")
+      .text("Open")
+      .attr("value", "open")
+      .appendTo(imagesOptgroup)
+      ;
+    $("<option />")
+      .text("Close")
+      .attr("value", "close")
+      .appendTo(imagesOptgroup)
+      ;
+    
 
     // Set state
     this.selection_select.prop("disabled", this.options.selection.length == 0);

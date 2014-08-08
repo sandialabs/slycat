@@ -29,6 +29,7 @@ $.widget("parameter_image.table",
     "x-variable" : null,
     "y-variable" : null,
     colormap : null,
+    hidden_simulations : [],
   },
 
   _create: function()
@@ -148,6 +149,8 @@ $.widget("parameter_image.table",
       sort_order : self.options["sort-order"],
       inputs : self.options.inputs,
       outputs : self.options.outputs,
+      indexOfIndex : self.options.metadata["column-count"]-1,
+      hidden_simulations : self.options.hidden_simulations,
       });
 
     self.trigger_row_selection = true;
@@ -345,6 +348,12 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
     }
+    else if(key == "hidden_simulations")
+    {
+      self.options[key] = value;
+      self.data.invalidate();
+      self.grid.invalidate();
+    }
   },
 
   _set_selected_x: function()
@@ -457,6 +466,8 @@ $.widget("parameter_image.table",
     self.inputs = parameters.inputs;
     self.outputs = parameters.outputs;
     self.analysis_columns = self.inputs.concat(self.outputs);
+    self.indexOfIndex = parameters.indexOfIndex;
+    self.hidden_simulations = parameters.hidden_simulations;
 
     self.pages = {};
     self.page_size = 50;
@@ -513,11 +524,17 @@ $.widget("parameter_image.table",
     {
       var row = this.getItem(index);
       var column_end = self.analysis_columns.length;
+      var cssClasses = "";
       for(var i=0; i != column_end; i++) {
         if(row[ self.analysis_columns[i] ]==null) {
-          return {"cssClasses" : "nullRow"};
+          cssClasses += "nullRow";
         }
       }
+      if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
+        cssClasses += "hiddenRow";
+      }
+      if(cssClasses != "")
+        return {"cssClasses" : cssClasses};
       return null;
     }
 
