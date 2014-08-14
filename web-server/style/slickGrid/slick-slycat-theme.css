@@ -182,11 +182,11 @@ rights in this software.
 .slick-row.hiddenRow .slick-cell .highlightWrapper
 {
 	background-color: white !important;
-	color: #878787 !important;
+	color: #c7c7c7 !important;
 }
 .slick-row.hiddenRow .slick-cell.selected,
 .slick-row.hiddenRow .slick-cell.selected .highlightWrapper
 {
 	background-color: #F5F5DC !important;
-	color: #878787 !important;
+	color: #c7c7c7 !important;
 }

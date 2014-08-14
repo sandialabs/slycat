@@ -517,7 +517,13 @@ $.widget("parameter_image.scatterplot",
       circle
         .attr("cx", function(d, i) { return self.x_scale(x[i]); })
         .attr("cy", function(d, i) { return self.y_scale(y[i]); })
-        .attr("fill", function(d, i) { return self.options.color(v[self.options.indices[i]]); })
+        .attr("fill", function(d, i) { 
+          var value = v[self.options.indices[i]];
+          if(Number.isNaN(value))
+            return $("#color-switcher").colorswitcher("get_null_color");
+          else
+            return self.options.color(v[self.options.indices[i]]); 
+        })
         ;
     }
 
@@ -566,7 +572,13 @@ $.widget("parameter_image.scatterplot",
       circle
         .attr("cx", function(d, i) { return x_scale(x[inverse_indices[selection[i]]]); })
         .attr("cy", function(d, i) { return y_scale(y[inverse_indices[selection[i]]]); })
-        .attr("fill", function(d, i) { return color(v[selection[i]]); })
+        .attr("fill", function(d, i) { 
+          var value = v[selection[i]];
+          if(Number.isNaN(value))
+            return $("#color-switcher").colorswitcher("get_null_color");
+          else
+            return self.options.color(value); 
+        })
         ;
     }
 
