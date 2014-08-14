@@ -342,6 +342,7 @@ $.widget("parameter_image.scatterplot",
     else if(key == "hidden_simulations")
     {
       self._schedule_update({render_data:true, render_selection:true, });
+      self._close_hidden_simulations();
     }
   },
 
@@ -505,9 +506,9 @@ $.widget("parameter_image.scatterplot",
         .attr("r", 4)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .attr("data-index", function(d, i) { return i; })
+        .attr("data-index", function(d, i) { return d; })
         .on("mouseover", function(d, i) { 
-          self._schedule_hover(i);
+          self._schedule_hover(d);
         })
         .on("mouseout", function(d, i) { 
           self._cancel_hover(); 
@@ -747,6 +748,18 @@ $.widget("parameter_image.scatterplot",
       return;
 
     var image = images[0];
+
+    // Don't open images for hidden simulations
+    if($.inArray(image.index, self.options.hidden_simulations) != -1) {
+      self._open_images(images.slice(1));
+      return;
+    }
+
+    // // Don't open image if it's already open
+    // if($(".open-image[data-uri='" + image.uri + "']").size() > 0) {
+    //   self._open_images(images.slice(1));
+    //   return;
+    // }
 
     // If image is hover and we are no longer loading this image, we're done.
     if( image.image_class == "hover-image" && 
@@ -1225,6 +1238,17 @@ $.widget("parameter_image.scatterplot",
       return;
     }
     xhr.send();
+  },
+
+  _close_hidden_simulations: function()
+  {
+    var self = this;
+    $("g.image-frame")
+      .filter(function(){
+        return $.inArray($(this).data("index"), self.options.hidden_simulations) > -1
+      })
+      .remove()
+      ;
   },
 
   _open_session: function(images)
