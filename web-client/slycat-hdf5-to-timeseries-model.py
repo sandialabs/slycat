@@ -10,7 +10,7 @@
 This script loads data from a directory containing:
 
     One inputs.hdf5 file containing a single table.
-    One timeseries-N.hdf5 file for each row in the input table.
+    One timeseries-N.hdf5 file for each row in the input table .
 """
 
 import collections
