@@ -30,6 +30,7 @@ $.widget("parameter_image.scatterplot",
     server_root : "",
     open_images : [],
     gradient : null,
+    hidden_simulations : [],
   },
 
   _create: function()
@@ -337,6 +338,11 @@ $.widget("parameter_image.scatterplot",
     {
       self._schedule_update({update_legend_colors:true, });
     }
+
+    else if(key == "hidden_simulations")
+    {
+      self._schedule_update({render_data:true, render_selection:true, });
+    }
   },
 
   _schedule_update: function(updates)
@@ -462,15 +468,39 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_data"])
     {
-      var count = self.options.x.length;
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
+      var indices = self.options.indices;
+      var hidden_simulations = self.options.hidden_simulations;
+
+      x = Array.apply( [], x );
+      y = Array.apply( [], y );
+      v = Array.apply( [], v );
+      indices = Array.apply( [], indices );
+
+      // Remove hidden simulations
+      for(var i=0; i<hidden_simulations.length; i++){
+        var index = $.inArray(hidden_simulations[i], indices);
+        if(index != -1) {
+          x.splice(index, 1);
+          y.splice(index, 1);
+          v.splice(index, 1);
+          indices.splice(index, 1);
+        }
+      }
 
       // Draw points ...
-      self.datum_layer.selectAll(".datum")
-        .data(x)
-      .enter().append("circle")
+      var circle = self.datum_layer.selectAll(".datum")
+        .data(indices, function(d, i){ 
+          return indices[i];
+        })
+        ;
+      circle.exit()
+        .remove()
+        ;
+      circle.enter()
+        .append("circle")
         .attr("class", "datum")
         .attr("r", 4)
         .attr("stroke", "black")
@@ -483,8 +513,7 @@ $.widget("parameter_image.scatterplot",
           self._cancel_hover(); 
         })
         ;
-
-      self.datum_layer.selectAll(".datum")
+      circle
         .attr("cx", function(d, i) { return self.x_scale(x[i]); })
         .attr("cy", function(d, i) { return self.y_scale(y[i]); })
         .attr("fill", function(d, i) { return self.options.color(v[self.options.indices[i]]); })
@@ -496,19 +525,31 @@ $.widget("parameter_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
+      var inverse_indices = self.inverse_indices;
+      var selection = self.options.selection.slice(0);
       var color = self.options.color;
-      var indices = self.options.indices;
-      var selection = self.options.selection;
+      var hidden_simulations = self.options.hidden_simulations;
+
+      // Remove hidden simulations
+      for(var i=0; i<hidden_simulations.length; i++){
+        var index = $.inArray(hidden_simulations[i], selection);
+        if(index != -1) {
+          selection.splice(index, 1);
+        }
+      }
 
       var x_scale = self.x_scale;
       var y_scale = self.y_scale;
-      var inverse_indices = self.inverse_indices;
 
       self.selected_layer.selectAll(".selection").remove();
 
-      self.selected_layer.selectAll(".selection")
-        .data(selection)
-      .enter().append("circle")
+      var circle = self.selected_layer.selectAll(".selection")
+        .data(selection, function(d, i){
+          return d;
+        })
+        ;
+      circle.enter()
+        .append("circle")
         .attr("class", "selection")
         .attr("r", 8)
         .attr("stroke", "black")
@@ -521,8 +562,7 @@ $.widget("parameter_image.scatterplot",
           self._cancel_hover(); 
         })
         ;
-
-      self.selected_layer.selectAll(".selection")
+      circle
         .attr("cx", function(d, i) { return x_scale(x[inverse_indices[selection[i]]]); })
         .attr("cy", function(d, i) { return y_scale(y[inverse_indices[selection[i]]]); })
         .attr("fill", function(d, i) { return color(v[selection[i]]); })

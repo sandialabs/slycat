@@ -504,7 +504,6 @@ $.widget("parameter_image.table",
             for(var i=0; i < data.rows.length; i++)
             {
               result = {};
-              result["rating"] = 'blah';
               for(var j = column_begin; j != column_end; ++j)
                 result[j] = data.data[j][i];
               self.pages[page].push(result);

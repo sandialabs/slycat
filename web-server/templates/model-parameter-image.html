@@ -650,7 +650,7 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images && (selected_simulations != null))
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images && (selected_simulations != null) && (hidden_simulations != null))
           {
             scatterplot_ready = true;
 
@@ -680,6 +680,7 @@ rights in this software.
               server_root: "{{server-root}}",
               open_images: open_images,
               gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+              hidden_simulations: hidden_simulations,
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -928,6 +929,7 @@ rights in this software.
               }
               hidden_simulations_changed();
               $("#table").table("option", "hidden_simulations", hidden_simulations);
+              $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
             });
 
             // Log changes to hidden selection ...
@@ -941,6 +943,7 @@ rights in this software.
               }
               hidden_simulations_changed();
               $("#table").table("option", "hidden_simulations", hidden_simulations);
+              $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
             });
           }
         }
