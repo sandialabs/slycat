@@ -300,20 +300,20 @@ $.widget("parameter_image.controls",
       .appendTo(scatterplotOptgroup)
       ;
 
-    var imagesOptgroup = $("<optgroup />")
-      .attr("label", "Images")
-      .appendTo(this.selection_select)
-      ;
-    $("<option />")
-      .text("Open")
-      .attr("value", "open")
-      .appendTo(imagesOptgroup)
-      ;
-    $("<option />")
-      .text("Close")
-      .attr("value", "close")
-      .appendTo(imagesOptgroup)
-      ;
+    // var imagesOptgroup = $("<optgroup />")
+    //   .attr("label", "Images")
+    //   .appendTo(this.selection_select)
+    //   ;
+    // $("<option />")
+    //   .text("Open")
+    //   .attr("value", "open")
+    //   .appendTo(imagesOptgroup)
+    //   ;
+    // $("<option />")
+    //   .text("Close")
+    //   .attr("value", "close")
+    //   .appendTo(imagesOptgroup)
+    //   ;
     
 
     // Set state
