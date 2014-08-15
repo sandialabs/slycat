@@ -42,12 +42,12 @@ def compute(mid):
       X = numpy.empty((row_count, len(input_columns)))
       for j, input in enumerate(input_columns):
         update(database, model, progress=mix(0.0, 0.25, float(j) / float(len(input_columns))))
-        X[:,j] = array.get(input)[...]
+        X[:,j] = array.get_data(input)[...]
 
       Y = numpy.empty((row_count, len(output_columns)))
       for j, output in enumerate(output_columns):
         update(database, model, progress=mix(0.25, 0.50, float(j) / float(len(output_columns))))
-        Y[:,j] = array.get(output)[...]
+        Y[:,j] = array.get_data(output)[...]
 
     # Remove rows containing NaNs ...
     good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))

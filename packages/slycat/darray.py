@@ -56,16 +56,15 @@ class Prototype(object):
     """Return a description of the array attributes."""
     raise NotImplementedError()
 
-  @property
-  def statistics(self):
-    """Return statistics for each array attribute."""
+  def get_statistics(self, attribute=0):
+    """Return statistics describing one attribute."""
     raise NotImplementedError()
 
-  def get(self, attribute=0):
+  def get_data(self, attribute=0):
     """Return data from one attribute."""
     raise NotImplementedError()
 
-  def set(self, attribute, slice, data):
+  def set_data(self, attribute, slice, data):
     """Write data to one attribute."""
     raise NotImplementedError()
 
@@ -123,26 +122,24 @@ class MemArray(Stub):
       if attribute.shape != self.shape:
         raise ValueError("Attribute data must match array shape.")
 
-  @property
-  def statistics(self):
-    """Return statistics for each array attribute."""
-    statistics = []
-    for attribute in self._data:
-      if attribute.dtype.char in ["O", "S", "U"]:
-        statistics.append(dict(min=min(attribute), max=max(attribute)))
-      else:
-        attribute = attribute[numpy.invert(numpy.isnan(attribute))]
-        if len(attribute):
-          statistics.append(dict(min=attribute.min(), max=attribute.max()))
-        else:
-          statistics.append(dict(min=None, max=None))
-    return statistics
+  def get_statistics(self, attribute=0):
+    """Return statistics describing one attribute."""
+    attribute = self._data[attribute]
 
-  def get(self, attribute=0):
+    if attribute.dtype.char in ["O", "S", "U"]:
+      return dict(min=min(attribute), max=max(attribute))
+
+    attribute = attribute[numpy.invert(numpy.isnan(attribute))]
+    if len(attribute):
+      return dict(min=attribute.min(), max=attribute.max())
+
+    return dict(min=None, max=None)
+
+  def get_data(self, attribute=0):
     """Return a data slice from one attribute."""
     return self._data[attribute]
 
-  def set(self, attribute, slice, data):
+  def set_data(self, attribute, slice, data):
     """Write a data slice to one attribute."""
     self._data[attribute][slice] = data
 

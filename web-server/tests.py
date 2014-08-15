@@ -295,7 +295,7 @@ def test_empty_model_arrays():
   connection.join_model(mid)
 
   metadata = connection.get_model_array_metadata(mid, "test-array-set", 0)
-  nose.tools.assert_equal(metadata["statistics"], [{"min":None,"max":None},{"min":None,"max":None},{"min":None,"max":None}])
+  nose.tools.assert_equal(metadata["statistics"], [{"min":0,"max":0},{"min":0,"max":0},{"min":"","max":""}])
 
   numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size), numpy.zeros(size, dtype="int64"))
   numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="float64"))

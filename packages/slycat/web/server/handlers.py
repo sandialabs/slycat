@@ -548,10 +548,10 @@ def get_model_array_metadata(mid, aid, array):
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
+    with slycat.web.server.database.hdf5.open(artifact, "r+") as file: # We open the file with writing enabled because retrieving statistics may need to update the cache.
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       hdf5_array = hdf5_arrayset[array]
-      metadata = dict(dimensions=hdf5_array.dimensions, attributes=hdf5_array.attributes, statistics=hdf5_array.statistics)
+      metadata = dict(dimensions=hdf5_array.dimensions, attributes=hdf5_array.attributes, statistics=[hdf5_array.get_statistics(attribute) for attribute in range(len(hdf5_array.attributes))])
   return metadata
 
 def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
@@ -602,7 +602,7 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
       index = tuple([slice(begin, end) for begin, end in ranges])
 
       attribute_type =  hdf5_array.attributes[attribute]["type"]
-      data = hdf5_array.get(attribute)[index]
+      data = hdf5_array.get_data(attribute)[index]
 
       if byteorder is None:
         return json.dumps(data.tolist())
@@ -755,7 +755,7 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
       index_key = "array/%s/index/%s" % (array_index, sort_column)
       if index_key not in file:
         cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
-        sort_index = numpy.argsort(slycat.hdf5.ArraySet(file)[array_index].get(sort_column)[...], kind="mergesort")
+        sort_index = numpy.argsort(slycat.hdf5.ArraySet(file)[array_index].get_data(sort_column)[...], kind="mergesort")
         file[index_key] = sort_index
       else:
         cherrypy.log.error("Loading cached sort index.")
@@ -774,7 +774,7 @@ def get_table_metadata(file, array_index, index):
 
   dimensions = array.dimensions
   attributes = array.attributes
-  statistics = array.statistics
+  statistics = [array.get_statistics(attribute) for attribute in range(len(attributes))]
 
   metadata = {
     "row-count" : dimensions[0]["end"] - dimensions[0]["begin"],
@@ -809,7 +809,7 @@ def get_model_table_metadata(mid, aid, array, index = None):
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
+    with slycat.web.server.database.hdf5.open(artifact, "r+") as file: # We have to open the file with writing enabled because the statistics cache may need to be updated.
       metadata = get_table_metadata(file, array, index)
   return metadata
 
@@ -855,7 +855,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
         if index is not None and column == metadata["column-count"]-1:
           values = slice.tolist()
         else:
-          values = slycat.hdf5.ArraySet(file)[array].get(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+          values = slycat.hdf5.ArraySet(file)[array].get_data(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
           if type in ["float32", "float64"]:
             values = [None if numpy.isnan(value) else value for value in values]
         data.append(values)
