@@ -19,6 +19,8 @@ $.widget("parameter_image.table",
     outputs : [],
     others : [],
     images : [],
+    ratings : [],
+    categories : [],
     "row-selection" : [],
     "variable-selection": [],
     "sort-variable" : null,
@@ -27,6 +29,7 @@ $.widget("parameter_image.table",
     "x-variable" : null,
     "y-variable" : null,
     colormap : null,
+    hidden_simulations : [],
   },
 
   _create: function()
@@ -39,6 +42,15 @@ $.widget("parameter_image.table",
     }
 
     function cell_formatter(row, cell, value, columnDef, dataContext)
+    {
+      if(columnDef.colormap)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      else if(value==null)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
+      return value_formatter(value);
+    }
+
+    function editable_cell_formatter(row, cell, value, columnDef, dataContext)
     {
       if(columnDef.colormap)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
@@ -61,7 +73,7 @@ $.widget("parameter_image.table",
       });
     }
 
-    function make_column(column_index, header_class, cell_class)
+    function make_column(column_index, header_class, cell_class, formatter)
     {
       var column = {
         id : column_index,
@@ -70,7 +82,7 @@ $.widget("parameter_image.table",
         sortable : false,
         headerCssClass : header_class,
         cssClass : cell_class,
-        formatter : cell_formatter,
+        formatter : formatter,
         width: 100,
         header :
         {
@@ -115,13 +127,18 @@ $.widget("parameter_image.table",
     }
 
     self.columns = [];
-    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
+    
+    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId", cell_formatter));
     for(var i in self.options.inputs)
-      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
+      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter));
     for(var i in self.options.outputs)
-      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
+      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter));
+    for(var i in self.options.ratings)
+      self.columns.push(make_column(self.options.ratings[i], "headerRating", "rowRating", editable_cell_formatter));
+    for(var i in self.options.categories)
+      self.columns.push(make_column(self.options.categories[i], "headerCategory", "rowCategory", editable_cell_formatter));
     for(var i in self.options.others)
-      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
+      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter));
 
     self.data = new self._data_provider({
       server_root : self.options["server-root"],
@@ -132,11 +149,18 @@ $.widget("parameter_image.table",
       sort_order : self.options["sort-order"],
       inputs : self.options.inputs,
       outputs : self.options.outputs,
+      indexOfIndex : self.options.metadata["column-count"]-1,
+      hidden_simulations : self.options.hidden_simulations,
       });
 
     self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+    self.grid = new Slick.Grid(self.element, self.data, self.columns, {
+      explicitInitialization : true, 
+      enableColumnReorder : false, 
+      editable : true, 
+      editCommandHandler : self._editCommandHandler,
+    });
 
     var header_buttons = new Slick.Plugins.HeaderButtons();
     header_buttons.onCommand.subscribe(function(e, args)
@@ -265,6 +289,13 @@ $.widget("parameter_image.table",
     self.grid.resizeCanvas();
   },
 
+  update_data: function()
+  {
+    var self = this;
+    self.data.invalidate();
+    self.grid.invalidate();
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
@@ -295,7 +326,7 @@ $.widget("parameter_image.table",
     else if(key == "colormap")
     {
       self.options[key] = value;
-      self._color_variables(self.options["variable-selection"])
+      self._color_variables(self.options["variable-selection"]);
     }
     else if(key == "x-variable")
     {
@@ -311,6 +342,17 @@ $.widget("parameter_image.table",
     {
       self.options[key] = value;
       self._set_selected_image();
+    }
+    else if(key == "metadata")
+    {
+      self.options[key] = value;
+      self._color_variables(self.options["variable-selection"]);
+    }
+    else if(key == "hidden_simulations")
+    {
+      self.options[key] = value;
+      self.data.invalidate();
+      self.grid.invalidate();
     }
   },
 
@@ -337,7 +379,21 @@ $.widget("parameter_image.table",
   _set_selected_y: function()
   {
     var self = this;
-    //this.y_select.val(self.options["y-variable"]);
+    for(var i in self.columns)
+    {
+      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+        if( self.columns[i].id == self.options["y-variable"]){
+          self.columns[i].header.buttons[0].cssClass = "icon-y-on";
+          self.columns[i].header.buttons[0].tooltip = "Current y variable";
+          self.columns[i].header.buttons[0].command = "";
+        } else {
+          self.columns[i].header.buttons[0].cssClass = "icon-y-off";
+          self.columns[i].header.buttons[0].tooltip = "Set as y variable";
+          self.columns[i].header.buttons[0].command = "y-on";
+        }
+        self.grid.updateColumnHeader(self.columns[i].id);
+      }
+    }
   },
 
   _set_selected_image: function()
@@ -390,6 +446,13 @@ $.widget("parameter_image.table",
     self.grid.invalidate();
   },
 
+  _editCommandHandler: function (item,column,editCommand) {
+    console.log("editCommandHandler called");
+    editCommand.execute();
+    // To Do: Attempt to save edit and undo it if Ajax call returns error
+    //editCommand.undo();
+  },
+
   _data_provider: function(parameters)
   {
     var self = this;
@@ -403,6 +466,8 @@ $.widget("parameter_image.table",
     self.inputs = parameters.inputs;
     self.outputs = parameters.outputs;
     self.analysis_columns = self.inputs.concat(self.outputs);
+    self.indexOfIndex = parameters.indexOfIndex;
+    self.hidden_simulations = parameters.hidden_simulations;
 
     self.pages = {};
     self.page_size = 50;
@@ -435,7 +500,14 @@ $.widget("parameter_image.table",
           async : false,
           success : function(data)
           {
-            self.pages[page] = data;
+            self.pages[page] = [];
+            for(var i=0; i < data.rows.length; i++)
+            {
+              result = {};
+              for(var j = column_begin; j != column_end; ++j)
+                result[j] = data.data[j][i];
+              self.pages[page].push(result);
+            }
           },
           error: function(request, status, reason_phrase)
           {
@@ -444,21 +516,24 @@ $.widget("parameter_image.table",
         });
       }
 
-      result = {};
-      for(var i = column_begin; i != column_end; ++i)
-        result[i] = self.pages[page].data[i][index - page_begin];
-      return result;
+      return self.pages[page][index - page_begin];
     }
 
     self.getItemMetadata = function(index)
     {
       var row = this.getItem(index);
       var column_end = self.analysis_columns.length;
+      var cssClasses = "";
       for(var i=0; i != column_end; i++) {
         if(row[ self.analysis_columns[i] ]==null) {
-          return {"cssClasses" : "nullRow"};
+          cssClasses += "nullRow";
         }
       }
+      if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
+        cssClasses += "hiddenRow";
+      }
+      if(cssClasses != "")
+        return {"cssClasses" : cssClasses};
       return null;
     }
 
@@ -469,7 +544,7 @@ $.widget("parameter_image.table",
       self.sort_column = column;
       self.sort_order = order;
       self.pages = {};
-    },
+    }
 
     self.get_indices = function(direction, rows, callback)
     {
@@ -511,6 +586,12 @@ $.widget("parameter_image.table",
         this.callback(new Int32Array(this.response));
       }
       request.send();
+    }
+
+    self.invalidate = function()
+    {
+      self.pages = {};
+
     }
   },
 

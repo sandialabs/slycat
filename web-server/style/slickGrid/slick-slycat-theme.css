@@ -178,3 +178,15 @@ rights in this software.
 	background-color: #DDDDDD !important;
 	color: #666655 !important;
 }
+.slick-row.hiddenRow .slick-cell,
+.slick-row.hiddenRow .slick-cell .highlightWrapper
+{
+	background-color: white !important;
+	color: #c7c7c7 !important;
+}
+.slick-row.hiddenRow .slick-cell.selected,
+.slick-row.hiddenRow .slick-cell.selected .highlightWrapper
+{
+	background-color: #F5F5DC !important;
+	color: #c7c7c7 !important;
+}
