@@ -30,6 +30,9 @@ $.widget("parameter_image.scatterplot",
     server_root : "",
     open_images : [],
     gradient : null,
+    hidden_simulations : [],
+    filtered_indices : [],
+    filtered_selection : [],
   },
 
   _create: function()
@@ -257,9 +260,40 @@ $.widget("parameter_image.scatterplot",
       self.end_drag = null;
       self.state = "";
 
+      self._filterIndices();
       self._schedule_update({render_selection:true});
       self.element.trigger("selection-changed", [self.options.selection]);
     });
+    self._filterIndices();
+  },
+
+  _filterIndices: function()
+  {
+    var self = this;
+    var x = self.options.x;
+    var y = self.options.y;
+    var indices = self.options.indices;
+    var selection = self.options.selection;
+    var hidden_simulations = self.options.hidden_simulations;
+    var filtered_indices = Array.apply( [], indices );;
+    var filtered_selection = selection.slice(0);
+    var length = indices.length;
+
+    // Remove hidden simulations and NaNs
+    for(var i=length-1; i>=0; i--){
+      var hidden = $.inArray(indices[i], hidden_simulations) > -1;
+      var NaNValue = Number.isNaN(x[i]) || Number.isNaN(y[i]);
+      if(hidden || NaNValue) {
+        filtered_indices.splice(i, 1);
+        var selectionIndex = $.inArray(indices[i], filtered_selection);
+        if( selectionIndex > -1 ) {
+          filtered_selection.splice(selectionIndex, 1);
+        }
+      }
+    }
+
+    self.options.filtered_indices = filtered_indices;
+    self.options.filtered_selection = filtered_selection;
   },
 
   _setOption: function(key, value)
@@ -271,6 +305,7 @@ $.widget("parameter_image.scatterplot",
 
     if(key == "indices")
     {
+      self._filterIndices();
       self._schedule_update({update_indices:true, render_selection:true});
     }
 
@@ -291,11 +326,15 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "x")
     {
+      self._filterIndices();
+      self._close_hidden_simulations();
       self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "y")
     {
+      self._filterIndices();
+      self._close_hidden_simulations();
       self._schedule_update({update_y:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
@@ -309,7 +348,8 @@ $.widget("parameter_image.scatterplot",
     }
 
     else if(key == "selection")
-    {
+    { 
+      self._filterIndices();
       self._schedule_update({render_selection:true});
     }
 
@@ -336,6 +376,13 @@ $.widget("parameter_image.scatterplot",
     else if(key == "gradient")
     {
       self._schedule_update({update_legend_colors:true, });
+    }
+
+    else if(key == "hidden_simulations")
+    {
+      self._filterIndices();
+      self._schedule_update({render_data:true, render_selection:true, });
+      self._close_hidden_simulations();
     }
   },
 
@@ -462,32 +509,45 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_data"])
     {
-      var count = self.options.x.length;
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
+      var indices = self.options.indices;
+      var filtered_indices = self.options.filtered_indices;
 
       // Draw points ...
-      self.datum_layer.selectAll(".datum")
-        .data(x)
-      .enter().append("circle")
+      var circle = self.datum_layer.selectAll(".datum")
+        .data(filtered_indices, function(d, i){ 
+          return filtered_indices[i];
+        })
+        ;
+      circle.exit()
+        .remove()
+        ;
+      circle.enter()
+        .append("circle")
         .attr("class", "datum")
         .attr("r", 4)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .attr("data-index", function(d, i) { return i; })
+        .attr("data-index", function(d, i) { return d; })
         .on("mouseover", function(d, i) { 
-          self._schedule_hover(i);
+          self._schedule_hover(d);
         })
         .on("mouseout", function(d, i) { 
           self._cancel_hover(); 
         })
         ;
-
-      self.datum_layer.selectAll(".datum")
-        .attr("cx", function(d, i) { return self.x_scale(x[i]); })
-        .attr("cy", function(d, i) { return self.y_scale(y[i]); })
-        .attr("fill", function(d, i) { return self.options.color(v[self.options.indices[i]]); })
+      circle
+        .attr("cx", function(d, i) { return self.x_scale( x[$.inArray(d, indices)] ); })
+        .attr("cy", function(d, i) { return self.y_scale( y[$.inArray(d, indices)] ); })
+        .attr("fill", function(d, i) { 
+          var value = v[$.inArray(d, indices)];
+          if(Number.isNaN(value))
+            return $("#color-switcher").colorswitcher("get_null_color");
+          else
+            return self.options.color(value); 
+        })
         ;
     }
 
@@ -496,36 +556,49 @@ $.widget("parameter_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
-      var color = self.options.color;
       var indices = self.options.indices;
-      var selection = self.options.selection;
+      var filtered_selection = self.options.filtered_selection;
 
       var x_scale = self.x_scale;
       var y_scale = self.y_scale;
-      var inverse_indices = self.inverse_indices;
 
       self.selected_layer.selectAll(".selection").remove();
 
-      self.selected_layer.selectAll(".selection")
-        .data(selection)
-      .enter().append("circle")
+      var circle = self.selected_layer.selectAll(".selection")
+        .data(filtered_selection, function(d, i){
+          return d;
+        })
+        ;
+      circle.enter()
+        .append("circle")
         .attr("class", "selection")
         .attr("r", 8)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .attr("data-index", function(d, i) { return selection[i]; })
+        .attr("data-index", function(d, i) { 
+          return d; 
+        })
         .on("mouseover", function(d, i) { 
-          self._schedule_hover(selection[i]); 
+          self._schedule_hover(d);
         })
         .on("mouseout", function(d, i) { 
           self._cancel_hover(); 
         })
         ;
-
-      self.selected_layer.selectAll(".selection")
-        .attr("cx", function(d, i) { return x_scale(x[inverse_indices[selection[i]]]); })
-        .attr("cy", function(d, i) { return y_scale(y[inverse_indices[selection[i]]]); })
-        .attr("fill", function(d, i) { return color(v[selection[i]]); })
+      circle
+        .attr("cx", function(d, i) { 
+          return x_scale( x[$.inArray(d, indices)] ); 
+        })
+        .attr("cy", function(d, i) { 
+          return y_scale( y[$.inArray(d, indices)] ); 
+        })
+        .attr("fill", function(d, i) { 
+          var value = v[$.inArray(d, indices)];
+          if(Number.isNaN(value))
+            return $("#color-switcher").colorswitcher("get_null_color");
+          else
+            return self.options.color(value); 
+        })
         ;
     }
 
@@ -707,6 +780,18 @@ $.widget("parameter_image.scatterplot",
       return;
 
     var image = images[0];
+
+    // Don't open images for hidden simulations
+    if($.inArray(image.index, self.options.hidden_simulations) != -1) {
+      self._open_images(images.slice(1));
+      return;
+    }
+
+    // // Don't open image if it's already open
+    // if($(".open-image[data-uri='" + image.uri + "']").size() > 0) {
+    //   self._open_images(images.slice(1));
+    //   return;
+    // }
 
     // If image is hover and we are no longer loading this image, we're done.
     if( image.image_class == "hover-image" && 
@@ -1185,6 +1270,17 @@ $.widget("parameter_image.scatterplot",
       return;
     }
     xhr.send();
+  },
+
+  _close_hidden_simulations: function()
+  {
+    var self = this;
+    $("g.image-frame")
+      .filter(function(){
+        return $.inArray($(this).data("index"), self.options.filtered_indices) == -1
+      })
+      .remove()
+      ;
   },
 
   _open_session: function(images)

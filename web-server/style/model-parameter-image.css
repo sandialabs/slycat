@@ -347,7 +347,7 @@ rights in this software.
 #color-switcher {
   margin: -16px 0 0 0;
 }
-#variable-switcher {
+#controls {
   /*float: left;
   margin-top: -3px;*/
   position: absolute;
@@ -356,11 +356,19 @@ rights in this software.
   text-align: center;
   bottom: 0;
 }
-#variable-switcher label {
+#controls label {
   font-weight: bold;
   margin-right: 5px;
 }
-#variable-switcher select {
+#controls label.disabled,
+#controls select:disabled
+{
+  color: gray;
+}
+#controls select:disabled {
+  
+}
+#controls select {
   margin-right: 10px;
   padding: 2px 4px;
 }
@@ -399,4 +407,7 @@ rights in this software.
 {
   fill: none;
   stroke: black;
+}
+.dialogErrorMessage {
+  color: red;
 }
