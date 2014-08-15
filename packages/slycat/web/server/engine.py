@@ -85,6 +85,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-home", "/", slycat.web.server.handlers.get_home, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/array-sets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-array-attribute-statistics", "/models/:mid/array-sets/:aid/arrays/:array/attributes/:attribute/statistics", slycat.web.server.handlers.get_model_array_attribute_statistics, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-metadata", "/models/:mid/array-sets/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_array_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/array-sets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset", "/models/:mid/array-sets/:aid", slycat.web.server.handlers.get_model_arrayset, conditions={"method" : ["GET"]})
