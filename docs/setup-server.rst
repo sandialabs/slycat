@@ -57,6 +57,7 @@ As user root:
        $ yum install libpng-devel
        $ yum install chromium
        $ yum install hdf5-devel
+       $ yum install libjpeg-turbo-devel
 
 -  Start the CouchDB service and set it up to start automatically at
    boot:
