@@ -114,7 +114,7 @@ As user "slycat":
        $ pip install pyzmq
        $ pip install Jinja2
        $ pip install tornado
-       $ pip install matplotlib
+       $ pip install Pillow
 
 -  Clone the Slycat repo into -/src:
 
