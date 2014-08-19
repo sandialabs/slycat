@@ -57,6 +57,7 @@ Documentation:
    setup-server.rst
    models.rst
    restful-api.rst
+   testing.rst
    reference.rst
 
 
