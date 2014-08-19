@@ -292,8 +292,7 @@ $.widget("parameter_image.controls",
     var numRows = array.rows.length;
     var numCols = array.columns.length;
     var rowMajorOutput = "";
-    // skip last column which is slycat index
-    numCols = numCols - 1;
+    //numCols = numCols - 1;  // skip last column which is slycat index
     var r, c;
     // add the headers
     for(c=0; c<numCols; c++) {
