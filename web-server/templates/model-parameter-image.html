@@ -774,6 +774,9 @@ rights in this software.
             }
 
             $("#controls").controls({
+              "server-root" : "{{server-root}}",
+              mid : "{{_id}}",
+              aid : "data-table",
               metadata: table_metadata,
               x_variables: numeric_variables.slice(0, numeric_variables.length-1),
               y_variables: numeric_variables.slice(0, numeric_variables.length-1),
