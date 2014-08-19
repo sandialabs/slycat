@@ -2,6 +2,33 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+"""Functions for managing cached remote ssh sessions.
+
+Slycat makes extensive use of ssh to communicate with remote resources, such
+as the high performance computing platforms used to generate ensembles.  This
+module provides functionality to create cached remote ssh sessions that can
+be used to retrieve data from remote hosts.  This functionality is used in
+a variety of ways:
+
+* Allowing web clients to browse the filesystem of a remote host.
+* Allowing web clients to create a Slycat model using data stored on a remote host.
+* Allowing web clients to retrieve images from a remote host on-demand (an essential part of the :ref:`Parameter Image Model`).
+
+When an ssh session is created, the connection to the remote host over ssh is
+setup and a unique session identifier is returned.  Callers can use the session
+id to retrieve the cached session, then use the contained ssh and sftp objects
+to communicate with the remote host.  A "last access" time for each session is
+maintained and updated whenever the cached session is accessed.  If a session
+times-out (a threshold amount of time has elapsed since the last access) it is
+automatically deleted, and subsequent use of the expired session id will fail.
+
+Each session is bound to the IP address of the client that created it - only
+the same client IP address is allowed to access the session.
+
+Once a caller retrieves a cached session, it must obtain the session thread lock
+before accessing the ssh or sftp objects.
+"""
+
 import cherrypy
 import datetime
 import hashlib
