@@ -58,6 +58,7 @@ Documentation:
    models.rst
    restful-api.rst
    testing.rst
+   colophon.rst
    reference.rst
 
 
