@@ -425,8 +425,7 @@ def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
     data = file.file.read()
     filename = file.filename
   elif file is None and sid is not None and path is not None:
-    client = cherrypy.request.remote.ip
-    session = slycat.web.server.ssh.get_session(client, sid)
+    session = slycat.web.server.ssh.get_session(sid)
     filename = "%s@%s:%s" % (session["username"], session["hostname"], path)
     if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
       raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
@@ -1011,20 +1010,18 @@ def get_user(uid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remote():
-  client = cherrypy.request.remote.ip
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
   password = cherrypy.request.json["password"]
-  return {"sid":slycat.web.server.ssh.create_session(client, hostname, username, password)}
+  return {"sid":slycat.web.server.ssh.create_session(hostname, username, password)}
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remote_browse():
-  client = cherrypy.request.remote.ip
   sid = cherrypy.request.json["sid"]
   path = cherrypy.request.json["path"]
 
-  session = slycat.web.server.ssh.get_session(client, sid)
+  session = slycat.web.server.ssh.get_session(sid)
   with session["lock"]:
     try:
       attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
@@ -1041,8 +1038,7 @@ def get_remote_file(sid, path):
   #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
   #cherrypy.response.headers["content-type"] = accept
 
-  client = cherrypy.request.remote.ip
-  session = slycat.web.server.ssh.get_session(client, sid)
+  session = slycat.web.server.ssh.get_session(sid)
   with session["lock"]:
     try:
       if stat.S_ISDIR(session["sftp"].stat(path).st_mode):

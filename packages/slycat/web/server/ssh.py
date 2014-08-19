@@ -11,13 +11,41 @@ import threading
 import time
 import uuid
 
-def connect(hostname, username, password):
-  """Create a standard SSH connection."""
+session_cache = {}
+session_cache_lock = threading.Lock()
+session_access_timeout = datetime.timedelta(minutes=15)
+
+def create_session(hostname, username, password):
+  """Create a cached ssh session for the given host.
+
+  Parameters
+  ----------
+  hostname : string
+    Name of the remote host to connect via ssh
+  username : string
+    Username for ssh authentication
+  password : string
+    Password for ssh authentication
+
+  Returns
+  -------
+  sid : string
+    A unique session identifier.
+  """
+  _start_session_monitor()
+  cherrypy.log.error("Creating ssh session for %s@%s from %s" % (username, hostname, cherrypy.request.remote.ip))
+
   try:
-    connection = paramiko.SSHClient()
-    connection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    connection.connect(hostname=hostname, username=username, password=password)
-    return connection
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname=hostname, username=username, password=password)
+    sftp = ssh.open_sftp()
+    sid = uuid.uuid4().hex
+    now = datetime.datetime.utcnow()
+    session = {"started":now, "accessed":now, "ssh":ssh, "sftp":sftp, "username":username, "hostname":hostname, "client":cherrypy.request.remote.ip, "lock":threading.Lock()}
+    with session_cache_lock:
+      session_cache[sid] = session
+    return sid
   except paramiko.AuthenticationException as e:
     cherrypy.log.error("%s %s" % (type(e), str(e)))
     raise cherrypy.HTTPError("403 Remote authentication failed.")
@@ -25,24 +53,42 @@ def connect(hostname, username, password):
     cherrypy.log.error("%s %s" % (type(e), str(e)))
     raise cherrypy.HTTPError("500 Remote connection failed: %s" % str(e))
 
-session_cache = {}
-session_cache_lock = threading.Lock()
-session_access_timeout = datetime.timedelta(minutes=15)
+def get_session(sid):
+  """Return a cached ssh session.
 
-def create_session(client, hostname, username, password):
-  """Create a cached ssh + sftp session for the given host."""
-  start_session_monitor()
-  cherrypy.log.error("Creating ssh session for %s@%s from %s" % (username, hostname, client))
-  ssh = connect(hostname, username, password)
-  sftp = ssh.open_sftp()
-  sid = uuid.uuid4().hex
-  now = datetime.datetime.utcnow()
-  session = {"started":now, "accessed":now, "ssh":ssh, "sftp":sftp, "username":username, "hostname":hostname, "client":client, "lock":threading.Lock()}
+  If the session has timed-out or doesn't exist, raises a 404 exception.
+
+  Parameters
+  ----------
+  sid : string
+    Unique session identifier returned by :func:`slycat.web.server.ssh.create_session`.
+
+  Returns
+  -------
+  session : dict
+    Dict containing session parameters, including Paramiko ssh and sftp
+    objects, username, hostname, and a thread lock callers must use to
+    synchronize access to the ssh and sftp objects..
+  """
   with session_cache_lock:
-    session_cache[sid] = session
-  return sid
+    _expire_session(sid)
 
-def expire_session(sid):
+    # Only the originating client can access a session.
+    if sid in session_cache:
+      session = session_cache[sid]
+      if cherrypy.request.remote.ip != session["client"]:
+        cherrypy.log.error("Client %s attempted to access ssh session for %s@%s from %s" % (cherrypy.request.remote.ip, session["username"], session["hostname"], session["client"]))
+        del session_cache[sid]
+        raise cherrypy.HTTPError("404")
+
+    if sid not in session_cache:
+      raise cherrypy.HTTPError("404")
+
+    session = session_cache[sid]
+    session["accessed"] = datetime.datetime.utcnow()
+    return session
+
+def _expire_session(sid):
   """Test an existing session to see if it is expired.
 
   Assumes that the caller already holds session_cache_lock.
@@ -54,37 +100,17 @@ def expire_session(sid):
       cherrypy.log.error("Timing-out ssh session for %s@%s from %s" % (session["username"], session["hostname"], session["client"]))
       del session_cache[sid]
 
-def get_session(client, sid):
-  """Returns a cached ssh + sftp session."""
-  with session_cache_lock:
-    expire_session(sid)
-
-    # Only the originating client can access a session.
-    if sid in session_cache:
-      session = session_cache[sid]
-      if client != session["client"]:
-        cherrypy.log.error("Client %s attempted to access ssh session for %s@%s from %s" % (client, session["username"], session["hostname"], session["client"]))
-        del session_cache[sid]
-        raise cherrypy.HTTPError("404")
-
-    if sid not in session_cache:
-      raise cherrypy.HTTPError("404")
-
-    session = session_cache[sid]
-    session["accessed"] = datetime.datetime.utcnow()
-    return session
-
-def session_monitor():
+def _session_monitor():
   while True:
     with session_cache_lock:
       for sid in list(session_cache.keys()): # We make an explicit copy of the keys because we may be modifying the dict contents
-        expire_session(sid)
+        _expire_session(sid)
     time.sleep(5)
 
-def start_session_monitor():
-  if start_session_monitor.thread is None:
+def _start_session_monitor():
+  if _start_session_monitor.thread is None:
     cherrypy.log.error("Starting ssh session monitor.")
-    start_session_monitor.thread = threading.Thread(name="SSH Monitor", target=session_monitor)
-    start_session_monitor.thread.daemon = True
-    start_session_monitor.thread.start()
-start_session_monitor.thread = None
+    _start_session_monitor.thread = threading.Thread(name="SSH Monitor", target=_session_monitor)
+    _start_session_monitor.thread.daemon = True
+    _start_session_monitor.thread.start()
+_start_session_monitor.thread = None
