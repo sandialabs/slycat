@@ -10,9 +10,9 @@ module provides functionality to create cached remote ssh sessions that can
 be used to retrieve data from remote hosts.  This functionality is used in
 a variety of ways:
 
-* Allowing web clients to browse the filesystem of a remote host.
-* Allowing web clients to create a Slycat model using data stored on a remote host.
-* Allowing web clients to retrieve images from a remote host on-demand (an essential part of the :ref:`Parameter Image Model`).
+* Web clients can browse the filesystem of a remote host.
+* Web clients can create a Slycat model using data stored on a remote host.
+* Web clients can retrieve images from a remote host (an essential part of the :ref:`Parameter Image Model`).
 
 When an ssh session is created, the connection to the remote host over ssh is
 setup and a unique session identifier is returned.  Callers can use the session
@@ -24,9 +24,6 @@ automatically deleted, and subsequent use of the expired session id will fail.
 
 Each session is bound to the IP address of the client that created it - only
 the same client IP address is allowed to access the session.
-
-Once a caller retrieves a cached session, it must obtain the session thread lock
-before accessing the ssh or sftp objects.
 """
 
 import cherrypy
@@ -41,6 +38,64 @@ import uuid
 session_cache = {}
 session_cache_lock = threading.Lock()
 session_access_timeout = datetime.timedelta(minutes=15)
+
+class Session(object):
+  """Encapsulates an open ssh session to a remote host.
+
+  Examples
+  --------
+
+  Calling threads must serialize access to the Session object.  To facilitate this,
+  a Session is a context manager - callers should always use a `with statement` when
+  accessing a session:
+
+  >>> with slycat.web.server.ssh.get_session(sid) as session:
+  ...   print session.username
+
+  """
+  def __init__(self, username, hostname, ssh, sftp):
+    now = datetime.datetime.utcnow()
+    self._created = now
+    self._accessed = now
+    self._username = username
+    self._hostname = hostname
+    self._ssh = ssh
+    self._sftp = sftp
+    self._client = cherrypy.request.remote.ip
+    self._lock = threading.Lock()
+  def __enter__(self):
+    self._lock.__enter__()
+    return self
+  def __exit__(self, exc_type, exc_value, traceback):
+    return self._lock.__exit__(exc_type, exc_value, traceback)
+  @property
+  def created(self):
+    """Return the time the session was created."""
+    return self._created
+  @property
+  def accessed(self):
+    """Return the time the session was last accessed."""
+    return self._accessed
+  @property
+  def username(self):
+    """Return the username used to create the session."""
+    return self._username
+  @property
+  def hostname(self):
+    """Return the remote hostname accessed by the session."""
+    return self._hostname
+  @property
+  def ssh(self):
+    """Return a Paramiko ssh object."""
+    return self._ssh
+  @property
+  def sftp(self):
+    """Return a Paramiko sftp object."""
+    return self._sftp
+  @property
+  def client(self):
+    """Return the IP address of the client that created the session."""
+    return self._client
 
 def create_session(hostname, username, password):
   """Create a cached ssh session for the given host.
@@ -63,15 +118,13 @@ def create_session(hostname, username, password):
   cherrypy.log.error("Creating ssh session for %s@%s from %s" % (username, hostname, cherrypy.request.remote.ip))
 
   try:
+    sid = uuid.uuid4().hex
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
     sftp = ssh.open_sftp()
-    sid = uuid.uuid4().hex
-    now = datetime.datetime.utcnow()
-    session = {"started":now, "accessed":now, "ssh":ssh, "sftp":sftp, "username":username, "hostname":hostname, "client":cherrypy.request.remote.ip, "lock":threading.Lock()}
     with session_cache_lock:
-      session_cache[sid] = session
+      session_cache[sid] = Session(username, hostname, ssh, sftp)
     return sid
   except paramiko.AuthenticationException as e:
     cherrypy.log.error("%s %s" % (type(e), str(e)))
@@ -92,10 +145,8 @@ def get_session(sid):
 
   Returns
   -------
-  session : dict
-    Dict containing session parameters, including Paramiko ssh and sftp
-    objects, username, hostname, and a thread lock callers must use to
-    synchronize access to the ssh and sftp objects..
+  session : :class:`slycat.web.server.ssh.Session`
+    Session object that encapsulates the connection to a remote server.
   """
   with session_cache_lock:
     _expire_session(sid)
@@ -103,8 +154,8 @@ def get_session(sid):
     # Only the originating client can access a session.
     if sid in session_cache:
       session = session_cache[sid]
-      if cherrypy.request.remote.ip != session["client"]:
-        cherrypy.log.error("Client %s attempted to access ssh session for %s@%s from %s" % (cherrypy.request.remote.ip, session["username"], session["hostname"], session["client"]))
+      if cherrypy.request.remote.ip != session.client:
+        cherrypy.log.error("Client %s attempted to access ssh session for %s@%s from %s" % (cherrypy.request.remote.ip, session.username, session.hostname, session.client))
         del session_cache[sid]
         raise cherrypy.HTTPError("404")
 
@@ -112,7 +163,7 @@ def get_session(sid):
       raise cherrypy.HTTPError("404")
 
     session = session_cache[sid]
-    session["accessed"] = datetime.datetime.utcnow()
+    session._accessed = datetime.datetime.utcnow()
     return session
 
 def _expire_session(sid):
@@ -123,8 +174,8 @@ def _expire_session(sid):
   if sid in session_cache:
     now = datetime.datetime.utcnow()
     session = session_cache[sid]
-    if now - session["accessed"] > session_access_timeout:
-      cherrypy.log.error("Timing-out ssh session for %s@%s from %s" % (session["username"], session["hostname"], session["client"]))
+    if now - session.accessed > session_access_timeout:
+      cherrypy.log.error("Timing-out ssh session for %s@%s from %s" % (session.username, session.hostname, session.client))
       del session_cache[sid]
 
 def _session_monitor():

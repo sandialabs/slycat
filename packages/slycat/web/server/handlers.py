@@ -425,11 +425,11 @@ def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
     data = file.file.read()
     filename = file.filename
   elif file is None and sid is not None and path is not None:
-    session = slycat.web.server.ssh.get_session(sid)
-    filename = "%s@%s:%s" % (session["username"], session["hostname"], path)
-    if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
-      raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
-    data = session["sftp"].file(path).read()
+    with slycat.web.server.ssh.get_session(sid) as session:
+      filename = "%s@%s:%s" % (session.username, session.hostname, path)
+      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+        raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+      data = session.sftp.file(path).read()
   else:
     raise cherrypy.HTTPError("400 Must supply a file parameter, or sid and path parameters.")
   slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=input)
@@ -1021,10 +1021,9 @@ def post_remote_browse():
   sid = cherrypy.request.json["sid"]
   path = cherrypy.request.json["path"]
 
-  session = slycat.web.server.ssh.get_session(sid)
-  with session["lock"]:
+  with slycat.web.server.ssh.get_session(sid) as session:
     try:
-      attributes = sorted(session["sftp"].listdir_attr(path), key=lambda x: x.filename)
+      attributes = sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename)
       names = [attribute.filename for attribute in attributes]
       sizes = [attribute.st_size for attribute in attributes]
       types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
@@ -1038,12 +1037,11 @@ def get_remote_file(sid, path):
   #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
   #cherrypy.response.headers["content-type"] = accept
 
-  session = slycat.web.server.ssh.get_session(sid)
-  with session["lock"]:
+  with slycat.web.server.ssh.get_session(sid) as session:
     try:
-      if stat.S_ISDIR(session["sftp"].stat(path).st_mode):
+      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
         raise cherrypy.HTTPError("400 Can't read directory.")
-      return session["sftp"].file(path).read()
+      return session.sftp.file(path).read()
     except Exception as e:
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
       if str(e) == "Garbage packet received":
