@@ -10,6 +10,7 @@ $.widget("parameter_image.controls",
   {
     "server-root" : "",
     mid : null,
+    model_name : null,
     aid : null,
     metadata : null,
     "x-variable" : null,
@@ -184,52 +185,21 @@ $.widget("parameter_image.controls",
   { 
     var self = this;
     console.log("++ write data table called");
-    var dataTable = self._request_table();
-    self._write_csv( self._convert_to_csv(dataTable), self._request_model_name() + "_data_table.csv" );
-  },
-
-  _request_model_name: function()
-  {
-    var self = this;
-    var model = {};
-    $.ajax(
-    {
-      type : "GET",
-      url : self.options['server-root'] + "models/" + self.options.mid,
-      async : false,
-      success : function(result)
-      {
-	model = result;
-      },
-      error: function(request, status, reason_phrase)
-      {
-        window.alert("Error retrieving model: " + reason_phrase);
-      }
-    });
-    return model.name;
-  },
-
-  _request_table: function()
-  {
-    var self = this;
-    var tableObject = {};
     var numRows = self.options.metadata['row-count'];
     var numCols = self.options.metadata['column-count'];
     $.ajax(
     {
       type : "GET",
       url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
-      async : false,
       success : function(result)
       {
-	tableObject = result;
+        self._write_csv( self._convert_to_csv(result), self.options.model_name + "_data_table.csv" );
       },
       error: function(request, status, reason_phrase)
       {
         window.alert("Error retrieving data table: " + reason_phrase);
       }
     });
-    return tableObject;
   },
 
   _write_csv: function(csvData, defaultFilename)

@@ -119,6 +119,7 @@ rights in this software.
         var bookmark = null;
 
         var table_metadata = null;
+        var table_statistics = null;
         var indices = null;
         var x_index = null;
         var y_index = null;
@@ -215,7 +216,9 @@ rights in this software.
               success: function(metadata)
               {
                 table_metadata = metadata;
-                metadata_loaded();
+                table_statistics = new Array(metadata["column-count"]);
+                table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
+                load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
               },
               error: artifact_missing
             });
@@ -497,7 +500,7 @@ rights in this software.
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && bookmark && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null) )
+          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && bookmark && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null) )
           {
             table_ready = true;
 
@@ -516,6 +519,7 @@ rights in this software.
               mid : "{{_id}}",
               aid : "data-table",
               metadata : table_metadata,
+              statistics : table_statistics,
               inputs : input_columns,
               outputs : output_columns,
               others : other_columns,
@@ -776,6 +780,7 @@ rights in this software.
             $("#controls").controls({
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
+              model_name: "{{name}}",
               aid : "data-table",
               metadata: table_metadata,
               x_variables: numeric_variables.slice(0, numeric_variables.length-1),
@@ -1130,6 +1135,29 @@ rights in this software.
           image.style.left=10;
           image.style.top=10;
           $("#scatterplot-pane").prepend(image);
+        }
+
+        function load_table_statistics(columns, callback)
+        {
+          var requests = Array();
+          for(var i=0; i<columns.length; i++)
+          {
+            requests.push(
+              $.ajax({
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
+                contentType : "application/json",
+              })
+            );
+          }
+          var defer = $.when.apply($, requests);
+          defer.done(function(){
+            // This is executed only after every ajax request has been completed
+            $.each(arguments, function(index, responseData){
+              // "responseData" contains an array of response information for each specific request
+              table_statistics[columns[index]] = responseData[0];
+            });
+            callback();
+          });
         }
       });
 
