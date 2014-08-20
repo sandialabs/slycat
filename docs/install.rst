@@ -19,7 +19,7 @@ Slycat VM. The Slycat VM image is ready-to-use with `VirtualBox
 Windows, Linux, Mac, and most flavors of Unix. Once you've installed VirtualBox
 on your host, you're ready to download the Slycat VM and get started:
 
--  Download the `Slycat VM image <http://sourceforge.net/projects/slycat/files/virtual-machines/slycatvm-20140402.ova/download>`__.
+-  Download the `Slycat VM image <http://sourceforge.net/projects/slycat/files/virtual-machines/slycatvm-20140820.ova/download>`__.
 -  Start VirtualBox.
 -  Choose *File > Import Appliance* and select the Slycat VM image you
    downloaded.

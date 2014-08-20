@@ -182,7 +182,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, h
       else:
         raise NotImplementedError()
 
-    hdf5_array.set(attribute_index, hyperslice, data)
+    hdf5_array.set_data(attribute_index, hyperslice, data)
 
 def store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data):
   update(database, model, message="Storing data to array set %s." % (name))
@@ -234,5 +234,5 @@ def store_array_set_data(database, model, name, array, attribute, hyperslice, by
         else:
           raise NotImplementedError()
 
-        hdf5_array.set(attribute_index, array_hyperslice, attribute_data)
+        hdf5_array.set_data(attribute_index, array_hyperslice, attribute_data)
 

@@ -4,18 +4,14 @@ Reference Documentation
 .. toctree::
    :maxdepth: 2
 
-   slycat.rst
    slycat.cca.rst
    slycat.darray.rst
    slycat.hdf5.rst
    slycat.table.rst
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
-   slycat.web.rst
    slycat.web.client.rst
-   slycat.web.server.rst
    slycat.web.server.authentication.rst
-   slycat.web.server.database.rst
    slycat.web.server.database.couchdb.rst
    slycat.web.server.database.hdf5.rst
    slycat.web.server.directory.rst

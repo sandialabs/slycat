@@ -57,6 +57,8 @@ Documentation:
    setup-server.rst
    models.rst
    restful-api.rst
+   testing.rst
+   colophon.rst
    reference.rst
 
 

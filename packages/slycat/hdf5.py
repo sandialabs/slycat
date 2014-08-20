@@ -31,15 +31,40 @@ class DArray(slycat.darray.Prototype):
   def attributes(self):
     return [dict(name=name, type=type) for name, type in zip(self._metadata["attribute-names"], self._metadata["attribute-types"])]
 
-  @property
-  def statistics(self):
-    attributes = [self._storage["attribute/%s" % attribute].attrs for attribute in range(len(self._metadata["attribute-names"]))]
-    return [dict(min=attribute.get("min", None), max=attribute.get("max", None)) for attribute in attributes]
+  def get_statistics(self, attribute=0):
+    attribute = self._storage["attribute/%s" % attribute]
 
-  def get(self, attribute=0):
+    if "min" not in attribute.attrs or "max" not in attribute.attrs:
+      attribute_min = None
+      attribute_max = None
+
+      chunk_size = 1000
+      for begin in numpy.arange(0, len(attribute), chunk_size):
+        slice = attribute[begin : begin + chunk_size]
+        if attribute.dtype.char in ["O", "S", "U"]:
+          data_min = min(slice)
+          data_max = max(slice)
+          attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
+          attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
+        else:
+          slice = slice[numpy.invert(numpy.isnan(slice))]
+          if len(slice):
+            data_min = numpy.asscalar(slice.min())
+            data_max = numpy.asscalar(slice.max())
+            attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+            attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+
+      if attribute_min is not None:
+        attribute.attrs["min"] = attribute_min
+      if attribute_max is not None:
+        attribute.attrs["max"] = attribute_max
+
+    return dict(min=attribute.attrs.get("min", None), max=attribute.attrs.get("max", None))
+
+  def get_data(self, attribute=0):
     return self._storage["attribute/%s" % attribute]
 
-  def set(self, attribute, hyperslice, data):
+  def set_data(self, attribute, hyperslice, data):
     if not (0 <= attribute and attribute < len(self.attributes)):
       raise ValueError("Attribute index %s out-of-range." % attribute)
     if isinstance(hyperslice, slice):
@@ -50,30 +75,16 @@ class DArray(slycat.darray.Prototype):
           raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
     else:
       raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
+
     # Store the data ...
     attribute = self._storage["attribute/%s" % attribute]
     attribute[hyperslice] = data
 
-    # Update attribute min/max statistics ...
-    attribute_min = attribute.attrs.get("min", None)
-    attribute_max = attribute.attrs.get("max", None)
-    if data.dtype.char in ["O", "S", "U"]:
-      data_min = min(data)
-      data_max = max(data)
-      attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
-      attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
-    else:
-      data = data[numpy.invert(numpy.isnan(data))]
-      if len(data):
-        data_min = numpy.asscalar(data.min())
-        data_max = numpy.asscalar(data.max())
-        attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
-        attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
-
-    if attribute_min is not None:
-      attribute.attrs["min"] = attribute_min
-    if attribute_max is not None:
-      attribute.attrs["max"] = attribute_max
+    # Flush cached statistics ...
+    if "min" in attribute.attrs:
+      del attribute.attrs["min"]
+    if "max" in attribute.attrs:
+      del attribute.attrs["max"]
 
 class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
@@ -153,15 +164,12 @@ class ArraySet(object):
     self.start_array(array_index, array.dimensions, array.attributes)
     for attribute_index, attribute in enumerate(array.attributes):
       stored_type = dtype(attribute["type"])
-      data = array.get(attribute_index)
-      statistics = array.statistics[attribute_index]
+      data = array.get_data(attribute_index)
 
       # Store the data ...
       attribute_key = "array/%s/attribute/%s" % (array_index, attribute_index)
       hdf5_attribute = self._storage[attribute_key]
       hdf5_attribute[index] = data
-      hdf5_attribute.attrs["min"] = statistics["min"]
-      hdf5_attribute.attrs["max"] = statistics["max"]
 
     return DArray(self._storage["array/%s" % array_index])
 

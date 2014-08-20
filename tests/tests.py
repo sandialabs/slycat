@@ -19,7 +19,7 @@ def assert_table(array, dimensions, attributes, data=None):
   nose.tools.assert_equal(array.attributes, attributes)
   if data is not None:
     for attribute, b in enumerate(data):
-      numpy.testing.assert_array_equal(array.get(attribute), b)
+      numpy.testing.assert_array_equal(array.get_data(attribute), b)
 
 ########################################################################################################
 # slycat.cca tests
@@ -76,34 +76,34 @@ def test_slycat_darray_memarray_basic():
   nose.tools.assert_equal(array.ndim, 2)
   nose.tools.assert_equal(array.shape, (4, 3))
   nose.tools.assert_equal(array.size, 12)
-  numpy.testing.assert_array_equal(array.get(), [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11]])
-  numpy.testing.assert_array_equal(array.get(1), numpy.zeros((4, 3)))
-  numpy.testing.assert_array_equal(array.get(1)[0:2,0:2], numpy.zeros((2, 2)))
-  array.set(1, [slice(0, 2), slice(0, 2)], numpy.ones((2, 2)))
-  numpy.testing.assert_array_equal(array.get(1)[0], [1, 1, 0])
-  nose.tools.assert_equal(array.statistics[0]["min"], 0)
-  nose.tools.assert_equal(array.statistics[0]["max"], 11)
-  nose.tools.assert_equal(array.statistics[1]["min"], 0)
-  nose.tools.assert_equal(array.statistics[1]["max"], 1)
+  numpy.testing.assert_array_equal(array.get_data(), [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11]])
+  numpy.testing.assert_array_equal(array.get_data(1), numpy.zeros((4, 3)))
+  numpy.testing.assert_array_equal(array.get_data(1)[0:2,0:2], numpy.zeros((2, 2)))
+  array.set_data(1, [slice(0, 2), slice(0, 2)], numpy.ones((2, 2)))
+  numpy.testing.assert_array_equal(array.get_data(1)[0], [1, 1, 0])
+  nose.tools.assert_equal(array.get_statistics(0)["min"], 0)
+  nose.tools.assert_equal(array.get_statistics(0)["max"], 11)
+  nose.tools.assert_equal(array.get_statistics(1)["min"], 0)
+  nose.tools.assert_equal(array.get_statistics(1)["max"], 1)
 
 def test_slycat_darray_memarray_string():
   array = slycat.darray.MemArray([dict(name="i", end=4)], [dict(name="val", type="string")], [["a", "b", "foo", "d"]])
   nose.tools.assert_equal(array.ndim, 1)
   nose.tools.assert_equal(array.shape, (4,))
   nose.tools.assert_equal(array.size, 4)
-  numpy.testing.assert_array_equal(array.get(), ["a", "b", "foo", "d"])
-  nose.tools.assert_equal(array.statistics[0]["min"], "a")
-  nose.tools.assert_equal(array.statistics[0]["max"], "foo")
+  numpy.testing.assert_array_equal(array.get_data(), ["a", "b", "foo", "d"])
+  nose.tools.assert_equal(array.get_statistics(0)["min"], "a")
+  nose.tools.assert_equal(array.get_statistics(0)["max"], "foo")
 
 def test_slycat_darray_memarray_nan_statistics():
   array = slycat.darray.MemArray([dict(name="i", end=4)], [dict(name="val", type="float64")], [[1, 2, numpy.nan, 5]])
-  nose.tools.assert_equal(array.statistics[0]["min"], 1)
-  nose.tools.assert_equal(array.statistics[0]["max"], 5)
+  nose.tools.assert_equal(array.get_statistics(0)["min"], 1)
+  nose.tools.assert_equal(array.get_statistics(0)["max"], 5)
 
 def test_slycat_darray_memarray_empty_statistics():
   array = slycat.darray.MemArray([dict(name="i", end=4)], [dict(name="val", type="float64")], [[numpy.nan, numpy.nan, numpy.nan, numpy.nan]])
-  nose.tools.assert_equal(array.statistics[0]["min"], None)
-  nose.tools.assert_equal(array.statistics[0]["max"], None)
+  nose.tools.assert_equal(array.get_statistics(0)["min"], None)
+  nose.tools.assert_equal(array.get_statistics(0)["max"], None)
 
 ########################################################################################################
 # slycat.hdf5 tests
@@ -122,7 +122,8 @@ def test_slycat_hdf5_array_basic():
     nose.tools.assert_equal(array.size, 4)
     nose.tools.assert_equal(array.dimensions, [{"name":"i", "type":"int64", "begin":0, "end":4}])
     nose.tools.assert_equal(array.attributes, [{"name":"a", "type":"float64"}, {"name":"b", "type":"string"}])
-    nose.tools.assert_equal(array.statistics, [{"min":None, "max":None}, {"min":None, "max":None}])
+    nose.tools.assert_equal(array.get_statistics(0), {"min":0, "max":0})
+    nose.tools.assert_equal(array.get_statistics(1), {"min":"", "max":""})
 
     array = arrayset[1]
     nose.tools.assert_equal(array.ndim, 1)
@@ -130,41 +131,43 @@ def test_slycat_hdf5_array_basic():
     nose.tools.assert_equal(array.size, 4)
     nose.tools.assert_equal(array.dimensions, [{"name":"i", "type":"int64", "begin":0, "end":4}])
     nose.tools.assert_equal(array.attributes, [{"name":"a", "type":"float64"}, {"name":"b", "type":"string"}])
-    nose.tools.assert_equal(array.statistics, [{"min":None, "max":None}, {"min":None, "max":None}])
+    nose.tools.assert_equal(array.get_statistics(0), {"min":0, "max":0})
+    nose.tools.assert_equal(array.get_statistics(1), {"min":"", "max":""})
 
-    array.set(0, slice(0, 4), numpy.arange(2, 6))
-    array.set(1, slice(0, 4), numpy.array(["foo", "bar", "baz", "blah"]))
-    numpy.testing.assert_array_equal(array.get(0), [2, 3, 4, 5])
-    numpy.testing.assert_array_equal(array.get(1), ["foo", "bar", "baz", "blah"])
-    nose.tools.assert_equal(array.statistics, [{"min":2, "max":5}, {"min":"bar", "max":"foo"}])
+    array.set_data(0, slice(0, 4), numpy.arange(2, 6))
+    array.set_data(1, slice(0, 4), numpy.array(["foo", "bar", "baz", "blah"]))
+    numpy.testing.assert_array_equal(array.get_data(0), [2, 3, 4, 5])
+    numpy.testing.assert_array_equal(array.get_data(1), ["foo", "bar", "baz", "blah"])
+    nose.tools.assert_equal(array.get_statistics(0), {"min":2, "max":5})
+    nose.tools.assert_equal(array.get_statistics(1), {"min":"bar", "max":"foo"})
 
 def test_slycat_hdf5_array_incremental_stats():
   with h5py.File(os.path.join(tempfile.mkdtemp(), "test.hdf5"), "w") as file:
     arrayset = slycat.hdf5.start_arrayset(file)
     array = arrayset.start_array(0, [dict(name="i", end=4)], [dict(name="a", type="float64")])
 
-    array.set(0, slice(0, 2), numpy.array([1, 5]))
-    array.set(0, slice(2, 4), numpy.array([2, 6]))
-    numpy.testing.assert_array_equal(array.get(0), [1, 5, 2, 6])
-    nose.tools.assert_equal(array.statistics, [{"min":1, "max":6}])
+    array.set_data(0, slice(0, 2), numpy.array([1, 5]))
+    array.set_data(0, slice(2, 4), numpy.array([2, 6]))
+    numpy.testing.assert_array_equal(array.get_data(0), [1, 5, 2, 6])
+    nose.tools.assert_equal(array.get_statistics(0), {"min":1, "max":6})
 
 def test_slycat_hdf5_array_nan_stats():
   with h5py.File(os.path.join(tempfile.mkdtemp(), "test.hdf5"), "w") as file:
     arrayset = slycat.hdf5.start_arrayset(file)
     array = arrayset.start_array(0, [dict(name="i", end=4)], [dict(name="a", type="float64")])
 
-    array.set(0, slice(0, 4), numpy.array([1, numpy.nan, 5, 3]))
-    numpy.testing.assert_array_equal(array.get(0), [1, numpy.nan, 5, 3])
-    nose.tools.assert_equal(array.statistics, [{"min":1, "max":5}])
+    array.set_data(0, slice(0, 4), numpy.array([1, numpy.nan, 5, 3]))
+    numpy.testing.assert_array_equal(array.get_data(0), [1, numpy.nan, 5, 3])
+    nose.tools.assert_equal(array.get_statistics(0), {"min":1, "max":5})
 
 def test_slycat_hdf5_array_all_nan_stats():
   with h5py.File(os.path.join(tempfile.mkdtemp(), "test.hdf5"), "w") as file:
     arrayset = slycat.hdf5.start_arrayset(file)
     array = arrayset.start_array(0, [dict(name="i", end=4)], [dict(name="a", type="float64")])
 
-    array.set(0, slice(0, 4), numpy.repeat(numpy.nan, 4))
-    numpy.testing.assert_array_equal(array.get(0), [numpy.nan, numpy.nan, numpy.nan, numpy.nan])
-    nose.tools.assert_equal(array.statistics, [{"min":None, "max":None}])
+    array.set_data(0, slice(0, 4), numpy.repeat(numpy.nan, 4))
+    numpy.testing.assert_array_equal(array.get_data(0), [numpy.nan, numpy.nan, numpy.nan, numpy.nan])
+    nose.tools.assert_equal(array.get_statistics(0), {"min":None, "max":None})
 
 ########################################################################################################
 # slycat.table tests

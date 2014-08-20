@@ -294,15 +294,16 @@ def test_empty_model_arrays():
   connection.finish_model(mid)
   connection.join_model(mid)
 
-  metadata = connection.get_model_array_metadata(mid, "test-array-set", 0)
-  nose.tools.assert_equal(metadata["statistics"], [{"min":None,"max":None},{"min":None,"max":None},{"min":None,"max":None}])
+  nose.tools.assert_equal(connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0), {"min":0, "max":0})
+  nose.tools.assert_equal(connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 1), {"min":0, "max":0})
+  nose.tools.assert_equal(connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 2), {"min":"", "max":""})
 
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size), numpy.zeros(size, dtype="int64"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="float64"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 2, size), [""] * size)
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, size), numpy.zeros(size, dtype="int64"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="float64"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 2, size), [""] * size)
 
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size, "int64"), numpy.zeros(size, dtype="int64"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size, "float64"), numpy.zeros(size, dtype="float64"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, size, "int64"), numpy.zeros(size, dtype="int64"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 1, size, "float64"), numpy.zeros(size, dtype="float64"))
 
   connection.delete_model(mid)
   connection.delete_project(pid)
@@ -321,13 +322,13 @@ def test_model_array_ranges():
   connection.finish_model(mid)
   connection.join_model(mid)
 
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, 10), numpy.arange(10))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, (2, 5)), numpy.arange(2, 5))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, [(1, 6)]), numpy.arange(1, 6))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, 10), numpy.arange(10))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, (2, 5)), numpy.arange(2, 5))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, [(1, 6)]), numpy.arange(1, 6))
 
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, 10, "int64"), numpy.arange(10))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, (2, 5), "int64"), numpy.arange(2, 5))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, [(1, 6)], "int64"), numpy.arange(1, 6))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, 10, "int64"), numpy.arange(10))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, (2, 5), "int64"), numpy.arange(2, 5))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, [(1, 6)], "int64"), numpy.arange(1, 6))
 
   connection.delete_model(mid)
   connection.delete_project(pid)
@@ -344,10 +345,10 @@ def test_model_array_string_attributes():
   connection.finish_model(mid)
   connection.join_model(mid)
 
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size), numpy.arange(size).astype("string"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="string"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 0, size, "string"), numpy.arange(size).astype("string"))
-  numpy.testing.assert_array_equal(connection.get_model_array_chunk(mid, "test-array-set", 0, 1, size, "string"), numpy.zeros(size, dtype="string"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, size), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 1, size), numpy.zeros(size, dtype="string"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, size, "string"), numpy.arange(size).astype("string"))
+  numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 1, size, "string"), numpy.zeros(size, dtype="string"))
 
   connection.delete_model(mid)
   connection.delete_project(pid)
@@ -375,12 +376,14 @@ def test_model_array_1d():
   nose.tools.assert_equal(attribute_names, [attribute["name"] for attribute in metadata["attributes"]])
   nose.tools.assert_equal(attribute_types, [attribute["type"] for attribute in metadata["attributes"]])
   nose.tools.assert_equal(metadata["dimensions"], [{"name":"row", "type":"int64", "begin":0, "end":size}])
-  for statistic, data in zip(metadata["statistics"], attribute_data):
-    numpy.testing.assert_equal(statistic["min"], min(data))
-    numpy.testing.assert_equal(statistic["max"], max(data))
 
   for attribute, data in enumerate(attribute_data):
-    chunk = connection.get_model_array_chunk(mid, "test-array-set", 0, attribute, size)
+    statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, attribute)
+    numpy.testing.assert_equal(statistics["min"], min(data))
+    numpy.testing.assert_equal(statistics["max"], max(data))
+
+  for attribute, data in enumerate(attribute_data):
+    chunk = connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, attribute, size)
     numpy.testing.assert_array_equal(chunk, data)
 
   # Test the 1D array (table) API ...
@@ -700,15 +703,25 @@ def test_api():
   project_admin.get_model_array_metadata(models[0], "data", 0)
   server_admin.get_model_array_metadata(models[0], "data", 0)
 
-  # Any project reader can retrieve model array chunks.
+  # Any project reader can retrieve model array attribute statistics.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.get_model_array_chunk(models[0], "data", 0, 0, 10)
+    server_outsider.get_model_array_attribute_statistics(models[0], "data", 0, 0)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.get_model_array_chunk(models[0], "data", 0, 0, 10)
-  project_reader.get_model_array_chunk(models[0], "data", 0, 0, 10)
-  project_writer.get_model_array_chunk(models[0], "data", 0, 0, 10)
-  project_admin.get_model_array_chunk(models[0], "data", 0, 0, 10)
-  server_admin.get_model_array_chunk(models[0], "data", 0, 0, 10)
+    project_outsider.get_model_array_attribute_statistics(models[0], "data", 0, 0)
+  project_reader.get_model_array_attribute_statistics(models[0], "data", 0, 0)
+  project_writer.get_model_array_attribute_statistics(models[0], "data", 0, 0)
+  project_admin.get_model_array_attribute_statistics(models[0], "data", 0, 0)
+  server_admin.get_model_array_attribute_statistics(models[0], "data", 0, 0)
+
+  # Any project reader can retrieve model array attribute chunks.
+  with nose.tools.assert_raises_regexp(Exception, "^401"):
+    server_outsider.get_model_array_attribute_chunk(models[0], "data", 0, 0, 10)
+  with nose.tools.assert_raises_regexp(Exception, "^403"):
+    project_outsider.get_model_array_attribute_chunk(models[0], "data", 0, 0, 10)
+  project_reader.get_model_array_attribute_chunk(models[0], "data", 0, 0, 10)
+  project_writer.get_model_array_attribute_chunk(models[0], "data", 0, 0, 10)
+  project_admin.get_model_array_attribute_chunk(models[0], "data", 0, 0, 10)
+  server_admin.get_model_array_attribute_chunk(models[0], "data", 0, 0, 10)
 
   # Any project reader can retrieve model table metadata.
   with nose.tools.assert_raises_regexp(Exception, "^401"):

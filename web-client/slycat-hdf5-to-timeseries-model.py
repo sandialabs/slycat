@@ -95,7 +95,7 @@ try:
     connection.start_array(mid, "inputs", 0, attributes, dimensions)
     for attribute in range(len(attributes)):
       slycat.web.client.log.info("Storing input table attribute %s", attribute)
-      data = array.get(attribute)[...]
+      data = array.get_data(attribute)[...]
       connection.store_array_set_data(mid, "inputs", 0, attribute, data=data)
 
   # Create a mapping from unique cluster names to timeseries attributes.
@@ -118,9 +118,9 @@ try:
     import h5py
     import os
     import slycat.hdf5
-    with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-      statistics = slycat.hdf5.ArraySet(file)[0].statistics
-    return statistics[0]["min"], statistics[0]["max"]
+    with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r+") as file: # We have to open the file with writing enabled in case the statistics cache gets updated.
+      statistics = slycat.hdf5.ArraySet(file)[0].get_statistics(0)
+    return statistics["min"], statistics["max"]
 
   connection.update_model(mid, message="Collecting timeseries statistics.")
   slycat.web.client.log.info("Collecting timeseries statistics.")
@@ -150,8 +150,8 @@ try:
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
         with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-          original_times = slycat.hdf5.ArraySet(file)[0].get(0)[:]
-          original_values = slycat.hdf5.ArraySet(file)[0].get(attribute_index + 1)[:]
+          original_times = slycat.hdf5.ArraySet(file)[0].get_data(0)[:]
+          original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
         bin_values = numpy.interp(bin_times, original_times, original_values)
         return {
           "input-index" : timeseries_index,
@@ -175,8 +175,8 @@ try:
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
         with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-          original_times = slycat.hdf5.ArraySet(file)[0].get(0)[:]
-          original_values = slycat.hdf5.ArraySet(file)[0].get(attribute_index + 1)[:]
+          original_times = slycat.hdf5.ArraySet(file)[0].get_data(0)[:]
+          original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
         bin_indices = numpy.digitize(original_times, bin_edges)
         bin_indices[-1] -= 1
         bin_counts = numpy.bincount(bin_indices)[1:]

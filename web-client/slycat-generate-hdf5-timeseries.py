@@ -74,14 +74,14 @@ def generate_timeseries(job):
     array = arrayset.start_array(0, timeseries_dimensions, timeseries_attributes)
 
     times = numpy.linspace(0, 2 * numpy.pi, samples)
-    array.set(0, slice(0, times.shape[0]), times)
+    array.set_data(0, slice(0, times.shape[0]), times)
 
     for variable_index, coefficients in enumerate(variables):
       print "Generating timeseries %s variable %s" % (timeseries_index, variable_index)
       values = numpy.zeros((samples))
       for k in coefficients:
         values += numpy.sin(times * k) / k
-      array.set(variable_index + 1, slice(0, values.shape[0]), values)
+      array.set_data(variable_index + 1, slice(0, values.shape[0]), values)
 
   return timeseries_index
 
@@ -99,5 +99,5 @@ with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
   arrayset = slycat.hdf5.start_arrayset(file)
   array = arrayset.start_array(0, input_dimensions, input_attributes)
   for attribute, data in enumerate(inputs.T):
-    array.set(attribute, slice(0, inputs.shape[0]), data)
+    array.set_data(attribute, slice(0, inputs.shape[0]), data)
 
