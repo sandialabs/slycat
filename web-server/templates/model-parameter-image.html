@@ -891,6 +891,10 @@ rights in this software.
                         update_scatterplot_y(variable);
                       if(variable == v_index)
                         update_scatterplot_value(variable);
+
+                      load_table_statistics([variable], function(){
+                        $("#table").table("option", "statistics", table_statistics);
+                      });
                     }
 
                   },
@@ -1154,7 +1158,7 @@ rights in this software.
             // This is executed only after every ajax request has been completed
             $.each(arguments, function(index, responseData){
               // "responseData" contains an array of response information for each specific request
-              table_statistics[columns[index]] = responseData[0];
+              table_statistics[parseInt(columns[index])] = responseData.length == undefined ? responseData : responseData[0];
             });
             callback();
           });
