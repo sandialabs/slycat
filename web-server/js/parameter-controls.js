@@ -8,6 +8,10 @@ $.widget("parameter_image.controls",
 {
   options:
   {
+    "server-root" : "",
+    mid : null,
+    model_name : null,
+    aid : null,
     metadata : null,
     "x-variable" : null,
     "y-variable" : null,
@@ -102,6 +106,13 @@ $.widget("parameter_image.controls",
       .appendTo(this.element)
       ;
 
+    this.csv_button = $("<button>Download Data Table</button>")
+	.click(function(){
+		self._write_data_table();
+	    })
+	.appendTo(this.element)
+	;
+
     $('#set-value-form').dialog({
       modal: true,
       autoOpen: false,
@@ -168,6 +179,108 @@ $.widget("parameter_image.controls",
     self._set_color_variables();
     self._set_selection_control();
   },
+
+
+  _write_data_table: function()
+  { 
+    var self = this;
+    console.log("++ write data table called");
+    var numRows = self.options.metadata['row-count'];
+    var numCols = self.options.metadata['column-count'];
+    $.ajax(
+    {
+      type : "GET",
+      url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
+      success : function(result)
+      {
+        self._write_csv( self._convert_to_csv(result), self.options.model_name + "_data_table.csv" );
+      },
+      error: function(request, status, reason_phrase)
+      {
+        window.alert("Error retrieving data table: " + reason_phrase);
+      }
+    });
+  },
+
+  _write_csv: function(csvData, defaultFilename)
+  {
+    var self = this;
+    //var D = self.window.document;
+    var D = document;   // is this the best way to do this?
+    //var A = arguments;
+    //var a = self.createElement("a");
+    var a = D.createElement("a");
+    var strMimeType = "text/plain";
+    var defaultFilename = defaultFilename || "slycatDataTable.csv";
+
+    //build download link:
+    a.href = "data:" + strMimeType + "charset=utf-8," + encodeURI(csvData);
+
+    if ('download' in a) { //FF20, CH19
+      console.log( "++ FF20 CH19 processing..." );
+      //console.log( a );
+      a.setAttribute("download", defaultFilename);
+      //a.setAttribute("download", n);
+      a.innerHTML = "downloading...";
+      //this.element.appendChild(a);
+      D.body.appendChild(a);
+      setTimeout(function() {
+	//var e = this.createEvent("MouseEvents");
+        var e = D.createEvent("MouseEvents");
+	e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+	a.dispatchEvent(e);
+	//this.element.removeChild(a);
+	D.body.removeChild(a);
+      }, 66);
+      return true;
+    } else {   // end if('download' in a)
+      console.log("++ firefox/chrome detect failed");
+    }
+/*
+    if (window.MSBlobBuilder) { // IE10
+      console.log( "doing the IE10 stuff" );
+      var bb = new MSBlobBuilder();
+      bb.append(strData);
+      return navigator.msSaveBlob(bb, strFileName);
+    }
+
+    //do iframe dataURL download: (older W3)
+    console.log( "doing the older W3 stuff" );
+    var f = D.createElement("iframe");
+    D.body.appendChild(f);
+    f.src = "data:" + (A[2] ? A[2] : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(strData);
+    setTimeout(function() {
+      D.body.removeChild(f);
+    }, 333);
+    return true;
+*/
+  },
+
+  _convert_to_csv: function(array)
+  {
+    // Note that array.data is column-major:  array.data[0][*] is the first column 
+    var numRows = array.rows.length;
+    var numCols = array.columns.length;
+    var rowMajorOutput = "";
+    numCols = numCols - 1;  // skip last column which is slycat index
+    var r, c;
+    // add the headers
+    for(c=0; c<numCols; c++) {
+      rowMajorOutput += array["column-names"][c] + ",";
+    }
+    rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
+    rowMajorOutput += "\n";
+    // add the data
+    for(r=0; r<numRows; r++) {
+      for(c=0; c<numCols; c++) {
+        rowMajorOutput += array.data[c][r] + ",";
+      }
+      rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
+      rowMajorOutput += "\n";
+    }
+    return rowMajorOutput;
+  },
+
 
   _set_x_variables: function()
   { 

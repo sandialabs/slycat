@@ -15,6 +15,7 @@ $.widget("parameter_image.table",
     mid : null,
     aid : null,
     metadata : null,
+    statistics : null,
     inputs : [],
     outputs : [],
     others : [],
@@ -348,6 +349,11 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
     }
+    else if(key == "statistics")
+    {
+      self.options[key] = value;
+      self._color_variables(self.options["variable-selection"]);
+    }
     else if(key == "hidden_simulations")
     {
       self.options[key] = value;
@@ -429,7 +435,7 @@ $.widget("parameter_image.table",
         column.colormap = self.options.colormap.copy();
 
         var new_domain = []
-        var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
+        var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.options.statistics[column.id]["min"], self.options.statistics[column.id]["max"]]);
         for(var i in column.colormap.range())
           new_domain.push(domain_scale(i));
         column.colormap.domain(new_domain);
