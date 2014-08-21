@@ -1,4 +1,5 @@
 import h5py
+import numbers
 import numpy
 import os
 import slycat.darray
@@ -79,14 +80,14 @@ class DArray(slycat.darray.Prototype):
 
     if not (0 <= attribute and attribute < len(self.attributes)):
       raise ValueError("Attribute index %s out-of-range." % attribute)
-    if isinstance(hyperslice, slice):
+    if isinstance(hyperslice, (numbers.Integral, slice, type(Ellipsis))):
       pass
     elif isinstance(hyperslice, tuple):
       for i in hyperslice:
-        if not isinstance(i, slice):
-          raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
+        if not isinstance(i, (numbers.Integral, slice, type(Ellipsis))):
+          raise ValueError("Unsupported hyperslice type.")
     else:
-      raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
+      raise ValueError("Unsupported hyperslice type.")
 
     # Store the data ...
     attribute_storage = self._storage["attribute/%s" % attribute]
