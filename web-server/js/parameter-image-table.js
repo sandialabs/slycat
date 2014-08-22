@@ -464,7 +464,7 @@ $.widget("parameter_image.table",
             {
               type : "GET",
               url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" 
-                + self.options.aid + "/arrays/0/chunk?rows=0-" + self.options.metadata['row-count'] + "&columns=" + column.id,
+                + self.options.aid + "/arrays/0/chunk?rows=0-" + self.options.metadata['row-count'] + "&columns=" + column.id + "&sort=" + column.id + ":ascending",
               success : function(result)
               {
                 
