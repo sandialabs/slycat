@@ -155,8 +155,8 @@ rights in this software.
             input_columns = model["artifact:input-columns"];
             output_columns = model["artifact:output-columns"];
             image_columns = model["artifact:image-columns"];
-            rating_columns = model["artifact:rating-columns"];
-            category_columns = model["artifact:category-columns"];
+            rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
+            category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
             model_loaded();
           },
           error: function(request, status, reason_phrase)

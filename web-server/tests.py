@@ -803,3 +803,32 @@ def test_server_administrator():
   # Server admins can delete any project.
   server_admin.delete_project(pid)
 
+def test_array_modifications():
+  attributes = [dict(name="a", type="float64")]
+  dimensions = [dict(name="row", end=10)]
+
+  pid = connection.create_project("array-modifications-project")
+  mid = connection.create_model(pid, "generic", "array-modifications-model")
+  connection.start_array_set(mid, "test-array-set")
+  connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10).astype("float64"))
+  connection.finish_model(mid)
+  connection.join_model(mid)
+
+  statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0)
+  nose.tools.assert_equal(statistics["min"], 0)
+  nose.tools.assert_equal(statistics["max"], 9)
+  numpy.testing.assert_array_equal(connection.get_model_table_chunk(mid, "test-array-set", 0, rows=numpy.arange(10), columns=[0])["data"][0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  numpy.testing.assert_array_equal(connection.get_model_table_sorted_indices(mid, "test-array-set", 0, numpy.arange(10), sort=[(0, "ascending")]), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+  connection.store_array_set_data(mid, "test-array-set", 0, 0, hyperslice=(3, 5), data=numpy.array([15, 12], dtype="float64"))
+
+  statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0)
+  nose.tools.assert_equal(statistics["min"], 0)
+  nose.tools.assert_equal(statistics["max"], 15)
+  numpy.testing.assert_array_equal(connection.get_model_table_chunk(mid, "test-array-set", 0, rows=numpy.arange(10), columns=[0])["data"][0], [0, 1, 2, 15, 12, 5, 6, 7, 8, 9])
+  numpy.testing.assert_array_equal(connection.get_model_table_sorted_indices(mid, "test-array-set", 0, numpy.arange(10), sort=[(0, "ascending")]), [0, 1, 2, 9, 8, 3, 4, 5, 6, 7])
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+

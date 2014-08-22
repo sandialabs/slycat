@@ -1,4 +1,5 @@
 import h5py
+import numbers
 import numpy
 import os
 import slycat.darray
@@ -65,26 +66,43 @@ class DArray(slycat.darray.Prototype):
     return self._storage["attribute/%s" % attribute]
 
   def set_data(self, attribute, hyperslice, data):
+    """Overwrite the contents of a darray attribute.
+
+    Parameters
+    ----------
+    attribute : integer
+      The zero-based integer index of the attribute to be overwritten.
+    hyperslice : integer, :class:`slice`, :class:`Ellipsis`, or tuple containing one or more integer, :class:`slice`, and :class:`Ellipsis` instances. 
+      Defines the attribute region to be overwritten.
+    data : numpy.ndarray
+      Data to be written to the attribute.
+    """
+
     if not (0 <= attribute and attribute < len(self.attributes)):
       raise ValueError("Attribute index %s out-of-range." % attribute)
-    if isinstance(hyperslice, slice):
+    if isinstance(hyperslice, (numbers.Integral, slice, type(Ellipsis))):
       pass
     elif isinstance(hyperslice, tuple):
       for i in hyperslice:
-        if not isinstance(i, slice):
-          raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
+        if not isinstance(i, (numbers.Integral, slice, type(Ellipsis))):
+          raise ValueError("Unsupported hyperslice type.")
     else:
-      raise ValueError("Hyperslice must be a slice object or tuple of slice objects.")
+      raise ValueError("Unsupported hyperslice type.")
 
     # Store the data ...
-    attribute = self._storage["attribute/%s" % attribute]
-    attribute[hyperslice] = data
+    attribute_storage = self._storage["attribute/%s" % attribute]
+    attribute_storage[hyperslice] = data
+
+    # Flush cached sort indices ...
+    index_key = "index/%s" % attribute
+    if index_key in self._storage:
+      del self._storage[index_key]
 
     # Flush cached statistics ...
-    if "min" in attribute.attrs:
-      del attribute.attrs["min"]
-    if "max" in attribute.attrs:
-      del attribute.attrs["max"]
+    if "min" in attribute_storage.attrs:
+      del attribute_storage.attrs["min"]
+    if "max" in attribute_storage.attrs:
+      del attribute_storage.attrs["max"]
 
 class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""

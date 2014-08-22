@@ -506,6 +506,9 @@ def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=N
 
   slycat.web.server.model.store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data)
 
+def put_model_array_attribute_data(mid, name, array, attribute, hyperslice, byteorder=None, data=None):
+  cherrypy.log.error("put_model_array_attribute_data: arrayset %s array %s attribute %s hyperslice %s byteorder %s" % (name, array, attribute, hyperslice, byteorder))
+
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
   model = couchdb.get("model", mid)
