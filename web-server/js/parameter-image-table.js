@@ -491,10 +491,6 @@ $.widget("parameter_image.table",
 
                 column.colormap = ordinalColormap;
 
-
-
-
-                console.log(result);
                 self.grid.invalidate();
               },
               error: function(request, status, reason_phrase)
@@ -505,8 +501,6 @@ $.widget("parameter_image.table",
           }
           getAllValues(column);
         }
-
-        
 
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
       }
