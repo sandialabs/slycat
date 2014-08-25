@@ -295,6 +295,13 @@ $.widget("parameter_image.table",
     var self = this;
     self.data.invalidate();
     self.grid.invalidate();
+    self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+    {
+      self.trigger_row_selection = false;
+      self.grid.setSelectedRows(sorted_rows);
+      if(sorted_rows.length)
+        self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
+    });
   },
 
   _setOption: function(key, value)
