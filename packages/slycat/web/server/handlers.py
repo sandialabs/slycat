@@ -1046,7 +1046,14 @@ def get_remote_file(sid, path):
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
       if str(e) == "Garbage packet received":
         raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
-      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+      # we now know that the file is not available due to access controls
+      # get the permissions of the file
+      # tried to use sftp, but could only see the uid and gid, which is not user friendly
+      # also, I could see the mode, but couldn't get it out and st_mode wasn't giving me permissions
+      # ls_out will contain the results of the ls -l <file path> 
+      _, ls_out, _ = session.ssh.exec_command("ls -l %s" % path)
+      file_permissions = ls_out.read()
+      raise cherrypy.HTTPError("400 Remote access failed: %s. Permissions: %s" % (str(e), file_permissions))
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
