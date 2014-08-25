@@ -218,7 +218,7 @@ $.widget("parameter_image.controls",
     var defaultFilename = defaultFilename || "slycatDataTable.csv";
 
     //build download link:
-    a.href = "data:" + strMimeType + "charset=utf-8," + encodeURI(csvData);
+    a.href = "data:" + strMimeType + "charset=utf-8," + encodeURIComponent(csvData);  //encodeURIComponent() handles all special chars
 
     if ('download' in a) { //FF20, CH19
       console.log( "++ FF20 CH19 processing..." );
