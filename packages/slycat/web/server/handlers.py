@@ -1060,7 +1060,7 @@ def get_remote_file(sid, path):
         _, ls_out, _ = session.ssh.exec_command("ls -l %s" % path)
         # just need the permissions, ls gives us the file name
         file_permissions = re.sub(r"%s" % path, '', ls_out.read())
-        # could also use sessions.sftp.stat(path), but the username and group are numeric: uid and gid
+        # could also use session.sftp.stat(path), but the username and group are numeric: uid and gid
         raise cherrypy.HTTPError("400 %s. Current permissions: %s" % (str(e), file_permissions))
       # catch all
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
