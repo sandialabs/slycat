@@ -37,6 +37,7 @@ import threading
 import time
 import traceback
 import uuid
+import re
 
 def require_parameter(name):
   if name not in cherrypy.request.json:
@@ -1049,14 +1050,20 @@ def get_remote_file(sid, path):
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
       if str(e) == "Garbage packet received":
         raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
-      # we now know that the file is not available due to access controls
-      # get the permissions of the file
-      # tried to use sftp, but could only see the uid and gid, which is not user friendly
-      # also, I could see the mode, but couldn't get it out and st_mode wasn't giving me permissions
-      # ls_out will contain the results of the ls -l <file path> 
-      _, ls_out, _ = session.ssh.exec_command("ls -l %s" % path)
-      file_permissions = ls_out.read()
-      raise cherrypy.HTTPError("400 Remote access failed: %s. Permissions: %s" % (str(e), file_permissions))
+      if e.strerror == "No such file":
+        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
+        raise cherrypy.HTTPError("400 File not found: %s" % str(e))
+      if e.strerror == "Permission denied":
+        # we know the file exists
+        # we now know that the file is not available due to access controls
+        # ls_out will contain the results of the ls -l <file path> 
+        _, ls_out, _ = session.ssh.exec_command("ls -l %s" % path)
+        # just need the permissions, ls gives us the file name
+        file_permissions = re.sub(r"%s" % path, '', ls_out.read())
+        # could also use sessions.sftp.stat(path), but the username and group are numeric: uid and gid
+        raise cherrypy.HTTPError("400 %s. Current permissions: %s" % (str(e), file_permissions))
+      # catch all
+      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
