@@ -275,7 +275,13 @@ $.widget("parameter_image.scatterplot",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-    var filtered_indices = Array.apply( [], indices );;
+    
+    var filtered_indices;
+    if(indices.length > 1)
+      filtered_indices = Array.apply( [], indices );
+    else
+      filtered_indices = [indices[0]];
+
     var filtered_selection = selection.slice(0);
     var length = indices.length;
 
