@@ -36,7 +36,7 @@ for i in range(arguments.category_count):
 
 for i in range(arguments.rating_count):
   names.append("rating%s" % i)
-  columns.append(numpy.random.uniform(-1, 1, size=arguments.row_count))
+  columns.append(numpy.zeros(arguments.row_count))
 
 for i in range(arguments.input_count):
   names.append("input%s" % i)

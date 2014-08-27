@@ -1151,7 +1151,7 @@ rights in this software.
 
                     var controls = [];
 
-                    if(table["column-types"][index] != "string" && table["column-min"][index] != table["column-max"][index])
+                    if(table["column-types"][index] != "string")
                     {
                       var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                       var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
