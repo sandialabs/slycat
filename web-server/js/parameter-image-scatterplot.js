@@ -1351,6 +1351,10 @@ $.widget("parameter_image.scatterplot",
     if(self.state != "")
       return;
 
+    // Disable hovering when there is no uri
+    if(self.options.images[self.options.indices[image_index]].trim() == "")
+      return;
+
     // // Disable hovering on points that already have open imges ...
     // var uri = self.options.images[self.options.indices[image_index]];
     // if($(".open-image[data-uri='" + uri + "']").size() != 0)
