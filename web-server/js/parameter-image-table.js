@@ -264,8 +264,8 @@ $.widget("parameter_image.table",
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
       if( !self._array_equal([args.column.field], self.options["variable-selection"]) && 
-          ( (self.options.metadata["column-types"][args.column.id] != "string") ||
-            (self.options["categories"].indexOf(args.column.field) != -1) )
+          ( (self.options.metadata["column-types"][args.column.id] != "string")
+            /* || (self.options["categories"].indexOf(args.column.field) != -1) */ )
         )
       {
         self.options["variable-selection"] = [args.column.field];
