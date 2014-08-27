@@ -180,7 +180,10 @@ $.widget("parameter_image.scatterplot",
       
       //console.log("#scatterplot mouseup");
       if(!e.ctrlKey)
+      {
         self.options.selection = [];
+        self.options.filtered_selection = [];
+      }
 
       var x = self.options.x;
       var y = self.options.y;
@@ -261,6 +264,7 @@ $.widget("parameter_image.scatterplot",
       self.state = "";
 
       self._filterIndices();
+      self.options.selection = self.options.filtered_selection.slice(0);
       self._schedule_update({render_selection:true});
       self.element.trigger("selection-changed", [self.options.selection]);
     });
@@ -275,7 +279,7 @@ $.widget("parameter_image.scatterplot",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-    
+
     var filtered_indices;
     if(indices.length > 1)
       filtered_indices = Array.apply( [], indices );
