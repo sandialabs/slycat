@@ -18,6 +18,11 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
     :math:`M \\times O` matrix containing :math:`M` observations and :math:`O` output features.
   scale_inputs : bool, optional
     Scale input and output features to unit variance.
+  force_positive : integer, optional
+    If specified, flip signs in the `x`, `y`, `x_loadings`, and `y_loadings` output values so
+    that the values in row :math:`n` of `y_loadings` are all positive.
+  significant_digits: integer, optional
+    Optionally specify the number of significant digits used to compute the `X` and `Y` ranks.
 
   Returns
   -------
