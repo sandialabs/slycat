@@ -6,6 +6,19 @@
 
 import numbers
 
+def validate(hyperslice):
+  """Validate an object to confirm that it is a valid hyperslice."""
+  if isinstance(hyperslice, (numbers.Integral, slice, type(Ellipsis))):
+    return hyperslice
+
+  if isinstance(hyperslice, tuple):
+    for dimension in hyperslice:
+      if not isinstance(dimension, (numbers.Integral, slice, type(Ellipsis))):
+        raise ValueError("Not a valid hyperslice: %s" % hyperslice)
+    return hyperslice
+
+  raise ValueError("Not a valid hyperslice: %s" % hyperslice)
+
 def _format_dimension(dimension):
   if isinstance(dimension, numbers.Integral):
     return str(dimension)

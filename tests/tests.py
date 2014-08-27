@@ -173,6 +173,24 @@ def test_slycat_hdf5_array_all_nan_stats():
 ########################################################################################################
 # slycat.hyperslice tests
 
+def test_slycat_hyperslice_validate():
+  slycat.hyperslice.validate(3)
+  slycat.hyperslice.validate(slice(3))
+  slycat.hyperslice.validate(Ellipsis)
+  slycat.hyperslice.validate(numpy.s_[10])
+  slycat.hyperslice.validate(numpy.s_[10:20])
+  slycat.hyperslice.validate(numpy.s_[10:20:2])
+  slycat.hyperslice.validate(numpy.s_[:20:2])
+  slycat.hyperslice.validate(numpy.s_[::2])
+  slycat.hyperslice.validate(numpy.s_[10::2])
+  slycat.hyperslice.validate(numpy.s_[10:])
+  slycat.hyperslice.validate(numpy.s_[:20])
+  slycat.hyperslice.validate(numpy.s_[10:20,30])
+  slycat.hyperslice.validate(numpy.s_[10:20,30:40])
+  slycat.hyperslice.validate(numpy.s_[...,30:40])
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.validate("foo")
+
 def test_slycat_hyperslice_format():
   nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10]), "10")
   nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10:20]), "10:20")

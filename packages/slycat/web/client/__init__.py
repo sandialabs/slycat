@@ -280,6 +280,53 @@ class connection(object):
 
     self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
 
+  def put_model_array_attribute_data(self, mid, name, array, attribute, hyperslices=None, data=None):
+    """Overwrite one-or-more hyperslices of an existing array attribute on the server."""
+    # Sanity check arguments
+    if not isinstance(array, numbers.Integral) or array < 0:
+      raise ValueError("Array index must be a positive integer.")
+    if not isinstance(attribute, numbers.Integral) or attribute < 0:
+      raise ValueError("Attribute index must be a positive integer.")
+    if hyperslices is None:
+      hyperslices = [Ellipsis]
+    if isinstance(hyperslices, list):
+      hyperslices = [slycat.hyperslice.validate(hyperslice) for hyperslice in hyperslices]
+    else:
+      hyperslices = [slycat.hyperslice.validate(hyperslices)]
+    if data is None:
+      raise ValueError("Missing data.")
+
+    try:
+      if isinstance(data, numpy.ndarray):
+        data = [data]
+      else:
+        data = list(data)
+        for item in data:
+          if not isinstance(item, numpy.ndarray):
+            raise Exception()
+    except Exception as e:
+      raise Exception("data argument must be a numpy array or a sequence of numpy arrays.")
+
+    # Generate the request
+    all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
+
+    request_data = {}
+    request_buffer = StringIO.StringIO()
+
+    if hyperslice is not None:
+      request_data["hyperslices"] = "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])
+
+    if all_numeric:
+      request_data["byteorder"] = sys.byteorder
+
+    if all_numeric:
+      for dataset in data:
+        request_buffer.write(dataset.tostring(order="C"))
+    else:
+      request_buffer.write(json.dumps([dataset.tolist() for dataset in data]))
+
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/data" % (mid, name, array, attribute), data=request_data, files={"data":request_buffer.getvalue()})
+
   def put_model_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""
     self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":attributes, "dimensions":dimensions}))
