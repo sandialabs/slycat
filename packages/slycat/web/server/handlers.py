@@ -470,29 +470,23 @@ def put_model_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=None, byteorder=None, data=None):
-  cherrypy.log.error("put data: arrayset %s array %s attribute %s hyperslice %s byteorder %s" % (name, array, attribute, hyperslice, byteorder))
+def put_model_array_set_data(mid, name, hyperchunks, data, byteorder=None):
+  cherrypy.log.error("put data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
   try:
-    if array is not None:
-      array = [[None if index == "" else int(index) for index in item.split(":")] for item in array.split(",")]
-      array = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in array]
+    for hyperchunk in hyperchunks.split(";"):
+      array, attribute, hyperslices = hyperchunk.split("/")
+      array = int(array)
+      if array < 0:
+        raise Exception()
+      attribute = int(attribute)
+      if attribute < 0:
+        raise Exception()
+      for hyperslice in hyperslices.split("|"):
+        slycat.hyperslice.parse(hyperslice)
   except:
-    raise cherrypy.HTTPError("400 optional array argument must be a comma-separated sequence of integers / slices.")
-
-  try:
-    if attribute is not None:
-      attribute = [[None if index == "" else int(index) for index in item.split(":")] for item in attribute.split(",")]
-      attribute = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in attribute]
-  except:
-    raise cherrypy.HTTPError("400 optional attribute argument must be a comma-separated sequence of integers / slices.")
-
-  try:
-    if hyperslice is not None:
-      hyperslice = [(int(begin), int(end)) for begin, end in [range.split(":") for range in hyperslice.split(",")]]
-  except:
-    raise cherrypy.HTTPError("400 optional hyperslice argument must be a comma-separated set of ranges.")
+    raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
@@ -505,9 +499,6 @@ def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=N
   slycat.web.server.authentication.require_project_writer(project)
 
   slycat.web.server.model.store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data)
-
-def put_model_array_attribute_data(mid, name, array, attribute, hyperslices, byteorder=None, data=None):
-  cherrypy.log.error("put_model_array_attribute_data: arrayset %s array %s attribute %s hyperslices %s byteorder %s" % (name, array, attribute, hyperslices, byteorder))
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()

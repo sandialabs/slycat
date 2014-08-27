@@ -201,131 +201,47 @@ class connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
+  def put_model_array_set_data(self, mid, name, hyperchunks):
     """Sends array data to the server."""
     # Sanity check arguments
-    try:
-      if array is not None:
-        if isinstance(array, (numbers.Integral, slice)):
-          array = [array]
-        else:
-          array = list(array)
-          for item in array:
-            if not isinstance(item, (numbers.Integral, slice)):
-              raise Exception()
-    except:
-      raise Exception("array argument must be an integer, a slice, a sequence of integers/slices, or None.")
-
-    try:
-      if attribute is not None:
-        if isinstance(attribute, (numbers.Integral, slice)):
-          attribute = [attribute]
-        else:
-          attribute = list(attribute)
-          for item in attribute:
-            if not isinstance(item, (numbers.Integral, slice)):
-              raise Exception()
-    except:
-      raise Exception("attribute argument must be an integer, a slice, a sequence of integers/slices, or None.")
-
-    try:
-      if hyperslice is not None:
-        if isinstance(hyperslice, tuple):
-          begin, end = hyperslice
-          hyperslice = [(begin, end)]
-        else:
-          hyperslice = [(begin, end) for begin, end in hyperslice]
-    except:
-      raise Exception("hyperslice argument must be a 2-tuple, a sequence of 2-tuples, or None")
-
-    try:
-      if isinstance(data, numpy.ndarray):
+    if isinstance(hyperchunks, tuple):
+      hyperchunks = [hyperchunks]
+    for array, attribute, hyperslices, data in hyperchunks:
+      if not isinstance(array, numbers.Integral) or array < 0:
+        raise ValueError("Array index must be a non-negative integer.")
+      if not isinstance(attribute, numbers.Integral) or attribute < 0:
+        raise ValueError("Attribute index must be a non-negative integer.")
+      if not isinstance(hyperslices, list):
+        hyperslices = [hyperslices]
+      for hyperslice in hyperslices:
+        slycat.hyperslice.validate(hyperslice)
+      if not isinstance(data, list):
         data = [data]
-      else:
-        data = list(data)
-        for item in data:
-          if not isinstance(item, numpy.ndarray):
-            raise Exception()
-    except Exception as e:
-      raise Exception("data argument must be a numpy array or a sequence of numpy arrays.")
+      for chunk in data:
+        if not isinstance(chunk, numpy.ndarray):
+          raise ValueError("Data chunk must be a numpy array.")
+      if len(hyperslices) != len(data):
+        raise ValueError("Hyperslice and data counts must match.")
 
-    # Generate the request
-    all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
+    # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
+    all_numeric = numpy.any([chunk.dtype.char == "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks])
 
+    # Build-up the request
     request_data = {}
-    request_buffer = StringIO.StringIO()
-
-    def format_spec(item):
-      if isinstance(item, numbers.Integral):
-        return str(item)
-      return "%s:%s:%s" % (item.start if item.start is not None else "", item.stop if item.stop is not None else "", item.step if item.step is not None else "")
-
-    if array is not None:
-      request_data["array"] = ",".join([format_spec(item) for item in array])
-
-    if attribute is not None:
-      request_data["attribute"] = ",".join([format_spec(item) for item in attribute])
-
-    if hyperslice is not None:
-      request_data["hyperslice"] = ",".join(["%s:%s" % (begin, end) for begin, end in hyperslice])
-
+    request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks]
     if all_numeric:
       request_data["byteorder"] = sys.byteorder
 
-    if all_numeric:
-      for dataset in data:
-        request_buffer.write(dataset.tostring(order="C"))
-    else:
-      request_buffer.write(json.dumps([dataset.tolist() for dataset in data]))
+    request_buffer = StringIO.StringIO()
+    for array, attribute, hyperslices, data in hyperchunks:
+      if all_numeric:
+        for chunk in data:
+          request_buffer.write(chunk.tostring(order="C"))
+      else:
+        request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
+    # Send the request to the server ...
     self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
-
-  def put_model_array_attribute_data(self, mid, name, array, attribute, hyperslices=None, data=None):
-    """Overwrite one-or-more hyperslices of an existing array attribute on the server."""
-    # Sanity check arguments
-    if not isinstance(array, numbers.Integral) or array < 0:
-      raise ValueError("Array index must be a positive integer.")
-    if not isinstance(attribute, numbers.Integral) or attribute < 0:
-      raise ValueError("Attribute index must be a positive integer.")
-    if hyperslices is None:
-      hyperslices = [Ellipsis]
-    if isinstance(hyperslices, list):
-      hyperslices = [slycat.hyperslice.validate(hyperslice) for hyperslice in hyperslices]
-    else:
-      hyperslices = [slycat.hyperslice.validate(hyperslices)]
-    if data is None:
-      raise ValueError("Missing data.")
-
-    try:
-      if isinstance(data, numpy.ndarray):
-        data = [data]
-      else:
-        data = list(data)
-        for item in data:
-          if not isinstance(item, numpy.ndarray):
-            raise Exception()
-    except Exception as e:
-      raise Exception("data argument must be a numpy array or a sequence of numpy arrays.")
-
-    # Generate the request
-    all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
-
-    request_data = {}
-    request_buffer = StringIO.StringIO()
-
-    if hyperslice is not None:
-      request_data["hyperslices"] = "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])
-
-    if all_numeric:
-      request_data["byteorder"] = sys.byteorder
-
-    if all_numeric:
-      for dataset in data:
-        request_buffer.write(dataset.tostring(order="C"))
-    else:
-      request_buffer.write(json.dumps([dataset.tolist() for dataset in data]))
-
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/data" % (mid, name, array, attribute), data=request_data, files={"data":request_buffer.getvalue()})
 
   def put_model_array(self, mid, name, array, attributes, dimensions):
     """Starts a new array set array, ready to receive data."""

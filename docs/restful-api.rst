@@ -37,7 +37,6 @@ any programming language or library that supports HTTP requests.
    POST-Project-Models.rst
    POST-Projects.rst
    PUT-Model-Array.rst
-   PUT-Model-Array-Attribute-Data.rst
    PUT-Model-Arrayset-Data.rst
    PUT-Model-Arrayset.rst
    PUT-Model-File.rst
