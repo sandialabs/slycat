@@ -67,7 +67,9 @@ rights in this software.
               <label for="edit-model-name">Model Name</label>
               <input id="edit-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
               <label for="edit-model-description">Description</label>
-              <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+              <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">
+                {{description}}
+              </textarea>
             </div>
           </div>
           <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
@@ -178,7 +180,8 @@ rights in this software.
           {
             $("#status-messages").empty().html(
               "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-              "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
+              "<div class='error-description'>We're probabably building it for you right now." +
+              "Watch the status bar for progress information and more details.</div>");
             show_status_messages();
           }
           else if(model["state"] == "closed" && model["result"] === null)
@@ -262,7 +265,8 @@ rights in this software.
 
           $("#status-messages").empty().html(
             "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-            "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
+            "<div class='error-description'>This probably means that there was a problem building the model. " +
+            "Here's the last thing that was going on with it:</div>" +
             "<pre>" + model["message"] + "</pre>");
 
           show_status_messages();
@@ -368,7 +372,12 @@ rights in this software.
           center:
           {
             resizeWhileDragging: false,
-            onresize: function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); },
+            onresize: function() { 
+              $("#scatterplot").scatterplot("option", {
+                width: $("#scatterplot-pane").width(), 
+                height: $("#scatterplot-pane").height()
+              }); 
+            },
           }
         });
 
@@ -490,7 +499,8 @@ rights in this software.
             $.ajax(
             {
               type : "GET",
-              url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+              url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" 
+                + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
               success : function(result)
               {
                 images = result;
@@ -505,7 +515,9 @@ rights in this software.
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && bookmark && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null) )
+          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
+            && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
+            && (selected_simulations != null) && (hidden_simulations != null) )
           {
             table_ready = true;
 
@@ -514,7 +526,8 @@ rights in this software.
             var other_columns = [];
             for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
             {
-              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
+              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 
+                && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
                 other_columns.push(i);
             }
 
@@ -659,7 +672,8 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images && (selected_simulations != null) && (hidden_simulations != null))
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images 
+            && (selected_simulations != null) && (hidden_simulations != null))
           {
             scatterplot_ready = true;
 
@@ -733,7 +747,8 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + 
+                  variable + "/chunk?ranges=0," + table_metadata["row-count"],
                 success : function(result)
                 {
                   $("#scatterplot").scatterplot("option", "images", result);
@@ -746,7 +761,8 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + 
+                  variable + "/chunk?ranges=0," + table_metadata["row-count"],
                 success : function(result)
                 {
                   $("#scatterplot").scatterplot("option", "images", result);
@@ -765,7 +781,9 @@ rights in this software.
 
         function setup_controls()
         {
-          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) && (category_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) )
+          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
+            && (category_columns != null) && (x_index != null) && (y_index != null) 
+            && (images_index != null) && (selected_simulations != null) )
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -846,7 +864,7 @@ rights in this software.
             // Changing the value of a variable updates the database, table, and scatterplot ...
             $("#controls").bind("set-value", function(event, arguments)
             {
-              console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
+              //console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
               var selection = arguments.selection;
               var variable = arguments.variable;
               var myBlob = new Blob(['[' + arguments.value + ']'], {type: "text/html"});

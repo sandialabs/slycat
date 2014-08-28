@@ -68,6 +68,7 @@ $.widget("parameter_image.table",
         self.grid.invalidate();
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
+        self.grid.resetActiveCell();
         if(sorted_rows.length)
           self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
         self.element.trigger("variable-sort-changed", [column, order]);
@@ -263,7 +264,10 @@ $.widget("parameter_image.table",
     });
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
+      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && 
+          ( (self.options.metadata["column-types"][args.column.id] != "string")
+            /* || (self.options["categories"].indexOf(args.column.field) != -1) */ )
+        )
       {
         self.options["variable-selection"] = [args.column.field];
         self._color_variables(self.options["variable-selection"]);
@@ -279,6 +283,7 @@ $.widget("parameter_image.table",
     {
       self.trigger_row_selection = false;
       self.grid.setSelectedRows(sorted_rows);
+      self.grid.resetActiveCell();
       if(sorted_rows.length)
         self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
     });
@@ -299,6 +304,7 @@ $.widget("parameter_image.table",
     {
       self.trigger_row_selection = false;
       self.grid.setSelectedRows(sorted_rows);
+      self.grid.resetActiveCell();
       if(sorted_rows.length)
         self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
     });
@@ -319,6 +325,7 @@ $.widget("parameter_image.table",
       {
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
+        self.grid.resetActiveCell();
         if(sorted_rows.length)
           self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
       });
@@ -441,11 +448,63 @@ $.widget("parameter_image.table",
         // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
         column.colormap = self.options.colormap.copy();
 
-        var new_domain = []
-        var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.options.statistics[column.id]["min"], self.options.statistics[column.id]["max"]]);
-        for(var i in column.colormap.range())
-          new_domain.push(domain_scale(i));
-        column.colormap.domain(new_domain);
+        if(self.options.metadata["column-types"][column.id] != "string")
+        {
+          var new_domain = []
+          var domain_scale = d3.scale.linear()
+            .domain([0, column.colormap.range().length])
+            .range([self.options.statistics[column.id]["min"], self.options.statistics[column.id]["max"]]);
+          for(var i in column.colormap.range())
+            new_domain.push(domain_scale(i));
+          column.colormap.domain(new_domain);
+          self.grid.invalidate();
+        }
+        else
+        {
+          // Get all the values for the current column
+
+          function getAllValues(column){
+            $.ajax(
+            {
+              type : "GET",
+              url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" 
+                + self.options.aid + "/arrays/0/chunk?rows=0-" + self.options.metadata['row-count'] + "&columns=" + column.id + "&sort=" + column.id + ":ascending",
+              success : function(result)
+              {
+                
+                var uniqueValues = d3.set(result.data[0]).values();
+                var tempOrdinal = d3.scale.ordinal().domain(uniqueValues).rangePoints([0, 100], 0);
+
+                var domain_scale = d3.scale.linear()
+                  .domain([0, column.colormap.range().length])
+                  .range([0, 100]);
+
+                var new_domain = []
+                for(var i in column.colormap.range())
+                  new_domain.push(domain_scale(i));
+
+                var tempColormap = self.options.colormap.copy();
+                tempColormap.domain(new_domain);
+
+                var rgbRange = [];
+                for(var i=0; i<uniqueValues.length; i++)
+                {
+                  rgbRange.push( tempColormap( tempOrdinal(uniqueValues[i]) ) );
+                }
+                var ordinalColormap = d3.scale.ordinal().domain(uniqueValues).range(rgbRange);
+
+                column.colormap = ordinalColormap;
+
+                self.grid.invalidate();
+              },
+              error: function(request, status, reason_phrase)
+              {
+                console.log("Error retrieving data table: " + reason_phrase);
+              }
+            });
+          }
+          getAllValues(column);
+        }
 
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
       }
@@ -453,10 +512,9 @@ $.widget("parameter_image.table",
       {
         column.colormap = null;
         column.cssClass = column.cssClass.split(" ")[0];
+        self.grid.invalidate();
       }
     }
-
-    self.grid.invalidate();
   },
 
   _editCommandHandler: function (item,column,editCommand) {
