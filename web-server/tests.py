@@ -308,16 +308,17 @@ def test_empty_model_arrays():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
-def test_model_array_ranges():
+def test_model_array_slicing():
   pid = connection.create_project("array-ranges-project")
   mid = connection.create_model(pid, "generic", "array-ranges-model")
 
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, [dict(name="value", type="int64")], [dict(name="row", end=10)])
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10))
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5), hyperslice=(0, 5))
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5, 8), hyperslice=(5, 8))
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(8, 10), hyperslice=[(8, 10)])
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[5], numpy.array([5])))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[:5], numpy.arange(5)))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[5:8], numpy.arange(5, 8)))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[8:], numpy.arange(8, 10)))
 
   connection.finish_model(mid)
   connection.join_model(mid)
@@ -340,7 +341,7 @@ def test_model_array_string_attributes():
   size = 10
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, [dict(name="v1", type="string"), dict(name="v2", type="string")], [dict(name="row", end=size)])
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(size).astype("string"))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(size).astype("string")))
 
   connection.finish_model(mid)
   connection.join_model(mid)
@@ -367,7 +368,7 @@ def test_model_array_1d():
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
   for attribute, data in enumerate(attribute_data):
-    connection.store_array_set_data(mid, "test-array-set", 0, attribute, data=data)
+    connection.store_array_set_data(mid, "test-array-set", (0, attribute, numpy.index_exp[...], data))
   connection.finish_model(mid)
   connection.join_model(mid)
 
@@ -612,14 +613,14 @@ def test_api():
 
   # Any project writer can store an array attribute.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+    server_outsider.store_array_set_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+    project_outsider.store_array_set_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
-  project_writer.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
-  project_admin.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
-  server_admin.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+    project_reader.store_array_set_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  project_writer.store_array_set_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  project_admin.store_array_set_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  server_admin.store_array_set_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
 
   # Any project writer can upload a table.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -811,7 +812,7 @@ def test_array_modifications():
   mid = connection.create_model(pid, "generic", "array-modifications-model")
   connection.start_array_set(mid, "test-array-set")
   connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10).astype("float64"))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(10).astype("float64")))
   connection.finish_model(mid)
   connection.join_model(mid)
 
@@ -821,7 +822,7 @@ def test_array_modifications():
   numpy.testing.assert_array_equal(connection.get_model_table_chunk(mid, "test-array-set", 0, rows=numpy.arange(10), columns=[0])["data"][0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
   numpy.testing.assert_array_equal(connection.get_model_table_sorted_indices(mid, "test-array-set", 0, numpy.arange(10), sort=[(0, "ascending")]), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, hyperslice=(3, 5), data=numpy.array([15, 12], dtype="float64"))
+  connection.store_array_set_data(mid, "test-array-set", (0, 0, numpy.index_exp[3:5], numpy.array([15, 12], dtype="float64")))
 
   statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0)
   nose.tools.assert_equal(statistics["min"], 0)

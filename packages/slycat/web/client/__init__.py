@@ -11,6 +11,7 @@ import numpy
 import os
 import requests
 import shlex
+import slycat.hyperslice
 import sys
 import time
 
@@ -222,7 +223,7 @@ class connection(object):
         raise ValueError("Hyperslice and data counts must match.")
 
     # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
-    all_numeric = numpy.any([chunk.dtype.char == "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks])
+    all_numeric = numpy.all([chunk.dtype.char != "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks])
 
     # Build-up the request
     request_data = {}
@@ -299,9 +300,9 @@ class connection(object):
     """Starts a new array set array, ready to receive data."""
     self.put_model_array(mid, name, array, attributes, dimensions)
 
-  def store_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
+  def store_array_set_data(self, mid, name, hyperchunks):
     """Sends an array attribute (or a slice of an array attribute) to the server."""
-    self.put_model_array_set_data(mid, name, array, attribute, hyperslice, data)
+    self.put_model_array_set_data(mid, name, hyperchunks)
 
   def copy_inputs(self, source, target):
     self.put_model_inputs(source, target)

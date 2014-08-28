@@ -23,6 +23,7 @@ import subprocess
 import stat
 import sys
 import slycat.hdf5
+import slycat.hyperslice
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
@@ -474,6 +475,8 @@ def put_model_array_set_data(mid, name, hyperchunks, data, byteorder=None):
   cherrypy.log.error("put data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
+  parsed_hyperchunks = []
+
   try:
     for hyperchunk in hyperchunks.split(";"):
       array, attribute, hyperslices = hyperchunk.split("/")
@@ -483,9 +486,10 @@ def put_model_array_set_data(mid, name, hyperchunks, data, byteorder=None):
       attribute = int(attribute)
       if attribute < 0:
         raise Exception()
-      for hyperslice in hyperslices.split("|"):
-        slycat.hyperslice.parse(hyperslice)
-  except:
+      hyperslices = [slycat.hyperslice.parse(hyperslice) for hyperslice in hyperslices.split("|")]
+      parsed_hyperchunks.append((array, attribute, hyperslices))
+  except Exception as e:
+    cherrypy.log.error("Parsing exception: %s" % e)
     raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
 
   if byteorder is not None:
@@ -498,7 +502,7 @@ def put_model_array_set_data(mid, name, hyperchunks, data, byteorder=None):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data)
+  slycat.web.server.model.store_array_set_data(database, model, name, parsed_hyperchunks, data, byteorder)
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()

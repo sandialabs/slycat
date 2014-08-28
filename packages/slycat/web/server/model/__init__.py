@@ -184,55 +184,45 @@ def store_array_attribute(database, model, name, array_index, attribute_index, h
 
     hdf5_array.set_data(attribute_index, hyperslice, data)
 
-def store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data):
+def store_array_set_data(database, model, name, hyperchunks, data, byteorder):
   update(database, model, message="Storing data to array set %s." % (name))
-  def expand(item, N):
-    if isinstance(item, numbers.Integral):
-      yield item
-    if isinstance(item, slice):
-      for index in numpy.arange(*item.indices(N)):
-        yield index
 
   if byteorder is None:
     data = json.load(data.file)
     data_iterator = iter(data)
 
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
-    if array is None:
-      array = numpy.sort(numpy.array([int(key) for key in file["array"].keys()]))
-    else:
-      if isinstance(array, (numbers.Integral, slice)):
-        array = [array]
-      array = numpy.array([index for item in array for index in expand(item, len(file["array"]))])
+    for array, attribute, hyperslices in hyperchunks:
+      hdf5_array = slycat.hdf5.ArraySet(file)[array]
+      for hyperslice in hyperslices:
+        cherrypy.log.error("Writing to array %s attribute %s hyperslice %s" % (array, attribute, hyperslice))
 
-    for array_index in array:
-      hdf5_array = slycat.hdf5.ArraySet(file)[array_index]
-      if attribute is None:
-        attribute = numpy.arange(len(hdf5_array.attributes))
-      elif isinstance(attribute, numbers.Integral):
-        attribute = numpy.array([attribute])
-      elif isinstance(attribute, slice):
-        attribute = attribute.indices(len(hdf5_array.attributes))
-        attribute = numpy.arange(attribute[0], attribute[1], attribute[2])
-
-      if hyperslice is None:
-        array_hyperslice = tuple((slice(dimension["begin"], dimension["end"]) for dimension in hdf5_array.dimensions))
-      else:
-        array_hyperslice = tuple((slice(begin, end) for begin, end in hyperslice))
-      array_shape = [(i.stop - i.start) for i in array_hyperslice]
-
-      for attribute_index in attribute:
-        #update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
+        if hyperslice == Ellipsis or hyperslice == (Ellipsis,):
+          data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
+        else:
+          data_shape = []
+          for hyperslice_dimension, array_dimension in zip(hyperslice, hdf5_array.dimensions):
+            if isinstance(hyperslice_dimension, numbers.Integral):
+              data_shape.append(1)
+            elif isinstance(hyperslice_dimension, type(Ellipsis)):
+              data_shape.append(array_dimension["end"] - array_dimension["begin"])
+            elif isinstance(hyperslice_dimension, slice):
+              # TODO: Handle step
+              start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
+              data_shape.append(stop - start)
+            else:
+              raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
 
         # Convert data to an array ...
-        stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute_index]["type"])
+        data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute]["type"])
+        data_size = numpy.prod(data_shape)
+
         if byteorder is None:
-          attribute_data = numpy.array(data_iterator.next(), dtype=stored_type).reshape(array_shape)
+          hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
         elif byteorder == sys.byteorder:
-          count = numpy.prod([(i.stop - i.start) for i in array_hyperslice])
-          attribute_data = numpy.fromfile(data.file, dtype=stored_type, count=count).reshape(array_shape)
+          hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
         else:
           raise NotImplementedError()
 
-        hdf5_array.set_data(attribute_index, array_hyperslice, attribute_data)
+        hdf5_array.set_data(attribute, hyperslice, hyperslice_data)
 
