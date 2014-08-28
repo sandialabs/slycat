@@ -892,6 +892,7 @@ $.widget("parameter_image.scatterplot",
                     self.close_hover_timer = null;
                   }
                   frame.classed("hover-image", false).classed("open-image", true);
+                  image.image_class = "open-image";
                   // Remove openHover class tag from any points that might have it
                   self.datum_layer.selectAll("circle.openHover")
                     .classed("openHover", false)
@@ -1066,6 +1067,7 @@ $.widget("parameter_image.scatterplot",
                   self.close_hover_timer = null;
                 }
                 frame.classed("hover-image", false).classed("open-image", true);
+                image.image_class = "open-image";
 
                 // Remove openHover class tag from any points that might have it
                 self.datum_layer.selectAll("circle.openHover")
@@ -1276,8 +1278,11 @@ $.widget("parameter_image.scatterplot",
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
       self.image_cache[image.uri] = blob;
+      // Adding lag for testing purposed. This should not exist in production.
+      // setTimeout(function(){
       self._open_images(images);
       return;
+      // }, 5000);
     }
     xhr.send();
   },
