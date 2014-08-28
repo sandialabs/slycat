@@ -413,12 +413,13 @@ $.widget("parameter_image.controls",
         .attr("label", "set")
         .appendTo(optgroup)
         ;
-      $("<option />")
-        .text("Clear")
-        .attr("value", this.options.rating_variables[i])
-        .attr("label", "clear")
-        .appendTo(optgroup)
-        ;
+      // Disabling clear functionality for ratings since it causes problems with nulls
+      // $("<option />")
+      //   .text("Clear")
+      //   .attr("value", this.options.rating_variables[i])
+      //   .attr("label", "clear")
+      //   .appendTo(optgroup)
+      //   ;
     }
 
     for(var i = 0; i < this.options.category_variables.length; i++)
