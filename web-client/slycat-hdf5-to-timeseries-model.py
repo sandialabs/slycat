@@ -96,7 +96,7 @@ try:
     for attribute in range(len(attributes)):
       slycat.web.client.log.info("Storing input table attribute %s", attribute)
       data = array.get_data(attribute)[...]
-      connection.store_array_set_data(mid, "inputs", 0, attribute, data=data)
+      connection.store_array_set_data(mid, "inputs", (0, attribute, numpy.index_exp[...], data))
 
   # Create a mapping from unique cluster names to timeseries attributes.
   connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
