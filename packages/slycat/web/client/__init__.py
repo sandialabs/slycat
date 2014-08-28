@@ -206,17 +206,15 @@ class connection(object):
     # Sanity check arguments
     if isinstance(hyperchunks, tuple):
       hyperchunks = [hyperchunks]
+    hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices], data if isinstance(data, list) else [data]) for array, attribute, hyperslices, data in hyperchunks]
+
     for array, attribute, hyperslices, data in hyperchunks:
       if not isinstance(array, numbers.Integral) or array < 0:
         raise ValueError("Array index must be a non-negative integer.")
       if not isinstance(attribute, numbers.Integral) or attribute < 0:
         raise ValueError("Attribute index must be a non-negative integer.")
-      if not isinstance(hyperslices, list):
-        hyperslices = [hyperslices]
       for hyperslice in hyperslices:
         slycat.hyperslice.validate(hyperslice)
-      if not isinstance(data, list):
-        data = [data]
       for chunk in data:
         if not isinstance(chunk, numpy.ndarray):
           raise ValueError("Data chunk must be a numpy array.")
@@ -228,7 +226,7 @@ class connection(object):
 
     # Build-up the request
     request_data = {}
-    request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks]
+    request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks])
     if all_numeric:
       request_data["byteorder"] = sys.byteorder
 

@@ -64,9 +64,10 @@ Sample Request
 
 The following request would write data in binary format to the following locations:
 
-* A single element (5) in vector array 0, attribute 1
-* A half-open range of elements [10-20) in vector array 0, attribute 1
-* A 4x4 subset of elements in matrix array 1, attribute 0
+* Element number 5 in vector array 0, attribute 1
+* A half-open range of elements [10-20) in vector array 2, attribute 3
+* A 4x4 subset of elements in matrix array 4, attribute 5
+* Elements [0-10) and [20-30) in vector array 6, attribute 7
 
 ::
 
@@ -86,7 +87,7 @@ The following request would write data in binary format to the following locatio
     --573af150d64b4d70b35689f41c136ed3
     Content-Disposition: form-data; name="hyperchunks"
 
-    0/1/5;0/1/10:20;1/0/0:4,0:4
+    0/1/5;2/3/10:20;4/5/0:4,0:4;6/7/0:10|20:30
     --573af150d64b4d70b35689f41c136ed3
     Content-Disposition: form-data; name="data"; filename="data"
     Content-Type: application/octet-stream
