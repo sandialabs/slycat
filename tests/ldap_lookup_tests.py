@@ -1,7 +1,10 @@
 import slycat.web.server.directory as d
 import nose
+import ConfigParser
 
-l = d.ldap('ldaps://sec-ldap-nm.sandia.gov/','ou=snl,dc=nnsa,dc=doe,dc=gov')
+config = ConfigParser.ConfigParser()
+config.read("test-config.ini")
+l = d.ldap(config.get("slycat","ldap_query_server"), config.get("slycat","ldap_query_dn"))
 
 def test_uid_to_username_lookup():
   nose.tools.assert_equal("cjsnide", l.uid_to_username("31776"))
