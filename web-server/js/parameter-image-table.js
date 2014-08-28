@@ -68,6 +68,7 @@ $.widget("parameter_image.table",
         self.grid.invalidate();
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
+        self.grid.resetActiveCell();
         if(sorted_rows.length)
           self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
         self.element.trigger("variable-sort-changed", [column, order]);
@@ -282,6 +283,7 @@ $.widget("parameter_image.table",
     {
       self.trigger_row_selection = false;
       self.grid.setSelectedRows(sorted_rows);
+      self.grid.resetActiveCell();
       if(sorted_rows.length)
         self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
     });
@@ -302,6 +304,7 @@ $.widget("parameter_image.table",
     {
       self.trigger_row_selection = false;
       self.grid.setSelectedRows(sorted_rows);
+      self.grid.resetActiveCell();
       if(sorted_rows.length)
         self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
     });
@@ -322,6 +325,7 @@ $.widget("parameter_image.table",
       {
         self.trigger_row_selection = false;
         self.grid.setSelectedRows(sorted_rows);
+        self.grid.resetActiveCell();
         if(sorted_rows.length)
           self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
       });
