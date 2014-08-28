@@ -11,6 +11,7 @@ import numpy
 import os
 import requests
 import shlex
+import slycat.darray
 import slycat.hyperslice
 import sys
 import time
@@ -202,7 +203,7 @@ class connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_array_set_data(self, mid, name, hyperchunks):
+  def put_model_arrayset_data(self, mid, name, hyperchunks):
     """Sends array data to the server."""
     # Sanity check arguments
     if isinstance(hyperchunks, tuple):
@@ -242,11 +243,12 @@ class connection(object):
     # Send the request to the server ...
     self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
 
-  def put_model_array(self, mid, name, array, attributes, dimensions):
+  def put_model_array(self, mid, name, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":attributes, "dimensions":dimensions}))
+    stub = slycat.darray.Stub(dimensions, attributes)
+    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
-  def put_model_array_set(self, mid, name, input=True):
+  def put_model_arrayset(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
     self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
@@ -264,52 +266,6 @@ class connection(object):
   def put_project(self, pid, project):
     """Modifies a project."""
     return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
-
-  ###########################################################################################################
-  # Aliases for low-level functions that make client code more readable.
-
-  def create_project(self, name, description=""):
-    """Creates a new project, returning the project ID."""
-    return self.post_projects(name, description)
-
-  def create_model(self, pid, type, name, marking="", description=""):
-    """Creates a new model, returning the model ID."""
-    return self.post_project_models(pid, type, name, marking, description)
-
-  def store_bookmark(self, pid, bookmark):
-    return self.post_project_bookmarks(pid, bookmark)
-
-  def update_model(self, mid, **kwargs):
-    """Updates the model state/result/progress/message."""
-    model = {key : value for key, value in kwargs.items() if value is not None}
-    self.put_model(mid, model)
-
-  def store_parameter(self, mid, name, value, input=True):
-    """Sets a model parameter value."""
-    self.put_model_parameter(mid, name, value, input)
-
-  def store_file(self, mid, name, data, content_type, input=True):
-    """Uploads a model file."""
-    self.put_model_file(mid, name, data, content_type, input)
-
-  def start_array_set(self, mid, name, input=True):
-    """Starts a new model array set artifact, ready to receive data."""
-    self.put_model_array_set(mid, name, input)
-
-  def start_array(self, mid, name, array, attributes, dimensions):
-    """Starts a new array set array, ready to receive data."""
-    self.put_model_array(mid, name, array, attributes, dimensions)
-
-  def store_array_set_data(self, mid, name, hyperchunks):
-    """Sends an array attribute (or a slice of an array attribute) to the server."""
-    self.put_model_array_set_data(mid, name, hyperchunks)
-
-  def copy_inputs(self, source, target):
-    self.put_model_inputs(source, target)
-
-  def finish_model(self, mid):
-    """Completes a model."""
-    self.post_model_finish(mid)
 
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
@@ -336,11 +292,16 @@ class connection(object):
     else:
       return self.create_project(name, description)
 
+  def update_model(self, mid, **kwargs):
+    """Updates the model state/result/progress/message."""
+    model = {key : value for key, value in kwargs.items() if value is not None}
+    self.put_model(mid, model)
+
   def join_model(self, mid):
     """Wait for a model to complete before returning.
 
-    Note that a model that hasn't been finished will never complete, you should
-    ensure that finish_model() is called successfully before calling
+    Note that a model that hasn't been finished will never complete - you should
+    ensure that post_model_finish() is called successfully before calling
     join_model().
     """
     while True:
