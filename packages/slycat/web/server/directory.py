@@ -71,12 +71,12 @@ class ldap(prototype):
         self.uid_cache[uid] = entry["uid"][0]
       except Exception as e:
         cherrypy.log.error("%s" % e)
-        return None
+        return uid
     
     if uid in self.uid_cache:
       return self.uid_cache[uid]
 
-    return None
+    return uid
   
   def gid_to_username(self, gid):
     if gid not in self.gid_cache:
@@ -86,12 +86,12 @@ class ldap(prototype):
         self.gid_cache[gid] = entry["uid"][0]
       except Exception as e:
         cherrypy.log.error("%s" % e)
-        return None
+        return gid
     
     if gid in self.gid_cache:
       return self.gid_cache[gid]
 
-    return None
+    return gid
 
   def ldap_query(self, search_filter, required=[]):
     try:
