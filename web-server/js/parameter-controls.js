@@ -131,7 +131,11 @@ $.widget("parameter_image.controls",
             valueValid = false;
           }
           if(valueValid) {
-            self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : value});
+            self.element.trigger("set-value", {
+              selection : self.options.selection, 
+              variable : variableIndex, 
+              value : numeric ? value : '"' + value + '"',
+            });
             $(this).dialog('close');
           } else {
             var message = "Please enter a value.";

@@ -180,7 +180,10 @@ $.widget("parameter_image.scatterplot",
       
       //console.log("#scatterplot mouseup");
       if(!e.ctrlKey)
+      {
         self.options.selection = [];
+        self.options.filtered_selection = [];
+      }
 
       var x = self.options.x;
       var y = self.options.y;
@@ -261,6 +264,7 @@ $.widget("parameter_image.scatterplot",
       self.state = "";
 
       self._filterIndices();
+      self.options.selection = self.options.filtered_selection.slice(0);
       self._schedule_update({render_selection:true});
       self.element.trigger("selection-changed", [self.options.selection]);
     });
@@ -275,7 +279,13 @@ $.widget("parameter_image.scatterplot",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-    var filtered_indices = Array.apply( [], indices );;
+
+    var filtered_indices;
+    if(indices.length > 1)
+      filtered_indices = Array.apply( [], indices );
+    else
+      filtered_indices = [indices[0]];
+
     var filtered_selection = selection.slice(0);
     var length = indices.length;
 
@@ -1339,6 +1349,10 @@ $.widget("parameter_image.scatterplot",
 
     // Disable hovering whenever anything else is going on ...
     if(self.state != "")
+      return;
+
+    // Disable hovering when there is no uri
+    if(self.options.images[self.options.indices[image_index]].trim() == "")
       return;
 
     // // Disable hovering on points that already have open imges ...
