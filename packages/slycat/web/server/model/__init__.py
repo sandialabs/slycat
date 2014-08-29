@@ -142,7 +142,7 @@ def store_file_artifact(database, model, name, value, content_type, input=False)
 def store_json_file_artifact(database, model, name, value, input=False):
   return store_file_artifact(database, model, name, json.dumps(value, separators=(",",":")), "application/json", input)
 
-def start_array_set(database, model, name, input=False):
+def start_arrayset(database, model, name, input=False):
   """Start a model array set artifact."""
   update(database, model, message="Starting array set %s." % (name))
   storage = uuid.uuid4().hex
@@ -184,7 +184,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, h
 
     hdf5_array.set_data(attribute_index, hyperslice, data)
 
-def store_array_set_data(database, model, name, hyperchunks, data, byteorder):
+def store_arrayset_data(database, model, name, hyperchunks, data, byteorder):
   update(database, model, message="Storing data to array set %s." % (name))
 
   if byteorder is None:

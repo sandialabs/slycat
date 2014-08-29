@@ -30,8 +30,8 @@ application/json as the result content-type:
 
 ::
 
-    GET /models/(mid)/array-sets/(aid)/arrays/(array)/attributes/(attribute)/chunk?ranges=...&byteorder=...
-    GET /models/(mid)/array-sets/(aid)/arrays/(array)/attributes/(attribute)/chunk?ranges=...
+    GET /models/(mid)/arraysets/(aid)/arrays/(array)/attributes/(attribute)/chunk?ranges=...&byteorder=...
+    GET /models/(mid)/arraysets/(aid)/arrays/(array)/attributes/(attribute)/chunk?ranges=...
 
 Accepts
 ^^^^^^^
@@ -54,7 +54,7 @@ Sample Request
 
 ::
 
-    GET /models/b6afa2e2b5324e118d98b5f026f40624/array-sets/test-array-set/arrays/0/attributes/0/chunk?ranges=0,10 HTTP/1.1
+    GET /models/b6afa2e2b5324e118d98b5f026f40624/arraysets/test-array-set/arrays/0/attributes/0/chunk?ranges=0,10 HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
@@ -79,7 +79,7 @@ Sample Binary Request
 
 ::
 
-    GET /models/6706e78890884845b6c709572a140681/array-sets/test-array-set/arrays/0/attributes/0/chunk?ranges=0,10&byteorder=little HTTP/1.1
+    GET /models/6706e78890884845b6c709572a140681/arraysets/test-array-set/arrays/0/attributes/0/chunk?ranges=0,10&byteorder=little HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress

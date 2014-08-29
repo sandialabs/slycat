@@ -92,7 +92,7 @@ try:
     timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
     connection.put_model_arrayset(mid, "inputs")
-    connection.put_model_array(mid, "inputs", 0, dimensions, attributes)
+    connection.put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
     for attribute in range(len(attributes)):
       slycat.web.client.log.info("Storing input table attribute %s", attribute)
       data = array.get_data(attribute)[...]
@@ -276,7 +276,7 @@ try:
       slycat.web.client.log.info("Creating preview %s" % index)
       dimensions = [dict(name="sample", end=len(waveform["times"]))]
       attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
-      connection.put_model_array(mid, "preview-%s" % name, index, dimensions, attributes)
+      connection.put_model_arrayset_array(mid, "preview-%s" % name, index, dimensions, attributes)
       connection.put_model_arrayset_data(mid, "preview-%s" % name, [(index, 0, numpy.index_exp[...], waveform["times"]), (index, 1, numpy.index_exp[...], waveform["values"])])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")

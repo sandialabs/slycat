@@ -18,7 +18,7 @@ Syntax
 
 ::
 
-    PUT /models/(mid)/array-sets/(name)/data
+    PUT /models/(mid)/arraysets/(name)/data
 
 Accepts
 ^^^^^^^
@@ -54,7 +54,7 @@ Precondition
 ^^^^^^^^^^^^
 
 The destination array(s) must have already been initialized with :ref:`PUT
-Model Array`.
+Model Arrayset Array`.
 
 Examples
 --------
@@ -71,7 +71,7 @@ The following request would write data in binary format to the following locatio
 
 ::
 
-    PUT /models/25f1cdb62c34465286cecbaeccc1460d/array-sets/test-array-set/data HTTP/1.1
+    PUT /models/25f1cdb62c34465286cecbaeccc1460d/arraysets/test-array-set/data HTTP/1.1
     Host: localhost:8093
     Content-Length: 470
     Accept-Encoding: gzip, deflate, compress
@@ -112,5 +112,5 @@ See Also
 --------
 
 -  :ref:`PUT Model Arrayset`
--  :ref:`PUT Model Array`
+-  :ref:`PUT Model Arrayset Array`
 

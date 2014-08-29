@@ -1,7 +1,8 @@
-.. _PUT Model Array:
+.. _PUT Model Arrayset Array:
 
-PUT Model Array
-===============
+PUT Model Arrayset Array
+========================
+
 Description
 -----------
 
@@ -15,7 +16,7 @@ Syntax
 
 ::
 
-    PUT /models/(mid)/array-sets/(name)/arrays/(array)
+    PUT /models/(mid)/arraysets/(name)/arrays/(array)
 
 Accepts
 ^^^^^^^
@@ -44,7 +45,7 @@ Sample Request
 
 ::
 
-    PUT /models/6f48db3de2b6416091d31e93814a22ae/array-sets/test-array-set/arrays/0 HTTP/1.1
+    PUT /models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set/arrays/0 HTTP/1.1
     Host: localhost:8093
     Content-Length: 203
     Accept-Encoding: gzip, deflate, compress

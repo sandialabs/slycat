@@ -74,7 +74,7 @@ connection.put_model_arrayset(mid, "data-table")
 # Start our single "data-table" array.
 dimensions = [dict(name="row", end=len(rows))]
 attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
-connection.put_model_array(mid, "data-table", 0, dimensions, attributes)
+connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
 # Upload data into the array.
 for index, data in enumerate(columns):

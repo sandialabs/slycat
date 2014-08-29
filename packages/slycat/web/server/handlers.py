@@ -448,7 +448,7 @@ def put_model_parameter(mid, name):
   slycat.web.server.model.store_parameter(database, model, name, value, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_array_set(mid, name):
+def put_model_arrayset(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -456,10 +456,10 @@ def put_model_array_set(mid, name):
 
   input = require_boolean_parameter("input")
 
-  slycat.web.server.model.start_array_set(database, model, name, input)
+  slycat.web.server.model.start_arrayset(database, model, name, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_array(mid, name, array):
+def put_model_arrayset_array(mid, name, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -471,7 +471,7 @@ def put_model_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_set_data(mid, name, hyperchunks, data, byteorder=None):
+def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
   cherrypy.log.error("put data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
@@ -502,7 +502,7 @@ def put_model_array_set_data(mid, name, hyperchunks, data, byteorder=None):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.store_array_set_data(database, model, name, parsed_hyperchunks, data, byteorder)
+  slycat.web.server.model.store_arrayset_data(database, model, name, parsed_hyperchunks, data, byteorder)
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()

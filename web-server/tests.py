@@ -289,7 +289,7 @@ def test_empty_model_arrays():
   mid = connection.post_project_models(pid, "generic", "empty-arrays-model")
 
   connection.put_model_arrayset(mid, "test-array-set")
-  connection.put_model_array(mid, "test-array-set", 0, [dict(name="row", end=size)], [dict(name="integer", type="int64"), dict(name="float", type="float64"), dict(name="string", type="string")])
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, [dict(name="row", end=size)], [dict(name="integer", type="int64"), dict(name="float", type="float64"), dict(name="string", type="string")])
 
   connection.post_model_finish(mid)
   connection.join_model(mid)
@@ -313,7 +313,7 @@ def test_model_array_slicing():
   mid = connection.post_project_models(pid, "generic", "array-ranges-model")
 
   connection.put_model_arrayset(mid, "test-array-set")
-  connection.put_model_array(mid, "test-array-set", 0, [dict(name="row", end=10)], [dict(name="value", type="int64")])
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, [dict(name="row", end=10)], [dict(name="value", type="int64")])
   connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(10)))
   connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[5], numpy.array([5])))
   connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[:5], numpy.arange(5)))
@@ -340,7 +340,7 @@ def test_model_array_string_attributes():
 
   size = 10
   connection.put_model_arrayset(mid, "test-array-set")
-  connection.put_model_array(mid, "test-array-set", 0, [dict(name="row", end=size)], [dict(name="v1", type="string"), dict(name="v2", type="string")])
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, [dict(name="row", end=size)], [dict(name="v1", type="string"), dict(name="v2", type="string")])
   connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(size).astype("string")))
 
   connection.post_model_finish(mid)
@@ -366,7 +366,7 @@ def test_model_array_1d():
   pid = connection.post_projects("1d-array-project")
   mid = connection.post_project_models(pid, "generic", "1d-array-model")
   connection.put_model_arrayset(mid, "test-array-set")
-  connection.put_model_array(mid, "test-array-set", 0, dimensions, attributes)
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, dimensions, attributes)
   for attribute, data in enumerate(attribute_data):
     connection.put_model_arrayset_data(mid, "test-array-set", (0, attribute, numpy.index_exp[...], data))
   connection.post_model_finish(mid)
@@ -602,14 +602,14 @@ def test_api():
 
   # Any project writer can start an array.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.put_model_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+    server_outsider.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.put_model_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+    project_outsider.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.put_model_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
-  project_writer.put_model_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
-  project_admin.put_model_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
-  server_admin.put_model_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+    project_reader.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+  project_writer.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+  project_admin.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+  server_admin.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
 
   # Any project writer can store an array attribute.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -811,7 +811,7 @@ def test_array_modifications():
   pid = connection.post_projects("array-modifications-project")
   mid = connection.post_project_models(pid, "generic", "array-modifications-model")
   connection.put_model_arrayset(mid, "test-array-set")
-  connection.put_model_array(mid, "test-array-set", 0, dimensions, attributes)
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, dimensions, attributes)
   connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(10).astype("float64")))
   connection.post_model_finish(mid)
   connection.join_model(mid)

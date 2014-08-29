@@ -133,19 +133,19 @@ class connection(object):
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
     if type is None or type == "string":
-      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+      return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
     else:
       shape = tuple([end - begin for begin, end in ranges])
-      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
+      content = self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
       return numpy.fromstring(content, dtype=type).reshape(shape)
 
   def get_model_array_attribute_statistics(self, mid, name, array, attribute):
     """Returns statistics describing an array artifact attribute."""
-    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/statistics" % (mid, name, array, attribute), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/statistics" % (mid, name, array, attribute), headers={"accept":"application/json"})
 
   def get_model_array_metadata(self, mid, name, array):
     """Returns the metadata for an array artifacat."""
-    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_model(self, mid):
     """Returns a single model."""
@@ -241,16 +241,16 @@ class connection(object):
         request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
-    self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
+    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
 
-  def put_model_array(self, mid, name, array, dimensions, attributes):
+  def put_model_arrayset_array(self, mid, name, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
     stub = slycat.darray.Stub(dimensions, attributes)
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
+    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
   def put_model_arrayset(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+    self.request("PUT", "/models/%s/arraysets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_file(self, mid, name, data, content_type, input=True):
     """Stores a model file artifact."""

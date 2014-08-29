@@ -35,7 +35,7 @@ connection.put_model_parameter(mid, "pi", 3.1416)
 connection.put_model_arrayset(mid, "data")
 
 # Start an array (a dense, multi-dimension, multi-attribute array).
-connection.put_model_array(mid, "data", 0, [dict(name="i", end=10)], [dict(name="range", type="int64")])
+connection.put_model_arrayset_array(mid, "data", 0, [dict(name="i", end=10)], [dict(name="range", type="int64")])
 
 # Store values into an array attribute.
 connection.put_model_arrayset_data(mid, "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
