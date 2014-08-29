@@ -63,9 +63,9 @@ class ldap(prototype):
 
     return None
   
-  def uid_to_username(self, uid):
+  def uid_to_username(self, uid, filter_key="esnAccountUnixUserId"):
     if uid not in self.uid_cache:
-      search_filter = "esnAccountUnixUserId=%s" % uid
+      search_filter = "%s=%s" % (filter_key,uid)
       try:
         entry = self.ldap_query(search_filter, required=['uid'])
         self.uid_cache[uid] = entry["uid"][0]
@@ -78,9 +78,9 @@ class ldap(prototype):
 
     return uid
   
-  def gid_to_username(self, gid):
+  def gid_to_username(self, gid, filter_key="esnUnixGroupId"):
     if gid not in self.gid_cache:
-      search_filter = "esnUnixGroupId=%s" % gid
+      search_filter = "%s=%s" % (filter_key,gid)
       try:
         entry = self.ldap_query(search_filter, required=['uid'])
         self.gid_cache[gid] = entry["uid"][0]
