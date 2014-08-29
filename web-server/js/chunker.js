@@ -16,7 +16,7 @@ function is_little_endian()
 function get_model_array_attribute_metadata(parameters)
 {
   $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
+    url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
     contentType : "application/json",
     success: function(metadata)
     {
@@ -47,7 +47,7 @@ function get_model_arrayset_metadata(parameters)
     }
   } else {
     $.ajax({
-      url : parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/metadata",
+      url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata",
       contentType : "application/json",
       success: function(metadata)
       {
@@ -147,7 +147,7 @@ function get_model_array_attribute(parameters)
     ranges = ranges.join(",");
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
     request.responseType = "arraybuffer";
     request.success = parameters.success;
     request.attribute = parameters.attribute;
@@ -208,7 +208,7 @@ function get_model_arrayset(parameters)
     var metadata = parameters.metadata;
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/array-sets/" + parameters.aid + "?byteorder=" + (is_little_endian() ? "little" : "big") + "&arrays=" + (parameters.arrays !== undefined ? parameters.arrays : ""));
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "?byteorder=" + (is_little_endian() ? "little" : "big") + "&arrays=" + (parameters.arrays !== undefined ? parameters.arrays : ""));
     request.responseType = "arraybuffer";
     request.success = parameters.success;
     request.metadata = metadata;

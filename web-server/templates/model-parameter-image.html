@@ -499,7 +499,7 @@ rights in this software.
             $.ajax(
             {
               type : "GET",
-              url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" 
+              url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
                 + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
               success : function(result)
               {
@@ -747,7 +747,7 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + 
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
                   variable + "/chunk?ranges=0," + table_metadata["row-count"],
                 success : function(result)
                 {
@@ -761,7 +761,7 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + 
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
                   variable + "/chunk?ranges=0," + table_metadata["row-count"],
                 success : function(result)
                 {
@@ -881,7 +881,7 @@ rights in this software.
                 formdata.append("hyperslice", hyperslice);
                 $.ajax({
                   type: "PUT",
-                  url : "{{server-root}}models/{{_id}}/array-sets/data-table/data",
+                  url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
                   data : formdata,
                   processData: false,
                   contentType: false,
@@ -1171,7 +1171,7 @@ rights in this software.
           {
             requests.push(
               $.ajax({
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
                 contentType : "application/json",
               })
             );
