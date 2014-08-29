@@ -38,7 +38,6 @@ import time
 import traceback
 import uuid
 import re
-import slycat.web.server.directory as ldap_dir
 
 def require_parameter(name):
   if name not in cherrypy.request.json:
@@ -1058,10 +1057,8 @@ def get_remote_file(sid, path):
         # we know the file exists
         # we now know that the file is not available due to access controls
         (perm, _, uid, gid) = session.sftp.stat(path).__str__().split()[:4]
-        server = cherrypy.request.app.config["slycat"]["ldap_query_server"]
-        dn = cherrypy.request.app.config["slycat"]["ldap_query_dn"]
-        ldap_query = ldap_dir.ldap(server, dn)
-        file_permissions = "%s %s %s" % (perm, ldap_query.uid_to_username(uid), ldap_query.gid_to_username(gid))
+        ldq = cherrypy.request.app.config["slycat"]["ldap_query"]
+        file_permissions = "%s %s %s" % (perm, ldq.uid_to_username(uid), ldq.gid_to_username(gid))
         raise cherrypy.HTTPError("400 %s. Current permissions: %s" % (str(e), file_permissions))
       # catch all
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
