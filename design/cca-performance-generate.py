@@ -6,21 +6,21 @@ def create_model(rows, columns, repetition):
   numpy.random.seed(1234)
 
   pid = connection.find_or_create_project("cca-performance-final")
-  mid = connection.create_model(pid, "cca", "%s x %s %s" % (rows, columns, repetition + 1), arguments.marking)
+  mid = connection.post_project_models(pid, "cca", "%s x %s %s" % (rows, columns, repetition + 1), arguments.marking)
 
-  connection.start_array_set(mid, "data-table")
-  attributes = [("%s" % column, "float64") for column in numpy.arange(columns)]
-  dimensions = [("row", "int64", 0, rows)]
-  connection.start_array(mid, "data-table", 0, attributes, dimensions)
+  connection.put_model_arrayset(mid, "data-table")
+  dimensions = [dict(name="row", end=rows)]
+  attributes = [dict(name=column, type="float64") for column in numpy.arange(columns)]
+  connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
   for i in numpy.arange(columns):
-    connection.store_array_set_data(mid, "data-table", 0, i, data=numpy.random.normal(size=rows))
+    connection.put_model_arrayset_data(mid, "data-table", (0, i, numpy.index_exp[...], numpy.random.normal(size=rows)))
 
-  connection.store_parameter(mid, "input-columns", range(0, columns // 2))
-  connection.store_parameter(mid, "output-columns", range(columns // 2, columns))
-  connection.store_parameter(mid, "scale-inputs", True)
+  connection.put_model_parameter(mid, "input-columns", range(0, columns // 2))
+  connection.put_model_parameter(mid, "output-columns", range(columns // 2, columns))
+  connection.put_model_parameter(mid, "scale-inputs", True)
 
-  connection.finish_model(mid)
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
 parser = slycat.web.client.option_parser()

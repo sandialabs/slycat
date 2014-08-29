@@ -89,28 +89,28 @@ connection = slycat.web.client.connect(arguments)
 pid = connection.find_or_create_project(arguments.project_name)
 
 # Create the new, empty model.
-mid = connection.create_model(pid, "parameter-image", arguments.model_name if arguments.model_name is not None else arguments.input, arguments.marking)
+mid = connection.post_project_models(pid, "parameter-image", arguments.model_name if arguments.model_name is not None else arguments.input, arguments.marking)
 
 # Upload our observations as "data-table".
-connection.start_array_set(mid, "data-table")
+connection.put_model_arrayset(mid, "data-table")
 
 # Start our single "data-table" array.
-attributes = [("%s" % name, "float64" if column.dtype == "float64" else "string") for name, column in columns]
-dimensions = [("row", "int64", 0, len(rows)-1)]
-connection.start_array(mid, "data-table", 0, attributes, dimensions)
+dimensions = [dict(name="row", end=len(rows)-1)]
+attributes = [dict(name=name, type="float64" if column.dtype == "float64" else "string") for name, column in columns]
+connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
 # Upload each column into the array.
 for index, (name, column) in enumerate(columns):
-  connection.store_array_set_data(mid, "data-table", 0, index, data=column)
+  connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], column))
 
 # Store the remaining parameters.
-connection.store_parameter(mid, "input-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.input_columns and column.dtype == "float64"])
-connection.store_parameter(mid, "output-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.output_columns and column.dtype == "float64"])
-connection.store_parameter(mid, "image-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.image_columns and column.dtype != "float64"])
+connection.put_model_parameter(mid, "input-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.input_columns and column.dtype == "float64"])
+connection.put_model_parameter(mid, "output-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.output_columns and column.dtype == "float64"])
+connection.put_model_parameter(mid, "image-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.image_columns and column.dtype != "float64"])
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web
 # Server know that it can start computation.
-connection.finish_model(mid)
+connection.post_model_finish(mid)
 # Wait until the model is ready.
 connection.join_model(mid)
 

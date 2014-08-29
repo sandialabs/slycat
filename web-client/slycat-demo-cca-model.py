@@ -62,28 +62,28 @@ connection = slycat.web.client.connect(arguments)
 pid = connection.find_or_create_project(arguments.project_name)
 
 # Create the new, empty model.
-mid = connection.create_model(pid, "cca", arguments.model_name, arguments.marking)
+mid = connection.post_project_models(pid, "cca", arguments.model_name, arguments.marking)
 
 # Upload our observations as "data-table".
-connection.start_array_set(mid, "data-table")
+connection.put_model_arrayset(mid, "data-table")
 
 # Start our single "data-table" array.
-attributes = [("%s%s" % (arguments.column_prefix, column), "float64") for column in range(total_columns)]
-dimensions = [("row", "int64", 0, arguments.row_count)]
-connection.start_array(mid, "data-table", 0, attributes, dimensions)
+dimensions = [dict(name="row", end=arguments.row_count)]
+attributes = [dict(name="%s%s" % (arguments.column_prefix, column), type="float64") for column in range(total_columns)]
+connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
 # Upload data into the array.
 for i in range(total_columns):
-  connection.store_array_set_data(mid, "data-table", 0, i, data=data.T[i])
+  connection.put_model_arrayset_data(mid, "data-table", (0, i, numpy.index_exp[...], data.T[i]))
 
 # Store the remaining parameters.
-connection.store_parameter(mid, "input-columns", range(0, arguments.input_count))
-connection.store_parameter(mid, "output-columns", range(arguments.input_count, arguments.input_count + arguments.output_count))
-connection.store_parameter(mid, "scale-inputs", False)
+connection.put_model_parameter(mid, "input-columns", range(0, arguments.input_count))
+connection.put_model_parameter(mid, "output-columns", range(arguments.input_count, arguments.input_count + arguments.output_count))
+connection.put_model_parameter(mid, "scale-inputs", False)
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web
 # Server know that it can start computation.
-connection.finish_model(mid)
+connection.post_model_finish(mid)
 # Wait until the model is ready.
 connection.join_model(mid)
 

@@ -15,7 +15,7 @@ Syntax
 
 ::
 
-    PUT /models/(mid)/array-sets/(name)
+    PUT /models/(mid)/arraysets/(name)
 
 Accepts
 ^^^^^^^
@@ -33,7 +33,7 @@ Sample Request
 
 ::
 
-    PUT /models/6f48db3de2b6416091d31e93814a22ae/array-sets/test-array-set HTTP/1.1
+    PUT /models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set HTTP/1.1
     Host: localhost:8093
     Content-Length: 2
     Accept-Encoding: gzip, deflate, compress
@@ -58,6 +58,6 @@ Sample Response
 See Also
 --------
 
--  :ref:`PUT Model Array`
+-  :ref:`PUT Model Arrayset Array`
 -  :ref:`PUT Model Arrayset Data`
 
