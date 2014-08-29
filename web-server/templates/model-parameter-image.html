@@ -875,10 +875,11 @@ rights in this software.
               function writeData(selection, variable, blob, iterator){
                 hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
                 var formdata = new FormData();
-                formdata.append("array", 0);
-                formdata.append("attribute", variable);
+                // formdata.append("array", 0);
+                // formdata.append("attribute", variable);
+                // formdata.append("hyperslice", hyperslice);
+                formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslice);
                 formdata.append("data", blob);
-                formdata.append("hyperslice", hyperslice);
                 $.ajax({
                   type: "PUT",
                   url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
