@@ -8,6 +8,12 @@ class prototype:
   """Prototype for a directory object that returns metadata associated with a user id."""
   def user(self, uid):
     raise NotImplementedError()
+  
+  def uid_to_username(self, uid, filter_key="esnAccountUnixUserId"):
+    raise NotImplementedError()
+  
+  def gid_to_username(self, gid, filter_key="esnUnixGroupId"):
+    raise NotImplementedError()
 
 class identity(prototype):
   """Directory implementation that returns a fake record for any user id that
@@ -24,6 +30,12 @@ class identity(prototype):
       "email" : "%s@%s" % (uid, self.domain),
       "roles" : []
       }
+  
+  def uid_to_username(self, uid, filter_key="esnAccountUnixUserId"):
+    return uid
+  
+  def gid_to_username(self, gid, filter_key="esnUnixGroupId"):
+    return gid
 
 class ldap(prototype):
   """Directory implementation that uses LDAP to perform user lookups."""
@@ -39,22 +51,12 @@ class ldap(prototype):
   def user(self, uid):
     if uid not in self.cache:
       try:
-        import ldap
-        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-        connection = ldap.initialize(self.server)
-        connection.simple_bind_s(self.who, self.cred)
-        result = connection.search_s(self.dn % uid, ldap.SCOPE_BASE)
-        if len(result) < 1: raise Exception("Improper LDAP Query")
-        entry = result[0][1]
+        entry = self.__ldap_query("uid=%s" % uid)
         self.cache[uid] = {
           "name" : entry["cn"][0],
           "email" : "%s@%s" % (uid, entry["esnAdministrativeDomainName"][0]),
           "roles" : entry["memberOf"]
           }
-
-        #import cherrypy
-        #cherrypy.log.error("%s" % self.cache[uid])
-
       except Exception as e:
         cherrypy.log.error("%s" % e)
 
@@ -67,7 +69,7 @@ class ldap(prototype):
     if uid not in self.uid_cache:
       search_filter = "%s=%s" % (filter_key,uid)
       try:
-        entry = self.ldap_query(search_filter, required=['uid'])
+        entry = self.__ldap_query(search_filter, required=['uid'])
         self.uid_cache[uid] = entry["uid"][0]
       except Exception as e:
         cherrypy.log.error("%s" % e)
@@ -82,7 +84,7 @@ class ldap(prototype):
     if gid not in self.gid_cache:
       search_filter = "%s=%s" % (filter_key,gid)
       try:
-        entry = self.ldap_query(search_filter, required=['uid'])
+        entry = self.__ldap_query(search_filter, required=['uid'])
         self.gid_cache[gid] = entry["uid"][0]
       except Exception as e:
         cherrypy.log.error("%s" % e)
@@ -93,7 +95,7 @@ class ldap(prototype):
 
     return gid
 
-  def ldap_query(self, search_filter, required=[]):
+  def __ldap_query(self, search_filter, required=[]):
     try:
       import ldap
       ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
