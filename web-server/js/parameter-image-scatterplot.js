@@ -193,20 +193,22 @@ $.widget("parameter_image.scatterplot",
       {
         self.selection_layer.selectAll(".rubberband").remove();
 
-        var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
-        var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
-        var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
-        var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
+        if(self.start_drag && self.end_drag) {
+          var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
+          var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
+          var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
+          var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
 
-        for(var i = 0; i != count; ++i)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          for(var i = 0; i != count; ++i)
           {
-            var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
-              self.options.selection.push(self.options.indices[i]);
+            if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+            {
+              var index = self.options.selection.indexOf(self.options.indices[i]);
+              if(index == -1)
+                self.options.selection.push(self.options.indices[i]);
+            }
           }
-        }
+        } 
       }
       else // Pick selection ...
       {
