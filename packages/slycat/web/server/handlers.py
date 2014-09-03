@@ -31,6 +31,7 @@ import slycat.web.server.database.hdf5
 import slycat.web.server.model.cca
 import slycat.web.server.model.generic
 import slycat.web.server.model.parameter_image
+import slycat.web.server.model.tracer_image
 import slycat.web.server.model.timeseries
 import slycat.web.server.ssh
 import slycat.web.server.template
@@ -209,7 +210,7 @@ def post_project_models(pid):
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
   model_type = cherrypy.request.json["model-type"]
-  allowed_model_types = ["generic", "cca", "timeseries", "parameter-image"]
+  allowed_model_types = ["generic", "cca", "timeseries", "parameter-image", "tracer-image"]
   if model_type not in allowed_model_types:
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
@@ -336,6 +337,9 @@ def get_model(mid, **kwargs):
 
     if "model-type" in model and model["model-type"] == "parameter-image":
       return slycat.web.server.template.render("model-parameter-image.html", context)
+    
+    if "model-type" in model and model["model-type"] == "tracer-image":
+      return slycat.web.server.template.render("model-tracer-image.html", context)
 
     return slycat.web.server.template.render("model-generic.html", context)
 
@@ -366,7 +370,7 @@ def post_model_finish(mid):
 
   if model["state"] != "waiting":
     raise cherrypy.HTTPError("400 Only waiting models can be finished.")
-  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries", "parameter-image"]:
+  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
   slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
@@ -378,6 +382,8 @@ def post_model_finish(mid):
     slycat.web.server.model.timeseries.finish(database, model)
   elif model["model-type"] == "parameter-image":
     slycat.web.server.model.parameter_image.finish(database, model)
+  elif model["model-type"] == "tracer-image":
+    slycat.web.server.model.tracer_image.finish(database, model)
   cherrypy.response.status = "202 Finishing model."
 
 def put_model_file(mid, name, input=None, file=None):
