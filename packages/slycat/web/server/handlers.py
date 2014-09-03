@@ -1052,14 +1052,15 @@ def get_remote_file(sid, path):
         raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
       if e.strerror == "No such file":
         # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
-        raise cherrypy.HTTPError("400 File not found: %s" % str(e))
+        raise cherrypy.HTTPError("400 File not found.")
       if e.strerror == "Permission denied":
         # we know the file exists
         # we now know that the file is not available due to access controls
-        (perm, _, uid, gid) = session.sftp.stat(path).__str__().split()[:4]
-        ldq = cherrypy.request.app.config["slycat"]["ldap_query"]
-        file_permissions = "%s %s %s" % (perm, ldq.uid_to_username(uid), ldq.gid_to_username(gid))
-        raise cherrypy.HTTPError("400 %s. Current permissions: %s" % (str(e), file_permissions))
+        remote_file = session.sftp.stat(path)
+        permissions = remote_file.__str__().split()[0]
+        directory = cherrypy.request.app.config["slycat"]["directory"]
+        file_permissions = "%s %s %s" % (permissions, directory.username(remote_file.st_uid), directory.groupname(remote_file.st_gid))
+        raise cherrypy.HTTPError("400 Permission denied. Current permissions: %s" % file_permissions)
       # catch all
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 

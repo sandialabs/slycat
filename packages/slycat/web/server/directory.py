@@ -6,35 +6,44 @@ import cherrypy
 
 class prototype:
   """Prototype for a directory object that returns metadata associated with a user id."""
-  def user(self, uid):
+  def user(self, username):
+    """Return a dictionary containing metadata describing a user, identified by username."""
     raise NotImplementedError()
-  
-  def uid_to_username(self, uid, filter_key="esnAccountUnixUserId"):
+
+  def username(self, uid, filter_key="esnAccountUnixUserId"):
+    """Lookup a username, given an integer user id."""
     raise NotImplementedError()
-  
-  def gid_to_username(self, gid, filter_key="esnUnixGroupId"):
+
+  def groupname(self, gid, filter_key="esnUnixGroupId"):
+    """Lookup a group name, given an integer group id."""
     raise NotImplementedError()
 
 class identity(prototype):
   """Directory implementation that returns a fake record for any user id that
   doesn't appear in a blacklist.  Useful for debugging and testing."""
-  def __init__(self, domain, blacklist=["nobody"]):
-    self.domain = domain
-    self.blacklist = blacklist
+  def __init__(self, domain, uid_map={}, gid_map={}, blacklist=["nobody"]):
+    self._domain = domain
+    self._uid_map = uid_map
+    self._gid_map = gid_map
+    self._blacklist = blacklist
 
-  def user(self, uid):
-    if uid in self.blacklist:
+  def user(self, username):
+    if username in self._blacklist:
       return None
     return {
-      "name" : uid,
-      "email" : "%s@%s" % (uid, self.domain),
+      "name" : username,
+      "email" : "%s@%s" % (username, self._domain),
       "roles" : []
       }
-  
-  def uid_to_username(self, uid, filter_key="esnAccountUnixUserId"):
+
+  def username(self, uid, filter_key="esnAccountUnixUserId"):
+    if uid in self._uid_map:
+      return self._uid_map[uid]
     return uid
-  
-  def gid_to_username(self, gid, filter_key="esnUnixGroupId"):
+
+  def groupname(self, gid, filter_key="esnUnixGroupId"):
+    if gid in self._gid_map:
+      return self._gid_map[gid]
     return gid
 
 class ldap(prototype):
@@ -48,54 +57,54 @@ class ldap(prototype):
     self.uid_cache = {}
     self.gid_cache = {}
 
-  def user(self, uid):
-    if uid not in self.cache:
+  def user(self, username):
+    if username not in self.cache:
       try:
-        entry = self.__ldap_query("uid=%s" % uid)
-        self.cache[uid] = {
+        entry = self._ldap_query("uid=%s" % username)
+        self.cache[username] = {
           "name" : entry["cn"][0],
-          "email" : "%s@%s" % (uid, entry["esnAdministrativeDomainName"][0]),
+          "email" : "%s@%s" % (username, entry["esnAdministrativeDomainName"][0]),
           "roles" : entry["memberOf"]
           }
       except Exception as e:
         cherrypy.log.error("%s" % e)
 
-    if uid in self.cache:
-      return self.cache[uid]
+    if username in self.cache:
+      return self.cache[username]
 
     return None
-  
-  def uid_to_username(self, uid, filter_key="esnAccountUnixUserId"):
+
+  def username(self, uid, filter_key="esnAccountUnixUserId"):
     if uid not in self.uid_cache:
       search_filter = "%s=%s" % (filter_key,uid)
       try:
-        entry = self.__ldap_query(search_filter, required=['uid'])
+        entry = self._ldap_query(search_filter, required=['uid'])
         self.uid_cache[uid] = entry["uid"][0]
       except Exception as e:
         cherrypy.log.error("%s" % e)
-        return uid
-    
+        return id
+
     if uid in self.uid_cache:
       return self.uid_cache[uid]
 
     return uid
-  
-  def gid_to_username(self, gid, filter_key="esnUnixGroupId"):
+
+  def groupname(self, gid, filter_key="esnUnixGroupId"):
     if gid not in self.gid_cache:
       search_filter = "%s=%s" % (filter_key,gid)
       try:
-        entry = self.__ldap_query(search_filter, required=['uid'])
+        entry = self._ldap_query(search_filter, required=['uid'])
         self.gid_cache[gid] = entry["uid"][0]
       except Exception as e:
         cherrypy.log.error("%s" % e)
         return gid
-    
+
     if gid in self.gid_cache:
       return self.gid_cache[gid]
 
     return gid
 
-  def __ldap_query(self, search_filter, required=[]):
+  def _ldap_query(self, search_filter, required=[]):
     try:
       import ldap
       ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
