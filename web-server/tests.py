@@ -76,7 +76,7 @@ def setup():
 
   global server_process
   server_process = subprocess.Popen(["python", "slycat-web-server.py", "--config=test-config.ini"])
-  time.sleep(2.0)
+  time.sleep(9.0)
 
   global connection, server_admin, project_admin, project_writer, project_reader, project_outsider, server_outsider
   connection = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))

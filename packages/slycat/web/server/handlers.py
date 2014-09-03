@@ -38,6 +38,7 @@ import threading
 import time
 import traceback
 import uuid
+import re
 
 def require_parameter(name):
   if name not in cherrypy.request.json:
@@ -1029,6 +1030,17 @@ def get_remote_file(sid, path):
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
       if str(e) == "Garbage packet received":
         raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
+      if e.strerror == "No such file":
+        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
+        raise cherrypy.HTTPError("400 File not found: %s" % str(e))
+      if e.strerror == "Permission denied":
+        # we know the file exists
+        # we now know that the file is not available due to access controls
+        (perm, _, uid, gid) = session.sftp.stat(path).__str__().split()[:4]
+        ldq = cherrypy.request.app.config["slycat"]["ldap_query"]
+        file_permissions = "%s %s %s" % (perm, ldq.uid_to_username(uid), ldq.gid_to_username(gid))
+        raise cherrypy.HTTPError("400 %s. Current permissions: %s" % (str(e), file_permissions))
+      # catch all
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def post_events(event):
