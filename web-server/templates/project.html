@@ -1277,12 +1277,14 @@ rights in this software.
         });
         $("#remote-pi-button").button().click(function()
         {
+          window.remote_pi_model_type = null;
+          $("#remote-pi-form").dialog("option", "title", "Remote File Parameter Image Model");
           $("#remote-pi-form").dialog("open");
         });
         $("#remote-ti-button").button().click(function()
         {
           window.remote_pi_model_type = "tracer-image";
-          $("#remote-pi-form").attr("title","Remote File Tracer Image Model");
+          $("#remote-pi-form").dialog("option", "title", "Remote File Tracer Image Model");
           $("#remote-pi-form").dialog("open");
         });
 
