@@ -34,7 +34,7 @@ specified, all arrays will be returned.
 
 ::
 
-    GET /models/(mid)/array-sets/(aid)?byteorder=...&arrays=...
+    GET /models/(mid)/arraysets/(aid)?byteorder=...&arrays=...
 
 Accepts
 ^^^^^^^
@@ -57,7 +57,7 @@ Sample Request
 
 ::
 
-    GET /models/6706e78890884845b6c709572a140681/array-sets/test-array-set?byteorder=little HTTP/1.1
+    GET /models/6706e78890884845b6c709572a140681/arraysets/test-array-set?byteorder=little HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress

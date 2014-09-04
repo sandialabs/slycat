@@ -7,6 +7,7 @@ Reference Documentation
    slycat.cca.rst
    slycat.darray.rst
    slycat.hdf5.rst
+   slycat.hyperslice.rst
    slycat.table.rst
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst

@@ -76,7 +76,7 @@ def setup():
 
   global server_process
   server_process = subprocess.Popen(["python", "slycat-web-server.py", "--config=test-config.ini"])
-  time.sleep(2.0)
+  time.sleep(9.0)
 
   global connection, server_admin, project_admin, project_writer, project_reader, project_outsider, server_outsider
   connection = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
@@ -96,8 +96,8 @@ def test_projects():
   projects = connection.get_projects()
   nose.tools.assert_equal(projects, [])
 
-  pid1 = connection.create_project("foo")
-  pid2 = connection.create_project("bar")
+  pid1 = connection.post_projects("foo")
+  pid2 = connection.post_projects("bar")
   projects = connection.get_projects()
   nose.tools.assert_is_instance(projects, list)
   nose.tools.assert_equal(len(projects), 2)
@@ -110,7 +110,7 @@ def test_projects():
   nose.tools.assert_equal(projects, [])
 
 def test_project():
-  pid = connection.create_project("project", "My test project.")
+  pid = connection.post_projects("project", "My test project.")
 
   project = require_valid_project(connection.get_project(pid))
   nose.tools.assert_equal(project["name"], "project")
@@ -129,26 +129,26 @@ def test_project():
     project = connection.get_project(pid)
 
 def test_bookmarks():
-  pid = connection.create_project("bookmark-project")
+  pid = connection.post_projects("bookmark-project")
 
   bookmark = {"foo":"bar", "baz":[1, 2, 3]}
-  bid = connection.store_bookmark(pid, bookmark)
+  bid = connection.post_project_bookmarks(pid, bookmark)
   nose.tools.assert_equal(connection.get_bookmark(bid), bookmark)
 
-  bid2 = connection.store_bookmark(pid, bookmark)
+  bid2 = connection.post_project_bookmarks(pid, bookmark)
   nose.tools.assert_equal(bid, bid2)
 
   connection.delete_project(pid)
 
 def test_models():
-  pid = connection.create_project("models-project")
+  pid = connection.post_projects("models-project")
 
-  mid1 = connection.create_model(pid, "generic", "model")
-  connection.finish_model(mid1)
+  mid1 = connection.post_project_models(pid, "generic", "model")
+  connection.post_model_finish(mid1)
   connection.join_model(mid1)
 
-  mid2 = connection.create_model(pid, "generic", "model2")
-  connection.finish_model(mid2)
+  mid2 = connection.post_project_models(pid, "generic", "model2")
+  connection.post_model_finish(mid2)
   connection.join_model(mid2)
 
   models = connection.get_project_models(pid)
@@ -165,8 +165,8 @@ def test_models():
   connection.delete_project(pid)
 
 def test_model_state():
-  pid = connection.create_project("model-state-project")
-  mid = connection.create_model(pid, "generic", "model-state-model")
+  pid = connection.post_projects("model-state-project")
+  mid = connection.post_project_models(pid, "generic", "model-state-model")
 
   model = connection.get_model(mid)
   nose.tools.assert_equal(model["state"], "waiting")
@@ -190,8 +190,8 @@ def test_model_state():
   connection.delete_project(pid)
 
 def test_model_result():
-  pid = connection.create_project("model-result-project")
-  mid = connection.create_model(pid, "generic", "model-result-model")
+  pid = connection.post_projects("model-result-project")
+  mid = connection.post_project_models(pid, "generic", "model-result-model")
 
   model = connection.get_model(mid)
   nose.tools.assert_equal(model.get("result"), None)
@@ -211,8 +211,8 @@ def test_model_result():
   connection.delete_project(pid)
 
 def test_model_progress():
-  pid = connection.create_project("model-progress-project")
-  mid = connection.create_model(pid, "generic", "model-progress-model")
+  pid = connection.post_projects("model-progress-project")
+  mid = connection.post_project_models(pid, "generic", "model-progress-model")
 
   model = connection.get_model(mid)
   nose.tools.assert_equal(model.get("progress", None), None)
@@ -229,8 +229,8 @@ def test_model_progress():
   connection.delete_project(pid)
 
 def test_model_message():
-  pid = connection.create_project("model-message-project")
-  mid = connection.create_model(pid, "generic", "model-message-model")
+  pid = connection.post_projects("model-message-project")
+  mid = connection.post_project_models(pid, "generic", "model-message-model")
 
   model = connection.get_model(mid)
   nose.tools.assert_equal(model.get("message", None), None)
@@ -247,13 +247,13 @@ def test_model_message():
   connection.delete_project(pid)
 
 def test_model_parameters():
-  pid = connection.create_project("model-parameters-project")
-  mid = connection.create_model(pid, "generic", "parameters-model")
-  connection.store_parameter(mid, "foo", "bar")
-  connection.store_parameter(mid, "baz", [1, 2, 3])
-  connection.store_parameter(mid, "blah", {"cat":"dog"})
-  connection.store_parameter(mid, "output", True, input=False)
-  connection.finish_model(mid)
+  pid = connection.post_projects("model-parameters-project")
+  mid = connection.post_project_models(pid, "generic", "parameters-model")
+  connection.put_model_parameter(mid, "foo", "bar")
+  connection.put_model_parameter(mid, "baz", [1, 2, 3])
+  connection.put_model_parameter(mid, "blah", {"cat":"dog"})
+  connection.put_model_parameter(mid, "output", True, input=False)
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
   model = connection.get_model(mid)
@@ -273,10 +273,10 @@ def test_model_parameters():
   connection.delete_project(pid)
 
 def test_model_file():
-  pid = connection.create_project("model-file-project")
-  mid = connection.create_model(pid, "generic", "model-file-model")
+  pid = connection.post_projects("model-file-project")
+  mid = connection.post_project_models(pid, "generic", "model-file-model")
 
-  connection.store_file(mid, "foo", "Howdy, World!", "text/plain")
+  connection.put_model_file(mid, "foo", "Howdy, World!", "text/plain")
   nose.tools.assert_equal(connection.get_model_file(mid, "foo"), "Howdy, World!")
 
   connection.delete_model(mid)
@@ -285,13 +285,13 @@ def test_model_file():
 def test_empty_model_arrays():
   size = 10
 
-  pid = connection.create_project("empty-arrays-project")
-  mid = connection.create_model(pid, "generic", "empty-arrays-model")
+  pid = connection.post_projects("empty-arrays-project")
+  mid = connection.post_project_models(pid, "generic", "empty-arrays-model")
 
-  connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, [dict(name="integer", type="int64"), dict(name="float", type="float64"), dict(name="string", type="string")], [dict(name="row", end=size)])
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, [dict(name="row", end=size)], [dict(name="integer", type="int64"), dict(name="float", type="float64"), dict(name="string", type="string")])
 
-  connection.finish_model(mid)
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
   nose.tools.assert_equal(connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0), {"min":0, "max":0})
@@ -308,18 +308,19 @@ def test_empty_model_arrays():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
-def test_model_array_ranges():
-  pid = connection.create_project("array-ranges-project")
-  mid = connection.create_model(pid, "generic", "array-ranges-model")
+def test_model_array_slicing():
+  pid = connection.post_projects("array-ranges-project")
+  mid = connection.post_project_models(pid, "generic", "array-ranges-model")
 
-  connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, [dict(name="value", type="int64")], [dict(name="row", end=10)])
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10))
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5), hyperslice=(0, 5))
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(5, 8), hyperslice=(5, 8))
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(8, 10), hyperslice=[(8, 10)])
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, [dict(name="row", end=10)], [dict(name="value", type="int64")])
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[5], numpy.array([5])))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[:5], numpy.arange(5)))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[5:8], numpy.arange(5, 8)))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[8:], numpy.arange(8, 10)))
 
-  connection.finish_model(mid)
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
   numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, 10), numpy.arange(10))
@@ -334,15 +335,15 @@ def test_model_array_ranges():
   connection.delete_project(pid)
 
 def test_model_array_string_attributes():
-  pid = connection.create_project("array-strings-project")
-  mid = connection.create_model(pid, "generic", "array-strings-model")
+  pid = connection.post_projects("array-strings-project")
+  mid = connection.post_project_models(pid, "generic", "array-strings-model")
 
   size = 10
-  connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, [dict(name="v1", type="string"), dict(name="v2", type="string")], [dict(name="row", end=size)])
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(size).astype("string"))
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, [dict(name="row", end=size)], [dict(name="v1", type="string"), dict(name="v2", type="string")])
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(size).astype("string")))
 
-  connection.finish_model(mid)
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
   numpy.testing.assert_array_equal(connection.get_model_array_attribute_chunk(mid, "test-array-set", 0, 0, size), numpy.arange(size).astype("string"))
@@ -362,13 +363,13 @@ def test_model_array_1d():
   attributes = [dict(name=name, type=type) for name, type in zip(attribute_names, attribute_types)]
   dimensions = [dict(name="row", end=size)]
 
-  pid = connection.create_project("1d-array-project")
-  mid = connection.create_model(pid, "generic", "1d-array-model")
-  connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
+  pid = connection.post_projects("1d-array-project")
+  mid = connection.post_project_models(pid, "generic", "1d-array-model")
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, dimensions, attributes)
   for attribute, data in enumerate(attribute_data):
-    connection.store_array_set_data(mid, "test-array-set", 0, attribute, data=data)
-  connection.finish_model(mid)
+    connection.put_model_arrayset_data(mid, "test-array-set", (0, attribute, numpy.index_exp[...], data))
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
   # Test the generic array API ...
@@ -410,14 +411,14 @@ def test_model_array_1d():
   connection.delete_project(pid)
 
 def test_copy_model_inputs():
-  pid = connection.create_project("copy-model-inputs-project")
-  source = connection.create_model(pid, "generic", "source-model")
-  target = connection.create_model(pid, "generic", "target-model")
+  pid = connection.post_projects("copy-model-inputs-project")
+  source = connection.post_project_models(pid, "generic", "source-model")
+  target = connection.post_project_models(pid, "generic", "target-model")
 
-  connection.store_parameter(source, "name", "Tim")
-  connection.store_parameter(source, "pi", 3.1415)
+  connection.put_model_parameter(source, "name", "Tim")
+  connection.put_model_parameter(source, "pi", 3.1415)
 
-  connection.copy_inputs(source, target)
+  connection.put_model_inputs(source, target)
 
   model = connection.get_model(target)
   nose.tools.assert_equal(model.get("artifact:name"), "Tim")
@@ -480,15 +481,15 @@ def test_api():
 
   # Any logged-in user can create a project.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.create_project("test")
-  project_outsider.create_project("test")
-  project_reader.create_project("test")
-  project_writer.create_project("test")
-  project_admin.create_project("test")
-  server_admin.create_project("test")
+    server_outsider.post_projects("test")
+  project_outsider.post_projects("test")
+  project_reader.post_projects("test")
+  project_writer.post_projects("test")
+  project_admin.post_projects("test")
+  server_admin.post_projects("test")
 
   # Create a project to use for the remaining tests.
-  pid = project_admin.create_project("security-test")
+  pid = project_admin.post_projects("security-test")
   project_admin.put_project(pid, {"acl":sample_acl})
 
   # Any logged-in user can request the list of projects.
@@ -536,13 +537,13 @@ def test_api():
   # Any project member (not just writers) can save a bookmark.
   bookmarks = []
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    bid = server_outsider.store_bookmark(pid, sample_bookmark)
+    bid = server_outsider.post_project_bookmarks(pid, sample_bookmark)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    bid = project_outsider.store_bookmark(pid, sample_bookmark)
-  bid = project_reader.store_bookmark(pid, sample_bookmark)
-  bid = project_writer.store_bookmark(pid, sample_bookmark)
-  bid = project_admin.store_bookmark(pid, sample_bookmark)
-  bid = server_admin.store_bookmark(pid, sample_bookmark)
+    bid = project_outsider.post_project_bookmarks(pid, sample_bookmark)
+  bid = project_reader.post_project_bookmarks(pid, sample_bookmark)
+  bid = project_writer.post_project_bookmarks(pid, sample_bookmark)
+  bid = project_admin.post_project_bookmarks(pid, sample_bookmark)
+  bid = server_admin.post_project_bookmarks(pid, sample_bookmark)
 
   # Any project member can get a bookmark.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -557,69 +558,69 @@ def test_api():
   # Any project writer can create a model.
   models = []
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    models.append(server_outsider.create_model(pid, "generic", "test-model"))
+    models.append(server_outsider.post_project_models(pid, "generic", "test-model"))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    models.append(project_outsider.create_model(pid, "generic", "test-model"))
+    models.append(project_outsider.post_project_models(pid, "generic", "test-model"))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    models.append(project_reader.create_model(pid, "generic", "test-model"))
-  models.append(project_writer.create_model(pid, "generic", "test-model"))
-  models.append(project_admin.create_model(pid, "generic", "test-model"))
-  models.append(server_admin.create_model(pid, "generic", "test-model"))
+    models.append(project_reader.post_project_models(pid, "generic", "test-model"))
+  models.append(project_writer.post_project_models(pid, "generic", "test-model"))
+  models.append(project_admin.post_project_models(pid, "generic", "test-model"))
+  models.append(server_admin.post_project_models(pid, "generic", "test-model"))
 
   # Any project writer can store a model parameter.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.store_parameter(models[0], "pi", 3.1415)
+    server_outsider.put_model_parameter(models[0], "pi", 3.1415)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.store_parameter(models[0], "pi", 3.1415)
+    project_outsider.put_model_parameter(models[0], "pi", 3.1415)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.store_parameter(models[0], "pi", 3.1415)
-  project_writer.store_parameter(models[0], "pi", 3.1415)
-  project_admin.store_parameter(models[0], "pi", 3.1415)
-  server_admin.store_parameter(models[0], "pi", 3.1415)
+    project_reader.put_model_parameter(models[0], "pi", 3.1415)
+  project_writer.put_model_parameter(models[0], "pi", 3.1415)
+  project_admin.put_model_parameter(models[0], "pi", 3.1415)
+  server_admin.put_model_parameter(models[0], "pi", 3.1415)
 
   # Any project writer can store a model file.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+    server_outsider.put_model_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+    project_outsider.put_model_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
-  project_writer.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
-  project_admin.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
-  server_admin.store_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+    project_reader.put_model_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  project_writer.put_model_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  project_admin.put_model_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
+  server_admin.put_model_file(models[0], "foo", "Supercalifragilisticexpialidocious", "text/plain", input=False)
 
   # Any project writer can start an arrayset artifact.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.start_array_set(models[0], "data")
+    server_outsider.put_model_arrayset(models[0], "data")
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.start_array_set(models[0], "data")
+    project_outsider.put_model_arrayset(models[0], "data")
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.start_array_set(models[0], "data")
-  project_writer.start_array_set(models[0], "data")
-  project_admin.start_array_set(models[0], "data")
-  server_admin.start_array_set(models[0], "data")
+    project_reader.put_model_arrayset(models[0], "data")
+  project_writer.put_model_arrayset(models[0], "data")
+  project_admin.put_model_arrayset(models[0], "data")
+  server_admin.put_model_arrayset(models[0], "data")
 
   # Any project writer can start an array.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
+    server_outsider.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
+    project_outsider.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.start_array(models[0], "data", 0, [dict(name="value", type="int64")],[dict(name="i", end=10)])
-  project_writer.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
-  project_admin.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
-  server_admin.start_array(models[0], "data", 0, [dict(name="value", type="int64")], [dict(name="i", end=10)])
+    project_reader.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+  project_writer.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+  project_admin.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
+  server_admin.put_model_arrayset_array(models[0], "data", 0, [dict(name="i", end=10)], [dict(name="value", type="int64")])
 
   # Any project writer can store an array attribute.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+    server_outsider.put_model_arrayset_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+    project_outsider.put_model_arrayset_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
-  project_writer.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
-  project_admin.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
-  server_admin.store_array_set_data(models[0], "data", 0, 0, data=numpy.arange(10))
+    project_reader.put_model_arrayset_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  project_writer.put_model_arrayset_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  project_admin.put_model_arrayset_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
+  server_admin.put_model_arrayset_data(models[0], "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
 
   # Any project writer can upload a table.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -634,14 +635,14 @@ def test_api():
 
   # Any project writer can copy inputs from one model to another.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.copy_inputs(models[0], models[1])
+    server_outsider.put_model_inputs(models[0], models[1])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.copy_inputs(models[0], models[1])
+    project_outsider.put_model_inputs(models[0], models[1])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.copy_inputs(models[0], models[1])
-  project_writer.copy_inputs(models[0], models[1])
-  project_admin.copy_inputs(models[0], models[1])
-  server_admin.copy_inputs(models[0], models[1])
+    project_reader.put_model_inputs(models[0], models[1])
+  project_writer.put_model_inputs(models[0], models[1])
+  project_admin.put_model_inputs(models[0], models[1])
+  server_admin.put_model_inputs(models[0], models[1])
 
   # Any logged-in user can request the list of open models, but will only see models from their projects.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -654,14 +655,14 @@ def test_api():
 
   # Any project writer can finish a model.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.finish_model(models[0])
+    server_outsider.post_model_finish(models[0])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_outsider.finish_model(models[0])
+    project_outsider.post_model_finish(models[0])
   with nose.tools.assert_raises_regexp(Exception, "^403"):
-    project_reader.finish_model(models[0])
-  project_writer.finish_model(models[0])
-  project_admin.finish_model(models[1])
-  server_admin.finish_model(models[2])
+    project_reader.post_model_finish(models[0])
+  project_writer.post_model_finish(models[0])
+  project_admin.post_model_finish(models[1])
+  server_admin.post_model_finish(models[2])
 
   # Any project member can request the list of project models.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -797,7 +798,7 @@ def test_api():
   project_admin.delete_project(pid)
 
 def test_server_administrator():
-  pid = project_admin.create_project("security-test")
+  pid = project_admin.post_projects("security-test")
   project_admin.put_project(pid, {"acl":sample_acl})
 
   # Server admins can delete any project.
@@ -807,12 +808,12 @@ def test_array_modifications():
   attributes = [dict(name="a", type="float64")]
   dimensions = [dict(name="row", end=10)]
 
-  pid = connection.create_project("array-modifications-project")
-  mid = connection.create_model(pid, "generic", "array-modifications-model")
-  connection.start_array_set(mid, "test-array-set")
-  connection.start_array(mid, "test-array-set", 0, attributes, dimensions)
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, data=numpy.arange(10).astype("float64"))
-  connection.finish_model(mid)
+  pid = connection.post_projects("array-modifications-project")
+  mid = connection.post_project_models(pid, "generic", "array-modifications-model")
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, dimensions, attributes)
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.arange(10).astype("float64")))
+  connection.post_model_finish(mid)
   connection.join_model(mid)
 
   statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0)
@@ -821,7 +822,7 @@ def test_array_modifications():
   numpy.testing.assert_array_equal(connection.get_model_table_chunk(mid, "test-array-set", 0, rows=numpy.arange(10), columns=[0])["data"][0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
   numpy.testing.assert_array_equal(connection.get_model_table_sorted_indices(mid, "test-array-set", 0, numpy.arange(10), sort=[(0, "ascending")]), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-  connection.store_array_set_data(mid, "test-array-set", 0, 0, hyperslice=(3, 5), data=numpy.array([15, 12], dtype="float64"))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[3:5], numpy.array([15, 12], dtype="float64")))
 
   statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 0)
   nose.tools.assert_equal(statistics["min"], 0)
