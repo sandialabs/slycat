@@ -8,7 +8,7 @@ rights in this software.
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 
-$.widget("parameter_image.scatterplot",
+$.widget("tracer-image.plot",
 {
   options:
   {
@@ -64,7 +64,7 @@ $.widget("parameter_image.scatterplot",
     });
 
     // Setup the scatterplot ...
-    self.svg = d3.select(self.element.get(0)).append("svg");
+    self.svg = d3.select(self.element.get(0));
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
