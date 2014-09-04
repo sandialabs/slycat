@@ -49,15 +49,20 @@
 
         $('#slycat-info').click(function()
         {
-          console.log("++ about clicked");
           aboutSlycatDialogOpen();
         });
 
         $("<p><h3>Slycat</h3></p>").appendTo("#about-slycat-dialog");
         $("<p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>").appendTo("#about-slycat-dialog");
-        $("<p>Our documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#about-slycat-dialog");
-        $("<p>Request help at <a href='mailto:slycat-help@sandia.gov'>slycat-help@sandia.gov.</a></p>").appendTo("#about-slycat-dialog");
-        $("<p>Version: 9f31f0668a0677b0c0428f338c85d91f0fba7905</p>").appendTo("#about-slycat-dialog");
+        $("<p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#about-slycat-dialog");
+        if( "{{help-email}}" !== "None")
+        {
+          $("<p>Request help at <a href=\"mailto:" + "{{help-email}}" + "\">" + "{{help-email}}"  + " </a></p>").appendTo("#about-slycat-dialog");
+        }
+        if( "{{version}}" !== "None")
+        {
+          $("<p>Version: " + "{{version}}" + "</p>").appendTo("#about-slycat-dialog");
+        }
 
         $('#about-slycat-dialog').dialog({
           modal: true,
