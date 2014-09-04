@@ -17,6 +17,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/chunker.js"></script>
     <script type="text/javascript" src="{{server-root}}js/color-switcher.js"></script>
     <script type="text/javascript" src="{{server-root}}js/parameter-controls.js"></script>v
+    <script type="text/javascript" src="{{server-root}}js/tracer-image-grid.js"></script>
     <script type="text/javascript" src="{{server-root}}js/tracer-image-plots.js"></script>
     <script type="text/javascript" src="{{server-root}}js/parameter-image-table.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.mousewheel.js"></script>
@@ -96,9 +97,9 @@ rights in this software.
     </div>
 
     <div id="model-pane" class="ui-layout-center">
-      <div id="scatterplot-pane" class="ui-layout-center">
+      <div id="grid-pane" class="ui-layout-center">
         <div class="load-status"></div>
-        <div id="scatterplot"></div>
+        <div id="grid"></div>
       </div>
     </div>
 
@@ -140,7 +141,7 @@ rights in this software.
         var hidden_simulations = null;
 
         var table_ready = false;
-        var scatterplot_ready = false;
+        var grid_ready = false;
         var controls_ready = false;
 
         var session_cache = {};
@@ -373,9 +374,9 @@ rights in this software.
           {
             resizeWhileDragging: false,
             onresize: function() { 
-              $("#scatterplot").scatterplot("option", {
-                width: $("#scatterplot-pane").width(), 
-                height: $("#scatterplot-pane").height()
+              $("#grid").grid("option", {
+                width: $("#grid-pane").width(), 
+                height: $("#grid-pane").height()
               }); 
             },
           }
@@ -443,7 +444,7 @@ rights in this software.
               success : function(result)
               {
                 x = result;
-                setup_scatterplot();
+                setup_grid();
                 setup_table();
               },
               error : artifact_missing
@@ -458,7 +459,7 @@ rights in this software.
               success : function(result)
               {
                 y = result;
-                setup_scatterplot();
+                setup_grid();
                 setup_table();
               },
               error : artifact_missing
@@ -474,7 +475,7 @@ rights in this software.
               v = new Float64Array(count);
               for(var i = 0; i != count; ++i)
                 v[i] = i;
-              setup_scatterplot();
+              setup_grid();
             }
             else
             {
@@ -487,7 +488,7 @@ rights in this software.
                 success : function(result)
                 {
                   v = result;
-                  setup_scatterplot();
+                  setup_grid();
                 },
                 error : artifact_missing
               });
@@ -504,7 +505,7 @@ rights in this software.
               success : function(result)
               {
                 images = result;
-                setup_scatterplot();
+                setup_grid();
                 setup_table();
               },
               error: artifact_missing
@@ -625,7 +626,7 @@ rights in this software.
             });
 
             // Changing the scatterplot selection updates the table row selection and controls ..
-            $("#scatterplot").bind("selection-changed", function(event, selection)
+            $("#grid").bind("selection-changed", function(event, selection)
             {
               $("#table").table("option", "row-selection", selection);
               $("#controls").controls("option", "selection", selection);
@@ -639,7 +640,7 @@ rights in this software.
               for(var i = 0; i != selection.length; ++i)
                 temp.push(selection[i]);
 
-              $("#scatterplot").scatterplot("option", "selection",  temp);
+              $("#grid").grid("option", "selection",  temp);
               $("#controls").controls("option", "selection",  temp);
             });
 
@@ -665,6 +666,17 @@ rights in this software.
             $("#controls").bind("color-selection-changed", function(event, variable)
             {
               $("#table").table("option", "variable-selection", [Number(variable)]);
+            });
+          }
+        }
+
+        function setup_grid() {
+          if(!grid_ready) {
+            grid_ready = true;
+            $("#grid").grid({
+              width: $("#grid-pane").width(),
+              height: $("#grid-pane").height(),
+              size: [2,2]
             });
           }
         }
