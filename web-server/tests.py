@@ -833,3 +833,51 @@ def test_array_modifications():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
+def test_binary_hyperchunks():
+  attributes = [dict(name="a", type="float64"), dict(name="b", type="float64"), dict(name="c", type="float64")]
+  dimensions = [dict(name="row", end=10)]
+
+  pid = connection.post_projects("array-modifications-project")
+  mid = connection.post_project_models(pid, "generic", "array-modifications-model")
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, dimensions, attributes)
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.zeros(10).astype("float64")))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 1, numpy.index_exp[...], numpy.zeros(10).astype("float64")))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 2, numpy.index_exp[...], numpy.zeros(10).astype("float64")))
+  connection.post_model_finish(mid)
+  connection.join_model(mid)
+
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 2, [numpy.index_exp[8], numpy.index_exp[9], numpy.index_exp[7]], [numpy.array([111], dtype="float64"), numpy.array([112], dtype="float64"), numpy.array([113], dtype="float64")]))
+
+  statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 2)
+  nose.tools.assert_equal(statistics["min"], 0)
+  nose.tools.assert_equal(statistics["max"], 113)
+  numpy.testing.assert_array_equal(connection.get_model_table_chunk(mid, "test-array-set", 0, rows=numpy.arange(10), columns=[2])["data"][0], [0, 0, 0, 0, 0, 0, 0, 113, 111, 112])
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
+def test_json_hyperchunks():
+  attributes = [dict(name="a", type="float64"), dict(name="b", type="float64"), dict(name="c", type="float64")]
+  dimensions = [dict(name="row", end=10)]
+
+  pid = connection.post_projects("array-modifications-project")
+  mid = connection.post_project_models(pid, "generic", "array-modifications-model")
+  connection.put_model_arrayset(mid, "test-array-set")
+  connection.put_model_arrayset_array(mid, "test-array-set", 0, dimensions, attributes)
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 0, numpy.index_exp[...], numpy.zeros(10).astype("float64")))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 1, numpy.index_exp[...], numpy.zeros(10).astype("float64")))
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 2, numpy.index_exp[...], numpy.zeros(10).astype("float64")))
+  connection.post_model_finish(mid)
+  connection.join_model(mid)
+
+  connection.put_model_arrayset_data(mid, "test-array-set", (0, 2, [numpy.index_exp[8], numpy.index_exp[9], numpy.index_exp[7]], [numpy.array([111], dtype="float64"), numpy.array([112], dtype="float64"), numpy.array([113], dtype="float64")]), force_json=True)
+
+  statistics = connection.get_model_array_attribute_statistics(mid, "test-array-set", 0, 2)
+  nose.tools.assert_equal(statistics["min"], 0)
+  nose.tools.assert_equal(statistics["max"], 113)
+  numpy.testing.assert_array_equal(connection.get_model_table_chunk(mid, "test-array-set", 0, rows=numpy.arange(10), columns=[2])["data"][0], [0, 0, 0, 0, 0, 0, 0, 113, 111, 112])
+
+  connection.delete_model(mid)
+  connection.delete_project(pid)
+
