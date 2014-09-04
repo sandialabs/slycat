@@ -59,6 +59,8 @@ def get_context():
 
   marking = cherrypy.request.app.config["slycat"]["marking"]
   context["marking-types"] = [{"type" : type, "label" : marking.label(type)} for type in marking.types()]
+  context["help-email"] = cherrypy.request.app.config["site"]["help-email"]
+  context["version"] = cherrypy.request.app.config["site"]["version"]
   return context
 
 def get_home():
