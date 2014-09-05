@@ -203,7 +203,7 @@ class connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_arrayset_data(self, mid, name, hyperchunks):
+  def put_model_arrayset_data(self, mid, name, hyperchunks, force_json=False):
     """Sends array data to the server."""
     # Sanity check arguments
     if isinstance(hyperchunks, tuple):
@@ -224,17 +224,17 @@ class connection(object):
         raise ValueError("Hyperslice and data counts must match.")
 
     # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
-    all_numeric = numpy.all([chunk.dtype.char != "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks])
+    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks]) and not force_json
 
     # Build-up the request
     request_data = {}
     request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks])
-    if all_numeric:
+    if use_binary:
       request_data["byteorder"] = sys.byteorder
 
     request_buffer = StringIO.StringIO()
     for array, attribute, hyperslices, data in hyperchunks:
-      if all_numeric:
+      if use_binary:
         for chunk in data:
           request_buffer.write(chunk.tostring(order="C"))
       else:

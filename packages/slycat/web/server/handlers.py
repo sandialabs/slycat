@@ -473,7 +473,7 @@ def put_model_arrayset_array(mid, name, array):
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
 def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
-  cherrypy.log.error("put data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
+  cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
   parsed_hyperchunks = []

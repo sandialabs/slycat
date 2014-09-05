@@ -189,13 +189,14 @@ def store_arrayset_data(database, model, name, hyperchunks, data, byteorder):
 
   if byteorder is None:
     data = json.load(data.file)
+    #cherrypy.log.error("Data: %s" % data)
     data_iterator = iter(data)
 
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
     for array, attribute, hyperslices in hyperchunks:
       hdf5_array = slycat.hdf5.ArraySet(file)[array]
       for hyperslice in hyperslices:
-        cherrypy.log.error("Writing to array %s attribute %s hyperslice %s" % (array, attribute, hyperslice))
+        cherrypy.log.error("Writing to arrayset %s array %s attribute %s hyperslice %s" % (name, array, attribute, hyperslice))
 
         if hyperslice == Ellipsis or hyperslice == (Ellipsis,):
           data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
