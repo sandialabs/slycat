@@ -1,0 +1,159 @@
+$(document).ready(function() {
+  // Event handlers.
+
+  function selected_colormap_changed(colormap)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
+    });
+    bookmarker.updateState({"colormap" : colormap});
+  }
+
+  function selected_variable_changed(variable)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+    });
+    bookmarker.updateState({"variable-selection" : variable});
+    v_index = Number(variable);
+  }
+
+  function variable_sort_changed(variable, order)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
+    });
+    bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
+  }
+
+  function selected_simulations_changed(selection)
+  {
+    // Logging every selected item is too slow, so just log the count instead.
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+    });
+    bookmarker.updateState( {"simulation-selection" : selection} );
+    selected_simulations = selection;
+  }
+
+  function x_selection_changed(variable)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
+    });
+    bookmarker.updateState( {"x-selection" : variable} );
+    x_index = Number(variable);
+  }
+
+  function y_selection_changed(variable)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/y/" + variable
+    });
+    bookmarker.updateState( {"y-selection" : variable} );
+  }
+
+  function images_selection_changed(variable)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/images/" + variable
+    });
+    bookmarker.updateState( {"images-selection" : variable} );
+    y_index = Number(variable);
+  }
+
+  function open_images_changed(selection)
+  {
+    // Logging every open image is too slow, so just log the count instead.
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/openimages/count/" + selection.length
+    });
+    bookmarker.updateState( {"open-images-selection" : selection} );
+  }
+
+  function hidden_simulations_changed()
+  {
+    // Logging every hidden simulation is too slow, so just log the count instead.
+    $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/hidden/count/" + hidden_simulations.length
+    });
+    bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
+  }
+
+  function update_scatterplot_value(attribute)
+  {
+    if(attribute == table_metadata["column-count"] - 1)
+    {
+      var count = v.length;
+      for(var i = 0; i != count; ++i)
+        v[i] = i;
+      $("#scatterplot").scatterplot("option", {v : v});
+    }
+    else
+    {
+      get_model_array_attribute({
+        server_root : "{{server-root}}",
+        mid : "{{_id}}",
+        aid : "data-table",
+        array : 0,
+        attribute : attribute,
+        success : function(result)
+        {
+          v = result;
+          $("#scatterplot").scatterplot("option", {v : v});
+        },
+        error : artifact_missing
+      });
+    }
+  }
+
+  function update_scatterplot_x(variable)
+  {
+    get_model_array_attribute({
+      server_root : "{{server-root}}",
+      mid : "{{_id}}",
+      aid : "data-table",
+      array : 0,
+      attribute : variable,
+      success : function(result)
+      {
+        $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+      },
+      error : artifact_missing
+    });
+  }
+
+  function update_scatterplot_y(variable)
+  {
+    get_model_array_attribute({
+      server_root : "{{server-root}}",
+      mid : "{{_id}}",
+      aid : "data-table",
+      array : 0,
+      attribute : variable,
+      success : function(result)
+      {
+        $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+      },
+      error : artifact_missing
+    });
+  }
+});

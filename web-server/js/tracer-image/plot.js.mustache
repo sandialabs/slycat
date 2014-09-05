@@ -1,0 +1,111 @@
+$(document).ready(function() {
+  function setup_scatterplot()
+  {
+    // Setup the scatterplot ...
+    if(!scatterplot_ready && bookmark && indices && x && y && v && images 
+      && (selected_simulations != null) && (hidden_simulations != null))
+    {
+      scatterplot_ready = true;
+
+      $("#scatterplot-pane .load-status").css("display", "none");
+
+      var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+      $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+
+      var open_images = [];
+      if("open-images-selection" in bookmark)
+        open_images = bookmark["open-images-selection"];
+
+      $("#scatterplot").scatterplot({
+        indices: indices,
+        x_label: table_metadata["column-names"][x_index],
+        y_label: table_metadata["column-names"][y_index],
+        v_label: table_metadata["column-names"][v_index],
+        x: x,
+        y: y,
+        v: v,
+        images: images,
+        width: $("#scatterplot-pane").width(),
+        height: $("#scatterplot-pane").height(),
+        color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+        selection: selected_simulations,
+        server_root: "{{server-root}}",
+        open_images: open_images,
+        gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+        hidden_simulations: hidden_simulations,
+        });
+
+      $("#scatterplot").bind("selection-changed", function(event, selection)
+      {
+        selected_simulations_changed(selection);
+      });
+
+      // Changing the color map updates the scatterplot ...
+      $("#color-switcher").bind("colormap-changed", function(event, colormap)
+      {
+        $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+        $("#scatterplot").scatterplot("option", {
+          color:    $("#color-switcher").colorswitcher("get_color_map", colormap),
+          gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+        });
+      });
+
+      // Changing the x variable updates the scatterplot ...
+      $("#table").bind("x-selection-changed", function(event, variable)
+      {
+        update_scatterplot_x(variable);
+      });
+      $("#controls").bind("x-selection-changed", function(event, variable)
+      {
+        update_scatterplot_x(variable);
+      });
+
+      // Changing the y variable updates the scatterplot ...
+      $("#table").bind("y-selection-changed", function(event, variable)
+      {
+        update_scatterplot_y(variable);
+      });
+      $("#controls").bind("y-selection-changed", function(event, variable)
+      {
+        update_scatterplot_y(variable);
+      });
+
+      // Changing the images variable updates the scatterplot ...
+      $("#table").bind("images-selection-changed", function(event, variable)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
+            variable + "/chunk?ranges=0," + table_metadata["row-count"],
+          success : function(result)
+          {
+            $("#scatterplot").scatterplot("option", "images", result);
+          },
+          error: artifact_missing
+        });
+      });
+      $("#controls").bind("images-selection-changed", function(event, variable)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
+            variable + "/chunk?ranges=0," + table_metadata["row-count"],
+          success : function(result)
+          {
+            $("#scatterplot").scatterplot("option", "images", result);
+          },
+          error: artifact_missing
+        });
+      });
+
+      // Log changes to open images ...
+      $("#scatterplot").bind("open-images-changed", function(event, selection)
+      {
+        open_images_changed(selection);
+      });
+    }
+  }
+});

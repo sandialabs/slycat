@@ -1,0 +1,206 @@
+$(document).ready(function() {
+});
+function setup_controls()
+{
+  if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
+    && (category_columns != null) && (x_index != null) && (y_index != null) 
+    && (images_index != null) && (selected_simulations != null) )
+  {
+    controls_ready = true;
+    var numeric_variables = [];
+
+    for(var i = 0; i < table_metadata["column-count"]; i++)
+    {
+      if(table_metadata["column-types"][i] != 'string')
+        numeric_variables.push(i);
+    }
+
+    var color_variable = table_metadata["column-count"] - 1;
+    if("variable-selection" in bookmark)
+    {
+      color_variable = [bookmark["variable-selection"]];
+    }
+
+    $("#controls").controls({
+      "server-root" : "{{server-root}}",
+      mid : "{{_id}}",
+      model_name: "{{name}}",
+      aid : "data-table",
+      metadata: table_metadata,
+      x_variables: numeric_variables.slice(0, numeric_variables.length-1),
+      y_variables: numeric_variables.slice(0, numeric_variables.length-1),
+      image_variables: image_columns,
+      color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
+      rating_variables : rating_columns,
+      category_variables : category_columns,
+      selection : selected_simulations,
+      "x-variable" : x_index,
+      "y-variable" : y_index,
+      "image-variable" : images_index,
+      "color-variable" : color_variable,
+    });
+
+    // Changing the x variable updates the controls ...
+    $("#table").bind("x-selection-changed", function(event, variable)
+    {
+      $("#controls").controls("option", "x-variable", variable);
+    });
+
+    // Changing the y variable updates the controls ...
+    $("#table").bind("y-selection-changed", function(event, variable)
+    {
+      $("#controls").controls("option", "y-variable", variable);
+    });
+
+    // Changing the image variable updates the controls ...
+    $("#table").bind("images-selection-changed", function(event, variable)
+    {
+      $("#controls").controls("option", "image-variable", variable);
+    });
+
+    // Changing the table variable updates the controls ...
+    $("#table").bind("variable-selection-changed", function(event, selection)
+    {
+      $("#controls").controls("option", "color-variable", selection[0]);
+    });
+
+    // Changing the table variable updates the legend label ...
+    $("#table").bind("variable-selection-changed", function(event, selection)
+    {
+      $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][selection[0]]});
+    });
+
+    // Changing the color variable updates the scatterplot ...
+    $("#controls").bind("color-selection-changed", function(event, variable)
+    {
+      update_scatterplot_value(variable);
+    });
+
+    // Changing the color variable updates the legend label ...
+    $("#controls").bind("color-selection-changed", function(event, variable)
+    {
+      $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][variable]});
+    });
+
+    // Changing the value of a variable updates the database, table, and scatterplot ...
+    $("#controls").bind("set-value", function(event, arguments)
+    {
+      //console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
+      var selection = arguments.selection;
+      var variable = arguments.variable;
+      var myBlob = new Blob(['[' + arguments.value + ']'], {type: "text/html"});
+
+      var hyperslice = "";
+      writeData(selection, variable, myBlob, 0);
+
+      function writeData(selection, variable, blob, iterator){
+        hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
+        var formdata = new FormData();
+        // formdata.append("array", 0);
+        // formdata.append("attribute", variable);
+        // formdata.append("hyperslice", hyperslice);
+        formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslice);
+        formdata.append("data", blob);
+        $.ajax({
+          type: "PUT",
+          url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
+          data : formdata,
+          processData: false,
+          contentType: false,
+          success : function(results)
+          {
+            console.log("writing array data SUCCESS");
+            iterator++;
+            if(iterator<selection.length) {
+              writeData(selection, variable, blob, iterator);
+            } 
+            else {
+              // Finished writing data, need to update widgets
+              // Load data table metadata.
+              // $.ajax({
+              //   url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
+              //   contentType : "application/json",
+              //   success: function(metadata)
+              //   {
+              //     table_metadata = metadata;
+              //     $("#table").table("option", "metadata", metadata);
+              //   },
+              //   error: artifact_missing
+              // });
+
+              $("#table").table("update_data");
+
+              if(variable == x_index)
+                update_scatterplot_x(variable);
+              if(variable == y_index)
+                update_scatterplot_y(variable);
+              if(variable == v_index)
+                update_scatterplot_value(variable);
+
+              load_table_statistics([variable], function(){
+                $("#table").table("option", "statistics", table_statistics);
+              });
+            }
+
+          },
+          error : function(jqXHR, textStatus, errorThrown)
+          {
+            console.log("writing array data error");
+          },
+        });
+      }
+
+    });
+
+    // Log changes to the x variable ...
+    $("#controls").bind("x-selection-changed", function(event, variable)
+    {
+      x_selection_changed(variable);
+    });
+
+    // Log changes to the y variable ...
+    $("#controls").bind("y-selection-changed", function(event, variable)
+    {
+      y_selection_changed(variable);
+    });
+
+    // Log changes to the images variable ...
+    $("#controls").bind("images-selection-changed", function(event, variable)
+    {
+      images_selection_changed(variable);
+    });
+
+    // Log changes to the color variable ...
+    $("#controls").bind("color-selection-changed", function(event, variable)
+    {
+      selected_variable_changed(Number(variable));
+    });
+
+    // Log changes to hidden selection ...
+    $("#controls").bind("hide-selection", function(event, selection)
+    {
+      for(var i=0; i<selected_simulations.length; i++){
+        if($.inArray(selected_simulations[i], hidden_simulations) == -1) {
+          hidden_simulations.push(selected_simulations[i]);
+        }
+      }
+      hidden_simulations_changed();
+      $("#table").table("option", "hidden_simulations", hidden_simulations);
+      $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+    });
+
+    // Log changes to hidden selection ...
+    $("#controls").bind("show-selection", function(event, selection)
+    {
+      for(var i=0; i<selected_simulations.length; i++){
+        var index = $.inArray(selected_simulations[i], hidden_simulations);
+        if(index != -1) {
+          hidden_simulations.splice(index, 1);
+        }
+      }
+      hidden_simulations_changed();
+      $("#table").table("option", "hidden_simulations", hidden_simulations);
+      $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+    });
+  }
+}
