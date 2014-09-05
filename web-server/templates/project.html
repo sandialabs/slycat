@@ -11,7 +11,9 @@ rights in this software.
 {{> head}}
     <title>{{name}} - Slycat Project</title>
     <script type="text/javascript" src="{{server-root}}js/file-browser.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.combobox.js"></script>
     <link rel="stylesheet" href="{{server-root}}style/file-browser.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}style/combobox.css" type="text/css">
   </head>
 
   <body>
@@ -97,7 +99,6 @@ rights in this software.
           <button id="remote-pi-button" title="Load a parameter image model from a remote CSV file.">Remote PI</button>
           {{/can-write}}
         </div>
-
         <!-- Local CCA user interface -->
         <div id="local-cca-form" class="dialog" title="Local File CCA Model">
           <div id="local-cca-basics">
@@ -167,13 +168,19 @@ rights in this software.
           </div>
 
           <div id="remote-cca-connection">
-            <p>Select the remote host where your data is located:
+            <!--<p>Select the remote host where your data is located:
               <select id="remote-cca-hostname">
                 {{#remote-hosts}}
                 <option value="{{name}}">{{name}}</option>
                 {{/remote-hosts}}
               </select>
             </p>
+            -->
+            <div class="ui-widget">
+              <label for="remote-hosts">Type the remote host where your data is located:</label>
+              <input type="text" id="remote-hosts">
+              <div id="remote-hosts-message"></div>
+            </div>
             <p><label for="remote-cca-username">Username</label><input id="remote-cca-username" name="remote-cca-username" type="input"/></p>
             <p><label for="remote-cca-password">Password</label><input id="remote-cca-password" name="remote-cca-password" type="password"/></p>
             <button id="remote-cca-connection-next">Next</button>
@@ -327,7 +334,6 @@ rights in this software.
             });
           }
         }
-
         $("#add-administrator").button().click(add_user($("#new-administrator"), modified_security.administrators, update_administrator_acl));
         $("#add-writer").button().click(add_user($("#new-writer"), modified_security.writers, update_writer_acl));
         $("#add-reader").button().click(add_user($("#new-reader"), modified_security.readers, update_reader_acl));
@@ -960,6 +966,26 @@ rights in this software.
         $("#remote-cca-button").button().click(function()
         {
           $("#remote-cca-form").dialog("open");
+        });
+
+        $("#remote-hosts").combobox(
+          {{remote-hosts-arr}}
+        );
+        $("#remote-hosts").change(function(){
+          var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
+          if($(this).val() == ""){
+            $("#remote-hosts-message").html("");
+          }else{
+            $.each(remote_host_array, function(index, value){
+              if (value.name == $("#remote-hosts").val()){
+                if(value.hasOwnProperty("message")){
+                  $("#remote-hosts-message").html("<p>"+ value.message +"</p>");
+                }else{
+                  $("#remote-hosts-message").html("");
+                }
+              }
+            });
+          }
         });
 
         function process_model_status(results) {
