@@ -24,9 +24,16 @@ rights in this software.
 
     <div id="table-pane" class="ui-layout-south">
       <div class="load-status"></div>
-      <div id="table">
-      </div>
+      <div id="table"></div>
     </div>
-    <script type="text/javascript">{{> ../js/tracer-image/grid.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/globals.js}}</script>
+    <script type="text/javascript" src="{{server-root}}js/tracer-image/layout.js"></script>
+    <script type="text/javascript">{{> ../js/tracer-image/model.js}}</script>
+    <script type="text/javascript" src="{{server-root}}js/tracer-image/grid.js"></script>
+    <script type="text/javascript">{{> ../js/tracer-image/plot.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/table.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/handlers.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/image.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/controls.js}}</script>
   </body>
 </html>
