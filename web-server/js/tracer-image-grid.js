@@ -29,12 +29,12 @@ $.widget("tracer_image.grid",
     for(x=0; x<self.options.size[0];x++) {
       for(y=0; y<self.options.size[1];y++) {
         self.svg.append("g").attr("class", "plot");
-/*        $("g.plot:last").plot({
+        $("g.plot:last").plot({
           grid_x: x,
           grid_y: y,
           width: self.cell_width,
           height: self.cell_height
-        }); */
+        });
       }
     }
   }
