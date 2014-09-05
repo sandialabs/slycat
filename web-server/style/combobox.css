@@ -12,10 +12,7 @@
 .combobox {
     margin-right: 0.1em;
 }
-#remote-cca-hostname{
-  background: #FFF url("down-arrow.png") no-repeat right;
-}
-#remote-pi-hostname{
+#remote-cca-hostname, #remote-pi-hostname{
   background: #FFF url("down-arrow.png") no-repeat right;
 }
 .combobox_selector {

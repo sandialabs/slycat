@@ -958,10 +958,7 @@ rights in this software.
           $("#remote-cca-form").dialog("open");
         });
 
-        $("#remote-cca-hostname").combobox(
-          {{remote-hosts-arr}}
-        );
-        $("#remote-pi-hostname").combobox(
+        $("#remote-cca-hostname, #remote-pi-hostname").combobox(
           {{remote-hosts-arr}}
         );
         $("#remote-cca-hostname").change(function(){
