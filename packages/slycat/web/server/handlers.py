@@ -124,7 +124,7 @@ def get_project(pid):
     context["acl-json"] = json.dumps(project["acl"])
     context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
     context["remote-hosts"] = json.dumps(get_remote_host_list()).replace('"','\\"')
-    context["remote-hosts-arr"] = remote_host_name_arr()
+    context["remote-hosts-arr"] = [host for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
     context["new-model-name"] = "Model-%s" % (len(models) + 1)
 
     return slycat.web.server.template.render("project.html", context)
@@ -140,13 +140,6 @@ def get_remote_host_list():
       remote_host_list.append({"name" : host, "message" : remote_host_dict[host]["message"]})
     else:
       remote_host_list.append({"name" : host})
-  return remote_host_list
-
-def remote_host_name_arr():
-  remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
-  remote_host_list = []
-  for host in remote_host_dict:
-      remote_host_list.append(host)
   return remote_host_list
 
 @cherrypy.tools.json_in(on = True)
