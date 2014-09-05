@@ -1,5 +1,7 @@
 #!/bin/bash
 
+/usr/sbin/sshd
+
 /usr/bin/couchdb -a /etc/couchdb/default.ini -a /etc/couchdb/local.ini -b -r 5 -p /var/run/couchdb/couchdb.pid
 sleep 5
 
