@@ -20,7 +20,7 @@ Requests must accept application/json as the result content-type:
 
 ::
 
-    GET /models/(mid)/array-sets/(aid)/arrays/(array)/attributes/(attribute)/statistics
+    GET /models/(mid)/arraysets/(aid)/arrays/(array)/attributes/(attribute)/statistics
 
 Responses
 ---------
@@ -38,7 +38,7 @@ Sample Request
 
 ::
 
-    GET /models/b6afa2e2b5324e118d98b5f026f40624/array-sets/test-array-set/arrays/0/attributes/0/statistics HTTP/1.1
+    GET /models/b6afa2e2b5324e118d98b5f026f40624/arraysets/test-array-set/arrays/0/attributes/0/statistics HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress

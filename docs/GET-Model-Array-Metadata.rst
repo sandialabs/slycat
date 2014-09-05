@@ -30,7 +30,7 @@ Syntax
 
 ::
 
-    GET /models/(mid)/array-sets/(aid)/arrays/(array)/metadata
+    GET /models/(mid)/arraysets/(aid)/arrays/(array)/metadata
 
 Responses
 ---------
@@ -48,7 +48,7 @@ Sample Request
 
 ::
 
-    GET /models/e97077e27af141d6a06f17c9eed6c17a/array-sets/canonical-variables/arrays/0/metadata HTTP/1.1
+    GET /models/e97077e27af141d6a06f17c9eed6c17a/arraysets/canonical-variables/arrays/0/metadata HTTP/1.1
     Host: localhost:8092
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress

@@ -65,30 +65,30 @@ def compute(mid):
     sample_count = x.shape[0]
 
     # Store canonical variable indices (scatterplot indices) as a |sample| vector of indices ...
-    start_array_set(database, model, "canonical-indices")
+    start_arrayset(database, model, "canonical-indices")
     start_array(database, model, "canonical-indices", 0, [dict(name="index", type="int32")],[dict(name="sample", end=sample_count)])
     store_array_attribute(database, model, "canonical-indices", 0, 0, slice(0, sample_count), indices)
 
     # Store canonical variables (scatterplot data) as a component x sample matrix of x/y attributes ...
-    start_array_set(database, model, "canonical-variables")
+    start_arrayset(database, model, "canonical-variables")
     start_array(database, model, "canonical-variables", 0, [dict(name="input", type="float64"), dict(name="output", type="float64")], [dict(name="component", end=component_count), dict(name="sample", end=sample_count)])
     store_array_attribute(database, model, "canonical-variables", 0, 0, (slice(0, component_count), slice(0, sample_count)), x.T)
     store_array_attribute(database, model, "canonical-variables", 0, 1, (slice(0, component_count), slice(0, sample_count)), y.T)
     update(database, model, progress=0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
-    start_array_set(database, model, "input-structure-correlation")
+    start_arrayset(database, model, "input-structure-correlation")
     start_array(database, model, "input-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="input", end=len(input_columns))])
     store_array_attribute(database, model, "input-structure-correlation", 0, 0, (slice(0, component_count), slice(0, len(input_columns))), x_loadings.T)
     update(database, model, progress=0.85)
 
-    start_array_set(database, model, "output-structure-correlation")
+    start_arrayset(database, model, "output-structure-correlation")
     start_array(database, model, "output-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="output", end=len(output_columns))])
     store_array_attribute(database, model, "output-structure-correlation", 0, 0, (slice(0, component_count), slice(0, len(output_columns))), y_loadings.T)
     update(database, model, progress=0.90)
 
     # Store statistics as a vector of component r2/p attributes
-    start_array_set(database, model, "cca-statistics")
+    start_arrayset(database, model, "cca-statistics")
     start_array(database, model, "cca-statistics", 0, [dict(name="r2", type="float64"), dict(name="p", type="float64")], [dict(name="component", end=component_count)])
     store_array_attribute(database, model, "cca-statistics", 0, 0, slice(0, component_count), r)
     store_array_attribute(database, model, "cca-statistics", 0, 1, slice(0, component_count), wilks)

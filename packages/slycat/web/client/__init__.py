@@ -11,6 +11,8 @@ import numpy
 import os
 import requests
 import shlex
+import slycat.darray
+import slycat.hyperslice
 import sys
 import time
 
@@ -131,19 +133,19 @@ class connection(object):
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
     if type is None or type == "string":
-      return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
+      return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
     else:
       shape = tuple([end - begin for begin, end in ranges])
-      content = self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
+      content = self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
       return numpy.fromstring(content, dtype=type).reshape(shape)
 
   def get_model_array_attribute_statistics(self, mid, name, array, attribute):
     """Returns statistics describing an array artifact attribute."""
-    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/attributes/%s/statistics" % (mid, name, array, attribute), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/statistics" % (mid, name, array, attribute), headers={"accept":"application/json"})
 
   def get_model_array_metadata(self, mid, name, array):
     """Returns the metadata for an array artifacat."""
-    return self.request("GET", "/models/%s/array-sets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
+    return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_model(self, mid):
     """Returns a single model."""
@@ -201,92 +203,54 @@ class connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
+  def put_model_arrayset_data(self, mid, name, hyperchunks, force_json=False):
     """Sends array data to the server."""
     # Sanity check arguments
-    try:
-      if array is not None:
-        if isinstance(array, (numbers.Integral, slice)):
-          array = [array]
-        else:
-          array = list(array)
-          for item in array:
-            if not isinstance(item, (numbers.Integral, slice)):
-              raise Exception()
-    except:
-      raise Exception("array argument must be an integer, a slice, a sequence of integers/slices, or None.")
+    if isinstance(hyperchunks, tuple):
+      hyperchunks = [hyperchunks]
+    hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices], data if isinstance(data, list) else [data]) for array, attribute, hyperslices, data in hyperchunks]
 
-    try:
-      if attribute is not None:
-        if isinstance(attribute, (numbers.Integral, slice)):
-          attribute = [attribute]
-        else:
-          attribute = list(attribute)
-          for item in attribute:
-            if not isinstance(item, (numbers.Integral, slice)):
-              raise Exception()
-    except:
-      raise Exception("attribute argument must be an integer, a slice, a sequence of integers/slices, or None.")
+    for array, attribute, hyperslices, data in hyperchunks:
+      if not isinstance(array, numbers.Integral) or array < 0:
+        raise ValueError("Array index must be a non-negative integer.")
+      if not isinstance(attribute, numbers.Integral) or attribute < 0:
+        raise ValueError("Attribute index must be a non-negative integer.")
+      for hyperslice in hyperslices:
+        slycat.hyperslice.validate(hyperslice)
+      for chunk in data:
+        if not isinstance(chunk, numpy.ndarray):
+          raise ValueError("Data chunk must be a numpy array.")
+      if len(hyperslices) != len(data):
+        raise ValueError("Hyperslice and data counts must match.")
 
-    try:
-      if hyperslice is not None:
-        if isinstance(hyperslice, tuple):
-          begin, end = hyperslice
-          hyperslice = [(begin, end)]
-        else:
-          hyperslice = [(begin, end) for begin, end in hyperslice]
-    except:
-      raise Exception("hyperslice argument must be a 2-tuple, a sequence of 2-tuples, or None")
+    # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
+    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks]) and not force_json
 
-    try:
-      if isinstance(data, numpy.ndarray):
-        data = [data]
-      else:
-        data = list(data)
-        for item in data:
-          if not isinstance(item, numpy.ndarray):
-            raise Exception()
-    except Exception as e:
-      raise Exception("data argument must be a numpy array or a sequence of numpy arrays.")
-
-    # Generate the request
-    all_numeric = bool([dataset for dataset in data if dataset.dtype.char != "S"])
-
+    # Build-up the request
     request_data = {}
-    request_buffer = StringIO.StringIO()
-
-    def format_spec(item):
-      if isinstance(item, numbers.Integral):
-        return str(item)
-      return "%s:%s:%s" % (item.start if item.start is not None else "", item.stop if item.stop is not None else "", item.step if item.step is not None else "")
-
-    if array is not None:
-      request_data["array"] = ",".join([format_spec(item) for item in array])
-
-    if attribute is not None:
-      request_data["attribute"] = ",".join([format_spec(item) for item in attribute])
-
-    if hyperslice is not None:
-      request_data["hyperslice"] = ",".join(["%s:%s" % (begin, end) for begin, end in hyperslice])
-
-    if all_numeric:
+    request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks])
+    if use_binary:
       request_data["byteorder"] = sys.byteorder
 
-    if all_numeric:
-      for dataset in data:
-        request_buffer.write(dataset.tostring(order="C"))
-    else:
-      request_buffer.write(json.dumps([dataset.tolist() for dataset in data]))
+    request_buffer = StringIO.StringIO()
+    for array, attribute, hyperslices, data in hyperchunks:
+      if use_binary:
+        for chunk in data:
+          request_buffer.write(chunk.tostring(order="C"))
+      else:
+        request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
-    self.request("PUT", "/models/%s/array-sets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
+    # Send the request to the server ...
+    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
 
-  def put_model_array(self, mid, name, array, attributes, dimensions):
+  def put_model_arrayset_array(self, mid, name, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"attributes":attributes, "dimensions":dimensions}))
+    stub = slycat.darray.Stub(dimensions, attributes)
+    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
-  def put_model_array_set(self, mid, name, input=True):
+  def put_model_arrayset(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/array-sets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+    self.request("PUT", "/models/%s/arraysets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_file(self, mid, name, data, content_type, input=True):
     """Stores a model file artifact."""
@@ -302,52 +266,6 @@ class connection(object):
   def put_project(self, pid, project):
     """Modifies a project."""
     return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
-
-  ###########################################################################################################
-  # Aliases for low-level functions that make client code more readable.
-
-  def create_project(self, name, description=""):
-    """Creates a new project, returning the project ID."""
-    return self.post_projects(name, description)
-
-  def create_model(self, pid, type, name, marking="", description=""):
-    """Creates a new model, returning the model ID."""
-    return self.post_project_models(pid, type, name, marking, description)
-
-  def store_bookmark(self, pid, bookmark):
-    return self.post_project_bookmarks(pid, bookmark)
-
-  def update_model(self, mid, **kwargs):
-    """Updates the model state/result/progress/message."""
-    model = {key : value for key, value in kwargs.items() if value is not None}
-    self.put_model(mid, model)
-
-  def store_parameter(self, mid, name, value, input=True):
-    """Sets a model parameter value."""
-    self.put_model_parameter(mid, name, value, input)
-
-  def store_file(self, mid, name, data, content_type, input=True):
-    """Uploads a model file."""
-    self.put_model_file(mid, name, data, content_type, input)
-
-  def start_array_set(self, mid, name, input=True):
-    """Starts a new model array set artifact, ready to receive data."""
-    self.put_model_array_set(mid, name, input)
-
-  def start_array(self, mid, name, array, attributes, dimensions):
-    """Starts a new array set array, ready to receive data."""
-    self.put_model_array(mid, name, array, attributes, dimensions)
-
-  def store_array_set_data(self, mid, name, array=None, attribute=None, hyperslice=None, data=None):
-    """Sends an array attribute (or a slice of an array attribute) to the server."""
-    self.put_model_array_set_data(mid, name, array, attribute, hyperslice, data)
-
-  def copy_inputs(self, source, target):
-    self.put_model_inputs(source, target)
-
-  def finish_model(self, mid):
-    """Completes a model."""
-    self.post_model_finish(mid)
 
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
@@ -372,13 +290,23 @@ class connection(object):
     elif len(projects) == 1:
       return projects[0]["_id"]
     else:
-      return self.create_project(name, description)
+      return self.post_projects(name, description)
+
+  def update_model(self, mid, **kwargs):
+    """Updates the model state/result/progress/message."""
+    model = {key : value for key, value in kwargs.items() if value is not None}
+    self.put_model(mid, model)
+
+  def update_model(self, mid, **kwargs):
+    """Updates the model state/result/progress/message."""
+    model = {key : value for key, value in kwargs.items() if value is not None}
+    self.put_model(mid, model)
 
   def join_model(self, mid):
     """Wait for a model to complete before returning.
 
-    Note that a model that hasn't been finished will never complete, you should
-    ensure that finish_model() is called successfully before calling
+    Note that a model that hasn't been finished will never complete - you should
+    ensure that post_model_finish() is called successfully before calling
     join_model().
     """
     while True:

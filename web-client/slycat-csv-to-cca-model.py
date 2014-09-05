@@ -66,29 +66,29 @@ connection = slycat.web.client.connect(arguments)
 pid = connection.find_or_create_project(arguments.project_name, arguments.project_description)
 
 # Create the new, empty model.
-mid = connection.create_model(pid, "cca", arguments.model_name, arguments.marking, arguments.model_description)
+mid = connection.post_project_models(pid, "cca", arguments.model_name, arguments.marking, arguments.model_description)
 
 # Upload our observations as "data-table".
-connection.start_array_set(mid, "data-table")
+connection.put_model_arrayset(mid, "data-table")
 
 # Start our single "data-table" array.
-attributes = zip(column_names, column_types)
-dimensions = [("row", "int64", 0, len(rows))]
-connection.start_array(mid, "data-table", 0, attributes, dimensions)
+dimensions = [dict(name="row", end=len(rows))]
+attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
+connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
 # Upload data into the array.
 for index, data in enumerate(columns):
   slycat.web.client.log.info("Uploading column {} of {} ({})".format(index, len(columns), column_names[index]))
-  connection.store_array_set_data(mid, "data-table", array=0, attribute=index, data=data)
+  connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], data))
 
 # Store the remaining parameters.
-connection.store_parameter(mid, "input-columns", inputs)
-connection.store_parameter(mid, "output-columns", outputs)
-connection.store_parameter(mid, "scale-inputs", arguments.scale_inputs)
+connection.put_model_parameter(mid, "input-columns", inputs)
+connection.put_model_parameter(mid, "output-columns", outputs)
+connection.put_model_parameter(mid, "scale-inputs", arguments.scale_inputs)
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web
 # Server know that it can start computation.
-connection.finish_model(mid)
+connection.post_model_finish(mid)
 # Wait until the model is ready.
 connection.join_model(mid)
 

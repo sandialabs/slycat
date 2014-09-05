@@ -180,7 +180,10 @@ $.widget("parameter_image.scatterplot",
       
       //console.log("#scatterplot mouseup");
       if(!e.ctrlKey)
+      {
         self.options.selection = [];
+        self.options.filtered_selection = [];
+      }
 
       var x = self.options.x;
       var y = self.options.y;
@@ -190,20 +193,22 @@ $.widget("parameter_image.scatterplot",
       {
         self.selection_layer.selectAll(".rubberband").remove();
 
-        var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
-        var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
-        var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
-        var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
+        if(self.start_drag && self.end_drag) {
+          var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
+          var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
+          var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
+          var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
 
-        for(var i = 0; i != count; ++i)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          for(var i = 0; i != count; ++i)
           {
-            var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
-              self.options.selection.push(self.options.indices[i]);
+            if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+            {
+              var index = self.options.selection.indexOf(self.options.indices[i]);
+              if(index == -1)
+                self.options.selection.push(self.options.indices[i]);
+            }
           }
-        }
+        } 
       }
       else // Pick selection ...
       {
@@ -261,6 +266,7 @@ $.widget("parameter_image.scatterplot",
       self.state = "";
 
       self._filterIndices();
+      self.options.selection = self.options.filtered_selection.slice(0);
       self._schedule_update({render_selection:true});
       self.element.trigger("selection-changed", [self.options.selection]);
     });
@@ -275,7 +281,13 @@ $.widget("parameter_image.scatterplot",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-    var filtered_indices = Array.apply( [], indices );;
+
+    var filtered_indices;
+    if(indices.length > 1)
+      filtered_indices = Array.apply( [], indices );
+    else
+      filtered_indices = [indices[0]];
+
     var filtered_selection = selection.slice(0);
     var length = indices.length;
 
@@ -518,7 +530,7 @@ $.widget("parameter_image.scatterplot",
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
         .data(filtered_indices, function(d, i){ 
-          return filtered_indices[i];
+          return d;
         })
         ;
       circle.exit()
@@ -539,10 +551,10 @@ $.widget("parameter_image.scatterplot",
         })
         ;
       circle
-        .attr("cx", function(d, i) { return self.x_scale( x[$.inArray(d, indices)] ); })
-        .attr("cy", function(d, i) { return self.y_scale( y[$.inArray(d, indices)] ); })
+        .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
+        .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
         .attr("fill", function(d, i) { 
-          var value = v[$.inArray(d, indices)];
+          var value = v[d];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
@@ -587,13 +599,13 @@ $.widget("parameter_image.scatterplot",
         ;
       circle
         .attr("cx", function(d, i) { 
-          return x_scale( x[$.inArray(d, indices)] ); 
+          return x_scale( x[d] ); 
         })
         .attr("cy", function(d, i) { 
-          return y_scale( y[$.inArray(d, indices)] ); 
+          return y_scale( y[d] ); 
         })
         .attr("fill", function(d, i) { 
-          var value = v[$.inArray(d, indices)];
+          var value = v[d];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
@@ -625,7 +637,7 @@ $.widget("parameter_image.scatterplot",
       {
         images.push({
           index : image.index,
-          uri : image.uri,
+          uri : image.uri.trim(),
           image_class : "open-image",
           x : width * image.relx,
           y : height * image.rely,
@@ -882,6 +894,7 @@ $.widget("parameter_image.scatterplot",
                     self.close_hover_timer = null;
                   }
                   frame.classed("hover-image", false).classed("open-image", true);
+                  image.image_class = "open-image";
                   // Remove openHover class tag from any points that might have it
                   self.datum_layer.selectAll("circle.openHover")
                     .classed("openHover", false)
@@ -1056,6 +1069,7 @@ $.widget("parameter_image.scatterplot",
                   self.close_hover_timer = null;
                 }
                 frame.classed("hover-image", false).classed("open-image", true);
+                image.image_class = "open-image";
 
                 // Remove openHover class tag from any points that might have it
                 self.datum_layer.selectAll("circle.openHover")
@@ -1266,8 +1280,11 @@ $.widget("parameter_image.scatterplot",
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
       self.image_cache[image.uri] = blob;
+      // Adding lag for testing purposed. This should not exist in production.
+      // setTimeout(function(){
       self._open_images(images);
       return;
+      // }, 5000);
     }
     xhr.send();
   },
@@ -1341,6 +1358,10 @@ $.widget("parameter_image.scatterplot",
     if(self.state != "")
       return;
 
+    // Disable hovering when there is no uri
+    if(self.options.images[self.options.indices[image_index]].trim() == "")
+      return;
+
     // // Disable hovering on points that already have open imges ...
     // var uri = self.options.images[self.options.indices[image_index]];
     // if($(".open-image[data-uri='" + uri + "']").size() != 0)
@@ -1380,7 +1401,7 @@ $.widget("parameter_image.scatterplot",
 
       self._open_images([{
         index : self.options.indices[image_index],
-        uri : self.options.images[self.options.indices[image_index]],
+        uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "hover-image",
         x : self.x_scale(self.options.x[image_index]) + 10,
         y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),

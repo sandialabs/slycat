@@ -725,7 +725,7 @@ a#title-link h1:hover
 
 #user-actions li
 {
-  display: inline;
+  /* display: inline; */
   margin-left: 20px;
 }
 

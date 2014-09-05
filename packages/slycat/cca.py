@@ -18,6 +18,11 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
     :math:`M \\times O` matrix containing :math:`M` observations and :math:`O` output features.
   scale_inputs : bool, optional
     Scale input and output features to unit variance.
+  force_positive : integer, optional
+    If specified, flip signs in the `x`, `y`, `x_loadings`, and `y_loadings` output values so
+    that the values in row :math:`n` of `y_loadings` are all positive.
+  significant_digits: integer, optional
+    Optionally specify the number of significant digits used to compute the `X` and `Y` ranks.
 
   Returns
   -------
@@ -79,17 +84,6 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
 
-#  if Xrank == 0:
-#    raise Exception("X must contain at least one non-constant column.")
-#  if Xrank < p1:
-#    Q1 = Q1[:,:Xrank]
-#    R1 = R1[:Xrank,:Xrank]
-#  if Yrank == 0:
-#    raise Exception("Y must contain at least one non-constant column.")
-#  if Yrank < p2:
-#    Q2 = Q2[:,:Yrank]
-#    R2 = R2[:Yrank,:Yrank]
-
   L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)
 
   d = min(Xrank, Yrank)
@@ -101,9 +95,6 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
 
   A *= numpy.sqrt(n - 1)
   B *= numpy.sqrt(n - 1)
-
-#  A = numpy.row_stack((A, numpy.zeros((p1 - Xrank, d))))
-#  B = numpy.row_stack((B, numpy.zeros((p2 - Yrank, d))))
 
   A[P1] = numpy.copy(A)
   B[P2] = numpy.copy(B)

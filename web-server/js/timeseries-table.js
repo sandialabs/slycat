@@ -92,6 +92,7 @@ $.widget("timeseries.table",
           var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selectedRows);
+          self.grid.resetActiveCell();
           if(selectedRows.length)
             self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }
@@ -112,7 +113,7 @@ $.widget("timeseries.table",
       var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
       self.trigger_row_selection = false;
       self.grid.setSelectedRows(selectedRows);
-      
+      self.grid.resetActiveCell();
       if(selectedRows.length)
         self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
     }
@@ -174,6 +175,7 @@ $.widget("timeseries.table",
           var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selectedRows);
+          self.grid.resetActiveCell();
           if(selectedRows.length)
             self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }
@@ -253,6 +255,7 @@ $.widget("timeseries.table",
           var selectedRows = self.data.getSimulationRowIndexes(self.options["row-selection"]);
           self.trigger_row_selection = false;
           self.grid.setSelectedRows(selectedRows);
+          self.grid.resetActiveCell();
           if(selectedRows.length)
             self.grid.scrollRowToTop(Math.min.apply(Math, selectedRows));
         }

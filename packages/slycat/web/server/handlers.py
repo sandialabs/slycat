@@ -23,6 +23,7 @@ import subprocess
 import stat
 import sys
 import slycat.hdf5
+import slycat.hyperslice
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
@@ -37,6 +38,7 @@ import threading
 import time
 import traceback
 import uuid
+import re
 
 def require_parameter(name):
   if name not in cherrypy.request.json:
@@ -59,6 +61,8 @@ def get_context():
 
   marking = cherrypy.request.app.config["slycat"]["marking"]
   context["marking-types"] = [{"type" : type, "label" : marking.label(type)} for type in marking.types()]
+  context["help-email"] = cherrypy.request.app.config["site"]["help-email"]
+  context["version"] = cherrypy.request.app.config["site"]["version"]
   return context
 
 def get_home():
@@ -465,7 +469,7 @@ def put_model_parameter(mid, name):
   slycat.web.server.model.store_parameter(database, model, name, value, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_array_set(mid, name):
+def put_model_arrayset(mid, name):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -473,10 +477,10 @@ def put_model_array_set(mid, name):
 
   input = require_boolean_parameter("input")
 
-  slycat.web.server.model.start_array_set(database, model, name, input)
+  slycat.web.server.model.start_arrayset(database, model, name, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_array(mid, name, array):
+def put_model_arrayset_array(mid, name, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -488,29 +492,26 @@ def put_model_array(mid, name, array):
   dimensions = cherrypy.request.json["dimensions"]
   slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
 
-def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=None, byteorder=None, data=None):
-  cherrypy.log.error("put data: arrayset %s array %s attribute %s hyperslice %s byteorder %s" % (name, array, attribute, hyperslice, byteorder))
+def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
+  cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
-  try:
-    if array is not None:
-      array = [[None if index == "" else int(index) for index in item.split(":")] for item in array.split(",")]
-      array = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in array]
-  except:
-    raise cherrypy.HTTPError("400 optional array argument must be a comma-separated sequence of integers / slices.")
+  parsed_hyperchunks = []
 
   try:
-    if attribute is not None:
-      attribute = [[None if index == "" else int(index) for index in item.split(":")] for item in attribute.split(",")]
-      attribute = [item[0] if len(item) == 1 else slice(item[0], item[1]) if len(item) == 2 else slice(item[0], item[1], item[2]) for item in attribute]
-  except:
-    raise cherrypy.HTTPError("400 optional attribute argument must be a comma-separated sequence of integers / slices.")
-
-  try:
-    if hyperslice is not None:
-      hyperslice = [(int(begin), int(end)) for begin, end in [range.split(":") for range in hyperslice.split(",")]]
-  except:
-    raise cherrypy.HTTPError("400 optional hyperslice argument must be a comma-separated set of ranges.")
+    for hyperchunk in hyperchunks.split(";"):
+      array, attribute, hyperslices = hyperchunk.split("/")
+      array = int(array)
+      if array < 0:
+        raise Exception()
+      attribute = int(attribute)
+      if attribute < 0:
+        raise Exception()
+      hyperslices = [slycat.hyperslice.parse(hyperslice) for hyperslice in hyperslices.split("|")]
+      parsed_hyperchunks.append((array, attribute, hyperslices))
+  except Exception as e:
+    cherrypy.log.error("Parsing exception: %s" % e)
+    raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
@@ -522,10 +523,7 @@ def put_model_array_set_data(mid, name, array=None, attribute=None, hyperslice=N
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.store_array_set_data(database, model, name, array, attribute, hyperslice, byteorder, data)
-
-def put_model_array_attribute_data(mid, name, array, attribute, hyperslice, byteorder=None, data=None):
-  cherrypy.log.error("put_model_array_attribute_data: arrayset %s array %s attribute %s hyperslice %s byteorder %s" % (name, array, attribute, hyperslice, byteorder))
+  slycat.web.server.model.store_arrayset_data(database, model, name, parsed_hyperchunks, data, byteorder)
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
@@ -537,21 +535,6 @@ def delete_model(mid):
   cleanup_arrays()
 
   cherrypy.response.status = "204 Model deleted."
-
-def get_model_timeseries_performance_test(mid):
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_reader(project)
-
-  context = get_context()
-  context["full-project"] = project
-  context.update(model)
-  context["model-design"] = json.dumps(model, indent=2, sort_keys=True)
-  marking = cherrypy.request.app.config["slycat"]["marking"]
-  context["marking-html"] = marking.html(model["marking"])
-
-  return slycat.web.server.template.render("timeseries-performance-test.html", context)
 
 @cherrypy.tools.json_out(on = True)
 def get_model_array_metadata(mid, aid, array):
@@ -1067,6 +1050,18 @@ def get_remote_file(sid, path):
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
       if str(e) == "Garbage packet received":
         raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
+      if e.strerror == "No such file":
+        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
+        raise cherrypy.HTTPError("400 File not found.")
+      if e.strerror == "Permission denied":
+        # we know the file exists
+        # we now know that the file is not available due to access controls
+        remote_file = session.sftp.stat(path)
+        permissions = remote_file.__str__().split()[0]
+        directory = cherrypy.request.app.config["slycat"]["directory"]
+        file_permissions = "%s %s %s" % (permissions, directory.username(remote_file.st_uid), directory.groupname(remote_file.st_gid))
+        raise cherrypy.HTTPError("400 Permission denied. Current permissions: %s" % file_permissions)
+      # catch all
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def post_events(event):

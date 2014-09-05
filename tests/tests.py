@@ -7,6 +7,7 @@ import tempfile
 import slycat.cca
 import slycat.darray
 import slycat.hdf5
+import slycat.hyperslice
 import slycat.table
 
 ########################################################################################################
@@ -168,6 +169,63 @@ def test_slycat_hdf5_array_all_nan_stats():
     array.set_data(0, slice(0, 4), numpy.repeat(numpy.nan, 4))
     numpy.testing.assert_array_equal(array.get_data(0), [numpy.nan, numpy.nan, numpy.nan, numpy.nan])
     nose.tools.assert_equal(array.get_statistics(0), {"min":None, "max":None})
+
+########################################################################################################
+# slycat.hyperslice tests
+
+def test_slycat_hyperslice_validate():
+  slycat.hyperslice.validate(3)
+  slycat.hyperslice.validate(slice(3))
+  slycat.hyperslice.validate(Ellipsis)
+  slycat.hyperslice.validate(numpy.s_[10])
+  slycat.hyperslice.validate(numpy.s_[10:20])
+  slycat.hyperslice.validate(numpy.s_[10:20:2])
+  slycat.hyperslice.validate(numpy.s_[:20:2])
+  slycat.hyperslice.validate(numpy.s_[::2])
+  slycat.hyperslice.validate(numpy.s_[10::2])
+  slycat.hyperslice.validate(numpy.s_[10:])
+  slycat.hyperslice.validate(numpy.s_[:20])
+  slycat.hyperslice.validate(numpy.s_[10:20,30])
+  slycat.hyperslice.validate(numpy.s_[10:20,30:40])
+  slycat.hyperslice.validate(numpy.s_[...,30:40])
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.validate("foo")
+
+def test_slycat_hyperslice_format():
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10]), "10")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10:20]), "10:20")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10:20:2]), "10:20:2")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[:20:2]), ":20:2")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[::2]), "::2")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10::2]), "10::2")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10:]), "10:")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[:20]), ":20")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10:20,30]), "10:20,30")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[10:20,30:40]), "10:20,30:40")
+  nose.tools.assert_equal(slycat.hyperslice.format(numpy.s_[...,30:40]), "...,30:40")
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.format("foo")
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.format(("foo", "bar"))
+
+def test_slycat_hyperslice_parse():
+  nose.tools.assert_equal(slycat.hyperslice.parse("10"), (10,))
+  nose.tools.assert_equal(slycat.hyperslice.parse("10:20"), (slice(10, 20),))
+  nose.tools.assert_equal(slycat.hyperslice.parse("10:20:2"), (slice(10, 20, 2),))
+  nose.tools.assert_equal(slycat.hyperslice.parse(":20:2"), (slice(None, 20, 2),))
+  nose.tools.assert_equal(slycat.hyperslice.parse("::2"), (slice(None, None, 2),))
+  nose.tools.assert_equal(slycat.hyperslice.parse("10::2"), (slice(10, None, 2),))
+  nose.tools.assert_equal(slycat.hyperslice.parse("10:"), (slice(10, None, None),))
+  nose.tools.assert_equal(slycat.hyperslice.parse(":20"), (slice(None, 20, None),))
+  nose.tools.assert_equal(slycat.hyperslice.parse("10:20,30"), (slice(10, 20, None), 30))
+  nose.tools.assert_equal(slycat.hyperslice.parse("10:20,30:40"), (slice(10, 20, None), slice(30, 40, None)))
+  nose.tools.assert_equal(slycat.hyperslice.parse("...,30:40"), (Ellipsis, slice(30, 40, None)))
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.parse(3)
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.parse("10:20:30:40")
+  with nose.tools.assert_raises(ValueError):
+    slycat.hyperslice.parse("10:20.1")
 
 ########################################################################################################
 # slycat.table tests

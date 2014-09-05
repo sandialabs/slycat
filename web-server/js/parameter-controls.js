@@ -108,8 +108,12 @@ $.widget("parameter_image.controls",
 
     this.csv_button = $("<button>Download Data Table</button>")
 	.click(function(){
-		self._write_data_table();
-	    })
+          if (self.options.selection.length == 0) {
+	    self._write_data_table();
+	  } else {
+            openCSVSaveChoiceDialog();
+          }
+	})
 	.appendTo(this.element)
 	;
 
@@ -127,7 +131,11 @@ $.widget("parameter_image.controls",
             valueValid = false;
           }
           if(valueValid) {
-            self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : value});
+            self.element.trigger("set-value", {
+              selection : self.options.selection, 
+              variable : variableIndex, 
+              value : numeric ? value : '"' + value + '"',
+            });
             $(this).dialog('close');
           } else {
             var message = "Please enter a value.";
@@ -159,6 +167,26 @@ $.widget("parameter_image.controls",
     });
 
 
+    $('#csv-save-choice-form').dialog({
+      modal: true,
+      autoOpen: false,
+      buttons: {
+        'Save The Whole Table': function() {
+	  self._write_data_table();
+          //$(this)._write_data_table();  //what's the diff with above?
+          $(this).dialog('close');
+        },
+        'Save Selected Rows': function() {
+	  self._write_data_table( self.options.selection );
+          $(this).dialog('close');
+        },
+        'Cancel': function() {
+          $(this).dialog('close');
+        },
+      },
+    });
+
+
     function openSetValueDialog(variable, variableIndex){
       $("#set-value-form #set-value-form-variable").text(variable);
       $("#set-value-form input").attr('value','');
@@ -172,6 +200,11 @@ $.widget("parameter_image.controls",
       $("#clear-value-form input#variable-index").attr('value', variableIndex);
       $("#clear-value-form").dialog("open");
     }
+    function openCSVSaveChoiceDialog(){
+      var txt = "You have " + self.options.selection.length + " rows selected. What would you like to do?";
+      $("#csv-save-choice-form #csv-save-choice-label").text(txt);
+      $("#csv-save-choice-form").dialog("open");
+    }
 
     self._set_x_variables();
     self._set_y_variables();
@@ -181,16 +214,27 @@ $.widget("parameter_image.controls",
   },
 
 
-  _write_data_table: function()
-  { 
+  _write_data_table: function(sl)
+  {
+    var selectionList = sl || [];
     var self = this;
-    console.log("++ write data table called");
     var numRows = self.options.metadata['row-count'];
     var numCols = self.options.metadata['column-count'];
+    var rowRequest = "";
+
+    if (selectionList.length > 0) {
+      selectionList.sort(function(x,y) {return x-y});
+      rowRequest = "rows=" + selectionList.toString();
+      //console.log("++ writing partial table rowRequest: " + rowRequest);
+    } else {
+      rowRequest = "rows=0-" + numRows;
+    }
+
     $.ajax(
     {
       type : "GET",
-      url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
+      url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?" + rowRequest + "&columns=0-" + numCols + "&index=Index",
+      //url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
       success : function(result)
       {
         self._write_csv( self._convert_to_csv(result), self.options.model_name + "_data_table.csv" );
@@ -214,10 +258,10 @@ $.widget("parameter_image.controls",
     var defaultFilename = defaultFilename || "slycatDataTable.csv";
 
     //build download link:
-    a.href = "data:" + strMimeType + "charset=utf-8," + encodeURI(csvData);
+    a.href = "data:" + strMimeType + "charset=utf-8," + encodeURIComponent(csvData);  //encodeURIComponent() handles all special chars
 
     if ('download' in a) { //FF20, CH19
-      console.log( "++ FF20 CH19 processing..." );
+      //console.log( "++ FF20 CH19 processing..." );
       //console.log( a );
       a.setAttribute("download", defaultFilename);
       //a.setAttribute("download", n);
@@ -369,12 +413,13 @@ $.widget("parameter_image.controls",
         .attr("label", "set")
         .appendTo(optgroup)
         ;
-      $("<option />")
-        .text("Clear")
-        .attr("value", this.options.rating_variables[i])
-        .attr("label", "clear")
-        .appendTo(optgroup)
-        ;
+      // Disabling clear functionality for ratings since it causes problems with nulls
+      // $("<option />")
+      //   .text("Clear")
+      //   .attr("value", this.options.rating_variables[i])
+      //   .attr("label", "clear")
+      //   .appendTo(optgroup)
+      //   ;
     }
 
     for(var i = 0; i < this.options.category_variables.length; i++)

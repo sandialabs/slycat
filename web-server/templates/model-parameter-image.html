@@ -67,7 +67,9 @@ rights in this software.
               <label for="edit-model-name">Model Name</label>
               <input id="edit-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
               <label for="edit-model-description">Description</label>
-              <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+              <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">
+                {{description}}
+              </textarea>
             </div>
           </div>
           <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
@@ -82,6 +84,11 @@ rights in this software.
             <p>
                <label for="variableIndex">Clear values for <span id="clear-value-form-variable">variable</span>?</label>
                <input type="hidden" id="variable-index" />
+            </p>
+          </div>
+          <div id="csv-save-choice-form" class="dialog" title="Download Choice" style="display: none;">
+            <p>
+               <label id="csv-save-choice-label"></label>
             </p>
           </div>
         </div>
@@ -173,7 +180,8 @@ rights in this software.
           {
             $("#status-messages").empty().html(
               "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-              "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
+              "<div class='error-description'>We're probabably building it for you right now." +
+              "Watch the status bar for progress information and more details.</div>");
             show_status_messages();
           }
           else if(model["state"] == "closed" && model["result"] === null)
@@ -257,7 +265,8 @@ rights in this software.
 
           $("#status-messages").empty().html(
             "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-            "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
+            "<div class='error-description'>This probably means that there was a problem building the model. " +
+            "Here's the last thing that was going on with it:</div>" +
             "<pre>" + model["message"] + "</pre>");
 
           show_status_messages();
@@ -363,7 +372,12 @@ rights in this software.
           center:
           {
             resizeWhileDragging: false,
-            onresize: function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); },
+            onresize: function() { 
+              $("#scatterplot").scatterplot("option", {
+                width: $("#scatterplot-pane").width(), 
+                height: $("#scatterplot-pane").height()
+              }); 
+            },
           }
         });
 
@@ -485,7 +499,8 @@ rights in this software.
             $.ajax(
             {
               type : "GET",
-              url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+              url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
+                + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
               success : function(result)
               {
                 images = result;
@@ -500,7 +515,9 @@ rights in this software.
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && bookmark && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null) )
+          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
+            && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
+            && (selected_simulations != null) && (hidden_simulations != null) )
           {
             table_ready = true;
 
@@ -509,7 +526,8 @@ rights in this software.
             var other_columns = [];
             for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
             {
-              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
+              if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 
+                && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
                 other_columns.push(i);
             }
 
@@ -654,7 +672,8 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images && (selected_simulations != null) && (hidden_simulations != null))
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images 
+            && (selected_simulations != null) && (hidden_simulations != null))
           {
             scatterplot_ready = true;
 
@@ -728,7 +747,8 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
+                  variable + "/chunk?ranges=0," + table_metadata["row-count"],
                 success : function(result)
                 {
                   $("#scatterplot").scatterplot("option", "images", result);
@@ -741,7 +761,8 @@ rights in this software.
               $.ajax(
               {
                 type : "GET",
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + variable + "/chunk?ranges=0," + table_metadata["row-count"],
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
+                  variable + "/chunk?ranges=0," + table_metadata["row-count"],
                 success : function(result)
                 {
                   $("#scatterplot").scatterplot("option", "images", result);
@@ -760,7 +781,9 @@ rights in this software.
 
         function setup_controls()
         {
-          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) && (category_columns != null) && (x_index != null) && (y_index != null) && (images_index != null) && (selected_simulations != null) )
+          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
+            && (category_columns != null) && (x_index != null) && (y_index != null) 
+            && (images_index != null) && (selected_simulations != null) )
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -841,62 +864,47 @@ rights in this software.
             // Changing the value of a variable updates the database, table, and scatterplot ...
             $("#controls").bind("set-value", function(event, arguments)
             {
-              console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
-              var selection = arguments.selection;
-              var variable = arguments.variable;
-              var myBlob = new Blob(['[' + arguments.value + ']'], {type: "text/html"});
-
-              var hyperslice = "";
-              writeData(selection, variable, myBlob, 0);
-
-              function writeData(selection, variable, blob, iterator){
-                hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
+              writeData(arguments.selection, arguments.variable, arguments.value);
+              function writeData(selection, variable, value)
+              {
+                var hyperslices = "";
+                var data = "[";
+                for(var i=0; i<selection.length; i++)
+                {
+                  if(i>0)
+                  {
+                    hyperslices += "|";
+                    data += ",";
+                  }
+                  hyperslices += selection[i];
+                  data += "[" + value + "]";
+                }
+                data += "]";
+                var blob = new Blob([data], {type: "text/html"});
                 var formdata = new FormData();
-                formdata.append("array", 0);
-                formdata.append("attribute", variable);
                 formdata.append("data", blob);
-                formdata.append("hyperslice", hyperslice);
+                formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslices);
+
                 $.ajax({
                   type: "PUT",
-                  url : "{{server-root}}models/{{_id}}/array-sets/data-table/data",
+                  url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
                   data : formdata,
                   processData: false,
                   contentType: false,
                   success : function(results)
                   {
-                    console.log("writing array data SUCCESS");
-                    iterator++;
-                    if(iterator<selection.length) {
-                      writeData(selection, variable, blob, iterator);
-                    } 
-                    else {
-                      // Finished writing data, need to update widgets
-                      // Load data table metadata.
-                      // $.ajax({
-                      //   url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
-                      //   contentType : "application/json",
-                      //   success: function(metadata)
-                      //   {
-                      //     table_metadata = metadata;
-                      //     $("#table").table("option", "metadata", metadata);
-                      //   },
-                      //   error: artifact_missing
-                      // });
+                    $("#table").table("update_data");
 
-                      $("#table").table("update_data");
+                    if(variable == x_index)
+                      update_scatterplot_x(variable);
+                    if(variable == y_index)
+                      update_scatterplot_y(variable);
+                    if(variable == v_index)
+                      update_scatterplot_value(variable);
 
-                      if(variable == x_index)
-                        update_scatterplot_x(variable);
-                      if(variable == y_index)
-                        update_scatterplot_y(variable);
-                      if(variable == v_index)
-                        update_scatterplot_value(variable);
-
-                      load_table_statistics([variable], function(){
-                        $("#table").table("option", "statistics", table_statistics);
-                      });
-                    }
-
+                    load_table_statistics([variable], function(){
+                      $("#table").table("option", "statistics", table_statistics);
+                    });
                   },
                   error : function(jqXHR, textStatus, errorThrown)
                   {
@@ -904,7 +912,6 @@ rights in this software.
                   },
                 });
               }
-
             });
 
             // Log changes to the x variable ...
@@ -1148,7 +1155,7 @@ rights in this software.
           {
             requests.push(
               $.ajax({
-                url : "{{server-root}}models/{{_id}}/array-sets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
                 contentType : "application/json",
               })
             );
