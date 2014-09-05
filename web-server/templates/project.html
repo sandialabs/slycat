@@ -966,13 +966,14 @@ rights in this software.
           if($(this).val() == ""){
             $("#remote-hosts-cca-message").html("");
           }else{
-            $.each(remote_host_array, function(index, value){
-              if (value.name == $("#remote-cca-hostname").val()){
-                if(value.hasOwnProperty("message")){
-                  $("#remote-hosts-cca-message").html("<p>"+ value.message +"</p>");
+            $.each(remote_host_array, function(index, remote_host_object){
+              if (remote_host_object.name == $("#remote-cca-hostname").val()){
+                if(remote_host_object.hasOwnProperty("message")){
+                  $("#remote-hosts-cca-message").html("<p>"+ remote_host_object.message +"</p>");
                 }else{
                   $("#remote-hosts-cca-message").html("");
                 }
+                return false;
               }
             });
           }
@@ -982,13 +983,14 @@ rights in this software.
           if($(this).val() == ""){
             $("#remote-hosts-pi-message").html("");
           }else{
-            $.each(remote_host_array, function(index, value){
-              if (value.name == $("#remote-pi-hostname").val()){
-                if(value.hasOwnProperty("message")){
-                  $("#remote-hosts-pi-message").html("<p>"+ value.message +"</p>");
+            $.each(remote_host_array, function(index, remote_host_object){
+              if (remote_host_object.name == $("#remote-pi-hostname").val()){
+                if(remote_host_object.hasOwnProperty("message")){
+                  $("#remote-hosts-pi-message").html("<p>"+ remote_host_object.message +"</p>");
                 }else{
                   $("#remote-hosts-pi-message").html("");
                 }
+                return false;
               }
             });
           }
