@@ -34,7 +34,18 @@ index and attribute index must be non-negative integers.  The list of hyperslice
 will contain one-or-more hyperslices, separated by vertical bars.  Each hyperslice
 will contain one-or-more slice dimensions, separated by commas.  Each slice dimension
 may be an integer, a colon-delimited start:stop:step range, or an ellipsis ("...").
-Any part of the colon-delimited start:stop:step range may be omitted.
+When specifying ranges, the :step may be omitted, in which case the step defaults
+to `1`.  If the start value is omitted (empty string), the start value defaults to
+`0`.  If the stop value is omitted (empty string), the stop value defaults to the
+end of the corresponding array dimension.  So for example:
+
+* `0:10:2` - specifies even numbered indices `0, 2, 4, 6, 8`.
+* `0:10` - specifies indices `0, 1, 2, 3, 4, 5, 6, 7, 8, 9`.
+* `:5` - specifies indices `0, 1, 2, 3, 4`.
+* `4:` - specifies indices from `4` through the end of the array dimension.
+* `:` - specifies every index in the array dimension.
+* `::3` - specifies every third index in the array dimension, starting at `0`.
+* `1::3` - specifies every third index in the array dimension, starting at `1`.
 
 The request may optionally contain a parameter `byteorder` that specifies that
 the request data is binary data with the given endianness. The byteorder
@@ -42,13 +53,17 @@ parameter must be either "little" or "big".  Note that the byteorder parameter
 can only be used if every attribute in every hyperchunk is of numeric type.
 
 The request must contain a file parameter "data" that contains the data to be
-stored in array attributes. If the byteorder parameter isn't specified, the
-request data must contain a JSON-encoded array with length equal to the number
-of hyperchunks.  Each element in the hyperchunk array must be an array with
-length equal to the number of hyperslices in the corresponding hyperchunk.
-Each element in the hyperslice array must be an array containing the
-corresponding data (the arrays will be nested further to represent data with
-dimension > 1).
+stored in array attributes. If the byteorder is specified, the request data
+must contain contiguous raw data bytes in the given byteorder, in the same
+order as the hyperchunks / hyperslices.  For multi-dimension arrays, hyperslice
+array elements must be in "C" order.
+
+If the byteorder parameter isn't specified, the request data must contain a
+JSON-encoded array with length equal to the total number of hyperslices.  Each
+element in this top level array must be an array containing the data for the
+corresponding hyperslice, in the same order as the hyperchunks / hyperslices.
+For multi-dimension arrays, data for the corresponding hyperslice will be
+nested further.
 
 Precondition
 ^^^^^^^^^^^^

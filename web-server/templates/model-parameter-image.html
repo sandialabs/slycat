@@ -864,22 +864,27 @@ rights in this software.
             // Changing the value of a variable updates the database, table, and scatterplot ...
             $("#controls").bind("set-value", function(event, arguments)
             {
-              //console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
-              var selection = arguments.selection;
-              var variable = arguments.variable;
-              var myBlob = new Blob(['[' + arguments.value + ']'], {type: "text/html"});
-
-              var hyperslice = "";
-              writeData(selection, variable, myBlob, 0);
-
-              function writeData(selection, variable, blob, iterator){
-                hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
+              writeData(arguments.selection, arguments.variable, arguments.value);
+              function writeData(selection, variable, value)
+              {
+                var hyperslices = "";
+                var data = "[";
+                for(var i=0; i<selection.length; i++)
+                {
+                  if(i>0)
+                  {
+                    hyperslices += "|";
+                    data += ",";
+                  }
+                  hyperslices += selection[i];
+                  data += "[" + value + "]";
+                }
+                data += "]";
+                var blob = new Blob([data], {type: "text/html"});
                 var formdata = new FormData();
-                // formdata.append("array", 0);
-                // formdata.append("attribute", variable);
-                // formdata.append("hyperslice", hyperslice);
-                formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslice);
                 formdata.append("data", blob);
+                formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslices);
+
                 $.ajax({
                   type: "PUT",
                   url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
@@ -888,39 +893,18 @@ rights in this software.
                   contentType: false,
                   success : function(results)
                   {
-                    console.log("writing array data SUCCESS");
-                    iterator++;
-                    if(iterator<selection.length) {
-                      writeData(selection, variable, blob, iterator);
-                    } 
-                    else {
-                      // Finished writing data, need to update widgets
-                      // Load data table metadata.
-                      // $.ajax({
-                      //   url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
-                      //   contentType : "application/json",
-                      //   success: function(metadata)
-                      //   {
-                      //     table_metadata = metadata;
-                      //     $("#table").table("option", "metadata", metadata);
-                      //   },
-                      //   error: artifact_missing
-                      // });
+                    $("#table").table("update_data");
 
-                      $("#table").table("update_data");
+                    if(variable == x_index)
+                      update_scatterplot_x(variable);
+                    if(variable == y_index)
+                      update_scatterplot_y(variable);
+                    if(variable == v_index)
+                      update_scatterplot_value(variable);
 
-                      if(variable == x_index)
-                        update_scatterplot_x(variable);
-                      if(variable == y_index)
-                        update_scatterplot_y(variable);
-                      if(variable == v_index)
-                        update_scatterplot_value(variable);
-
-                      load_table_statistics([variable], function(){
-                        $("#table").table("option", "statistics", table_statistics);
-                      });
-                    }
-
+                    load_table_statistics([variable], function(){
+                      $("#table").table("option", "statistics", table_statistics);
+                    });
                   },
                   error : function(jqXHR, textStatus, errorThrown)
                   {
@@ -928,7 +912,6 @@ rights in this software.
                   },
                 });
               }
-
             });
 
             // Log changes to the x variable ...
