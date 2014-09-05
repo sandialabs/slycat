@@ -699,7 +699,9 @@ rights in this software.
             if("open-images-selection" in bookmark)
               open_images = bookmark["open-images-selection"];
 
-            $("#scatterplot").scatterplot({
+            d3.select($("#scatterplot")).append("svg");
+
+            $("#scatterplot").plot({
               indices: indices,
               x_label: table_metadata["column-names"][x_index],
               y_label: table_metadata["column-names"][y_index],
@@ -708,8 +710,10 @@ rights in this software.
               y: y,
               v: v,
               images: images,
-              width: $("#scatterplot-pane").width(),
-              height: $("#scatterplot-pane").height(),
+              offset_x: 150,
+              offset_x: 150,
+              width: $("#scatterplot-pane").width()/2,
+              height: $("#scatterplot-pane").height()/2,
               color: $("#color-switcher").colorswitcher("get_color_map", colormap),
               selection: selected_simulations,
               server_root: "{{server-root}}",

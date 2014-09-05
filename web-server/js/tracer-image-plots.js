@@ -12,8 +12,10 @@ $.widget("tracer-image.plot",
 {
   options:
   {
-    width : 300,
-    height : 300,
+    offset_x : 0,
+    offset_y : 0,
+    width : 1,
+    height : 1,
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
@@ -39,6 +41,8 @@ $.widget("tracer-image.plot",
   {
     var self = this;
 
+    test_item = self;
+
     self.hover_timer = null;
     self.close_hover_timer = null;
 
@@ -48,31 +52,20 @@ $.widget("tracer-image.plot",
     self.current_drag = null;
     self.end_drag = null;
 
-    // Setup the login dialog ...
-    self.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
-    self.login.appendTo(self.element);
-    self.login.dialog(
-    {
-      autoOpen: false,
-      width: 700,
-      height: 300,
-      modal: true,
-      close: function()
-      {
-        $("#remote-password").val("");
-      }
-    });
-
     // Setup the scatterplot ...
-    self.svg = d3.select(self.element.get(0));
-    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
-    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
-    self.legend_layer = self.svg.append("g").attr("class", "legend");
+    self.svg = $(self.element.get(0)).parents("svg");
+    self.start_x = self.options.offset_x * self.svg.width()/2;
+    self.start_y = self.options.offset_y * self.svg.height()/2;
+
+    self.graphic = d3.select(self.element.get(0)).attr("translate", "translate(" + self.start_x + " " + self.start_y + ")");
+    self.x_axis_layer = self.graphic.append("g").attr("class", "x-axis");
+    self.y_axis_layer = self.graphic.append("g").attr("class", "y-axis");
+    self.legend_layer = self.graphic.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
-    self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
-    self.selected_layer = self.svg.append("g");
-    self.selection_layer = self.svg.append("g");
-    self.image_layer = self.svg.append("g");
+    self.datum_layer = self.graphic.append("g").attr("class", "datum-layer");
+    self.selected_layer = self.graphic.append("g");
+    self.selection_layer = self.graphic.append("g");
+    self.image_layer = self.graphic.append("g");
 
     self.session_cache = {};
     self.image_cache = {};
@@ -107,8 +100,8 @@ $.widget("tracer-image.plot",
               var theElement = d3.select(this);
               var transx = Number(theElement.attr("data-transx"));
               var transy = Number(theElement.attr("data-transy"));
-              transx += d3.event.dx;
-              transy += d3.event.dy;
+              transx += d3.event.dx + self.options.offset_x;
+              transy += d3.event.dy + self.options.offset_y;
               theElement.attr("data-transx", transx);
               theElement.attr("data-transy", transy);
               theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
@@ -126,14 +119,14 @@ $.widget("tracer-image.plot",
       )
       ;
 
-    self.element.mousedown(function(e)
+    self.svg.mousedown(function(e)
     {
       //console.log("#scatterplot mousedown");
       self.start_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
       self.end_drag = null;
     });
 
-    self.element.mousemove(function(e)
+    self.svg.mousemove(function(e)
     {
       //console.log("#scatterplot mousemove");
       if(self.start_drag) // Mouse is down ...
@@ -142,8 +135,8 @@ $.widget("tracer-image.plot",
         {
           self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
 
-          var width = self.element.width();
-          var height = self.element.height();
+          var width = self.svg.width() * self.options.width;
+          var height = self.svg.height() * self.options.height;
 
           self.selection_layer.selectAll(".rubberband")
               .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
@@ -173,7 +166,7 @@ $.widget("tracer-image.plot",
       }
     });
 
-    self.element.mouseup(function(e)
+    self.svg.mouseup(function(e)
     {
       if(self.state == "resizing" || self.state == "moving")
         return;
@@ -234,8 +227,8 @@ $.widget("tracer-image.plot",
               // {
               //   self._close_hover();
 
-              //   var width = self.svg.attr("width");
-              //   var height = self.svg.attr("height");
+              //   var width = self.graphic.attr("width");
+              //   var height = self.graphic.attr("height");
               //   var open_width = Math.min(width, height) / 3;
               //   var open_height = Math.min(width, height) / 3;
 
@@ -268,7 +261,7 @@ $.widget("tracer-image.plot",
       self._filterIndices();
       self.options.selection = self.options.filtered_selection.slice(0);
       self._schedule_update({render_selection:true});
-      self.element.trigger("selection-changed", [self.options.selection]);
+      self.svg.trigger("selection-changed", [self.options.selection]);
     });
     self._filterIndices();
   },
@@ -420,14 +413,14 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_width"])
     {
-      self.element.attr("width", self.options.width);
-      self.svg.attr("width", self.options.width);
+      self.graphic.attr("width", self.options.width);
+      self.graphic.attr("width", self.options.width);
     }
 
     if(self.updates["update_height"])
     {
-      self.element.attr("height", self.options.height);
-      self.svg.attr("height", self.options.height);
+      self.graphic.attr("height", self.options.height);
+      self.graphic.attr("height", self.options.height);
     }
 
     if(self.updates["update_indices"])
@@ -440,12 +433,12 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_x"])
     {
-      var total_width = self.element.attr("width");
-      var total_height = self.element.attr("height");
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var total_width = self.graphic.attr("width");
+      var total_height = self.graphic.attr("height");
+      var width = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
+      var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
+      var width_offset = (total_width - width) / 2 + self.options.offset_x
+      var height_offset = (total_height - height) / 2 + self.options.offset_y
 
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
@@ -457,13 +450,13 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_y"])
     {
-      var total_width = self.element.attr("width");
-      var total_height = self.element.attr("height");
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = self.graphic.attr("width");
+      var total_height = self.graphic.attr("height");
+      var width = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
+      var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
-      self.y_axis_offset = 0 + width_offset + self.options.border;
+      self.y_axis_offset = 0 + width_offset + self.options.border + self.options.offset_x;
 
       self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
@@ -475,7 +468,7 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_x_label"])
     {
-      var x = self.svg.attr("width") / 2;
+      var x = self.graphic.attr("width") / 2;
       var y = 40;
 
       self.x_axis_layer.selectAll(".label").remove()
@@ -493,9 +486,11 @@ $.widget("tracer-image.plot",
     {
       self.y_axis_layer.selectAll(".label").remove();
 
+      test_out = self;
+
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
       var x = -(y_axis_width+15);
-      var y = self.svg.attr("height") / 2;
+      var y = self.graphic.attr("height") / 2;
       
       self.y_axis_layer.append("text")
         .attr("class", "label")
@@ -629,8 +624,8 @@ $.widget("tracer-image.plot",
       });
 
       // Transform the list of initial images so we can pass them to _open_images()
-      var width = Number(self.svg.attr("width"));
-      var height = Number(self.svg.attr("height"));
+      var width = Number(self.graphic.attr("width"));
+      var height = Number(self.graphic.attr("height"));
 
       var images = [];
       self.options.open_images.forEach(function(image, index)
@@ -698,10 +693,10 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.element.attr("width"));
-      var total_height = Number(self.element.attr("height"));
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = Number(self.graphic.attr("width"));
+      var total_height = Number(self.graphic.attr("height"));
+      var width = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
+      var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var datum_layer_width = self.datum_layer.node().getBBox().width;
       var width_offset = (total_width + datum_layer_width) / 2;
@@ -709,8 +704,8 @@ $.widget("tracer-image.plot",
 
       if( self.legend_layer.attr("data-status") != "moved" )
       {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
+        var transx = parseInt(y_axis_layer_width + 10 + width_offset) + self.options.offset_x;
+        var transy = parseInt((total_height/2)-(rectHeight/2)) + self.options.offset_y;
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
@@ -728,19 +723,18 @@ $.widget("tracer-image.plot",
       self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
-        .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
+        .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1 + self.options.offset_x) + ",0)")
         .call(self.legend_axis)
         ;
     }
 
     if(self.updates["update_v_label"])
     {
-      console.log("updating v label.");
       self.legend_layer.selectAll(".label").remove();
 
       // var y_axis_width = self.y_axis_layer.node().getBBox().width;
       // var x = -(y_axis_width+15);
-      // var y = self.svg.attr("height") / 2;
+      // var y = self.graphic.attr("height") / 2;
       var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
       var x = -15;
       var y = rectHeight/2;
@@ -764,8 +758,8 @@ $.widget("tracer-image.plot",
     var self = this;
 
     // Get the scatterplot width so we can convert absolute to relative coordinates.
-    var width = Number(self.svg.attr("width"));
-    var height = Number(self.svg.attr("height"));
+    var width = Number(self.graphic.attr("width"));
+    var height = Number(self.graphic.attr("height"));
     var open_images = [];
     $(".open-image").each(function(index, frame)
     {
@@ -780,7 +774,7 @@ $.widget("tracer-image.plot",
         height : Number(image.attr("height")),
         });
     });
-    self.element.trigger("open-images-changed", [open_images]);
+    self.graphic.trigger("open-images-changed", [open_images]);
   },
 
   _open_images: function(images)
@@ -826,7 +820,7 @@ $.widget("tracer-image.plot",
       if(image.x === undefined)
       {
         // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
+        var width = self.graphic.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
@@ -837,7 +831,7 @@ $.widget("tracer-image.plot",
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
+        var height = self.graphic.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = parseInt((target_y / height) * (height - image.height));
       }
@@ -983,7 +977,7 @@ $.widget("tracer-image.plot",
       if(image.x === undefined)
       {
         // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
+        var width = self.graphic.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
@@ -994,7 +988,7 @@ $.widget("tracer-image.plot",
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
+        var height = self.graphic.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = (target_y / height) * (height - image.height);
       }
@@ -1195,7 +1189,7 @@ $.widget("tracer-image.plot",
           var imageHeight = 200;
           var imageWidth = 200;
 
-          var width = self.svg.attr("width");
+          var width = self.graphic.attr("width");
           var range = self.x_scale.range();
           var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
           var x, y;
@@ -1205,7 +1199,7 @@ $.widget("tracer-image.plot",
           else
             x = width - ((width - range[1]) * (1.0 - relx)) - imageWidth;
 
-          var height = self.svg.attr("height");
+          var height = self.graphic.attr("height");
           var target_y = self.y_scale(self.options.y[image.index]);
           y = (target_y / height) * (height - imageHeight);
 
@@ -1394,8 +1388,8 @@ $.widget("tracer-image.plot",
       self._close_hover();
       self.opening_image = image_index;
 
-      var width = self.svg.attr("width");
-      var height = self.svg.attr("height");
+      var width = self.graphic.attr("width");
+      var height = self.graphic.attr("height");
       var hover_width = Math.min(width, height) * 0.85;
       var hover_height = Math.min(width, height) * 0.85;
 
@@ -1404,7 +1398,7 @@ $.widget("tracer-image.plot",
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "hover-image",
         x : self.x_scale(self.options.x[image_index]) + 10,
-        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
+        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.graphic.attr("height") - hover_height - self.options.border - 10),
         width : hover_width,
         height : hover_height,
         target_x : self.x_scale(self.options.x[image_index]),
