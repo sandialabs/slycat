@@ -17,81 +17,85 @@ networking.
 Generate Timeseries Data
 ------------------------
 
--  Within the Slycat Virtual Machine, use *Applications > System Tools >
-   Terminal* to open a new shell.
--  Switch to the Slycat source code directory containing sample client
-   scripts:
+* For this example we'll ssh into the Slycat server, where the scripts
+  to be run are located.  Normally, you would run these scripts on the
+  system where your data was located::
 
-   ::
+  $ ssh slycat@<docker ip address> -p 2222
 
-       $ cd src/slycat/web-client
+In this case, substitute your docker host IP address.  If you're running
+docker on a Linux host, this will be `localhost`.  On systems using
+Boot2Docker, it will be the IP address returned by::
 
--  The script for synthesizing data is designed to run in parallel, so
-   start some parallel worker processes in the background:
+  $ boot2docker ip
 
-   ::
+When prompted, enter password `slycat`.
 
-       $ ipcluster start --daemonize
+* Switch to the Slycat source code directory containing the sample client
+  scripts::
 
--  Synthesize some time series data, organized for use with Slycat:
+  $ cd src/slycat/web-client
 
-   ::
+* The script for synthesizing data is designed to run in parallel, so
+  start some parallel worker processes in the background::
 
-       $ python slycat-generate-hdf5-timeseries.py mydata
+  $ ipcluster start --daemonize
 
--  The script creates a *mydata* directory and populates it with a set
-   of random input variables and ten output time series, each containing
-   two variables (additional command line parameters are available to
-   synthesize data of arbitrary size).
+* Synthesize some time series data, organized for use with Slycat::
+
+  $ python slycat-generate-hdf5-timeseries.py mydata
+
+* The script creates a *mydata* directory and populates it with a set
+  of random input variables and ten output time series, each containing
+  two variables (additional command line parameters are available to
+  synthesize data of arbitrary size).
 
 Compute a Timeseries Model
 --------------------------
 
--  Now that you have some sample data, run
-   *slycat-hdf5-to-timeseries-model.py*, entering the password "slycat"
-   when prompted (this script also runs in parallel, using the workers
-   you started previously):
+* Now that you have some sample data, run
+  *slycat-hdf5-to-timeseries-model.py*, entering the password `slycat`
+  when prompted (this script also runs in parallel, using the workers
+  you started previously)::
 
-   ::
-
-       $ python slycat-hdf5-to-timeseries-model.py mydata
-       slycat password: 
-       INFO - Storing clustering parameters.
-       INFO - Storing input table attribute 0
-       INFO - Storing input table attribute 1
-       INFO - Storing input table attribute 2
-       ...
-       INFO - Your new model is located at https://localhost:8092/models/...
+    $ python slycat-hdf5-to-timeseries-model.py mydata
+    slycat password:
+    INFO - Storing clustering parameters.
+    INFO - Storing input table attribute 0
+    INFO - Storing input table attribute 1
+    INFO - Storing input table attribute 2
+    ...
+    INFO - Your new model is located at https://localhost:8092/models/...
 
 View a Timeseries Model
 -----------------------
 
--  Point your web browser to the Slycat home page at
-   https://localhost:8092 again. Wait for the model icon in the *Worker
-   Pane* to switch to a green check, if it hasn't already.
--  Note that the push script created a new project, "HDF5-Timeseries".
-   Click on the project's name, and the browser opens the project page.
--  In the project page, note that there is a new model entry named "my
-   data". Click on on the model's name, and the browser opens the
-   timeseries page.
--  At the top of the page there is a list of output variables.
--  At page left is a hierarchical clustering of the output variable
-   timeseries, displayed as a dendrogram.
--  At page right the raw output timeseries are plotted.
--  At the bottom of the page is a table containing raw input data.
+* Point your web browser to the Slycat home page at
+  https://<docker ip address> again. Wait for the model icon in the *Worker
+  Pane* to switch to a green check, if it hasn't already.
+* Note that the push script created a new project, "HDF5-Timeseries".
+  Click on the project's name, and the browser opens the project page.
+* In the project page, note that there is a new model entry named "my
+  data". Click on on the model's name, and the browser opens the
+  timeseries page.
+* At the top of the page there is a list of output variables.
+* At page left is a hierarchical clustering of the output variable
+  timeseries, displayed as a dendrogram.
+* At page right the raw output timeseries are plotted.
+* At the bottom of the page is a table containing raw input data.
 
 Interact with a Timeseries Model
 --------------------------------
 
--  Click on an output variable name at the top of the page to select
-   that output, updating the rest of the interface.
--  Click variable names in the raw input table to color timeseries using
-   that variable.
--  Click individual raw input table rows or shift-click ranges of rows
-   to highlight the corresponding timeseries.
--  Click nodes in the dendrogram to display only those waveforms.
--  Double-click nodes in the dendrogram to expand / collapse their
-   children.
+* Click on an output variable name at the top of the page to select
+  that output, updating the rest of the interface.
+* Click variable names in the raw input table to color timeseries using
+  that variable.
+* Click individual raw input table rows or shift-click ranges of rows
+  to highlight the corresponding timeseries.
+* Click nodes in the dendrogram to display only those waveforms.
+* Double-click nodes in the dendrogram to expand / collapse their
+  children.
 
 Next Steps
 ----------
