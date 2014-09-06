@@ -3,74 +3,76 @@
 Install Slycat
 =================
 
-As a convenience, we provide the Slycat Virtual Machine, a complete
-virtual machine image that has Slycat and all its dependencies
-preinstalled. Using the Slycat VM, you can quickly begin exploring
-Slycat, try some tutorials, and run modest-size analyses on your own
-data. Eventually you might want to :ref:`Setup Slycat Web Server` on your
-own hardware to perform large-scale analyses.
+As a convenience, we provide a `Docker <http://www.docker.com>`_ image that
+has Slycat and all its dependencies preinstalled. Using the Slycat image,
+you can quickly begin exploring Slycat, try some tutorials, and run small
+analyses on your own data. Eventually you might want to :ref:`Setup Slycat Web
+Server` on your own hardware to perform large-scale analyses.
 
-Install the Virtual Machine
----------------------------
+Install Docker
+--------------
 
-You will need to install a hypervisor on the host where you plan to run the
-Slycat VM. The Slycat VM image is ready-to-use with `VirtualBox
-<https://www.virtualbox.org>`_, an open-source hypervisor that runs well on
-Windows, Linux, Mac, and most flavors of Unix. Once you've installed VirtualBox
-on your host, you're ready to download the Slycat VM and get started:
+Mac OSX Installation
+~~~~~~~~~~~~~~~~~~~~
 
--  Download the `Slycat VM image <http://sourceforge.net/projects/slycat/files/virtual-machines/slycatvm-20140820.ova/download>`__.
--  Start VirtualBox.
--  Choose *File > Import Appliance* and select the Slycat VM image you
-   downloaded.
--  When prompted for "Appliance Settings", you may want to adjust the
-   number of CPUs and the amount of RAM assigned to the VM, to match
-   your hardware.
--  Once you are satisfied with the settings, click the *Import* button.
--  After the import is finished, a new "Slycat Virtual Machine" entry
-   appears in VirtualBox Manager.
+Because Docker uses Linux-specific kernel features, you will need to run Docker
+in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relatively easy:
 
-Get the Latest Slycat Source Code:
-----------------------------------
+* Download the latest `Boot2Docker` installer from https://github.com/boot2docker/osx-installer/releases
+* Run the installer.  This will install a `VirtualBox <https://www.virtualbox.org>`_ hypervisor on your machine, if you don't already have one.
+* In a terminal window, initialize the Boot2Docker VM::
 
-The Slycat Virtual Machine doesn't change as often as Slycat itself, so
-the next step is to ensure that your new VM has the latest Slycat source
-code:
+  $ boot2docker init
 
--  Select the Slycat Virtual Machine entry and choose *Machine > Start*
-   to boot the virtual OS.
--  At the login prompt, select user "slycat" and enter password "slycat"
-   when prompted.
--  In the VM desktop, choose *Applications > System Tools > Terminal* to
-   open a shell window, and update the Slycat soure code to the latest
-   version:
+* Next, start the Boot2Docker VM::
 
-   ::
+  $ boot2docker start
 
-       $ cd -/src/slycat
-       $ git pull
+* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy the paste the command into the terminal (note that the variable setting on your machine may differ from the following example)::
 
-Start Slycat Web Server
------------------------
+  $ export DOCKER_HOST=tcp://192.168.59.103:2375
 
-::
+With Boot2Docker installed and running and the DOCKER_HOST environment variable set, the rest of the
+install instructions are platform-independent.
 
-        $ cd web-server
-        $ python slycat-web-server.py
+Other Platforms
+~~~~~~~~~~~~~~~
 
--  The Slycat Web Server begins running, waiting for requests on
-   https://localhost:8092.
--  Leave the shell window open for the remainder of these tutorials.
+You will need to install the Docker engine on your host, following the instructions
+at https://docs.docker.com/installation/#installation
+
+Download the Image and Create a Container
+-----------------------------------------
+
+Now that you have the Docker daemon running and DOCKER_HOST set to connect to it,
+you're ready to download the Slycat image and create a container::
+
+  $ docker run -d -p 2222:22 -p 443:8092 --name slycat sandialabs/slycat
+
+Docker will begin downloading the `sandialabs/slycat` image, and will create a
+container with the name `slycat` (you will use this name as a convenient way to
+reference the container in subsequent commands).  The Slycat server will begin
+running as soon as the download is complete.  Leave the container running for
+the remainder of these tutorials.
 
 Connect to Slycat with a Web Browser
 ------------------------------------
 
--  Within the VM desktop, choose *Applications > Internet > Chromium Web
-   Browser* to start a web browser.
--  When the browser opens, its home page is already set to
-   https://localhost:8092.
--  When prompted for a username and password, enter *slycat* for both.
--  The Slycat Projects page opens in the browser.
+* If you're running the Slycat container on a Linux host, you can open a web browser and point it to the Slycat server directly at https://localhost.
+
+* If you're running the Slycat container in a VM on a non-Linux host, you need to know the IP address of the VM::
+
+    $ boot2docker ip
+     
+    The VM's Host only interface IP address is: 192.168.59.103
+
+Open a web browser and point it to the Slycat server at https://192.168.59.103
+... note that the IP address may be different on your machine, and that the `https://`
+is *required*.
+
+* When prompted for a username and password, enter *slycat* for both.
+
+* The Slycat Projects page opens in the browser.
 
 Next Steps
 ----------
