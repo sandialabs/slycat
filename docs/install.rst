@@ -35,6 +35,35 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 With Boot2Docker installed and running and the DOCKER_HOST environment variable set, the rest of the
 install instructions are platform-independent.
 
+.. NOTE::
+
+  If you're using Boot2Docker behind a proxy, you'll need additional configuration
+  so it can access the network to download the Slycat image:
+
+  * To configure proxy information, ssh into the Boot2Docker VM::
+
+    $ boot2docker ssh
+
+  * Create / modify the `/var/lib/boot2docker/profile` file to set proxy info::
+
+    $ sudo vi /var/lib/boot2docker/profile
+
+  * Add the proxy info using `protocol://host:port`, for example:
+    ::
+
+      export HTTP_PROXY=http://your.proxy.name:80
+      export HTTPS_PROXY=http://your.proxy.name:80
+
+  * If your site uses SSL interception, you will need to get a copy of the
+    interception certificate, and append it to /etc/ssl/cacerts.pem::
+
+    $ sudo vi /etc/ssl/cacerts.pem
+
+  * Restart the Docker service and exit the VM::
+
+    $ sudo /etc/init.d/docker restart
+    $ exit
+
 Other Platforms
 ~~~~~~~~~~~~~~~
 
