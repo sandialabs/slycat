@@ -26,8 +26,8 @@ $.widget("tracer_image.grid",
     // Setup the grid ...
     self.svg = d3.select(self.element.get(0)).append("svg");
     // create plots
-    for(x=0; x<self.options.size[0];x++) {
-      for(y=0; y<self.options.size[1];y++) {
+    for(var x=0; x<self.options.size[0];x++) {
+      for(var y=0; y<self.options.size[1];y++) {
         self.svg.append("g").attr("class", "plot");
         $("g.plot:last").plot({
           grid_x: x,
