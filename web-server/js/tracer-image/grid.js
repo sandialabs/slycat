@@ -7,7 +7,9 @@ function setup_grid() {
     $("#grid").grid({
       width: $("#grid-pane").width(),
       height: $("#grid-pane").height(),
-      size: [2,2]
+      size: [2,2],
+      x: x,
+      y: y
     });
   }
 }
