@@ -1,126 +1,130 @@
-function metadata_loaded()
-{
+function metadata_loaded() {
   setup_table();
 
-  if(!indices && table_metadata)
-  {
+  if(!indices && table_metadata) {
     var count = table_metadata["row-count"];
     indices = new Int32Array(count);
-    for(var i = 0; i != count; ++i)
+    for(var i = 0; i != count; ++i) {
       indices[i] = i;
+    }
   }
 
-  if(table_metadata && bookmark)
-  {
+  if(table_metadata && bookmark) {
     // Choose some columns for the X and Y axes.
     var numeric_variables = [];
-    for(var i = 0; i < table_metadata["column-count"]-1; i++)
-    {
+    for(var i = 0; i < table_metadata["column-count"]-1; i++) {
       // Only use non-string columns that are not used for ratings or categories
-      if(table_metadata["column-types"][i] != 'string' && rating_columns.indexOf(i) == -1 && category_columns.indexOf(i) == -1)
+      if(table_metadata["column-types"][i] != 'string' && rating_columns.indexOf(i) == -1 && category_columns.indexOf(i) == -1) {
         numeric_variables.push(i);
+      }
     }
 
     x_index = numeric_variables[0];
     y_index = numeric_variables[1 % numeric_variables.length];
-    if("x-selection" in bookmark)
+    if("x-selection" in bookmark) {
       x_index = Number(bookmark["x-selection"]);
-    if("y-selection" in bookmark)
+    }
+    if("y-selection" in bookmark) {
       y_index = Number(bookmark["y-selection"]);
-
+    }
     // Set state of selected and hidden simulations
     selected_simulations = [];
-    if("simulation-selection" in bookmark)
+    if("simulation-selection" in bookmark) {
       selected_simulations = bookmark["simulation-selection"];
-    hidden_simulations = [];
-    if("hidden-simulations" in bookmark)
-      hidden_simulations = bookmark["hidden-simulations"];
-
-    get_model_array_attribute({
-      server_root : "{{server-root}}",
-      mid : "{{_id}}",
-      aid : "data-table",
-      array : 0,
-      attribute : x_index,
-      success : function(result)
-      {
-        x = result;
-        setup_grid();
-        setup_table();
-      },
-      error : artifact_missing
-    });
-
-    get_model_array_attribute({
-      server_root : "{{server-root}}",
-      mid : "{{_id}}",
-      aid : "data-table",
-      array : 0,
-      attribute : y_index,
-      success : function(result)
-      {
-        console.debug("Set y")
-        console.debug(result)
-        y = result;
-        setup_grid();
-        setup_table();
-      },
-      error : artifact_missing
-    });
-
-    v_index = table_metadata["column-count"] - 1;
-    if("variable-selection" in bookmark)
-      v_index = Number(bookmark["variable-selection"]);
-
-    if(v_index == table_metadata["column-count"] - 1)
-    {
-      var count = table_metadata["row-count"];
-      v = new Float64Array(count);
-      for(var i = 0; i != count; ++i)
-        v[i] = i;
-      setup_grid();
     }
-    else
-    {
+    hidden_simulations = [];
+    if("hidden-simulations" in bookmark) {
+      hidden_simulations = bookmark["hidden-simulations"];
+    }
+
+    $.when(
       get_model_array_attribute({
         server_root : "{{server-root}}",
         mid : "{{_id}}",
         aid : "data-table",
         array : 0,
-        attribute : v_index,
+        attribute : x_index,
         success : function(result)
         {
-          v = result;
-          setup_grid();
+          x = result;
+          //setup_grid();
+          //setup_table();
         },
         error : artifact_missing
       });
-    }
 
-    images_index = image_columns[0];
-    if("images-selection" in bookmark)
-      images_index = bookmark["images-selection"];
-    $.ajax(
-    {
-      type : "GET",
-      url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
-        + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
-      success : function(result)
+      get_model_array_attribute({
+        server_root : "{{server-root}}",
+        mid : "{{_id}}",
+        aid : "data-table",
+        array : 0,
+        attribute : y_index,
+        success : function(result)
+        {
+          y = result;
+          //setup_grid();
+          //setup_table();
+        },
+        error : artifact_missing
+      });
+
+      v_index = table_metadata["column-count"] - 1;
+      if("variable-selection" in bookmark)
+        v_index = Number(bookmark["variable-selection"]);
+
+      if(v_index == table_metadata["column-count"] - 1)
       {
-        images = result;
-        setup_grid();
-        setup_table();
-      },
-      error: artifact_missing
+        var count = table_metadata["row-count"];
+        v = new Float64Array(count);
+        for(var i = 0; i != count; ++i)
+          v[i] = i;
+        //setup_grid();
+      }
+      else
+      {
+        get_model_array_attribute({
+          server_root : "{{server-root}}",
+          mid : "{{_id}}",
+          aid : "data-table",
+          array : 0,
+          attribute : v_index,
+          success : function(result)
+          {
+            v = result;
+            //setup_grid();
+          },
+          error : artifact_missing
+        });
+      }
+
+      images_index = image_columns[0];
+      if("images-selection" in bookmark)
+        images_index = bookmark["images-selection"];
+      $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/"
+            + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+          success : function(result)
+          {
+            images = result;
+            //setup_grid();
+            //setup_table();
+          },
+          error: artifact_missing
+        });
+    ).then(function() {
+      setup_grid();
+      setup_table();
+      setup_controls();
     });
-    setup_controls();
   }
 }
 
 function setup_table()
 {
-  if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
-    && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
+  if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"])
+    && bookmark && (x_index != null) && (y_index != null) && (images_index != null)
     && (selected_simulations != null) && (hidden_simulations != null) )
   {
     table_ready = true;
@@ -130,7 +134,7 @@ function setup_table()
     var other_columns = [];
     for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
     {
-      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 
+      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1
         && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
         other_columns.push(i);
     }
