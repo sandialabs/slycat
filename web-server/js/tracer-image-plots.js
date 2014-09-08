@@ -12,8 +12,6 @@ $.widget("tracer-image.plot",
 {
   options:
   {
-    offset_x : 0,
-    offset_y : 0,
     width : 1,
     height : 1,
     pick_distance : 3,
@@ -54,10 +52,10 @@ $.widget("tracer-image.plot",
 
     // Setup the scatterplot ...
     self.svg = $(self.element.get(0)).parents("svg");
-    self.start_x = self.options.offset_x * self.svg.width()/2;
-    self.start_y = self.options.offset_y * self.svg.height()/2;
+    self.start_x = self.options.grid_x * self.svg.width()/2;
+    self.start_y = self.options.grid_y * self.svg.height()/2;
 
-    self.graphic = d3.select(self.element.get(0)).attr("translate", "translate(" + self.start_x + " " + self.start_y + ")");
+    self.graphic = d3.select(self.element.get(0)).attr("transform", "translate(" + self.start_x + " " + self.start_y + ")");
     self.x_axis_layer = self.graphic.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.graphic.append("g").attr("class", "y-axis");
     self.legend_layer = self.graphic.append("g").attr("class", "legend");
@@ -73,16 +71,16 @@ $.widget("tracer-image.plot",
     self.updates = {};
     self.update_timer = null;
     self._schedule_update({
-      update_indices:true, 
-      update_width:true, 
-      update_height:true, 
-      update_x:true, 
-      update_y:true, 
-      update_x_label:true, 
-      update_y_label:true, 
-      update_color_domain:true, 
-      render_data:true, 
-      render_selection:true, 
+      update_indices:true,
+      update_width:true,
+      update_height:true,
+      update_x:true,
+      update_y:true,
+      update_x_label:true,
+      update_y_label:true,
+      update_color_domain:true,
+      render_data:true,
+      render_selection:true,
       open_images:true,
       render_legend:true,
       update_legend_colors:true,
@@ -100,8 +98,8 @@ $.widget("tracer-image.plot",
               var theElement = d3.select(this);
               var transx = Number(theElement.attr("data-transx"));
               var transy = Number(theElement.attr("data-transy"));
-              transx += d3.event.dx + self.options.offset_x;
-              transy += d3.event.dy + self.options.offset_y;
+              transx += d3.event.dx + self.start_x;
+              transy += d3.event.dy + self.start_y;
               theElement.attr("data-transx", transx);
               theElement.attr("data-transy", transy);
               theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
@@ -170,7 +168,7 @@ $.widget("tracer-image.plot",
     {
       if(self.state == "resizing" || self.state == "moving")
         return;
-      
+
       //console.log("#scatterplot mouseup");
       if(!e.ctrlKey)
       {
@@ -201,7 +199,7 @@ $.widget("tracer-image.plot",
                 self.options.selection.push(self.options.indices[i]);
             }
           }
-        } 
+        }
       }
       else // Pick selection ...
       {
@@ -353,7 +351,7 @@ $.widget("tracer-image.plot",
     }
 
     else if(key == "selection")
-    { 
+    {
       self._filterIndices();
       self._schedule_update({render_selection:true});
     }
@@ -437,8 +435,8 @@ $.widget("tracer-image.plot",
       var total_height = self.graphic.attr("height");
       var width = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
       var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
-      var width_offset = (total_width - width) / 2 + self.options.offset_x
-      var height_offset = (total_height - height) / 2 + self.options.offset_y
+      var width_offset = (total_width - width) / 2 + self.start_x;
+      var height_offset = (total_height - height) / 2 + self.start_y;
 
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
@@ -456,7 +454,7 @@ $.widget("tracer-image.plot",
       var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
-      self.y_axis_offset = 0 + width_offset + self.options.border + self.options.offset_x;
+      self.y_axis_offset = 0 + width_offset + self.options.border + self.options.start_y;
 
       self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
@@ -491,7 +489,7 @@ $.widget("tracer-image.plot",
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
       var x = -(y_axis_width+15);
       var y = self.graphic.attr("height") / 2;
-      
+
       self.y_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -524,7 +522,7 @@ $.widget("tracer-image.plot",
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
-        .data(filtered_indices, function(d, i){ 
+        .data(filtered_indices, function(d, i){
           return filtered_indices[i];
         })
         ;
@@ -538,22 +536,22 @@ $.widget("tracer-image.plot",
         .attr("stroke", "black")
         .attr("linewidth", 1)
         .attr("data-index", function(d, i) { return d; })
-        .on("mouseover", function(d, i) { 
+        .on("mouseover", function(d, i) {
           self._schedule_hover(d);
         })
-        .on("mouseout", function(d, i) { 
-          self._cancel_hover(); 
+        .on("mouseout", function(d, i) {
+          self._cancel_hover();
         })
         ;
       circle
         .attr("cx", function(d, i) { return self.x_scale( x[$.inArray(d, indices)] ); })
         .attr("cy", function(d, i) { return self.y_scale( y[$.inArray(d, indices)] ); })
-        .attr("fill", function(d, i) { 
+        .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
-            return self.options.color(value); 
+            return self.options.color(value);
         })
         ;
     }
@@ -582,29 +580,29 @@ $.widget("tracer-image.plot",
         .attr("r", 8)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .attr("data-index", function(d, i) { 
-          return d; 
+        .attr("data-index", function(d, i) {
+          return d;
         })
-        .on("mouseover", function(d, i) { 
+        .on("mouseover", function(d, i) {
           self._schedule_hover(d);
         })
-        .on("mouseout", function(d, i) { 
-          self._cancel_hover(); 
+        .on("mouseout", function(d, i) {
+          self._cancel_hover();
         })
         ;
       circle
-        .attr("cx", function(d, i) { 
-          return x_scale( x[$.inArray(d, indices)] ); 
+        .attr("cx", function(d, i) {
+          return x_scale( x[$.inArray(d, indices)] );
         })
-        .attr("cy", function(d, i) { 
-          return y_scale( y[$.inArray(d, indices)] ); 
+        .attr("cy", function(d, i) {
+          return y_scale( y[$.inArray(d, indices)] );
         })
-        .attr("fill", function(d, i) { 
+        .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
-            return self.options.color(value); 
+            return self.options.color(value);
         })
         ;
     }
@@ -704,8 +702,8 @@ $.widget("tracer-image.plot",
 
       if( self.legend_layer.attr("data-status") != "moved" )
       {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset) + self.options.offset_x;
-        var transy = parseInt((total_height/2)-(rectHeight/2)) + self.options.offset_y;
+        var transx = parseInt(y_axis_layer_width + 10 + width_offset) + self.start_x;
+        var transy = parseInt((total_height/2)-(rectHeight/2)) + self.start_y;
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
@@ -723,7 +721,7 @@ $.widget("tracer-image.plot",
       self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
-        .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1 + self.options.offset_x) + ",0)")
+        .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1 + self.start_x) + ",0)")
         .call(self.legend_axis)
         ;
     }
@@ -738,7 +736,7 @@ $.widget("tracer-image.plot",
       var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
       var x = -15;
       var y = rectHeight/2;
-      
+
       self.legend_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -800,7 +798,7 @@ $.widget("tracer-image.plot",
     // }
 
     // If image is hover and we are no longer loading this image, we're done.
-    if( image.image_class == "hover-image" && 
+    if( image.image_class == "hover-image" &&
         self.opening_image != image.index
       )
     {
@@ -836,7 +834,7 @@ $.widget("tracer-image.plot",
         image.y = parseInt((target_y / height) * (height - image.height));
       }
 
-      // Tag associated point with class 
+      // Tag associated point with class
       self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
         .classed("openHover", true)
         ;
@@ -959,7 +957,7 @@ $.widget("tracer-image.plot",
       // Schedule timeout for hover
       self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
     }
-    
+
     // If the image is already in the cache, display it.
     if(image.uri in self.image_cache)
     {
@@ -1044,7 +1042,7 @@ $.widget("tracer-image.plot",
                 theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
                 theLine.attr("x1", (newWidth / 2));
                 theLine.attr("y1", (newHeight / 2));
-                  
+
               }
             })
             .on("dragstart", function() {
@@ -1465,4 +1463,3 @@ $.widget("tracer-image.plot",
       ;
   },
 });
-
