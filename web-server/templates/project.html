@@ -958,11 +958,10 @@ rights in this software.
           $("#remote-cca-form").dialog("open");
         });
 
-        $("#remote-cca-hostname, #remote-pi-hostname").combobox(
-          {{remote-hosts-arr}}
-        );
-
         $.each(["cca", "pi"], function(index, model_type){
+          $("#remote-" + model_type + "-hostname").combobox(
+            {{remote-hosts-arr}}
+          );
           $("#remote-"+ model_type + "-hostname").change(function(){
             var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
             if($(this).val() == ""){
