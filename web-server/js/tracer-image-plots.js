@@ -54,7 +54,6 @@ $.widget("tracer-image.plot",
     self.svg = $(self.element.get(0)).parents("svg");
     self.start_x = self.options.grid_x * self.svg.width()/2;
     self.start_y = self.options.grid_y * self.svg.height()/2;
-
     self.graphic = d3.select(self.element.get(0)).attr("transform", "translate(" + self.start_x + " " + self.start_y + ")");
     self.x_axis_layer = self.graphic.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.graphic.append("g").attr("class", "y-axis");
@@ -102,6 +101,7 @@ $.widget("tracer-image.plot",
               transy += d3.event.dy + self.start_y;
               theElement.attr("data-transx", transx);
               theElement.attr("data-transy", transy);
+              debugger;
               theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
             }
           })
@@ -431,12 +431,11 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_x"])
     {
-      var total_width = self.graphic.attr("width");
-      var total_height = self.graphic.attr("height");
-      var width = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
-      var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
-      var width_offset = (total_width - width) / 2 + self.start_x;
-      var height_offset = (total_height - height) / 2 + self.start_y;
+      var total_width = parseFloat(self.graphic.attr("width"));
+      var total_height = parseFloat(self.graphic.attr("height"));
+      var min_dimension = Math.min(total_width, total_height);
+      var width_offset = (total_width - min_dimension) / 2 + self.start_x;
+      var height_offset = (total_height - min_dimension) / 2 + self.start_y;
 
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
@@ -448,18 +447,16 @@ $.widget("tracer-image.plot",
 
     if(self.updates["update_y"])
     {
-      var total_width = self.graphic.attr("width");
-      var total_height = self.graphic.attr("height");
-      var width = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
-      var height = Math.min(self.graphic.attr("width"), self.graphic.attr("height"));
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
-      self.y_axis_offset = 0 + width_offset + self.options.border + self.options.start_y;
+      var total_width = parseFloat(self.graphic.attr("width"));
+      var total_height = parseFloat(self.graphic.attr("height"));
+      var min_dimension = Math.min(total_width, total_height);
+      var width_offset = (total_width - min_dimension) / 2;
+      var height_offset = (total_height - min_dimension) / 2;
 
       self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
-        .attr("transform", "translate(" + self.y_axis_offset + ",0)")
+        .attr("transform", "translate(" + self.start_y + ",0)")
         .call(self.y_axis)
         ;
     }
@@ -860,6 +857,7 @@ $.widget("tracer-image.plot",
                 transy += d3.event.dy;
                 theElement.attr("data-transx", transx);
                 theElement.attr("data-transy", transy);
+                debugger;
                 theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
 
                 var leader = theElement.select(".leader");
@@ -1005,6 +1003,7 @@ $.widget("tracer-image.plot",
         ;
 
       // Create a resize handle
+      debugger;
       var resize_handle = frame.append("g")
         .attr("class", "resize-handle")
         .attr('transform', "translate(" + (image.width-9) + ", " + (image.height-9) + ")")
@@ -1039,6 +1038,7 @@ $.widget("tracer-image.plot",
                 theImage.attr("height", newHeight);
                 theRectangle.attr("width", newWidth+1);
                 theRectangle.attr("height", newHeight+1);
+                debugger;
                 theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
                 theLine.attr("x1", (newWidth / 2));
                 theLine.attr("y1", (newHeight / 2));
@@ -1206,7 +1206,7 @@ $.widget("tracer-image.plot",
             .attr("data-transy", y)
             .attr('transform', "translate(" + x + ", " + y + ")")
             ;
-
+          debugger;
           // Adjust image size
           theImage.attr("width", imageWidth);
           theImage.attr("height", imageHeight);
