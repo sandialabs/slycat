@@ -31,6 +31,7 @@ console.log("SEtup globals");
 
   var table_ready = false;
   var scatterplot_ready = false;
+  var grid_ready = false;
   var controls_ready = false;
 
   var session_cache = {};
@@ -65,8 +66,8 @@ console.log("LOAD THE MODEL 1 -- ajax");
   //////////////////////////////////////////////////////////////////////////////////////////
 
   function model_loaded()
-console.log("Inside model_loaded()");
   {
+console.log("Inside model_loaded()");
     if(model["state"] == "waiting" || model["state"] == "running")
     {
       $("#status-messages").empty().html(
@@ -270,7 +271,12 @@ console.log("delete model -- ajax");
     {
       resizeWhileDragging: false,
       onresize: function() { 
-        $("#scatterplot").scatterplot("option", {
+// TODO HANDLE IN GRID
+//        $("#scatterplot").scatterplot("option", {
+//          width: $("#scatterplot-pane").width(), 
+//          height: $("#scatterplot-pane").height()
+//        }); 
+        $("#scatterplot").grid("option", {
           width: $("#scatterplot-pane").width(), 
           height: $("#scatterplot-pane").height()
         }); 
@@ -279,11 +285,12 @@ console.log("delete model -- ajax");
   });
 
   //////////////////////////////////////////////////////////////////////////////////////////
-  // Setup the rest of the UI as data is received.
+  // setup the rest of the ui as data is received.
   //////////////////////////////////////////////////////////////////////////////////////////
 
   function setup_colorswitcher()
   {
+console.log("inside setup_colorswitcher()");
     var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
     $("#color-switcher").colorswitcher({colormap:colormap});
@@ -295,35 +302,36 @@ console.log("delete model -- ajax");
 
   function metadata_loaded()
   {
+console.log("inside metadata loaded()");
     setup_table();
 
     if(!indices && table_metadata)
     {
       var count = table_metadata["row-count"];
-      indices = new Int32Array(count);
+      indices = new int32array(count);
       for(var i = 0; i != count; ++i)
         indices[i] = i;
     }
 
     if(table_metadata && bookmark)
     {
-      // Choose some columns for the X and Y axes.
+      // choose some columns for the x and y axes.
       var numeric_variables = [];
       for(var i = 0; i < table_metadata["column-count"]-1; i++)
       {
-        // Only use non-string columns that are not used for ratings or categories
-        if(table_metadata["column-types"][i] != 'string' && rating_columns.indexOf(i) == -1 && category_columns.indexOf(i) == -1)
+        // only use non-string columns that are not used for ratings or categories
+        if(table_metadata["column-types"][i] != 'string' && rating_columns.indexof(i) == -1 && category_columns.indexof(i) == -1)
           numeric_variables.push(i);
       }
 
       x_index = numeric_variables[0];
       y_index = numeric_variables[1 % numeric_variables.length];
       if("x-selection" in bookmark)
-        x_index = Number(bookmark["x-selection"]);
+        x_index = number(bookmark["x-selection"]);
       if("y-selection" in bookmark)
-        y_index = Number(bookmark["y-selection"]);
+        y_index = number(bookmark["y-selection"]);
 
-      // Set state of selected and hidden simulations
+      // set state of selected and hidden simulations
       selected_simulations = [];
       if("simulation-selection" in bookmark)
         selected_simulations = bookmark["simulation-selection"];
@@ -340,7 +348,9 @@ console.log("delete model -- ajax");
         success : function(result)
         {
           x = result;
-          setup_scatterplot();
+// TODO move to grid
+//          setup_grid();
+          setup_grid();
           setup_table();
         },
         error : artifact_missing
@@ -355,7 +365,9 @@ console.log("delete model -- ajax");
         success : function(result)
         {
           y = result;
-          setup_scatterplot();
+// TODO move to grid          
+//          setup_grid();
+          setup_grid();
           setup_table();
         },
         error : artifact_missing
@@ -371,7 +383,9 @@ console.log("delete model -- ajax");
         v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           v[i] = i;
-        setup_scatterplot();
+// TODO move to grid
+//        setup_grid();
+        setup_grid();
       }
       else
       {
@@ -384,7 +398,9 @@ console.log("delete model -- ajax");
           success : function(result)
           {
             v = result;
-            setup_scatterplot();
+// TODO move to grid
+//            setup_grid();
+            setup_grid();
           },
           error : artifact_missing
         });
@@ -403,7 +419,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
         success : function(result)
         {
           images = result;
-          setup_scatterplot();
+          setup_grid();
           setup_table();
         },
         error: artifact_missing
@@ -414,6 +430,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
 
   function setup_table()
   {
+console.log("inside setup_table()");
     if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
       && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
       && (selected_simulations != null) && (hidden_simulations != null) )
@@ -447,7 +464,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
         "x-variable" : x_index,
         "y-variable" : y_index,
         "row-selection" : selected_simulations,
-        hidden_simulations : hidden_simulations,
+        hidden_simulations : hidden_simulations
       };
 
       var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -568,8 +585,13 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
     }
   }
 
+  function setup_grid() {
+// TODO leverage setup_scatterplot() -- fadingswordsman
+  }
+
   function setup_scatterplot()
   {
+console.log("inside setup_scatterplot()");
     // Setup the scatterplot ...
     if(!scatterplot_ready && bookmark && indices && x && y && v && images 
       && (selected_simulations != null) && (hidden_simulations != null))
@@ -602,7 +624,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
         server_root: "{{server-root}}",
         open_images: open_images,
         gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
-        hidden_simulations: hidden_simulations,
+        hidden_simulations: hidden_simulations
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -658,7 +680,7 @@ console.log("changing the images var updates the scatter plot -- ajax");
       });
       $("#controls").bind("images-selection-changed", function(event, variable)
       {
-console.log("GET  -- ajax");
+console.log("GET models/id/attrs / image selection changed -- ajax");
         $.ajax(
         {
           type : "GET",
@@ -682,6 +704,7 @@ console.log("GET  -- ajax");
 
   function setup_controls()
   {
+console.log("inside setup_controls()");
     if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
       && (category_columns != null) && (x_index != null) && (y_index != null) 
       && (images_index != null) && (selected_simulations != null) )
@@ -774,6 +797,7 @@ console.log("GET  -- ajax");
         writeData(selection, variable, myBlob, 0);
 
         function writeData(selection, variable, blob, iterator){
+console.log("inside writeData()");
           hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
           var formdata = new FormData();
           // formdata.append("array", 0);
@@ -781,6 +805,7 @@ console.log("GET  -- ajax");
           // formdata.append("hyperslice", hyperslice);
           formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslice);
           formdata.append("data", blob);
+console.log("write data PUT models/id/arraysets/data-table/data -- ajax");
           $.ajax({
             type: "PUT",
             url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
@@ -796,17 +821,6 @@ console.log("GET  -- ajax");
               } 
               else {
                 // Finished writing data, need to update widgets
-                // Load data table metadata.
-                // $.ajax({
-                //   url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
-                //   contentType : "application/json",
-                //   success: function(metadata)
-                //   {
-                //     table_metadata = metadata;
-                //     $("#table").table("option", "metadata", metadata);
-                //   },
-                //   error: artifact_missing
-                // });
 
                 $("#table").table("update_data");
 
@@ -891,6 +905,8 @@ console.log("GET  -- ajax");
 
   function selected_colormap_changed(colormap)
   {
+console.log("inside selected_colormap_changed()");
+console.log("colormap change POST events/models/id/ -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -901,6 +917,8 @@ console.log("GET  -- ajax");
 
   function selected_variable_changed(variable)
   {
+console.log("inside selected_variable_chagned()");
+console.log("selected variable changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -912,6 +930,8 @@ console.log("GET  -- ajax");
 
   function variable_sort_changed(variable, order)
   {
+console.log("inside variable sort changed");
+console.log("variable sort changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -922,7 +942,9 @@ console.log("GET  -- ajax");
 
   function selected_simulations_changed(selection)
   {
+console.log("inside selected simulations changed");
     // Logging every selected item is too slow, so just log the count instead.
+console.log("selectred sim changed changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -934,6 +956,8 @@ console.log("GET  -- ajax");
 
   function x_selection_changed(variable)
   {
+console.log("inside x selection changed");
+console.log("x selection changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -945,6 +969,8 @@ console.log("GET  -- ajax");
 
   function y_selection_changed(variable)
   {
+console.log("inside y selection changed");
+console.log("y selection changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -955,6 +981,8 @@ console.log("GET  -- ajax");
 
   function images_selection_changed(variable)
   {
+console.log("inside images selection changed");
+console.log("images selection changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -966,7 +994,9 @@ console.log("GET  -- ajax");
 
   function open_images_changed(selection)
   {
+console.log("inside open images  changed");
     // Logging every open image is too slow, so just log the count instead.
+console.log("open images changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -977,7 +1007,9 @@ console.log("GET  -- ajax");
 
   function hidden_simulations_changed()
   {
+console.log("inside hidden simulations  changed");
     // Logging every hidden simulation is too slow, so just log the count instead.
+console.log("hidden simulations changed -- ajax");
     $.ajax(
     {
       type : "POST",
@@ -988,6 +1020,7 @@ console.log("GET  -- ajax");
 
   function update_scatterplot_value(attribute)
   {
+console.log("inside update scatterplot value");
     if(attribute == table_metadata["column-count"] - 1)
     {
       var count = v.length;
@@ -1015,6 +1048,7 @@ console.log("GET  -- ajax");
 
   function update_scatterplot_x(variable)
   {
+console.log("inside update scatterplot x");
     get_model_array_attribute({
       server_root : "{{server-root}}",
       mid : "{{_id}}",
@@ -1031,6 +1065,7 @@ console.log("GET  -- ajax");
 
   function update_scatterplot_y(variable)
   {
+console.log("inside update scatterplot y");
     get_model_array_attribute({
       server_root : "{{server-root}}",
       mid : "{{_id}}",
@@ -1047,6 +1082,7 @@ console.log("GET  -- ajax");
 
   function display_image(uri)
   {
+console.log("inside display image");
     image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
     if(image_uri.hostname in session_cache)
       load_image();
@@ -1056,6 +1092,7 @@ console.log("GET  -- ajax");
 
   function load_image()
   {
+console.log("inside load image");
     var sid = session_cache[image_uri.hostname];
     image = document.createElement("img");
     image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
@@ -1068,9 +1105,11 @@ console.log("GET  -- ajax");
 
   function load_table_statistics(columns, callback)
   {
+console.log("inside load table statistics");
     var requests = Array();
     for(var i=0; i<columns.length; i++)
     {
+console.log("request push -" + columns[i] + " -- ajax");
       requests.push(
         $.ajax({
           url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",

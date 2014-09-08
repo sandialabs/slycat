@@ -29,7 +29,7 @@ $.widget("tracer_image.grid",
     for(var i=0; i<self.options.size[0];i++) {
       for(var j=0; j<self.options.size[1];j++) {
         self.svg.append("g").attr("class", "plot");
-        $("g.plot:last").plot({
+        $("g.plot:last").scatterplot({
           indices: indices,
           x_label: table_metadata["column-names"][x_index],
           y_label: table_metadata["column-names"][y_index],
