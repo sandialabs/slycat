@@ -958,6 +958,13 @@ rights in this software.
           $("#remote-cca-form").dialog("open");
         });
 
+        /*This each loop goes over each model type abbreviation and sets the #remote-model_name-hostname textfield to a combobox.
+          It also watches the text field for value changes and handles displaying messages and removing them when they need to be
+          shown or hidden. If there is a new model type that you would like a remote connection to use, simply add a text field
+          with the id: "#remote-model_name-hostname" where model_name is the actual abbreviation (Ex: cca, pi). Then make sure there
+          is a div of id: "#remote-hosts-model_name-message" where model_name is the actual abbreviation. This div will be where the
+          sub-optimal warning message is added or removed.
+        */
         $.each(["cca", "pi"], function(index, model_type){
           $("#remote-" + model_type + "-hostname").combobox(
             {{remote-hosts-arr}}
