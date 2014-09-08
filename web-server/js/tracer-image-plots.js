@@ -8,7 +8,7 @@ rights in this software.
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 
-$.widget("tracer-image.plot",
+$.widget("tracer-image.scatterplot",
 {
   options:
   {
@@ -37,6 +37,7 @@ $.widget("tracer-image.plot",
 
   _create: function()
   {
+console.log("creating");
     var self = this;
 
     test_item = self;
@@ -217,31 +218,7 @@ $.widget("tracer-image.plot",
             {
               // Selecting a new point.
               self.options.selection.push(self.options.indices[i]);
-
-              // // If the URI for this point isn't already open, open it.
-              // var uri = self.options.images[self.options.indices[i]];
-              // if($(".open-image[data-uri='" + uri + "']").size() == 0)
-              // {
-              //   self._close_hover();
-
-              //   var width = self.graphic.attr("width");
-              //   var height = self.graphic.attr("height");
-              //   var open_width = Math.min(width, height) / 3;
-              //   var open_height = Math.min(width, height) / 3;
-
-              //   self._open_images([{
-              //     index : self.options.indices[i],
-              //     uri : self.options.images[self.options.indices[i]],
-              //     image_class : "open-image",
-              //     target_x : self.x_scale(self.options.x[i]),
-              //     target_y : self.y_scale(self.options.y[i]),
-              //     width: open_width,
-              //     height : open_height,
-              //     }]);
-              // }
-            }
-            else
-            {
+            } else  {
               // Deselecting an existing point.
               self.options.selection.splice(index, 1);
             }
@@ -428,7 +405,7 @@ $.widget("tracer-image.plot",
         self.inverse_indices[self.options.indices[i]] = i;
     }
 
-    if(self.updates["update_x"])
+    if(self.updates["update_x"] && self.options.x)
     {
       var total_width = parseFloat(self.graphic.attr("width"));
       var total_height = parseFloat(self.graphic.attr("height"));
@@ -444,7 +421,7 @@ $.widget("tracer-image.plot",
         ;
     }
 
-    if(self.updates["update_y"])
+    if(self.updates["update_y"] && self.options.y)
     {
       var total_width = parseFloat(self.graphic.attr("width"));
       var total_height = parseFloat(self.graphic.attr("height"));
@@ -452,7 +429,7 @@ $.widget("tracer-image.plot",
       var width_offset = (total_width - min_dimension) / 2;
       var height_offset = (total_height - min_dimension) / 2;
 
-      self.y_scale = d3.scale.linear().domain([d3.min(y), d3.max(y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
+      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + self.start_y + ",0)")
@@ -497,7 +474,7 @@ $.widget("tracer-image.plot",
         ;
     }
 
-    if(self.updates["update_color_domain"])
+    if(self.updates["update_color_domain"] && self.options.v)
     {
       var v_min = d3.min(self.options.v);
       var v_max = d3.max(self.options.v);
@@ -712,7 +689,7 @@ $.widget("tracer-image.plot",
         ;
     }
 
-    if(self.updates["update_legend_axis"])
+    if(self.updates["update_legend_axis"] && self.options.v)
     {
       self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
