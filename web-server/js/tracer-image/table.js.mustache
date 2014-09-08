@@ -36,7 +36,12 @@ function metadata_loaded() {
     if("hidden-simulations" in bookmark) {
       hidden_simulations = bookmark["hidden-simulations"];
     }
+    images_index = image_columns[0];
+    if("images-selection" in bookmark) {
+      images_index = bookmark["images-selection"];
+    }
 
+    debugger;
     $.when(
       get_model_array_attribute({
         server_root : "{{server-root}}",
@@ -51,8 +56,7 @@ function metadata_loaded() {
           //setup_table();
         },
         error : artifact_missing
-      });
-
+      }),
       get_model_array_attribute({
         server_root : "{{server-root}}",
         mid : "{{_id}}",
@@ -66,40 +70,39 @@ function metadata_loaded() {
           //setup_table();
         },
         error : artifact_missing
-      });
-
-      v_index = table_metadata["column-count"] - 1;
-      if("variable-selection" in bookmark)
-        v_index = Number(bookmark["variable-selection"]);
-
-      if(v_index == table_metadata["column-count"] - 1)
-      {
-        var count = table_metadata["row-count"];
-        v = new Float64Array(count);
-        for(var i = 0; i != count; ++i)
-          v[i] = i;
-        //setup_grid();
-      }
-      else
-      {
-        get_model_array_attribute({
-          server_root : "{{server-root}}",
-          mid : "{{_id}}",
-          aid : "data-table",
-          array : 0,
-          attribute : v_index,
-          success : function(result)
-          {
-            v = result;
-            //setup_grid();
-          },
-          error : artifact_missing
-        });
-      }
-
-      images_index = image_columns[0];
-      if("images-selection" in bookmark)
-        images_index = bookmark["images-selection"];
+      }),
+      function() {
+        v_index = table_metadata["column-count"] - 1;
+        if("variable-selection" in bookmark) {
+          v_index = Number(bookmark["variable-selection"]);
+        }
+        if(v_index == table_metadata["column-count"] - 1) {
+          var dfd = $.Deferred();
+          var count = table_metadata["row-count"];
+          v = new Float64Array(count);
+          for(var i = 0; i != count; ++i) {
+            v[i] = i;
+          }
+          //setup_grid();
+          dfd.resolve();
+          return dfd;
+        }
+        else {
+          return get_model_array_attribute({
+            server_root : "{{server-root}}",
+            mid : "{{_id}}",
+            aid : "data-table",
+            array : 0,
+            attribute : v_index,
+            success : function(result)
+            {
+              v = result;
+              //setup_grid();
+            },
+            error : artifact_missing
+          });
+        }
+      }(),
       $.ajax(
         {
           type : "GET",
@@ -112,7 +115,7 @@ function metadata_loaded() {
             //setup_table();
           },
           error: artifact_missing
-        });
+      })
     ).then(function() {
       setup_grid();
       setup_table();
