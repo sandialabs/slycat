@@ -12,9 +12,9 @@ $.widget("tracer_image.grid",
 {
   options:
   {
-    width : 300,
-    height : 300,
-    size : [2,2]
+    width : 0,
+    height : 0,
+    size : [0,0]
   },
 
   _create: function()
@@ -26,14 +26,30 @@ $.widget("tracer_image.grid",
     // Setup the grid ...
     self.svg = d3.select(self.element.get(0)).append("svg");
     // create plots
-    for(var x=0; x<self.options.size[0];x++) {
-      for(var y=0; y<self.options.size[1];y++) {
+    for(var i=0; i<self.options.size[0];i++) {
+      for(var j=0; j<self.options.size[1];j++) {
         self.svg.append("g").attr("class", "plot");
         $("g.plot:last").plot({
-          grid_x: x,
-          grid_y: y,
+          indices: indices,
+          x_label: table_metadata["column-names"][x_index],
+          y_label: table_metadata["column-names"][y_index],
+          v_label: table_metadata["column-names"][v_index],
+          x: x,
+          y: y,
+          v: v,
+          grid_x: i,
+          grid_y: j,
+          //images: images,
+          // width: $("#scatterplot-pane").width(),
+          // height: $("#scatterplot-pane").height(),
           width: self.cell_width,
-          height: self.cell_height
+          height: self.cell_height,
+          //color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+          //selection: selected_simulations,
+          server_root: "{{server-root}}",
+          //open_images: open_images,
+          //gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+          //hidden_simulations: hidden_simulations
         });
       }
     }
