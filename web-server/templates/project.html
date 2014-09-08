@@ -961,39 +961,25 @@ rights in this software.
         $("#remote-cca-hostname, #remote-pi-hostname").combobox(
           {{remote-hosts-arr}}
         );
-        $("#remote-cca-hostname").change(function(){
-          var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
-          if($(this).val() == ""){
-            $("#remote-hosts-cca-message").html("");
-          }else{
-            $.each(remote_host_array, function(index, remote_host_object){
-              if (remote_host_object.name == $("#remote-cca-hostname").val()){
-                if(remote_host_object.hasOwnProperty("message")){
-                  $("#remote-hosts-cca-message").html("<p>"+ remote_host_object.message +"</p>");
-                }else{
-                  $("#remote-hosts-cca-message").html("");
+
+        $.each(["cca", "pi"], function(index, model_type){
+          $("#remote-"+ model_type + "-hostname").change(function(){
+            var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
+            if($(this).val() == ""){
+              $("#remote-hosts-" + model_type + "-message").html("");
+            }else{
+              $.each(remote_host_array, function(index, remote_host_object){
+                if (remote_host_object.name == $("#remote-" + model_type + "-hostname").val()){
+                  if(remote_host_object.hasOwnProperty("message")){
+                    $("#remote-hosts-" + model_type + "-message").html("<p>"+ remote_host_object.message +"</p>");
+                  }else{
+                    $("#remote-hosts-" + model_type + "-message").html("");
+                  }
+                  return false;
                 }
-                return false;
-              }
-            });
-          }
-        });
-        $("#remote-pi-hostname").change(function(){
-          var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
-          if($(this).val() == ""){
-            $("#remote-hosts-pi-message").html("");
-          }else{
-            $.each(remote_host_array, function(index, remote_host_object){
-              if (remote_host_object.name == $("#remote-pi-hostname").val()){
-                if(remote_host_object.hasOwnProperty("message")){
-                  $("#remote-hosts-pi-message").html("<p>"+ remote_host_object.message +"</p>");
-                }else{
-                  $("#remote-hosts-pi-message").html("");
-                }
-                return false;
-              }
-            });
-          }
+              });
+            }
+          });
         });
 
         function process_model_status(results) {
