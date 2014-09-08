@@ -59,6 +59,8 @@ function metadata_loaded()
       attribute : y_index,
       success : function(result)
       {
+        console.debug("Set y")
+        console.debug(result)
         y = result;
         setup_grid();
         setup_table();

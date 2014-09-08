@@ -101,7 +101,6 @@ $.widget("tracer-image.plot",
               transy += d3.event.dy + self.start_y;
               theElement.attr("data-transx", transx);
               theElement.attr("data-transy", transy);
-              debugger;
               theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
             }
           })
@@ -453,7 +452,7 @@ $.widget("tracer-image.plot",
       var width_offset = (total_width - min_dimension) / 2;
       var height_offset = (total_height - min_dimension) / 2;
 
-      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
+      self.y_scale = d3.scale.linear().domain([d3.min(y), d3.max(y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + self.start_y + ",0)")
