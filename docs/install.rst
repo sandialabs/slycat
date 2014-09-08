@@ -19,8 +19,8 @@ Because Docker uses Linux-specific kernel features, you will need to run Docker
 in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relatively easy:
 
 * Download the latest `Boot2Docker` installer from https://github.com/boot2docker/osx-installer/releases
-* Run the installer.  This will install a `VirtualBox <https://www.virtualbox.org>`_ hypervisor on your machine, if you don't already have one.
-* In a terminal window, initialize the Boot2Docker VM::
+* Run the installer.  This will install a set of docker commands, plus a `VirtualBox <https://www.virtualbox.org>`_ hypervisor, if you don't already have one.
+* In a terminal window, initialize the Boot2Docker VM:
 
   $ boot2docker init
 
@@ -28,7 +28,7 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 
   $ boot2docker start
 
-* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy the paste the command into the terminal (note that the variable setting on your machine may differ from the following example)::
+* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy and paste the command into the terminal (note that the variable setting on your machine may differ from the following example)::
 
   $ export DOCKER_HOST=tcp://192.168.59.103:2375
 
