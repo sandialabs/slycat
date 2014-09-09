@@ -413,6 +413,8 @@ console.log("creating");
       var width_offset = (total_width - min_dimension) / 2 + self.start_x;
       var height_offset = (total_height - min_dimension) / 2 + self.start_y;
 
+      debugger;
+
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer

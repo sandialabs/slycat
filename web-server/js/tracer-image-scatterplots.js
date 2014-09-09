@@ -441,10 +441,10 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_x"])
     {
-      var total_width = self.element.attr("width");
-      var total_height = self.element.attr("height");
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = self.element.width();
+      var total_height = self.element.height();
+      var width = Math.min(total_width, total_height);
+      var height = Math.min(total_width, total_height);
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
 
@@ -458,10 +458,10 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_y"])
     {
-      var total_width = self.element.attr("width");
-      var total_height = self.element.attr("height");
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = self.element.width();
+      var total_height = self.element.height();
+      var width = Math.min(total_width, total_height);
+      var height = Math.min(total_width, total_height);
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
       self.y_axis_offset = 0 + width_offset + self.options.border;
@@ -552,8 +552,8 @@ $.widget("tracer_image.scatterplot",
         })
         ;
       circle
-        .attr("cx", function(d, i) { return self.x_scale( x[$.inArray(d, indices)] ); })
-        .attr("cy", function(d, i) { return self.y_scale( y[$.inArray(d, indices)] ); })
+        .attr("cx", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ); })
+        .attr("cy", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ); })
         .attr("fill", function(d, i) { 
           var value = v[$.inArray(d, indices)];
           if(Number.isNaN(value))
@@ -699,10 +699,10 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.element.attr("width"));
-      var total_height = Number(self.element.attr("height"));
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = Number(self.element.width());
+      var total_height = Number(self.element.height());
+      var width = Math.min(total_width, total_height);
+      var height = Math.min(total_width, total_height);
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var datum_layer_width = self.datum_layer.node().getBBox().width;
       var width_offset = (total_width + datum_layer_width) / 2;
@@ -719,6 +719,7 @@ $.widget("tracer_image.scatterplot",
           ;
       }
 
+      self.element
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
         ;

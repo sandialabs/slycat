@@ -593,9 +593,10 @@ console.log("inside PLOT setup()");
     if(!this.ready && bookmark && model.indices && this.x && this.y && this.v && this.images 
       && (this.selected_simulations != null) && (this.hidden_simulations != null))
     {
+      var self = this;
       this.ready = true;
 
-      $(this.plot_ref + " .scatterplot-pane .load-status").css("display", "none");
+      $(this.plot_ref + " .scatterplot-pane .load-status").hide();
 
       var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
@@ -604,6 +605,12 @@ console.log("inside PLOT setup()");
       var open_images = [];
       if("open-images-selection" in bookmark)
         open_images = bookmark["open-images-selection"];
+
+      //Get the first parent that has a defined size, and fill it
+      //TODO: Adjust this, the size should likely be calculated based on siblings
+      var sized_parent = $(self.plot_ref);
+      while(!(sized_parent.width() && sized_parent.height()))
+        sized_parent = sized_parent.parent();
 
       $(this.plot_ref + " .scatterplot").scatterplot({
         indices: model.indices,
@@ -614,8 +621,8 @@ console.log("inside PLOT setup()");
         y: self.y,
         v: self.v,
         images: self.images,
-        width: $(self.plot_ref + " .scatterplot-pane").width(),
-        height: $(self.plot_ref + " .scatterplot-pane").height(),
+        width: sized_parent.width(),
+        height: sized_parent.height(),
         color: $("#color-switcher").colorswitcher("get_color_map", colormap),
         selection: self.selected_simulations,
         server_root: "{{server-root}}",
@@ -1105,8 +1112,6 @@ console.log("request push -" + columns[i] + " -- ajax");
       // This is executed only after every ajax request has been completed
       $.each(arguments, function(index, responseData){
         // "responseData" contains an array of response information for each specific request
-        console.log("table self:");
-        console.log(self);
         self.statistics[parseInt(columns[index])] = responseData.length == undefined ? responseData : responseData[0];
       });
       callback.call(callback_obj || self);
