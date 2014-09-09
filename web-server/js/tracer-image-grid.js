@@ -14,7 +14,9 @@ $.widget("tracer_image.grid",
   {
     width : 0,
     height : 0,
-    size : [0,0]
+    size : {x:0, y:0},
+    labels: {x_label: "X Label", y_label: "Y Label", v_label: "V Label"},
+    data : {x: [], y: [], v: []}
   },
 
   _create: function()
@@ -25,23 +27,24 @@ $.widget("tracer_image.grid",
 
     // Setup the grid ...
     self.svg = d3.select(self.element.get(0)).append("svg");
+    self.plots = [];
     // create plots
     for(var i=0; i<self.options.size[0];i++) {
       for(var j=0; j<self.options.size[1];j++) {
-        self.svg.append("g").attr("class", "plot");
-        $("g.plot:last").scatterplot({
+        self.svg.append("svg").attr("class", "plot");
+        self.plots.push($("g.plot:last").scatterplot({
           indices: indices,
-          x_label: table_metadata["column-names"][x_index],
-          y_label: table_metadata["column-names"][y_index],
-          v_label: table_metadata["column-names"][v_index],
-          x: x,
-          y: y,
-          v: v,
+          grid_x: i,
+          grid_y: j,
+          x_label: self.options.labels.x_label,
+          y_label: self.options.labels.y_label,
+          v_label: self.options.labels.v_label,
+          x: self.options.data.x,
+          y: self.options.data.y,
+          v: self.options.data.v,
           grid_x: i,
           grid_y: j,
           //images: images,
-          // width: $("#scatterplot-pane").width(),
-          // height: $("#scatterplot-pane").height(),
           width: self.cell_width,
           height: self.cell_height,
           //color: $("#color-switcher").colorswitcher("get_color_map", colormap),
@@ -50,7 +53,7 @@ $.widget("tracer_image.grid",
           //open_images: open_images,
           //gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
           //hidden_simulations: hidden_simulations
-        });
+        }));
       }
     }
   }
