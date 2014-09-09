@@ -100,3 +100,8 @@ Interact with a Parameter Image Model
 * Drag the "resize" icon in the lower-right-corner of a pinned image to resize it.
 * Click-and-drag anywhere else within a pinned image to reposition it on the page.
 * Click-and-drag the colorbar to reposition it on the page.
+
+Next Steps
+----------
+
+Consider :ref:`Contributing to Slycat`.
