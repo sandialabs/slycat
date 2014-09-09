@@ -8,10 +8,11 @@ rights in this software.
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 
-$.widget("parameter_image.scatterplot",
+$.widget("tracer_image.scatterplot",
 {
   options:
   {
+    object_ref : null,
     width : 300,
     height : 300,
     pick_distance : 3,
