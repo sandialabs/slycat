@@ -1081,6 +1081,9 @@ console.log("inside load image");
   };
 
   ScatterPlot.prototype.load_table_statistics = function(columns, callback) {
+// TODO what's going on with callback in terms of OO? 
+// the callback does not contain the same context as "this" here does
+console.log(this);
 console.log("inside load table statistics");
     var requests = Array();
     for(var i=0; i<columns.length; i++)
