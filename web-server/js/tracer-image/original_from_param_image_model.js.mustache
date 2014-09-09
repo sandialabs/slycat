@@ -68,7 +68,7 @@ console.log("LOAD THE MODEL 1 -- ajax");
         window.alert("Error retrieving model: " + reason_phrase);
       }
     });
-  }
+  };
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Once the model has been loaded, retrieve metadata / bookmarked state
@@ -126,10 +126,10 @@ console.log("Inside model laoded - load table metadata 1 -- ajax");
         contentType : "application/json",
         success: function(metadata)
         {
-          table_metadata = metadata;
+          this.table_metadata = metadata;
           table_statistics = new Array(metadata["column-count"]);
           table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-          this_scatter_plot.load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
+          this_scatter_plot.load_table_statistics(d3.range(metadata["column-count"]-1), this_scatter_plot.metadata_loaded);
         },
         error: this_scatter_plot.artifact_missing
       });
@@ -138,11 +138,11 @@ console.log("Inside model laoded - load table metadata 1 -- ajax");
       this.bookmarker.get_state(function(state)
       {
         bookmark = state;
-        this.setup_colorswitcher();
-        metadata_loaded();
+        this_scatter_plot.setup_colorswitcher();
+        this_scatter_plot.metadata_loaded();
       });
     }
-  }
+  };
 
   ScatterPlot.prototype.show_status_messages = function() {
 console.log("Inside show_status_messages()");
@@ -160,7 +160,7 @@ console.log("Inside show_status_messages()");
         }
       }
     });
-  }
+  };
 
   ScatterPlot.prototype.artifact_missing = function() {
 console.log("Inside artifact_missing()");
@@ -173,7 +173,7 @@ console.log("Inside artifact_missing()");
       "<pre>" + model["message"] + "</pre>");
 
     show_status_messages();
-  }
+  };
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout and forms.
@@ -265,8 +265,7 @@ console.log("Inside artifact_missing()");
       {
         size: $("body").height() / 2,
         resizeWhileDragging: false,
-        onresize: function()
-        {
+        onresize: function() {
           $("#table").css("height", $("#table-pane").height());
           $("#table").table("resize_canvas");
         }
@@ -291,7 +290,7 @@ console.log("Inside artifact_missing()");
         },
       }
     });
-  }
+  };
   //////////////////////////////////////////////////////////////////////////////////////////
   // setup the rest of the ui as data is received.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -305,35 +304,36 @@ console.log("inside setup_colorswitcher()");
     {
       selected_colormap_changed(colormap);
     });
-  }
+  };
 
   ScatterPlot.prototype.metadata_loaded = function() {
 console.log("inside metadata loaded()");
-    setup_table();
+    console.log(this);
+    this.setup_table();
 
-    if(!indices && table_metadata)
+    if(!this.indices && this.table_metadata)
     {
-      var count = table_metadata["row-count"];
-      indices = new int32array(count);
+      var count = this.table_metadata["row-count"];
+      this.indices = new int32array(count);
       for(var i = 0; i != count; ++i)
-        indices[i] = i;
+        this.indices[i] = i;
     }
 
-    if(table_metadata && bookmark)
+    if(this.table_metadata && bookmark)
     {
       // choose some columns for the x and y axes.
       var numeric_variables = [];
-      for(var i = 0; i < table_metadata["column-count"]-1; i++)
+      for(var i = 0; i < this.table_metadata["column-count"]-1; i++)
       {
         // only use non-string columns that are not used for ratings or categories
-        if(table_metadata["column-types"][i] != 'string' && rating_columns.indexof(i) == -1 && category_columns.indexof(i) == -1)
+        if(this.table_metadata["column-types"][i] != 'string' && rating_columns.indexof(i) == -1 && category_columns.indexof(i) == -1)
           numeric_variables.push(i);
       }
 
-      x_index = numeric_variables[0];
+      this.x_index = numeric_variables[0];
       y_index = numeric_variables[1 % numeric_variables.length];
       if("x-selection" in bookmark)
-        x_index = number(bookmark["x-selection"]);
+        this.x_index = number(bookmark["x-selection"]);
       if("y-selection" in bookmark)
         y_index = number(bookmark["y-selection"]);
 
@@ -350,12 +350,12 @@ console.log("inside metadata loaded()");
         mid : "{{_id}}",
         aid : "data-table",
         array : 0,
-        attribute : x_index,
+        attribute : this.x_index,
         success : function(result)
         {
           x = result;
           setup_scatterplot();
-          setup_table();
+          this.setup_table();
         },
         error : artifact_missing
       });
@@ -370,18 +370,18 @@ console.log("inside metadata loaded()");
         {
           y = result;
           setup_scatterplot();
-          setup_table();
+          this.setup_table();
         },
         error : artifact_missing
       });
 
-      v_index = table_metadata["column-count"] - 1;
+      v_index = this.table_metadata["column-count"] - 1;
       if("variable-selection" in bookmark)
         v_index = Number(bookmark["variable-selection"]);
 
-      if(v_index == table_metadata["column-count"] - 1)
+      if(v_index == this.table_metadata["column-count"] - 1)
       {
-        var count = table_metadata["row-count"];
+        var count = this.table_metadata["row-count"];
         v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           v[i] = i;
@@ -413,31 +413,31 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
       {
         type : "GET",
         url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
-          + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+          + images_index + "/chunk?ranges=0," + this.table_metadata["row-count"],
         success : function(result)
         {
           images = result;
           setup_scatterplot();
-          setup_table();
+          this.setup_table();
         },
         error: artifact_missing
       });
       setup_controls();
     }
-  }
+  };
 
   ScatterPlot.prototype.setup_table = function() {
 console.log("inside setup_table()");
-    if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
-      && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
+    if( !this.table_ready && this.table_metadata && (table_statistics.length == this.table_metadata["column-count"]) 
+      && bookmark && (this.x_index != null) && (y_index != null) && (images_index != null) 
       && (selected_simulations != null) && (hidden_simulations != null) )
     {
-      table_ready = true;
+      this.table_ready = true;
 
       $("#table-pane .load-status").css("display", "none");
 
       var other_columns = [];
-      for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
+      for(var i = 0; i != this.table_metadata["column-count"] - 1; ++i)
       {
         if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 
           && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
@@ -449,7 +449,7 @@ console.log("inside setup_table()");
         "server-root" : "{{server-root}}",
         mid : "{{_id}}",
         aid : "data-table",
-        metadata : table_metadata,
+        metadata : this.table_metadata,
         statistics : table_statistics,
         inputs : input_columns,
         outputs : output_columns,
@@ -458,7 +458,7 @@ console.log("inside setup_table()");
         ratings : rating_columns,
         categories : category_columns,
         "image-variable" : images_index,
-        "x-variable" : x_index,
+        "x-variable" : this.x_index,
         "y-variable" : y_index,
         "row-selection" : selected_simulations,
         hidden_simulations : hidden_simulations
@@ -479,7 +479,7 @@ console.log("inside setup_table()");
       }
       else
       {
-        table_options["variable-selection"] = [table_metadata["column-count"] - 1];
+        table_options["variable-selection"] = [this.table_metadata["column-count"] - 1];
       }
 
       $("#table").table(table_options);
@@ -580,12 +580,12 @@ console.log("inside setup_table()");
         $("#table").table("option", "variable-selection", [Number(variable)]);
       });
     }
-  }
+  };
 
   ScatterPlot.prototype.setup_scatterplot = function() {
 console.log("inside setup_scatterplot()");
     // Setup the scatterplot ...
-    if(!scatterplot_ready && bookmark && indices && x && y && v && images 
+    if(!scatterplot_ready && bookmark && this.indices && x && y && v && images 
       && (selected_simulations != null) && (hidden_simulations != null))
     {
       scatterplot_ready = true;
@@ -601,10 +601,10 @@ console.log("inside setup_scatterplot()");
         open_images = bookmark["open-images-selection"];
 
       $("#scatterplot").scatterplot({
-        indices: indices,
-        x_label: table_metadata["column-names"][x_index],
-        y_label: table_metadata["column-names"][y_index],
-        v_label: table_metadata["column-names"][v_index],
+        indices: this.indices,
+        x_label: this.table_metadata["column-names"][this.x_index],
+        y_label: this.table_metadata["column-names"][y_index],
+        v_label: this.table_metadata["column-names"][v_index],
         x: x,
         y: y,
         v: v,
@@ -662,7 +662,7 @@ console.log("changing the images var updates the scatter plot -- ajax");
         {
           type : "GET",
           url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
-            variable + "/chunk?ranges=0," + table_metadata["row-count"],
+            variable + "/chunk?ranges=0," + this.table_metadata["row-count"],
           success : function(result)
           {
             $("#scatterplot").scatterplot("option", "images", result);
@@ -677,7 +677,7 @@ console.log("GET models/id/attrs / image selection changed -- ajax");
         {
           type : "GET",
           url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
-            variable + "/chunk?ranges=0," + table_metadata["row-count"],
+            variable + "/chunk?ranges=0," + this.table_metadata["row-count"],
           success : function(result)
           {
             $("#scatterplot").scatterplot("option", "images", result);
@@ -692,24 +692,24 @@ console.log("GET models/id/attrs / image selection changed -- ajax");
         open_images_changed(selection);
       });
     }
-  }
+  };
 
   ScatterPlot.prototype.setup_controls = function() {
 console.log("inside setup_controls()");
-    if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
-      && (category_columns != null) && (x_index != null) && (y_index != null) 
+    if( !controls_ready && this.table_metadata && (image_columns != null) && (rating_columns != null) 
+      && (category_columns != null) && (this.x_index != null) && (y_index != null) 
       && (images_index != null) && (selected_simulations != null) )
     {
       controls_ready = true;
       var numeric_variables = [];
 
-      for(var i = 0; i < table_metadata["column-count"]; i++)
+      for(var i = 0; i < this.table_metadata["column-count"]; i++)
       {
-        if(table_metadata["column-types"][i] != 'string')
+        if(this.table_metadata["column-types"][i] != 'string')
           numeric_variables.push(i);
       }
 
-      var color_variable = table_metadata["column-count"] - 1;
+      var color_variable = this.table_metadata["column-count"] - 1;
       if("variable-selection" in bookmark)
       {
         color_variable = [bookmark["variable-selection"]];
@@ -720,7 +720,7 @@ console.log("inside setup_controls()");
         mid : "{{_id}}",
         model_name: "{{name}}",
         aid : "data-table",
-        metadata: table_metadata,
+        metadata: this.table_metadata,
         x_variables: numeric_variables.slice(0, numeric_variables.length-1),
         y_variables: numeric_variables.slice(0, numeric_variables.length-1),
         image_variables: image_columns,
@@ -728,7 +728,7 @@ console.log("inside setup_controls()");
         rating_variables : rating_columns,
         category_variables : category_columns,
         selection : selected_simulations,
-        "x-variable" : x_index,
+        "x-variable" : this.x_index,
         "y-variable" : y_index,
         "image-variable" : images_index,
         "color-variable" : color_variable,
@@ -761,7 +761,7 @@ console.log("inside setup_controls()");
       // Changing the table variable updates the legend label ...
       $("#table").bind("variable-selection-changed", function(event, selection)
       {
-        $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][selection[0]]});
+        $("#scatterplot").scatterplot("option", {v_label:this.table_metadata["column-names"][selection[0]]});
       });
 
       // Changing the color variable updates the scatterplot ...
@@ -773,7 +773,7 @@ console.log("inside setup_controls()");
       // Changing the color variable updates the legend label ...
       $("#controls").bind("color-selection-changed", function(event, variable)
       {
-        $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][variable]});
+        $("#scatterplot").scatterplot("option", {v_label:this.table_metadata["column-names"][variable]});
       });
 
       // Changing the value of a variable updates the database, table, and scatterplot ...
@@ -815,7 +815,7 @@ console.log("write data PUT models/id/arraysets/data-table/data -- ajax");
 
                 $("#table").table("update_data");
 
-                if(variable == x_index)
+                if(variable == this.x_index)
                   update_scatterplot_x(variable);
                 if(variable == y_index)
                   update_scatterplot_y(variable);
@@ -888,7 +888,7 @@ console.log("write data PUT models/id/arraysets/data-table/data -- ajax");
         $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
       });
     }
-  }
+  };
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Event handlers.
@@ -903,7 +903,7 @@ console.log("colormap change POST events/models/id/ -- ajax");
       url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
     });
     bookmarker.updateState({"colormap" : colormap});
-  }
+  };
 
   ScatterPlot.prototype.selected_variable_changed = function(variable) {
 console.log("inside selected_variable_chagned()");
@@ -915,7 +915,7 @@ console.log("selected variable changed -- ajax");
     });
     bookmarker.updateState({"variable-selection" : variable});
     v_index = Number(variable);
-  }
+  };
 
   ScatterPlot.prototype.variable_sort_changed = function(variable, order) {
 console.log("inside variable sort changed");
@@ -926,7 +926,7 @@ console.log("variable sort changed -- ajax");
       url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
     });
     bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
-  }
+  };
 
   ScatterPlot.prototype.selected_simulations_changed = function(selection) {
 console.log("inside selected simulations changed");
@@ -939,7 +939,7 @@ console.log("selectred sim changed changed -- ajax");
     });
     bookmarker.updateState( {"simulation-selection" : selection} );
     selected_simulations = selection;
-  }
+  };
 
   ScatterPlot.prototype.x_selection_changed = function(variable) {
 console.log("inside x selection changed");
@@ -950,8 +950,8 @@ console.log("x selection changed -- ajax");
       url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
     });
     bookmarker.updateState( {"x-selection" : variable} );
-    x_index = Number(variable);
-  }
+    this.x_index = Number(variable);
+  };
 
   ScatterPlot.prototype.y_selection_changed = function(variable) {
 console.log("inside y selection changed");
@@ -962,7 +962,7 @@ console.log("y selection changed -- ajax");
       url : "{{server-root}}events/models/{{_id}}/select/y/" + variable
     });
     bookmarker.updateState( {"y-selection" : variable} );
-  }
+  };
 
   ScatterPlot.prototype.images_selection_changed = function(variable) {
 console.log("inside images selection changed");
@@ -974,7 +974,7 @@ console.log("images selection changed -- ajax");
     });
     bookmarker.updateState( {"images-selection" : variable} );
     y_index = Number(variable);
-  }
+  };
 
   ScatterPlot.prototype.open_images_changed = function(selection) {
 console.log("inside open images  changed");
@@ -986,7 +986,7 @@ console.log("open images changed -- ajax");
       url : "{{server-root}}events/models/{{_id}}/select/openimages/count/" + selection.length
     });
     bookmarker.updateState( {"open-images-selection" : selection} );
-  }
+  };
 
   ScatterPlot.prototype.hidden_simulations_changed = function() {
 console.log("inside hidden simulations  changed");
@@ -998,11 +998,11 @@ console.log("hidden simulations changed -- ajax");
       url : "{{server-root}}events/models/{{_id}}/hidden/count/" + hidden_simulations.length
     });
     bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
-  }
+  };
 
   ScatterPlot.prototype.update_scatterplot_value = function(attribute) {
 console.log("inside update scatterplot value");
-    if(attribute == table_metadata["column-count"] - 1)
+    if(attribute == this.table_metadata["column-count"] - 1)
     {
       var count = v.length;
       for(var i = 0; i != count; ++i)
@@ -1025,7 +1025,7 @@ console.log("inside update scatterplot value");
         error : artifact_missing
       });
     }
-  }
+  };
 
   ScatterPlot.prototype.update_scatterplot_x = function(variable) {
 console.log("inside update scatterplot x");
@@ -1037,11 +1037,11 @@ console.log("inside update scatterplot x");
       attribute : variable,
       success : function(result)
       {
-        $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+        $("#scatterplot").scatterplot("option", {x: result, x_label:this.table_metadata["column-names"][variable]});
       },
       error : artifact_missing
     });
-  }
+  };
 
   ScatterPlot.prototype.update_scatterplot_y = function(variable) {
 console.log("inside update scatterplot y");
@@ -1053,11 +1053,11 @@ console.log("inside update scatterplot y");
       attribute : variable,
       success : function(result)
       {
-        $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+        $("#scatterplot").scatterplot("option", {y: result, y_label:this.table_metadata["column-names"][variable]});
       },
       error : artifact_missing
     });
-  }
+  };
 
   ScatterPlot.prototype.display_image = function(uri) {
 console.log("inside display image");
@@ -1066,7 +1066,7 @@ console.log("inside display image");
       load_image();
     else
       $("#remote-login").dialog("open");
-  }
+  };
 
   ScatterPlot.prototype.load_image = function() {
 console.log("inside load image");
@@ -1078,7 +1078,7 @@ console.log("inside load image");
     image.style.left=10;
     image.style.top=10;
     $("#scatterplot-pane").prepend(image);
-  }
+  };
 
   ScatterPlot.prototype.load_table_statistics = function(columns, callback) {
 console.log("inside load table statistics");
@@ -1102,7 +1102,7 @@ console.log("request push -" + columns[i] + " -- ajax");
       });
       callback();
     });
-  }
+  };
 
   function jQueryWithContext(selector) {
     return $(selector);
