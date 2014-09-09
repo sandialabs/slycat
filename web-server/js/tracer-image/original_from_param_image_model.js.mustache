@@ -1,72 +1,81 @@
 $(document).ready(function()
 {
+
+  function ScatterPlot(plot_ref) {
+    
 console.log("SEtup globals");
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Setup global variables.
-  //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Setup global variables.
+    //////////////////////////////////////////////////////////////////////////////////////////
 
-  var model = null;
-  var input_columns = null;
-  var output_columns = null;
-  var image_columns = null;
-  var rating_columns = null;
-  var category_columns = null;
+    this.plot_ref = plot_ref;
 
-  var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
-  var bookmark = null;
+    this.model = null;
+    this.input_columns = null;
+    this.output_columns = null;
+    this.image_columns = null;
+    this.rating_columns = null;
+    this.category_columns = null;
 
-  var table_metadata = null;
-  var table_statistics = null;
-  var indices = null;
-  var x_index = null;
-  var y_index = null;
-  var v_index = null;
-  var images_index = null;
-  var x = null;
-  var y = null;
-  var v = null;
-  var images = null;
-  var selected_simulations = null;
-  var hidden_simulations = null;
+    this.bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+    this.bookmark = null;
 
-  var table_ready = false;
-  var scatterplot_ready = false;
-  var grid_ready = false;
-  var controls_ready = false;
+    this.table_metadata = null;
+    this.table_statistics = null;
+    this.indices = null;
+    this.x_index = null;
+    this.y_index = null;
+    this.v_index = null;
+    this.images_index = null;
+    this.x = null;
+    this.y = null;
+    this.v = null;
+    this.images = null;
+    this.selected_simulations = null;
+    this.hidden_simulations = null;
 
-  var session_cache = {};
-  var image_uri = document.createElement("a");
+    this.table_ready = false;
+    this.scatterplot_ready = false;
+    this.grid_ready = false;
+    this.controls_ready = false;
 
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Load the model
-  //////////////////////////////////////////////////////////////////////////////////////////
+    this.session_cache = {};
+    this.image_uri = document.createElement("a");
+  }
+
+  ScatterPlot.prototype.load_model = function() {
+    var this_scatter_plot = this;
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Load the model
+    //////////////////////////////////////////////////////////////////////////////////////////
 console.log("LOAD THE MODEL 1 -- ajax");
-  $.ajax(
-  {
-    type : "GET",
-    url : "{{server-root}}models/{{_id}}",
-    success : function(result)
+    $.ajax(
     {
-      model = result;
-      input_columns = model["artifact:input-columns"];
-      output_columns = model["artifact:output-columns"];
-      image_columns = model["artifact:image-columns"];
-      rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
-      category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
-      model_loaded();
-    },
-    error: function(request, status, reason_phrase)
-    {
-      window.alert("Error retrieving model: " + reason_phrase);
-    }
-  });
+      type : "GET",
+      url : "{{server-root}}models/{{_id}}",
+      success : function(result)
+      {
+        model = result;
+        input_columns = model["artifact:input-columns"];
+        output_columns = model["artifact:output-columns"];
+        image_columns = model["artifact:image-columns"];
+        rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
+        category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
+        this_scatter_plot.model_loaded();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        window.alert("Error retrieving model: " + reason_phrase);
+      }
+    });
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Once the model has been loaded, retrieve metadata / bookmarked state
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  function model_loaded()
-  {
+  ScatterPlot.prototype.model_loaded = function() {
+    var this_scatter_plot = this;
 console.log("Inside model_loaded()");
     if(model["state"] == "waiting" || model["state"] == "running")
     {
@@ -120,23 +129,22 @@ console.log("Inside model laoded - load table metadata 1 -- ajax");
           table_metadata = metadata;
           table_statistics = new Array(metadata["column-count"]);
           table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-          load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
+          this_scatter_plot.load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
         },
-        error: artifact_missing
+        error: this_scatter_plot.artifact_missing
       });
 
       // Retrieve bookmarked state information ...
-      bookmarker.get_state(function(state)
+      this.bookmarker.get_state(function(state)
       {
         bookmark = state;
-        setup_colorswitcher();
+        this.setup_colorswitcher();
         metadata_loaded();
       });
     }
   }
 
-  function show_status_messages()
-  {
+  ScatterPlot.prototype.show_status_messages = function() {
 console.log("Inside show_status_messages()");
     $("#status-messages").dialog(
     {
@@ -154,8 +162,7 @@ console.log("Inside show_status_messages()");
     });
   }
 
-  function artifact_missing()
-  {
+  ScatterPlot.prototype.artifact_missing = function() {
 console.log("Inside artifact_missing()");
     $(".load-status").css("display", "none");
 
@@ -173,123 +180,123 @@ console.log("Inside artifact_missing()");
   //////////////////////////////////////////////////////////////////////////////////////////
 
   // Setup the edit model form ...
-  $("#edit-model-form").dialog(
-  {
-    autoOpen: false,
-    width: 700,
-    height: 300,
-    modal: true,
-    buttons:
+  ScatterPlot.prototype.setup_layout = function() {
+    $("#edit-model-form").dialog(
     {
-      "Save Changes": function()
+      autoOpen: false,
+      width: 700,
+      height: 300,
+      modal: true,
+      buttons:
       {
-        var model =
+        "Save Changes": function()
         {
-          "name" : $("#edit-model-name").val(),
-          "description" : $("#edit-model-description").val()
-        };
+          var model =
+          {
+            "name" : $("#edit-model-name").val(),
+            "description" : $("#edit-model-description").val()
+          };
 
-console.log("save model changes -- ajax");
-        $.ajax(
+  console.log("save model changes -- ajax");
+          $.ajax(
+          {
+            type : "PUT",
+            url : "{{server-root}}models/{{_id}}",
+            contentType : "application/json",
+            data : $.toJSON(model),
+            processData : false,
+            success : function()
+            {
+              window.location.reload();
+            },
+            error : function(request, status, reason_phrase)
+            {
+              window.alert("Error updating model: " + reason_phrase);
+            }
+          });
+        },
+        Cancel: function()
         {
-          type : "PUT",
-          url : "{{server-root}}models/{{_id}}",
-          contentType : "application/json",
-          data : $.toJSON(model),
-          processData : false,
-          success : function()
-          {
-            window.location.reload();
-          },
-          error : function(request, status, reason_phrase)
-          {
-            window.alert("Error updating model: " + reason_phrase);
-          }
-        });
+          $(this).dialog("close");
+        }
       },
-      Cancel: function()
+      close: function()
       {
-        $(this).dialog("close");
-      }
-    },
-    close: function()
-    {
-    }
-  });
-
-  $("#delete-model-link").click(function(){
-    if(!window.confirm("Delete model {{name}}?  This cannot be undone."))
-      return false;
-
-console.log("delete model -- ajax");
-    $.ajax(
-    {
-      type : "DELETE",
-      url : "{{server-root}}models/{{_id}}",
-      success : function(details)
-      {
-        window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
-      },
-      error : function(request, status, reason_phrase)
-      {
-        window.alert("Error deleting model: " + reason_phrase);
       }
     });
-  });
 
-  $("#edit-model-button").button().click(function()
-  {
-    $("#edit-model-form").dialog("open");
-    $("#edit-model-name").focus();
-  });
+    $("#delete-model-link").click(function(){
+      if(!window.confirm("Delete model {{name}}?  This cannot be undone."))
+        return false;
 
-
-  // Layout resizable panels ...
-  $("body").layout(
-  {
-    north:
-    {
-    },
-    center:
-    {
-    },
-    south:
-    {
-      size: $("body").height() / 2,
-      resizeWhileDragging: false,
-      onresize: function()
+  console.log("delete model -- ajax");
+      $.ajax(
       {
-        $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
-      }
-    },
-  });
+        type : "DELETE",
+        url : "{{server-root}}models/{{_id}}",
+        success : function(details)
+        {
+          window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+        },
+        error : function(request, status, reason_phrase)
+        {
+          window.alert("Error deleting model: " + reason_phrase);
+        }
+      });
+    });
 
-  $("#model-pane").layout(
-  {
-    center:
+    $("#edit-model-button").button().click(function()
     {
-      resizeWhileDragging: false,
-      onresize: function() { 
-// TODO HANDLE IN GRID
-//        $("#scatterplot").scatterplot("option", {
-//          width: $("#scatterplot-pane").width(), 
-//          height: $("#scatterplot-pane").height()
-//        }); 
-        $("#scatterplot").grid("option", {
-          width: $("#scatterplot-pane").width(), 
-          height: $("#scatterplot-pane").height()
-        }); 
-      },
-    }
-  });
+      $("#edit-model-form").dialog("open");
+      $("#edit-model-name").focus();
+    });
 
+
+    // Layout resizable panels ...
+    $("body").layout(
+    {
+      north:
+      {
+      },
+      center:
+      {
+      },
+      south:
+      {
+        size: $("body").height() / 2,
+        resizeWhileDragging: false,
+        onresize: function()
+        {
+          $("#table").css("height", $("#table-pane").height());
+          $("#table").table("resize_canvas");
+        }
+      },
+    });
+
+    $("#model-pane").layout(
+    {
+      center:
+      {
+        resizeWhileDragging: false,
+        onresize: function() { 
+  // TODO HANDLE IN GRID
+  //        $("#scatterplot").scatterplot("option", {
+  //          width: $("#scatterplot-pane").width(), 
+  //          height: $("#scatterplot-pane").height()
+  //        }); 
+          $("#scatterplot").grid("option", {
+            width: $("#scatterplot-pane").width(), 
+            height: $("#scatterplot-pane").height()
+          }); 
+        },
+      }
+    });
+  }
   //////////////////////////////////////////////////////////////////////////////////////////
   // setup the rest of the ui as data is received.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  function setup_colorswitcher()
-  {
+  ScatterPlot.prototype.setup_colorswitcher = function() {
 console.log("inside setup_colorswitcher()");
     var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
@@ -300,8 +307,7 @@ console.log("inside setup_colorswitcher()");
     });
   }
 
-  function metadata_loaded()
-  {
+  ScatterPlot.prototype.metadata_loaded = function() {
 console.log("inside metadata loaded()");
     setup_table();
 
@@ -348,9 +354,7 @@ console.log("inside metadata loaded()");
         success : function(result)
         {
           x = result;
-// TODO move to grid
-//          setup_grid();
-          setup_grid();
+          setup_scatterplot();
           setup_table();
         },
         error : artifact_missing
@@ -365,9 +369,7 @@ console.log("inside metadata loaded()");
         success : function(result)
         {
           y = result;
-// TODO move to grid          
-//          setup_grid();
-          setup_grid();
+          setup_scatterplot();
           setup_table();
         },
         error : artifact_missing
@@ -383,9 +385,7 @@ console.log("inside metadata loaded()");
         v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           v[i] = i;
-// TODO move to grid
-//        setup_grid();
-        setup_grid();
+        setup_scatterplot();
       }
       else
       {
@@ -398,9 +398,7 @@ console.log("inside metadata loaded()");
           success : function(result)
           {
             v = result;
-// TODO move to grid
-//            setup_grid();
-            setup_grid();
+            setup_scatterplot();
           },
           error : artifact_missing
         });
@@ -419,7 +417,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
         success : function(result)
         {
           images = result;
-          setup_grid();
+          setup_scatterplot();
           setup_table();
         },
         error: artifact_missing
@@ -428,8 +426,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
     }
   }
 
-  function setup_table()
-  {
+  ScatterPlot.prototype.setup_table = function() {
 console.log("inside setup_table()");
     if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
       && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
@@ -585,12 +582,7 @@ console.log("inside setup_table()");
     }
   }
 
-  function setup_grid() {
-// TODO leverage setup_scatterplot() -- fadingswordsman
-  }
-
-  function setup_scatterplot()
-  {
+  ScatterPlot.prototype.setup_scatterplot = function() {
 console.log("inside setup_scatterplot()");
     // Setup the scatterplot ...
     if(!scatterplot_ready && bookmark && indices && x && y && v && images 
@@ -702,8 +694,7 @@ console.log("GET models/id/attrs / image selection changed -- ajax");
     }
   }
 
-  function setup_controls()
-  {
+  ScatterPlot.prototype.setup_controls = function() {
 console.log("inside setup_controls()");
     if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
       && (category_columns != null) && (x_index != null) && (y_index != null) 
@@ -903,8 +894,7 @@ console.log("write data PUT models/id/arraysets/data-table/data -- ajax");
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  function selected_colormap_changed(colormap)
-  {
+  ScatterPlot.prototype.selected_colormap_changed = function(colormap) {
 console.log("inside selected_colormap_changed()");
 console.log("colormap change POST events/models/id/ -- ajax");
     $.ajax(
@@ -915,8 +905,7 @@ console.log("colormap change POST events/models/id/ -- ajax");
     bookmarker.updateState({"colormap" : colormap});
   }
 
-  function selected_variable_changed(variable)
-  {
+  ScatterPlot.prototype.selected_variable_changed = function(variable) {
 console.log("inside selected_variable_chagned()");
 console.log("selected variable changed -- ajax");
     $.ajax(
@@ -928,8 +917,7 @@ console.log("selected variable changed -- ajax");
     v_index = Number(variable);
   }
 
-  function variable_sort_changed(variable, order)
-  {
+  ScatterPlot.prototype.variable_sort_changed = function(variable, order) {
 console.log("inside variable sort changed");
 console.log("variable sort changed -- ajax");
     $.ajax(
@@ -940,8 +928,7 @@ console.log("variable sort changed -- ajax");
     bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
   }
 
-  function selected_simulations_changed(selection)
-  {
+  ScatterPlot.prototype.selected_simulations_changed = function(selection) {
 console.log("inside selected simulations changed");
     // Logging every selected item is too slow, so just log the count instead.
 console.log("selectred sim changed changed -- ajax");
@@ -954,8 +941,7 @@ console.log("selectred sim changed changed -- ajax");
     selected_simulations = selection;
   }
 
-  function x_selection_changed(variable)
-  {
+  ScatterPlot.prototype.x_selection_changed = function(variable) {
 console.log("inside x selection changed");
 console.log("x selection changed -- ajax");
     $.ajax(
@@ -967,8 +953,7 @@ console.log("x selection changed -- ajax");
     x_index = Number(variable);
   }
 
-  function y_selection_changed(variable)
-  {
+  ScatterPlot.prototype.y_selection_changed = function(variable) {
 console.log("inside y selection changed");
 console.log("y selection changed -- ajax");
     $.ajax(
@@ -979,8 +964,7 @@ console.log("y selection changed -- ajax");
     bookmarker.updateState( {"y-selection" : variable} );
   }
 
-  function images_selection_changed(variable)
-  {
+  ScatterPlot.prototype.images_selection_changed = function(variable) {
 console.log("inside images selection changed");
 console.log("images selection changed -- ajax");
     $.ajax(
@@ -992,8 +976,7 @@ console.log("images selection changed -- ajax");
     y_index = Number(variable);
   }
 
-  function open_images_changed(selection)
-  {
+  ScatterPlot.prototype.open_images_changed = function(selection) {
 console.log("inside open images  changed");
     // Logging every open image is too slow, so just log the count instead.
 console.log("open images changed -- ajax");
@@ -1005,8 +988,7 @@ console.log("open images changed -- ajax");
     bookmarker.updateState( {"open-images-selection" : selection} );
   }
 
-  function hidden_simulations_changed()
-  {
+  ScatterPlot.prototype.hidden_simulations_changed = function() {
 console.log("inside hidden simulations  changed");
     // Logging every hidden simulation is too slow, so just log the count instead.
 console.log("hidden simulations changed -- ajax");
@@ -1018,8 +1000,7 @@ console.log("hidden simulations changed -- ajax");
     bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
   }
 
-  function update_scatterplot_value(attribute)
-  {
+  ScatterPlot.prototype.update_scatterplot_value = function(attribute) {
 console.log("inside update scatterplot value");
     if(attribute == table_metadata["column-count"] - 1)
     {
@@ -1046,8 +1027,7 @@ console.log("inside update scatterplot value");
     }
   }
 
-  function update_scatterplot_x(variable)
-  {
+  ScatterPlot.prototype.update_scatterplot_x = function(variable) {
 console.log("inside update scatterplot x");
     get_model_array_attribute({
       server_root : "{{server-root}}",
@@ -1063,8 +1043,7 @@ console.log("inside update scatterplot x");
     });
   }
 
-  function update_scatterplot_y(variable)
-  {
+  ScatterPlot.prototype.update_scatterplot_y = function(variable) {
 console.log("inside update scatterplot y");
     get_model_array_attribute({
       server_root : "{{server-root}}",
@@ -1080,8 +1059,7 @@ console.log("inside update scatterplot y");
     });
   }
 
-  function display_image(uri)
-  {
+  ScatterPlot.prototype.display_image = function(uri) {
 console.log("inside display image");
     image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
     if(image_uri.hostname in session_cache)
@@ -1090,8 +1068,7 @@ console.log("inside display image");
       $("#remote-login").dialog("open");
   }
 
-  function load_image()
-  {
+  ScatterPlot.prototype.load_image = function() {
 console.log("inside load image");
     var sid = session_cache[image_uri.hostname];
     image = document.createElement("img");
@@ -1103,8 +1080,7 @@ console.log("inside load image");
     $("#scatterplot-pane").prepend(image);
   }
 
-  function load_table_statistics(columns, callback)
-  {
+  ScatterPlot.prototype.load_table_statistics = function(columns, callback) {
 console.log("inside load table statistics");
     var requests = Array();
     for(var i=0; i<columns.length; i++)
@@ -1127,4 +1103,15 @@ console.log("request push -" + columns[i] + " -- ajax");
       callback();
     });
   }
+
+  function jQueryWithContext(selector) {
+    return $(selector);
+  }
+
+  $(".plot").each(function() {
+    scatter_plot = new ScatterPlot($(this).attr("id"));
+    scatter_plot.load_model();
+    scatter_plot.setup_layout();
+  });
 });
+
