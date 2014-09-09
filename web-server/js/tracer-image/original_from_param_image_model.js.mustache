@@ -2,7 +2,7 @@ $(document).ready(function() {
 
   var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
   var bookmark = null;
-  
+
   function show_status_messages() {
 console.log("Inside show_status_messages()");
     $("#status-messages").dialog({
@@ -19,7 +19,7 @@ console.log("Inside show_status_messages()");
       }
     });
   }
-  
+
   function artifact_missing() {
 console.log("Inside artifact_missing()");
     $(".load-status").css("display", "none");
@@ -106,7 +106,7 @@ console.log("LOAD THE MODEL 1 -- ajax");
       }
     });
   };
-  
+
   Model.prototype.get_numeric_variables = function() {
     var numeric_variables = [];
     for(var i = 0; i < model.metadata["column-count"]-1; i++)
@@ -201,17 +201,20 @@ console.log("Inside model laoded - load table metadata 1 -- ajax");
 console.log("about to call metadata_loaded ....");
 console.log("context is : ");
 console.log(self);
+          //debugger;
           table.load_statistics(d3.range(self.metadata["column-count"]-1), self.metadata_loaded, self);
         },
         error: artifact_missing
       });
 
+      // TODO integrate into callbacks
       // Retrieve bookmarked state information ...
       bookmarker.get_state(function(state)
       {
         bookmark = state;
         layout.setup_colorswitcher();
-        self.metadata_loaded();
+        //debugger;
+        //self.metadata_loaded();
       });
     }
   };
@@ -320,9 +323,9 @@ console.log("save model changes -- ajax");
       center:
       {
         resizeWhileDragging: false,
-        onresize: function() { 
+        onresize: function() {
           scatterplots.each(function(plot) {
-            resize.call(plot); 
+            resize.call(plot);
           });
         },
       }
@@ -331,9 +334,9 @@ console.log("save model changes -- ajax");
 
   ScatterPlot.prototype.resize = function() {
     $(this.plot_ref + " .scatterplot").scatterplot("option", {
-      width: $(this.plot_ref + ".scatterplot-pane").width(), 
+      width: $(this.plot_ref + ".scatterplot-pane").width(),
       height: $(this.plot_ref + ".scatterplot-pane").height()
-    }); 
+    });
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -370,51 +373,51 @@ console.log("inside setup_colorswitcher()");
     });
   };
 
-  Model.prototype.metadata_loaded = function() {
+Model.prototype.metadata_loaded = function() {
 console.log("inside metadata loaded()");
 console.log(this);
-    table.setup();
 
-    if(!this.indices && this.metadata) {
-      var count = this.metadata["row-count"];
-      this.indices = new Int32Array(count);
-      for(var i = 0; i != count; ++i)
-        this.indices[i] = i;
-    }
+  if(!this.indices && this.metadata) {
+    var count = this.metadata["row-count"];
+    this.indices = new Int32Array(count);
+    for(var i = 0; i != count; ++i)
+      this.indices[i] = i;
+  }
 
-    if(this.metadata && bookmark) {
-      scatterplots.forEach(function(plot) {
-        plot.setup_labels();
-        plot.setup_simulations();
+  if(this.metadata && bookmark) {
+    scatterplots.forEach(function(plot) {
+      plot.setup_labels();
+      plot.setup_simulations();
 
-        plot.update_axis(plot.x_index, "x");
-        plot.update_axis(plot.y_index, "y");
-      
-        plot.v_index = model.metadata["column-count"] - 1;
-        if("variable-selection" in bookmark)
-          plot.v_index = Number(bookmark["variable-selection"]);
+      plot.update_axis(plot.x_index, "x");
+      plot.update_axis(plot.y_index, "y");
 
-        if(plot.v_index == model.metadata["column-count"] - 1)
-        {
-          var count = model.metadata["row-count"];
-          plot.v = new Float64Array(count);
-          for(var i = 0; i != count; ++i)
-            plot.v[i] = i;
-          plot.setup();
-        }
-        else
-        {
-          plot.update_axis(plot.v_index, "v");
-        }
+      plot.v_index = model.metadata["column-count"] - 1;
+      if("variable-selection" in bookmark)
+        plot.v_index = Number(bookmark["variable-selection"]);
 
-        plot.images_index = model.image_columns[0];
-        if("images-selection" in bookmark)
-          plot.images_index = bookmark["images-selection"];
+      if(plot.v_index == model.metadata["column-count"] - 1)
+      {
+        var count = model.metadata["row-count"];
+        plot.v = new Float64Array(count);
+        for(var i = 0; i != count; ++i)
+          plot.v[i] = i;
+        plot.setup();
+      }
+      else
+      {
+        plot.update_axis(plot.v_index, "v");
+      }
 
-console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
+      plot.images_index = model.image_columns[0];
+      if("images-selection" in bookmark) {
+        plot.images_index = bookmark["images-selection"];
+      }
+      table.setup();
+      console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
       $.ajax({
         type : "GET",
-        url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
+        url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/"
           + plot.images_index + "/chunk?ranges=0," + model.metadata["row-count"],
         success : function(result)
         {
@@ -426,6 +429,7 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
       });
       plot.controls.setup();
     });
+    table.setup(); //TODO: decouple this from scatterplot - currently dependent
   }
 };
 
@@ -435,6 +439,7 @@ console.log("inside TABLE setup()");
     // TODO - for now using the first plot
     // TODO - can this be decoupled?
     // this means we are still good for parameter image
+    debugger;
     var plot = scatterplots[0];
     var x_index = plot.x_index;
     var y_index = plot.y_index;
@@ -442,9 +447,9 @@ console.log("inside TABLE setup()");
     var images_index = plot.images_index;
     var selected_simulations = plot.selected_simulations;
     var hidden_simulations = plot.hidden_simulations;
-    if( !this.ready && model.metadata && (this.statistics.length == model.metadata["column-count"]) 
-      && this.bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
-      && (this.selected_simulations != null) && (this.hidden_simulations != null) )
+    if( !this.ready && model.metadata && (this.statistics.length == model.metadata["column-count"])
+      && bookmark && (x_index != null) && (y_index != null) && (images_index != null)
+      && (selected_simulations != null) && (hidden_simulations != null) )
     {
       this.ready = true;
 
@@ -453,7 +458,7 @@ console.log("inside TABLE setup()");
       var other_columns = [];
       for(var i = 0; i != model.metadata["column-count"] - 1; ++i)
       {
-        if($.inArray(i, model.input_columns) == -1 && $.inArray(i, model.output_columns) == -1 
+        if($.inArray(i, model.input_columns) == -1 && $.inArray(i, model.output_columns) == -1
           && $.inArray(i, model.rating_columns) == -1 && $.inArray(i, model.category_columns) == -1)
           other_columns.push(i);
       }
@@ -590,7 +595,7 @@ console.log("inside TABLE setup()");
   ScatterPlot.prototype.setup = function() {
 console.log("inside PLOT setup()");
     // Setup the scatterplot ...
-    if(!this.ready && bookmark && model.indices && this.x && this.y && this.v && this.images 
+    if(!this.ready && bookmark && model.indices && this.x && this.y && this.v && this.images
       && (this.selected_simulations != null) && (this.hidden_simulations != null))
     {
       var self = this;
@@ -672,7 +677,7 @@ console.log("changing the images var updates the scatter plot -- ajax");
         $.ajax(
         {
           type : "GET",
-          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
+          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
             variable + "/chunk?ranges=0," + model.metadata["row-count"],
           success : function(result)
           {
@@ -687,7 +692,7 @@ console.log("GET models/id/attrs / image selection changed -- ajax");
         $.ajax(
         {
           type : "GET",
-          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + 
+          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
             variable + "/chunk?ranges=0," + model.metadata["row-count"],
           success : function(result)
           {
@@ -708,8 +713,8 @@ console.log("GET models/id/attrs / image selection changed -- ajax");
   Controls.prototype.setup = function() {
 console.log("inside setup_controls()");
     var plot = this.plot;
-    if( !this.ready && model.metadata && (model.image_columns != null) && (model.rating_columns != null) 
-      && (model.category_columns != null) && (plot.x_index != null) && (plot.y_index != null) 
+    if( !this.ready && model.metadata && (model.image_columns != null) && (model.rating_columns != null)
+      && (model.category_columns != null) && (plot.x_index != null) && (plot.y_index != null)
       && (plot.images_index != null) && (plot.selected_simulations != null) )
     {
       this.ready = true;
@@ -821,7 +826,7 @@ console.log("write data PUT models/id/arraysets/data-table/data -- ajax");
               iterator++;
               if(iterator<selection.length) {
                 writeData(selection, variable, blob, iterator);
-              } 
+              }
               else {
                 // Finished writing data, need to update widgets
 
@@ -1092,7 +1097,7 @@ console.log("inside load image");
   };
 
   Table.prototype.load_statistics = function(columns, callback, callback_obj) {
-    // TODO what's going on with callback in terms of OO? 
+    // TODO what's going on with callback in terms of OO?
     // the callback does not contain the same context as "this" here does
     var self = this;
 console.log(this);
