@@ -1,0 +1,45 @@
+function show_status_messages() {
+  console.log("Inside show_status_messages()");
+  $("#status-messages").dialog({
+    autoOpen: true,
+    width: 500,
+    height: 300,
+    modal: false,
+    buttons:
+    {
+      OK: function()
+      {
+        $("#status-messages").dialog("close");
+      }
+    }
+  });
+}
+
+function artifact_missing() {
+  console.log("Inside artifact_missing()");
+  $(".load-status").css("display", "none");
+
+  $("#status-messages").empty().html(
+    "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
+      "<div class='error-description'>This probably means that there was a problem building the model. " +
+      "Here's the last thing that was going on with it:</div>" +
+      "<pre>" + model["message"] + "</pre>");
+
+  show_status_messages();
+}
+
+//(function() {
+  var layout = new Layout(); //load first to instantiate bookmarker
+  var model = new Model();
+  model.load();
+  var table = new Table();
+  layout.setup();
+
+  var scatterplots = [];
+
+  $(".plot").each(function() {
+    scatter_plot = new ScatterPlot($(this).attr("id"));
+    scatter_plot.controls = new Controls(scatter_plot);
+    scatterplots.push(scatter_plot);
+  });
+//})();

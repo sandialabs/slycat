@@ -1,80 +1,79 @@
-$(document).ready(function() {
-  // Load the model
+function Model() {
+  console.log("Setup model");
+  this.model = null;
+  this.metadata = null;
+  this.indices = null;
+  this.input_columns = null;
+  this.output_columns = null;
+  this.image_columns = null;
+  this.rating_columns = null;
+  this.category_columns = null;
+}
 
+Model.prototype.load = function() {
+  console.log("LOAD THE MODEL 1 -- ajax");
+  var self = this;
   $.ajax(
-  {
-    type : "GET",
-    url : "{{server-root}}models/{{_id}}",
-    success : function(result)
     {
-      model = result;
-      input_columns = model["artifact:input-columns"];
-      output_columns = model["artifact:output-columns"];
-      image_columns = model["artifact:image-columns"];
-      rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
-      category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
-      model_loaded();
-    },
-    error: function(request, status, reason_phrase)
-    {
-      window.alert("Error retrieving model: " + reason_phrase);
-    }
-  });
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Once the model has been loaded, retrieve metadata / bookmarked state
-  //////////////////////////////////////////////////////////////////////////////////////////
-
-  $("#delete-model-link").click(function(){
-    if(!window.confirm("Delete model {{name}}?  This cannot be undone."))
-      return false;
-
-    $.ajax(
-    {
-      type : "DELETE",
+      type : "GET",
       url : "{{server-root}}models/{{_id}}",
-      success : function(details)
+      success : function(result)
       {
-        window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+        self.model = result;
+        self.input_columns = self.model["artifact:input-columns"];
+        self.output_columns = self.model["artifact:output-columns"];
+        self.image_columns = self.model["artifact:image-columns"];
+        self.rating_columns = self.model["artifact:rating-columns"] == undefined ? [] : self.model["artifact:rating-columns"];
+        self.category_columns = self.model["artifact:category-columns"] == undefined ? [] : self.model["artifact:category-columns"];
+        self.loaded();
       },
-      error : function(request, status, reason_phrase)
+      error: function(request, status, reason_phrase)
       {
-        window.alert("Error deleting model: " + reason_phrase);
+        window.alert("Error retrieving model: " + reason_phrase);
       }
     });
-  });
+};
 
-  $("#edit-model-button").button().click(function()
+Model.prototype.get_numeric_variables = function() {
+  var numeric_variables = [];
+  for(var i = 0; i < model.metadata["column-count"]-1; i++)
   {
-    $("#edit-model-form").dialog("open");
-    $("#edit-model-name").focus();
-  });
-});
-  
-function model_loaded()
-{
-  if(model["state"] == "waiting" || model["state"] == "running")
+    // only use non-string columns that are not used for ratings or categories
+    if(model.metadata["column-types"][i] != 'string' && model.rating_columns.indexOf(i) == -1 && model.category_columns.indexOf(i) == -1)
+      numeric_variables.push(i);
+  }
+  return numeric_variables;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Once the model has been loaded, retrieve metadata / bookmarked state
+//////////////////////////////////////////////////////////////////////////////////////////
+
+Model.prototype.loaded = function() {
+  var self = this;
+  console.log("Inside model_loaded()");
+  if(self.model["state"] == "waiting" || self.model["state"] == "running")
   {
     $("#status-messages").empty().html(
       "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-      "<div class='error-description'>We're probabably building it for you right now." +
-      "Watch the status bar for progress information and more details.</div>");
+        "<div class='error-description'>We're probabably building it for you right now." +
+        "Watch the status bar for progress information and more details.</div>");
     show_status_messages();
   }
-  else if(model["state"] == "closed" && model["result"] === null)
+  else if(self.model["state"] == "closed" && self.model["result"] === null)
   {
     $("#status-messages").empty().html(
       "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
-      "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
-      "<pre>" + model["message"] + "</pre>");
+        "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
+        "<pre>" + model["message"] + "</pre>");
     show_status_messages();
   }
-  else if(model["result"] == "failed")
+  else if(self.model["result"] == "failed")
   {
     $("#status-messages").empty().html(
       "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-      "<div class='error-description'>Here's what was happening when it ended:</div>" +
-      "<pre>" + model["message"] + "</pre>");
+        "<div class='error-description'>Here's what was happening when it ended:</div>" +
+        "<pre>" + model["message"] + "</pre>");
     show_status_messages();
   }
   else
@@ -83,113 +82,104 @@ function model_loaded()
     $(".load-status").text("Loading data.");
 
     // Mark this model as closed, so it doesn't show-up in the header anymore.
+    console.log("mark this model as closed -- ajax");
     $.ajax(
-    {
-      type : "PUT",
-      url : "{{server-root}}models/{{_id}}",
-      contentType : "application/json",
-      data : $.toJSON({
-        "state" : "closed"
-      }),
-      processData : false
-    });
+      {
+        type : "PUT",
+        url : "{{server-root}}models/{{_id}}",
+        contentType : "application/json",
+        data : $.toJSON({
+          "state" : "closed"
+        }),
+        processData : false
+      });
 
+    console.log("Inside model laoded - load table metadata 1 -- ajax");
     // Load data table metadata.
     $.ajax({
       url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
       contentType : "application/json",
       success: function(metadata)
       {
-        table_metadata = metadata;
-        table_statistics = new Array(metadata["column-count"]);
-        table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-        load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
+        self.metadata = metadata;
+        table.statistics = new Array(metadata["column-count"]);
+        table.statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
+        console.log("about to call metadata_loaded ....");
+        console.log("context is : ");
+        console.log(self);
+        //debugger;
+        table.load_statistics(d3.range(self.metadata["column-count"]-1), self.metadata_loaded, self);
       },
       error: artifact_missing
     });
 
+    // TODO integrate into callbacks
     // Retrieve bookmarked state information ...
-    bookmarker.get_state(function(state)
-    {
-      bookmark = state;
-      setup_colorswitcher();
-      metadata_loaded();
+    layout.bookmarker.get_state(function(state) {
+      layout.bookmark = state;
+      layout.setup_colorswitcher();
+      //debugger;
+      //self.metadata_loaded();
     });
   }
-}
+};
 
-function show_status_messages()
-{
-  $("#status-messages").dialog(
-  {
-    autoOpen: true,
-    width: 500,
-    height: 300,
-    modal: false,
-    buttons:
-    {
-      OK: function()
-      {
-        $("#status-messages").dialog("close");
-      }
-    }
-  });
-}
+Model.prototype.metadata_loaded = function() {
+  console.log("inside metadata loaded()");
+  console.log(this);
 
-function artifact_missing()
-{
-  $(".load-status").css("display", "none");
-
-  $("#status-messages").empty().html(
-    "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-    "<div class='error-description'>This probably means that there was a problem building the model. " +
-    "Here's the last thing that was going on with it:</div>" +
-    "<pre>" + model["message"] + "</pre>");
-
-  show_status_messages();
-}
-// Setup page layout and forms.
-// Setup the edit model form ...
-$("#edit-model-form").dialog(
-{
-  autoOpen: false,
-  width: 700,
-  height: 300,
-  modal: true,
-  buttons:
-  {
-    "Save Changes": function()
-    {
-      var model =
-      {
-        "name" : $("#edit-model-name").val(),
-        "description" : $("#edit-model-description").val()
-      };
-
-      $.ajax(
-      {
-        type : "PUT",
-        url : "{{server-root}}models/{{_id}}",
-        contentType : "application/json",
-        data : $.toJSON(model),
-        processData : false,
-        success : function()
-        {
-          window.location.reload();
-        },
-        error : function(request, status, reason_phrase)
-        {
-          window.alert("Error updating model: " + reason_phrase);
-        }
-      });
-    },
-    Cancel: function()
-    {
-      $(this).dialog("close");
-    }
-  },
-  close: function()
-  {
+  if(!this.indices && this.metadata) {
+    var count = this.metadata["row-count"];
+    this.indices = new Int32Array(count);
+    for(var i = 0; i != count; ++i)
+      this.indices[i] = i;
   }
-});
 
+  if(this.metadata && layout.bookmark) {
+    scatterplots.forEach(function(plot) {
+      plot.setup_labels();
+      plot.setup_simulations();
+
+      plot.update_axis(plot.x_index, "x");
+      plot.update_axis(plot.y_index, "y");
+
+      plot.v_index = model.metadata["column-count"] - 1;
+      if("variable-selection" in layout.bookmark)
+        plot.v_index = Number(layout.bookmark["variable-selection"]);
+
+      if(plot.v_index == model.metadata["column-count"] - 1)
+      {
+        var count = model.metadata["row-count"];
+        plot.v = new Float64Array(count);
+        for(var i = 0; i != count; ++i)
+          plot.v[i] = i;
+        plot.setup();
+      }
+      else
+      {
+        plot.update_axis(plot.v_index, "v");
+      }
+
+      plot.images_index = model.image_columns[0];
+      if("images-selection" in layout.bookmark) {
+        plot.images_index = layout.bookmark["images-selection"];
+      }
+      table.setup();
+      console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
+      $.ajax({
+        type : "GET",
+        url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/"
+          + plot.images_index + "/chunk?ranges=0," + model.metadata["row-count"],
+        success : function(result)
+        {
+          plot.images = result;
+          // TODO set this up after all ajax requests are done -- plot.setup();
+          // TODO set this up after all ajax requests are done -- this.setup();
+        },
+        error: artifact_missing
+      });
+      plot.controls.setup();
+    });
+    table.setup(); //TODO: decouple this from scatterplot - currently dependent
+  }
+};
