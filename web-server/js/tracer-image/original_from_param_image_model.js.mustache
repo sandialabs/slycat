@@ -1,5 +1,4 @@
-$(document).ready(function()
-{
+$(document).ready(function() {
 
   var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
   var bookmark = null;
@@ -57,15 +56,12 @@ console.log("Setup model");
 
   function Table() {
 console.log("Setup table");
-    var self = this;
     this.statistics = null;
     this.ready = false;
   };
 
   function ScatterPlot(plot_ref) {
 console.log("Setup scatter plot");
-    var self = this;
-
     this.plot_ref = "#" + plot_ref;  // DOM plot ref
     this.controls = null;
 
@@ -226,7 +222,7 @@ console.log(self);
   //////////////////////////////////////////////////////////////////////////////////////////
 
   // Setup the edit model form ...
-  Layout.setup = function() {
+  Layout.prototype.setup = function() {
 console.log("setting up the layout");
     $("#edit-model-form").dialog(
     {
@@ -356,38 +352,37 @@ console.log("inside setup_colorswitcher()");
     });
   };
 
+  ScatterPlot.prototype.update_axis = function(index, axis) {
+    var self = this;
+    get_model_array_attribute({
+      server_root : "{{server-root}}",
+      mid : "{{_id}}",
+      aid : "data-table",
+      array : 0,
+      attribute : index,
+      success : function(result)
+      {
+        self[axis] = result;
+        self.setup();
+        // TODO refactor to setup the table ONCE after all ajax requests// table.setup();
+      },
+      error : artifact_missing
+    });
+  };
+
   Model.prototype.metadata_loaded = function() {
 console.log("inside metadata loaded()");
 console.log(this);
     table.setup();
 
-    if(!this.indices && this.metadata)
-    {
+    if(!this.indices && this.metadata) {
       var count = this.metadata["row-count"];
       this.indices = new Int32Array(count);
       for(var i = 0; i != count; ++i)
         this.indices[i] = i;
     }
-        
-    ScatterPlot.prototype.update_axis = function(index, axis) {
-      get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
-        aid : "data-table",
-        array : 0,
-        attribute : index,
-        success : function(result)
-        {
-          self[axis] = result;
-          self.setup();
-          // TODO refactor to setup the table ONCE after all ajax requests// table.setup();
-        },
-        error : artifact_missing
-      });
-    };
 
-    if(this.metadata && bookmark)
-    {
+    if(this.metadata && bookmark) {
       scatterplots.forEach(function(plot) {
         plot.setup_labels();
         plot.setup_simulations();
@@ -417,8 +412,7 @@ console.log(this);
           plot.images_index = bookmark["images-selection"];
 
 console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
-      $.ajax(
-      {
+      $.ajax({
         type : "GET",
         url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
           + plot.images_index + "/chunk?ranges=0," + model.metadata["row-count"],
@@ -430,9 +424,10 @@ console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
         },
         error: artifact_missing
       });
-      controls.setup();
-    }
-  };
+      plot.controls.setup();
+    });
+  }
+};
 
   Table.prototype.setup = function() {
 console.log("inside TABLE setup()");
@@ -440,6 +435,7 @@ console.log("inside TABLE setup()");
     // TODO - for now using the first plot
     // TODO - can this be decoupled?
     // this means we are still good for parameter image
+    var plot = scatterplots[0];
     var x_index = plot.x_index;
     var y_index = plot.y_index;
     var v_index = plot.v_index;
@@ -645,21 +641,21 @@ console.log("inside PLOT setup()");
       // Changing the x variable updates the scatterplot ...
       $("#table").bind("x-selection-changed", function(event, variable)
       {
-        plot.update_x(variable);
+        self.update_x(variable);
       });
-      $(plot.plot_ref + " .controls").bind("x-selection-changed", function(event, variable)
+      $(this.plot_ref + " .controls").bind("x-selection-changed", function(event, variable)
       {
-        plot.update_x(variable);
+        self.update_x(variable);
       });
 
       // Changing the y variable updates the scatterplot ...
       $("#table").bind("y-selection-changed", function(event, variable)
       {
-        plot.update_y(variable);
+        self.update_y(variable);
       });
-      $(plot.plot_ref + " .controls").bind("y-selection-changed", function(event, variable)
+      $(this.plot_ref + " .controls").bind("y-selection-changed", function(event, variable)
       {
-        plot.update_y(variable);
+        self.update_y(variable);
       });
 
       // Changing the images variable updates the scatterplot ...
@@ -678,7 +674,7 @@ console.log("changing the images var updates the scatter plot -- ajax");
           error: artifact_missing
         });
       });
-      $(plot.plot_ref + " .controls").bind("images-selection-changed", function(event, variable)
+      $(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable)
       {
 console.log("GET models/id/attrs / image selection changed -- ajax");
         $.ajax(
@@ -697,13 +693,14 @@ console.log("GET models/id/attrs / image selection changed -- ajax");
       // Log changes to open images ...
       $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection)
       {
-        open_images_changed(selection);
+        self.open_images_changed(selection);
       });
     }
   };
 
   Controls.prototype.setup = function() {
 console.log("inside setup_controls()");
+    var plot = this.plot;
     if( !this.ready && model.metadata && (model.image_columns != null) && (model.rating_columns != null) 
       && (model.category_columns != null) && (plot.x_index != null) && (plot.y_index != null) 
       && (plot.images_index != null) && (plot.selected_simulations != null) )
@@ -1088,8 +1085,9 @@ console.log("inside load image");
   };
 
   Table.prototype.load_statistics = function(columns, callback, callback_obj) {
-// TODO what's going on with callback in terms of OO? 
-// the callback does not contain the same context as "this" here does
+    // TODO what's going on with callback in terms of OO? 
+    // the callback does not contain the same context as "this" here does
+    var self = this;
 console.log(this);
 console.log("inside load table statistics");
     var requests = Array();
@@ -1107,6 +1105,8 @@ console.log("request push -" + columns[i] + " -- ajax");
       // This is executed only after every ajax request has been completed
       $.each(arguments, function(index, responseData){
         // "responseData" contains an array of response information for each specific request
+        console.log("table self:");
+        console.log(self);
         self.statistics[parseInt(columns[index])] = responseData.length == undefined ? responseData : responseData[0];
       });
       callback.call(callback_obj || self);
@@ -1119,9 +1119,11 @@ console.log("request push -" + columns[i] + " -- ajax");
   var layout = new Layout();
   layout.setup();
 
+  var scatterplots = [];
+
   $(".plot").each(function() {
     scatter_plot = new ScatterPlot($(this).attr("id"));
     scatter_plot.controls = new Controls(scatter_plot);
+    scatterplots.push(scatter_plot);
   });
 });
-
