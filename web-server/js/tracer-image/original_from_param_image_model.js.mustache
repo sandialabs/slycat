@@ -322,6 +322,7 @@ console.log("save model changes -- ajax");
         resizeWhileDragging: false,
         onresize: function() { 
           scatterplots.each(function(plot) {
+            debugger;
             resize.call(plot); 
           });
         },
@@ -608,9 +609,7 @@ console.log("inside PLOT setup()");
 
       //Get the first parent that has a defined size, and fill it
       //TODO: Adjust this, the size should likely be calculated based on siblings
-      var sized_parent = $(self.plot_ref);
-      while(!(sized_parent.width() && sized_parent.height()))
-        sized_parent = sized_parent.parent();
+      var sized_parent = $("#grid-pane");
 
       $(this.plot_ref + " .scatterplot").scatterplot({
         indices: model.indices,
@@ -622,7 +621,7 @@ console.log("inside PLOT setup()");
         v: self.v,
         images: self.images,
         width: sized_parent.width(),
-        height: sized_parent.height(),
+        height: sized_parent.height() / $(".scatterplot").length,
         color: $("#color-switcher").colorswitcher("get_color_map", colormap),
         selection: self.selected_simulations,
         server_root: "{{server-root}}",
