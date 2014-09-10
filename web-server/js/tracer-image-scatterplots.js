@@ -15,6 +15,9 @@ $.widget("tracer_image.scatterplot",
     object_ref : null,
     width : 300,
     height : 300,
+    //The parent to use for resizing purposes:
+    display_pane : "",
+    dimension_adjustments: {width: function(){return 0}, height: function(){return 0;}},
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
@@ -421,12 +424,16 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_width"])
     {
+      self.options.width = self.element.parents(self.options.display_pane).width() * self.options.scalar.x;
+      self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
       self.svg.attr("width", self.options.width);
     }
 
     if(self.updates["update_height"])
     {
+      self.options.height = self.element.parents(self.options.display_pane).height() * self.options.scalar.y;
+      self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
       self.svg.attr("height", self.options.height);
     }

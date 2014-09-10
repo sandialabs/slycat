@@ -106,6 +106,10 @@ ScatterPlot.prototype.setup = function() {
 
     $(this.plot_ref + " .scatterplot").scatterplot({
       indices: model.indices,
+      display_pane: "#grid-pane",
+      dimension_adjustments: {
+          width: function(){return 0;},
+          height: function(){return -1 * $(self.grid_ref + " .controls").height(); }},
       x_label: model.metadata["column-names"][self.x_index],
       y_label: model.metadata["column-names"][self.y_index],
       v_label: model.metadata["column-names"][self.v_index],
@@ -114,7 +118,7 @@ ScatterPlot.prototype.setup = function() {
       v: self.v,
       images: self.images,
       width: sized_parent.width(),
-      height: sized_parent.height() / $(".scatterplot").length,
+      height: sized_parent.height(),
       color: $("#color-switcher").colorswitcher("get_color_map", colormap),
       selection: self.selected_simulations,
       server_root: "{{server-root}}",
