@@ -75,12 +75,42 @@ Layout.prototype.setup = function() {
       });
   });
 
-  $("#edit-model-button").button().click(function()
-                                         {
-                                           $("#edit-model-form").dialog("open");
-                                           $("#edit-model-name").focus();
-                                         });
+  $("#edit-model-button").button().click(function() {
+    $("#edit-model-form").dialog("open");
+    $("#edit-model-name").focus();
+  });
+  $("#download-data-button").button().click(function() {
+    /* do stuff
+    if (self.options.selection.length == 0) {
+	    self._write_data_table();
+	  } else {
+            openCSVSaveChoiceDialog();
+          }
+      $('#csv-save-choice-form').dialog({
+      modal: true,
+      autoOpen: false,
+      buttons: {
+        'Save The Whole Table': function() {
+	  self._write_data_table();
+          //$(this)._write_data_table();  //what's the diff with above?
+          $(this).dialog('close');
+        },
+        'Save Selected Rows': function() {
+	  self._write_data_table( self.options.selection );
+          $(this).dialog('close');
+        },
+        'Cancel': function() {
+          $(this).dialog('close');
+        },
+      },
 
+    });
+      function openCSVSaveChoiceDialog(){
+      var txt = "You have " + self.options.selection.length + " rows selected. What would you like to do?";
+      $("#csv-save-choice-form #csv-save-choice-label").text(txt);
+      $("#csv-save-choice-form").dialog("open");
+    }*/
+  });
 
   // Layout resizable panels ...
   $("body").layout(

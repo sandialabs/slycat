@@ -114,6 +114,7 @@ ScatterPlot.prototype.setup = function() {
       x: self.x,
       y: self.y,
       v: self.v,
+      t: self.t,
       images: self.images,
       width: sized_parent.width(),
       height: sized_parent.height(),
@@ -144,18 +145,21 @@ ScatterPlot.prototype.setup = function() {
     $("#table").bind("x-selection-changed", function(event, variable) {
       self.update_x(variable);
     });
+    */
     $(this.plot_ref + " .controls").bind("x-selection-changed", function(event, variable) {
       self.update_x(variable);
     });
 
+    /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the y variable updates the scatterplot ...
     $("#table").bind("y-selection-changed", function(event, variable) {
       self.update_y(variable);
-    });
+    });*/
     $(this.plot_ref + " .controls").bind("y-selection-changed", function(event, variable) {
       self.update_y(variable);
     });
 
+    /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the images variable updates the scatterplot ...
     $("#table").bind("images-selection-changed", function(event, variable) {
       console.debug("changing the images var updates the scatter plot -- ajax");
@@ -170,7 +174,7 @@ ScatterPlot.prototype.setup = function() {
           },
           error: artifact_missing
         });
-    });
+    });*/
     $(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
       console.debug("GET models/id/attrs / image selection changed -- ajax");
       $.ajax(
@@ -185,7 +189,7 @@ ScatterPlot.prototype.setup = function() {
           error: artifact_missing
         });
     });
-   */
+
     // Log changes to open images ...
     $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
       self.open_images_changed(selection);
@@ -226,7 +230,9 @@ ScatterPlot.prototype.x_selection_changed = function(variable) {
       type : "POST",
       url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
     });
-  layout.bookmarker.updateState( {"x-selection" : variable} );
+  stateToUpdate = {};
+  stateToUpdate["x-selection-" + this.plot_id] = variable;
+  layout.bookmarker.updateState(stateToUpdate);
   this.x_index = Number(variable);
 };
 
@@ -238,7 +244,9 @@ ScatterPlot.prototype.y_selection_changed = function(variable) {
       type : "POST",
       url : "{{server-root}}events/models/{{_id}}/select/y/" + variable
     });
-  layout.bookmarker.updateState( {"y-selection" : variable} );
+  stateToUpdate = {};
+  stateToUpdate["y-selection-" + this.plot_id] = variable;
+  layout.bookmarker.updateState(stateToUpdate);
 };
 
 ScatterPlot.prototype.images_selection_changed = function(variable) {

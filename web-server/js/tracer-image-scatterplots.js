@@ -27,6 +27,7 @@ $.widget("tracer_image.scatterplot",
     x : [],
     y : [],
     v : [],
+    t : [],
     images : [],
     selection : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
@@ -516,8 +517,11 @@ $.widget("tracer_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
+      var t = self.options.t;
       var indices = self.options.indices;
       var filtered_indices = self.options.filtered_indices;
+      // If b is a higher time (came later), then it goes after a:
+      filtered_indices.sort(function(a,b){ return t[a] - t[b]; });
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
@@ -553,6 +557,23 @@ $.widget("tracer_image.scatterplot",
             return self.options.color(value); 
         })
         ;
+
+
+      self.svg.select(".time-paths").remove();
+
+      var make_line = d3.svg.line();
+
+      var time_line_group = self.svg.append("g")
+        .attr("class", "time-paths");
+
+      filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
+        .reduce(function(prev, next){
+          time_line_group.append("path")
+            .attr("stroke", "black")
+            .attr("linewidth", 1)
+            .attr("d", make_line([prev, next]));
+          return next;
+        });
     }
 
     if(self.updates["render_selection"])
