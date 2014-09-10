@@ -8,4 +8,5 @@ Tutorial
    create-cca.rst
    create-timeseries.rst
    create-parameter-image.rst
+   contributing.rst
 

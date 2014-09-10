@@ -3,6 +3,7 @@ MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages
 RUN yum install -y couchdb git python-devel python-pip numpy scipy python-couchdb python-paramiko python-routes pyOpenSSL python-requests python-ldap python-nose python-coverage python-sphinx python-pillow python-sphinx_rtd_theme h5py pystache openssh-server dejavu-serif-fonts python-zmq
+RUN yum install -y make
 
 # Install Python modules
 RUN pip install cherrypy==3.2.6 sphinxcontrib-napoleon ipython
