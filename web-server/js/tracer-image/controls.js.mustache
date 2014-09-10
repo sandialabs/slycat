@@ -4,7 +4,7 @@ function Controls(plot) {
 }
 
 Controls.prototype.setup = function() {
-  console.log("inside setup_controls()");
+  console.debug("inside setup_controls()");
   var plot = this.plot;
   if( !this.ready && model.metadata && (model.image_columns != null) && (model.rating_columns != null)
       && (model.category_columns != null) && (plot.x_index != null) && (plot.y_index != null)
@@ -81,7 +81,7 @@ Controls.prototype.setup = function() {
 
     // Changing the value of a variable updates the database, table, and scatterplot ...
     $(plot.plot_ref + " .controls").bind("set-value", function(event, arguments) {
-      //console.log("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
+      //console.debug("set-value. selection: " + selection + ", variable: " + variable + ", value: " + value);
       var selection = arguments.selection;
       var variable = arguments.variable;
       var myBlob = new Blob(['[' + arguments.value + ']'], {type: "text/html"});
@@ -90,7 +90,7 @@ Controls.prototype.setup = function() {
       writeData(selection, variable, myBlob, 0);
 
       function writeData(selection, variable, blob, iterator){
-        console.log("inside writeData()");
+        console.debug("inside writeData()");
         hyperslice = selection[iterator] + ":" + (selection[iterator]+1);
         var formdata = new FormData();
         // formdata.append("array", 0);
@@ -98,7 +98,7 @@ Controls.prototype.setup = function() {
         // formdata.append("hyperslice", hyperslice);
         formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslice);
         formdata.append("data", blob);
-        console.log("write data PUT models/id/arraysets/data-table/data -- ajax");
+        console.debug("write data PUT models/id/arraysets/data-table/data -- ajax");
         $.ajax({
           type: "PUT",
           url : "{{server-root}}models/{{_id}}/arraysets/data-table/data",
@@ -106,7 +106,7 @@ Controls.prototype.setup = function() {
           processData: false,
           contentType: false,
           success : function(results) {
-            console.log("writing array data SUCCESS");
+            console.debug("writing array data SUCCESS");
             iterator++;
             if(iterator<selection.length) {
               writeData(selection, variable, blob, iterator);
@@ -129,7 +129,7 @@ Controls.prototype.setup = function() {
             }
           },
           error : function(jqXHR, textStatus, errorThrown) {
-            console.log("writing array data error");
+            console.debug("writing array data error");
           },
         });
       }

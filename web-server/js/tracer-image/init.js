@@ -1,5 +1,5 @@
 function show_status_messages() {
-  console.log("Inside show_status_messages()");
+  console.debug("Inside show_status_messages()");
   $("#status-messages").dialog({
     autoOpen: true,
     width: 500,
@@ -16,7 +16,7 @@ function show_status_messages() {
 }
 
 function artifact_missing() {
-  console.log("Inside artifact_missing()");
+  console.debug("Inside artifact_missing()");
   $(".load-status").css("display", "none");
 
   $("#status-messages").empty().html(
@@ -28,18 +28,10 @@ function artifact_missing() {
   show_status_messages();
 }
 
-//(function() {
-  var layout = new Layout(); //load first to instantiate bookmarker
-  var model = new Model();
-  model.load();
-  var table = new Table();
-  layout.setup();
-
-  var scatterplots = [];
-
-  $(".plot").each(function() {
-    scatter_plot = new ScatterPlot($(this).attr("id"));
-    scatter_plot.controls = new Controls(scatter_plot);
-    scatterplots.push(scatter_plot);
-  });
-//})();
+var layout = new Layout(); //load first to instantiate bookmarker
+var model = new Model();
+model.load();
+var table = new Table();
+layout.setup();
+var grid = new Grid("#grid-pane", [2,2], ScatterPlot);
+grid.setup();
