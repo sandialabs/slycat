@@ -52,21 +52,6 @@ $.widget("tracer_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
 
-    // Setup the login dialog ...
-    self.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
-    self.login.appendTo(self.element);
-    self.login.dialog(
-    {
-      autoOpen: false,
-      width: 700,
-      height: 300,
-      modal: true,
-      close: function()
-      {
-        $("#remote-password").val("");
-      }
-    });
-
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0)).append("svg");
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
@@ -78,7 +63,6 @@ $.widget("tracer_image.scatterplot",
     self.selection_layer = self.svg.append("g");
     self.image_layer = self.svg.append("g");
 
-    self.session_cache = {};
     self.image_cache = {};
 
     self.updates = {};
@@ -1252,7 +1236,7 @@ $.widget("tracer_image.scatterplot",
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in self.session_cache))
+    if(!(parser.hostname in login.session_cache))
     {
       self._open_session(images);
       return;
@@ -1262,7 +1246,7 @@ $.widget("tracer_image.scatterplot",
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", self.options.server_root + "remote/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1271,7 +1255,7 @@ $.widget("tracer_image.scatterplot",
       // Either way, delete the cached session and create a new one.
       if(this.status == 404 || this.status == 500)
       {
-        delete self.session_cache[parser.hostname];
+        delete login.session_cache[parser.hostname];
         self._open_session(images);
         return;
       }
@@ -1322,6 +1306,8 @@ $.widget("tracer_image.scatterplot",
 
     $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
     $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
+    console.log(login.image_login);
+    self.login = login.image_login;
     self.login.dialog(
     {
       buttons:
@@ -1338,7 +1324,7 @@ $.widget("tracer_image.scatterplot",
             processData : false,
             success : function(result)
             {
-              self.session_cache[parser.hostname] = result.sid;
+              login.session_cache[parser.hostname] = result.sid;
               self.login.dialog("close");
               self._open_images(images);
             },

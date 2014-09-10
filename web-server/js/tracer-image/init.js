@@ -28,10 +28,12 @@ function artifact_missing() {
   show_status_messages();
 }
 
+var grid_pane = "#grid-pane";
 var layout = new Layout(); //load first to instantiate bookmarker
 var model = new Model();
 model.load();
 var table = new Table();
 layout.setup();
-var grid = new Grid("#grid-pane", [2,2], ScatterPlot);
+var grid = new Grid(grid_pane, [2,2], ScatterPlot);
 grid.setup();
+var login = new Login(grid_pane);
