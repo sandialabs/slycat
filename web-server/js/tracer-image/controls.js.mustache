@@ -1,6 +1,7 @@
 function Controls(plot) {
   this.ready = false;
   this.plot = plot;
+  plot.controls = this;
 }
 
 Controls.prototype.setup = function() {
@@ -13,15 +14,13 @@ Controls.prototype.setup = function() {
     this.ready = true;
     var numeric_variables = [];
 
-    for(var i = 0; i < model.metadata["column-count"]; i++)
-    {
+    for(var i = 0; i < model.metadata["column-count"]; i++) {
       if(model.metadata["column-types"][i] != 'string')
         numeric_variables.push(i);
     }
 
     var color_variable = model.metadata["column-count"] - 1;
-    if("variable-selection" in layout.bookmark)
-    {
+    if("variable-selection" in layout.bookmark) {
       color_variable = [layout.bookmark["variable-selection"]];
     }
 
@@ -46,22 +45,22 @@ Controls.prototype.setup = function() {
 
     // Changing the x variable updates the controls ...
     $("#table").bind("x-selection-changed", function(event, variable) {
-      $(plot.plot_ref + " .controls").controls("option", "x-variable", variable);
+      $(plot.plot_ref + " .controls").tracer_controls("option", "x-variable", variable);
     });
 
     // Changing the y variable updates the controls ...
     $("#table").bind("y-selection-changed", function(event, variable) {
-      $(plot.plot_ref + " .controls").controls("option", "y-variable", variable);
+      $(plot.plot_ref + " .controls").tracer_controls("option", "y-variable", variable);
     });
 
     // Changing the image variable updates the controls ...
     $("#table").bind("images-selection-changed", function(event, variable) {
-      $(plot.plot_ref + " .controls").controls("option", "image-variable", variable);
+      $(plot.plot_ref + " .controls").tracer_controls("option", "image-variable", variable);
     });
 
     // Changing the table variable updates the controls ...
     $("#table").bind("variable-selection-changed", function(event, selection) {
-      $(plot.plot_ref + " .controls").controls("option", "color-variable", selection[0]);
+      $(plot.plot_ref + " .controls").tracer_controls("option", "color-variable", selection[0]);
     });
 
     // Changing the table variable updates the legend label ...

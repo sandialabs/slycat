@@ -10,6 +10,7 @@ Table.prototype.setup = function() {
   // TODO - for now using the first plot
   // TODO - can this be decoupled?
   // this means we are still good for parameter image
+  var self = this;
   var plot = grid.plots[0];
   var x_index = plot.x_index;
   var y_index = plot.y_index;
@@ -71,7 +72,7 @@ Table.prototype.setup = function() {
 
     // Log changes to the table sort order ...
     $("#table").bind("variable-sort-changed", function(event, variable, order) {
-      this.variable_sort_changed(variable, order);
+      self.variable_sort_changed(variable, order);
     });
 
     /* TODO: implement the table controls to sync with a 'selected plot'
@@ -174,4 +175,14 @@ Table.prototype.load_statistics = function(columns, callback, callback_obj) {
     });
     callback.call(callback_obj || self);
   });
+};
+
+Table.prototype.variable_sort_changed = function(variable, order) {
+  console.debug("inside variable_sort_changed()");
+  console.debug("variable sort changed -- ajax");
+    $.ajax({
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
+    });
+  layout.bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
 };
