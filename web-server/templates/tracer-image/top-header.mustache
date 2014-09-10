@@ -4,7 +4,10 @@
         <div class="width-wrapper">
           <div class="marking">{{{marking-html}}}</div>
           {{#can-write}}
-          <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
+          <div class="global-controls">
+            <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
+            <button id="download-data-button" title="Download the data contained in this table.">Download Data Table</button>
+          </div>
           {{/can-write}}
           <div id="breadcrumbs">
             <a href="{{server-root}}projects">Projects</a> &rarr;
@@ -13,7 +16,6 @@
           <h2>{{name}}</h2>
           <div id="model-desc">{{description}}</div>
           <div id="color-switcher"></div>
-          <div id="controls"></div>
           <div id="status-messages" style="display: none;"></div>
           <div id="edit-model">
             <div id="edit-model-form" class="dialog" title="Edit Model">

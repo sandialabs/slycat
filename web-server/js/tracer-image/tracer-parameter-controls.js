@@ -21,7 +21,7 @@ $.widget("parameter_image.tracer_controls",
     y_variables : [],
     image_variables : [],
     color_variables : [],
-    rating_variables : [],
+    //rating_variables : [],
     category_variables : [],
     selection : [],
   },
@@ -106,6 +106,7 @@ $.widget("parameter_image.tracer_controls",
       .appendTo(this.element)
       ;
 
+    /* TODO: complete moving to layout.js
     this.csv_button = $("<button>Download Data Table</button>")
 	.click(function(){
           if (self.options.selection.length == 0) {
@@ -115,7 +116,7 @@ $.widget("parameter_image.tracer_controls",
           }
 	})
 	.appendTo(this.element)
-	;
+	;*/
 
     $('#set-value-form').dialog({
       modal: true,
@@ -246,7 +247,8 @@ $.widget("parameter_image.tracer_controls",
     });
   },
 
-  _write_csv: function(csvData, defaultFilename)
+
+ _write_csv: function(csvData, defaultFilename)
   {
     var self = this;
     //var D = self.window.document;
@@ -280,7 +282,7 @@ $.widget("parameter_image.tracer_controls",
     } else {   // end if('download' in a)
       console.log("++ firefox/chrome detect failed");
     }
-/*
+ /*
     if (window.MSBlobBuilder) { // IE10
       console.log( "doing the IE10 stuff" );
       var bb = new MSBlobBuilder();
@@ -297,7 +299,7 @@ $.widget("parameter_image.tracer_controls",
       D.body.removeChild(f);
     }, 333);
     return true;
-*/
+    */
   },
 
   _convert_to_csv: function(array)
