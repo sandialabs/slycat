@@ -23,12 +23,12 @@ $.widget("tracer_image.table",
     ratings : [],
     categories : [],
     "row-selection" : [],
-    "variable-selection": [],
+    //"variable-selection": [],
     "sort-variable" : null,
     "sort-order" : null,
-    "image-variable" : null,
-    "x-variable" : null,
-    "y-variable" : null,
+    //"image-variable" : null,
+    //"x-variable" : null,
+    //"y-variable" : null,
     colormap : null,
     hidden_simulations : [],
   },
@@ -98,6 +98,7 @@ $.widget("tracer_image.table",
           ]
         }
       };
+      /*
       // Special options for image columns
       if( self.options.images.indexOf(column_index) > -1 ) {
         column.headerCssClass += " headerImage";
@@ -125,11 +126,12 @@ $.widget("tracer_image.table",
           }
         );
       }
+      */
       return column;
     }
 
     self.columns = [];
-    
+
     self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId", cell_formatter));
     for(var i in self.options.inputs)
       self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter));
@@ -158,9 +160,9 @@ $.widget("tracer_image.table",
     self.trigger_row_selection = true;
 
     self.grid = new Slick.Grid(self.element, self.data, self.columns, {
-      explicitInitialization : true, 
-      enableColumnReorder : false, 
-      editable : true, 
+      explicitInitialization : true,
+      enableColumnReorder : false,
+      editable : true,
       editCommandHandler : self._editCommandHandler,
     });
 
@@ -196,6 +198,7 @@ $.widget("tracer_image.table",
         button.tooltip = 'Sort ascending';
         set_sort(column.id, "descending");
       }
+      /*
       else if(command == "image-on")
       {
         for(var i=0; i < self.options.images.length; i++)
@@ -243,6 +246,7 @@ $.widget("tracer_image.table",
         button.tooltip = 'Current y variable';
         self.element.trigger("y-selection-changed", column.id);
       }
+      */
     });
 
     self.grid.registerPlugin(header_buttons);
@@ -262,11 +266,12 @@ $.widget("tracer_image.table",
       }
       self.trigger_row_selection = true;
     });
+    /*
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && 
+      if( !self._array_equal([args.column.field], self.options["variable-selection"]) &&
           ( (self.options.metadata["column-types"][args.column.id] != "string")
-            /* || (self.options["categories"].indexOf(args.column.field) != -1) */ )
+            /* || (self.options["categories"].indexOf(args.column.field) != -1) star/ )
         )
       {
         self.options["variable-selection"] = [args.column.field];
@@ -274,9 +279,8 @@ $.widget("tracer_image.table",
         self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
       }
     });
-
     self._color_variables(self.options["variable-selection"]);
-
+    */
     self.grid.init();
 
     self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
@@ -330,19 +334,20 @@ $.widget("tracer_image.table",
           self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
       });
     }
-    else if(key == "variable-selection")
+    /*else if(key == "variable-selection")
     {
       if(self._array_equal(self.options[key], value))
         return;
 
       self.options[key] = value;
       self._color_variables(value);
-    }
+    }*/
     else if(key == "colormap")
     {
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
     }
+    /*
     else if(key == "x-variable")
     {
       self.options[key] = value;
@@ -358,6 +363,7 @@ $.widget("tracer_image.table",
       self.options[key] = value;
       self._set_selected_image();
     }
+    */
     else if(key == "metadata")
     {
       self.options[key] = value;
@@ -376,6 +382,7 @@ $.widget("tracer_image.table",
     }
   },
 
+ /*
   _set_selected_x: function()
   {
     var self = this;
@@ -434,7 +441,7 @@ $.widget("tracer_image.table",
       self.grid.updateColumnHeader(self.columns[index].id);
     }
   },
-
+*/
   _color_variables: function(variables)
   {
     var self = this;
@@ -467,11 +474,11 @@ $.widget("tracer_image.table",
             $.ajax(
             {
               type : "GET",
-              url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" 
+              url : self.options['server-root'] + "models/" + self.options.mid + "/tables/"
                 + self.options.aid + "/arrays/0/chunk?rows=0-" + self.options.metadata['row-count'] + "&columns=" + column.id + "&sort=" + column.id + ":ascending",
               success : function(result)
               {
-                
+
                 var uniqueValues = d3.set(result.data[0]).values();
                 var tempOrdinal = d3.scale.ordinal().domain(uniqueValues).rangePoints([0, 100], 0);
 
