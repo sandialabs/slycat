@@ -123,7 +123,7 @@ def get_project(pid):
     context["can-administer"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project)
     context["acl-json"] = json.dumps(project["acl"])
     context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
-    context["remote-hosts"] = json.dumps(get_remote_host_list()).replace('"','\\"')
+    context["remote-hosts"] = json.dumps(get_remote_host_dict()).replace('"','\\"')
     context["remote-hosts-arr"] = [host for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
     context["new-model-name"] = "Model-%s" % (len(models) + 1)
 
@@ -132,14 +132,14 @@ def get_project(pid):
   if accept == "application/json":
     return json.dumps(project)
   
-def get_remote_host_list():
+def get_remote_host_dict():
   remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
   remote_host_list = []
   for host in remote_host_dict:
     if "message" in remote_host_dict[host]:
-      remote_host_list.append({"name" : host, "message" : remote_host_dict[host]["message"]})
+      remote_host_list.append({"name": host, "message": remote_host_dict[host]["message"]})
     else:
-      remote_host_list.append({"name" : host})
+      remote_host_list.append({"name": host})
   return remote_host_list
 
 @cherrypy.tools.json_in(on = True)
