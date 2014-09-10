@@ -17,7 +17,7 @@ $.widget("slycat.browser",
     root_label : "foo",
     multiple_selection : false,
     directory_selection : false,
-    hide_dotfiles : true,
+    hide_dotfiles : true
   },
 
   _create: function()
@@ -69,6 +69,7 @@ $.widget("slycat.browser",
         else // Expand this node ...
         {
           $(this).addClass("open");
+          console.log("Expanding: " + $(this));
 
           $.ajax(
           {
@@ -85,6 +86,7 @@ $.widget("slycat.browser",
             {
 
               var path = $(this).data("path");
+              //var container = $("<ul>").appendTo($("ul#middle");
               var container = $("<ul>").appendTo($(this));
               for(var i = 0; i != result.names.length; ++i)
               {
@@ -143,7 +145,9 @@ $.widget("slycat.browser",
       }
     }
 
-    var container = $("<ul>").addClass("file-browser").appendTo(self.element.empty())
+    var container = $("<ul>").addClass("file-browser").attr("id","left").appendTo(self.element.empty())
+    var containermiddle = $("<ul>").addClass("file-browser").attr("id","middle").appendTo(self.element)
+    var containerright = $("<ul>").addClass("file-browser").attr("id","right").appendTo(self.element)
     var item = $("<li>").appendTo(container);
     var entry = $("<div/>").appendTo(item);
     var arrow = $("<span class='arrow'></span>").appendTo(entry);
