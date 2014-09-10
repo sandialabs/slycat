@@ -1,4 +1,4 @@
-function ScatterPlot(dom_id, grid_ref) {
+function ScatterPlot(dom_id, grid_ref, scalar) {
   console.log("Setup scatter plot");
 
   if (typeof ScatterPlot._uid_counter === 'undefined') {
@@ -26,6 +26,8 @@ function ScatterPlot(dom_id, grid_ref) {
 
   this.session_cache = {};
   this.image_uri = document.createElement("a");
+
+  this.scalar = scalar || {x:1, y:1};
 
   this.setup_dom();
 }
@@ -118,7 +120,8 @@ ScatterPlot.prototype.setup = function() {
       server_root: "{{server-root}}",
       open_images: open_images,
       gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
-      hidden_simulations: self.hidden_simulations
+      hidden_simulations: self.hidden_simulations,
+      scalar: self.scalar
     });
 
     $(self.plot_ref + " .scatterplot").bind("selection-changed", function(event, selection) {
