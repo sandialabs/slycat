@@ -4,6 +4,10 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
+#remote-pi-browser{
+  display:block;
+  border: 1px solid black;
+}
 ul.file-browser, .file-browser ul
 {
   list-style-type: none;
@@ -16,6 +20,10 @@ ul.file-browser
   -moz-user-select: none;
   -o-user-select: none;
   user-select: none;
+  margin:0;
+  padding:0;
+  width:200px;
+  border-right:1px solid black;
 }
 
 .file-browser .hidden
