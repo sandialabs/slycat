@@ -246,8 +246,15 @@ rights in this software.
           </div>
 
           <div id="remote-pi-browse">
-            <p>Highlight the file to be analyzed:</p>
-            <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+            <div id="top-shelf" style="height:50px; border-top:1px solid black; border-left: 1px solid black; border-right:1px solid black;padding-right:5px;">
+              <div id="dotfile-div" style="float:left;">
+                <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+              </div>
+              <div id="pi-file-path-entry" style="float:left; margin-left:30px;">
+                <p><input id="remote-pi-path-entry" type="text" placeholder="File Path Entry"></input></p>
+              </div>
+              <button id="remote-pi-browse-next" style="float:right;margin-top:10px;">Next</button>
+            </div>
             <div id="remote-pi-browser"></div>
             <button id="remote-pi-browse-next">Next</button>
           </div>
@@ -751,6 +758,11 @@ rights in this software.
             }
           });
         });
+        $("#remote-cca-password").keypress(function(event){
+            if (event.keyCode == 13){
+              $("#remote-cca-connection-next").trigger("click");
+            }
+        });
         $("#remote-cca-connection-next").button().click(function()
         {
           $.ajax(
@@ -1058,6 +1070,11 @@ rights in this software.
               window.alert("Error creating model: " + reason_phrase);
             }
           });
+        });
+        $("#remote-pi-password").keypress(function(event){
+            if (event.keyCode == 13){
+              $("#remote-pi-connection-next").trigger("click");
+            }
         });
         $("#remote-pi-connection-next").button().click(function()
         {
