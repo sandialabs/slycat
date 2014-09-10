@@ -108,8 +108,8 @@ Layout.prototype.setup = function() {
       {
         resizeWhileDragging: false,
         onresize: function() {
-          scatterplots.each(function(plot) {
-            resize.call(plot);
+          scatterplots.forEach(function(plot) {
+            plot.resize();
           });
         },
       }
