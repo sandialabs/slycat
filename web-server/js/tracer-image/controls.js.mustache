@@ -25,7 +25,7 @@ Controls.prototype.setup = function() {
       color_variable = [layout.bookmark["variable-selection"]];
     }
 
-    $(plot.plot_ref + " .controls").controls({
+    $(plot.plot_ref + " .controls").tracer_controls({
       "server-root" : "{{server-root}}",
       mid : "{{_id}}",
       model_name: "{{name}}",
