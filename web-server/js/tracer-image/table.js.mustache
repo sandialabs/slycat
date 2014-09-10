@@ -74,26 +74,28 @@ Table.prototype.setup = function() {
       this.variable_sort_changed(variable, order);
     });
 
-    // Log changes to the x variable ...
-    $("#table").bind("x-selection-changed", function(event, variable) {
-      plot.x_selection_changed(variable);
-    });
+    /* TODO: implement the table controls to sync with a 'selected plot'
+     // Log changes to the x variable ...
+     $("#table").bind("x-selection-changed", function(event, variable) {
+     plot.x_selection_changed(variable);
+     });
 
-    // Log changes to the y variable ...
-    $("#table").bind("y-selection-changed", function(event, variable) {
-      plot.y_selection_changed(variable);
-    });
+     // Log changes to the y variable ...
+     $("#table").bind("y-selection-changed", function(event, variable) {
+     plot.y_selection_changed(variable);
+     });
 
-    // Log changes to the images variable ...
-    $("#table").bind("images-selection-changed", function(event, variable) {
-      plot.images_selection_changed(variable);
-    });
+     // Log changes to the images variable ...
+     $("#table").bind("images-selection-changed", function(event, variable) {
+     plot.images_selection_changed(variable);
+     });
 
-    // Log changes to the table variable selection ...
-    // column selection in table
-    $("#table").bind("variable-selection-changed", function(event, selection) {
-      plot.selected_variable_changed(selection[0]);
-    });
+     // Log changes to the table variable selection ...
+     // column selection in table
+     $("#table").bind("variable-selection-changed", function(event, selection) {
+     plot.selected_variable_changed(selection[0]);
+     });
+     */
 
     // Log changes to the table row selection ...
     $("#table").bind("row-selection-changed", function(event, selection) {
@@ -104,45 +106,46 @@ Table.prototype.setup = function() {
         temp.push(selection[i]);
       plot.selected_simulations_changed(temp);
       $(plot.plot_ref + " .scatterplot").scatterplot("option", "selection",  temp);
-      $(plot.plot_ref + " .controls").controls("option", "selection",  temp);
+      $(plot.plot_ref + " .controls").tracer_controls("option", "selection",  temp);
     });
 
     // Changing the colormap updates the table ...
     $("#color-switcher").bind("colormap-changed", function(event, colormap) {
       $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
     });
-
-    // Changing the table variable updates the scatterplot ...
-    $("#table").bind("variable-selection-changed", function(event, selection) {
-      plot.update_value(selection[0]);
-    });
-
+    /* TODO: implement the table controls to sync with a 'selected plot'
+     // Changing the table variable updates the scatterplot ...
+     $("#table").bind("variable-selection-changed", function(event, selection) {
+     plot.update_value(selection[0]);
+     });
+     */
     // Changing the scatterplot selection updates the table row selection and controls ..
     $(".scatterplot").bind("selection-changed", function(event, selection) {
       $("#table").table("option", "row-selection", selection);
-      $(plot.plot_ref + " .controls").controls("option", "selection", selection);
+      $(plot.plot_ref + " .controls").tracer_controls("option", "selection", selection);
     });
+    /*
+     // Changing the x variable updates the table ...
+     $(plot.plot_ref + " .controls").bind("x-selection-changed", function(event, variable) {
 
-    // Changing the x variable updates the table ...
-    $(plot.plot_ref + " .controls").bind("x-selection-changed", function(event, variable) {
+     $("#table").table("option", "x-variable", variable);
+     });
 
-      $("#table").table("option", "x-variable", variable);
-    });
+     // Changing the y variable updates the table ...
+     $(plot.plot_ref + " .controls").bind("y-selection-changed", function(event, variable) {
+     $("#table").table("option", "y-variable", variable);
+     });
 
-    // Changing the y variable updates the table ...
-    $(plot.plot_ref + " .controls").bind("y-selection-changed", function(event, variable) {
-      $("#table").table("option", "y-variable", variable);
-    });
+     // Changing the image variable updates the table ...
+     $(plot.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
+     $("#table").table("option", "image-variable", variable);
+     });
 
-    // Changing the image variable updates the table ...
-    $(plot.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
-      $("#table").table("option", "image-variable", variable);
-    });
-
-    // Changing the color variable updates the table ...
-    $(plot.plot_ref + " .controls").bind("color-selection-changed", function(event, variable) {
-      $("#table").table("option", "variable-selection", [Number(variable)]);
-    });
+     // Changing the color variable updates the table ...
+     $(plot.plot_ref + " .controls").bind("color-selection-changed", function(event, variable) {
+     $("#table").table("option", "variable-selection", [Number(variable)]);
+     });
+     */
   }
 };
 

@@ -1,13 +1,9 @@
-function ScatterPlot(dom_id, grid_ref, scalar) {
+function ScatterPlot(plot_id, grid_ref, scalar) {
   console.log("Setup scatter plot");
 
-  if (typeof ScatterPlot._uid_counter === 'undefined') {
-    ScatterPlot._uid_counter = 0;
-  }
-  this.uid = ScatterPlot._uid_counter++; // UID to help registering per-plot event handlers
   this.grid_ref = grid_ref; // DOM for parent
-  this.dom_id = dom_id;
-  this.plot_ref = "#" + dom_id;  // DOM plot ref
+  this.plot_id = plot_id;
+  this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.controls = null;
 
   this.x_index = null;
@@ -41,10 +37,12 @@ ScatterPlot.prototype.setup_labels = function() {
   var numeric_variables = model.get_numeric_variables();
   this.x_index = numeric_variables[0];
   this.y_index = numeric_variables[1 % numeric_variables.length]; // use 0 if only one element, use 1 otherwise
-  if("x-selection" in layout.bookmark)
-    this.x_index = Number(layout.bookmark["x-selection"]);
-  if("y-selection" in layout.bookmark)
-    this.y_index = Number(layout.bookmark["y-selection"]);
+  if("x-selection-" + this.plot_id in layout.bookmark) {
+    this.x_index = Number(layout.bookmark["x-selection-" + this.plot_id]);
+  }
+  if("y-selection-" + this.plot_id in layout.bookmark) {
+    this.y_index = Number(layout.bookmark["y-selection-" + this.plot_id]);
+  }
 };
 
 ScatterPlot.prototype.setup_simulations = function() {
@@ -141,6 +139,7 @@ ScatterPlot.prototype.setup = function() {
       });
     });
 
+    /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the x variable updates the scatterplot ...
     $("#table").bind("x-selection-changed", function(event, variable) {
       self.update_x(variable);
@@ -186,7 +185,7 @@ ScatterPlot.prototype.setup = function() {
           error: artifact_missing
         });
     });
-
+   */
     // Log changes to open images ...
     $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
       self.open_images_changed(selection);
