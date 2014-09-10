@@ -1,5 +1,9 @@
 function ScatterPlot(plot_ref) {
   console.log("Setup scatter plot");
+  if (typeof ScatterPlot._uid_counter === 'undefined') {
+    ScatterPlot._uid_counter = 0;
+  }
+  this.uid = ScatterPlot._uid_counter++;
   this.plot_ref = "#" + plot_ref;  // DOM plot ref
   this.controls = null;
 
@@ -20,6 +24,13 @@ function ScatterPlot(plot_ref) {
   this.session_cache = {};
   this.image_uri = document.createElement("a");
 }
+
+ScatterPlot.prototype.assign_uid = function() {
+  if (typeof this._uid_counter == "undefined") {
+    this.prototype._uid_counter = 0;
+  }
+  return this._uid_counter++;
+};
 
 ScatterPlot.prototype.setup_labels = function() {
   // choose some columns for the x and y axes.
