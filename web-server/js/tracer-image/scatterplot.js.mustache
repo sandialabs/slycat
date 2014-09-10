@@ -1,6 +1,8 @@
-function ScatterPlot(plot_ref) {
-  console.log("Setup scatter plot");
-  this.plot_ref = "#" + plot_ref;  // DOM plot ref
+function ScatterPlot(plot_id, grid_ref) {
+  console.debug("Setup scatter plot");
+  this.grid_ref = grid_ref; // DOM for parent
+  this.plot_id = plot_id;
+  this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.controls = null;
 
   this.x_index = null;
@@ -19,7 +21,13 @@ function ScatterPlot(plot_ref) {
 
   this.session_cache = {};
   this.image_uri = document.createElement("a");
+
+  this.setup_dom();
 }
+
+ScatterPlot.prototype.setup_dom = function() {
+  $(this.grid_ref).append('{{> ../templates/tracer-image/plot.html}}');
+};
 
 ScatterPlot.prototype.setup_labels = function() {
   // choose some columns for the x and y axes.
@@ -67,7 +75,7 @@ ScatterPlot.prototype.update_axis = function(index, axis) {
 };
 
 ScatterPlot.prototype.setup = function() {
-  console.log("inside PLOT setup()");
+  console.debug("inside PLOT setup()");
   // Setup the scatterplot ...
   if(!this.ready && layout.bookmark && model.indices && this.x && this.y && this.v && this.images
      && (this.selected_simulations != null) && (this.hidden_simulations != null))
@@ -139,7 +147,7 @@ ScatterPlot.prototype.setup = function() {
 
     // Changing the images variable updates the scatterplot ...
     $("#table").bind("images-selection-changed", function(event, variable) {
-      console.log("changing the images var updates the scatter plot -- ajax");
+      console.debug("changing the images var updates the scatter plot -- ajax");
       $.ajax(
         {
           type : "GET",
@@ -153,7 +161,7 @@ ScatterPlot.prototype.setup = function() {
         });
     });
     $(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
-      console.log("GET models/id/attrs / image selection changed -- ajax");
+      console.debug("GET models/id/attrs / image selection changed -- ajax");
       $.ajax(
         {
           type : "GET",
@@ -175,8 +183,8 @@ ScatterPlot.prototype.setup = function() {
 };
 
 ScatterPlot.prototype.selected_variable_changed = function(variable) {
-  console.log("inside selected_variable_chagned()");
-  console.log("selected variable changed -- ajax");
+  console.debug("inside selected_variable_chagned()");
+  console.debug("selected variable changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -187,9 +195,9 @@ ScatterPlot.prototype.selected_variable_changed = function(variable) {
 };
 
 ScatterPlot.prototype.selected_simulations_changed = function(selection) {
-  console.log("inside selected simulations changed");
+  console.debug("inside selected simulations changed");
   // Logging every selected item is too slow, so just log the count instead.
-  console.log("selectred sim changed changed -- ajax");
+  console.debug("selectred sim changed changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -200,8 +208,8 @@ ScatterPlot.prototype.selected_simulations_changed = function(selection) {
 };
 
 ScatterPlot.prototype.x_selection_changed = function(variable) {
-  console.log("inside x selection changed");
-  console.log("x selection changed -- ajax");
+  console.debug("inside x selection changed");
+  console.debug("x selection changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -212,8 +220,8 @@ ScatterPlot.prototype.x_selection_changed = function(variable) {
 };
 
 ScatterPlot.prototype.y_selection_changed = function(variable) {
-  console.log("inside y selection changed");
-  console.log("y selection changed -- ajax");
+  console.debug("inside y selection changed");
+  console.debug("y selection changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -223,8 +231,8 @@ ScatterPlot.prototype.y_selection_changed = function(variable) {
 };
 
 ScatterPlot.prototype.images_selection_changed = function(variable) {
-  console.log("inside images selection changed");
-  console.log("images selection changed -- ajax");
+  console.debug("inside images selection changed");
+  console.debug("images selection changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -235,9 +243,9 @@ ScatterPlot.prototype.images_selection_changed = function(variable) {
 };
 
 ScatterPlot.prototype.open_images_changed = function(selection) {
-  console.log("inside open images  changed");
+  console.debug("inside open images  changed");
   // Logging every open image is too slow, so just log the count instead.
-  console.log("open images changed -- ajax");
+  console.debug("open images changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -247,9 +255,9 @@ ScatterPlot.prototype.open_images_changed = function(selection) {
 };
 
 ScatterPlot.prototype.hidden_simulations_changed = function() {
-  console.log("inside hidden simulations  changed");
+  console.debug("inside hidden simulations  changed");
   // Logging every hidden simulation is too slow, so just log the count instead.
-  console.log("hidden simulations changed -- ajax");
+  console.debug("hidden simulations changed -- ajax");
   $.ajax(
     {
       type : "POST",
@@ -259,7 +267,7 @@ ScatterPlot.prototype.hidden_simulations_changed = function() {
 };
 
 ScatterPlot.prototype.update_value = function(attribute) {
-  console.log("inside update scatterplot value");
+  console.debug("inside update scatterplot value");
   if(attribute == model.metadata["column-count"] - 1)
   {
     var count = this.v.length;
@@ -285,7 +293,7 @@ ScatterPlot.prototype.update_value = function(attribute) {
 };
 
 ScatterPlot.prototype.update_x = function(variable) {
-  console.log("inside update scatterplot x");
+  console.debug("inside update scatterplot x");
   get_model_array_attribute({
     server_root : "{{server-root}}",
     mid : "{{_id}}",
@@ -301,7 +309,7 @@ ScatterPlot.prototype.update_x = function(variable) {
 };
 
 ScatterPlot.prototype.update_y = function(variable) {
-  console.log("inside update scatterplot y");
+  console.debug("inside update scatterplot y");
   get_model_array_attribute({
     server_root : "{{server-root}}",
     mid : "{{_id}}",
@@ -317,7 +325,7 @@ ScatterPlot.prototype.update_y = function(variable) {
 };
 
 ScatterPlot.prototype.display_image = function(uri) {
-  console.log("inside display image");
+  console.debug("inside display image");
   image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
   if(image_uri.hostname in session_cache)
     this.load_image();
@@ -326,7 +334,7 @@ ScatterPlot.prototype.display_image = function(uri) {
 };
 
 ScatterPlot.prototype.load_image = function() {
-  console.log("inside load image");
+  console.debug("inside load image");
   var sid = session_cache[image_uri.hostname];
   image = document.createElement("img");
   image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;

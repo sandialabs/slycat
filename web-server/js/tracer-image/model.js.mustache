@@ -1,5 +1,5 @@
 function Model() {
-  console.log("Setup model");
+  console.debug("Setup model");
   this.model = null;
   this.metadata = null;
   this.indices = null;
@@ -11,7 +11,7 @@ function Model() {
 }
 
 Model.prototype.load = function() {
-  console.log("LOAD THE MODEL 1 -- ajax");
+  console.debug("LOAD THE MODEL 1 -- ajax");
   var self = this;
   $.ajax(
     {
@@ -51,7 +51,7 @@ Model.prototype.get_numeric_variables = function() {
 
 Model.prototype.loaded = function() {
   var self = this;
-  console.log("Inside model_loaded()");
+  console.debug("Inside model_loaded()");
   if(self.model["state"] == "waiting" || self.model["state"] == "running")
   {
     $("#status-messages").empty().html(
@@ -82,7 +82,7 @@ Model.prototype.loaded = function() {
     $(".load-status").text("Loading data.");
 
     // Mark this model as closed, so it doesn't show-up in the header anymore.
-    console.log("mark this model as closed -- ajax");
+    console.debug("mark this model as closed -- ajax");
     $.ajax(
       {
         type : "PUT",
@@ -94,7 +94,7 @@ Model.prototype.loaded = function() {
         processData : false
       });
 
-    console.log("Inside model laoded - load table metadata 1 -- ajax");
+    console.debug("Inside model laoded - load table metadata 1 -- ajax");
     // Load data table metadata.
     $.ajax({
       url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
@@ -104,9 +104,9 @@ Model.prototype.loaded = function() {
         self.metadata = metadata;
         table.statistics = new Array(metadata["column-count"]);
         table.statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-        console.log("about to call metadata_loaded ....");
-        console.log("context is : ");
-        console.log(self);
+        console.debug("about to call metadata_loaded ....");
+        console.debug("context is : ");
+        console.debug(self);
         //debugger;
         table.load_statistics(d3.range(self.metadata["column-count"]-1), self.metadata_loaded, self);
       },
@@ -125,8 +125,8 @@ Model.prototype.loaded = function() {
 };
 
 Model.prototype.metadata_loaded = function() {
-  console.log("inside metadata loaded()");
-  console.log(this);
+  console.debug("inside metadata loaded()");
+  console.debug(this);
 
   if(!this.indices && this.metadata) {
     var count = this.metadata["row-count"];
@@ -136,7 +136,7 @@ Model.prototype.metadata_loaded = function() {
   }
 
   if(this.metadata && layout.bookmark) {
-    scatterplots.forEach(function(plot) {
+    grid.plots.forEach(function(plot) {
       plot.setup_labels();
       plot.setup_simulations();
 
@@ -165,7 +165,7 @@ Model.prototype.metadata_loaded = function() {
         plot.images_index = layout.bookmark["images-selection"];
       }
       table.setup();
-      console.log("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
+      console.debug("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
       $.ajax({
         type : "GET",
         url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/"
