@@ -276,22 +276,24 @@ ScatterPlot.prototype.hidden_simulations_changed = function() {
   console.debug("inside hidden simulations  changed");
   // Logging every hidden simulation is too slow, so just log the count instead.
   console.debug("hidden simulations changed -- ajax");
+  var self = this;
   $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/hidden/count/" + this.hidden_simulations.length
+      url : "{{server-root}}events/models/{{_id}}/hidden/count/" + self.hidden_simulations.length
     });
-  layout.bookmarker.updateState( {"hidden-simulations" : this.hidden_simulations} );
+  layout.bookmarker.updateState( {"hidden-simulations" : self.hidden_simulations} );
 };
 
 ScatterPlot.prototype.update_value = function(attribute) {
   console.debug("inside update scatterplot value");
+  var self = this;
   if(attribute == model.metadata["column-count"] - 1)
   {
     var count = this.v.length;
     for(var i = 0; i != count; ++i)
-      this.v[i] = i;
-    $(this.plot_ref + " .scatterplot").scatterplot("option", {v : this.v});
+      self.v[i] = i;
+    $(self.plot_ref + " .scatterplot").scatterplot("option", {v : self.v});
   }
   else
   {
@@ -312,6 +314,7 @@ ScatterPlot.prototype.update_value = function(attribute) {
 
 ScatterPlot.prototype.update_x = function(variable) {
   console.debug("inside update scatterplot x");
+  var self = this;
   get_model_array_attribute({
     server_root : "{{server-root}}",
     mid : "{{_id}}",
@@ -320,6 +323,7 @@ ScatterPlot.prototype.update_x = function(variable) {
     attribute : variable,
     success : function(result)
     {
+      console.log("update x ajax returned!!!!!");
       $(self.plot_ref + " .scatterplot").scatterplot("option", {x: result, x_label:model.metadata["column-names"][variable]});
     },
     error : artifact_missing
@@ -328,6 +332,7 @@ ScatterPlot.prototype.update_x = function(variable) {
 
 ScatterPlot.prototype.update_y = function(variable) {
   console.debug("inside update scatterplot y");
+  var self = this;
   get_model_array_attribute({
     server_root : "{{server-root}}",
     mid : "{{_id}}",
