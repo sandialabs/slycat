@@ -57,4 +57,4 @@ $.widget("tracer_image.plot_control", {
       self._build_select_options();
     }
   }
-}
+});

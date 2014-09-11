@@ -13,6 +13,7 @@ $.widget("tracer_image.scatterplot",
   options:
   {
     object_ref : null,
+    scatterplot_obj : null,
     width : 300,
     height : 300,
     //The parent to use for resizing purposes:
@@ -46,12 +47,17 @@ $.widget("tracer_image.scatterplot",
 
     self.hover_timer = null;
     self.close_hover_timer = null;
-
     self.opening_image = null;
     self.state = "";
     self.start_drag = null;
     self.current_drag = null;
     self.end_drag = null;
+
+    self.numeric_variables = [];
+    for(var i = 0; i < model.metadata["column-count"]; i++) { // model is currently in global scope (init.js)
+      if(model.metadata["column-types"][i] != 'string')
+        self.numeric_variables.push(i);
+    }
 
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0)).append("svg");
@@ -69,16 +75,16 @@ $.widget("tracer_image.scatterplot",
     self.updates = {};
     self.update_timer = null;
     self._schedule_update({
-      update_indices:true, 
-      update_width:true, 
-      update_height:true, 
-      update_x:true, 
-      update_y:true, 
-      update_x_label:true, 
-      update_y_label:true, 
-      update_color_domain:true, 
-      render_data:true, 
-      render_selection:true, 
+      update_indices:true,
+      update_width:true,
+      update_height:true,
+      update_x:true,
+      update_y:true,
+      update_x_label:true,
+      update_y_label:true,
+      update_color_domain:true,
+      render_data:true,
+      render_selection:true,
       open_images:true,
       render_legend:true,
       update_legend_colors:true,
@@ -166,7 +172,7 @@ $.widget("tracer_image.scatterplot",
     {
       if(self.state == "resizing" || self.state == "moving")
         return;
-      
+
       //console.log("#scatterplot mouseup");
       if(!e.ctrlKey)
       {
@@ -197,7 +203,7 @@ $.widget("tracer_image.scatterplot",
                 self.options.selection.push(self.options.indices[i]);
             }
           }
-        } 
+        }
       }
       else // Pick selection ...
       {
@@ -349,7 +355,7 @@ $.widget("tracer_image.scatterplot",
     }
 
     else if(key == "selection")
-    { 
+    {
       self._filterIndices();
       self._schedule_update({render_selection:true});
     }
@@ -480,6 +486,19 @@ $.widget("tracer_image.scatterplot",
         .style("font-weight", "bold")
         .text(self.options.x_label)
         ;
+      //debugger;
+      var $controls = $('<foreignObject class="controls x-control">')
+            .plot_control({
+              control_type: "x",
+              selected_variable: self.options.scatterplot_obj.x_index,
+              variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+              select_id: "x-axis-switcher",
+              label_text: "X Axis:",
+              event_to_trigger: "x-selection-changed",
+              column_names: model.metadata['column-names']
+            });
+      var d3controls = d3.select($controls.toArray()); //translate jquery to d3
+      self.x_axis_layer.append(function() { return d3controls.node()[0]; });
     }
 
     if(self.updates["update_y_label"])
@@ -489,7 +508,7 @@ $.widget("tracer_image.scatterplot",
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
       var x = -(y_axis_width+15);
       var y = self.svg.attr("height") / 2;
-      
+
       self.y_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -525,7 +544,7 @@ $.widget("tracer_image.scatterplot",
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
-        .data(filtered_indices, function(d, i){ 
+        .data(filtered_indices, function(d, i){
           return filtered_indices[i];
         })
         ;
@@ -539,22 +558,22 @@ $.widget("tracer_image.scatterplot",
         .attr("stroke", "black")
         .attr("linewidth", 1)
         .attr("data-index", function(d, i) { return d; })
-        .on("mouseover", function(d, i) { 
+        .on("mouseover", function(d, i) {
           self._schedule_hover(d);
         })
-        .on("mouseout", function(d, i) { 
-          self._cancel_hover(); 
+        .on("mouseout", function(d, i) {
+          self._cancel_hover();
         })
         ;
       circle
         .attr("cx", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ); })
         .attr("cy", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ); })
-        .attr("fill", function(d, i) { 
+        .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
-            return self.options.color(value); 
+            return self.options.color(value);
         })
         ;
 
@@ -600,29 +619,29 @@ $.widget("tracer_image.scatterplot",
         .attr("r", 8)
         .attr("stroke", "black")
         .attr("linewidth", 1)
-        .attr("data-index", function(d, i) { 
-          return d; 
+        .attr("data-index", function(d, i) {
+          return d;
         })
-        .on("mouseover", function(d, i) { 
+        .on("mouseover", function(d, i) {
           self._schedule_hover(d);
         })
-        .on("mouseout", function(d, i) { 
-          self._cancel_hover(); 
+        .on("mouseout", function(d, i) {
+          self._cancel_hover();
         })
         ;
       circle
-        .attr("cx", function(d, i) { 
-          return x_scale( x[$.inArray(d, indices)] ); 
+        .attr("cx", function(d, i) {
+          return x_scale( x[$.inArray(d, indices)] );
         })
-        .attr("cy", function(d, i) { 
-          return y_scale( y[$.inArray(d, indices)] ); 
+        .attr("cy", function(d, i) {
+          return y_scale( y[$.inArray(d, indices)] );
         })
-        .attr("fill", function(d, i) { 
+        .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
-            return self.options.color(value); 
+            return self.options.color(value);
         })
         ;
     }
@@ -758,7 +777,7 @@ $.widget("tracer_image.scatterplot",
       var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
       var x = -15;
       var y = rectHeight/2;
-      
+
       self.legend_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -820,7 +839,7 @@ $.widget("tracer_image.scatterplot",
     // }
 
     // If image is hover and we are no longer loading this image, we're done.
-    if( image.image_class == "hover-image" && 
+    if( image.image_class == "hover-image" &&
         self.opening_image != image.index
       )
     {
@@ -856,7 +875,7 @@ $.widget("tracer_image.scatterplot",
         image.y = parseInt((target_y / height) * (height - image.height));
       }
 
-      // Tag associated point with class 
+      // Tag associated point with class
       self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
         .classed("openHover", true)
         ;
@@ -979,7 +998,7 @@ $.widget("tracer_image.scatterplot",
       // Schedule timeout for hover
       self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
     }
-    
+
     // If the image is already in the cache, display it.
     if(image.uri in self.image_cache)
     {
@@ -1064,7 +1083,7 @@ $.widget("tracer_image.scatterplot",
                 theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
                 theLine.attr("x1", (newWidth / 2));
                 theLine.attr("y1", (newHeight / 2));
-                  
+
               }
             })
             .on("dragstart", function() {
@@ -1487,4 +1506,3 @@ $.widget("tracer_image.scatterplot",
       ;
   },
 });
-

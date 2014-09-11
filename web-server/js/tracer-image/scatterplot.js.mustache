@@ -103,6 +103,7 @@ ScatterPlot.prototype.setup = function() {
     var sized_parent = $("#grid-pane");
 
     $(this.plot_ref + " .scatterplot").scatterplot({
+      scatterplot_obj: self,
       indices: model.indices,
       display_pane: "#grid-pane",
       dimension_adjustments: {
