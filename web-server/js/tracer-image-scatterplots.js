@@ -563,7 +563,7 @@ $.widget("tracer_image.scatterplot",
 
       var make_line = d3.svg.line();
 
-      var time_line_group = self.svg.append("g")
+      var time_line_group = self.svg.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
 
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
