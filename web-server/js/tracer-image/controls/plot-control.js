@@ -4,7 +4,7 @@
  rights in this software.
  */
 
-$.widget("tracerImage.plot_control", {
+$.widget("tracer_image.plot_control", {
 
   options: {
     control_type : null, // x, y, image, color, etc.
