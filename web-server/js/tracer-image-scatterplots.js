@@ -536,11 +536,8 @@ $.widget("tracer_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
-      var t = self.options.t;
       var indices = self.options.indices;
       var filtered_indices = self.options.filtered_indices;
-      // If b is a higher time (came later), then it goes after a:
-      filtered_indices.sort(function(a,b){ return t[a] - t[b]; });
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
@@ -590,7 +587,7 @@ $.widget("tracer_image.scatterplot",
           time_line_group.append("path")
             .attr("stroke", "black")
             .attr("linewidth", 1)
-            .attr("d", make_line([prev, next]));
+            .attr("d", function(){return make_line([prev, next])});
           return next;
         });
     }
