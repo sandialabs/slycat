@@ -113,7 +113,7 @@ ScatterPlot.prototype.setup = function() {
 
     var colormap = layout.bookmark["colormap"] !== undefined ? layout.bookmark["colormap"] : "night";
 
-    $(this.plot_ref + ".scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    $(this.plot_ref).parents("svg").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
     var open_images = [];
     if("open-images-selection" in layout.bookmark)
@@ -155,7 +155,7 @@ ScatterPlot.prototype.setup = function() {
 
     // Changing the color map updates the scatterplot ...
     $("#color-switcher").bind("colormap-changed", function(event, colormap) {
-      $(self.plot_ref + " .scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+      $(self.plot_ref).parents("svg").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
       $(self.plot_ref + " .scatterplot").scatterplot("option", {
         color:    $("#color-switcher").colorswitcher("get_color_map", colormap),
         gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
