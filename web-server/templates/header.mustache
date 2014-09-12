@@ -16,7 +16,10 @@
         </a>
         <ul id="user-actions">
           <li id="login"><span id="login-status" class="session">{{#security}}{{name}} ({{user}}){{/security}}</span></li>
+          <li id="slycat-info"> About Slycat </li>
         </ul>
+      </div>
+      <div id="about-slycat-dialog" class="dialog" title="About Slycat" style="display: none;">
       </div>
     </div>
 
@@ -41,6 +44,39 @@
         // Warn everyone other than WebKit 534.53+ or Chrome 17+ or FF10+ they might need to upgrade
         else if ( !(newWebkit || newChrome || newMozilla) ) {
           alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+        }
+
+        $('#slycat-info').click(function()
+        {
+          aboutSlycatDialogOpen();
+        });
+
+        $("<p><h3>Slycat</h3></p>").appendTo("#about-slycat-dialog");
+        $("<p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>").appendTo("#about-slycat-dialog");
+        $("<p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#about-slycat-dialog");
+        if( "{{help-email}}" !== "None")
+        {
+          $("<p>Request help at <a href=\"mailto:" + "{{help-email}}" + "\">" + "{{help-email}}"  + " </a></p>").appendTo("#about-slycat-dialog");
+        }
+        if( "{{version}}" !== "None")
+        {
+          $("<p>Version: " + "{{version}}" + "</p>").appendTo("#about-slycat-dialog");
+        }
+
+        $('#about-slycat-dialog').dialog({
+          modal: true,
+          autoOpen: false,
+          minWidth: 500,
+          buttons: {
+            'Close': function() {
+              $(this).dialog('close');
+            },
+          },
+        });
+
+        function aboutSlycatDialogOpen()
+        {
+          $("#about-slycat-dialog").dialog("open");
         }
 
         $('#workers-close').click(function()

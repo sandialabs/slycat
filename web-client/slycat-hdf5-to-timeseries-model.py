@@ -124,7 +124,7 @@ try:
 
   connection.update_model(mid, message="Collecting timeseries statistics.")
   slycat.web.client.log.info("Collecting timeseries statistics.")
-  time_ranges = pool[:].map_sync(get_time_range, itertools.repeat(arguments.directory, timeseries_count), range(timeseries_count))
+  time_ranges = pool[:].map_sync(get_time_range, list(itertools.repeat(arguments.directory, timeseries_count)), range(timeseries_count))
 
   # For each cluster ...
   for index, (name, storage) in enumerate(sorted(clusters.items())):
@@ -158,10 +158,10 @@ try:
           "times" : bin_times,
           "values" : bin_values,
         }
-      directories = itertools.repeat(arguments.directory, len(storage))
-      min_times = itertools.repeat(time_min, len(storage))
-      max_times = itertools.repeat(time_max, len(storage))
-      bin_counts = itertools.repeat(arguments.cluster_sample_count, len(storage))
+      directories = list(itertools.repeat(arguments.directory, len(storage)))
+      min_times = list(itertools.repeat(time_min, len(storage)))
+      max_times = list(itertools.repeat(time_max, len(storage)))
+      bin_counts = list(itertools.repeat(arguments.cluster_sample_count, len(storage)))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
       waveforms = pool[:].map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
@@ -190,10 +190,10 @@ try:
           "times" : bin_times,
           "values" : bin_values,
         }
-      directories = itertools.repeat(arguments.directory, len(storage))
-      min_times = itertools.repeat(time_min, len(storage))
-      max_times = itertools.repeat(time_max, len(storage))
-      bin_counts = itertools.repeat(arguments.cluster_sample_count, len(storage))
+      directories = list(itertools.repeat(arguments.directory, len(storage)))
+      min_times = list(itertools.repeat(time_min, len(storage)))
+      max_times = list(itertools.repeat(time_max, len(storage)))
+      bin_counts = list(itertools.repeat(arguments.cluster_sample_count, len(storage)))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
       waveforms = pool[:].map_sync(uniform_paa, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
