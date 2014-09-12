@@ -17,3 +17,4 @@ packages/cherrypy/test/test_misc_tools.log
 slycat.egg-info
 web-client/*images
 web-client/*images.csv
+.*.swp
