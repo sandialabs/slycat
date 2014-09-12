@@ -61,10 +61,14 @@ $.widget("slycat.browser",
     {
       return function()
       {
-        if($(this).children("ul").length) // Collapse this node ...
+        if($(this).hasClass("open")) // Collapse this node ...
         {
+          id = parseInt($(this).parent().parent()[0].id) 
+          id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1
+          $(".file-browser#"+(id+1)).remove();
+          $(".file-browser#"+id_to_show).show();
           $(this).removeClass("open");
-          $(this).children("ul").remove();
+          //Remove the table with this parent table's id+1
         }
         else // Expand this node ...
         {
@@ -87,18 +91,35 @@ $.widget("slycat.browser",
 
               var path = $(this).data("path");
               //var container = $("<ul>").appendTo($("ul#middle");
-              var container = $("<ul>").appendTo($(this));
+              //var container = $("<ul>").appendTo($(this));
+              var current_position = $(this).parent().parent().attr("id");
+              console.log(current_position);
+              var slide = false;
+              if (parseInt(current_position) >= 4){
+                var slide = true;
+              }
+              if (slide == true){
+                ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()
+                min = ids[0];
+                max = ids[ids.length-1];
+                //We hide the lowest numbered column.
+                $(".file-browser#"+min).hide();
+                //We show the next numbered column.
+                $(".file-browser#"+max).show();
+              }
+              //No matter what we append to the next table if we are expanding.
+              var container = $(".file-browser#"+(parseInt(current_position)+1));
               for(var i = 0; i != result.names.length; ++i)
               {
                 name = result.names[i];
                 size = result.sizes[i];
                 type = result.types[i];
 
-                var item = $("<li>").appendTo(container);
+                var item = $("<tr>").appendTo(container);
                 var entry = $("<div/>").appendTo(item);
                 var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
-                var label = $("<span class='label'></span>").text(name).appendTo(entry);
+                var label = $("<span class='label'></span>").text(name.substring(0,20)+"...").appendTo(entry);
 
                 item.data("path", path.replace(/\/$/, "") + "/" + name);
                 item.bind("toggle-directory", toggle_directory(self));
@@ -145,10 +166,12 @@ $.widget("slycat.browser",
       }
     }
 
-    var container = $("<ul>").addClass("file-browser").attr("id","left").appendTo(self.element.empty())
-    var containermiddle = $("<ul>").addClass("file-browser").attr("id","middle").appendTo(self.element)
-    var containerright = $("<ul>").addClass("file-browser").attr("id","right").appendTo(self.element)
-    var item = $("<li>").appendTo(container);
+    var container1 = $("<table>").addClass("file-browser").attr("id","1").appendTo(self.element.empty())
+    //Make this dynamically added you FOOL!!!
+    for(var i = 2; i < 20; i++){
+      $("<table>").addClass("file-browser").attr("id",i).appendTo(self.element)
+    }
+    var item = $("<tr>").appendTo(container1);
     var entry = $("<div/>").appendTo(item);
     var arrow = $("<span class='arrow'></span>").appendTo(entry);
     var icon = $("<span class='icon'></span>").appendTo(entry);
