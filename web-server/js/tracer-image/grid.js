@@ -37,8 +37,8 @@ Grid.prototype.setup = function() {
       update_plot_dimensions(cell, [i,j])();
       $(this.grid_ref).resize(update_plot_dimensions(cell, [i,j]));
       plot = new this.plot_type("plot_" + i + "_" + j, "#" + cell.attr("id"), {x: 1/this.size[0], y: 1/this.size[1]});
+      console.debug("GOT EHRE after plot");
       plot.controls = new Controls(plot);
-      plot.movie = new Movie(plot);
       this.plots.push(plot);
     }
   }
