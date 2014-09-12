@@ -5,6 +5,7 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.controls = null;
+  this.movie = null;
 
   this.x_index = null;
   this.y_index = null;
@@ -27,6 +28,14 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
 
   this.setup_dom();
 }
+
+ScatterPlot.prototype.show = function() {
+  $(this.plot_ref + " .scatterplot").show();
+};
+
+ScatterPlot.prototype.hide = function() {
+  $(this.plot_ref + " .scatterplot").hide();
+};
 
 ScatterPlot.prototype.setup_dom = function() {
   //Have to initialize with the d3 builder, or doesn't want to show:
@@ -65,6 +74,7 @@ ScatterPlot.prototype.resize = function() {
     width: $(this.plot_ref + ".scatterplot-pane").width(),
     height: $(this.plot_ref + ".scatterplot-pane").height()
   });
+  this.movie.resize();
 };
 
 ScatterPlot.prototype.update_axis = function(index, axis) {
