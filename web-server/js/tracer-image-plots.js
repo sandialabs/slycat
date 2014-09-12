@@ -65,7 +65,6 @@ console.log("creating");
     self.selection_layer = self.graphic.append("g");
     self.image_layer = self.graphic.append("g");
 
-    self.session_cache = {};
     self.image_cache = {};
 
     self.updates = {};
@@ -1211,9 +1210,7 @@ console.log("creating");
     }
 
     // If we don't have a session for the image hostname, create one.
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in self.session_cache))
+    if(!(login.logged_into_host_for_file(file)))
     {
       self._open_session(images);
       return;
@@ -1223,7 +1220,7 @@ console.log("creating");
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", self.options.server_root + "remote/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1232,7 +1229,7 @@ console.log("creating");
       // Either way, delete the cached session and create a new one.
       if(this.status == 404 || this.status == 500)
       {
-        delete self.session_cache[parser.hostname];
+        delete login.session_cache[parser.hostname];
         self._open_session(images);
         return;
       }
@@ -1299,7 +1296,7 @@ console.log("creating");
             processData : false,
             success : function(result)
             {
-              self.session_cache[parser.hostname] = result.sid;
+              login.session_cache[parser.hostname] = result.sid;
               self.login.dialog("close");
               self._open_images(images);
             },
