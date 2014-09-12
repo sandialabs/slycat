@@ -15,4 +15,9 @@ function Login(grid_ref) {
       $("#remote-password").val("");
     }
   });
+  $("#remote-password").keypress(function(event){ 
+    if (event.keyCode == 13) { 
+      $('.ui-dialog-buttonset').find('button:first').trigger('click');
+    }
+  });
 };
