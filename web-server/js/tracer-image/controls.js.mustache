@@ -42,7 +42,7 @@ Controls.prototype.setup = function() {
       "image-variable" : plot.images_index,
       "color-variable" : color_variable
     });
-
+/*
     // Changing the x variable updates the controls ...
     $("#table").bind("x-selection-changed", function(event, variable) {
       $(plot.plot_ref + " .controls").tracer_controls("option", "x-variable", variable);
@@ -67,7 +67,7 @@ Controls.prototype.setup = function() {
     $("#table").bind("variable-selection-changed", function(event, selection) {
       $(plot.plot_ref + " .scatterplot").scatterplot("option", {v_label:model.metadata["column-names"][selection[0]]});
     });
-
+*/
     // Changing the color variable updates the scatterplot ...
     $(plot.plot_ref + " .controls").bind("color-selection-changed", function(event, variable) {
       plot.update_value(variable);
