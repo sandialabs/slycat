@@ -21,7 +21,6 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.ready = false;
   this.controls_ready = false;
 
-  this.session_cache = {};
   this.image_uri = document.createElement("a");
 
   this.scalar = scalar || {x:1, y:1};
@@ -38,15 +37,18 @@ ScatterPlot.prototype.hide = function() {
 };
 
 ScatterPlot.prototype.setup_dom = function() {
+  console.debug("setting up DOM for plot");
   //Have to initialize with the d3 builder, or doesn't want to show:
   var group = d3.select($(this.grid_ref)[0]).append("g").attr({class: "plot", id: this.plot_id});
   var pane = group.append("g").attr({class: "scatterplot-pane"});
   pane.append("g").attr({class: "load-status"});
   pane.append("g").attr({class: "scatterplot"});
   pane.append("g").attr({class: "controls"});
+  pane.append("g").attr({class: "movie"});
 };
 
 ScatterPlot.prototype.setup_labels = function() {
+  console.debug("setting up labels for plot");
   // choose some columns for the x and y axes.
   var numeric_variables = model.get_numeric_variables();
   this.x_index = numeric_variables[0];
@@ -60,6 +62,7 @@ ScatterPlot.prototype.setup_labels = function() {
 };
 
 ScatterPlot.prototype.setup_simulations = function() {
+  console.debug("setting up sims for plot");
   // set state of selected and hidden simulations
   this.selected_simulations = [];
   if("simulation-selection" in layout.bookmark)
@@ -102,6 +105,9 @@ ScatterPlot.prototype.setup = function() {
   {
     var self = this;
     this.ready = true;
+
+    // add our movie here so it can immediately reference images
+    this.movie = new Movie(this);
 
     $(this.plot_ref + " .scatterplot-pane .load-status").hide();
 
@@ -366,16 +372,15 @@ ScatterPlot.prototype.update_y = function(variable) {
 
 ScatterPlot.prototype.display_image = function(uri) {
   console.debug("inside display image");
-  image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
-  if(image_uri.hostname in session_cache)
+  if(login.logged_into_host_for_file(file))
     this.load_image();
   else
-    $("#remote-login").dialog("open");
+    login.show_prompt();
 };
 
 ScatterPlot.prototype.load_image = function() {
   console.debug("inside load image");
-  var sid = session_cache[image_uri.hostname];
+  var sid = login.sid_for_file(file);
   image = document.createElement("img");
   image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
   image.width = 100;
