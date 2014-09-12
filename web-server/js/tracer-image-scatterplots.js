@@ -54,7 +54,7 @@ $.widget("tracer_image.scatterplot",
     self.end_drag = null;
 
     // Setup the scatterplot ...
-    self.svg = d3.select(self.element.get(0)).append("svg");
+    self.svg = d3.select(self.element.get(0));
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
@@ -131,8 +131,8 @@ $.widget("tracer_image.scatterplot",
         {
           self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
 
-          var width = self.element.width();
-          var height = self.element.height();
+          var width = self.element.attr("width");
+          var height = self.element.attr("height");
 
           self.selection_layer.selectAll(".rubberband")
               .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
@@ -433,8 +433,8 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_x"])
     {
-      var total_width = self.element.width();
-      var total_height = self.element.height();
+      var total_width = self.options.width;
+      var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
       var width_offset = (total_width - width) / 2
@@ -450,8 +450,8 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_y"])
     {
-      var total_width = self.element.width();
-      var total_height = self.element.height();
+      var total_width = self.options.width;
+      var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
       var width_offset = (total_width - width) / 2
@@ -711,8 +711,8 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.element.width());
-      var total_height = Number(self.element.height());
+      var total_width = Number(self.svg.attr("width"));
+      var total_height = Number(self.svg.attr("height"));
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
       var rectHeight = parseInt((height - self.options.border - 40)/2);
@@ -751,6 +751,8 @@ $.widget("tracer_image.scatterplot",
     {
       console.log("updating v label.");
       self.legend_layer.selectAll(".label").remove();
+
+      self.element.parents("svg").resize();
 
       // var y_axis_width = self.y_axis_layer.node().getBBox().width;
       // var x = -(y_axis_width+15);

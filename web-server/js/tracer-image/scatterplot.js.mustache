@@ -29,7 +29,12 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
 }
 
 ScatterPlot.prototype.setup_dom = function() {
-  $(this.grid_ref).append('{{> ../templates/tracer-image/plot.html}}');
+  //Have to initialize with the d3 builder, or doesn't want to show:
+  var group = d3.select($(this.grid_ref)[0]).append("g").attr({class: "plot", id: this.plot_id});
+  var pane = group.append("g").attr({class: "scatterplot-pane"});
+  pane.append("g").attr({class: "load-status"});
+  pane.append("g").attr({class: "scatterplot"});
+  pane.append("g").attr({class: "controls"});
 };
 
 ScatterPlot.prototype.setup_labels = function() {
@@ -92,7 +97,7 @@ ScatterPlot.prototype.setup = function() {
 
     var colormap = layout.bookmark["colormap"] !== undefined ? layout.bookmark["colormap"] : "night";
 
-    $(this.plot_ref + " .scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    $(this.plot_ref + ".scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
     var open_images = [];
     if("open-images-selection" in layout.bookmark)
