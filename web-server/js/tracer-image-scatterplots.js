@@ -8,10 +8,8 @@ rights in this software.
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 
-$.widget("tracer_image.scatterplot",
-{
-  options:
-  {
+$.widget("tracer_image.scatterplot", {
+  options: {
     object_ref : null,
     scatterplot_obj : null,
     width : 300,
@@ -41,8 +39,7 @@ $.widget("tracer_image.scatterplot",
     filtered_selection : [],
   },
 
-  _create: function()
-  {
+  _create: function() {
     var self = this;
 
     self.hover_timer = null;
@@ -61,7 +58,8 @@ $.widget("tracer_image.scatterplot",
 
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0));
-    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
+    self._build_x_axis();
+
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
@@ -303,6 +301,27 @@ $.widget("tracer_image.scatterplot",
     self.options.filtered_selection = filtered_selection;
   },
 
+  _build_x_axis: function() {
+    var self = this;
+    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
+    self.x_control = new PlotControl({
+      scatterplot_obj: self.options.scatterplot_obj,
+      container: self.x_axis_layer,
+      control_type: 'x',
+      selected_variable: self.options.scatterplot_obj.x_index,
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      select_id: 'x-axis-switcher',
+      label_text: 'X Axis:',
+      event_to_trigger: 'x-selection-changed',
+      column_names: model.metadata['column-names']
+    });
+    self.x_control.build();
+
+  // for reference, how to translate the other direction - i.e. jquery selection to D3:
+  // var d3controls = d3.select($controls.toArray()); //translate jquery to d3
+  // self.x_axis_layer.append(function() { return d3controls.node()[0]; });
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
@@ -477,7 +496,7 @@ $.widget("tracer_image.scatterplot",
       var x = self.svg.attr("width") / 2;
       var y = 40;
 
-      self.x_axis_layer.selectAll(".label").remove()
+      /*self.x_axis_layer.selectAll(".label").remove()
       self.x_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -486,19 +505,7 @@ $.widget("tracer_image.scatterplot",
         .style("font-weight", "bold")
         .text(self.options.x_label)
         ;
-      //debugger;
-      var $controls = $('<foreignObject class="controls x-control">')
-            .plot_control({
-              control_type: "x",
-              selected_variable: self.options.scatterplot_obj.x_index,
-              variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
-              select_id: "x-axis-switcher",
-              label_text: "X Axis:",
-              event_to_trigger: "x-selection-changed",
-              column_names: model.metadata['column-names']
-            });
-      var d3controls = d3.select($controls.toArray()); //translate jquery to d3
-      self.x_axis_layer.append(function() { return d3controls.node()[0]; });
+      */
     }
 
     if(self.updates["update_y_label"])
