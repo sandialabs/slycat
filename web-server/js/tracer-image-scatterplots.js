@@ -68,7 +68,11 @@ $.widget("tracer_image.scatterplot", {
     self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
     self.selected_layer = self.svg.append("g");
     self.selection_layer = self.svg.append("g");
-    self.image_layer = self.svg.append("g");
+    
+    var top_layer = $(self.svg[0]).parents("svg");
+    var image_layer_check = top_layer.find("g.image-layer")[0];
+
+    self.image_layer = image_layer_check ? d3.select(image_layer_check) : d3.select(top_layer[0]).append("g").attr("class", "image-layer");
 
     self.image_cache = {};
 
