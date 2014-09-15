@@ -5,7 +5,7 @@ function Movie(plot) {
   this.jq_movie = $(this.movie_ref);
   this.d3_movie = d3.select(this.movie_ref).selectAll("image");
   this.hide();
-  this.interval = 1000;
+  this.interval = 0;
   this.show_interval = 2000; // length of time to show the image
   this.animation_interval = null;
   this.current_image = null;

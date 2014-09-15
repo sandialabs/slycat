@@ -59,17 +59,20 @@ $.widget("tracer_image.scatterplot", {
     }
 
     // Setup the scatterplot ...
-    self.svg = d3.select(self.element.get(0));
+    self.group = d3.select(self.element.get(0));
+
+    self.svg = d3.select($(self.group[0]).parents("svg")[0]);
+
     self._build_x_axis();
     self._build_y_axis();
 
-    self.legend_layer = self.svg.append("g").attr("class", "legend");
+    self.legend_layer = self.group.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
-    self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
-    self.selected_layer = self.svg.append("g");
-    self.selection_layer = self.svg.append("g");
+    self.datum_layer = self.group.append("g").attr("class", "datum-layer");
+    self.selected_layer = self.group.append("g");
+    self.selection_layer = self.group.append("g");
     
-    var top_layer = $(self.svg[0]).parents("svg");
+    var top_layer = $(self.group[0]).parents("svg");
     var image_layer_check = top_layer.find("g.image-layer")[0];
 
     self.image_layer = image_layer_check ? d3.select(image_layer_check) : d3.select(top_layer[0]).append("g").attr("class", "image-layer");
@@ -233,8 +236,8 @@ $.widget("tracer_image.scatterplot", {
               // {
               //   self._close_hover();
 
-              //   var width = self.svg.attr("width");
-              //   var height = self.svg.attr("height");
+              //   var width = self.group.attr("width");
+              //   var height = self.group.attr("height");
               //   var open_width = Math.min(width, height) / 3;
               //   var open_height = Math.min(width, height) / 3;
 
@@ -309,7 +312,7 @@ $.widget("tracer_image.scatterplot", {
 
   _build_x_axis: function() {
     var self = this;
-    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
+    self.x_axis_layer = self.group.append("g").attr("class", "x-axis");
     self.x_control = new PlotControl({
       scatterplot_obj: self.options.scatterplot_obj,
       container: self.x_axis_layer,
@@ -321,10 +324,10 @@ $.widget("tracer_image.scatterplot", {
     self.x_control.build();
 
     // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
-    var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
+    var background_color = $(self.group.node()).parents('svg').css('background'); //translate d3 selection to jquery
     self.x_control.foreign_object.select('body').style('background', background_color);
 
-    var x = self.svg.attr('width') / 2;
+    var x = self.group.attr('width') / 2;
     var y = 40;
 
       /*self.x_g
@@ -341,7 +344,7 @@ $.widget("tracer_image.scatterplot", {
 
   _build_y_axis: function() {
     var self = this;
-    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
+    self.y_axis_layer = self.group.append("g").attr("class", "y-axis");
     self.y_control = new PlotControl({
       scatterplot_obj: self.options.scatterplot_obj,
       container: self.y_axis_layer,
@@ -353,7 +356,7 @@ $.widget("tracer_image.scatterplot", {
     self.y_control.build();
 
     // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
-    var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
+    var background_color = $(self.group.node()).parents('svg').css('background'); //translate d3 selection to jquery
     self.y_control.foreign_object.select('body').style('background', background_color);
   },
 
@@ -472,7 +475,7 @@ $.widget("tracer_image.scatterplot", {
       self.options.width = self.element.parents(self.options.display_pane).width() * self.options.scalar.x;
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
-      self.svg.attr("width", self.options.width);
+      self.group.attr("width", self.options.width);
     }
 
     if(self.updates["update_height"])
@@ -480,7 +483,7 @@ $.widget("tracer_image.scatterplot", {
       self.options.height = self.element.parents(self.options.display_pane).height() * self.options.scalar.y;
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
-      self.svg.attr("height", self.options.height);
+      self.group.attr("height", self.options.height);
     }
 
     if(self.updates["update_indices"])
@@ -537,7 +540,7 @@ $.widget("tracer_image.scatterplot", {
 
     if(self.updates["update_x_label"]) {
     /*
-      var x = self.svg.attr("width") / 2;
+      var x = self.group.attr("width") / 2;
       var y = 40;
 
       self.x_axis_layer.selectAll(".label").remove()
@@ -558,7 +561,7 @@ $.widget("tracer_image.scatterplot", {
 
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
       var x = -(y_axis_width+15);
-      var y = self.svg.attr("height") / 2;
+      var y = self.group.attr("height") / 2;
 
       self.y_axis_layer.append("text")
         .attr("class", "label")
@@ -581,8 +584,8 @@ $.widget("tracer_image.scatterplot", {
       for(var i in self.options.color.domain())
         domain.push(domain_scale(i));
       self.options.color.domain(domain);
-      var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
-      self.svg.selectAll('.controls body').style('background', background_color);
+      var background_color = $(self.group.node()).parents('svg').css('background'); //translate d3 selection to jquery
+      self.group.selectAll('.controls body').style('background', background_color);
     }
 
     if(self.updates["render_data"])
@@ -629,14 +632,14 @@ $.widget("tracer_image.scatterplot", {
         ;
 
 
-      self.svg.select(".time-paths").remove();
+      self.group.select(".time-paths").remove();
 
       var make_line = d3.svg.line();
       var color_scale = d3.scale.linear()
         .domain([0, filtered_indices.length])
         .range(["white", "black"]);
 
-      var time_line_group = self.svg.insert("g", ".datum-layer + g")
+      var time_line_group = self.group.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
 
 
@@ -716,8 +719,8 @@ $.widget("tracer_image.scatterplot", {
       });
 
       // Transform the list of initial images so we can pass them to _open_images()
-      var width = Number(self.svg.attr("width"));
-      var height = Number(self.svg.attr("height"));
+      var width = Number(self.group.attr("width"));
+      var height = Number(self.group.attr("height"));
 
       var images = [];
       self.options.open_images.forEach(function(image, index)
@@ -785,8 +788,8 @@ $.widget("tracer_image.scatterplot", {
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.svg.attr("width"));
-      var total_height = Number(self.svg.attr("height"));
+      var total_width = Number(self.group.attr("width"));
+      var total_height = Number(self.group.attr("height"));
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
       var rectHeight = parseInt((height - self.options.border - 40)/2);
@@ -824,7 +827,7 @@ $.widget("tracer_image.scatterplot", {
 
       // var y_axis_width = self.y_axis_layer.node().getBBox().width;
       // var x = -(y_axis_width+15);
-      // var y = self.svg.attr("height") / 2;
+      // var y = self.group.attr("height") / 2;
       var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
       var x = -15;
       var y = rectHeight/2;
@@ -848,8 +851,8 @@ $.widget("tracer_image.scatterplot", {
     var self = this;
 
     // Get the scatterplot width so we can convert absolute to relative coordinates.
-    var width = Number(self.svg.attr("width"));
-    var height = Number(self.svg.attr("height"));
+    var width = Number(self.group.attr("width"));
+    var height = Number(self.group.attr("height"));
     var open_images = [];
     $(".open-image").each(function(index, frame)
     {
@@ -910,7 +913,7 @@ $.widget("tracer_image.scatterplot", {
       if(image.x === undefined)
       {
         // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
+        var width = self.group.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
@@ -921,7 +924,7 @@ $.widget("tracer_image.scatterplot", {
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
+        var height = self.group.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = parseInt((target_y / height) * (height - image.height));
       }
@@ -944,7 +947,7 @@ $.widget("tracer_image.scatterplot", {
             .on('drag', function(){
               //console.log("frame drag");
               // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+              if( 0 <= d3.event.y && d3.event.y <= $(self.svg[0]).height() && 0 <= d3.event.x && d3.event.x <= $(self.svg[0]).width() ){
                 var theElement = d3.select(this);
                 var transx = Number(theElement.attr("data-transx"));
                 var transy = Number(theElement.attr("data-transy"));
@@ -969,6 +972,7 @@ $.widget("tracer_image.scatterplot", {
                 d3.event.sourceEvent.stopPropagation(); // silence other listeners
                 // Reset tracking of hover image if we are starting to drag a hover image
                 var frame = d3.select(this);
+
                 if(frame.classed("hover-image"))
                 {
                   self.opening_image = null;
@@ -1067,7 +1071,7 @@ $.widget("tracer_image.scatterplot", {
       if(image.x === undefined)
       {
         // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
+        var width = self.group.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
@@ -1078,7 +1082,7 @@ $.widget("tracer_image.scatterplot", {
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
+        var height = self.group.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = (target_y / height) * (height - image.height);
       }
@@ -1279,7 +1283,7 @@ $.widget("tracer_image.scatterplot", {
           var imageHeight = 200;
           var imageWidth = 200;
 
-          var width = self.svg.attr("width");
+          var width = self.group.attr("width");
           var range = self.x_scale.range();
           var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
           var x, y;
@@ -1289,7 +1293,7 @@ $.widget("tracer_image.scatterplot", {
           else
             x = width - ((width - range[1]) * (1.0 - relx)) - imageWidth;
 
-          var height = self.svg.attr("height");
+          var height = self.group.attr("height");
           var target_y = self.y_scale(self.options.y[image.index]);
           y = (target_y / height) * (height - imageHeight);
 
@@ -1480,8 +1484,8 @@ $.widget("tracer_image.scatterplot", {
       self._close_hover();
       self.opening_image = image_index;
 
-      var width = self.svg.attr("width");
-      var height = self.svg.attr("height");
+      var width = self.group.attr("width");
+      var height = self.group.attr("height");
       var hover_width = Math.min(width, height) * 0.85;
       var hover_height = Math.min(width, height) * 0.85;
 
@@ -1490,7 +1494,7 @@ $.widget("tracer_image.scatterplot", {
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "hover-image",
         x : self.x_scale(self.options.x[image_index]) + 10,
-        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
+        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.group.attr("height") - hover_height - self.options.border - 10),
         width : hover_width,
         height : hover_height,
         target_x : self.x_scale(self.options.x[image_index]),
