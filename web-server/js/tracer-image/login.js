@@ -1,6 +1,7 @@
-function Login(grid_ref) {
+function Login(grid_ref, server_root) {
   var self = this;
   this.session_cache = {};
+  this.server_root = server_root;
   this.grid_ref = grid_ref;
   this.image_uri = document.createElement("a");
 
@@ -55,7 +56,52 @@ Login.prototype.logged_into_host_for_file = function(file) {
   console.debug("testing 3");
 };
 
-Login.prototype.show_prompt = function() {
-  console.debug("show the prompt to login");
-  $("#remote-login").dialog("open");
+Login.prototype.show_prompt = function(images, callback) {
+  var self = this;
+
+  if(images.length == 0)
+    return;
+  var image = images[0];
+
+  var parser = document.createElement("a");
+  parser.href = image.uri.substr(0,5) == "file:" ? image.uri.substr(5) : image.uri;
+
+  $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+  $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
+
+  self.image_login.dialog(
+  {
+    buttons:
+    {
+      "Login": function()
+      {
+        $.ajax(
+        {
+          async : true,
+          type : "POST",
+          url : self.server_root + "remote",
+          contentType : "application/json",
+          data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
+          processData : false,
+          success : function(result)
+          {
+            login.session_cache[parser.hostname] = result.sid;
+            self.image_login.dialog("close");
+            callback(images);
+          },
+          error : function(request, status, reason_phrase)
+          {
+            image.last_error = "Error opening remote session: " + reason_phrase;
+            self.image_login.dialog("close");
+            self.show_prompt(images, callback);
+          }
+        });
+      },
+      Cancel: function()
+      {
+        $(this).dialog("close");
+      }
+    },
+  });
+  self.image_login.dialog("open");
 };

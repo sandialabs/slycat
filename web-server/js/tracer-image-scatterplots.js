@@ -1376,53 +1376,7 @@ $.widget("tracer_image.scatterplot", {
   _open_session: function(images)
   {
     var self = this;
-
-    if(images.length == 0)
-      return;
-    var image = images[0];
-
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-
-    $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
-    console.log(login.image_login);
-    self.login = login.image_login;
-    self.login.dialog(
-    {
-      buttons:
-      {
-        "Login": function()
-        {
-          $.ajax(
-          {
-            async : true,
-            type : "POST",
-            url : self.options.server_root + "remote",
-            contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
-            processData : false,
-            success : function(result)
-            {
-              login.session_cache[parser.hostname] = result.sid;
-              self.login.dialog("close");
-              self._open_images(images);
-            },
-            error : function(request, status, reason_phrase)
-            {
-              image.last_error = "Error opening remote session: " + reason_phrase;
-              self.login.dialog("close");
-              self._open_session(images);
-            }
-          });
-        },
-        Cancel: function()
-        {
-          $(this).dialog("close");
-        }
-      },
-    });
-    self.login.dialog("open");
+    login.show_prompt(images, self._open_images);
   },
 
   _schedule_hover: function(image_index)
