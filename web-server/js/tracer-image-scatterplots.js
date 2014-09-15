@@ -59,8 +59,8 @@ $.widget("tracer_image.scatterplot", {
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0));
     self._build_x_axis();
+    self._build_y_axis();
 
-    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
@@ -313,6 +313,34 @@ $.widget("tracer_image.scatterplot", {
       column_names: model.metadata['column-names']
     });
     self.x_control.build();
+
+    var x = self.svg.attr('width') / 2;
+    var y = 40;
+
+      /*self.x_axis_layer.selectAll(".label").remove()
+      self.x_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.x_label)
+        ;
+      */
+  },
+
+  _build_y_axis: function() {
+    var self = this;
+    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
+    self.y_control = new PlotControl({
+      scatterplot_obj: self.options.scatterplot_obj,
+      container: self.y_axis_layer,
+      control_type: 'y',
+      label_text: 'Y Axis:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.y_control.build();
   },
 
   _setOption: function(key, value)
@@ -462,8 +490,7 @@ $.widget("tracer_image.scatterplot", {
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
-        .call(self.x_axis)
-        ;
+        .call(self.x_axis);
     }
 
     if(self.updates["update_y"])
