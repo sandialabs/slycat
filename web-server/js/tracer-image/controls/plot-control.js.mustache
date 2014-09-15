@@ -24,8 +24,8 @@ PlotControl.prototype.build = function() {
     .classed('controls ' + self.control_type + '-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
     .attr('width', 100) //TODO: make this sizing not be stupid
     .attr('height', 50);
-  var body = self.foreign_object.append('xhtml:body');
-
+  var body = self.foreign_object.append('xhtml:body')
+    .style('background', 'transparent');;
 
   //build label
   var select_id = self.control_type + '-selector'; // DOM id for the <select>

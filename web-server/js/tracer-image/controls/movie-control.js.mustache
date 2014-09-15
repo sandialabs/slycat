@@ -13,17 +13,19 @@ function MovieControl(options) {
 
 MovieControl.prototype.build = function() {
   var self = this;
+
   self.foreign_object = self.container.append('foreignObject')
     .classed('movie-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
     .attr('width', 50) //TODO: make this sizing not be stupid
     .attr('height', 40);
-  var body = self.foreign_object.append('xhtml:body');
-  var button = body.append('button')
-    .classed('play_movie', true)
+  var open_body = self.foreign_object.append('xhtml:body')
+    .style('background', 'transparent');;
+  var open_button = open_body.append('button')
+    .classed('play-movie', true)
     .on('click', function() {
-      self.play();
+      self.show();
     });
-  button.append('img')
+  open_button.append('img')
     .attr('src', '/style/play.png');
 };
 
@@ -32,7 +34,36 @@ MovieControl.prototype.play = function () {
   self.movie.play();
 };
 
+MovieControl.prototype.build_close_button = function() {
+  var self = this;
+  var close_obj = d3.select(self.movie.movie_ref).append('foreignObject')
+        .classed('close-movie', true)
+        .attr('width', 50)
+        .attr('height', 50);
+  self.close_body = close_obj.append('xhtml:body')
+    .style('background', 'transparent');
+    //.style('visibility', 'hidden');
+  var close_button = self.close_body.append('button')
+        .classed('close-movie', true)
+        .on('click', function() {
+          self.hide();
+        });
+  close_button.append('img')
+    .attr('src', '/style/x-gray.png');
+};
+
 MovieControl.prototype.show = function() {
   var self = this;
-  // TODO: hide plot and show control panel overlay from which play() can be triggered
+  $(self.plot.plot_ref + ' .scatterplot').hide();
+  //self.close_body.style('visibility', 'visible');
+  // TODO: show control panel overlay from which play() can be triggered
+  self.play();
+  self.build_close_button(); //afterward so close button is clickable on top of images
+};
+
+MovieControl.prototype.hide = function() {
+  var self = this;
+  //self.close_body.style('visibility', 'hidden');
+  $(self.movie.movie_ref).hide();
+  $(self.plot.plot_ref + ' .scatterplot').show();
 };

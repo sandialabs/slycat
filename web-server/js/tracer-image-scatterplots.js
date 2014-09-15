@@ -329,23 +329,6 @@ $.widget("tracer_image.scatterplot", {
       plot: self.options.scatterplot_obj
     });
     self.movie_control.build();
-
-    self.x_control.foreign_object.select('body').style('background', 'transparent');
-    self.movie_control.foreign_object.select('body').style('background', 'transparent');
-
-    var x = self.group.attr('width') / 2;
-    var y = 40;
-
-      /*self.x_g
-      self.x_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.x_label)
-        ;
-     */
   },
 
   _build_y_axis: function() {
@@ -360,7 +343,6 @@ $.widget("tracer_image.scatterplot", {
       column_names: model.metadata['column-names']
     });
     self.y_control.build();
-    self.y_control.foreign_object.select('body').style('background', 'transparent');
   },
 
   _setOption: function(key, value)
