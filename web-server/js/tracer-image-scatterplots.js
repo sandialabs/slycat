@@ -316,6 +316,10 @@ $.widget("tracer_image.scatterplot", {
     });
     self.x_control.build();
 
+    // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
+    var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
+    self.x_control.foreign_object.select('body').style('background', background_color);
+
     var x = self.svg.attr('width') / 2;
     var y = 40;
 
@@ -328,7 +332,7 @@ $.widget("tracer_image.scatterplot", {
         .style("font-weight", "bold")
         .text(self.options.x_label)
         ;
-      */
+     */
   },
 
   _build_y_axis: function() {
@@ -343,6 +347,10 @@ $.widget("tracer_image.scatterplot", {
       column_names: model.metadata['column-names']
     });
     self.y_control.build();
+
+    // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
+    var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
+    self.y_control.foreign_object.select('body').style('background', background_color);
   },
 
   _setOption: function(key, value)
@@ -569,6 +577,8 @@ $.widget("tracer_image.scatterplot", {
       for(var i in self.options.color.domain())
         domain.push(domain_scale(i));
       self.options.color.domain(domain);
+      var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
+      self.svg.selectAll('.controls body').style('background', background_color);
     }
 
     if(self.updates["render_data"])

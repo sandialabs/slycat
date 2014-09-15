@@ -21,7 +21,7 @@ PlotControl.prototype.build = function() {
 
   //build foreignObject SVG container
   self.foreign_object = self.container.append('foreignObject')
-    .classed('controls x-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
+    .classed('controls ' + self.control_type + '-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
     .attr('width', 100) //TODO: make this sizing not be stupid
     .attr('height', 50);
   var body = self.foreign_object.append('xhtml:body');
