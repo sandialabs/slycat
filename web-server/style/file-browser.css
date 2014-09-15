@@ -42,7 +42,7 @@ ul.file-browser
   height: 20px;
 }
 
-.file-browser li.selected > div
+.file-browser tr.selected > div
 {
   background: #4478cf;
   color: white;
@@ -77,7 +77,13 @@ ul.file-browser
 {
   background: url(arrow-right-small.png) no-repeat center;
 }
-
+.file-browser tr.host.open > div, .file-browser tr.directory.open > div
+{
+  background: #e7f6f7;
+  color: black;
+  border: 1px solid black;
+  padding: 2px;
+}
 .file-browser tr.host.open > div > .arrow, .file-browser tr.directory.open > div > .arrow
 {
   background: url(arrow-down-small.png) no-repeat center;
