@@ -1023,6 +1023,13 @@ def post_remote_browse():
       cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
+# need the content type when requesting the image
+# GET /remote/:sid/image/file/:path vs /remote/:sid/file/:path
+def get_remote_file_as_image(sid, path):
+  accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
+  cherrypy.response.headers["content-type"] = accept
+  return get_remote_file(sid, path)
+
 def get_remote_file(sid, path):
   #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
   #cherrypy.response.headers["content-type"] = accept

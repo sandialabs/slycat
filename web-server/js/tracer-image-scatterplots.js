@@ -50,6 +50,8 @@ $.widget("tracer_image.scatterplot", {
     self.current_drag = null;
     self.end_drag = null;
 
+    out = self;
+
     self.numeric_variables = [];
     for(var i = 0; i < model.metadata["column-count"]; i++) { // model is currently in global scope (init.js)
       if(model.metadata["column-types"][i] != 'string')
@@ -620,10 +622,11 @@ $.widget("tracer_image.scatterplot", {
       var time_line_group = self.svg.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
 
+
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
-        .reduce(function(prev, next){
+        .reduce(function(prev, next, index){
           time_line_group.append("path")
-            .attr("stroke", "black")
+            .attr("stroke", self.options.color(index))
             .attr("linewidth", 1)
             .attr("d", function(){return make_line([prev, next])});
           return next;
