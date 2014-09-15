@@ -62,8 +62,9 @@ $.widget("slycat.browser",
       {
         if($(this).hasClass("open")) // Collapse this node ...
         {
-          id = parseInt($(this).parent().parent()[0].id) 
-          id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1
+          id = parseInt($(this).parent().parent()[0].id);
+          id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
+          $(".path-entry-input").val($(".path-entry-input").val().replace(($(this).attr("id").replace("dot",".")+"/"),""));
           $(".file-browser#"+(id+1)).remove();
           $(".file-browser#"+id_to_show).show();
           $(this).removeClass("open");
@@ -76,19 +77,21 @@ $.widget("slycat.browser",
           if (parseInt(current_position) >= 4){
             slide = true;
           }
-          if($(this).attr("id") != undefined && input_with_text == false){
-            folder_name = $(this).attr("id").replace("dot",".")
-            $(".path-entry-input").val($(".path-entry-input").val() + folder_name + "/");
-          }
-          input_with_text = false;
           //Remove the next column if it exists before adding new one. This covers the same level expansion.
           if($(".file-browser#"+(parseInt(current_position)+1)).length){
             //We set a boolean so we know not to slide on this expansion
             slide = false;
             //Need to remove the activated icon from the same row first.
-            $(".file-browser#"+parseInt(current_position)).find(".directory.open").removeClass("open");
+            previous_dir = $(".file-browser#"+parseInt(current_position)).find(".directory.open");
+            $(".path-entry-input").val($(".path-entry-input").val().replace((previous_dir.attr("id").replace("dot",".")+"/"),""));
+            previous_dir.removeClass("open");
             $(".file-browser#"+(parseInt(current_position)+1)).remove();
           }
+          if($(this).attr("id") != undefined && input_with_text == false){
+            folder_name = $(this).attr("id").replace("dot",".")
+            $(".path-entry-input").val($(".path-entry-input").val() + folder_name + "/");
+          }
+          input_with_text = false;
           //Add text to the file path input when clicked.
           $(this).addClass("open");
           $.ajax(
