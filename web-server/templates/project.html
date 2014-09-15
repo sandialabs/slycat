@@ -243,16 +243,16 @@ rights in this software.
           </div>
 
           <div id="remote-pi-browse">
-            <div id="top-shelf" style="height:50px; border-top:1px solid black; border-left: 1px solid black; border-right:1px solid black;padding-right:5px;">
+            <div id="top-shelf" style="height:50px; padding-right:5px;margin-bottom:5px;">
               <div id="dotfile-div" style="float:left;">
                 <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
               </div>
               <div id="pi-file-path-entry" style="float:left; margin-left:30px;">
-                <p><input id="remote-pi-path-entry" type="text" placeholder="File Path Entry"></input></p>
+                <p><input id="remote-pi-path-entry" class="path-entry-input" style="width: 400px;" type="text" placeholder="File Path Entry"></input></p>
               </div>
               <button id="remote-pi-browse-next" style="float:right;margin-top:10px;">Next</button>
             </div>
-            <div id="remote-pi-browser"></div>
+            <div id="remote-pi-browser" style="margin-bottom:15px;"></div>
             <button id="remote-pi-browse-next">Next</button>
           </div>
 
@@ -1069,6 +1069,8 @@ rights in this software.
 
             // Clear password field
             $("#remote-pi-password").val("");
+            // Clear file path field
+            $(".path-entry-input").val("");
           }
         });
         $("#remote-pi-basics-next").button().click(function()
