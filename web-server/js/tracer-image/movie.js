@@ -5,9 +5,7 @@ function Movie(plot) {
   this.jq_movie = $(this.movie_ref);
   this.d3_movie = d3.select(this.movie_ref).selectAll("image");
   this.hide();
-  this.interval = 0;
-  this.show_interval = 2000; // length of time to show the image
-  this.animation_interval = null;
+  this.interval = 400;
   this.current_image = null;
   // TODO leverage bookmarker here for state of movie
   // start out of range and we increment when we ask for the next image
@@ -51,10 +49,8 @@ Movie.prototype.loop = function() {
   // see http://stackoverflow.com/questions/23875661/looping-through-a-set-of-images-using-d3js
   // and see my jsfiddel related to this - http://jsfiddle.net/1270p51q/2/
   self.d3_movie.transition().attr("opacity",0);
-  self.d3_movie.transition().attr("opacity",1).delay(function(d,i){return i * self.show_interval;})
-               .duration(self.interval)
+  self.d3_movie.transition().attr("opacity",1).delay(function(d,i){return i * self.interval;})
                .call(self.check_for_loop_end, self, self.loop);
-
 };
 
 Movie.prototype.play = function() {
