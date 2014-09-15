@@ -581,7 +581,7 @@ $.widget("tracer_image.scatterplot", {
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
-        .data(filtered_indices, function(d, i){
+        .data(filtered_indices.filter(function(d){return self.options.images[d].length > 0;}), function(d, i){
           return filtered_indices[i];
         })
         ;
@@ -618,6 +618,9 @@ $.widget("tracer_image.scatterplot", {
       self.svg.select(".time-paths").remove();
 
       var make_line = d3.svg.line();
+      var color_scale = d3.scale.linear()
+        .domain([0, filtered_indices.length])
+        .range(["white", "black"]);
 
       var time_line_group = self.svg.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
@@ -626,7 +629,7 @@ $.widget("tracer_image.scatterplot", {
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
         .reduce(function(prev, next, index){
           time_line_group.append("path")
-            .attr("stroke", self.options.color(index))
+            .attr("stroke", color_scale(index))
             .attr("linewidth", 1)
             .attr("d", function(){return make_line([prev, next])});
           return next;
