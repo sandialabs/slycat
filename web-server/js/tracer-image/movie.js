@@ -18,9 +18,12 @@ Movie.prototype.build_movie = function() {
   var self = this;
   // TODO images for "image set"
   // TODO this may just work after LG fixes controls wrt image set??
-  this.d3_movie = this.d3_movie.data(this.plot.images).enter().append("image")
-                               .attr("width", "200px").attr("height","200px")
-                               .attr("xlink:href", function(d){return self.plot.image_url_for_session(d);});
+  this.d3_movie = this.d3_movie
+                      .data(this.plot.images.filter(function(d){return d.length > 0;}))
+                    .enter().append("image")
+                      .attr({width : $(this.plot.grid_ref).attr("width"),
+                        height : $(this.plot.grid_ref).attr("height"),
+                        "xlink:href" : function(d){return self.plot.image_url_for_session(d);}});
 };
 
 Movie.prototype.show = function() {
