@@ -56,7 +56,6 @@ $.widget("slycat.browser",
         return false;
       }
     }
-
     function toggle_directory(self)
     {
       return function()
@@ -72,9 +71,26 @@ $.widget("slycat.browser",
         }
         else // Expand this node ...
         {
+          var current_position = $(this).parent().parent().attr("id");
+          var slide = false;
+          if (parseInt(current_position) >= 4){
+            slide = true;
+          }
+          if($(this).attr("id") != undefined && input_with_text == false){
+            folder_name = $(this).attr("id").replace("dot",".")
+            $(".path-entry-input").val($(".path-entry-input").val() + folder_name + "/");
+          }
+          input_with_text = false;
+          //Remove the next column if it exists before adding new one. This covers the same level expansion.
+          if($(".file-browser#"+(parseInt(current_position)+1)).length){
+            //We set a boolean so we know not to slide on this expansion
+            slide = false;
+            //Need to remove the activated icon from the same row first.
+            $(".file-browser#"+parseInt(current_position)).find(".directory.open").removeClass("open");
+            $(".file-browser#"+(parseInt(current_position)+1)).remove();
+          }
+          //Add text to the file path input when clicked.
           $(this).addClass("open");
-          console.log("Expanding: " + $(this));
-
           $.ajax(
           {
             context : this,
@@ -90,23 +106,14 @@ $.widget("slycat.browser",
             {
 
               var path = $(this).data("path");
-              //var container = $("<ul>").appendTo($("ul#middle");
-              //var container = $("<ul>").appendTo($(this));
-              var current_position = $(this).parent().parent().attr("id");
-              console.log(current_position);
-              var slide = false;
-              if (parseInt(current_position) >= 4){
-                var slide = true;
-              }
               if (slide == true){
                 ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()
                 min = ids[0];
-                max = ids[ids.length-1];
+                //max = ids[ids.length-1];
                 //We hide the lowest numbered column.
                 $(".file-browser#"+min).hide();
-                //We show the next numbered column.
-                $(".file-browser#"+max).show();
               }
+              $("<table>").addClass("file-browser").attr("id",parseInt(current_position)+1).appendTo(self.element);
               //No matter what we append to the next table if we are expanding.
               var container = $(".file-browser#"+(parseInt(current_position)+1));
               for(var i = 0; i != result.names.length; ++i)
@@ -115,11 +122,15 @@ $.widget("slycat.browser",
                 size = result.sizes[i];
                 type = result.types[i];
 
-                var item = $("<tr>").appendTo(container);
+                var item = $("<tr>").attr("id",name.replace(".","dot")).appendTo(container);
                 var entry = $("<div/>").appendTo(item);
                 var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
-                var label = $("<span class='label'></span>").text(name.substring(0,20)+"...").appendTo(entry);
+                concat_name = name;
+                if (name.length > 20){
+                  concat_name = name.substring(0,20)+"...";
+                }
+                var label = $("<span class='label'></span>").text(concat_name).appendTo(entry);
 
                 item.data("path", path.replace(/\/$/, "") + "/" + name);
                 item.bind("toggle-directory", toggle_directory(self));
@@ -166,11 +177,17 @@ $.widget("slycat.browser",
       }
     }
 
-    var container1 = $("<table>").addClass("file-browser").attr("id","1").appendTo(self.element.empty())
-    //Make this dynamically added you FOOL!!!
-    for(var i = 2; i < 20; i++){
-      $("<table>").addClass("file-browser").attr("id",i).appendTo(self.element)
-    }
+    $(".path-entry-input").keypress(function(event){
+      if(event.which == 47){
+        folder_array = $(this).val().split("/");
+        latest_folder = folder_array[folder_array.length-1]
+        //Click the folder
+        input_with_text = true;
+        $("tr#"+latest_folder.replace(".","dot")).find(".arrow").click();
+      }
+    });
+    var container1 = $("<table>").addClass("file-browser").attr("id","1").appendTo(self.element.empty());
+    var input_with_text = false;
     var item = $("<tr>").appendTo(container1);
     var entry = $("<div/>").appendTo(item);
     var arrow = $("<span class='arrow'></span>").appendTo(entry);
