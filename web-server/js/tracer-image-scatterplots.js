@@ -308,18 +308,11 @@ $.widget("tracer_image.scatterplot", {
       scatterplot_obj: self.options.scatterplot_obj,
       container: self.x_axis_layer,
       control_type: 'x',
-      selected_variable: self.options.scatterplot_obj.x_index,
-      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
-      select_id: 'x-axis-switcher',
       label_text: 'X Axis:',
-      event_to_trigger: 'x-selection-changed',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
       column_names: model.metadata['column-names']
     });
     self.x_control.build();
-
-  // for reference, how to translate the other direction - i.e. jquery selection to D3:
-  // var d3controls = d3.select($controls.toArray()); //translate jquery to d3
-  // self.x_axis_layer.append(function() { return d3controls.node()[0]; });
   },
 
   _setOption: function(key, value)

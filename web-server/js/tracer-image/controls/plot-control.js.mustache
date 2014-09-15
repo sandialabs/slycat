@@ -4,117 +4,79 @@
  rights in this software.
  */
 
-function PlotControl(options) { //callback arg
+function PlotControl(options) {
   var self = this;
-  //this.namespace = options.namespace; // set to xhtml so it's understood within a <foreignObject>
-  //this.callback = callback;
-  this.scatterplot_obj = options.scatterplot_obj;
+  this.scatterplot_obj = options.scatterplot_obj; // TODO: improve the confusing naming/superfluous object layers
   this.container = options.container; // d3 selection
   this.control_type = options.control_type; // x, y, image, color, etc.
-  this.selected_variable = options.selected_variable; // currently displayed variable
-  this.variables = options.variables; // variables that can be selected
-  this.select_id = options.select_id; // DOM id for the <select>
   this.label_text = options.label_text;  // label display text
+  this.variables = options.variables; // variables that can be selected
   this.column_names = options.column_names; // set to model.metadata['column-names'] - used to retrieve valid options for the select
-  this.select = null;
+  this.selected_variable = null;
 }
 
 PlotControl.prototype.build = function() {
   var self = this;
 
+  //build foreignObject SVG container
   var body = self.container.append('foreignObject')
         .attr('width', 100)
         .attr('height', 100)
         .append('xhtml:body')
         .classed('controls x-control', true);
-  body.append('label').attr('for', self.select_id).text(self.label_text);
-  self.select = body.append('select')
-    .attr('id', self.select_id)
-    .attr('name', self.select_id)
+
+  //build label
+  var select_id = self.control_type + '-control'; // DOM id for the <select>
+  body.append('label').attr('for', select_id).text(self.label_text);
+
+  //build select and register event handler
+  var select = body.append('select')
+    .attr('id', select_id)
+    .attr('name', select_id)
     .on('change', function() {
-      self.update_x(this.value); //pass selected option index
+      self.store_selected_variable(this.value);
+      self.update_plot(this.value); //pass selected option index
     });
 
-  build_select_options();
-
-  function build_select_options() {
-    self.select.empty();
-    for(var i = 0; i < self.variables.length; i++) {
-      $("<option />")
-        .text(self.column_names[self.variables[i]])
-        .attr("value", self.variables[i])
-        .attr("selected", function() {
-          return self.selected_variable == self.variables[i] ? "selected" : false;
-        })
-        .appendTo(self.select);
-    }
+  //build options for select
+  self.retrieve_selected_variable();
+  //select.empty();
+  //select..selectAll('[selected=selected]').attr('selected', null);
+  for(var i = 0; i < self.variables.length; i++) {
+    $("<option />")
+      .text(self.column_names[self.variables[i]])
+      .attr("value", self.variables[i])
+      .attr("selected", function() {
+        return self.selected_variable == self.variables[i] ? "selected" : false;
+      })
+      .appendTo(select);
   }
-};
-/*
- $(plot.plot_ref + " .controls").bind("x-selection-changed", function(event, variable) {
- plot.x_selection_changed(variable);
- });
- */
-/*
- $("#table").bind("x-selection-changed", function(event, variable) {
- $(plot.plot_ref + " .controls").tracer_controls("option", "x-variable", variable);
- });
- */
-PlotControl.prototype.selection_changed = function(variable) {
-  $.ajax(
-    {
-      type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
-    });
-  stateToUpdate = {};
-  stateToUpdate["x-selection-" + this.plot_id] = variable;
-  layout.bookmarker.updateState(stateToUpdate);
-  this.x_index = Number(variable);
 };
 
-PlotControl.prototype.x_selection_changed = function(variable) {
-  console.debug("inside NEW x selection changed");
-  console.debug("NEW x selection changed -- ajax");
-  $.ajax(
-    {
-      type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
-    });
-  //stateToUpdate = {};
-  //stateToUpdate["x-selection-" + this.plot_id] = variable;
-  //layout.bookmarker.updateState(stateToUpdate);
-  //this.x_index = Number(variable);
-};
-PlotControl.prototype.setup_labels = function() {
-  // choose some columns for the x and y axes.
-  var numeric_variables = model.get_numeric_variables();
-  this.x_index = numeric_variables[0];
-  this.y_index = numeric_variables[1 % numeric_variables.length]; // use 0 if only one element, use 1 otherwise
-  if("x-selection-" + this.plot_id in layout.bookmark) {
-    this.x_index = Number(layout.bookmark["x-selection-" + this.plot_id]);
-  }
-  if("y-selection-" + this.plot_id in layout.bookmark) {
-    this.y_index = Number(layout.bookmark["y-selection-" + this.plot_id]);
-  }
-};
-PlotControl.prototype.update_axis = function(index, axis) {
+
+PlotControl.prototype.store_selected_variable = function(variable) {
   var self = this;
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : index,
-    success : function(result) {
-      self[axis] = result;
-      self.setup();
-      // TODO refactor to setup the table ONCE after all ajax requests// table.setup();
-    },
-    error : artifact_missing
-  });
+  $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/" + self.control_type + "/" + variable
+    });
+  state_to_store = {};
+  state_to_store[self.control_type + "-selection-" + self.scatterplot_obj.plot_id] = variable;
+  layout.bookmarker.updateState(state_to_store);
 };
-PlotControl.prototype.update_x = function(variable) {
-  console.debug("inside NEW update scatterplot x");
+
+PlotControl.prototype.retrieve_selected_variable = function(variable) {
+  var self = this;
+  var numeric_variables = model.get_numeric_variables();
+  this.selected_variable = numeric_variables[0]; //in case there's no bookmark
+  var state_to_retrieve =  self.control_type + "-selection-" + self.scatterplot_obj.plot_id;
+  if(state_to_retrieve in layout.bookmark) {
+    self.selected_variable = Number(layout.bookmark[state_to_retrieve]);
+  }
+};
+
+PlotControl.prototype.update_plot = function(variable) {
   var self = this;
   get_model_array_attribute({
     server_root : "{{server-root}}",
@@ -124,67 +86,16 @@ PlotControl.prototype.update_x = function(variable) {
     attribute : variable,
     success : function(result)
     {
-      console.log("update x ajax returned!!!!!");
-      $(self.scatterplot_obj.plot_ref + " .scatterplot").scatterplot("option", {x: result});
+      var option_to_update = {};
+      option_to_update[self.control_type] = result;
+      $(self.scatterplot_obj.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
     },
     error : artifact_missing
   });
 };
+
 /*
- $.widget("tracer_image.plot_control", {
-
- options: {
- namespace: null, // set to xhtml so it's understood within a <foreignObject>
- control_type : null, // x, y, image, color, etc.
- selected_variable : null, // currently displayed variable
- variables : [], // variables that can be selected
- select_id : null, // DOM id for the <select>
- label_text : null, // label display text
- event_to_trigger : null, // name of event to trigger
- column_names : null, // set to model.metadata['column-names'] - used to retrieve valid options for the select
- },
-
- _create: function() {
- var self = this;
- self.label = $("<label for='" + self.options.select_id + "'>" + self.options.label_text + "</label>").appendTo(self.element);
- self.label = $(namespace + 'label'). for='" + self.options.select_id + "'>" + self.options.label_text + "</label>").appendTo(self.element);
- self.select = $("<select id='" + self.options.select_id + "' name='" + self.options.select_id + "' />")
- .change(function() {
- self.element.trigger(event_to_trigger, this.value);
- })
- .appendTo(self.element);
-
- self._build_select_options();
- },
-
- _build_select_options: function() {
- var self = this;
- self.select.empty();
- for(var i = 0; i < self.options.variables.length; i++) {
- $("<option />")
- .text(self.options.column_names[self.options.variables[i]])
- .attr("value", self.options.variables[i])
- .attr("selected", function() {
- return self.options.selected_variable == self.options.variables[i] ? "selected" : false;
- })
- .appendTo(self.select);
- }
- },
-
- _set_selected_variable: function() {
- var self = this;
- this.select.val(self.options.variable);
- },
-
- _setOption: function(key, value) {
- var self = this;
- self.options.key = value;
- if (key == "selected_variable") {
- self._set_selected_variable();
- }
- else if (key == "variables") {
- self._build_select_options();
- }
- }
- });
- */
+ For reference, how to translate jquery selection to D3 selection and append:
+ var d3controls = d3.select($controls.toArray()); //translate jquery to d3
+ self.x_axis_layer.append(function() { return d3controls.node()[0]; });
+*/
