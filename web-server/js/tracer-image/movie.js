@@ -20,7 +20,7 @@ Movie.prototype.build_movie = function() {
   // TODO this may just work after LG fixes controls wrt image set??
   this.d3_movie = this.d3_movie
                       .data(this.plot.images.filter(function(d){return d.length > 0;}))
-                    .enter().append("image")
+                      .enter().append("image")
                       .attr({width : $(this.plot.grid_ref).attr("width"),
                         height : $(this.plot.grid_ref).attr("height"),
                         "xlink:href" : function(d){return self.plot.image_url_for_session(d);}});
@@ -39,23 +39,21 @@ Movie.prototype.hide = function() {
 };
 
 // when the movie is over (reached end of loop), repeat by calling loop again
-Movie.prototype.check_for_loop_end = function(transition, callback) {
+Movie.prototype.check_for_loop_end = function(transition, d3_obj, callback) {
   var n = 0;
   transition
     .each(function() {++n;})
-    .each("end", function() {if(!--n) callback.apply(this, arguments);});
+    .each("end", function() {if(!--n) callback.apply(d3_obj, arguments);});
 };
 
 Movie.prototype.loop = function() {
   var self = this;
-  // TODO maybe no transition here, just hide everything:
-  // self.d3_movie.attr(op => 0).transition ....
   // see http://stackoverflow.com/questions/23875661/looping-through-a-set-of-images-using-d3js
   // and see my jsfiddel related to this - http://jsfiddle.net/1270p51q/2/
   self.d3_movie.transition().attr("opacity",0);
   self.d3_movie.transition().attr("opacity",1).delay(function(d,i){return i * self.show_interval;})
                .duration(self.interval)
-               .call(self.check_for_loop_end, self.loop);
+               .call(self.check_for_loop_end, self, self.loop);
 
 };
 
