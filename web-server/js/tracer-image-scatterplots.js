@@ -30,7 +30,7 @@ $.widget("tracer_image.scatterplot", {
     images : [],
     selection : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
-    border : 25,
+    border : 50,
     server_root : "",
     open_images : [],
     gradient : null,
@@ -317,7 +317,7 @@ $.widget("tracer_image.scatterplot", {
     var x = self.svg.attr('width') / 2;
     var y = 40;
 
-      /*self.x_axis_layer.selectAll(".label").remove()
+      /*self.x_g
       self.x_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -483,14 +483,19 @@ $.widget("tracer_image.scatterplot", {
       var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var width_offset = (total_width - width) / 2;
+      var height_offset = (total_height - height) / 2;
 
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
         .call(self.x_axis);
+
+      var range = self.x_scale.range();
+      var range_midpoint = (range[1] - range[0])/2 + range[0];
+      var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
+      self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',20)');
     }
 
     if(self.updates["update_y"])
@@ -499,24 +504,29 @@ $.widget("tracer_image.scatterplot", {
       var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var width_offset = (total_width - width) / 2;
+      var height_offset = (total_height - height) / 2;
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
       self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
-        .call(self.y_axis)
-        ;
+        .call(self.y_axis);
+
+      var range = self.y_scale.range();
+      var range_midpoint = (range[1] - range[0])/2 + range[0];
+      var control_x_offset = -30 - Number(self.y_control.foreign_object.attr('width'));
+      var control_y_offset = range_midpoint - Number(self.y_control.foreign_object.attr('height'))/2; //account for control width
+      self.y_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',' + control_y_offset + ')');
     }
 
-    if(self.updates["update_x_label"])
-    {
+    if(self.updates["update_x_label"]) {
+    /*
       var x = self.svg.attr("width") / 2;
       var y = 40;
 
-      /*self.x_axis_layer.selectAll(".label").remove()
+      self.x_axis_layer.selectAll(".label").remove()
       self.x_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -528,8 +538,8 @@ $.widget("tracer_image.scatterplot", {
       */
     }
 
-    if(self.updates["update_y_label"])
-    {
+    if(self.updates["update_y_label"]) {
+    /*
       self.y_axis_layer.selectAll(".label").remove();
 
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
@@ -545,6 +555,7 @@ $.widget("tracer_image.scatterplot", {
         .style("font-weight", "bold")
         .text(self.options.y_label)
         ;
+     */
     }
 
     if(self.updates["update_color_domain"])

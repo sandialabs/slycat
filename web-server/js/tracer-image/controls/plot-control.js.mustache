@@ -13,26 +13,26 @@ function PlotControl(options) {
   this.variables = options.variables; // variables that can be selected
   this.column_names = options.column_names; // set to model.metadata['column-names'] - used to retrieve valid options for the select
   this.selected_variable = null; // currently selected variable
-  this.body = null; // handle to foreignObject so SVG can manipulate
+  this.foreign_object = null; // handle to foreignObject so SVG can manipulate
 }
 
 PlotControl.prototype.build = function() {
   var self = this;
 
   //build foreignObject SVG container
-  self.body = self.container.append('foreignObject')
-    .classed('controls x-control', true)
+  self.foreign_object = self.container.append('foreignObject')
+    .classed('controls x-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
     .attr('width', 100) //TODO: make this sizing not be stupid
-    .attr('height', 50)
-    .append('xhtml:body');
+    .attr('height', 50);
+  var body = self.foreign_object.append('xhtml:body');
 
 
   //build label
-  var select_id = self.control_type + '-control'; // DOM id for the <select>
-  self.body.append('label').attr('for', select_id).text(self.label_text);
+  var select_id = self.control_type + '-selector'; // DOM id for the <select>
+  body.append('label').attr('for', select_id).text(self.label_text);
 
   //build select and register event handler
-  var select = self.body.append('select')
+  var select = body.append('select')
     .attr('id', select_id)
     .attr('name', select_id)
     .on('change', function() {
