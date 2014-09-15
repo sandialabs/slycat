@@ -71,7 +71,7 @@ $.widget("tracer_image.scatterplot", {
     self.datum_layer = self.group.append("g").attr("class", "datum-layer");
     self.selected_layer = self.group.append("g");
     self.selection_layer = self.group.append("g");
-    
+
     var top_layer = $(self.group[0]).parents("svg");
     var image_layer_check = top_layer.find("g.image-layer")[0];
 
@@ -330,10 +330,8 @@ $.widget("tracer_image.scatterplot", {
     });
     self.movie_control.build();
 
-    // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
-    var background_color = $(self.group.node()).parents('svg').css('background'); //translate d3 selection to jquery
-    self.x_control.foreign_object.select('body').style('background', background_color);
-    self.movie_control.foreign_object.select('body').style('background', background_color);
+    self.x_control.foreign_object.select('body').style('background', 'transparent');
+    self.movie_control.foreign_object.select('body').style('background', 'transparent');
 
     var x = self.group.attr('width') / 2;
     var y = 40;
@@ -362,10 +360,7 @@ $.widget("tracer_image.scatterplot", {
       column_names: model.metadata['column-names']
     });
     self.y_control.build();
-
-    // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
-    var background_color = $(self.group.node()).parents('svg').css('background'); //translate d3 selection to jquery
-    self.y_control.foreign_object.select('body').style('background', background_color);
+    self.y_control.foreign_object.select('body').style('background', 'transparent');
   },
 
   _setOption: function(key, value)
@@ -594,8 +589,6 @@ $.widget("tracer_image.scatterplot", {
       for(var i in self.options.color.domain())
         domain.push(domain_scale(i));
       self.options.color.domain(domain);
-      var background_color = $(self.group.node()).parents('svg').css('background'); //translate d3 selection to jquery
-      self.group.selectAll('.controls body').style('background', background_color);
     }
 
     if(self.updates["render_data"])
