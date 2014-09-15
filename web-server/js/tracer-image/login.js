@@ -28,7 +28,7 @@ function Login(grid_ref) {
 };
 
 Login.prototype.sid_for_file = function(file) {
-  this.session_cache[this.hostname_for_file(file)];
+  return this.session_cache[this.hostname_for_file(file)];
 };
 
 Login.prototype.hostname_for_file = function(file) {
@@ -36,12 +36,17 @@ Login.prototype.hostname_for_file = function(file) {
   return this.image_uri.hostname;
 };
 
+Login.prototype.pathname_for_file = function(file) {
+  this.image_uri.href = file.substr(0, 5) == "file:" ? file.substr(5) : file;
+  return this.image_uri.pathname;
+};
+
 Login.prototype.logged_into_host_for_file = function(file) {
   console.debug("testing for login for host: " + this.hostname_for_file(file));
   console.debug("testing 2");
   console.debug(this.session_cache);
   if(this.hostname_for_file(file) in this.session_cache) {
-    console.debug("already logged in");
+    console.debug("a already logged in");
     return true;
   } else {
     console.debug('not logged in');
