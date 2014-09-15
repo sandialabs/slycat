@@ -1,0 +1,103 @@
+/*
+ Copyright 2013, Sandia Corporation. Under the terms of Contract
+ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+ rights in this software.
+ */
+
+function PlotControl(options) {
+  var self = this;
+  this.scatterplot_obj = options.scatterplot_obj; // TODO: improve the confusing naming/superfluous object layers
+  this.container = options.container; // d3 selection
+  this.control_type = options.control_type; // x, y, image, color, etc.
+  this.label_text = options.label_text;  // label display text
+  this.variables = options.variables; // variables that can be selected
+  this.column_names = options.column_names; // set to model.metadata['column-names'] - used to retrieve valid options for the select
+  this.selected_variable = null; // currently selected variable
+  this.body = null; // handle to foreignObject so SVG can manipulate
+}
+
+PlotControl.prototype.build = function() {
+  var self = this;
+
+  //build foreignObject SVG container
+  self.body = self.container.append('foreignObject')
+    .classed('controls x-control', true)
+    .attr('width', 100) //TODO: make this sizing not be stupid
+    .attr('height', 50)
+    .append('xhtml:body');
+
+
+  //build label
+  var select_id = self.control_type + '-control'; // DOM id for the <select>
+  self.body.append('label').attr('for', select_id).text(self.label_text);
+
+  //build select and register event handler
+  var select = self.body.append('select')
+    .attr('id', select_id)
+    .attr('name', select_id)
+    .on('change', function() {
+      self.store_selected_variable(this.value);
+      self.update_plot(this.value); //pass selected option index
+    });
+
+  //build options for select
+  self.retrieve_selected_variable();
+  //select.empty();
+  //select..selectAll('[selected=selected]').attr('selected', null);
+  for(var i = 0; i < self.variables.length; i++) {
+    $("<option />")
+      .text(self.column_names[self.variables[i]])
+      .attr("value", self.variables[i])
+      .attr("selected", function() {
+        return self.selected_variable == self.variables[i] ? "selected" : false;
+      })
+      .appendTo(select);
+  }
+};
+
+
+PlotControl.prototype.store_selected_variable = function(variable) {
+  var self = this;
+  $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/" + self.control_type + "/" + variable
+    });
+  state_to_store = {};
+  state_to_store[self.control_type + "-selection-" + self.scatterplot_obj.plot_id] = variable;
+  layout.bookmarker.updateState(state_to_store);
+};
+
+PlotControl.prototype.retrieve_selected_variable = function(variable) {
+  var self = this;
+  var numeric_variables = model.get_numeric_variables();
+  this.selected_variable = numeric_variables[0]; //in case there's no bookmark
+  var state_to_retrieve =  self.control_type + "-selection-" + self.scatterplot_obj.plot_id;
+  if(state_to_retrieve in layout.bookmark) {
+    self.selected_variable = Number(layout.bookmark[state_to_retrieve]);
+  }
+};
+
+PlotControl.prototype.update_plot = function(variable) {
+  var self = this;
+  get_model_array_attribute({
+    server_root : "{{server-root}}",
+    mid : "{{_id}}",
+    aid : "data-table",
+    array : 0,
+    attribute : variable,
+    success : function(result)
+    {
+      var option_to_update = {};
+      option_to_update[self.control_type] = result;
+      $(self.scatterplot_obj.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
+    },
+    error : artifact_missing
+  });
+};
+
+/*
+ For reference, how to translate jquery selection to D3 selection and append:
+ var d3controls = d3.select($controls.toArray()); //translate jquery to d3
+ self.x_axis_layer.append(function() { return d3controls.node()[0]; });
+*/

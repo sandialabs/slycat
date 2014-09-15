@@ -8,10 +8,8 @@ rights in this software.
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 
-$.widget("tracer_image.scatterplot",
-{
-  options:
-  {
+$.widget("tracer_image.scatterplot", {
+  options: {
     object_ref : null,
     scatterplot_obj : null,
     width : 300,
@@ -41,8 +39,7 @@ $.widget("tracer_image.scatterplot",
     filtered_selection : [],
   },
 
-  _create: function()
-  {
+  _create: function() {
     var self = this;
 
     self.hover_timer = null;
@@ -53,6 +50,8 @@ $.widget("tracer_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
 
+    out = self;
+
     self.numeric_variables = [];
     for(var i = 0; i < model.metadata["column-count"]; i++) { // model is currently in global scope (init.js)
       if(model.metadata["column-types"][i] != 'string')
@@ -61,8 +60,9 @@ $.widget("tracer_image.scatterplot",
 
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0));
-    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
-    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
+    self._build_x_axis();
+    self._build_y_axis();
+
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
@@ -303,6 +303,48 @@ $.widget("tracer_image.scatterplot",
     self.options.filtered_selection = filtered_selection;
   },
 
+  _build_x_axis: function() {
+    var self = this;
+    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
+    self.x_control = new PlotControl({
+      scatterplot_obj: self.options.scatterplot_obj,
+      container: self.x_axis_layer,
+      control_type: 'x',
+      label_text: 'X Axis:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.x_control.build();
+
+    var x = self.svg.attr('width') / 2;
+    var y = 40;
+
+      /*self.x_axis_layer.selectAll(".label").remove()
+      self.x_axis_layer.append("text")
+        .attr("class", "label")
+        .attr("x", x)
+        .attr("y", y)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(self.options.x_label)
+        ;
+      */
+  },
+
+  _build_y_axis: function() {
+    var self = this;
+    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
+    self.y_control = new PlotControl({
+      scatterplot_obj: self.options.scatterplot_obj,
+      container: self.y_axis_layer,
+      control_type: 'y',
+      label_text: 'Y Axis:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.y_control.build();
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
@@ -450,8 +492,7 @@ $.widget("tracer_image.scatterplot",
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
-        .call(self.x_axis)
-        ;
+        .call(self.x_axis);
     }
 
     if(self.updates["update_y"])
@@ -477,7 +518,7 @@ $.widget("tracer_image.scatterplot",
       var x = self.svg.attr("width") / 2;
       var y = 40;
 
-      self.x_axis_layer.selectAll(".label").remove()
+      /*self.x_axis_layer.selectAll(".label").remove()
       self.x_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -486,19 +527,7 @@ $.widget("tracer_image.scatterplot",
         .style("font-weight", "bold")
         .text(self.options.x_label)
         ;
-      //debugger;
-      var $controls = $('<foreignObject class="controls x-control">')
-            .plot_control({
-              control_type: "x",
-              selected_variable: self.options.scatterplot_obj.x_index,
-              variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
-              select_id: "x-axis-switcher",
-              label_text: "X Axis:",
-              event_to_trigger: "x-selection-changed",
-              column_names: model.metadata['column-names']
-            });
-      var d3controls = d3.select($controls.toArray()); //translate jquery to d3
-      self.x_axis_layer.append(function() { return d3controls.node()[0]; });
+      */
     }
 
     if(self.updates["update_y_label"])
@@ -536,11 +565,8 @@ $.widget("tracer_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
-      var t = self.options.t;
       var indices = self.options.indices;
       var filtered_indices = self.options.filtered_indices;
-      // If b is a higher time (came later), then it goes after a:
-      filtered_indices.sort(function(a,b){ return t[a] - t[b]; });
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
@@ -585,12 +611,13 @@ $.widget("tracer_image.scatterplot",
       var time_line_group = self.svg.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
 
+
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
-        .reduce(function(prev, next){
+        .reduce(function(prev, next, index){
           time_line_group.append("path")
-            .attr("stroke", "black")
+            .attr("stroke", self.options.color(index))
             .attr("linewidth", 1)
-            .attr("d", make_line([prev, next]));
+            .attr("d", function(){return make_line([prev, next])});
           return next;
         });
     }
