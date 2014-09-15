@@ -310,7 +310,7 @@ $.widget("tracer_image.scatterplot", {
       scatterplot_obj: self.options.scatterplot_obj,
       container: self.x_axis_layer,
       control_type: 'x',
-      label_text: 'X Axis:',
+      label_text: 'X variable:',
       variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
       column_names: model.metadata['column-names']
     });
@@ -342,7 +342,7 @@ $.widget("tracer_image.scatterplot", {
       scatterplot_obj: self.options.scatterplot_obj,
       container: self.y_axis_layer,
       control_type: 'y',
-      label_text: 'Y Axis:',
+      label_text: 'Y variable:',
       variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
       column_names: model.metadata['column-names']
     });
@@ -505,7 +505,7 @@ $.widget("tracer_image.scatterplot", {
       var range = self.x_scale.range();
       var range_midpoint = (range[1] - range[0])/2 + range[0];
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
-      self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',20)');
+      self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
     }
 
     if(self.updates["update_y"])

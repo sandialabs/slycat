@@ -10,6 +10,10 @@ rights in this software.
   float: right;
 }
 
+.controls > body {
+  text-align: center;
+}
+
 #table
 {
 	position: absolute;

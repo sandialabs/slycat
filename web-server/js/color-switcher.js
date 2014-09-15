@@ -8,7 +8,7 @@ $.widget("slycat.colorswitcher",
 {
   options:
   {
-    colormap : "night",
+    colormap : "day",
   },
 
   _create: function()
