@@ -56,6 +56,23 @@ $.widget("slycat.browser",
         return false;
       }
     }
+
+    function toggle_all_folders_after_column(column_id){
+      visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
+      console.log("visible column ids: " + visible_column_ids);
+      max = visible_column_ids[visible_column_ids.length-1];
+      console.log("max from them is: " + max)
+      //Iterate over every column after the given id and remove the column, handling slide and text.
+      for(var i = (column_id+1); i <= max; i++){
+        $(".file-browser#"+i).remove();
+        //Refresh what's visible
+        visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
+        column_to_show = visible_column_ids[0] - 1;
+        console.log("min about to show is: " + column_to_show);
+        $(".file-browser#"+column_to_show).show();
+      }
+    }
+
     function toggle_directory(self)
     {
       return function()
@@ -65,8 +82,9 @@ $.widget("slycat.browser",
           id = parseInt($(this).parent().parent()[0].id);
           id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
           $(".path-entry-input").val($(".path-entry-input").val().replace(($(this).attr("id").replace("dot",".")+"/"),""));
-          $(".file-browser#"+(id+1)).remove();
-          $(".file-browser#"+id_to_show).show();
+          //$(".file-browser#"+(id+1)).remove();
+          //$(".file-browser#"+id_to_show).show();
+          toggle_all_folders_after_column(id);
           $(this).removeClass("open");
           //Remove the table with this parent table's id+1
         }
@@ -110,7 +128,7 @@ $.widget("slycat.browser",
 
               var path = $(this).data("path");
               if (slide == true){
-                ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()
+                ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
                 min = ids[0];
                 //max = ids[ids.length-1];
                 //We hide the lowest numbered column.
