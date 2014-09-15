@@ -6,7 +6,7 @@
 
 function PlotControl(options) {
   var self = this;
-  this.scatterplot_obj = options.scatterplot_obj; // TODO: improve the confusing naming/superfluous object layers
+  this.plot = options.plot; // TODO: improve the confusing naming/superfluous object layers
   this.container = options.container; // d3 selection
   this.control_type = options.control_type; // x, y, image, color, etc.
   this.label_text = options.label_text;  // label display text
@@ -64,7 +64,7 @@ PlotControl.prototype.store_selected_variable = function(variable) {
       url : "{{server-root}}events/models/{{_id}}/select/" + self.control_type + "/" + variable
     });
   state_to_store = {};
-  state_to_store[self.control_type + "-selection-" + self.scatterplot_obj.plot_id] = variable;
+  state_to_store[self.control_type + "-selection-" + self.plot.plot_id] = variable;
   layout.bookmarker.updateState(state_to_store);
 };
 
@@ -72,7 +72,7 @@ PlotControl.prototype.retrieve_selected_variable = function(variable) {
   var self = this;
   var numeric_variables = model.get_numeric_variables();
   this.selected_variable = numeric_variables[0]; //in case there's no bookmark
-  var state_to_retrieve =  self.control_type + "-selection-" + self.scatterplot_obj.plot_id;
+  var state_to_retrieve =  self.control_type + "-selection-" + self.plot.plot_id;
   if(state_to_retrieve in layout.bookmark) {
     self.selected_variable = Number(layout.bookmark[state_to_retrieve]);
   }
@@ -90,7 +90,7 @@ PlotControl.prototype.update_plot = function(variable) {
     {
       var option_to_update = {};
       option_to_update[self.control_type] = result;
-      $(self.scatterplot_obj.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
+      $(self.plot.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
     },
     error : artifact_missing
   });

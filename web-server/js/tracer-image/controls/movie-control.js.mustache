@@ -1,0 +1,38 @@
+/*
+ Copyright 2013, Sandia Corporation. Under the terms of Contract
+ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+ rights in this software.
+ */
+
+function MovieControl(options) {
+  this.container = options.container;
+  this.plot = options.plot;
+  this.movie = this.plot.movie;
+  this.foreign_object = null; // handle to foreignObject so SVG can manipulate
+}
+
+MovieControl.prototype.build = function() {
+  var self = this;
+  self.foreign_object = self.container.append('foreignObject')
+    .classed('movie-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
+    .attr('width', 50) //TODO: make this sizing not be stupid
+    .attr('height', 40);
+  var body = self.foreign_object.append('xhtml:body');
+  var button = body.append('button')
+    .classed('play_movie', true)
+    .on('click', function() {
+      self.play();
+    });
+  button.append('img')
+    .attr('src', '/style/play.png');
+};
+
+MovieControl.prototype.play = function () {
+  var self = this;
+  self.movie.play();
+};
+
+MovieControl.prototype.show = function() {
+  var self = this;
+  // TODO: hide plot and show control panel overlay from which play() can be triggered
+};

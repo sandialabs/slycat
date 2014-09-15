@@ -307,7 +307,7 @@ $.widget("tracer_image.scatterplot", {
     var self = this;
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.x_control = new PlotControl({
-      scatterplot_obj: self.options.scatterplot_obj,
+      plot: self.options.scatterplot_obj,
       container: self.x_axis_layer,
       control_type: 'x',
       label_text: 'X variable:',
@@ -316,9 +316,17 @@ $.widget("tracer_image.scatterplot", {
     });
     self.x_control.build();
 
+    // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
+    self.movie_control = new MovieControl({
+      container: self.x_axis_layer,
+      plot: self.options.scatterplot_obj
+    });
+    self.movie_control.build();
+
     // redundantly set this here to avoid color flash, note: can't be done in ScatterPlot initialization because controls don't exist yet
     var background_color = $(self.svg.node()).parents('svg').css('background'); //translate d3 selection to jquery
     self.x_control.foreign_object.select('body').style('background', background_color);
+    self.movie_control.foreign_object.select('body').style('background', background_color);
 
     var x = self.svg.attr('width') / 2;
     var y = 40;
@@ -339,7 +347,7 @@ $.widget("tracer_image.scatterplot", {
     var self = this;
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.y_control = new PlotControl({
-      scatterplot_obj: self.options.scatterplot_obj,
+      plot: self.options.scatterplot_obj,
       container: self.y_axis_layer,
       control_type: 'y',
       label_text: 'Y variable:',
@@ -506,6 +514,8 @@ $.widget("tracer_image.scatterplot", {
       var range_midpoint = (range[1] - range[0])/2 + range[0];
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
+      // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
+      self.movie_control.foreign_object.attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',30)');
     }
 
     if(self.updates["update_y"])
@@ -787,7 +797,7 @@ $.widget("tracer_image.scatterplot", {
       var height = Math.min(total_width, total_height);
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var datum_layer_width = self.datum_layer.node().getBBox().width;
-      var width_offset = (total_width + datum_layer_width) / 2;// - 100;
+      var width_offset = (total_width + datum_layer_width) / 2;
 
       if( self.legend_layer.attr("data-status") != "moved" ) {
         var transx = parseInt(width_offset + 40);
