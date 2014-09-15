@@ -3,7 +3,7 @@ function Movie(plot) {
   this.plot = plot;
   this.movie_ref = this.plot.plot_ref + " .movie";
   this.jq_movie = $(this.movie_ref);
-  this.d3_movie = d3.select(this.movie_ref).selectAll("img");
+  this.d3_movie = d3.select(this.movie_ref).selectAll("image");
   this.hide();
   this.interval = 1000;
   this.show_interval = 2000; // length of time to show the image
@@ -15,12 +15,12 @@ function Movie(plot) {
 }
 
 Movie.prototype.build_movie = function() {
+  var self = this;
   // TODO images for "image set"
   // TODO this may just work after LG fixes controls wrt image set??
-  this.d3_movie = this.d3_movie.data(this.plot.images).enter().append("img")
-                               .attr("class","slide")
-                               .attr("src", function(d){d})
-                               .attr("opacity",0);
+  this.d3_movie = this.d3_movie.data(this.plot.images).enter().append("image")
+                               .attr("width", "200px").attr("height","200px")
+                               .attr("xlink:href", function(d){return self.plot.image_url_for_session(d);});
 };
 
 Movie.prototype.show = function() {
@@ -35,25 +35,40 @@ Movie.prototype.resize = function() {
 Movie.prototype.hide = function() {
 };
 
+// when the movie is over (reached end of loop), repeat by calling loop again
+Movie.prototype.check_for_loop_end = function(transition, callback) {
+  var n = 0;
+  transition
+    .each(function() {++n;})
+    .each("end", function() {if(!--n) callback.apply(this, arguments);});
+};
+
+Movie.prototype.loop = function() {
+  var self = this;
+  // TODO maybe no transition here, just hide everything:
+  // self.d3_movie.attr(op => 0).transition ....
+  // see http://stackoverflow.com/questions/23875661/looping-through-a-set-of-images-using-d3js
+  // and see my jsfiddel related to this - http://jsfiddle.net/1270p51q/2/
+  self.d3_movie.transition().attr("opacity",0);
+  self.d3_movie.transition().attr("opacity",1).delay(function(d,i){return i * self.show_interval;})
+               .duration(self.interval)
+               .call(self.check_for_loop_end, self.loop);
+
+};
+
 Movie.prototype.play = function() {
-  console.debug("playing");
   var self = this;
   // TODO get ALL hostnames for the image set - assuming there can be more than one?
   // TODO set the hostname to something ... loop over all hostnames and get session cache for that hostname
   // TODO right now we just look at the first image
   if(!login.logged_into_host_for_file(this.plot.images[0])) {
-    console.debug("stopping and showing login prompt");
     this.stop();
-    console.debug("stopped it");
     login.show_prompt();
   } else {
-    console.debug("already logged in");
     this.build_movie();
     this.show();
-    this.d3_movie.transition().duration(this.interval)
-                 .delay(function(d,i){return i * this.show_interval;})
-                 .attr("opacity",1);
-    console.debug("playing2");
+    this.loop();
+    return true;
   }
 };
 
