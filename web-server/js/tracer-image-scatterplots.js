@@ -787,24 +787,18 @@ $.widget("tracer_image.scatterplot", {
       var height = Math.min(total_width, total_height);
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var datum_layer_width = self.datum_layer.node().getBBox().width;
-      var width_offset = (total_width + datum_layer_width) / 2;
-      var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
+      var width_offset = (total_width + datum_layer_width) / 2;// - 100;
 
-      if( self.legend_layer.attr("data-status") != "moved" )
-      {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
+      if( self.legend_layer.attr("data-status") != "moved" ) {
+        var transx = parseInt(width_offset + 40);
+        var transy = parseInt((total_height/2)-(rectHeight/2)-10);
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
-          .attr("data-transy", transy)
-          ;
+          .attr("data-transy", transy);
       }
-
-      self.element
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
-        ;
     }
 
     if(self.updates["update_legend_axis"])
