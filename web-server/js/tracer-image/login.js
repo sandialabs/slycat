@@ -56,7 +56,7 @@ Login.prototype.logged_into_host_for_file = function(file) {
   console.debug("testing 3");
 };
 
-Login.prototype.show_prompt = function(images, callback) {
+Login.prototype.show_prompt = function(images, callback, this_arg) {
   var self = this;
 
   if(images.length == 0)
@@ -87,13 +87,13 @@ Login.prototype.show_prompt = function(images, callback) {
           {
             login.session_cache[parser.hostname] = result.sid;
             self.image_login.dialog("close");
-            callback(images);
+            callback.call(this_arg, images);
           },
           error : function(request, status, reason_phrase)
           {
             image.last_error = "Error opening remote session: " + reason_phrase;
             self.image_login.dialog("close");
-            self.show_prompt(images, callback);
+            self.show_prompt(images, callback, this_arg);
           }
         });
       },

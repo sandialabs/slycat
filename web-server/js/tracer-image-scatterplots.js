@@ -1375,8 +1375,7 @@ $.widget("tracer_image.scatterplot", {
 
   _open_session: function(images)
   {
-    var self = this;
-    login.show_prompt(images, self._open_images);
+    login.show_prompt(images, this._open_images, this);
   },
 
   _schedule_hover: function(image_index)
@@ -1499,4 +1498,9 @@ $.widget("tracer_image.scatterplot", {
       .classed("openHover", false)
       ;
   },
+
+  get_option: function(option)
+  {
+    return this.options[option];
+  }
 });

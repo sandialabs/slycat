@@ -58,13 +58,22 @@ Movie.prototype.loop = function() {
 };
 
 Movie.prototype.play = function() {
-  var self = this;
   // TODO get ALL hostnames for the image set - assuming there can be more than one?
   // TODO set the hostname to something ... loop over all hostnames and get session cache for that hostname
   // TODO right now we just look at the first image
   if(!login.logged_into_host_for_file(this.plot.images[0])) {
     this.stop();
-    login.show_prompt();
+    var plot = $(this.plot.plot_ref + " .scatterplot");
+    var images = plot.scatterplot("get_option", "images")
+      .filter(function(image){ return image.length > 0; })
+      .map(function(image, index)
+      {
+        return {index : image.index,
+          uri : image.trim(),
+          image_class : "open-image",
+        }
+      });
+    login.show_prompt(images, this.play, this);
   } else {
     this.build_movie();
     this.show();
