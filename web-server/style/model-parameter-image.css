@@ -381,6 +381,10 @@ rights in this software.
 {
   cursor: move;
 }
+#scatterplot .close-button:hover,
+#scatterplot .pin-button:hover {
+  cursor: pointer;
+}
 #scatterplot g.open-image image.image {
 
 }
