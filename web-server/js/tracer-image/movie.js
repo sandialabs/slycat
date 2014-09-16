@@ -10,6 +10,8 @@ function Movie(plot) {
   // TODO leverage bookmarker here for state of movie
   // start out of range and we increment when we ask for the next image
   this.current_image_index = -1;
+  this.height = $(this.plot.grid_ref).attr("height");
+  this.width = $(this.plot.grid_ref).attr("width");
 }
 
 Movie.prototype.build_movie = function() {
@@ -19,9 +21,13 @@ Movie.prototype.build_movie = function() {
   this.d3_movie = this.d3_movie
                       .data(this.plot.images.filter(function(d){return d.length > 0;}))
                       .enter().append("image")
-                      .attr({width : $(this.plot.grid_ref).attr("width"),
-                        height : $(this.plot.grid_ref).attr("height"),
-                        "xlink:href" : function(d){return self.plot.image_url_for_session(d);}});
+                      .attr({width : self.width,
+                             height : self.height,
+                             "xlink:href" : function(d) {
+                               return self.plot.image_url_for_session(d);
+                             }
+                            }
+                           );
 };
 
 Movie.prototype.show = function() {
@@ -29,8 +35,10 @@ Movie.prototype.show = function() {
 };
 
 Movie.prototype.resize = function() {
-  $(this.jq_movie).css("width", $(this.plot.plot_ref + " .scatterplot-pane").width());
-  $(this.jq_movie).css("height", 375);// TODO $(this.plot.plot_ref + " .scatterplot-pane").height());
+  self.width = $(this.plot.plot_ref + " .scatterplot-pane").width();
+  self.height = 375; // TODO $(this.plot.plot_ref + " .scatterplot-pane").height());
+  $(this.jq_movie).css("width", self.width);
+  $(this.jq_movie).css("height", self.height);
 };
 
 Movie.prototype.hide = function() {
@@ -99,5 +107,5 @@ Movie.prototype.increment_current_image_index = function() {
   if(this.plot.images && this.current_image_index >= this.plot.images.length) {
     this.current_image_index = 0;
   }
-  this.current_image_index = this.current_image_index + 1; 
+  this.current_image_index = this.current_image_index + 1;
 };
