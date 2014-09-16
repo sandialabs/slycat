@@ -322,13 +322,8 @@ $.widget("tracer_image.scatterplot", {
       column_names: model.metadata['column-names']
     });
     self.x_control.build();
-
     // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
-    self.movie_control = new MovieControl({
-      container: self.x_axis_layer,
-      plot: self.options.scatterplot_obj
-    });
-    self.movie_control.build();
+    self.options.scatterplot_obj.movie.build_open_button(self.x_axis_layer);
   },
 
   _build_y_axis: function() {
@@ -499,7 +494,7 @@ $.widget("tracer_image.scatterplot", {
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
       // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
-      self.movie_control.foreign_object.attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',30)');
+      self.options.scatterplot_obj.movie.open_control.attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',30)');
     }
 
     if(self.updates["update_y"])
@@ -1183,8 +1178,7 @@ $.widget("tracer_image.scatterplot", {
 
       // Create a close button ...
       var close_button = frame.append("g")
-        .attr("class", "close-button")
-        ;
+        .attr("class", "close-button");
 
       close_button.append("rect")
         .attr("x", 5)
@@ -1211,7 +1205,6 @@ $.widget("tracer_image.scatterplot", {
           self._sync_open_images();
         })
         ;
-
       close_button.append("path")
         .attr("d", "M" + (8) + " " + (8) + " l10 10 m0 -10 l-10 10")
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
