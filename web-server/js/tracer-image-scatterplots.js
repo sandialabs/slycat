@@ -1090,12 +1090,14 @@ $.widget("tracer_image.scatterplot", {
               //console.log("resize drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
-                var theImage = d3.select(this.parentNode).select("image.image");
+                var frame = d3.select(this.parentNode);
+                var theImage = frame.select("image.image");
                 var width = Number(theImage.attr("width"));
                 var height = Number(theImage.attr("height"));
-                var theRectangle = d3.select(this.parentNode).select("rect.outline");
+                var theRectangle = frame.select("rect.outline");
                 var theHandle = d3.select(this);
-                var theLine = d3.select(this.parentNode).select("line.leader");
+                var theLine = frame.select("line.leader");
+                var thePin = frame.select('.pin-button');
                 var ratio = Number(theImage.attr("data-ratio"));
                 var newWidth, newHeight;
                 var x = d3.event.x;
@@ -1116,9 +1118,9 @@ $.widget("tracer_image.scatterplot", {
                 theRectangle.attr("width", newWidth+1);
                 theRectangle.attr("height", newHeight+1);
                 theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
+                thePin.attr('transform',  'translate(' + (newWidth-20) + ',0)');
                 theLine.attr("x1", (newWidth / 2));
                 theLine.attr("y1", (newHeight / 2));
-
               }
             })
             .on("dragstart", function() {
@@ -1215,8 +1217,7 @@ $.widget("tracer_image.scatterplot", {
       // Create a pin button ...
       var pin_button = frame.append("g")
         .attr("class", "pin-button")
-        ;
-
+        .attr('transform', "translate(" + (image.width-20) + ",0)");
       pin_button.append("image")
         .attr("class", "pin-icon")
         .attr("x", 2)
@@ -1254,13 +1255,12 @@ $.widget("tracer_image.scatterplot", {
           var theHandle = frame.select("g.resize-handle");
           var theLine = frame.select("line.leader");
           frame.classed("hover-image", false)
-            .classed("open-image", true)
-            ;
+            .classed("open-image", true);
+          var thePin = frame.select('.pin-button');
 
           // Adjust image position
           var imageHeight = 200;
           var imageWidth = 200;
-
           var width = self.group.attr("width");
           var range = self.x_scale.range();
           var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
@@ -1287,6 +1287,7 @@ $.widget("tracer_image.scatterplot", {
           theRectangle.attr("width", imageWidth+1);
           theRectangle.attr("height", imageHeight+1);
           theHandle.attr('transform', "translate(" + (imageWidth-9) + ", " + (imageHeight-9) + ")");
+          thePin.attr('transform',  'translate(' + (imageWidth-20) + ',0)');
 
           // Adjust line
           theLine

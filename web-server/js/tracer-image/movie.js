@@ -49,8 +49,8 @@ Movie.prototype.build_open_button = function(container) {
   var open_button = open_body.append('button')
     .classed('play-movie', true)
     .on('click', function() {
-      $(self.plot.plot_ref + ' .scatterplot').hide();
       self.play();
+      //TODO: doing this here now to ensure it's the last appended element and can pick up click events, but this is dirty...
       self.build_close_button(d3.select(self.movie_ref));
     });
   open_button.append('img')
@@ -80,7 +80,9 @@ Movie.prototype.build_close_button = function(container) {
 };
 
 Movie.prototype.show = function() {
-  this.resize();
+  var self = this;
+  $(self.plot.plot_ref + ' .scatterplot').hide();
+  self.resize();
 };
 
 Movie.prototype.resize = function() {
