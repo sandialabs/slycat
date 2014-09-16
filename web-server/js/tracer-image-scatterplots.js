@@ -995,14 +995,16 @@ $.widget("tracer_image.scatterplot", {
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
       {
+        var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+
         frame.append("line")
           .attr("class", "leader")
           .attr("x1", (image.width / 2))
           .attr("y1", (image.height / 2))
-          .attr("x2", image.target_x - Number(frame.attr("data-transx")))
-          .attr("y2", image.target_y - Number(frame.attr("data-transy")))
-          .attr("data-targetx", image.target_x)
-          .attr("data-targety", image.target_y)
+          .attr("x2", image.target_x - Number(frame.attr("data-transx")) + Number(offsets[1]))
+          .attr("y2", image.target_y - Number(frame.attr("data-transy")) + Number(offsets[2]))
+          .attr("data-targetx", image.target_x + Number(offsets[1]))
+          .attr("data-targety", image.target_y + Number(offsets[2]))
           .style("stroke", "black")
           .style("stroke-width", 1.0)
           ;
@@ -1420,12 +1422,14 @@ $.widget("tracer_image.scatterplot", {
       var hover_width = Math.min(width, height) * 0.85;
       var hover_height = Math.min(width, height) * 0.85;
 
+      var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+
       self._open_images([{
         index : self.options.indices[image_index],
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "hover-image",
-        x : self.x_scale(self.options.x[image_index]) + 10,
-        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.group.attr("height") - hover_height - self.options.border - 10),
+        x : Number(offsets[1]) + self.x_scale(self.options.x[image_index]) + 10,
+        y : Number(offsets[2]) + Math.min(self.y_scale(self.options.y[image_index]) + 10, self.group.attr("height") - hover_height - self.options.border - 10),
         width : hover_width,
         height : hover_height,
         target_x : self.x_scale(self.options.x[image_index]),
