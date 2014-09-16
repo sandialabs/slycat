@@ -106,8 +106,7 @@ Table.prototype.setup = function() {
       for(var i = 0; i != selection.length; ++i)
         temp.push(selection[i]);
       plot.selected_simulations_changed(temp);
-      $(plot.plot_ref + " .scatterplot").scatterplot("option", "selection",  temp);
-      $(plot.plot_ref + " .controls").tracer_controls("option", "selection",  temp);
+      $(".scatterplot").scatterplot("option", "selection",  temp);
     });
 
     // Changing the colormap updates the table ...
@@ -122,8 +121,11 @@ Table.prototype.setup = function() {
      */
     // Changing the scatterplot selection updates the table row selection and controls ..
     $(".scatterplot").bind("selection-changed", function(event, selection) {
+      var temp = [];
+      for(var i = 0; i != selection.length; ++i)
+        temp.push(selection[i]);
       $("#table").table("option", "row-selection", selection);
-      $(plot.plot_ref + " .controls").tracer_controls("option", "selection", selection);
+      $(".scatterplot").scatterplot("option", "selection",  temp);
     });
     /*
      // Changing the x variable updates the table ...
@@ -185,4 +187,9 @@ Table.prototype.variable_sort_changed = function(variable, order) {
       url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
     });
   layout.bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
+};
+
+Table.prototype.select_rows = function(rows){
+  $(".scatterplot").scatterplot("option", "selection",  rows);
+  $("#table").table("option", "row-selection", rows);
 };
