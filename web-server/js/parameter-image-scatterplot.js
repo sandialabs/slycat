@@ -530,7 +530,7 @@ $.widget("parameter_image.scatterplot",
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
         .data(filtered_indices, function(d, i){ 
-          return filtered_indices[i];
+          return d;
         })
         ;
       circle.exit()
@@ -551,10 +551,10 @@ $.widget("parameter_image.scatterplot",
         })
         ;
       circle
-        .attr("cx", function(d, i) { return self.x_scale( x[$.inArray(d, indices)] ); })
-        .attr("cy", function(d, i) { return self.y_scale( y[$.inArray(d, indices)] ); })
+        .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
+        .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
         .attr("fill", function(d, i) { 
-          var value = v[$.inArray(d, indices)];
+          var value = v[d];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
@@ -599,13 +599,13 @@ $.widget("parameter_image.scatterplot",
         ;
       circle
         .attr("cx", function(d, i) { 
-          return x_scale( x[$.inArray(d, indices)] ); 
+          return x_scale( x[d] ); 
         })
         .attr("cy", function(d, i) { 
-          return y_scale( y[$.inArray(d, indices)] ); 
+          return y_scale( y[d] ); 
         })
         .attr("fill", function(d, i) { 
-          var value = v[$.inArray(d, indices)];
+          var value = v[d];
           if(Number.isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else

@@ -17,7 +17,7 @@ $.widget("slycat.browser",
     root_label : "foo",
     multiple_selection : false,
     directory_selection : false,
-    hide_dotfiles : true,
+    hide_dotfiles : true
   },
 
   _create: function()
@@ -57,19 +57,61 @@ $.widget("slycat.browser",
       }
     }
 
+    function toggle_all_folders_after_column(column_id){
+      visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
+      console.log("visible column ids: " + visible_column_ids);
+      max = visible_column_ids[visible_column_ids.length-1];
+      console.log("max from them is: " + max)
+      //Iterate over every column after the given id and remove the column, handling slide and text.
+      for(var i = (column_id+1); i <= max; i++){
+        $(".file-browser#"+i).remove();
+        //Refresh what's visible
+        visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
+        column_to_show = visible_column_ids[0] - 1;
+        console.log("min about to show is: " + column_to_show);
+        $(".file-browser#"+column_to_show).show();
+      }
+    }
+
     function toggle_directory(self)
     {
       return function()
       {
-        if($(this).children("ul").length) // Collapse this node ...
+        if($(this).hasClass("open")) // Collapse this node ...
         {
+          id = parseInt($(this).parent().parent()[0].id);
+          id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
+          $(".path-entry-input").val($(".path-entry-input").val().replace(($(this).attr("id").replace("dot",".")+"/"),""));
+          //$(".file-browser#"+(id+1)).remove();
+          //$(".file-browser#"+id_to_show).show();
+          toggle_all_folders_after_column(id);
           $(this).removeClass("open");
-          $(this).children("ul").remove();
+          //Remove the table with this parent table's id+1
         }
         else // Expand this node ...
         {
+          var current_position = $(this).parent().parent().attr("id");
+          var slide = false;
+          if (parseInt(current_position) >= 4){
+            slide = true;
+          }
+          //Remove the next column if it exists before adding new one. This covers the same level expansion.
+          if($(".file-browser#"+(parseInt(current_position)+1)).length){
+            //We set a boolean so we know not to slide on this expansion
+            slide = false;
+            //Need to remove the activated icon from the same row first.
+            previous_dir = $(".file-browser#"+parseInt(current_position)).find(".directory.open");
+            $(".path-entry-input").val($(".path-entry-input").val().replace((previous_dir.attr("id").replace("dot",".")+"/"),""));
+            previous_dir.removeClass("open");
+            $(".file-browser#"+(parseInt(current_position)+1)).remove();
+          }
+          if($(this).attr("id") != undefined && input_with_text == false){
+            folder_name = $(this).attr("id").replace("dot",".")
+            $(".path-entry-input").val($(".path-entry-input").val() + folder_name + "/");
+          }
+          input_with_text = false;
+          //Add text to the file path input when clicked.
           $(this).addClass("open");
-
           $.ajax(
           {
             context : this,
@@ -85,18 +127,31 @@ $.widget("slycat.browser",
             {
 
               var path = $(this).data("path");
-              var container = $("<ul>").appendTo($(this));
+              if (slide == true){
+                ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
+                min = ids[0];
+                //max = ids[ids.length-1];
+                //We hide the lowest numbered column.
+                $(".file-browser#"+min).hide();
+              }
+              $("<table>").addClass("file-browser").attr("id",parseInt(current_position)+1).appendTo(self.element);
+              //No matter what we append to the next table if we are expanding.
+              var container = $(".file-browser#"+(parseInt(current_position)+1));
               for(var i = 0; i != result.names.length; ++i)
               {
                 name = result.names[i];
                 size = result.sizes[i];
                 type = result.types[i];
 
-                var item = $("<li>").appendTo(container);
+                var item = $("<tr>").attr("id",name.replace(".","dot")).appendTo(container);
                 var entry = $("<div/>").appendTo(item);
                 var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
-                var label = $("<span class='label'></span>").text(name).appendTo(entry);
+                concat_name = name;
+                if (name.length > 20){
+                  concat_name = name.substring(0,20)+"...";
+                }
+                var label = $("<span class='label'></span>").text(concat_name).appendTo(entry);
 
                 item.data("path", path.replace(/\/$/, "") + "/" + name);
                 item.bind("toggle-directory", toggle_directory(self));
@@ -143,8 +198,18 @@ $.widget("slycat.browser",
       }
     }
 
-    var container = $("<ul>").addClass("file-browser").appendTo(self.element.empty())
-    var item = $("<li>").appendTo(container);
+    $(".path-entry-input").keypress(function(event){
+      if(event.which == 47){
+        folder_array = $(this).val().split("/");
+        latest_folder = folder_array[folder_array.length-1]
+        //Click the folder
+        input_with_text = true;
+        $("tr#"+latest_folder.replace(".","dot")).find(".arrow").click();
+      }
+    });
+    var container1 = $("<table>").addClass("file-browser").attr("id","1").appendTo(self.element.empty());
+    var input_with_text = false;
+    var item = $("<tr>").appendTo(container1);
     var entry = $("<div/>").appendTo(item);
     var arrow = $("<span class='arrow'></span>").appendTo(entry);
     var icon = $("<span class='icon'></span>").appendTo(entry);

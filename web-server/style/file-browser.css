@@ -4,11 +4,20 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-ul.file-browser, .file-browser ul
+#remote-pi-browser{
+  display: inline-block;
+}
+/*ul.file-browser, .file-browser ul
 {
   list-style-type: none;
+}*/
+table.file-browser{
+  float: left;
+  min-width: 100;
 }
-
+table.file-browser#t1{
+  clear: both;
+}
 ul.file-browser
 {
   -webkit-user-select: none;
@@ -16,6 +25,10 @@ ul.file-browser
   -moz-user-select: none;
   -o-user-select: none;
   user-select: none;
+  margin:0;
+  padding:0;
+  width:200px;
+  border-right:1px solid black;
 }
 
 .file-browser .hidden
@@ -29,7 +42,7 @@ ul.file-browser
   height: 20px;
 }
 
-.file-browser li.selected > div
+.file-browser tr.selected > div
 {
   background: #4478cf;
   color: white;
@@ -60,27 +73,33 @@ ul.file-browser
   margin-top: 2px;
 }
 
-.file-browser li.host > div > .arrow, .file-browser li.directory > div > .arrow
+.file-browser tr.host > div > .arrow, .file-browser tr.directory > div > .arrow
 {
   background: url(arrow-right-small.png) no-repeat center;
 }
-
-.file-browser li.host.open > div > .arrow, .file-browser li.directory.open > div > .arrow
+.file-browser tr.host.open > div, .file-browser tr.directory.open > div
+{
+  background: #e7f6f7;
+  color: black;
+  border: 1px solid black;
+  padding: 2px;
+}
+.file-browser tr.host.open > div > .arrow, .file-browser tr.directory.open > div > .arrow
 {
   background: url(arrow-down-small.png) no-repeat center;
 }
 
-.file-browser li.host > div > .icon, .file-browser li.directory > div > .icon
+.file-browser tr.host > div > .icon, .file-browser tr.directory > div > .icon
 {
   background: url(directory-small.png) no-repeat center;
 }
 
-.file-browser li.directory.forbidden > div > .icon
+.file-browser tr.directory.forbidden > div > .icon
 {
   background: url(directory-forbidden-small.png) no-repeat center;
 }
 
-.file-browser li.file > div > .icon
+.file-browser tr.file > div > .icon
 {
   background: url(file-small.png) no-repeat center;
 }
