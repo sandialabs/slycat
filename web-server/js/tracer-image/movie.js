@@ -37,6 +37,7 @@ Movie.prototype.build_movie = function() {
                              }
                             }
                            );
+  self.build_close_button(d3.select(self.movie_ref));
 };
 
 Movie.prototype.build_open_button = function(container) {
@@ -51,8 +52,6 @@ Movie.prototype.build_open_button = function(container) {
     .classed('play-movie', true)
     .on('click', function() {
       self.play();
-      //TODO: doing this here now to ensure it's the last appended element and can pick up click events, but this is dirty...
-      self.build_close_button(d3.select(self.movie_ref));
     });
   open_button.append('img')
     .attr('src', '/style/play.png');
@@ -72,6 +71,7 @@ Movie.prototype.build_close_button = function(container) {
     .style("fill", "rgba(0%,0%,0%,0.2)")
     .on("click", function() {
       self.hide();
+      self.stop();
     });
   close_button.append("path")
     .attr("d", "M" + (8) + " " + (8) + " l10 10 m0 -10 l-10 10")
