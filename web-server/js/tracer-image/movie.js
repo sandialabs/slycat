@@ -52,7 +52,6 @@ Movie.prototype.build_open_button = function(container) {
     .classed('play-movie', true)
     .on('click', function() {
       self.play();
-      //TODO: doing this here now to ensure it's the last appended element and can pick up click events, but this is dirty...
     });
   open_button.append('img')
     .attr('src', '/style/play.png');
