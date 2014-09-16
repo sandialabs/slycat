@@ -7,6 +7,7 @@
 function Movie(plot) {
   // a plot has access to the image set for the specific cell of the grid
   this.plot = plot;
+  this.stopped = true;
   this.movie_ref = this.plot.plot_ref + " .movie";
   this.jq_movie = $(this.movie_ref);
   this.d3_movie = d3.select(this.movie_ref).selectAll("image");
@@ -102,14 +103,29 @@ Movie.prototype.check_for_loop_end = function(transition, d3_obj, callback) {
 
 Movie.prototype.loop = function() {
   var self = this;
+  this.stopped = false;
   // see http://stackoverflow.com/questions/23875661/looping-through-a-set-of-images-using-d3js
   // and see my jsfiddel related to this - http://jsfiddle.net/1270p51q/2/
+  var indices_with_images = this.plot.images
+      .map(function(d,i){return [d,i];})
+      .filter(function(d){return d[0].length > 0;})
+      .map(function(d){return d[1];});
+  var update_selected_image = function(uri, index)
+  {
+    if(!self.stopped) {
+      table.select_rows([indices_with_images[index]]);
+    }
+  };
+
   self.d3_movie.transition().attr("opacity",0);
-  self.d3_movie.transition().attr("opacity",1).delay(function(d,i){return i * self.interval;})
-               .call(self.check_for_loop_end, self, self.loop);
+  self.d3_movie.transition()
+               .attr("opacity",1).each("start", update_selected_image)
+               .delay(function(d,i){return i * self.interval;})
+               .call(self.check_for_loop_end, self, self.loop)
 };
 
 Movie.prototype.play = function() {
+  this.stopped = false;
   // TODO get ALL hostnames for the image set - assuming there can be more than one?
   // TODO set the hostname to something ... loop over all hostnames and get session cache for that hostname
   // TODO right now we just look at the first image
@@ -136,7 +152,7 @@ Movie.prototype.play = function() {
 };
 
 Movie.prototype.stop = function() {
-
+  this.stopped = true;
 };
 
 Movie.prototype.step = function() {
