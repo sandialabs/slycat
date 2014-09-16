@@ -1219,7 +1219,7 @@ $.widget("tracer_image.scatterplot", {
 
       pin_button.append("image")
         .attr("class", "pin-icon")
-        .attr("x", 2)
+        .attr("x", 18)
         .attr("y", 2)
         .attr("width", 16)
         .attr("height", 16)
