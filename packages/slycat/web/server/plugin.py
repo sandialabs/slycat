@@ -20,10 +20,10 @@ class Manager(object):
       Path to a directory containing plugin modules.
     """
     try:
-      cherrypy.log.error("Loading plugins from %s" % directory)
+      cherrypy.log.error("Loading plugin modules from directory '%s'" % directory)
       plugin_names = [x[:-3] for x in os.listdir(directory) if x.endswith(".py")]
       for plugin_name in plugin_names:
-        cherrypy.log.error("Loading plugin %s/%s" % (directory, plugin_name))
+        cherrypy.log.error("Loading plugin '%s'" % os.path.join(directory, plugin_name + ".py"))
         try:
           module_fp, module_pathname, module_description = imp.find_module(plugin_name, [directory])
           self._modules.append(imp.load_module(plugin_name, module_fp, module_pathname, module_description))
