@@ -37,6 +37,8 @@ Movie.prototype.build_movie = function() {
                              }
                             }
                            );
+  //width : self.width,
+  //height : self.height,
   self.build_close_button(d3.select(self.movie_ref));
 };
 
@@ -82,15 +84,18 @@ Movie.prototype.build_close_button = function(container) {
 
 Movie.prototype.show = function() {
   var self = this;
+  // TODO .show() for reopens
   $(self.plot.plot_ref + ' .scatterplot').hide();
+  $('svg .image-layer').hide();
   self.resize();
 };
 
 Movie.prototype.resize = function() {
-  self.width = $(this.plot.plot_ref + " .scatterplot-pane").width();
-  self.height = 375; // TODO $(this.plot.plot_ref + " .scatterplot-pane").height());
-  $(this.jq_movie).css("width", self.width);
-  $(this.jq_movie).css("height", self.height);
+  /* seems superfluous and might be breaking button placement... */
+  //self.width = $(this.plot.plot_ref + " .scatterplot-pane").width();
+  //self.height = $(this.plot.plot_ref + " .scatterplot-pane").height(); // 375 ... why was this here?
+  //$(this.jq_movie).css("width", self.width);
+  //$(this.jq_movie).css("height", self.height);
 };
 
 // when the movie is over (reached end of loop), repeat by calling loop again
@@ -164,6 +169,7 @@ Movie.prototype.hide = function() {
   //self.close_body.style('visibility', 'hidden');
   $(self.movie_ref).hide();
   $(self.plot.plot_ref + ' .scatterplot').show();
+  $('svg .image-layer').show();
 };
 
 Movie.prototype.next_image = function() {
