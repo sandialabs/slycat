@@ -11,6 +11,8 @@ class Manager(object):
   """Manages loading plugin modules."""
   def __init__(self):
     self._modules = []
+    self._models = {}
+
   def load(self, directory):
     """Load a directory containing *.py files as plugin modules.
 
@@ -38,3 +40,10 @@ class Manager(object):
   @property
   def modules(self):
     return self._modules
+
+  def register_model(self, type, finish):
+    if type in self._models:
+      raise Exception("Model type '%s' has already been registered." % type)
+
+    self._models[type] = {"finish":finish}
+    cherrypy.log.error("Registered new model '%s'" % type)
