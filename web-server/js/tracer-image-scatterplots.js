@@ -20,8 +20,6 @@ $.widget("tracer_image.scatterplot", {
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
-    x_label : "X Label",
-    y_label : "Y Label",
     v_label : "V Label",
     x : [],
     y : [],
@@ -87,8 +85,6 @@ $.widget("tracer_image.scatterplot", {
       update_height:true,
       update_x:true,
       update_y:true,
-      update_x_label:true,
-      update_y_label:true,
       update_color_domain:true,
       render_data:true,
       render_selection:true,
@@ -353,16 +349,6 @@ $.widget("tracer_image.scatterplot", {
       self._schedule_update({update_indices:true, render_selection:true});
     }
 
-    else if(key == "x_label")
-    {
-      self._schedule_update({update_x_label:true});
-    }
-
-    else if(key == "y_label")
-    {
-      self._schedule_update({update_y_label:true});
-    }
-
     else if(key == "v_label")
     {
       self._schedule_update({update_v_label:true});
@@ -404,12 +390,12 @@ $.widget("tracer_image.scatterplot", {
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, update_y_label:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
+      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
     }
 
     else if(key == "border")
@@ -518,43 +504,6 @@ $.widget("tracer_image.scatterplot", {
       var control_x_offset = -30 - Number(self.y_control.foreign_object.attr('width'));
       var control_y_offset = range_midpoint - Number(self.y_control.foreign_object.attr('height'))/2; //account for control width
       self.y_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',' + control_y_offset + ')');
-    }
-
-    if(self.updates["update_x_label"]) {
-    /*
-      var x = self.group.attr("width") / 2;
-      var y = 40;
-
-      self.x_axis_layer.selectAll(".label").remove()
-      self.x_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.x_label)
-        ;
-      */
-    }
-
-    if(self.updates["update_y_label"]) {
-    /*
-      self.y_axis_layer.selectAll(".label").remove();
-
-      var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      var x = -(y_axis_width+15);
-      var y = self.group.attr("height") / 2;
-
-      self.y_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.y_label)
-        ;
-     */
     }
 
     if(self.updates["update_color_domain"])
@@ -682,8 +631,8 @@ $.widget("tracer_image.scatterplot", {
     if(self.updates["open_images"])
     {
       // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
-      self.options.open_images.forEach(function(image)
-      {
+      self.options.open_images.forEach(function(image) {
+        //debugger;
         if(image.uri === undefined)
           image.uri = self.options.images[image.index];
         if(image.width === undefined)
@@ -693,7 +642,7 @@ $.widget("tracer_image.scatterplot", {
       });
 
       // Transform the list of initial images so we can pass them to _open_images()
-      var width = Number(self.group.attr("width"));
+      var width = Number(self.group.attr("width")); //self.group refers to <g class="scatterplot" ...>
       var height = Number(self.group.attr("height"));
 
       var images = [];
@@ -905,8 +854,7 @@ $.widget("tracer_image.scatterplot", {
 
       // Tag associated point with class
       self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
-        .classed("openHover", true)
-        ;
+        .classed("openHover", true);
 
       var frame = self.image_layer.append("g")
         .attr("data-uri", image.uri)

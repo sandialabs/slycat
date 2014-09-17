@@ -46,6 +46,7 @@ ScatterPlot.prototype.setup_dom = function() {
   pane.append("g").attr({class: "movie"});
 };
 
+// TODO rename since x/y labels aren't used now
 ScatterPlot.prototype.setup_labels = function() {
   console.debug("setting up labels for plot");
   // choose some columns for the x and y axes.
@@ -128,8 +129,6 @@ ScatterPlot.prototype.setup = function() {
       dimension_adjustments: {
           width: function(){return 0;},
           height: function(){return -1 * $(self.grid_ref + " .controls").height(); }},
-      x_label: model.metadata["column-names"][self.x_index],
-      y_label: model.metadata["column-names"][self.y_index],
       v_label: model.metadata["column-names"][self.v_index],
       x: self.x,
       y: self.y,
@@ -345,7 +344,7 @@ ScatterPlot.prototype.update_x = function(variable) {
     success : function(result)
     {
       console.log("update x ajax returned!!!!!");
-      $(self.plot_ref + " .scatterplot").scatterplot("option", {x: result, x_label:model.metadata["column-names"][variable]});
+      $(self.plot_ref + " .scatterplot").scatterplot("option", {x: result});
     },
     error : artifact_missing
   });
@@ -362,7 +361,7 @@ ScatterPlot.prototype.update_y = function(variable) {
     attribute : variable,
     success : function(result)
     {
-      $(self.plot_ref + " .scatterplot").scatterplot("option", {y: result, y_label:model.metadata["column-names"][variable]});
+      $(self.plot_ref + " .scatterplot").scatterplot("option", {y: result});
     },
     error : artifact_missing
   });
