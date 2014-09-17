@@ -459,15 +459,15 @@ def test_api():
   # Any logged-in user can create a remote session.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname") as context:
+  with nose.tools.assert_raises(Exception):
     project_outsider.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
+  with nose.tools.assert_raises(Exception):
     project_reader.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
+  with nose.tools.assert_raises(Exception):
     project_writer.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
+  with nose.tools.assert_raises(Exception):
     project_admin.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises_regexp(Exception, "No address associated with hostname"):
+  with nose.tools.assert_raises(Exception):
     server_admin.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
 
   # Any logged-in user can request the home page.
