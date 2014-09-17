@@ -25,7 +25,6 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.image_uri = document.createElement("a");
 
   this.scalar = scalar || {x:1, y:1};
-
   this.setup_dom();
 }
 
@@ -53,7 +52,7 @@ ScatterPlot.prototype.setup_labels = function() {
   // choose some columns for the x and y axes.
   var numeric_variables = model.get_numeric_variables();
   this.x_index = numeric_variables[0];
-  this.y_index = numeric_variables[1 % numeric_variables.length]; // use 0 if only one element, use 1 otherwise
+  this.y_index = numeric_variables[0];
   if("x-selection-" + this.plot_id in layout.bookmark) {
     this.x_index = Number(layout.bookmark["x-selection-" + this.plot_id]);
   }
