@@ -1021,9 +1021,17 @@ def post_remote_browse():
   with slycat.web.server.ssh.get_session(sid) as session:
     try:
       attributes = sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename)
-      names = [attribute.filename for attribute in attributes]
-      sizes = [attribute.st_size for attribute in attributes]
-      types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
+      filtered_attributes = []
+      for attribute in attributes:
+        image_match_results = re.match('(.*\.jpg$)|(.*\.svg$)|(.*\.png$)|(.*\.jpeg$)|(.*\.xcf$)|(.*\.sh$)|(.*\.conf)|(.*\.ini$)', attribute.filename)
+        if image_match_results is None:
+          filtered_attributes.append(attribute)
+      names = [attribute.filename for attribute in filtered_attributes]
+      #names = [attribute.filename for attribute in attributes]
+      sizes = [attribute.st_size for attribute in filtered_attributes]
+      #sizes = [attribute.st_size for attribute in attributes]
+      types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in filtered_attributes]
+      #types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
       response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
       return response
     except Exception as e:
