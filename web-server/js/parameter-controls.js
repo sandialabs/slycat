@@ -225,7 +225,6 @@ $.widget("parameter_image.controls",
     if (selectionList.length > 0) {
       selectionList.sort(function(x,y) {return x-y});
       rowRequest = "rows=" + selectionList.toString();
-      //console.log("++ writing partial table rowRequest: " + rowRequest);
     } else {
       rowRequest = "rows=0-" + numRows;
     }
@@ -249,31 +248,22 @@ $.widget("parameter_image.controls",
   _write_csv: function(csvData, defaultFilename)
   {
     var self = this;
-    //var D = self.window.document;
-    var D = document;   // is this the best way to do this?
-    //var A = arguments;
-    //var a = self.createElement("a");
+    var D = document;
     var a = D.createElement("a");
     var strMimeType = "text/plain";
     var defaultFilename = defaultFilename || "slycatDataTable.csv";
 
     //build download link:
-    a.href = "data:" + strMimeType + "charset=utf-8," + encodeURIComponent(csvData);  //encodeURIComponent() handles all special chars
+    a.href = "data:" + strMimeType + ";charset=utf-8," + encodeURIComponent(csvData);  //encodeURIComponent() handles all special chars
 
     if ('download' in a) { //FF20, CH19
-      //console.log( "++ FF20 CH19 processing..." );
-      //console.log( a );
       a.setAttribute("download", defaultFilename);
-      //a.setAttribute("download", n);
       a.innerHTML = "downloading...";
-      //this.element.appendChild(a);
       D.body.appendChild(a);
       setTimeout(function() {
-	//var e = this.createEvent("MouseEvents");
-        var e = D.createEvent("MouseEvents");
+        var e = D.createEvent("MouseEvent");
 	e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
 	a.dispatchEvent(e);
-	//this.element.removeChild(a);
 	D.body.removeChild(a);
       }, 66);
       return true;
