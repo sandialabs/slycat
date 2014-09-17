@@ -8,7 +8,7 @@ import os
 import traceback
 
 class Manager(object):
-  """Manages loading plugin modules."""
+  """Manages server plugin modules."""
   def __init__(self):
     self._modules = []
     self._models = {}
@@ -39,11 +39,42 @@ class Manager(object):
 
   @property
   def modules(self):
+    """Returns a sequence of loaded plugin (literally: Python) modules."""
     return self._modules
 
-  def register_model(self, type, finish):
+  @property
+  def models(self):
+    """Returns a dict mapping model types to models."""
+    return self._models
+
+  def register_plugins(self):
+    """Called to register plugins after all plugin modules have been loaded."""
+    for module in self._modules:
+      if hasattr(module, "register_slycat_plugin"):
+        try:
+          module.register_slycat_plugin(self)
+        except Exception as e:
+          import traceback
+          cherrypy.log.error(traceback.format_exc())
+
+  def register_model(self, type, finish, html):
+    """Called when a plugin is loaded to register a new model type.
+
+    Parameters
+    ----------
+    type : string, required
+      A unique identifier for the new model type.
+    finish : callback function, required
+      Function that will be called to finish (perform computation on) a new instance of the model.
+    html : callback function, required
+      Function that will be called to generate an HTML representation of the model.
+    """
     if type in self._models:
       raise Exception("Model type '%s' has already been registered." % type)
 
-    self._models[type] = {"finish":finish}
+    self._models[type] = {"finish":finish, "html":html}
     cherrypy.log.error("Registered new model '%s'" % type)
+
+# Create a new, singleton instance of slycat.web.server.plugin.Manager()
+manager = Manager()
+

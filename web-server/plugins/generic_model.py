@@ -1,5 +1,8 @@
 def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
+  import cherrypy
+  import datetime
+  import os
   import slycat.web.server.database.couchdb
   import slycat.web.server.model
   import threading
@@ -23,9 +26,13 @@ def register_slycat_plugin(context):
       slycat.web.server.model.update(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
   def finish(model):
-    """Called to finish the model.  This function must return immediately, so any real work should be done in a separate thread."""
+    """Called to finish the model.  This function must return immediately, so the actual work is done in a separate thread."""
     thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
+  def html(database, model):
+    """Return the HTML representation of the model."""
+    return open(os.path.join(os.path.dirname(__file__), "generic_model.html"), "r").read()
+
   # Register our new model type
-  context.register_model("generic", finish)
+  context.register_model("generic", finish, html)

@@ -154,17 +154,10 @@ def start(config_file="config.ini"):
       cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 
   # Load plugin modules.
-  manager = slycat.web.server.plugin.Manager()
+  manager = slycat.web.server.plugin.manager
   for directory in configuration["slycat"]["plugins"]:
     manager.load(directory)
-
-  for module in manager.modules:
-    if hasattr(module, "register_slycat_plugin"):
-      try:
-        module.register_slycat_plugin(manager)
-      except Exception as e:
-        import traceback
-        cherrypy.log.error(traceback.format_exc())
+  manager.register_plugins()
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

@@ -29,9 +29,9 @@ import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.model.cca
-import slycat.web.server.model.generic
 import slycat.web.server.model.parameter_image
 import slycat.web.server.model.timeseries
+import slycat.web.server.plugin
 import slycat.web.server.ssh
 import slycat.web.server.template
 import threading
@@ -211,7 +211,7 @@ def post_project_models(pid):
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
   model_type = cherrypy.request.json["model-type"]
-  allowed_model_types = ["generic", "cca", "timeseries", "parameter-image"]
+  allowed_model_types = slycat.web.server.plugin.manager.models.keys() + ["cca", "timeseries", "parameter-image"]
   if model_type not in allowed_model_types:
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
@@ -315,6 +315,9 @@ def get_model(mid, **kwargs):
   if accept == "application/json":
     return json.dumps(model)
   elif accept == "text/html":
+    if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
+      return slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
+
     model_count = len(list(database.view("slycat/project-models", startkey=project["_id"], endkey=project["_id"])))
 
     context = get_context()
@@ -339,7 +342,7 @@ def get_model(mid, **kwargs):
     if "model-type" in model and model["model-type"] == "parameter-image":
       return slycat.web.server.template.render("model-parameter-image.html", context)
 
-    return slycat.web.server.template.render("model-generic.html", context)
+    return slycat.web.server.template.render("model.html", context)
 
 @cherrypy.tools.json_in(on = True)
 def put_model(mid):
@@ -368,12 +371,12 @@ def post_model_finish(mid):
 
   if model["state"] != "waiting":
     raise cherrypy.HTTPError("400 Only waiting models can be finished.")
-  if model["model-type"] not in ["generic", "cca", "cca3", "timeseries", "parameter-image"]:
+  if model["model-type"] not in slycat.web.server.plugin.manager.models.keys() + ["cca", "cca3", "timeseries", "parameter-image"]:
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
   slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
-  if model["model-type"] == "generic":
-    slycat.web.server.model.generic.finish(database, model)
+  if model["model-type"] in slycat.web.server.plugin.manager.models.keys():
+    slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](model)
   elif model["model-type"] == "cca":
     slycat.web.server.model.cca.finish(database, model)
   elif model["model-type"] == "timeseries":
