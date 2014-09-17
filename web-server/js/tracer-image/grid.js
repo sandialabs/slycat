@@ -67,7 +67,6 @@ Grid.prototype.setup = function() {
 
   var drag_start = function(e)
   {
-    e.preventDefault();
     drag_object.drag_start = [e.originalEvent.layerX, e.originalEvent.layerY];
 
     drag_object.drag_plot = calculate_plot.call(self, drag_object.drag_start);
@@ -77,7 +76,6 @@ Grid.prototype.setup = function() {
 
   var drag_end = function(e)
   {
-    e.preventDefault();
     drag_object.drag_end = [e.originalEvent.layerX, e.originalEvent.layerY];
 
     drag_object.drag_start = invert_selection_location.call(self, drag_object.drag_start);

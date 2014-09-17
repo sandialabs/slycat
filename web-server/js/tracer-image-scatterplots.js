@@ -398,8 +398,6 @@ $.widget("tracer_image.scatterplot", {
         .append("circle")
         .attr("class", "datum")
         .attr("r", 4)
-        .attr("stroke", "black")
-        .attr("linewidth", 1)
         .attr("data-index", function(d, i) { return d; })
         .on("mouseover", function(d, i) {
           self._schedule_hover(d);
@@ -460,8 +458,6 @@ $.widget("tracer_image.scatterplot", {
         .append("circle")
         .attr("class", "selection")
         .attr("r", 8)
-        .attr("stroke", "black")
-        .attr("linewidth", 1)
         .attr("data-index", function(d, i) {
           return d;
         })
