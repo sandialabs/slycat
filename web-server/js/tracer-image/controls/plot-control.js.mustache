@@ -49,7 +49,11 @@ PlotControl.prototype.build = function() {
       .text(self.column_names[self.variables[i]])
       .attr("value", self.variables[i])
       .attr("selected", function() {
-        return self.selected_variable == self.variables[i] ? "selected" : false;
+        if (self.selected_variable == self.variables[i]) {
+          //self.update_plot(i); dirty hack: enable if the initial variable select isn't working as expected
+          return "selected";
+        }
+        return false;
       })
       .appendTo(select);
   }
@@ -80,6 +84,8 @@ PlotControl.prototype.retrieve_selected_variable = function(variable) {
 
 PlotControl.prototype.update_plot = function(variable) {
   var self = this;
+  // TODO: either update plot.x_index, etc. here or strip out the index attributes from Scatterplot completely
+  // since they become irrelevant once update is called
   get_model_array_attribute({
     server_root : "{{server-root}}",
     mid : "{{_id}}",

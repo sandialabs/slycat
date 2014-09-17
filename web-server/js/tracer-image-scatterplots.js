@@ -580,11 +580,9 @@ $.widget("tracer_image.scatterplot", {
       var circle = self.datum_layer.selectAll(".datum")
         .data(filtered_indices.filter(function(d){return self.options.images[d].length > 0;}), function(d, i){
           return filtered_indices[i];
-        })
-        ;
+        });
       circle.exit()
-        .remove()
-        ;
+        .remove();
       circle.enter()
         .append("circle")
         .attr("class", "datum")
@@ -597,8 +595,7 @@ $.widget("tracer_image.scatterplot", {
         })
         .on("mouseout", function(d, i) {
           self._cancel_hover();
-        })
-        ;
+        });
       circle
         .attr("cx", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ); })
         .attr("cy", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ); })
@@ -608,9 +605,7 @@ $.widget("tracer_image.scatterplot", {
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
-        })
-        ;
-
+        });
 
       self.group.select(".time-paths").remove();
 
@@ -621,7 +616,6 @@ $.widget("tracer_image.scatterplot", {
 
       var time_line_group = self.group.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
-
 
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
         .reduce(function(prev, next, index){
