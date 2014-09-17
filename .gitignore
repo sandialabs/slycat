@@ -3,6 +3,7 @@ build
 .coverage
 docs/_build
 .DS_Store
+._.DS_Store
 .ipynb_checkpoints
 packages/cherrypy/test/access.log
 packages/cherrypy/test/error.log
