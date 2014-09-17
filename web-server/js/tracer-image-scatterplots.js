@@ -128,149 +128,8 @@ $.widget("tracer_image.scatterplot", {
       )
       ;
 
-    self.element.mousedown(function(e)
-    {
-      //console.log("#scatterplot mousedown");
-      self.start_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
-      self.end_drag = null;
-    });
-
-    self.element.mousemove(function(e)
-    {
-      //console.log("#scatterplot mousemove");
-      if(self.start_drag) // Mouse is down ...
-      {
-        if(self.end_drag) // Already dragging ...
-        {
-          self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
-
-          var width = self.element.attr("width");
-          var height = self.element.attr("height");
-
-          self.selection_layer.selectAll(".rubberband")
-              .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
-              .attr("y", Math.min(self.start_drag[1], self.end_drag[1]))
-              .attr("width", Math.abs(self.start_drag[0] - self.end_drag[0]))
-              .attr("height", Math.abs(self.start_drag[1] - self.end_drag[1]))
-            ;
-        }
-        else
-        {
-          if(Math.abs(e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
-          {
-            self.state = "rubber-band-drag";
-            self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
-            self.selection_layer.append("rect")
-              .attr("class", "rubberband")
-              .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
-              .attr("y", Math.min(self.start_drag[1], self.end_drag[1]))
-              .attr("width", Math.abs(self.start_drag[0] - self.end_drag[0]))
-              .attr("height", Math.abs(self.start_drag[1] - self.end_drag[1]))
-              .attr("fill", "rgba(255, 255, 0, 0.3)")
-              .attr("stroke", "rgb(255, 255, 0)")
-              .attr("linewidth", 2)
-              ;
-          }
-        }
-      }
-    });
-
     self.element.mouseup(function(e)
     {
-      if(self.state == "resizing" || self.state == "moving")
-        return;
-
-      //console.log("#scatterplot mouseup");
-      if(!e.ctrlKey)
-      {
-        self.options.selection = [];
-        self.options.filtered_selection = [];
-      }
-
-      var x = self.options.x;
-      var y = self.options.y;
-      var count = x.length;
-
-      if(self.state == "rubber-band-drag") // Rubber-band selection ...
-      {
-        self.selection_layer.selectAll(".rubberband").remove();
-
-        if(self.start_drag && self.end_drag) {
-          var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
-          var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
-          var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
-          var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
-
-          for(var i = 0; i != count; ++i)
-          {
-            if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-            {
-              var index = self.options.selection.indexOf(self.options.indices[i]);
-              if(index == -1)
-                self.options.selection.push(self.options.indices[i]);
-            }
-          }
-        }
-      }
-      else // Pick selection ...
-      {
-        var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
-        var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
-        var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
-        var y2 = self.y_scale.invert(e.originalEvent.layerY - self.options.pick_distance);
-
-        for(var i = 0; i != count; ++i)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-          {
-            // Update the list of selected points ...
-            var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
-            {
-              // Selecting a new point.
-              self.options.selection.push(self.options.indices[i]);
-
-              // // If the URI for this point isn't already open, open it.
-              // var uri = self.options.images[self.options.indices[i]];
-              // if($(".open-image[data-uri='" + uri + "']").size() == 0)
-              // {
-              //   self._close_hover();
-
-              //   var width = self.group.attr("width");
-              //   var height = self.group.attr("height");
-              //   var open_width = Math.min(width, height) / 3;
-              //   var open_height = Math.min(width, height) / 3;
-
-              //   self._open_images([{
-              //     index : self.options.indices[i],
-              //     uri : self.options.images[self.options.indices[i]],
-              //     image_class : "open-image",
-              //     target_x : self.x_scale(self.options.x[i]),
-              //     target_y : self.y_scale(self.options.y[i]),
-              //     width: open_width,
-              //     height : open_height,
-              //     }]);
-              // }
-            }
-            else
-            {
-              // Deselecting an existing point.
-              self.options.selection.splice(index, 1);
-            }
-
-            break;
-          }
-        }
-      }
-
-      self.start_drag = null;
-      self.end_drag = null;
-      self.state = "";
-
-      self._filterIndices();
-      self.options.selection = self.options.filtered_selection.slice(0);
-      self._schedule_update({render_selection:true});
-      self.element.trigger("selection-changed", [self.options.selection]);
     });
     self._filterIndices();
   },
@@ -1500,5 +1359,80 @@ $.widget("tracer_image.scatterplot", {
   get_option: function(option)
   {
     return this.options[option];
+  },
+
+  handle_drag: function(drag_object, e)
+  {
+    var self = this;
+    if(self.state == "resizing" || self.state == "moving")
+      return;
+
+    //console.log("#scatterplot mouseup");
+    if(!e.ctrlKey)
+    {
+      self.options.selection = [];
+      self.options.filtered_selection = [];
+    }
+
+    var x = self.options.x;
+    var y = self.options.y;
+    var count = x.length;
+
+    if(drag_object.state == "rubber-band-drag") // Rubber-band selection ...
+    {
+      if(drag_object.drag_start && drag_object.drag_end) {
+        var x1 = self.x_scale.invert(Math.min(drag_object.drag_start[0], drag_object.drag_end[0]));
+        var y1 = self.y_scale.invert(Math.max(drag_object.drag_start[1], drag_object.drag_end[1]));
+        var x2 = self.x_scale.invert(Math.max(drag_object.drag_start[0], drag_object.drag_end[0]));
+        var y2 = self.y_scale.invert(Math.min(drag_object.drag_start[1], drag_object.drag_end[1]));
+
+        for(var i = 0; i != count; ++i)
+        {
+          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          {
+            var index = self.options.selection.indexOf(self.options.indices[i]);
+            if(index == -1)
+              self.options.selection.push(self.options.indices[i]);
+          }
+        }
+      }
+    }
+    else // Pick selection ...
+    {
+      var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
+      var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
+      var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
+      var y2 = self.y_scale.invert(e.originalEvent.layerY - self.options.pick_distance);
+
+      for(var i = 0; i != count; ++i)
+      {
+        if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+        {
+          // Update the list of selected points ...
+          var index = self.options.selection.indexOf(self.options.indices[i]);
+          if(index == -1)
+          {
+            // Selecting a new point.
+            self.options.selection.push(self.options.indices[i]);
+          }
+          else
+          {
+            // Deselecting an existing point.
+            self.options.selection.splice(index, 1);
+          }
+
+          break;
+        }
+      }
+    }
+
+    self.start_drag = null;
+    self.end_drag = null;
+    self.state = "";
+
+    self._filterIndices();
+    self.options.selection = self.options.filtered_selection.slice(0);
+    self._schedule_update({render_selection:true});
+    self.element.trigger("selection-changed", [self.options.selection]);
   }
 });
