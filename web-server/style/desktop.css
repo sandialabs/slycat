@@ -805,6 +805,13 @@ button:active, button.active
   background-color: #888 !important;
   color: #eee;
 }
+button:disabled,
+button:disabled:hover,
+button:disabled:active
+{
+  color: #808080;
+  background-color: #DDDDDD !important;
+}
 
 select
 {

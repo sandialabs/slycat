@@ -24,6 +24,7 @@ $.widget("parameter_image.controls",
     rating_variables : [],
     category_variables : [],
     selection : [],
+    hidden_simulations : [],
   },
 
   _create: function()
@@ -106,16 +107,23 @@ $.widget("parameter_image.controls",
       .appendTo(this.element)
       ;
 
+    this.show_all_button = $("<button>Show All</button>")
+      .click(function(){
+        self.element.trigger("show-all");
+      })
+      .appendTo(this.element)
+      ;
+
     this.csv_button = $("<button>Download Data Table</button>")
-	.click(function(){
-          if (self.options.selection.length == 0) {
-	    self._write_data_table();
-	  } else {
-            openCSVSaveChoiceDialog();
-          }
-	})
-	.appendTo(this.element)
-	;
+    	.click(function(){
+        if (self.options.selection.length == 0) {
+    	    self._write_data_table();
+    	  } else {
+          openCSVSaveChoiceDialog();
+        }
+    	})
+    	.appendTo(this.element)
+    	;
 
     $('#set-value-form').dialog({
       modal: true,
@@ -211,6 +219,7 @@ $.widget("parameter_image.controls",
     self._set_image_variables();
     self._set_color_variables();
     self._set_selection_control();
+    self._set_show_all();
   },
 
 
@@ -465,8 +474,7 @@ $.widget("parameter_image.controls",
     
 
     // Set state
-    this.selection_select.prop("disabled", this.options.selection.length == 0);
-    this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
+    self._set_selection();
   },
 
   _set_selected_x: function()
@@ -498,6 +506,18 @@ $.widget("parameter_image.controls",
     var self = this;
     this.selection_select.prop("disabled", this.options.selection.length == 0);
     this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
+  },
+
+  _set_show_all: function()
+  {
+    var self = this,
+        noneHidden = this.options.hidden_simulations.length == 0;
+        titleText = 'Show All Hidden Scatterplot Points';
+    if(noneHidden) {
+      titleText = 'There are currently no hidden scatterplot points to show.';
+    }
+    this.show_all_button.prop("disabled", noneHidden);
+    this.show_all_button.attr("title", titleText);
   },
 
   _setOption: function(key, value)
@@ -542,6 +562,10 @@ $.widget("parameter_image.controls",
     else if(key == 'selection')
     {
       self._set_selection();
+    }
+    else if(key == 'hidden_simulations')
+    {
+      self._set_show_all();
     }
   },
 
