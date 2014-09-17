@@ -57,20 +57,18 @@ $.widget("slycat.browser",
       }
     }
 
+    //This method will take a column id and collapse all folder after it while updating the file path input field to be correct.
     function toggle_all_folders_after_column(column_id){
       visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
-      console.log("visible column ids: " + visible_column_ids);
       max = visible_column_ids[visible_column_ids.length-1];
-      console.log("max from them is: " + max)
-      //Iterate over every column after the given id and remove the column, handling slide and text.
       for(var i = (column_id+1); i <= max; i++){
         $(".file-browser#"+i).remove();
-        //Refresh what's visible
         visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
         column_to_show = visible_column_ids[0] - 1;
-        console.log("min about to show is: " + column_to_show);
         $(".file-browser#"+column_to_show).show();
       }
+      new_value = $(".path-entry-input").val().split("/").splice(0,column_id-1).join("/")+"/";
+      $(".path-entry-input").val(new_value);
     }
 
     function toggle_directory(self)
@@ -81,15 +79,15 @@ $.widget("slycat.browser",
         {
           id = parseInt($(this).parent().parent()[0].id);
           id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
-          $(".path-entry-input").val($(".path-entry-input").val().replace(($(this).attr("id").replace("dot",".")+"/"),""));
-          //$(".file-browser#"+(id+1)).remove();
-          //$(".file-browser#"+id_to_show).show();
           toggle_all_folders_after_column(id);
           $(this).removeClass("open");
-          //Remove the table with this parent table's id+1
         }
         else // Expand this node ...
         {
+          //If the folder we are expanding is the host, we want to prepend a / to the path input box.
+          if ($(this).hasClass("host")){
+            $(".path-entry-input").val("/")
+          }
           var current_position = $(this).parent().parent().attr("id");
           var slide = false;
           if (parseInt(current_position) >= 4){
@@ -99,11 +97,10 @@ $.widget("slycat.browser",
           if($(".file-browser#"+(parseInt(current_position)+1)).length){
             //We set a boolean so we know not to slide on this expansion
             slide = false;
-            //Need to remove the activated icon from the same row first.
+            toggle_all_folders_after_column(parseInt(current_position));
+            //Need to remove the activated icon from the same column folder.
             previous_dir = $(".file-browser#"+parseInt(current_position)).find(".directory.open");
-            $(".path-entry-input").val($(".path-entry-input").val().replace((previous_dir.attr("id").replace("dot",".")+"/"),""));
             previous_dir.removeClass("open");
-            $(".file-browser#"+(parseInt(current_position)+1)).remove();
           }
           if($(this).attr("id") != undefined && input_with_text == false){
             folder_name = $(this).attr("id").replace("dot",".")
@@ -127,15 +124,15 @@ $.widget("slycat.browser",
             {
 
               var path = $(this).data("path");
+              //This is where the horizontal sliding occurs.
               if (slide == true){
                 ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
                 min = ids[0];
-                //max = ids[ids.length-1];
                 //We hide the lowest numbered column.
                 $(".file-browser#"+min).hide();
               }
               $("<table>").addClass("file-browser").attr("id",parseInt(current_position)+1).appendTo(self.element);
-              //No matter what we append to the next table if we are expanding.
+              //No matter what we append to the next table if we are expanding a folder.
               var container = $(".file-browser#"+(parseInt(current_position)+1));
               for(var i = 0; i != result.names.length; ++i)
               {
