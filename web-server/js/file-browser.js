@@ -68,8 +68,41 @@ $.widget("slycat.browser",
         $(".file-browser#"+column_to_show).show();
       }
       new_value = $(".path-entry-input").val().split("/").splice(0,column_id-1).join("/")+"/";
+      //Undo the autocomplete hiding of rows.
+      $(".file-browser#"+column_id).find("tr").show();
       $(".path-entry-input").val(new_value);
     }
+
+    //Watch what they type into the file path input field and click, or unclick folders based on it.
+    $(".path-entry-input").keypress(function(event){
+      if(event.which == 47){
+        folder_array = $(this).val().split("/");
+        latest_folder = folder_array[folder_array.length-1];
+        //Click the folder
+        input_with_text = true;
+        $("tr#"+latest_folder.replace(".","dot")).find(".arrow").click();
+      }else if (event.which == 8){
+        //Backspace was pressed
+        folder_array = $(this).val().split("/");
+        latest_folder = folder_array[folder_array.length-1];
+        if (latest_folder == ""){
+          path_to_add = folder_array[folder_array.length-2];
+          column = folder_array.length-1;
+          toggle_all_folders_after_column(column);
+          previous_dir = $(".file-browser#"+column).find(".directory.open");
+          previous_dir.removeClass("open");
+          //Random character appended so that the backspace will take effect on it. Hacky? Yes. Future fix desired.
+          $(this).val($(this).val()+path_to_add+"r");
+        }
+      }
+    });
+
+    //This is where the autocomplete happens.
+    $(".path-entry-input").keyup(function(event){
+      column_id = $(this).val().split("/").length-1;
+      $(".file-browser#"+(column_id+1)).find('tr').hide();
+      matches = $(".file-browser#"+(column_id+1)).find('tr:regex(id,^'+$(this).val().replace(".","dot").split("/").splice(column_id,1).join("/")+')').show();
+    });
 
     function toggle_directory(self)
     {
@@ -88,18 +121,18 @@ $.widget("slycat.browser",
           if ($(this).hasClass("host")){
             $(".path-entry-input").val("/")
           }
-          var current_position = $(this).parent().parent().attr("id");
+          var current_position = parseInt($(this).parent().parent().attr("id"));
           var slide = false;
-          if (parseInt(current_position) >= 4){
+          if (current_position >= 4){
             slide = true;
           }
           //Remove the next column if it exists before adding new one. This covers the same level expansion.
-          if($(".file-browser#"+(parseInt(current_position)+1)).length){
+          if($(".file-browser#"+(current_position+1)).length){
             //We set a boolean so we know not to slide on this expansion
             slide = false;
-            toggle_all_folders_after_column(parseInt(current_position));
+            toggle_all_folders_after_column(current_position);
             //Need to remove the activated icon from the same column folder.
-            previous_dir = $(".file-browser#"+parseInt(current_position)).find(".directory.open");
+            previous_dir = $(".file-browser#"+current_position).find(".directory.open");
             previous_dir.removeClass("open");
           }
           if($(this).attr("id") != undefined && input_with_text == false){
@@ -133,9 +166,9 @@ $.widget("slycat.browser",
                 //We hide the lowest numbered column.
                 $(".file-browser#"+min).hide();
               }
-              $("<table>").addClass("file-browser").attr("id",parseInt(current_position)+1).appendTo(self.element);
+              $("<table>").addClass("file-browser").attr("id",current_position+1).appendTo(self.element);
               //No matter what we append to the next table if we are expanding a folder.
-              var container = $(".file-browser#"+(parseInt(current_position)+1));
+              var container = $(".file-browser#"+(current_position+1));
               for(var i = 0; i != result.names.length; ++i)
               {
                 name = result.names[i];
@@ -197,29 +230,6 @@ $.widget("slycat.browser",
       }
     }
 
-    //Watch what they type into the file path input field and click, or unclick folders based on it.
-    $(".path-entry-input").keypress(function(event){
-      if(event.which == 47){
-        folder_array = $(this).val().split("/");
-        latest_folder = folder_array[folder_array.length-1];
-        //Click the folder
-        input_with_text = true;
-        $("tr#"+latest_folder.replace(".","dot")).find(".arrow").click();
-      }else if (event.which == 8){
-        //Backspace was pressed
-        folder_array = $(this).val().split("/");
-        latest_folder = folder_array[folder_array.length-1];
-        if (latest_folder == ""){
-          path_to_add = folder_array[folder_array.length-2];
-          column = folder_array.length-1;
-          toggle_all_folders_after_column(column);
-          previous_dir = $(".file-browser#"+column).find(".directory.open");
-          previous_dir.removeClass("open");
-          //Random character appended so that the backspace will take effect on it. Hacky? Yes. Future fix desired.
-          $(this).val($(this).val()+path_to_add+"r");
-        }
-      }
-    });
     var container1 = $("<table>").addClass("file-browser").attr("id","1").appendTo(self.element.empty());
     var input_with_text = false;
     var item = $("<tr>").appendTo(container1);
