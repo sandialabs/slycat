@@ -67,6 +67,7 @@ Grid.prototype.setup = function() {
 
   var drag_start = function(e)
   {
+    e.preventDefault();
     drag_object.drag_start = [e.originalEvent.layerX, e.originalEvent.layerY];
 
     drag_object.drag_plot = calculate_plot.call(self, drag_object.drag_start);
@@ -76,6 +77,7 @@ Grid.prototype.setup = function() {
 
   var drag_end = function(e)
   {
+    e.preventDefault();
     drag_object.drag_end = [e.originalEvent.layerX, e.originalEvent.layerY];
 
     drag_object.drag_start = invert_selection_location.call(self, drag_object.drag_start);
@@ -90,6 +92,7 @@ Grid.prototype.setup = function() {
 
   var drag_move = function(e)
   {
+    e.preventDefault();
     if(drag_object.drag_start)
     {
       if(drag_object.drag_end)
@@ -123,7 +126,7 @@ Grid.prototype.setup = function() {
     }
   };
 
-  $(grid[0]).mousemove(drag_move)
+  $(grid[0]).select(".datum-layer").mousemove(drag_move)
     .mousedown(drag_start)
     .mouseup(drag_end);
 }

@@ -100,6 +100,7 @@ $.widget("tracer_image.scatterplot", {
       .call(
         d3.behavior.drag()
           .on('drag', function(){
+            d3.event.sourceEvent.stopPropagation();
             // Make sure mouse is inside svg element
             if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
               var theElement = d3.select(this);
@@ -112,11 +113,13 @@ $.widget("tracer_image.scatterplot", {
               theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
             }
           })
-          .on("dragstart", function() {
+          .on("dragstart", function(e) {
+            d3.event.sourceEvent.stopPropagation();
             self.state = "moving";
             d3.event.sourceEvent.stopPropagation(); // silence other listeners
           })
-          .on("dragend", function() {
+          .on("dragend", function(e) {
+            d3.event.sourceEvent.stopPropagation();
             self.state = "";
             // self._sync_open_images();
             d3.select(this).attr("data-status", "moved");
