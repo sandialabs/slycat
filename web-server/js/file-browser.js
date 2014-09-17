@@ -103,8 +103,10 @@ $.widget("slycat.browser",
             previous_dir.removeClass("open");
           }
           if($(this).attr("id") != undefined && input_with_text == false){
-            folder_name = $(this).attr("id").replace("dot",".")
-            $(".path-entry-input").val($(".path-entry-input").val() + folder_name + "/");
+            folder_name = $(this).attr("id").replace("dot",".");
+            old_value = $(".path-entry-input").val().split("/");
+            old_value = old_value.splice(0,old_value.length-1).join("/");
+            $(".path-entry-input").val(old_value +"/"+ folder_name + "/");
           }
           input_with_text = false;
           //Add text to the file path input when clicked.
@@ -195,13 +197,27 @@ $.widget("slycat.browser",
       }
     }
 
+    //Watch what they type into the file path input field and click, or unclick folders based on it.
     $(".path-entry-input").keypress(function(event){
       if(event.which == 47){
         folder_array = $(this).val().split("/");
-        latest_folder = folder_array[folder_array.length-1]
+        latest_folder = folder_array[folder_array.length-1];
         //Click the folder
         input_with_text = true;
         $("tr#"+latest_folder.replace(".","dot")).find(".arrow").click();
+      }else if (event.which == 8){
+        //Backspace was pressed
+        folder_array = $(this).val().split("/");
+        latest_folder = folder_array[folder_array.length-1];
+        if (latest_folder == ""){
+          path_to_add = folder_array[folder_array.length-2];
+          column = folder_array.length-1;
+          toggle_all_folders_after_column(column);
+          previous_dir = $(".file-browser#"+column).find(".directory.open");
+          previous_dir.removeClass("open");
+          //Random character appended so that the backspace will take effect on it. Hacky? Yes. Future fix desired.
+          $(this).val($(this).val()+path_to_add+"r");
+        }
       }
     });
     var container1 = $("<table>").addClass("file-browser").attr("id","1").appendTo(self.element.empty());
