@@ -1022,13 +1022,17 @@ def post_remote_browse():
     try:
       attributes = sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename)
       filtered_attributes = []
+      names = []
+      sizes = []
       for attribute in attributes:
         image_match_results = re.match('(.*\.jpg$)|(.*\.svg$)|(.*\.png$)|(.*\.jpeg$)|(.*\.xcf$)|(.*\.sh$)|(.*\.conf)|(.*\.ini$)', attribute.filename)
         if image_match_results is None:
           filtered_attributes.append(attribute)
-      names = [attribute.filename for attribute in filtered_attributes]
+          names.append(attribute.filename)
+          sizes.append(attribute.st_size)
+      #names = [attribute.filename for attribute in filtered_attributes]
       #names = [attribute.filename for attribute in attributes]
-      sizes = [attribute.st_size for attribute in filtered_attributes]
+      #sizes = [attribute.st_size for attribute in filtered_attributes]
       #sizes = [attribute.st_size for attribute in attributes]
       types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in filtered_attributes]
       #types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
