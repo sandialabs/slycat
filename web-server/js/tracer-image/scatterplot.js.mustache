@@ -4,6 +4,7 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.grid_ref = grid_ref; // DOM for parent
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
+  this.scatterplot_obj
   this.controls = null;
   this.movie = null;
 
@@ -28,11 +29,11 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
 }
 
 ScatterPlot.prototype.show = function() {
-  $(this.plot_ref + " .scatterplot").show();
+  this.scatterplot_obj.show();
 };
 
 ScatterPlot.prototype.hide = function() {
-  $(this.plot_ref + " .scatterplot").hide();
+  this.scatterplot_obj.hide();
 };
 
 ScatterPlot.prototype.setup_dom = function() {
@@ -73,7 +74,7 @@ ScatterPlot.prototype.setup_simulations = function() {
 };
 
 ScatterPlot.prototype.resize = function() {
-  $(this.plot_ref + " .scatterplot").scatterplot("option", {
+  this.scatterplot_obj.scatterplot("option", {
     width: $(this.plot_ref + ".scatterplot-pane").width(),
     height: $(this.plot_ref + ".scatterplot-pane").height()
   });
@@ -122,7 +123,10 @@ ScatterPlot.prototype.setup = function() {
     //Get the first parent that has a defined size, and fill it
     //TODO: Adjust this, the size should likely be calculated based on siblings
     var sized_parent = $("#grid-pane");
-    $(this.plot_ref + " .scatterplot").scatterplot({
+
+    this.scatterplot_obj = $(this.plot_ref + " .scatterplot");
+
+    this.scatterplot_obj.scatterplot({
       scatterplot_obj: self,
       indices: model.indices,
       display_pane: "#grid-pane",
