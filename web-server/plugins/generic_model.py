@@ -31,8 +31,13 @@ def register_slycat_plugin(context):
     thread.start()
 
   def html(database, model):
-    """Return the HTML representation of the model."""
-    return open(os.path.join(os.path.dirname(__file__), "generic_model.html"), "r").read()
+    """Add the HTML representation of the model to the context object."""
+    import json
+    import pystache
+
+    context = dict()
+    context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
+    return pystache.render(open(os.path.join(os.path.dirname(__file__), "generic_model.html"), "r").read(), context)
 
   # Register our new model type
   context.register_model("generic", finish, html)
