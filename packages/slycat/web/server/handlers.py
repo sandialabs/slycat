@@ -315,9 +315,6 @@ def get_model(mid, **kwargs):
   if accept == "application/json":
     return json.dumps(model)
   elif accept == "text/html":
-    if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
-      return slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
-
     model_count = len(list(database.view("slycat/project-models", startkey=project["_id"], endkey=project["_id"])))
 
     context = get_context()
@@ -341,6 +338,9 @@ def get_model(mid, **kwargs):
 
     if "model-type" in model and model["model-type"] == "parameter-image":
       return slycat.web.server.template.render("model-parameter-image.html", context)
+
+    if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
+      context["plugin-content"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
 
     return slycat.web.server.template.render("model.html", context)
 
