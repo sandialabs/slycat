@@ -342,7 +342,8 @@ $.widget("tracer_image.scatterplot", {
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
       // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
-      self.options.scatterplot_obj.movie.open_control.attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',30)');
+      self.options.scatterplot_obj.movie.open_control
+          .attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',40)');
     }
 
     if(self.updates["update_y"])

@@ -53,19 +53,28 @@ Movie.prototype.build_movie = function() {
 
 Movie.prototype.build_open_button = function(container) {
   var self = this;
-  self.open_control = container.append('foreignObject')
-    .classed('open-movie', true) //need a class since d3 can't select foreignObject elements properly in Chrome
-    .attr('width', 50) //TODO: make this sizing not be stupid
-    .attr('height', 40);
-  var open_body = self.open_control.append('xhtml:body')
-    .style('background', 'transparent');;
-  var open_button = open_body.append('button')
-    .classed('play-movie', true)
-    .on('click', function() {
-      self.play();
-    });
-  open_button.append('img')
-    .attr('src', '/style/play.png');
+  self.open_control = container.append('g')
+    .classed('open-movie', true)
+    .on('click', function(){d3.event.stopPropagation(); self.play($('.open-movie').remove) })
+    .on('mousedown', function(){d3.event.stopPropagation()})
+    .on('mouseup', function(){d3.event.stopPropagation()})
+    .attr('width', 20)
+    .attr('height', 20)
+
+  var radius = self.open_control.attr('width')/2
+  
+  self.open_control.append('circle')
+    .attr('r', radius)
+    .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',' + self.open_control.attr("width")/2 +')')
+    .attr('fill', 'transparent')
+    .attr('stroke', 'darkgreen')
+    .attr('stroke-width', 2);
+
+  self.open_control.append('path')
+    .attr('fill', 'green')
+    .attr('stroke', 'darkgreen')
+    .attr('stroke-width', 2)
+    .attr('d', 'M' + radius/4 + ' ' + 3*radius/8 + 'L' + (2*radius - 2) + ' ' + radius + 'L' + radius/4 + ' ' + 13*radius/8 + 'Z')
 }
 
 Movie.prototype.build_close_button = function(container) {
@@ -110,9 +119,10 @@ Movie.prototype.resize = function() {
 // when the movie is over (reached end of loop), repeat by calling loop again
 Movie.prototype.check_for_loop_end = function(transition, d3_obj, callback) {
   var n = 0;
+  var self = this;
   transition
     .each(function() {++n;})
-    .each("end", function() {if(!--n) callback.apply(d3_obj, arguments);});
+    .each("end", function() {if(!--n && !self.stopped) callback.apply(d3_obj, arguments);});
 };
 
 Movie.prototype.loop = function() {
@@ -138,7 +148,7 @@ Movie.prototype.loop = function() {
                .call(self.check_for_loop_end, self, self.loop)
 };
 
-Movie.prototype.play = function() {
+Movie.prototype.play = function(on_success) {
   this.stopped = false;
   // TODO get ALL hostnames for the image set - assuming there can be more than one?
   // TODO set the hostname to something ... loop over all hostnames and get session cache for that hostname
@@ -156,8 +166,11 @@ Movie.prototype.play = function() {
           image_class : "open-image",
         }
       });
-    login.show_prompt(images, this.play, this);
+    login.show_prompt(images, function(){this.play(on_success)}, this);
   } else {
+    if(on_success) {
+      on_success();
+    }
     this.build_movie();
     this.show();
     this.loop();

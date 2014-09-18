@@ -32,8 +32,10 @@ rights in this software.
   user-select: none;
 }
 
-.x-axis path,
-.y-axis path
+.x-axis .tick path,
+.x-axis .domain,
+.y-axis .tick path,
+.y-axis .domain
 {
   fill: none;
   stroke: black;
