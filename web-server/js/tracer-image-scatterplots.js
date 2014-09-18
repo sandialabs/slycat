@@ -300,18 +300,22 @@ $.widget("tracer_image.scatterplot", {
 
     if(self.updates["update_width"])
     {
+      console.log("updating width!!!!!");
       self.options.width = self.element.parents(self.options.display_pane).width() * self.options.scalar.x;
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
       self.group.attr("width", self.options.width);
+      self.options.scatterplot_obj.movie.resize();
     }
 
     if(self.updates["update_height"])
     {
+      console.log("updating height!!!!!");
       self.options.height = self.element.parents(self.options.display_pane).height() * self.options.scalar.y;
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
       self.group.attr("height", self.options.height);
+      self.options.scatterplot_obj.movie.resize();
     }
 
     if(self.updates["update_indices"])

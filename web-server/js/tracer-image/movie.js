@@ -7,10 +7,12 @@
 function Movie(plot) {
   // a plot has access to the image set for the specific cell of the grid
   this.plot = plot;
+  this.built = false;
+  this.open = false;
   this.stopped = true;
-  this.movie_ref = this.plot.plot_ref + " .movie";
-  this.jq_movie = $(this.movie_ref);
-  this.d3_movie = d3.select(this.movie_ref).selectAll("image");
+  this.container = this.plot.plot_ref + " .movie";
+  this.frame = null;
+  this.d3_movie = d3.select(this.container).selectAll("image");
   this.interval = 400;
   this.current_image = null;
   // TODO leverage bookmarker here for state of movie
@@ -19,21 +21,18 @@ function Movie(plot) {
   this.height = null;
   this.width = null;
   this.open_control = null; //handle to foreignObject so SVG can manipulate
+  $(this.container).hide();
 }
 
 Movie.prototype.build_movie = function() {
   var self = this;
   // TODO images for "image set"
   // TODO this may just work after LG fixes controls wrt image set??
-  self.height = $(this.plot.grid_ref).attr("height");
-  self.width = $(this.plot.grid_ref).attr("width");
 
-  d3.select(self.movie_ref).append("rect")
+  self.frame = d3.select(self.container).append("rect")
     .attr("class", "outline")
     .attr("x", 0)
     .attr("y", 0)
-    .attr("width", Number(self.width) + 1)
-    .attr("height", Number(self.height) + 1)
     .style("stroke", "black")
     .style("stroke-width", "1px")
     .style("fill", "white");
@@ -41,28 +40,34 @@ Movie.prototype.build_movie = function() {
   self.d3_movie = self.d3_movie
     .data(self.plot.images.filter(function(d){return d.length > 0;}))
     .enter().append("image")
-    .attr({width : self.width,
-           height : self.height,
-           "xlink:href" : function(d) {
+    .attr({ "xlink:href" : function(d) {
              return self.plot.image_url_for_session(d);
            }
           }
          );
-  self.build_close_button(d3.select(self.movie_ref));
+  self.build_close_button(d3.select(self.container));
+  self.built = true;
 };
 
 Movie.prototype.build_open_button = function(container) {
   var self = this;
   self.open_control = container.append('g')
     .classed('open-movie', true)
-    .on('click', function(){d3.event.stopPropagation(); self.play($('.open-movie').remove) })
-    .on('mousedown', function(){d3.event.stopPropagation()})
-    .on('mouseup', function(){d3.event.stopPropagation()})
+    .on('click', function() {
+      d3.event.stopPropagation();
+      self.play();
+    })
+    .on('mousedown', function() {
+      d3.event.stopPropagation();
+    })
+    .on('mouseup', function() {
+      d3.event.stopPropagation();
+    })
     .attr('width', 20)
     .attr('height', 20)
 
   var radius = self.open_control.attr('width')/2
-  
+
   self.open_control.append('circle')
     .attr('r', radius)
     .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',' + self.open_control.attr("width")/2 +')')
@@ -75,7 +80,7 @@ Movie.prototype.build_open_button = function(container) {
     .attr('stroke', 'darkgreen')
     .attr('stroke-width', 2)
     .attr('d', 'M' + radius/4 + ' ' + 3*radius/8 + 'L' + (2*radius - 2) + ' ' + radius + 'L' + radius/4 + ' ' + 13*radius/8 + 'Z')
-}
+};
 
 Movie.prototype.build_close_button = function(container) {
   var self = this;
@@ -90,8 +95,8 @@ Movie.prototype.build_close_button = function(container) {
     .attr("ry", 2)
     .style("fill", "rgba(0%,0%,0%,0.2)")
     .on("click", function() {
-      self.hide();
       self.stop();
+      self.hide();
     });
   close_button.append("path")
     .attr("d", "M" + (8) + " " + (8) + " l10 10 m0 -10 l-10 10")
@@ -105,15 +110,24 @@ Movie.prototype.show = function() {
   // TODO .show() for reopens
   $(self.plot.plot_ref + ' .scatterplot').hide();
   $('svg .image-layer').hide();
+  self.open = true;
   self.resize();
+  $(self.container).show();
 };
 
 Movie.prototype.resize = function() {
-  /* seems superfluous and might be breaking button placement... */
-  //self.width = $(this.plot.plot_ref + " .scatterplot-pane").width();
-  //self.height = $(this.plot.plot_ref + " .scatterplot-pane").height(); // 375 ... why was this here?
-  //$(this.jq_movie).css("width", self.width);
-  //$(this.jq_movie).css("height", self.height);
+  var self = this;
+  if (self.built && self.open) { // a) prevent it from breaking if called before movie built, b) unnecessary to update while hidden
+    var plot = $(this.plot.plot_ref + ' .scatterplot');
+    self.height = Number(plot.attr("height"));
+    self.width = Number(plot.attr("width"));
+    self.d3_movie
+      .attr("width", self.width + 1)
+      .attr("height", self.height + 1);
+    self.frame
+      .attr("width", self.width + 1)
+      .attr("height", self.height + 1);
+  }
 };
 
 // when the movie is over (reached end of loop), repeat by calling loop again
@@ -127,7 +141,6 @@ Movie.prototype.check_for_loop_end = function(transition, d3_obj, callback) {
 
 Movie.prototype.loop = function() {
   var self = this;
-  this.stopped = false;
   // see http://stackoverflow.com/questions/23875661/looping-through-a-set-of-images-using-d3js
   // and see my jsfiddel related to this - http://jsfiddle.net/1270p51q/2/
   var indices_with_images = this.plot.images
@@ -149,14 +162,15 @@ Movie.prototype.loop = function() {
 };
 
 Movie.prototype.play = function(on_success) {
+  var self = this;
   this.stopped = false;
   // TODO get ALL hostnames for the image set - assuming there can be more than one?
   // TODO set the hostname to something ... loop over all hostnames and get session cache for that hostname
   // TODO right now we just look at the first image
 
-  if(!login.logged_into_host_for_file(this.plot.images[0])) {
-    this.stop();
-    var plot = $(this.plot.plot_ref + " .scatterplot");
+  if(!login.logged_into_host_for_file(self.plot.images[0])) {
+    self.stop();
+    var plot = $(self.plot.plot_ref + " .scatterplot");
     var images = plot.scatterplot("get_option", "images")
       .filter(function(image){ return image.length > 0; })
       .map(function(image, index)
@@ -171,15 +185,20 @@ Movie.prototype.play = function(on_success) {
     if(on_success) {
       on_success();
     }
-    this.build_movie();
-    this.show();
-    this.loop();
+    if(!self.built) {
+      self.build_movie();
+    }
+    self.show();
+    self.loop();
     return true;
   }
 };
 
 Movie.prototype.stop = function() {
-  this.stopped = true;
+  var self = this;
+  self.stopped = true;
+  self.hide();
+
 };
 
 Movie.prototype.step = function() {
@@ -188,8 +207,8 @@ Movie.prototype.step = function() {
 
 Movie.prototype.hide = function() {
   var self = this;
-  //self.close_body.style('visibility', 'hidden');
-  $(self.movie_ref).hide();
+  $(self.container).hide();
+  self.open = false;
   $(self.plot.plot_ref + ' .scatterplot').show();
   $('svg .image-layer').show();
 };
