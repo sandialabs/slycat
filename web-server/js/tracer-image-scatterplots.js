@@ -491,7 +491,6 @@ $.widget("tracer_image.scatterplot", {
     {
       // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
       self.options.open_images.forEach(function(image) {
-        //debugger;
         if(image.uri === undefined)
           image.uri = self.options.images[image.index];
         if(image.width === undefined)
@@ -685,7 +684,7 @@ $.widget("tracer_image.scatterplot", {
     // Create scaffolding and status indicator if we already don't have one
     if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
 
-      // Define a default size for every image.
+      // Define a default size for every image. Should have come in set by hover height/width though.
       if(image.width === undefined)
         image.width = 200;
       if(image.height === undefined)
@@ -820,8 +819,7 @@ $.widget("tracer_image.scatterplot", {
         .attr("height", image.height + 1)
         .style("stroke", "black")
         .style("stroke-width", "1px")
-        .style("fill", "white")
-        ;
+        .style("fill", "white");
 
       // // Create the loading image ...
       // var timeout_image = frame.append("image")
@@ -1113,8 +1111,7 @@ $.widget("tracer_image.scatterplot", {
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in login.session_cache))
-    {
+    if(!(parser.hostname in login.session_cache)) {
       self._open_session(images);
       return;
     }
@@ -1125,13 +1122,11 @@ $.widget("tracer_image.scatterplot", {
     xhr.image = image;
     xhr.open("GET", self.options.server_root + "remote/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
+    xhr.onload = function(e) {
       // If we get 404, the remote session no longer exists because it timed-out.
       // If we get 500, there was an internal error communicating to the remote host.
       // Either way, delete the cached session and create a new one.
-      if(this.status == 404 || this.status == 500)
-      {
+      if(this.status == 404 || this.status == 500) {
         delete login.session_cache[parser.hostname];
         self._open_session(images);
         return;
@@ -1139,8 +1134,7 @@ $.widget("tracer_image.scatterplot", {
       // If we get 400, it means that the session is good and we're
       // communicating with the remote host, but something else went wrong
       // (probably file permissions issues).
-      if(this.status == 400)
-      {
+      if(this.status == 400) {
 	      console.log(this);
         window.alert("Couldn't load image " + this.image.uri + ": " + this.statusText);
         return;
@@ -1220,9 +1214,9 @@ $.widget("tracer_image.scatterplot", {
       self.opening_image = image_index;
 
       var width = self.group.attr("width");
-      var height = self.group.attr("height");
-      var hover_width = Math.min(width, height) * 0.85;
-      var hover_height = Math.min(width, height) * 0.85;
+      var height = self.group.attr("height"); // self.group is <g class="scatterplot" ...>
+      var hover_width = Math.min(width, height) * 0.85; //initial image width comes from this
+      var hover_height = Math.min(width, height) * 0.85; //initial image height comes from this
 
       var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
 

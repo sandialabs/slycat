@@ -27,18 +27,27 @@ Movie.prototype.build_movie = function() {
   // TODO this may just work after LG fixes controls wrt image set??
   self.height = $(this.plot.grid_ref).attr("height");
   self.width = $(this.plot.grid_ref).attr("width");
-  this.d3_movie = this.d3_movie
-                      .data(this.plot.images.filter(function(d){return d.length > 0;}))
-                      .enter().append("image")
-                      .attr({width : self.width,
-                             height : self.height,
-                             "xlink:href" : function(d) {
-                               return self.plot.image_url_for_session(d);
-                             }
-                            }
-                           );
-  //width : self.width,
-  //height : self.height,
+
+  d3.select(self.movie_ref).append("rect")
+    .attr("class", "outline")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", Number(self.width) + 1)
+    .attr("height", Number(self.height) + 1)
+    .style("stroke", "black")
+    .style("stroke-width", "1px")
+    .style("fill", "white");
+
+  self.d3_movie = self.d3_movie
+    .data(self.plot.images.filter(function(d){return d.length > 0;}))
+    .enter().append("image")
+    .attr({width : self.width,
+           height : self.height,
+           "xlink:href" : function(d) {
+             return self.plot.image_url_for_session(d);
+           }
+          }
+         );
   self.build_close_button(d3.select(self.movie_ref));
 };
 

@@ -117,9 +117,9 @@ ScatterPlot.prototype.setup = function() {
     $(this.plot_ref).parents("svg").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
     var open_images = [];
-    if("open-images-selection" in layout.bookmark)
+    if("open-images-selection" in layout.bookmark) {
       open_images = layout.bookmark["open-images-selection"];
-
+    }
     //Get the first parent that has a defined size, and fill it
     //TODO: Adjust this, the size should likely be calculated based on siblings
     var sized_parent = $("#grid-pane");
