@@ -135,7 +135,7 @@ $.widget("parameter_image.controls",
           var value = $('input#value', this).val().trim();
           var numeric = self.options.metadata["column-types"][variableIndex] != "string";
           var valueValid = value.length > 0;
-          if( valueValid && numeric && Number.isNaN(Number(value)) ) {
+          if( valueValid && numeric && isNaN(Number(value)) ) {
             valueValid = false;
           }
           if(valueValid) {
