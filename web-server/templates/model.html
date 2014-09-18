@@ -28,25 +28,25 @@ rights in this software.
     <script src="{{server-root}}js/jquery.knob.js"></script>
     <script src="{{server-root}}js/jquery.qtip.min.js"></script>
     <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.min.css" />
-    <div id="workers">
-      <div id="workers-close" style="display: none;">Close</div>
-      <div id="workers-container" class="workersCompact">
-        <div id="workersWrapper"></div>
+    <div id="slycat-workers">
+      <div id="slycat-workers-close" style="display: none;">Close</div>
+      <div id="slycat-workers-container" class="slycat-workers-compact">
+        <div id="slycat-workers-wrapper"></div>
       </div>
     </div>
 
-    <div id="header">
-      <div class="width-wrapper">
-        <a href="{{server-root}}projects" id="title-link">
-          <img id="logo" src="{{server-root}}style/slycat-small.png" title="A very sly cat." />
-          <h1 id="title">Slycat <span id="version"></span></h1>
+    <div id="slycat-header">
+      <div class="slycat-width-wrapper">
+        <a href="{{server-root}}projects">
+          <img id="slycat-logo" src="{{server-root}}style/slycat-small.png" title="A very sly cat." />
+          <h1 id="slycat-title">Slycat <span id="slycat-version"></span></h1>
         </a>
-        <ul id="user-actions">
-          <li id="login"><span id="login-status" class="session">{{#security}}{{name}} ({{user}}){{/security}}</span></li>
-          <li id="slycat-info"> About Slycat </li>
+        <ul id="slycat-user-actions">
+          <li><span>{{#security}}{{name}} ({{user}}){{/security}}</span></li>
+          <li id="slycat-about">About Slycat</li>
         </ul>
       </div>
-      <div id="about-slycat-dialog" class="dialog" title="About Slycat" style="display: none;">
+      <div id="slycat-about-dialog" class="dialog" title="About Slycat" style="display: none;">
       </div>
     </div>
 
@@ -73,24 +73,24 @@ rights in this software.
           alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
         }
 
-        $('#slycat-info').click(function()
+        $('#slycat-about').click(function()
         {
           aboutSlycatDialogOpen();
         });
 
-        $("<p><h3>Slycat</h3></p>").appendTo("#about-slycat-dialog");
-        $("<p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>").appendTo("#about-slycat-dialog");
-        $("<p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#about-slycat-dialog");
+        $("<p><h3>Slycat</h3></p>").appendTo("#slycat-about-dialog");
+        $("<p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>").appendTo("#slycat-about-dialog");
+        $("<p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#slycat-about-dialog");
         if( "{{help-email}}" !== "None")
         {
-          $("<p>Request help at <a href=\"mailto:" + "{{help-email}}" + "\">" + "{{help-email}}"  + " </a></p>").appendTo("#about-slycat-dialog");
+          $("<p>Request help at <a href=\"mailto:" + "{{help-email}}" + "\">" + "{{help-email}}"  + " </a></p>").appendTo("#slycat-about-dialog");
         }
         if( "{{version}}" !== "None")
         {
-          $("<p>Version: " + "{{version}}" + "</p>").appendTo("#about-slycat-dialog");
+          $("<p>Version: " + "{{version}}" + "</p>").appendTo("#slycat-about-dialog");
         }
 
-        $('#about-slycat-dialog').dialog({
+        $('#slycat-about-dialog').dialog({
           modal: true,
           autoOpen: false,
           minWidth: 500,
@@ -103,26 +103,26 @@ rights in this software.
 
         function aboutSlycatDialogOpen()
         {
-          $("#about-slycat-dialog").dialog("open");
+          $("#slycat-about-dialog").dialog("open");
         }
 
-        $('#workers-close').click(function()
+        $('#slycat-workers-close').click(function()
         {
-          $('#workers-close').slideUp();
-          $('#workers-container').switchClass("workersDetail","workersCompact");
-          window.setTimeout( "$('#workers-container .worker').each(function() { $(this).qtip('enable'); })", 250 ); // Enable tooltips when collapsing status bar. Added dealy otherwise tooltips appear before slideUp is finished
+          $('#slycat-workers-close').slideUp();
+          $('#slycat-workers-container').switchClass("slycat-workers-detail","slycat-workers-compact");
+          window.setTimeout( "$('#slycat-workers-container .slycat-worker').each(function() { $(this).qtip('enable'); })", 250 ); // Enable tooltips when collapsing status bar. Added dealy otherwise tooltips appear before slideUp is finished
         });
 
         // Expand status bar when any part of it is clicked
-        $('#workers-container.workersCompact').click(function()
+        $('#slycat-workers-container.slycat-workers-compact').click(function()
         {
-          if($(this).hasClass('workersCompact'))
+          if($(this).hasClass('slycat-workers-compact'))
           {
             document.getSelection().removeAllRanges(); // Need to clear selection after click since for some reason clicking an icon selects the status text to the right of it
             // Hide and disable all tooltips when expanding status bar
-            disable_tooltips($("#workers-container .worker"));
-            $('#workers-close').slideDown();
-            $('#workers-container').switchClass("workersCompact","workersDetail");
+            disable_tooltips($("#slycat-workers-container .slycat-worker"));
+            $('#slycat-workers-close').slideDown();
+            $('#slycat-workers-container').switchClass("slycat-workers-compact","slycat-workers-detail");
           }
         });
 
@@ -184,11 +184,11 @@ rights in this software.
 
                 function create_model_scaffolding(model)
                 {
-                  return $("<div class='worker'>")
+                  return $("<div class='slycat-worker'>")
                     .attr('id', model["_id"])
-                    .append($("<div>").addClass("message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                    .append($("<div>").addClass("name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                    .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(
+                    .append($("<div>").addClass("slycat-message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("slycat-name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("slycat-close").append($("<button>").html("&times;").attr("title", "Close model.").click(
                       function(e){
                         close_model(model["_id"]);
                         e.stopPropagation();
@@ -216,9 +216,9 @@ rights in this software.
                 $.each(models, function(index, model)
                 {
                   var model_id = model["_id"];
-                  var line = $("#" + model_id ,"#workers #workers-container");
+                  var line = $("#" + model_id ,"#slycat-workers #slycat-workers-container");
                   if(line.length == 0)
-                    line = create_model_scaffolding(model).appendTo($("#workers #workers-container #workersWrapper"));
+                    line = create_model_scaffolding(model).appendTo($("#slycat-workers #slycat-workers-container #slycat-workers-wrapper"));
 
                   line.toggleClass("finished", model["finished"] ? true : false)
                     .addClass(model["result"])
@@ -236,12 +236,12 @@ rights in this software.
                     });
                   }
 
-                  if( $('#workers-container').hasClass('workersDetail') ) {
+                  if( $('#slycat-workers-container').hasClass('slycat-workers-detail') ) {
                     disable_tooltips(line);
                   }
-                  line.find(".message").text(model["message"] || "");
-                  line.find(".name").text(model["name"] || "");
-                  line.find(".close button").unbind('click').click(
+                  line.find(".slycat-message").text(model["message"] || "");
+                  line.find(".slycat-name").text(model["name"] || "");
+                  line.find(".slycat-close button").unbind('click').click(
                     function(e){
                       close_model(model_id);
                       e.stopPropagation();
@@ -251,8 +251,8 @@ rights in this software.
                   // Set up progress indicator for workers with progress
                   if(model.hasOwnProperty("progress")) {
                     // If the line doesn't have a progress class, add the class and add a progress indicator if it's not finished yet
-                    if(!line.hasClass("progressDeterminate")) {
-                      line.addClass("progressDeterminate");
+                    if(!line.hasClass("slycat-progress-determinate")) {
+                      line.addClass("slycat-progress-determinate");
                       if(!model["finished"]){
                         line.append($("<input>").addClass("pie").attr("value", model["progress"]).knob({
                           'min':0,
@@ -293,8 +293,8 @@ rights in this software.
 
                 });
 
-                $("#workers-container .worker").not(".updated").remove(); // Remove any non-existing workers
-                $("#workers-container .worker").removeClass("updated"); // Clear the updated flag
+                $("#slycat-workers-container .slycat-worker").not(".updated").remove(); // Remove any non-existing workers
+                $("#slycat-workers-container .slycat-worker").removeClass("updated"); // Clear the updated flag
               }
 
               // Restart the request immediately.
@@ -312,34 +312,31 @@ rights in this software.
       });
     </script>
 
-    <div id="page-title">
-      <div class="width-wrapper">
-        <button id="edit-model-button" class="edit-page" title="Edit this model's name and description.">Edit Model</button>
-        <div id="breadcrumbs">
+    <div id="slycat-page-title">
+      <div class="slycat-width-wrapper">
+        <button id="slycat-edit-model" class="slycat-edit-page" title="Edit this model's name and description.">Edit Model</button>
+        <div id="slycat-breadcrumbs">
           <a href="{{server-root}}projects">Projects</a> &rarr;
-          {{#full-project}}<a href="{{server-root}}projects/{{_id}}" id="project-link">{{name}}</a> &rarr;{{/full-project}}
+          {{#full-project}}<a href="{{server-root}}projects/{{_id}}">{{name}}</a> &rarr;{{/full-project}}
         </div>
         <h2>{{name}}</h2>
-        <div id="model-desc">{{description}}</div>
-        <div id="edit-model">
-
-          <div id="edit-model-form" title="Edit Model">
-            <form>
-              <label for="new-model-name">Model Name</label>
-              <input id="new-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
-              <label for="new-model-description">Description</label>
-              <textarea id="new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
-            </form>
-          </div>
+        <div>{{description}}</div>
+        <div id="slycat-edit-model-dialog" title="Edit Model">
+          <form>
+            <label for="slycat-new-model-name">Model Name</label>
+            <input id="slycat-new-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
+            <label for="slycat-new-model-description">Description</label>
+            <textarea id="slycat-new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+          </form>
         </div>
       </div>
     </div>
 
-    <div id="content">
-      <div class="width-wrapper">
-        <div class="marking">{{{marking-html}}}</div>
+    <div id="slycat-content">
+      <div class="slycat-width-wrapper">
+        <div>{{{marking-html}}}</div>
         {{{slycat-plugin-content}}}
-        <div class="marking">{{{marking-html}}}</div>
+        <div>{{{marking-html}}}</div>
       </div>
     </div>
 
@@ -358,7 +355,7 @@ rights in this software.
           processData : false
         });
 
-        $("#edit-model-form").dialog(
+        $("#slycat-edit-model-dialog").dialog(
         {
           autoOpen: false,
           height: 500,
@@ -389,8 +386,8 @@ rights in this software.
             {
               var model =
               {
-                "name" : $("#edit-model-name").val(),
-                "description" : $("#edit-model-description").val()
+                "name" : $("#slycat-new-model-name").val(),
+                "description" : $("#slycat-new-model-description").val()
               };
 
               $.ajax(
@@ -420,9 +417,9 @@ rights in this software.
           }
         });
 
-        $("#edit-model-button").button().click(function()
+        $("#slycat-edit-model").button().click(function()
         {
-          $("#edit-model-form").dialog("open");
+          $("#slycat-edit-model-dialog").dialog("open");
         });
       });
     </script>
