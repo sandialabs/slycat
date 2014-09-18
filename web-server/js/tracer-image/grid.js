@@ -90,6 +90,7 @@ Grid.prototype.setup = function() {
 
   var drag_move = function(e)
   {
+    e.preventDefault();
     if(drag_object.drag_start)
     {
       if(drag_object.drag_end)
@@ -123,7 +124,7 @@ Grid.prototype.setup = function() {
     }
   };
 
-  $(grid[0]).mousemove(drag_move)
+  $(grid[0]).select(".datum-layer").mousemove(drag_move)
     .mousedown(drag_start)
     .mouseup(drag_end);
 }
