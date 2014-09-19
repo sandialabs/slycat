@@ -5,7 +5,6 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.scatterplot_obj = null;
-  this.controls = null;
   this.movie = null;
 
   this.x_index = null;
@@ -20,7 +19,6 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.hidden_simulations = null;
 
   this.ready = false;
-  this.controls_ready = false;
 
   this.image_uri = document.createElement("a");
 
@@ -43,7 +41,6 @@ ScatterPlot.prototype.setup_dom = function() {
   var pane = group.append("g").attr({class: "scatterplot-pane"});
   pane.append("g").attr({class: "load-status"});
   pane.append("g").attr({class: "scatterplot"});
-  //pane.append("g").attr({class: "controls"});
   pane.append("g").attr({class: "movie"});
 };
 
@@ -131,7 +128,7 @@ ScatterPlot.prototype.setup = function() {
       display_pane: "#grid-pane",
       dimension_adjustments: {
           width: function(){return 0;},
-          height: function(){return -1 * $(self.grid_ref + " .controls").height(); }},
+          height: function(){return -1 * $(self.grid_ref + " .controls").height(); }}, //TODO what is this doing
       x: self.x,
       y: self.y,
       v: self.v,
@@ -187,6 +184,10 @@ ScatterPlot.prototype.setup = function() {
         });
     });
 
+    // Log changes to open images ...
+    $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
+      self.open_images_changed(selection);
+    });
   }
 };
 

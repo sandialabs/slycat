@@ -12,8 +12,8 @@ $.widget("tracer_image.scatterplot", {
   options: {
     object_ref : null,
     scatterplot_obj : null,
-    width : 300,
-    height : 300,
+    width : null,
+    height : null,
     //The parent to use for resizing purposes:
     display_pane : "",
     dimension_adjustments: {width: function(){return 0}, height: function(){return 0;}},
