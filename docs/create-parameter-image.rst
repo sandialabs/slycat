@@ -104,4 +104,4 @@ Interact with a Parameter Image Model
 Next Steps
 ----------
 
-Consider :ref:`Contributing to Slycat`.
+That's it for the tutorial ... now on to :ref:`Managing Docker`.

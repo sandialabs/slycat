@@ -10,6 +10,12 @@ It's intended as a guide for advanced users who are interested in
 setting-up Slycat Web Server on their own hardware.  Of course,
 you'll have to adjust these instructions for your own OS.
 
+The Slycat Repository
+---------------------
+
+You can find the Slycat repository at http://github.com/sandialabs/slycat ... the repository
+includes the Slycat source code, issue tracker, and wiki.
+
 Create the Virtual Machine
 --------------------------
 
