@@ -4,7 +4,7 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.grid_ref = grid_ref; // DOM for parent
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
-  this.scatterplot_obj
+  this.scatterplot_obj = null;
   this.controls = null;
   this.movie = null;
 
@@ -132,7 +132,6 @@ ScatterPlot.prototype.setup = function() {
       dimension_adjustments: {
           width: function(){return 0;},
           height: function(){return -1 * $(self.grid_ref + " .controls").height(); }},
-      v_label: model.metadata["column-names"][self.v_index],
       x: self.x,
       y: self.y,
       v: self.v,
@@ -167,21 +166,11 @@ ScatterPlot.prototype.setup = function() {
     $("#table").bind("x-selection-changed", function(event, variable) {
       self.update_x(variable);
     });
-    */
-    $(this.plot_ref + " .controls").bind("x-selection-changed", function(event, variable) {
-      self.update_x(variable);
-    });
-
-    /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the y variable updates the scatterplot ...
     $("#table").bind("y-selection-changed", function(event, variable) {
       self.update_y(variable);
     });*/
-    $(this.plot_ref + " .controls").bind("y-selection-changed", function(event, variable) {
-      self.update_y(variable);
-    });
 
-    /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the images variable updates the scatterplot ...
     $("#table").bind("images-selection-changed", function(event, variable) {
       console.debug("changing the images var updates the scatter plot -- ajax");
@@ -196,39 +185,9 @@ ScatterPlot.prototype.setup = function() {
           },
           error: artifact_missing
         });
-    });*/
-    $(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
-      console.debug("GET models/id/attrs / image selection changed -- ajax");
-      $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
-            variable + "/chunk?ranges=0," + model.metadata["row-count"],
-          success : function(result)
-          {
-            $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
-          },
-          error: artifact_missing
-        });
     });
 
-    // Log changes to open images ...
-    $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
-      self.open_images_changed(selection);
-    });
   }
-};
-
-ScatterPlot.prototype.selected_variable_changed = function(variable) {
-  console.debug("inside selected_variable_chagned()");
-  console.debug("selected variable changed -- ajax");
-  $.ajax(
-    {
-      type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
-    });
-  layout.bookmarker.updateState({"variable-selection" : variable});
-  this.v_index = Number(variable);
 };
 
 ScatterPlot.prototype.selected_simulations_changed = function(selection) {
@@ -242,33 +201,6 @@ ScatterPlot.prototype.selected_simulations_changed = function(selection) {
     });
   layout.bookmarker.updateState( {"simulation-selection" : selection} );
   this.selected_simulations = selection;
-};
-
-ScatterPlot.prototype.x_selection_changed = function(variable) {
-  console.debug("inside x selection changed");
-  console.debug("x selection changed -- ajax");
-  $.ajax(
-    {
-      type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/x/" + variable
-    });
-  stateToUpdate = {};
-  stateToUpdate["x-selection-" + this.plot_id] = variable;
-  layout.bookmarker.updateState(stateToUpdate);
-  this.x_index = Number(variable);
-};
-
-ScatterPlot.prototype.y_selection_changed = function(variable) {
-  console.debug("inside y selection changed");
-  console.debug("y selection changed -- ajax");
-  $.ajax(
-    {
-      type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/y/" + variable
-    });
-  stateToUpdate = {};
-  stateToUpdate["y-selection-" + this.plot_id] = variable;
-  layout.bookmarker.updateState(stateToUpdate);
 };
 
 ScatterPlot.prototype.images_selection_changed = function(variable) {
@@ -306,68 +238,6 @@ ScatterPlot.prototype.hidden_simulations_changed = function() {
       url : "{{server-root}}events/models/{{_id}}/hidden/count/" + self.hidden_simulations.length
     });
   layout.bookmarker.updateState( {"hidden-simulations" : self.hidden_simulations} );
-};
-
-ScatterPlot.prototype.update_value = function(attribute) {
-  console.debug("inside update scatterplot value");
-  var self = this;
-  if(attribute == model.metadata["column-count"] - 1)
-  {
-    var count = this.v.length;
-    for(var i = 0; i != count; ++i)
-      self.v[i] = i;
-    $(self.plot_ref + " .scatterplot").scatterplot("option", {v : self.v});
-  }
-  else
-  {
-    get_model_array_attribute({
-      server_root : "{{server-root}}",
-      mid : "{{_id}}",
-      aid : "data-table",
-      array : 0,
-      attribute : attribute,
-      success : function(result)
-      {
-        $(self.plot_ref + " .scatterplot").scatterplot("option", {v : result});
-      },
-      error : artifact_missing
-    });
-  }
-};
-
-ScatterPlot.prototype.update_x = function(variable) {
-  console.debug("inside update scatterplot x");
-  var self = this;
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : variable,
-    success : function(result)
-    {
-      console.log("update x ajax returned!!!!!");
-      $(self.plot_ref + " .scatterplot").scatterplot("option", {x: result});
-    },
-    error : artifact_missing
-  });
-};
-
-ScatterPlot.prototype.update_y = function(variable) {
-  console.debug("inside update scatterplot y");
-  var self = this;
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : variable,
-    success : function(result)
-    {
-      $(self.plot_ref + " .scatterplot").scatterplot("option", {y: result});
-    },
-    error : artifact_missing
-  });
 };
 
 ScatterPlot.prototype.display_image = function(uri) {

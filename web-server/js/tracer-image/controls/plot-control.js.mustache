@@ -62,6 +62,11 @@ PlotControl.prototype.build = function() {
 
 PlotControl.prototype.store_selected_variable = function(variable) {
   var self = this;
+  // pre-refactor selected_variable_changed() method POSTed to "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+  // and bookmarker saved 'variable-selection' state...
+  // color_control currently sets control_type to 'v' so it's POSTing to a different path and saving a different key
+  // but changing the key shouldn't matter as long as it's retrieved the same way and from examining engine.py and handlers.py
+  // it appears that the only effect of this POST is to log client events on the server so all's good
   $.ajax(
     {
       type : "POST",
@@ -100,7 +105,40 @@ PlotControl.prototype.update_plot = function(variable) {
     },
     error : artifact_missing
   });
+  /* NOTE: color variable selection used to conditionally use index instead of fetching variable from server
+     but the index was arbitrary and essentially just ended up representing time, which will usually be the first
+     csv column and thus default selection anyway
+
+    if(attribute == model.metadata["column-count"] - 1) {
+      var count = this.v.length;
+      for(var i = 0; i != count; ++i)
+        self.v[i] = i;
+      $(self.plot_ref + " .scatterplot").scatterplot("option", {v : self.v});
+    }
+  */
 };
+
+/* TODO: implement image-selection control. Excerpted from pre-refactor codebase:
+$(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
+ console.debug("GET models/id/attrs / image selection changed -- ajax");
+ $.ajax(
+ {
+ type : "GET",
+ url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
+ variable + "/chunk?ranges=0," + model.metadata["row-count"],
+ success : function(result)
+ {
+ $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
+ },
+ error: artifact_missing
+ });
+ });
+
+ // Log changes to open images ...
+ $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
+ self.open_images_changed(selection);
+ });
+*/
 
 /*
  For reference, how to translate jquery selection to D3 selection and append:

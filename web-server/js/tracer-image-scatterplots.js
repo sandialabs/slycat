@@ -20,7 +20,6 @@ $.widget("tracer_image.scatterplot", {
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
-    v_label : "V Label",
     x : [],
     y : [],
     v : [],
@@ -63,9 +62,8 @@ $.widget("tracer_image.scatterplot", {
 
     self._build_x_axis();
     self._build_y_axis();
+    self._build_color_legend();
 
-    self.legend_layer = self.group.append("g").attr("class", "legend");
-    self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.datum_layer = self.group.append("g").attr("class", "datum-layer");
     self.selected_layer = self.group.append("g");
     self.selection_layer = self.group.append("g");
@@ -93,7 +91,6 @@ $.widget("tracer_image.scatterplot", {
       update_legend_colors:true,
       update_legend_position:true,
       update_legend_axis:true,
-      update_v_label:true,
     });
 
     self.legend_layer
@@ -198,6 +195,22 @@ $.widget("tracer_image.scatterplot", {
     self.y_control.build();
   },
 
+  _build_color_legend: function() {
+    var self = this;
+    self.legend_layer = self.group.append("g").attr("class", "legend");
+
+    self.color_control = new PlotControl({
+      plot: self.options.scatterplot_obj,
+      container: self.legend_layer,
+      control_type: 'v',
+      label_text: 'Color variable:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.color_control.build();
+    self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
@@ -209,11 +222,6 @@ $.widget("tracer_image.scatterplot", {
     {
       self._filterIndices();
       self._schedule_update({update_indices:true, render_selection:true});
-    }
-
-    else if(key == "v_label")
-    {
-      self._schedule_update({update_v_label:true});
     }
 
     else if(key == "x")
@@ -257,12 +265,12 @@ $.widget("tracer_image.scatterplot", {
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
+      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true});
     }
 
     else if(key == "border")
     {
-      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_v_label:true,});
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true});
     }
 
     else if(key == "gradient")
@@ -541,22 +549,16 @@ $.widget("tracer_image.scatterplot", {
       });
     }
 
-    if(self.updates["render_legend"])
-    {
+    if(self.updates["render_legend"]) {
       var gradient = self.legend_layer.append("defs").append("linearGradient");
       gradient.attr("id", "color-gradient")
         .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%")
-        ;
-
+        .attr("x2", "0%").attr("y2", "100%");
       var colorbar = self.legend_layer.append("rect")
         .classed("color", true)
-        .attr("width", 10)
-        .attr("height", 200)
         .attr("x", 0)
         .attr("y", 0)
-        .style("fill", "url(#color-gradient)")
-        ;
+        .style("fill", "url(#color-gradient)");
     }
 
     if(self.updates["update_legend_colors"])
@@ -577,10 +579,11 @@ $.widget("tracer_image.scatterplot", {
       var total_height = Number(self.group.attr("height"));
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
+      var rectWidth = 10;
+      // rectHeight attr used to be set to 200 in render, but then overwritten to this. deleted former from render.
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var datum_layer_width = self.datum_layer.node().getBBox().width;
       var width_offset = (total_width + datum_layer_width) / 2;
-
       if( self.legend_layer.attr("data-status") != "moved" ) {
         var transx = parseInt(width_offset + 40);
         var transy = parseInt((total_height/2)-(rectHeight/2)-10);
@@ -591,44 +594,24 @@ $.widget("tracer_image.scatterplot", {
       }
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
+        .attr('width', rectWidth);
+
+      var legend_width = rectWidth + self.legend_axis_layer.node().getBBox().width;
+      var control_width = Number(self.color_control.foreign_object.attr('width'));
+      var control_height = Number(self.color_control.foreign_object.attr('height'));
+      //TODO: figure out how to use the <select>'s width instead of the <foreignObject>'s... then won't need to subtract the arbitrary -10
+      var horizontal_offset = (control_width - legend_width)/2 - 10;
+      // use (rectHeight + 10) y-transform to put control below legend
+      self.color_control.foreign_object.attr('transform', 'translate(-' + horizontal_offset + ',-' + (control_height + 5) + ')');
     }
 
-    if(self.updates["update_legend_axis"])
-    {
+    if(self.updates["update_legend_axis"]) {
       self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
-        .call(self.legend_axis)
-        ;
+        .call(self.legend_axis);
     }
-
-    if(self.updates["update_v_label"])
-    {
-      console.log("updating v label.");
-      self.legend_layer.selectAll(".label").remove();
-
-      self.element.parents("svg").resize();
-
-      // var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      // var x = -(y_axis_width+15);
-      // var y = self.group.attr("height") / 2;
-      var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
-      var x = -15;
-      var y = rectHeight/2;
-
-      self.legend_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.v_label)
-        ;
-    }
-
-    self.updates = {}
   },
 
   _sync_open_images: function()
