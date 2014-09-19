@@ -881,3 +881,35 @@ def test_json_hyperchunks():
   connection.delete_model(mid)
   connection.delete_project(pid)
 
+def test_remote_browse_filter():
+  import pprint
+  sid = connection.post_remote("localhost", "slycat", "slycat")
+  directory = connection.post_remote_browse(sid, "/home/slycat/src/slycat/web-server")
+  for name in ["plugins", "templates", "config.ini", "slycat-web-server.py", "web-server.pem"]:
+    nose.tools.assert_in(name, directory["names"])
+
+  directory = connection.post_remote_browse(sid, "/home/slycat/src/slycat/web-server", file_reject="[.]py$")
+  for name in ["plugins", "templates", "config.ini", "web-server.pem"]:
+    nose.tools.assert_in(name, directory["names"])
+  for name in ["slycat-web-server.py"]:
+    nose.tools.assert_not_in(name, directory["names"])
+
+  directory = connection.post_remote_browse(sid, "/home/slycat/src/slycat/web-server", file_reject=".*", file_allow="[.]py$")
+  for name in ["plugins", "templates", "slycat-web-server.py"]:
+    nose.tools.assert_in(name, directory["names"])
+  for name in ["config.ini", "web-server.pem"]:
+    nose.tools.assert_not_in(name, directory["names"])
+
+  directory = connection.post_remote_browse(sid, "/home/slycat/src/slycat/web-server", directory_reject=".*")
+  for name in ["config.ini", "slycat-web-server.py", "web-server.pem"]:
+    nose.tools.assert_in(name, directory["names"])
+  for name in ["plugins", "templates"]:
+    nose.tools.assert_not_in(name, directory["names"])
+
+  directory = connection.post_remote_browse(sid, "/home/slycat/src/slycat/web-server", directory_reject=".*", directory_allow="plugins")
+  for name in ["plugins", "config.ini", "slycat-web-server.py", "web-server.pem"]:
+    nose.tools.assert_in(name, directory["names"])
+  for name in ["templates"]:
+    nose.tools.assert_not_in(name, directory["names"])
+
+

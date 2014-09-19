@@ -1012,13 +1012,35 @@ def post_remote():
 def post_remote_browse():
   sid = cherrypy.request.json["sid"]
   path = cherrypy.request.json["path"]
+  file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
+  file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
+  directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
+  directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
 
   with slycat.web.server.ssh.get_session(sid) as session:
     try:
-      attributes = sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename)
-      names = [attribute.filename for attribute in attributes]
-      sizes = [attribute.st_size for attribute in attributes]
-      types = ["d" if stat.S_ISDIR(attribute.st_mode) else "f" for attribute in attributes]
+      names = []
+      sizes = []
+      types = []
+
+      for attribute in sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename):
+        filepath = os.path.join(path, attribute.filename)
+        filetype = "d" if stat.S_ISDIR(attribute.st_mode) else "f"
+
+        if filetype == "d":
+          if directory_reject is not None and directory_reject.search(filepath) is not None:
+            if directory_allow is None or directory_allow.search(filepath) is None:
+              continue
+
+        if filetype == "f":
+          if file_reject is not None and file_reject.search(filepath) is not None:
+            if file_allow is None or file_allow.search(filepath) is None:
+              continue
+
+        names.append(attribute.filename)
+        sizes.append(attribute.st_size)
+        types.append(filetype)
+
       response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
       return response
     except Exception as e:
