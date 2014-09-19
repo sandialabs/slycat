@@ -11,7 +11,9 @@ rights in this software.
 {{> head}}
     <title>{{name}} - Slycat Project</title>
     <script type="text/javascript" src="{{server-root}}js/file-browser.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.combobox.js"></script>
     <link rel="stylesheet" href="{{server-root}}style/file-browser.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}style/combobox.css" type="text/css">
   </head>
 
   <body>
@@ -97,7 +99,6 @@ rights in this software.
           <button id="remote-pi-button" title="Load a parameter image model from a remote CSV file.">Remote PI</button>
           {{/can-write}}
         </div>
-
         <!-- Local CCA user interface -->
         <div id="local-cca-form" class="dialog" title="Local File CCA Model">
           <div id="local-cca-basics">
@@ -167,13 +168,11 @@ rights in this software.
           </div>
 
           <div id="remote-cca-connection">
-            <p>Select the remote host where your data is located:
-              <select id="remote-cca-hostname">
-                {{#remote-hosts}}
-                <option value="{{name}}">{{name}}</option>
-                {{/remote-hosts}}
-              </select>
-            </p>
+            <div class="ui-widget">
+              <label for="remote-cca-hostname">Type the remote host where your data is located:</label>
+              <input type="text" id="remote-cca-hostname">
+              <div id="remote-hosts-cca-message"></div>
+            </div>
             <p><label for="remote-cca-username">Username</label><input id="remote-cca-username" name="remote-cca-username" type="input"/></p>
             <p><label for="remote-cca-password">Password</label><input id="remote-cca-password" name="remote-cca-password" type="password"/></p>
             <button id="remote-cca-connection-next">Next</button>
@@ -233,13 +232,11 @@ rights in this software.
           </div>
 
           <div id="remote-pi-connection">
-            <p>Select the remote host where your data is located:
-              <select id="remote-pi-hostname">
-                {{#remote-hosts}}
-                <option value="{{name}}">{{name}}</option>
-                {{/remote-hosts}}
-              </select>
-            </p>
+            <div class="ui-widget">
+              <label for="remote-pi-hostname">Type the remote host where your data is located:</label>
+              <input type="text" id="remote-pi-hostname">
+              <div id="remote-hosts-pi-message"></div>
+            </div>
             <p><label for="remote-pi-username">Username</label><input id="remote-pi-username" name="remote-pi-username" type="input"/></p>
             <p><label for="remote-pi-password">Password</label><input id="remote-pi-password" name="remote-pi-password" type="password"/></p>
             <button id="remote-pi-connection-next">Next</button>
@@ -327,7 +324,6 @@ rights in this software.
             });
           }
         }
-
         $("#add-administrator").button().click(add_user($("#new-administrator"), modified_security.administrators, update_administrator_acl));
         $("#add-writer").button().click(add_user($("#new-writer"), modified_security.writers, update_writer_acl));
         $("#add-reader").button().click(add_user($("#new-reader"), modified_security.readers, update_reader_acl));
@@ -960,6 +956,35 @@ rights in this software.
         $("#remote-cca-button").button().click(function()
         {
           $("#remote-cca-form").dialog("open");
+        });
+
+        /*This each loop goes over each model type abbreviation and sets the "#remote-model_name-hostname" textfield to a combobox.
+          It also watches the text field for value changes and handles displaying messages and removing them when they need to be
+          shown or hidden. If there is a new model type that you would like a remote connection combobox in, simply add a text field
+          with the id: "#remote-model_name-hostname" where model_name is the actual abbreviation (Ex: cca, pi). This text field will
+          be the combobox where they can type their own hostname, or select from the list. Then make sure there is a div of 
+          id: "#remote-hosts-model_name-message" where model_name is the actual abbreviation. This div will be where the sub-optimal 
+          warning message is added or removed.
+        */
+        $.each(["cca", "pi"], function(index, model_type)
+        {
+          $("#remote-" + model_type + "-hostname").combobox({{remote-hosts-arr}});
+          $("#remote-"+ model_type + "-hostname").on("change", function()
+          {
+            var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
+            $("#remote-hosts-" + model_type + "-message").html("");
+            $.each(remote_host_array, function(index, remote_host_object)
+            {
+              if(remote_host_object.name == $("#remote-" + model_type + "-hostname").val())
+              {
+                if(remote_host_object.hasOwnProperty("message"))
+                {
+                  $("#remote-hosts-" + model_type + "-message").html("<p>"+ remote_host_object.message +"</p>");
+                }
+                return false;
+              }
+            });
+          });
         });
 
         function process_model_status(results) {
