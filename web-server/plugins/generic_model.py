@@ -25,7 +25,7 @@ def register_slycat_plugin(context):
       model = database.get("model", mid)
       slycat.web.server.model.update(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
-  def finish(model):
+  def finish(database, model):
     """Called to finish the model.  This function must return immediately, so the actual work is done in a separate thread."""
     thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()

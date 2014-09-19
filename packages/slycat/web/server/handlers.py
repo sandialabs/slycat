@@ -379,7 +379,7 @@ def post_model_finish(mid):
 
   slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
   if model["model-type"] in slycat.web.server.plugin.manager.models.keys():
-    slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](model)
+    slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
   elif model["model-type"] == "cca":
     slycat.web.server.model.cca.finish(database, model)
   elif model["model-type"] == "timeseries":
