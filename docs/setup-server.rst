@@ -43,16 +43,17 @@ previous, adding new functionality:
   will be used to startup the other processes.
 * sshd - Installs an SSH server on top of the supervisord image, and configures supervisord
   to automatically start it when the container is run.
-* slycat - Installs the Slycat server and its dependencies atop the sshd image.
+* slycat - Installs the Slycat server and its dependencies atop the sshd image, and configures
+  supervisord to automatically start it when the container is run.
 
 The main differences between platforms will be in how you install the various
 dependencies.  One platform - such as Fedora 20 in our Dockerfile - installs
 the Python h5py module and its compiled hdf5 library dependency using a single
 yum package, where another platform - such as Centos 6 - provides a yum package
 for hdf5, but no package for the Python h5py module, so you have to use pip to
-  install it.  Unfortunately, we can't enumerate all the possibilities here, so
-  you'll have to begin with the packages listed in the Dockerfile, and
-  generalize to your platform.
+install it.  Unfortunately, we can't enumerate all the possibilities here, so
+you'll have to begin with the packages listed in the Dockerfile, and
+generalize to your platform.
 
 Configuring Slycat Web Server
 -----------------------------
@@ -69,14 +70,19 @@ The sample `config.ini` that we provide with the Slycat source code is designed
 to start Slycat in a state that's useful for developers, so you'll likely want
 to copy it to some other filesystem location, modify it, and point Slycat to
 the modified `config.ini` instead.  To do so, you specify the config file location
-using command-line arguments::
+using the command-line::
 
   $ python slycat-web-server.py --config=/etc/slycat/config.ini
 
 The `config.ini` file is an INI file divided into sections using square braces.
-The `[slycat]` section is reserved for configuration specific to the functionality of
-the Slycat server, while the `[global]` section and any sections starting with a slash
-(for example: `[/style]`) are used to configure the CherryPy server that Slycat is
-based upon.
+The `[slycat]` section is reserved for configuration specific to the
+functionality of the Slycat server, while the `[global]` section and any
+sections starting with a slash (for example: `[/style]`) are used to configure
+the `CherryPy <http://www.cherrypy.org>`_ server that Slycat is based upon.
 
 The values for each setting in `config.ini` must be valid Python expressions.
+You should note that in the sample `config.ini` we provide, some values are
+simple scalars, such as `[global] server.socket_port`, while some values create
+object instances, such as `[slycat] directory`, which creates a directory
+object that will handle user lookups.  This provides great flexibility to
+customize Slycat for your network.
