@@ -4,24 +4,16 @@
 
 from __future__ import absolute_import
 
-import base64
 import cherrypy
-import copy
-import cStringIO as StringIO
 import datetime
 import hashlib
-import h5py
 import itertools
 import json
 import logging.handlers
 import numpy
-import optparse
 import os
-import pprint
 import Queue
-import subprocess
-import stat
-import sys
+import re
 import slycat.hdf5
 import slycat.hyperslice
 import slycat.web.server
@@ -34,11 +26,11 @@ import slycat.web.server.model.timeseries
 import slycat.web.server.plugin
 import slycat.web.server.ssh
 import slycat.web.server.template
+import stat
+import sys
 import threading
 import time
-import traceback
 import uuid
-import re
 
 def require_parameter(name):
   if name not in cherrypy.request.json:
