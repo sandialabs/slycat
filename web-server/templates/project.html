@@ -966,26 +966,24 @@ rights in this software.
           id: "#remote-hosts-model_name-message" where model_name is the actual abbreviation. This div will be where the sub-optimal 
           warning message is added or removed.
         */
-        $.each(["cca", "pi"], function(index, model_type){
-          $("#remote-" + model_type + "-hostname").combobox(
-            {{remote-hosts-arr}}
-          );
-          $("#remote-"+ model_type + "-hostname").change(function(){
+        $.each(["cca", "pi"], function(index, model_type)
+        {
+          $("#remote-" + model_type + "-hostname").combobox({{remote-hosts-arr}});
+          $("#remote-"+ model_type + "-hostname").on("change", function()
+          {
             var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
-            if($(this).val() == ""){
-              $("#remote-hosts-" + model_type + "-message").html("");
-            }else{
-              $.each(remote_host_array, function(index, remote_host_object){
-                if (remote_host_object.name == $("#remote-" + model_type + "-hostname").val()){
-                  if(remote_host_object.hasOwnProperty("message")){
-                    $("#remote-hosts-" + model_type + "-message").html("<p>"+ remote_host_object.message +"</p>");
-                  }else{
-                    $("#remote-hosts-" + model_type + "-message").html("");
-                  }
-                  return false;
+            $("#remote-hosts-" + model_type + "-message").html("");
+            $.each(remote_host_array, function(index, remote_host_object)
+            {
+              if(remote_host_object.name == $("#remote-" + model_type + "-hostname").val())
+              {
+                if(remote_host_object.hasOwnProperty("message"))
+                {
+                  $("#remote-hosts-" + model_type + "-message").html("<p>"+ remote_host_object.message +"</p>");
                 }
-              });
-            }
+                return false;
+              }
+            });
           });
         });
 
