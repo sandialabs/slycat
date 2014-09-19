@@ -32,24 +32,24 @@ application/json
 Parameters
 ^^^^^^^^^^
 
-* sid - remote session identifier, required.
-* path - remote filesystem path, required.
-* directory-reject - regular expression for directories that should be removed from the results. Optional.
-* directory-allow - regular expression for directories that should be included in the results. Optional.
-* file-reject - regular expression for files that should be removed from the results. Optional.
-* file-allow - regular expression for files that should be included in the results. Optional.
+* sid - required remote session identifier.
+* path - required remote filesystem path.
+* directory-reject - optional regular expression for filtering directories.
+* directory-allow - optional regular expression for retaining directories.
+* file-reject - optional regular expression for filtering files.
+* file-allow - optional regular expression for allowing files.
 
 The regular expression parameters are matched against full file / directory
 paths.  If a file / directory matches a reject expression, it will not be
-included in the results, unless it also matches an allow expression.  For example,
-to only return CSV files, specify::
+included in the results, unless it also matches an allow expression.  So, to
+remove JPEG files from the results::
 
-  file-reject = .*       # Matches all files
-  file-allow = [.]csv$   # Matches files that end with .csv
+  file-reject = [.]jpg$|[.]jpeg$  # Reject files that end in .jpg or .jpeg
 
-Or to remove JPEG files from results::
+but to only return CSV files::
 
-  file-reject = [.]jpg$
+  file-reject = .*       # Reject all files
+  file-allow = [.]csv$   # ... except for files that end in .csv
 
 Responses
 ---------
