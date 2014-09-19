@@ -4,150 +4,49 @@ Setup Slycat Web Server
 =======================
 
 Note: If you're new to Slycat and are here give it a try, please see
-:ref:`Install Slycat` instead. The following outlines how we setup the
-Slycat Web Server when we build the a custom Slycat virtual machine.
-It's intended as a guide for advanced users who are interested in
-setting-up Slycat Web Server on their own hardware.  Of course,
-you'll have to adjust these instructions for your own OS.
+:ref:`Install Slycat` instead. The following outlines how we setup the Slycat
+Web Server when we build the Slycat Docker image.  It's intended as a guide for
+advanced users who are interested in setting-up Slycat Web Server on their own
+hardware.  Of course, you'll have to adjust this information for your own OS.
 
 The Slycat Repository
 ---------------------
 
-You can find the Slycat repository at http://github.com/sandialabs/slycat ... the repository
-includes the Slycat source code, issue tracker, and wiki.
+First things first ... you can find the Slycat repository at
+http://github.com/sandialabs/slycat which includes the Slycat
+source code, issue tracker, and wiki.
 
-Create the Virtual Machine
---------------------------
+Using the Dockerfiles
+---------------------
 
--  We used VirtualBox to create a new VM and installed CentOS 6.5 64-bit
-   as the OS.
--  The VM should have at least 2 CPUs, and use SCSI instead of SATA as
-   the disk controller.
+We prefer to point new Slycat administrators to our `Dockerfiles` for
+information on setting-up Slycat, because these files are the actual scripts
+that we use to build the Slycat Docker image - thus they're an
+always-up-to-date and unambiguous specification of how to build a Slycat
+server.  Ideally, we encourage you to use the Slycat docker image as a
+starting-point for your own Slycat server instance, perhaps using our
+`sandialabs/slycat` image as the base for your own Docker image customized to
+suit your production environment.  But even if you don't use Docker, the
+Dockerfiles are easy to understand and adapt to your own processes.
 
-As user root:
--------------
+You will find our Dockerfiles in a set of directories located in the `docker`
+directory within the Slycat repo:
 
--  Add a "slycat" user.
--  Add the slycat user to group wheel and allow group wheel to use sudo.
--  Setup the EPEL respository:
+  https://github.com/sandialabs/slycat/tree/master/docker
 
-   ::
+There, you will find three subdirectories used to build Docker images.  The
+first image, located in the `supervisord` directory, is the starting-point for
+the Slycat server.  If you view `supervisord/Dockerfile`, you will see how we
+begin with Fedora 20, and install the supervisord daemon.  Next, the `sshd`
+directory contains instructions in `sshd/Dockerfile` to install an SSH server
+on top of the supervisord image.  Finally `slycat/Dockerfile` does the rest of
+the work to install Slycat and its dependencies on top of the sshd image.
 
-       $ wget http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-       $ rpm -ivh epel-release-6-8.noarch.rpm
-
--  Setup the Chromium repository:
-
-   ::
-
-       $ cd /etc/yum.repos.d
-       $ wget http://people.centos.org/hughesjr/chromium/6/chromium-el6.repo
-
--  Get the latest packages with ``yum upgrade``.
--  Install packaged prerequisites:
-
-   ::
-
-       $ yum install couchdb
-       $ yum install git
-       $ yum install zlib-devel
-       $ yum install bzip2-devel
-       $ yum install openssl-devel
-       $ yum install ncurses-devel
-       $ yum install blas-devel
-       $ yum install lapack-devel
-       $ yum install openldap-devel
-       $ yum install readline-devel
-       $ yum install tk-devel
-       $ yum install gcc-c++
-       $ yum install libpng-devel
-       $ yum install chromium
-       $ yum install hdf5-devel
-       $ yum install libjpeg-turbo-devel
-
--  Start the CouchDB service and set it up to start automatically at
-   boot:
-
-   ::
-
-       $ /etc/init.d/couchdb start
-       $ /sbin/chkconfig couchdb on
-
-As user "slycat":
------------------
-
--  Build Python 2.7 from source, installing it in -/install/python:
-
-   ::
-
-       $ ./configure --prefix=/home/slycat/install/python --enable-shared
-       $ make install
-
--  Add ``export PATH=-/install/python/bin:$PATH`` to -/.bashrc
--  Add ``export LD_LIBRARY_PATH=-/install/python/lib:$LD_LIBRARY_PATH``
-   to -/.bashrc
--  Verify that the above environment takes effect in your shell before
-   proceeding.
--  Install Python setuptools:
-
-   ::
-
-       $ wget https://bitbucket.org/pypa/setuptools/downloads/ez_setup.py -O - | python
-
--  Install pip:
-
-   ::
-
-       $ curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-       $ python get-pip.py
-
--  Install Python prerequisites:
-
-   ::
-
-       $ pip install cherrypy==3.2.6
-       $ pip install couchdb
-       $ pip install paramiko
-       $ pip install routes
-       $ pip install pyopenssl
-       $ pip install requests
-       $ pip install numpy
-       $ pip install scipy
-       $ pip install python-ldap
-       $ pip install nose
-       $ pip install ipython
-       $ pip install pystache
-       $ pip install h5py
-       $ pip install pyzmq
-       $ pip install Jinja2
-       $ pip install tornado
-       $ pip install Pillow
-
--  Clone the Slycat repo into -/src:
-
-   ::
-
-       $ git clone https://github.com/sandialabs/slycat.git
-
--  Add ``export PYTHONPATH=-/src/slycat/packages:$PYTHONPATH`` to
-   -/.bashrc
-
--  Configure the couchdb database for use with Slycat:
-
-   ::
-
-       $ cd src/slycat/web-server
-       $ python slycat-couchdb-setup.py
-
--  Import the Slycat root certificate ``slycat/web-server/root-ca.pem``
-   into Firefox and Chromium as a trusted authority for identifying
-   websites.
-
--  Add
-   ``export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/web-server/root-ca.pem``
-   to -/.bashrc, so push scripts don't have to use the --no-verify
-   option.
-
--  Set the Firefox and Chromium startup pages to https://localhost:8092
-
-
+The main differences between platforms will be in how you install the various
+dependencies.  One platform - such as Fedora 20 in our Dockerfile - might
+install the Python h5py library and its compiled hdf5 library dependency using
+a single yum package, where another platform - such as Centos 6 - would provide
+a yum package for hdf5, and you would use pip to install the Python h5py
+package.  Unfortunately, we can't enumerate all the possibilities here, so
+you'll have to start with the packages listed in the Dockerfile, and generalize
+to your platform.
