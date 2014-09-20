@@ -14,7 +14,7 @@ Generate Image Data
 
 * If you haven't already ssh into the Slycat server::
 
-  $ ssh slycat@<docker ip address>
+  $ ssh slycat@<docker ip address> -p2222
 
 * Switch to the Slycat source code directory containing sample client
   scripts::
@@ -49,11 +49,12 @@ Ingest a Parameter Image Model
   browser.
 * In the *Remote File Parameter Image Model* wizard, enter "MyPI" as the model name
   and click *Next*.
-* In the login screen that follows, enter username "slycat" and password
-  "slycat" and choose *Next*.  Note that these credentials will be used to SSH
-  to another machine to load the parameter image data (in this case, the
-  "other" machine happens to be localhost, but the Slycat server can be configured to
-  connect to any other host that's accessible via SSH).
+* In the login screen that follows, choose hostname "localhost", enter username
+  "slycat" and password "slycat" and choose *Next*.  Note that these
+  credentials will be used to SSH to another machine to load the parameter
+  image data (in this case, the "other" machine happens to be localhost, but
+  the Slycat server can be configured to connect to any other host that's
+  accessible via SSH).
 * In the remote file browser that opens, select the
   *localhost//home/slycat/src/slycat/web-client/images.csv* file and click the
   *Next* button. This is the file that you generated in a previous step.

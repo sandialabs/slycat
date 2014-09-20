@@ -10,19 +10,25 @@ guidelines to get you started:
 Prerequisites
 -------------
 
-* We assume that you've already :ref:`Installed Slycat <Install Slycat>` and the Slycat container is running.
+* We assume that you've already :ref:`Installed Slycat <Install Slycat>` and
+  are familiar with how to manage the Slycat docker image.
+* We provide a special developer's image that modifies the Slycat Docker image
+  that you've been working with for easier development, so download and run it now::
+
+    $ docker run -p 2222:22 -p 5984:5984 -p 443:8092 -d --name slycat-dev sandialabs/slycat-dev
+
 * You will need to note the IP address of the Docker host:
 
-  * If you are running Docker on a Linux host, then the host IP is "localhost" or "127.0.0.1"
-  * If you are running Boot2Docker on a non-Linux host, then the host IP is the address reported by the `boot2docker ip` command.
-  * We will refer to the host address as `host_ip` throughout the rest of this document.
+  * If you are running Docker on a Linux host, then the Docker host IP is "localhost" or "127.0.0.1"
+  * If you are running Boot2Docker on a non-Linux host, then the Docker host IP is the address reported by the `boot2docker ip` command.
+  * We will refer to the host address as `<docker host ip>` throughout the rest of this document.
 
 Working Inside the Running Container
 ------------------------------------
 
 * The Slycat container includes an ssh server, so you can login to the container as user `slycat` with password `slycat`::
 
-  $ ssh slycat@HOST_IP -p2222
+  $ ssh slycat@<docker host ip> -p2222
 
 * Once you're logged-in, you can pull the latest version of the source code::
 
@@ -33,26 +39,22 @@ Working Inside the Running Container
 
   $ vi packages/slycat/...
 
-* You can see the logging output from the Slycat server::
-
-  $ tail -f /var/log/slycat/*
-
-* And the couchdb database if necessary::
-
-  $ tail -f /var/log/couchdb/*
-
-* Note that when you make source code changes, the Slycat server automatically
+* Note that the Slycat server isn't running by default when you start the slycat-dev container.
+  That's because when you make source code changes, the Slycat server automatically
   restarts.  However, if you insert a typo or other syntax error, the server won't
-  be able to restart.  For this reason, it's usually better to kill the Slycat server
-  that automatically runs when the container is started, and run your own server
-  instead::
+  be able to restart.  Thus, it's better when coding to just run your own Slycat server
+  instead, so you can see when it's died, and restart it more easily::
 
-    $ ps aux # To list processes running within the container
-    $ kill <Slycat PID>
     $ cd src/slycat/web-server
     $ python slycat-web-server.py
 
   Then use another ssh login for code editing.
+
+* When you run the Slycat server from the source directory, the default configuration logs
+  everything to stderr / stdout, so you won't need to watch any Slycat logs.  However, you
+  can still watch the couchdb logs if necessary::
+
+  $ tail -f /var/log/couchdb/*
 
 * To commit changes while logged-in to the container, you'll need to add your
   personal information to `~/.gitconfig`::
@@ -95,7 +97,7 @@ One way to do this is to use `sshfs` to mount the source code inside the
 container to a directory on the host::
 
   $ mkdir ~/src/slycat-container
-  $ sshfs -p 2222 slycat@host_ip:/home/slycat/src/slycat ~/src/slycat-container -oauto_cache,reconnect,defer_permissions,negative_vncache,volname=slycat-container
+  $ sshfs -p 2222 slycat@<docker host ip>:/home/slycat/src/slycat ~/src/slycat-container -oauto_cache,reconnect,defer_permissions,negative_vncache,volname=slycat-container
 
 Regardless of how you edit the sources, the Slycat server will still restart
 automatically whenever you make modifications, and you will likely want to
