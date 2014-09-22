@@ -99,8 +99,7 @@ container to a directory on the host::
   $ mkdir ~/src/slycat-container
   $ sshfs -p 2222 slycat@<docker host ip>:/home/slycat/src/slycat ~/src/slycat-container -oauto_cache,reconnect,defer_permissions,negative_vncache,volname=slycat-container
 
-Regardless of how you edit the sources, the Slycat server will still restart
-automatically whenever you make modifications, and you will likely want to
-run the server in an ssh session so you can see its logging output and restart
-it if necessary.
+Note that you'll still need to ssh into the container to run the Slycat server, but now
+you can edit the source code using whichever host tools you want, and the Slycat server
+will still restart automatically whenever you save changes.
 
