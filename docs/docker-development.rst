@@ -90,13 +90,13 @@ Working Inside the Running Container
 Working Outside the Running Container
 -------------------------------------
 
-Instead of working on the Slycat source inside the running container, you may
+Instead of working on the Slycat sources inside the running container, you may
 wish to edit them from the outside.  One advantage of this approach is that you
-can edit the sources using more sophisticated graphical editors that installed
-on your host system, instead of the tools provided within the container.  Another
-is that the setup you perform (configuring your git credentials, setting-up
-proxy information) is part of your host system and will be retained even if you
-upgrade or replace the Slycat container.
+can edit the sources using sophisticated graphical tools installed
+on your host system, instead of the minimalist command-line tools provided within
+the container.  Another benefit is that the setup you perform (configuring your git
+credentials, setting-up proxy information) is part of your host system and will be
+retained even if you upgrade or replace the Slycat container.
 
 One way to do this is to use `sshfs` to mount the source code inside the
 container to a directory on the host::
@@ -104,7 +104,10 @@ container to a directory on the host::
   $ mkdir ~/src/slycat-container
   $ sshfs -p 2222 slycat@<docker host ip>:/home/slycat/src/slycat ~/src/slycat-container -oauto_cache,reconnect,defer_permissions,negative_vncache,volname=slycat-container
 
-Note that you'll still need to ssh into the container to run the Slycat server, but now
-you can edit the source code using whichever host tools you want, and the Slycat server
-will still restart automatically whenever you save changes.
+The main disadvantage to working this way is the increased latency caused by the sshfs
+filesystem ... some operations (such as building the documentation) will be noticably
+slower when run on an sshfs mount
+
+Note that you'll still need to ssh into the container to run the Slycat server, but the server
+will still restart automatically whenever you save changes to the sshfs mount.
 
