@@ -15,7 +15,6 @@ import sys
 
 import slycat.web.server.directory
 import slycat.web.server.handlers
-import slycat.web.server.marking
 import slycat.web.server.plugin
 
 class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
@@ -158,6 +157,11 @@ def start(config_file="config.ini"):
   for directory in configuration["slycat"]["plugins"]:
     manager.load(directory)
   manager.register_plugins()
+
+  # Sanity-check to ensure that we have a marking plugin for every allowed marking type.
+  for allowed_marking in configuration["slycat"]["allowed-markings"]:
+    if allowed_marking not in manager.markings.keys():
+      raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)
