@@ -294,7 +294,7 @@ $.widget("parameter_image.scatterplot",
     // Remove hidden simulations and NaNs
     for(var i=length-1; i>=0; i--){
       var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-      var NaNValue = Number.isNaN(x[i]) || Number.isNaN(y[i]);
+      var NaNValue = isNaN(x[i]) || isNaN(y[i]);
       if(hidden || NaNValue) {
         filtered_indices.splice(i, 1);
         var selectionIndex = $.inArray(indices[i], filtered_selection);
@@ -555,7 +555,7 @@ $.widget("parameter_image.scatterplot",
         .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
         .attr("fill", function(d, i) {
           var value = v[d];
-          if(Number.isNaN(value))
+          if(isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
@@ -606,7 +606,7 @@ $.widget("parameter_image.scatterplot",
         })
         .attr("fill", function(d, i) {
           var value = v[d];
-          if(Number.isNaN(value))
+          if(isNaN(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);

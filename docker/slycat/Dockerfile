@@ -2,12 +2,10 @@ FROM sandialabs/sshd
 MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages.
-RUN yum install -y couchdb git python-devel python-pip numpy scipy python-couchdb python-paramiko python-routes pyOpenSSL python-requests python-ldap python-nose python-coverage python-sphinx python-pillow python-sphinx_rtd_theme h5py pystache dejavu-serif-fonts python-zmq
-RUN yum install -y make
-RUN yum install -y vim
+RUN yum install -y couchdb dejavu-serif-fonts git h5py numpy pyOpenSSL pystache python-couchdb python-devel python-ldap python-paramiko python-pillow python-pip python-requests python-routes python-zmq scipy
 
 # Install Python modules.
-RUN pip install cherrypy==3.2.6 sphinxcontrib-napoleon ipython
+RUN pip install cherrypy==3.2.6 ipython
 
 # Setup the root user.
 RUN echo 'root:slycat' | chpasswd
@@ -18,8 +16,6 @@ RUN echo 'slycat:slycat' | chpasswd
 USER slycat
 RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.bash_profile
 RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/web-server/root-ca.pem" >> /home/slycat/.bash_profile
-RUN echo "alias vi=vim" >> /home/slycat/.bash_profile
-ADD .vimrc /home/slycat/.vimrc
 RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git
 
 USER root
@@ -32,9 +28,15 @@ RUN /usr/bin/couchdb -a /etc/couchdb/default.ini -a /etc/couchdb/local.ini -a /t
 EXPOSE 5984
 
 # Setup the Slycat server.
+RUN mkdir -p /etc/slycat
+RUN mkdir -p /var/lib/slycat/data-store
+RUN chown --recursive slycat:slycat /var/lib/slycat
+RUN mkdir -p /var/log/slycat
+ADD config.ini /etc/slycat/config.ini
+ADD web-server.key /etc/slycat/web-server.key
+ADD web-server.pem /etc/slycat/web-server.pem
 ADD slycat.conf /etc/supervisord.d/slycat.conf
-RUN mkdir /var/log/slycat
-EXPOSE 8092
+EXPOSE 443
 
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="{{server-root}}style/slycat.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}style/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css">
+    {{#stylesheets}}
+    <link rel="stylesheet" href="{{server-root}}{{path}}" type="text/css">
+    {{/stylesheets}}
+    <script type="text/javascript" src="{{server-root}}js/jquery-2.1.1.min.js"></script>
+    <!-- Uncompressed, development version of jQuery Migrate -->
+    <script type="text/javascript" src="{{server-root}}js/jquery-migrate-1.2.1.js"></script>
+    <!-- Compressed, production version of jQuery Migrate. Use this instead of the one above when deploying. -->
+    <!-- <script type="text/javascript" src="{{server-root}}js/jquery-migrate-1.2.1.min.js"></script> -->
+    <script type="text/javascript" src="{{server-root}}js/jquery.json-2.4.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery-ui-1.10.4.custom.min.js"></script>
+    <title>{{name}} - Slycat Model</title>
+  </head>
+
+  <body>
+    <script src="{{server-root}}js/jquery.knob.js"></script>
+    <script src="{{server-root}}js/jquery.qtip.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.min.css" />
+    <div id="slycat-workers">
+      <div id="slycat-workers-close" style="display: none;">Close</div>
+      <div id="slycat-workers-container" class="slycat-workers-compact">
+        <div id="slycat-workers-wrapper"></div>
+      </div>
+    </div>
+
+    <div id="slycat-header">
+      <div class="slycat-width-wrapper">
+        <a href="{{server-root}}projects">
+          <img id="slycat-logo" src="{{server-root}}style/slycat-small.png" title="A very sly cat." />
+          <h1 id="slycat-title">Slycat <span id="slycat-version"></span></h1>
+        </a>
+        <ul id="slycat-user-actions">
+          <li><span>{{#security}}{{name}} ({{user}}){{/security}}</span></li>
+          <li id="slycat-about">About Slycat</li>
+        </ul>
+      </div>
+      <div id="slycat-about-dialog" class="dialog" title="About Slycat" style="display: none;">
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        var current_revision = null;
+
+        var newWebkit  = $.browser.webkit  && parseFloat($.browser.version) >= 534.53;
+        var newChrome  = $.browser.chrome  && parseFloat($.browser.version) >= 17;
+        var newMozilla = $.browser.mozilla && parseFloat($.browser.version) >= 10;
+        // Warn IE8- users they need a better browser
+        if ($.browser.msie && parseInt($.browser.version,10)<9)
+        {
+          alert("Your browser doesn't provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+        }
+        // Warn IE9+ users they might need to upgrade
+        // else if ($.browser.msie)
+        // {
+        //   alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+        // }
+        // Warn everyone other than WebKit 534.53+ or Chrome 17+ or FF10+ they might need to upgrade
+        else if ( !(newWebkit || newChrome || newMozilla) ) {
+          alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+        }
+
+        $('#slycat-about').click(function()
+        {
+          aboutSlycatDialogOpen();
+        });
+
+        $("<p><h3>Slycat</h3></p>").appendTo("#slycat-about-dialog");
+        $("<p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>").appendTo("#slycat-about-dialog");
+        $("<p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#slycat-about-dialog");
+        if( "{{help-email}}" !== "None")
+        {
+          $("<p>Request help at <a href=\"mailto:" + "{{help-email}}" + "\">" + "{{help-email}}"  + " </a></p>").appendTo("#slycat-about-dialog");
+        }
+        if( "{{version}}" !== "None")
+        {
+          $("<p>Version: " + "{{version}}" + "</p>").appendTo("#slycat-about-dialog");
+        }
+
+        $('#slycat-about-dialog').dialog({
+          modal: true,
+          autoOpen: false,
+          minWidth: 500,
+          buttons: {
+            'Close': function() {
+              $(this).dialog('close');
+            },
+          },
+        });
+
+        function aboutSlycatDialogOpen()
+        {
+          $("#slycat-about-dialog").dialog("open");
+        }
+
+        $('#slycat-workers-close').click(function()
+        {
+          $('#slycat-workers-close').slideUp();
+          $('#slycat-workers-container').switchClass("slycat-workers-detail","slycat-workers-compact");
+          window.setTimeout( "$('#slycat-workers-container .slycat-worker').each(function() { $(this).qtip('enable'); })", 250 ); // Enable tooltips when collapsing status bar. Added dealy otherwise tooltips appear before slideUp is finished
+        });
+
+        // Expand status bar when any part of it is clicked
+        $('#slycat-workers-container.slycat-workers-compact').click(function()
+        {
+          if($(this).hasClass('slycat-workers-compact'))
+          {
+            document.getSelection().removeAllRanges(); // Need to clear selection after click since for some reason clicking an icon selects the status text to the right of it
+            // Hide and disable all tooltips when expanding status bar
+            disable_tooltips($("#slycat-workers-container .slycat-worker"));
+            $('#slycat-workers-close').slideDown();
+            $('#slycat-workers-container').switchClass("slycat-workers-compact","slycat-workers-detail");
+          }
+        });
+
+        function close_model(mid)
+        {
+          $.ajax(
+          {
+            type : "PUT",
+            url : "{{server-root}}models/" + mid,
+            contentType : "application/json",
+            data : $.toJSON({
+              "state" : "closed"
+            }),
+            processData : false
+          });
+        }
+
+        function disable_tooltips(selector)
+        {
+          selector.each(function() { $(this).qtip('hide').qtip('api').disable(true); });
+        }
+
+        function update()
+        {
+          $.ajax(
+          {
+            dataType : "text",
+            type : "GET",
+            cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
+            url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
+            success : function(text)
+            {
+              // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
+              var results = text? $.parseJSON(text) : null;
+              if(results != null)
+              {
+                current_revision = results.revision;
+                models = results.models;
+                models.sort(function(a, b)
+                {
+                  if(!a["finished"] && !b["finished"])
+                  {
+                    if(a["started"] > b["started"])
+                      return -1;
+                    if(a["started"] == b["started"])
+                      return 0;
+                    return 1;
+                  };
+                  if(a["finished"] && b["finished"])
+                  {
+                    if(a["finished"] > b["finished"])
+                      return -1;
+                    if(a["finished"] == b["finished"])
+                      return 0;
+                    return 1;
+                  }
+                  return a["finished"] ? 1 : -1;
+                });
+
+                function create_model_scaffolding(model)
+                {
+                  return $("<div class='slycat-worker'>")
+                    .attr('id', model["_id"])
+                    .append($("<div>").addClass("slycat-message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("slycat-name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("slycat-close").append($("<button>").html("&times;").attr("title", "Close model.").click(
+                      function(e){
+                        close_model(model["_id"]);
+                        e.stopPropagation();
+                      }
+                    )))
+                    .qtip({
+                      position: {
+                        adjust: {
+                          x: -14
+                        }
+                      },
+                      content: {
+                        text: ' ' // Need to initiate with some text otherwise tooltip is never created
+                      },
+                      hide: {
+                        delay: 500,
+                        fixed: true,
+                      },
+                      show: {
+                        solo: true
+                      },
+                    });
+                }
+
+                $.each(models, function(index, model)
+                {
+                  var model_id = model["_id"];
+                  var line = $("#" + model_id ,"#slycat-workers #slycat-workers-container");
+                  if(line.length == 0)
+                    line = create_model_scaffolding(model).appendTo($("#slycat-workers #slycat-workers-container #slycat-workers-wrapper"));
+
+                  line.toggleClass("finished", model["finished"] ? true : false)
+                    .addClass(model["result"])
+                    .addClass("updated") // Mark each model so we can remove the ones that no loner exist
+                    .qtip(
+                      'option',
+                      'content.title.text',
+                      (model["name"] || "")
+                    );
+
+                  if(model["finished"]) {
+                    line.click(function(e){
+                      window.location="{{server-root}}models/" + model["_id"];
+                      e.stopPropagation();
+                    });
+                  }
+
+                  if( $('#slycat-workers-container').hasClass('slycat-workers-detail') ) {
+                    disable_tooltips(line);
+                  }
+                  line.find(".slycat-message").text(model["message"] || "");
+                  line.find(".slycat-name").text(model["name"] || "");
+                  line.find(".slycat-close button").unbind('click').click(
+                    function(e){
+                      close_model(model_id);
+                      e.stopPropagation();
+                    }
+                  );
+
+                  // Set up progress indicator for workers with progress
+                  if(model.hasOwnProperty("progress")) {
+                    // If the line doesn't have a progress class, add the class and add a progress indicator if it's not finished yet
+                    if(!line.hasClass("slycat-progress-determinate")) {
+                      line.addClass("slycat-progress-determinate");
+                      if(!model["finished"]){
+                        line.append($("<input>").addClass("pie").attr("value", model["progress"]).knob({
+                          'min':0,
+                          'max':1,
+                          'readOnly':true,
+                          'displayInput':false,
+                          'fgColor':'#4D720C',
+                          'bgColor':'#D7D7D6',
+                          'width':15,
+                          'height':15,
+                          'thickness':0.4,
+                          'step':0.01,
+                        }));
+                      }
+                    }
+                    // Otherwise check if it's not finished and update the progress indicator with current value
+                    else if(!model["finished"]){
+                      line.find(".pie").val(model["progress"]).trigger('change');
+                    }
+                    else {
+                      line.find("input.pie").parent().remove();
+                    }
+                  }
+
+                  if(true)
+                  {
+                    line.qtip('option','content.text',
+                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', "{{server-root}}models/" + model['_id']).text('View'))
+                    );
+
+                  }
+                  else
+                  {
+                    line.qtip('option','content.text',
+                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a href="#">').text('Delete').click(close_model.bind(this, model_id)))
+                    );
+                  }
+
+                });
+
+                $("#slycat-workers-container .slycat-worker").not(".updated").remove(); // Remove any non-existing workers
+                $("#slycat-workers-container .slycat-worker").removeClass("updated"); // Clear the updated flag
+              }
+
+              // Restart the request immediately.
+              window.setTimeout(update, 10);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              // Rate-limit requests when there's an error.
+              window.setTimeout(update, 5000);
+            }
+          });
+        }
+
+        update();
+      });
+    </script>
+
+    <div id="slycat-page-title">
+      <div class="slycat-width-wrapper">
+        <button id="slycat-edit-model" class="slycat-edit-page" title="Edit this model's name and description.">Edit Model</button>
+        <div id="slycat-breadcrumbs">
+          <a href="{{server-root}}projects">Projects</a> &rarr;
+          {{#full-project}}<a href="{{server-root}}projects/{{_id}}">{{name}}</a> &rarr;{{/full-project}}
+        </div>
+        <h2>{{name}}</h2>
+        <div>{{description}}</div>
+        <div id="slycat-edit-model-dialog" title="Edit Model">
+          <form>
+            <label for="slycat-new-model-name">Model Name</label>
+            <input id="slycat-new-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
+            <label for="slycat-new-model-description">Description</label>
+            <textarea id="slycat-new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">{{description}}</textarea>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="slycat-content">
+      <div class="slycat-width-wrapper">
+        <div>{{{marking-html}}}</div>
+        {{{slycat-plugin-content}}}
+        <div>{{{marking-html}}}</div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        // Mark this model as closed, so it doesn't show-up in the header anymore.
+        $.ajax(
+        {
+          type : "PUT",
+          url : "{{server-root}}models/{{_id}}",
+          contentType : "application/json",
+          data : $.toJSON({
+            "state" : "closed"
+          }),
+          processData : false
+        });
+
+        $("#slycat-edit-model-dialog").dialog(
+        {
+          autoOpen: false,
+          height: 500,
+          width: 680,
+          modal: true,
+          buttons:
+          {
+            "Delete Model" : function()
+            {
+              if(!window.confirm("Delete model {{name}}?  This cannot be undone."))
+                return;
+
+              $.ajax(
+              {
+                type : "DELETE",
+                url : "{{server-root}}models/{{_id}}",
+                success : function(details)
+                {
+                  window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error deleting model: " + reason_phrase);
+                }
+              });
+            },
+            "Save Changes": function()
+            {
+              var model =
+              {
+                "name" : $("#slycat-new-model-name").val(),
+                "description" : $("#slycat-new-model-description").val()
+              };
+
+              $.ajax(
+              {
+                type : "PUT",
+                url : "{{server-root}}models/{{_id}}",
+                contentType : "application/json",
+                data : $.toJSON(model),
+                processData : false,
+                success : function()
+                {
+                  window.location.reload();
+                },
+                error : function(request, status, reason_phrase)
+                {
+                  window.alert("Error updating model: " + reason_phrase);
+                }
+              });
+            },
+            Cancel: function()
+            {
+              $(this).dialog("close");
+            }
+          },
+          close: function()
+          {
+          }
+        });
+
+        $("#slycat-edit-model").button().click(function()
+        {
+          $("#slycat-edit-model-dialog").dialog("open");
+        });
+      });
+    </script>
+  </body>
+</html>

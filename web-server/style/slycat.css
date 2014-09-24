@@ -1,0 +1,250 @@
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
+
+/* General styles for all elements */
+h1, h2, h3, h4, h5, fieldset, legend, dl, dt, dd, cite
+{
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+body
+{
+  padding: 0;
+  margin: 0;
+  background: #232323;
+  font-size: small;
+  font-family: helvetica, arial, sans-serif;
+  color: #665;
+}
+
+a
+{
+  color: #800;
+  text-decoration: none;
+}
+
+#slycat-workers
+{
+  background: black;
+}
+
+#slycat-workers table
+{
+  table-layout: fixed;
+  width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#slycat-workers .name
+{
+  white-space: nowrap;
+  overflow: hidden;
+  width: 400px;
+  text-overflow: ellipsis;
+}
+
+#slycat-workers .message
+{
+  white-space: nowrap;
+  overflow: hidden;
+  width: 500px;
+  text-overflow: ellipsis;
+}
+
+#slycat-workers .slycat-close button
+{
+  background-color: #444;
+  border-radius: 2px;
+  border: 0;
+  color: #888;
+  height: 15px;
+  margin: 0;
+  padding: 0;
+  width: 16px;
+  position: relative;
+  top: -4px;
+}
+
+#slycat-workers .slycat-close button:hover
+{
+  background-color: #d88;
+}
+
+#slycat-workers tr.finished.succeeded
+{
+  color: #8c8;
+}
+
+#slycat-workers tr.finished.stopped
+{
+  color: #ee8;
+}
+
+#slycat-workers tr.finished.failed
+{
+  color: #c88;
+}
+
+#slycat-workers .ui-progressbar
+{
+  height: 1em;
+}
+
+#slycat-workers {
+  color: #8F887C;
+}
+#slycat-workers-close {
+  text-align: center;
+}
+#slycat-workers-close:hover {
+  color: white;
+  cursor: pointer;
+}
+#slycat-workers-container {
+  width: 960px;
+  margin: 0 auto;
+}
+#slycat-workers-container .slycat-worker {
+  padding-left: 23px;
+}
+#slycat-workers-container .slycat-worker:hover
+{
+  color: white;
+  cursor: pointer;
+}
+#slycat-workers-container .slycat-message,
+#slycat-workers-container .slycat-name,
+#slycat-workers-container .slycat-close,
+{
+  display: inline-block;
+}
+#slycat-workers-container .slycat-message,
+#slycat-workers-container .slycat-name
+{
+  width: auto;
+  max-width: 500px;
+  margin-right: 0.4em;
+}
+#slycat-workers-container .slycat-worker {
+  background-image: url(1363132633_gear.png);
+  background-repeat: no-repeat;
+}
+#slycat-workers-container .slycat-progress-determinate {
+  background-image: none;
+  position: relative;
+}
+#slycat-workers-container .succeeded {
+  background-image: url(1359513602_onebit_34.png);
+  background-repeat: no-repeat;
+  background-size: auto 16px;
+}
+#slycat-workers-container .failed {
+  background-image: url(1359513595_onebit_33.png);
+  background-repeat: no-repeat;
+  background-size: auto 16px;
+}
+.slycat-worker canvas {
+  position: absolute;
+  left: 0px;
+}
+
+#slycat-workers-container.slycat-workers-compact {
+  cursor: pointer;
+  padding-top: 4px;
+  margin-bottom: -4px;
+}
+#slycat-workers-container.slycat-workers-compact .slycat-worker {
+  display: inline-block;
+  height: 20px;
+}
+#slycat-workers-container.slycat-workers-compact .slycat-worker *,
+{
+  display: none;
+}
+#slycat-workers-container.slycat-workers-compact .slycat-worker canvas {
+  display: block;
+}
+
+.slycat-width-wrapper
+{
+  width: 960px;
+  margin: 0 auto;
+}
+
+#slycat-header
+{
+  min-height: 60px;
+  background-color: #333333;
+  color: white;
+  padding: 20px 0 20px 0;
+}
+
+#slycat-logo
+{
+  height: 60px; /* The header is 60px min height, so we should keep the logo the same */
+  float: left;
+  margin: 0 10px 0 0;
+}
+
+#slycat-title
+{
+  float: left;
+  font-weight: normal;
+  color: white;
+}
+
+#slycat-version
+{
+  color: yellow;
+  font-size: 85%;
+}
+
+#slycat-user-actions
+{
+  list-style: none outside none;
+  float: right;
+  margin-top: 0;
+}
+
+#slycat-user-actions li
+{
+  margin-left: 20px;
+}
+
+#slycat-page-title
+{
+  background-color: #D7D7D7;
+  color: #383838;
+  padding: 20px 0;
+  border-bottom: 1px solid #BBBBBB;
+}
+
+#slycat-page-title h2
+{
+  font-weight: normal;
+  font-size: 2.5em;
+}
+
+#slycat-breadcrumbs a:hover
+{
+  text-decoration: underline;
+}
+
+.slycat-edit-page
+{
+  float: right;
+  clear: right;
+}
+
+#slycat-content
+{
+  padding: 20px 0;
+  background-color: #D2D1D0;
+}
+

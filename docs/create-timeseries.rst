@@ -21,7 +21,7 @@ Generate Timeseries Data
   to be run are located.  Normally, you would run these scripts on the
   system where your data was located::
 
-  $ ssh slycat@<docker ip address> -p 2222
+  $ ssh slycat@<docker host ip> -p2222
 
 In this case, substitute your docker host IP address.  If you're running
 docker on a Linux host, this will be `localhost`.  On systems using
@@ -58,7 +58,7 @@ Compute a Timeseries Model
   when prompted (this script also runs in parallel, using the workers
   you started previously)::
 
-    $ python slycat-hdf5-to-timeseries-model.py mydata
+    $ python slycat-hdf5-to-timeseries-model.py --host=https://localhost mydata
     slycat password:
     INFO - Storing clustering parameters.
     INFO - Storing input table attribute 0
@@ -71,7 +71,7 @@ View a Timeseries Model
 -----------------------
 
 * Point your web browser to the Slycat home page at
-  https://<docker ip address> again. Wait for the model icon in the *Worker
+  https://<docker host ip> again. Wait for the model icon in the *Worker
   Pane* to switch to a green check, if it hasn't already.
 * Note that the push script created a new project, "HDF5-Timeseries".
   Click on the project's name, and the browser opens the project page.
