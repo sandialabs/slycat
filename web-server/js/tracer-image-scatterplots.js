@@ -612,6 +612,8 @@ $.widget("tracer_image.scatterplot", {
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
         .call(self.legend_axis);
     }
+
+    self.updates = {}; // THIS LINE IS ABSOLUTELY CRITICAL, YOU WILL CRY LOOKING FOR THE BUG IF YOU ACCIDENTALLY REMOVE IT
   },
 
   _sync_open_images: function()
