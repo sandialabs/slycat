@@ -55,11 +55,13 @@ Documentation:
    tutorial.rst
    setup-clients.rst
    setup-server.rst
-   models.rst
-   restful-api.rst
+   docker-development.rst
    testing.rst
    coding-guidelines.rst
+   plugins.rst
    colophon.rst
+   models.rst
+   restful-api.rst
    reference.rst
 
 

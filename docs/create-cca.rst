@@ -26,10 +26,10 @@ Generate a CCA Model
 * In the *Remote File CCA Model* wizard, enter "MyCCA" as the model name
   and click *Next*.
 * We are going to load a file that happens to be located on the same host
-  as the Slycat server ("localhost"), but could be located on any host
-  where ssh is enabled.  In the next page of the wizard, enter
-  username *slycat* and password *slycat*.  Leave *localhost* selected as the
-  remote host.
+  as the Slycat server ("localhost"), but could be located on any host that's
+  reachable from the Slycat server over ssh.  In the next page of the wizard,
+  choose *localhost* in the hostname dropdown and enter username *slycat* and
+  password *slycat*.
 * The remote file browser appears, showing the Slycat server's filesystem.
   Highlight the */home/slycat/src/slycat/data/cars.csv* file, then scroll to
   the bottom of the wizard and click the *Next* button. This file contains data
@@ -66,8 +66,7 @@ View a CCA Model
 ----------------
 
 * Wait for the model icon in the Worker Pane to become a green
-  checkmark. Hover over the icon to reveal a small popup and click the
-  *View* link. The browser will switch to a separate page containing
+  checkmark. The browser will switch to a separate page containing
   the new model.
 * The bottom half of the model page features a table containing the raw
   data used to compute the model. Input variables are color-coded

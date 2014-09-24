@@ -29,13 +29,15 @@ any programming language or library that supports HTTP requests.
    GET-Project-Models.rst
    GET-Project.rst
    GET-Projects.rst
+   GET-Remote-File.rst
    GET-User.rst
-   POST-Browse.rst
    POST-Events.rst
    POST-Model-Finish.rst
    POST-Project-Bookmarks.rst
    POST-Project-Models.rst
    POST-Projects.rst
+   POST-Remote-Browse.rst
+   POST-Remote.rst
    PUT-Model-Arrayset-Array.rst
    PUT-Model-Arrayset-Data.rst
    PUT-Model-Arrayset.rst
