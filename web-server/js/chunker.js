@@ -13,7 +13,7 @@ function is_little_endian()
 }
 
 // Retrieve an array attribute's metadata asynchronously, calling a callback when it's ready ...
-function get_model_array_attribute_metadata(parameters)
+function get_model_array_attribute_metadata(parameters, dfd)
 {
   $.ajax({
     url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
@@ -31,6 +31,9 @@ function get_model_array_attribute_metadata(parameters)
     {
       if(parameters.error)
         parameters.error(request, status, reason_phrase);
+    },
+    always: function() {
+      dfd.resolve();
     }
   });
 }
@@ -133,10 +136,18 @@ function cast_array_buffer(buffer, type, offset, count)
 }
 
 // Retrieve an array attribute asynchronously, calling a callback when it's ready ...
-function get_model_array_attribute(parameters)
-{
-  function retrieve_model_array_attribute(parameters)
-  {
+function get_model_array_attribute(parameters) {
+  var dfd = $.Deferred();
+  if(parameters.metadata === undefined) {
+    parameters.metadataSuccess = retrieve_model_array_attribute;
+    get_model_array_attribute_metadata(parameters, dfd);
+  }
+  else {
+    retrieve_model_array_attribute(parameters);
+  }
+  return dfd;
+
+  function retrieve_model_array_attribute(parameters) {
     var ranges = [];
     var metadata = parameters.metadata;
     for(var dimension in metadata.dimensions)
@@ -175,18 +186,9 @@ function get_model_array_attribute(parameters)
         window.alert("Can't handle array with " + metadata.dimensions.length + " dimensions.");
       }
       this.success(result);
+      dfd.resolve();
     }
     request.send();
-  }
-
-  if(parameters.metadata === undefined)
-  {
-    parameters.metadataSuccess = retrieve_model_array_attribute;
-    get_model_array_attribute_metadata(parameters);
-  }
-  else
-  {
-    retrieve_model_array_attribute(parameters);
   }
 }
 

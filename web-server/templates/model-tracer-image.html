@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    {{> head}}
+    {{> tracer-image/header}}
+  </head>
+
+  <body class="parameter-image">
+    {{> tracer-image/top-header}}
+
+    <div id="model-pane" class="ui-layout-center">
+      <div id="grid-pane" class="ui-layout-center"></div>
+    </div>
+
+    <div id="table-pane" class="ui-layout-south">
+      <div class="load-status"></div>
+      <div id="table"></div>
+    </div>
+
+    <script type="text/javascript">{{> ../js/tracer-image/layout.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/model.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/scatterplot.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/plot-control.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/table.js}}</script>
+    <script type="text/javascript">{{> ../js/tracer-image/controls.js}}</script>
+    <script type="text/javascript" src="{{server-root}}js/tracer-image/movie.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/tracer-image/grid.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/tracer-image/login.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/tracer-image/init.js"></script>
+  </body>
+</html>

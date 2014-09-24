@@ -98,6 +98,7 @@ rights in this software.
           <button id="local-cca-button" title="Compute a CCA model using a local file.">Local CCA</button>
           <button id="remote-cca-button" title="Compute a CCA model using a remote file.">Remote CCA</button>
           <button id="remote-pi-button" title="Load a parameter image model from a remote CSV file.">Remote PI</button>
+          <button id="remote-ti-button" title="Load a tracer image model from a remote CSV file.">Remote TI</button>
           {{/can-write}}
         </div>
         <!-- Local CCA user interface -->
@@ -1080,7 +1081,7 @@ rights in this software.
             contentType : "application/json",
             data: $.toJSON(
             {
-              "model-type" : "parameter-image",
+              "model-type" : window.remote_pi_model_type || "parameter-image",
               "name" : $("#remote-pi-name").val(),
               "marking" : $("#remote-pi-marking").val(),
               "description" : $("#remote-pi-description").val()
@@ -1320,6 +1321,14 @@ rights in this software.
         });
         $("#remote-pi-button").button().click(function()
         {
+          window.remote_pi_model_type = null;
+          $("#remote-pi-form").dialog("option", "title", "Remote File Parameter Image Model");
+          $("#remote-pi-form").dialog("open");
+        });
+        $("#remote-ti-button").button().click(function()
+        {
+          window.remote_pi_model_type = "tracer-image";
+          $("#remote-pi-form").dialog("option", "title", "Remote File Tracer Image Model");
           $("#remote-pi-form").dialog("open");
         });
 

@@ -1,0 +1,52 @@
+    <div class="ui-layout-north">
+      {{> header}}
+      <div id="page-title">
+        <div class="width-wrapper">
+          <div class="marking">{{{marking-html}}}</div>
+          {{#can-write}}
+          <div class="global-controls">
+            <button id="edit-model-button" title="Edit this model's name and description.">Edit Model</button>
+            <button id="download-data-button" title="Download the data contained in this table.">Download Data Table</button>
+          </div>
+          {{/can-write}}
+          <div id="breadcrumbs">
+            <a href="{{server-root}}projects">Projects</a> &rarr;
+            {{#full-project}}<a href="{{server-root}}projects/{{_id}}" id="project-link">{{name}}</a> &rarr;{{/full-project}}
+          </div>
+          <h2>{{name}}</h2>
+          <div id="model-desc">{{description}}</div>
+          <div id="color-switcher"></div>
+          <div id="status-messages" style="display: none;"></div>
+          <div id="edit-model">
+            <div id="edit-model-form" class="dialog" title="Edit Model">
+              <button id="delete-model-link">Delete Model</button>
+              <label for="edit-model-name">Model Name</label>
+              <input id="edit-model-name" class="text ui-widget-content ui-corner-all" value="{{name}}" />
+              <label for="edit-model-description">Description</label>
+              <textarea id="edit-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20">
+                {{description}}
+              </textarea>
+            </div>
+          </div>
+          <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
+            <p>
+               <label for="value">Set values for <span id="set-value-form-variable">variable</span>:</label>
+               <input type="text" id="value" />
+               <input type="hidden" id="variable-index" />
+               <div class='dialogErrorMessage'></div>
+            </p>
+          </div>
+          <div id="clear-value-form" class="dialog" title="Clear Values" style="display: none;">
+            <p>
+               <label for="variableIndex">Clear values for <span id="clear-value-form-variable">variable</span>?</label>
+               <input type="hidden" id="variable-index" />
+            </p>
+          </div>
+          <div id="csv-save-choice-form" class="dialog" title="Download Choice" style="display: none;">
+            <p>
+               <label id="csv-save-choice-label"></label>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>

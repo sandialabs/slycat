@@ -1,0 +1,185 @@
+function Model() {
+  console.debug("Setup model");
+  this.model = null;
+  this.metadata = null;
+  this.indices = null;
+  this.input_columns = null;
+  this.output_columns = null;
+  this.image_columns = null;
+  this.rating_columns = null;
+  this.category_columns = null;
+  this.server_root = "{{server-root}}";
+}
+
+Model.prototype.load = function() {
+  console.debug("LOAD THE MODEL 1 -- ajax");
+  var self = this;
+  $.ajax(
+    {
+      type : "GET",
+      url : "{{server-root}}models/{{_id}}",
+      success : function(result)
+      {
+        self.model = result;
+        self.input_columns = self.model["artifact:input-columns"];
+        self.output_columns = self.model["artifact:output-columns"];
+        self.image_columns = self.model["artifact:image-columns"];
+        self.rating_columns = self.model["artifact:rating-columns"] == undefined ? [] : self.model["artifact:rating-columns"];
+        self.category_columns = self.model["artifact:category-columns"] == undefined ? [] : self.model["artifact:category-columns"];
+        self.loaded();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        window.alert("Error retrieving model: " + reason_phrase);
+      }
+    });
+};
+
+Model.prototype.get_numeric_variables = function() {
+  var numeric_variables = [];
+  for(var i = 0; i < model.metadata["column-count"]-1; i++)
+  {
+    // only use non-string columns that are not used for ratings or categories
+    if(model.metadata["column-types"][i] != 'string' && model.rating_columns.indexOf(i) == -1 && model.category_columns.indexOf(i) == -1)
+      numeric_variables.push(i);
+  }
+  return numeric_variables;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Once the model has been loaded, retrieve metadata / bookmarked state
+//////////////////////////////////////////////////////////////////////////////////////////
+
+Model.prototype.loaded = function() {
+  var self = this;
+  console.debug("Inside model_loaded()");
+  if(self.model["state"] == "waiting" || self.model["state"] == "running")
+  {
+    $("#status-messages").empty().html(
+      "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
+        "<div class='error-description'>We're probabably building it for you right now." +
+        "Watch the status bar for progress information and more details.</div>");
+    show_status_messages();
+  }
+  else if(self.model["state"] == "closed" && self.model["result"] === null)
+  {
+    $("#status-messages").empty().html(
+      "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
+        "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
+        "<pre>" + model["message"] + "</pre>");
+    show_status_messages();
+  }
+  else if(self.model["result"] == "failed")
+  {
+    $("#status-messages").empty().html(
+      "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
+        "<div class='error-description'>Here's what was happening when it ended:</div>" +
+        "<pre>" + model["message"] + "</pre>");
+    show_status_messages();
+  }
+  else
+  {
+    // Display progress as the load happens ...
+    $(".load-status").text("Loading data.");
+
+    // Mark this model as closed, so it doesn't show-up in the header anymore.
+    console.debug("mark this model as closed -- ajax");
+    $.ajax(
+      {
+        type : "PUT",
+        url : "{{server-root}}models/{{_id}}",
+        contentType : "application/json",
+        data : $.toJSON({
+          "state" : "closed"
+        }),
+        processData : false
+      });
+
+    console.debug("Inside model laoded - load table metadata 1 -- ajax");
+    // Load data table metadata.
+    $.ajax({
+      url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
+      contentType : "application/json",
+      success: function(metadata)
+      {
+        self.metadata = metadata;
+        table.statistics = new Array(metadata["column-count"]);
+        table.statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
+        console.debug("about to call metadata_loaded ....");
+        console.debug("context is : ");
+        console.debug(self);
+        //debugger;
+        table.load_statistics(d3.range(self.metadata["column-count"]-1), self.metadata_loaded, self);
+      },
+      error: artifact_missing
+    });
+
+    // TODO integrate into callbacks
+    // Retrieve bookmarked state information ...
+    layout.bookmarker.get_state(function(state) {
+      layout.bookmark = state;
+      layout.setup_colorswitcher();
+      //debugger;
+      //self.metadata_loaded();
+    });
+  }
+};
+
+Model.prototype.metadata_loaded = function() {
+  console.debug("inside metadata loaded()");
+  console.debug(this);
+
+  if(!this.indices && this.metadata) {
+    var count = this.metadata["row-count"];
+    this.indices = new Int32Array(count);
+    for(var i = 0; i != count; ++i)
+      this.indices[i] = i;
+  }
+
+  if(this.metadata && layout.bookmark) {
+    grid.plots.forEach(function(plot) {
+      plot.setup_labels();
+      plot.setup_simulations();
+
+      plot.update_axis(plot.x_index, "x");
+      plot.update_axis(plot.y_index, "y");
+
+      plot.v_index = model.metadata["column-count"] - 1;
+      if("variable-selection" in layout.bookmark)
+        plot.v_index = Number(layout.bookmark["variable-selection"]);
+
+      if(plot.v_index == model.metadata["column-count"] - 1)
+      {
+        var count = model.metadata["row-count"];
+        plot.v = new Float64Array(count);
+        for(var i = 0; i != count; ++i)
+          plot.v[i] = i;
+        plot.setup();
+      }
+      else
+      {
+        plot.update_axis(plot.v_index, "v");
+      }
+
+      plot.images_index = model.image_columns[0];
+      if("images-selection" in layout.bookmark) {
+        plot.images_index = layout.bookmark["images-selection"];
+      }
+      table.setup();
+      console.debug("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
+      $.ajax({
+        type : "GET",
+        url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/"
+          + plot.images_index + "/chunk?ranges=0," + model.metadata["row-count"],
+        success : function(result)
+        {
+          plot.images = result;
+          // TODO set this up after all ajax requests are done -- plot.setup();
+          // TODO set this up after all ajax requests are done -- this.setup();
+        },
+        error: artifact_missing
+      });
+    });
+    table.setup(); //TODO: decouple this from scatterplot - currently dependent
+  }
+};

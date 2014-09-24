@@ -1,0 +1,150 @@
+/*
+ Copyright 2013, Sandia Corporation. Under the terms of Contract
+ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+ rights in this software.
+ */
+
+function PlotControl(options) {
+  var self = this;
+  this.plot = options.plot; // TODO: improve the confusing naming/superfluous object layers
+  this.container = options.container; // d3 selection
+  this.control_type = options.control_type; // x, y, image, color, etc.
+  this.label_text = options.label_text;  // label display text
+  this.variables = options.variables; // variables that can be selected
+  this.column_names = options.column_names; // set to model.metadata['column-names'] - used to retrieve valid options for the select
+  this.selected_variable = null; // currently selected variable
+  this.foreign_object = null; // handle to foreignObject so SVG can manipulate
+}
+
+PlotControl.prototype.build = function() {
+  var self = this;
+
+  //build foreignObject SVG container
+  self.foreign_object = self.container.append('foreignObject')
+    .classed('controls ' + self.control_type + '-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
+    .attr('width', 100) //TODO: make this sizing not be stupid
+    .attr('height', 50);
+  var body = self.foreign_object.append('xhtml:body')
+    .style('background', 'transparent');
+
+  //build label
+  var select_id = self.control_type + '-selector'; // DOM id for the <select>
+  body.append('label').attr('for', select_id).text(self.label_text);
+
+  //build select and register event handler
+  var select = body.append('select')
+    .attr('id', select_id)
+    .attr('name', select_id)
+    .on('change', function() {
+      self.store_selected_variable(this.value);
+      self.update_plot(this.value); //pass selected option index
+    })
+    .on('mousedown', function(){
+      event.stopPropagation();
+    });
+
+  //build options for select
+  self.retrieve_selected_variable();
+  //select.empty();
+  //select..selectAll('[selected=selected]').attr('selected', null);
+  for(var i = 0; i < self.variables.length; i++) {
+    $("<option />")
+      .text(self.column_names[self.variables[i]])
+      .attr("value", self.variables[i])
+      .attr("selected", function() {
+        if (self.selected_variable == self.variables[i]) {
+          //self.update_plot(i); dirty hack: enable if the initial variable select isn't working as expected
+          return "selected";
+        }
+        return false;
+      })
+      .appendTo(select);
+  }
+};
+
+
+PlotControl.prototype.store_selected_variable = function(variable) {
+  var self = this;
+  // pre-refactor selected_variable_changed() method POSTed to "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+  // and bookmarker saved 'variable-selection' state...
+  // color_control currently sets control_type to 'v' so it's POSTing to a different path and saving a different key
+  // but changing the key shouldn't matter as long as it's retrieved the same way and from examining engine.py and handlers.py
+  // it appears that the only effect of this POST is to log client events on the server so all's good
+  $.ajax(
+    {
+      type : "POST",
+      url : "{{server-root}}events/models/{{_id}}/select/" + self.control_type + "/" + variable
+    });
+  state_to_store = {};
+  state_to_store[self.control_type + "-selection-" + self.plot.plot_id] = variable;
+  layout.bookmarker.updateState(state_to_store);
+};
+
+PlotControl.prototype.retrieve_selected_variable = function(variable) {
+  var self = this;
+  var numeric_variables = model.get_numeric_variables();
+  this.selected_variable = numeric_variables[0]; //in case there's no bookmark
+  var state_to_retrieve =  self.control_type + "-selection-" + self.plot.plot_id;
+  if(state_to_retrieve in layout.bookmark) {
+    self.selected_variable = Number(layout.bookmark[state_to_retrieve]);
+  }
+};
+
+PlotControl.prototype.update_plot = function(variable) {
+  var self = this;
+  // TODO: either update plot.x_index, etc. here or strip out the index attributes from Scatterplot completely
+  // since they become irrelevant once update is called
+  get_model_array_attribute({
+    server_root : "{{server-root}}",
+    mid : "{{_id}}",
+    aid : "data-table",
+    array : 0,
+    attribute : variable,
+    success : function(result)
+    {
+      var option_to_update = {};
+      option_to_update[self.control_type] = result;
+      $(self.plot.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
+    },
+    error : artifact_missing
+  });
+  /* NOTE: color variable selection used to conditionally use index instead of fetching variable from server
+     but the index was arbitrary and essentially just ended up representing time, which will usually be the first
+     csv column and thus default selection anyway
+
+    if(attribute == model.metadata["column-count"] - 1) {
+      var count = this.v.length;
+      for(var i = 0; i != count; ++i)
+        self.v[i] = i;
+      $(self.plot_ref + " .scatterplot").scatterplot("option", {v : self.v});
+    }
+  */
+};
+
+/* TODO: implement image-selection control. Excerpted from pre-refactor codebase:
+$(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
+ console.debug("GET models/id/attrs / image selection changed -- ajax");
+ $.ajax(
+ {
+ type : "GET",
+ url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
+ variable + "/chunk?ranges=0," + model.metadata["row-count"],
+ success : function(result)
+ {
+ $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
+ },
+ error: artifact_missing
+ });
+ });
+
+ // Log changes to open images ...
+ $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
+ self.open_images_changed(selection);
+ });
+*/
+
+/*
+ For reference, how to translate jquery selection to D3 selection and append:
+ var d3controls = d3.select($controls.toArray()); //translate jquery to d3
+ self.x_axis_layer.append(function() { return d3controls.node()[0]; });
+*/
