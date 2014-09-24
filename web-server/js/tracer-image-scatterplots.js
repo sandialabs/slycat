@@ -309,6 +309,7 @@ $.widget("tracer_image.scatterplot", {
     if(self.updates["update_width"])
     {
       console.log("updating width!!!!!");
+      $(self.options.display_pane).resize();
       self.options.width = self.element.parents(self.options.display_pane).width() * self.options.scalar.x;
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
@@ -319,6 +320,7 @@ $.widget("tracer_image.scatterplot", {
     if(self.updates["update_height"])
     {
       console.log("updating height!!!!!");
+      $(self.options.display_pane).resize();
       self.options.height = self.element.parents(self.options.display_pane).height() * self.options.scalar.y;
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
