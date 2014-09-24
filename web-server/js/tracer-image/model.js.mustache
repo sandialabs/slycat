@@ -8,7 +8,7 @@ function Model() {
   this.image_columns = null;
   this.rating_columns = null;
   this.category_columns = null;
-  this.server_root = "{{server-root}}"
+  this.server_root = "{{server-root}}";
 }
 
 Model.prototype.load = function() {
@@ -179,7 +179,6 @@ Model.prototype.metadata_loaded = function() {
         },
         error: artifact_missing
       });
-      plot.controls.setup();
     });
     table.setup(); //TODO: decouple this from scatterplot - currently dependent
   }

@@ -12,8 +12,8 @@ $.widget("tracer_image.scatterplot", {
   options: {
     object_ref : null,
     scatterplot_obj : null,
-    width : 300,
-    height : 300,
+    width : null,
+    height : null,
     //The parent to use for resizing purposes:
     display_pane : "",
     dimension_adjustments: {width: function(){return 0}, height: function(){return 0;}},
@@ -612,6 +612,8 @@ $.widget("tracer_image.scatterplot", {
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
         .call(self.legend_axis);
     }
+
+    self.updates = {}; // THIS LINE IS ABSOLUTELY CRITICAL, YOU WILL CRY LOOKING FOR THE BUG IF YOU ACCIDENTALLY REMOVE IT
   },
 
   _sync_open_images: function()
