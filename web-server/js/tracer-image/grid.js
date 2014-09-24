@@ -84,18 +84,21 @@ Grid.prototype.setup = function() {
 
   var drag_end = function(e)
   {
-    drag_object.drag_end = [e.originalEvent.layerX, e.originalEvent.layerY];
+    if(drag_object.drag_start)
+    {
+      drag_object.drag_end = [e.originalEvent.layerX, e.originalEvent.layerY];
 
-    var endpoints = invert_selection_location.call(self, drag_object.drag_start, drag_object.drag_end);
+      var endpoints = invert_selection_location.call(self, drag_object.drag_start, drag_object.drag_end);
 
-    drag_object.drag_start = endpoints["start"];
-    drag_object.drag_end = endpoints["end"];
+      drag_object.drag_start = endpoints["start"];
+      drag_object.drag_end = endpoints["end"];
 
-    drag_object.drag_plot.scatterplot("handle_drag", drag_object, e);
+      drag_object.drag_plot.scatterplot("handle_drag", drag_object, e);
 
-    self.selection_layer.selectAll(".rubberband").remove();
+      self.selection_layer.selectAll(".rubberband").remove();
 
-    drag_object = {};
+      drag_object = {};
+    }
   };
 
   var drag_move = function(e)

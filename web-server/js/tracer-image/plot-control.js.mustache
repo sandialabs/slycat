@@ -25,7 +25,7 @@ PlotControl.prototype.build = function() {
     .attr('width', 100) //TODO: make this sizing not be stupid
     .attr('height', 50);
   var body = self.foreign_object.append('xhtml:body')
-    .style('background', 'transparent');;
+    .style('background', 'transparent');
 
   //build label
   var select_id = self.control_type + '-selector'; // DOM id for the <select>
@@ -38,6 +38,9 @@ PlotControl.prototype.build = function() {
     .on('change', function() {
       self.store_selected_variable(this.value);
       self.update_plot(this.value); //pass selected option index
+    })
+    .on('mousedown', function(){
+      event.stopPropagation();
     });
 
   //build options for select
