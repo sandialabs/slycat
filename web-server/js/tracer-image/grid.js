@@ -57,12 +57,19 @@ Grid.prototype.setup = function() {
     return this.plots[(this.size[1] * y) + x].scatterplot_obj;
   };
 
-  var invert_selection_location = function(coordinates)
+  var invert_selection_location = function(first_point, second_point)
   {
-    var x = coordinates[0] % $(this.plots[0].grid_ref).attr("width");
-    var y = coordinates[1] % $(this.plots[0].grid_ref).attr("height");
-    
-    return [x,y];
+    var x1 = first_point[0] % $(this.plots[0].grid_ref).attr("width");
+    var y1 = first_point[1] % $(this.plots[0].grid_ref).attr("height");
+
+    //To ensure we don't cross boundaries into other plots:
+    var diff_x = first_point[0] - x1
+    var diff_y = first_point[1] - y1
+
+    var x2 = second_point[0] - diff_x;
+    var y2 = second_point[1] - diff_y;
+
+    return {start: [x1, y1], end: [x2, y2]};
   }
 
   var drag_start = function(e)
@@ -78,8 +85,10 @@ Grid.prototype.setup = function() {
   {
     drag_object.drag_end = [e.originalEvent.layerX, e.originalEvent.layerY];
 
-    drag_object.drag_start = invert_selection_location.call(self, drag_object.drag_start);
-    drag_object.drag_end = invert_selection_location.call(self, drag_object.drag_end);
+    var endpoints = invert_selection_location.call(self, drag_object.drag_start, drag_object.drag_end);
+
+    drag_object.drag_start = endpoints["start"];
+    drag_object.drag_end = endpoints["end"];
 
     drag_object.drag_plot.scatterplot("handle_drag", drag_object, e);
 
