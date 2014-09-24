@@ -58,14 +58,16 @@ $.widget("slycat.browser",
     }
 
     //This method will take a column id and collapse all folder after it while updating the file path input field to be correct.
-    function toggle_all_folders_after_column(column_id){
+    function toggle_all_folders_after_column(column_id, slide_boolean){
       visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
       max = visible_column_ids[visible_column_ids.length-1];
       for(var i = (column_id+1); i <= max; i++){
         $(".file-browser#"+i).remove();
         visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
-        column_to_show = visible_column_ids[0] - 1;
-        $(".file-browser#"+column_to_show).show();
+        if(slide_boolean){
+          column_to_show = visible_column_ids[0] - 1;
+          $(".file-browser#"+column_to_show).show();
+        }
       }
       new_value = $(".path-entry-input").val().split("/").splice(0,column_id-1).join("/")+"/";
       //Undo the autocomplete hiding of rows.
@@ -88,7 +90,7 @@ $.widget("slycat.browser",
         if (latest_folder == ""){
           path_to_add = folder_array[folder_array.length-2];
           column = folder_array.length-1;
-          toggle_all_folders_after_column(column);
+          toggle_all_folders_after_column(column, true);
           previous_dir = $(".file-browser#"+column).find(".directory.open");
           previous_dir.removeClass("open");
           //Random character appended so that the backspace will take effect on it. Hacky? Yes. Future fix desired.
@@ -112,7 +114,7 @@ $.widget("slycat.browser",
         {
           id = parseInt($(this).parent().parent()[0].id);
           id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
-          toggle_all_folders_after_column(id);
+          toggle_all_folders_after_column(id,true);
           $(this).removeClass("open");
         }
         else // Expand this node ...
@@ -130,7 +132,7 @@ $.widget("slycat.browser",
           if($(".file-browser#"+(current_position+1)).length){
             //We set a boolean so we know not to slide on this expansion
             slide = false;
-            toggle_all_folders_after_column(current_position);
+            toggle_all_folders_after_column(current_position, slide);
             //Need to remove the activated icon from the same column folder.
             previous_dir = $(".file-browser#"+current_position).find(".directory.open");
             previous_dir.removeClass("open");
@@ -153,7 +155,7 @@ $.widget("slycat.browser",
             processData : false,
             data : $.toJSON({
               sid : self.options.session,
-              path : $(this).data("path"),
+              path : $(this).data("path")
             }),
             success : function(result)
             {
@@ -169,6 +171,11 @@ $.widget("slycat.browser",
               $("<table>").addClass("file-browser").attr("id",current_position+1).appendTo(self.element);
               //No matter what we append to the next table if we are expanding a folder.
               var container = $(".file-browser#"+(current_position+1));
+              if(result.names.length == 0){
+                var item = $("<tr>").attr("id","empty").appendTo(container);
+                var entry = $("<div/>").appendTo(item);
+                var label = $("<span class='label'></span>").text("Folder is empty.").appendTo(entry);
+              }
               for(var i = 0; i != result.names.length; ++i)
               {
                 name = result.names[i];
@@ -181,7 +188,7 @@ $.widget("slycat.browser",
                 var icon = $("<span class='icon'></span>").appendTo(entry);
                 concat_name = name;
                 if (name.length > 20){
-                  concat_name = name.substring(0,20)+"...";
+                  concat_name = name.substring(0,18)+"...";
                 }
                 var label = $("<span class='label'></span>").text(concat_name).appendTo(entry);
 
