@@ -4,30 +4,32 @@ Setup Slycat Web Server
 =======================
 
 Note: If you're new to Slycat and are here give it a try, please see
-:ref:`Install Slycat` instead. The following outlines how we setup the Slycat
-Web Server when we build the Slycat Docker image.  It's intended as a guide for
+:ref:`Install Slycat` instead. The following is a guide for
 advanced users who are interested in setting-up Slycat Web Server on their own
 hardware.  Of course, you'll have to adjust this information for your own OS.
 
-The Slycat Repository
----------------------
+Use the Docker Image
+--------------------
 
-First things first ... you can find the Slycat repository at
-http://github.com/sandialabs/slycat which includes the Slycat
-source code, issue tracker, and wiki.
+Many administrators should be able to use the Slycat Docker image in production directly, 
+and we strongly urge you to give this approach a shot - after
+following the instructions to :ref:`Install Slycat`, you would simply make a few
+configuration changes (assigning real passwords to the root and slycat users, replacing
+our self-signed server certificate with one of your own, locking-down ssh access, etc.)
+then continue using the image in production.  Because the Slycat Docker image is a container
+rather than a VM, there is absolutely no performance penalty for using it in this configuration.
+You can even use Docker to automate the process of creating your own site-specific Slycat image
+using Slycat as the base image!
 
-Using the Dockerfiles
----------------------
+Installing Slycat from Scratch
+------------------------------
 
-We prefer to point new Slycat administrators to our `Dockerfiles` for
-information on setting-up Slycat, because these files are the actual scripts
+If you insist on creating your own Slycat instance from scratch, 
+we still prefer to point you to our `Dockerfiles` for
+information on installing Slycat and its dependencies, because these files are the actual scripts
 that we use to build the Slycat Docker image - thus they're an
 always-up-to-date and unambiguous specification of how to build a Slycat
-server.  Ideally, we encourage you to use the Slycat docker image as a
-starting-point for your own Slycat server instance, whether using the image
-unmodified and changing the server configuration, or using the
-`sandialabs/slycat` image as the base for an image customized to suit your
-production environment.  However, even if you don't use Docker, the Dockerfiles
+server.  Even if you don't use Docker, the Dockerfiles
 are easy to understand and adapt to your own processes.
 
 You will find our Dockerfiles in a set of directories located in the `docker`
@@ -65,11 +67,11 @@ configuration.  When you start Slycat Web Server::
   $ cd slycat/web-server
   $ python slycat-web-server.py
 
-... it automatically loads a file `config.ini` from the same directory by default.
-The sample `config.ini` that we provide with the Slycat source code is designed
+... it automatically loads a file `config.ini` from the same directory as slycat-web-server.py.
+The sample `config.ini` that we provide with the source code is designed
 to start Slycat in a state that's useful for developers, so you'll likely want
 to copy it to some other filesystem location, modify it, and point Slycat to
-the modified `config.ini` instead.  To do so, you specify the config file location
+the modified `config.ini` instead.  To do so, you would specify the config file location
 using the command-line::
 
   $ python slycat-web-server.py --config=/etc/slycat/config.ini
@@ -85,4 +87,17 @@ You should note that in the sample `config.ini` we provide, some values are
 simple scalars, such as `[global] server.socket_port`, while some values create
 object instances, such as `[slycat] directory`, which creates a directory
 object that will handle user lookups.  This provides great flexibility to
-customize Slycat for your network.
+customize Slycat for your network.  Here are some common settings you may wish
+to modify::
+
+  [global]
+  engine.autoreload.on - When set to True, Slycat will restart any time the source code is modified.  This is typically disabled in production.
+  require.show_tracebacks - When set to True, failed client requests will return debugging information for the server code that failed.  This is typically disabled in production.
+  server.ssl_certificate - Path to a certificate used for SSL encryption.  Relative paths are relative to the slycat-web-server.py executable.
+  server.ssl_private_key - Path to a private key used for SSL encryption.  Relative paths are relative to the slycat-web-server.py executable.
+  
+  [slycat]
+  allowed-markings - Set to a list of marking types that may be assigned to models.
+  plugins - Set to a list of directories from which plugins will be loaded.  Relative paths are relative to the slycat-web-server.py executable.
+  server-admins - List of users allowed to administer Slycat.
+  
