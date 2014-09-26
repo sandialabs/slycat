@@ -51,9 +51,7 @@ def get_context():
   context["security"] = cherrypy.request.security
   context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
-
-  marking = cherrypy.request.app.config["slycat"]["marking"]
-  context["marking-types"] = [{"type" : type, "label" : marking.label(type)} for type in marking.types()]
+  context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items()]
   context["help-email"] = cherrypy.request.app.config["site"]["help-email"]
   context["version"] = cherrypy.request.app.config["site"]["version"]
   return context
@@ -104,9 +102,8 @@ def get_project(pid):
     models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
     models = sorted(models, key=lambda x: x["created"], reverse=True)
 
-    marking = cherrypy.request.app.config["slycat"]["marking"]
     for model in models:
-      model["marking-html"] = marking.html(model["marking"])
+      model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
 
     context = get_context()
     context.update(project)
@@ -124,7 +121,7 @@ def get_project(pid):
 
   if accept == "application/json":
     return json.dumps(project)
-  
+
 def get_remote_host_dict():
   remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
   remote_host_list = []
@@ -219,8 +216,9 @@ def post_project_models(pid):
   if model_type not in allowed_model_types:
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
-  if marking not in cherrypy.request.app.config["slycat"]["marking"].types():
-    raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(["'%s'" % type for type in cherrypy.request.app.config["slycat"]["marking"].types()]))
+
+  if marking not in cherrypy.request.app.config["slycat"]["allowed-markings"]:
+    raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat"]["allowed-markings"]))
   name = cherrypy.request.json["name"]
   description = cherrypy.request.json.get("description", "")
   mid = uuid.uuid4().hex
@@ -327,9 +325,7 @@ def get_model(mid, **kwargs):
     context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
     context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
     context["new-model-name"] = "Model-%s" % (model_count + 1)
-
-    marking = cherrypy.request.app.config["slycat"]["marking"]
-    context["marking-html"] = marking.html(model["marking"])
+    context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
 
     if "model-type" in model and model["model-type"] == "timeseries":
       context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"

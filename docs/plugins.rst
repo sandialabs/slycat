@@ -31,6 +31,25 @@ functionality.  This explicit registration process allows a single plugin module
 to register as many new capabilities as it wishes, and the registration API
 will expand as we add new categories of plugin functionality to the server.
 
+Marking Plugins
+---------------
+
+A marking plugin add a new type of marking to the Slycat server.  A marking
+consists of the following:
+
+* A unique string identifier called the `marking type`.
+* A human-readable label that will become part of the user interface when prompting end-users
+  to choose the marking for a model.
+* A block of HTML code that will be inserted into the user interface to display the marking.
+
+For example, the following is a marking plugin that allows models to be marked `Faculty Only`::
+
+  def register_slycat_plugin(context):
+    context.register_marking("faculty", "Faculty Only", """<div>FACULTY ONLY</div>""")
+
+In practice, most marking plugins will wish to include inline style information to control the
+appearance of the marking.
+
 Model Plugins
 -------------
 
@@ -99,5 +118,3 @@ connection to the Slycat server has been made and the project identified or crea
 is created and immediately finished (causing the finish() function to be called).  If you view the
 new model in a web browser, it will display "Hello, World!", which was returned from the plugin
 html() function.
-
-
