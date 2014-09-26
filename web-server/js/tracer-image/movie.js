@@ -24,10 +24,27 @@ function Movie(plot) {
   $(this.container).hide();
 }
 
+Movie.prototype.add_loader = function() {
+  var self = this;
+  this.show();
+  this.loader = new LoadingAnimation({
+    end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
+    selector : this.plot.grid_ref,
+    radius : 3*this.plot.scatterplot_obj.attr("height") / 8,
+    complete_callback : function(){
+        self.show();
+        self.loop();
+      }
+  });
+  this.loader.init();
+}
+
 Movie.prototype.build_movie = function() {
   var self = this;
   // TODO images for "image set"
   // TODO this may just work after LG fixes controls wrt image set??
+  
+  self.add_loader();
 
   self.frame = d3.select(self.container).append("rect")
     .attr("class", "outline")
@@ -44,7 +61,8 @@ Movie.prototype.build_movie = function() {
              return self.plot.image_url_for_session(d);
            }
           }
-         );
+         )
+     .each(function(d){$(this).load( function(){ self.loader.update(1); })});
   self.build_close_button(d3.select(self.container));
   self.built = true;
 };
@@ -188,8 +206,10 @@ Movie.prototype.play = function(on_success) {
     if(!self.built) {
       self.build_movie();
     }
-    self.show();
-    self.loop();
+    else {
+      self.show();
+      self.loop();
+    }
     return true;
   }
 };
