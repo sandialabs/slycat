@@ -11,6 +11,7 @@ rights in this software.
 {{> head}}
     <title>{{name}} - Slycat Project</title>
     <script type="text/javascript" src="{{server-root}}js/file-browser.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.regex-selector.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.combobox.js"></script>
     <link rel="stylesheet" href="{{server-root}}style/file-browser.css" type="text/css">
     <link rel="stylesheet" href="{{server-root}}style/combobox.css" type="text/css">
@@ -244,17 +245,16 @@ rights in this software.
           </div>
 
           <div id="remote-pi-browse">
-            <div id="top-shelf" style="height:50px; padding-right:5px;margin-bottom:5px;">
-              <div id="dotfile-div" style="float:left;">
+            <div class="top-shelf">
+              <div class="pull-left">
                 <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
               </div>
-              <div id="pi-file-path-entry" style="float:left; margin-left:30px;">
-                <p><input id="remote-pi-path-entry" class="path-entry-input" style="width: 400px;" type="text" placeholder="File Path Entry"></input></p>
+              <div id="pi-file-path-entry" class="file-path-entry">
+                <p><input id="remote-pi-path-entry" class="path-entry-input" type="text" placeholder="File Path Entry"></input></p>
               </div>
               <button id="remote-pi-browse-next" style="float:right;margin-top:10px;">Next</button>
             </div>
-            <div id="remote-pi-browser" style="margin-bottom:15px;"></div>
-            <button id="remote-pi-browse-next">Next</button>
+            <div id="remote-pi-browser"></div>
           </div>
 
           <div id="remote-pi-parameters">
