@@ -18,6 +18,10 @@ rights in this software.
 .path-entry-input{
   width: 300px;
 }
+.remote-browser-next-button{
+  float: right;
+  margin-top: 10px;
+}
 #remote-pi-browser{
   display: inline-block;
   margin-bottom:15px;
