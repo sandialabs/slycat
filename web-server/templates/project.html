@@ -181,10 +181,16 @@ rights in this software.
           </div>
 
           <div id="remote-cca-browse">
-            <p>Highlight the file to be analyzed:</p>
-            <p><input id="remote-cca-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+            <div class="top-shelf">
+              <div class="pull-left">
+                <p><input id="remote-cca-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+              </div>
+              <div id="cca-file-path-entry" class="file-path-entry">
+                <p><input id="remote-cca-path-entry" class="path-entry-input" type="text" placeholder="File Path Entry"></input></p>
+              </div>
+              <button id="remote-cca-browse-next" class="remote-browser-next-button">Next</button>
+            </div>
             <div id="remote-cca-browser"></div>
-            <button id="remote-cca-browse-next">Next</button>
           </div>
 
           <div id="remote-cca-parameters">
@@ -252,7 +258,7 @@ rights in this software.
               <div id="pi-file-path-entry" class="file-path-entry">
                 <p><input id="remote-pi-path-entry" class="path-entry-input" type="text" placeholder="File Path Entry"></input></p>
               </div>
-              <button id="remote-pi-browse-next" style="float:right;margin-top:10px;">Next</button>
+              <button id="remote-pi-browse-next" class="remote-browser-next-button">Next</button>
             </div>
             <div id="remote-pi-browser"></div>
           </div>
