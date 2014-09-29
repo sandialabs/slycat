@@ -72,6 +72,10 @@ Movie.prototype.build_movie = function() {
 
 Movie.prototype.build_open_button = function(container) {
   var self = this;
+
+  var width = 28,
+      height = 28;
+
   self.open_control = container.append('g')
     .classed('open-movie', true)
     .on('click', function() {
@@ -84,23 +88,18 @@ Movie.prototype.build_open_button = function(container) {
     .on('mouseup', function() {
       d3.event.stopPropagation();
     })
-    .attr('width', 20)
-    .attr('height', 20)
+    .attr('width', width)
+    .attr('height', height)
 
-  var radius = self.open_control.attr('width')/2
+  var radius = self.open_control.attr('width')/2;
 
-  self.open_control.append('circle')
-    .attr('r', radius)
-    .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',' + self.open_control.attr("width")/2 +')')
-    .attr('fill', 'transparent')
-    .attr('stroke', 'darkgreen')
-    .attr('stroke-width', 2);
+  self.open_control.append('image')
+      .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
+        "style/play.png")
+      .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
+      .attr('width', width)
+      .attr('height', height);
 
-  self.open_control.append('path')
-    .attr('fill', 'green')
-    .attr('stroke', 'darkgreen')
-    .attr('stroke-width', 2)
-    .attr('d', 'M' + radius/4 + ' ' + 3*radius/8 + 'L' + (2*radius - 2) + ' ' + radius + 'L' + radius/4 + ' ' + 13*radius/8 + 'Z')
 };
 
 Movie.prototype.build_close_button = function(container) {
