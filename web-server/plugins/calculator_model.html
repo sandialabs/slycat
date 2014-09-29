@@ -1,4 +1,4 @@
-<div style="padding-left: 15px">
+<div style="padding: 10px">
   <h1>Calculator</h1>
   <p id="operand-a"></p>
   <p id="operand-b"></p>
@@ -6,6 +6,7 @@
   <button id="add">Add</button>
   <button id="subtract">Subtract</button>
 </div>
+
 <script type="text/javascript">
   var request = new XMLHttpRequest();
   request.open("GET", "#")
@@ -17,11 +18,25 @@
     document.querySelector("#operand-b").innerHTML = "B: " + model["artifact:b"]
     document.querySelector("#add").onclick = function()
     {
-      document.querySelector("#result").innerHTML = model["artifact:a"] + " + " + model["artifact:b"] + " = ";
+      var request = new XMLHttpRequest();
+      request.open("GET", window.location.href + "/commands/add");
+      request.onload = function()
+      {
+        var result = JSON.parse(this.responseText);
+        document.querySelector("#result").innerHTML = "A + B = " + result;
+      }
+      request.send();
     };
     document.querySelector("#subtract").onclick = function()
     {
-      document.querySelector("#result").innerHTML = model["artifact:a"] + " - " + model["artifact:b"] + " = ";
+      var request = new XMLHttpRequest();
+      request.open("GET", window.location.href + "/commands/subtract");
+      request.onload = function()
+      {
+        var result = JSON.parse(this.responseText);
+        document.querySelector("#result").innerHTML = "A - B = " + result;
+      }
+      request.send();
     };
   };
   request.send();

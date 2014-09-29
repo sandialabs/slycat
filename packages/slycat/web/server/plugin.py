@@ -12,6 +12,7 @@ class Manager(object):
   def __init__(self):
     self._modules = []
     self._models = {}
+    self._model_commands = {}
     self._markings = {}
 
   def load(self, directory):
@@ -49,6 +50,11 @@ class Manager(object):
     return self._models
 
   @property
+  def model_commands(self):
+    """Returns a dict of dicts mapping custom requests to models."""
+    return self._model_commands
+
+  @property
   def markings(self):
     """Returns a dict mapping marking types to marking data."""
     return self._markings
@@ -80,6 +86,27 @@ class Manager(object):
 
     self._models[type] = {"finish":finish, "html":html}
     cherrypy.log.error("Registered new model '%s'" % type)
+
+  def register_model_command(self, type, command, handler):
+    """Called when a plugin is loaded to register a custom request handler associcated with a model type.
+
+    Parameters
+    ----------
+    type : string, required
+      Unique identifier of the already-registered model type.
+    command : string, required
+      Unique-to-the model name of the request.
+    handler : callback function, required
+      Function that will be called to handle requests for the given model command.
+    """
+    if type not in self._models:
+      raise Exception("Unknown model type: %s." % type)
+    if type not in self._model_commands:
+      self._model_commands[type] = {}
+    if command in self._model_commands[type]:
+      raise Exception("Command '%s' has already been registered with model '%s'." % (command, type))
+    self._model_commands[type][command] = {"handler":handler}
+    cherrypy.log.error("Registered new model command: %s/%s" % (type, command))
 
   def register_marking(self, type, label, html):
     """Called when a plugin is loaded to register a new marking type.
