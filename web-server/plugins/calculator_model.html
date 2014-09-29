@@ -1,0 +1,28 @@
+<div style="padding-left: 15px">
+  <h1>Calculator</h1>
+  <p id="operand-a"></p>
+  <p id="operand-b"></p>
+  <p id="result"></p>
+  <button id="add">Add</button>
+  <button id="subtract">Subtract</button>
+</div>
+<script type="text/javascript">
+  var request = new XMLHttpRequest();
+  request.open("GET", "#")
+  request.setRequestHeader("accept", "application/json");
+  request.onload = function()
+  {
+    var model = JSON.parse(this.responseText);
+    document.querySelector("#operand-a").innerHTML = "A: " + model["artifact:a"]
+    document.querySelector("#operand-b").innerHTML = "B: " + model["artifact:b"]
+    document.querySelector("#add").onclick = function()
+    {
+      document.querySelector("#result").innerHTML = model["artifact:a"] + " + " + model["artifact:b"] + " = ";
+    };
+    document.querySelector("#subtract").onclick = function()
+    {
+      document.querySelector("#result").innerHTML = model["artifact:a"] + " - " + model["artifact:b"] + " = ";
+    };
+  };
+  request.send();
+</script>
