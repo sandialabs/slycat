@@ -30,11 +30,12 @@ Movie.prototype.add_loader = function() {
   this.loader = new LoadingAnimation({
     end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
     selector : this.plot.grid_ref,
-    radius : 3*this.plot.scatterplot_obj.attr("height") / 8,
+    radius : function(){return 3*self.plot.scatterplot_obj.attr("height") / 8},
     complete_callback : function(){
         self.show();
         self.loop();
-      }
+      },
+    resize_parent : $(this.plot.scatterplot_obj.scatterplot("get_option", "display_pane")),
   });
   this.loader.init();
 }
@@ -59,7 +60,9 @@ Movie.prototype.build_movie = function() {
     .enter().append("image")
     .attr({ "xlink:href" : function(d) {
              return self.plot.image_url_for_session(d);
-           }
+           },
+           opacity: 0,
+           async: true
           }
          )
      .each(function(d){$(this).load( function(){ self.loader.update(1); })});
