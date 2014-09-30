@@ -12,7 +12,58 @@ from __future__ import absolute_import
 
 import cherrypy
 import couchdb.client
+import threading
+import time
 import uuid
+
+class Monitor:
+  def __init__(self):
+    self._changed = threading.Condition()
+
+  @property
+  def changed(self):
+    return self._changed
+
+  def run(self):
+    database = slycat.web.server.database.couchdb.connect()
+    id_cache = set()
+    revision = 0
+
+    # Initialize the cache ...
+    changes = database.changes(filter="slycat/models")
+    with self._changed:
+      revision = changes["last_seq"]
+      for change in changes["results"]:
+        if "deleted" in change:
+          if change["id"] in id_cache:
+            del id_cache[change["id"]]
+        else:
+          id_cache.add(change["id"])
+
+    cherrypy.log.error("Initialized id cache to revision %s, loaded %s ids." % (revision, len(id_cache)))
+
+    # Update the cache when the database changes ...
+    while True:
+      try:
+        for change in database.changes(filter="slycat/models", feed="continuous", since=revision):
+          with self._changed:
+            if "deleted" in change:
+              if change["id"] in id_cache:
+                revision = change["seq"]
+                self._changed.notify_all()
+            elif "seq" in change:
+              id_cache.add(change["id"])
+              revision = change["seq"]
+              self._changed.notify_all()
+      except:
+        cherrypy.log.error("Waiting to reconnect to database.")
+        time.sleep(1.0)
+        database = slycat.web.server.database.couchdb.connect()
+
+  def start(self):
+    self._thread = threading.Thread(name="Database Monitor", target=self.run)
+    self._thread.daemon = True
+    self._thread.start()
 
 class Database:
   """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
