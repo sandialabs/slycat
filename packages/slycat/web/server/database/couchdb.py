@@ -18,7 +18,7 @@ import uuid
 #################################################################################################################
 # Deprecated API, don't use in new code.
 
-class database_wrapper:
+class Database:
   """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
   def __init__(self, database):
     self.database = database
@@ -71,8 +71,8 @@ def connect():
 
   Returns
   -------
-  database : :class:`slycat.web.server.database.couchdb.database_wrapper`
+  database : :class:`slycat.web.server.database.couchdb.Database`
   """
   server = couchdb.client.Server(url=cherrypy.tree.apps[""].config["slycat"]["couchdb-host"])
-  database = database_wrapper(server[cherrypy.tree.apps[""].config["slycat"]["couchdb-database"]])
+  database = Database(server[cherrypy.tree.apps[""].config["slycat"]["couchdb-database"]])
   return database
