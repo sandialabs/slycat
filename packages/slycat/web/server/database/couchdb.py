@@ -3,10 +3,9 @@
 # rights in this software.
 
 """Slycat uses `CouchDB <http://couchdb.apache.org>`_ as its primary storage
-index, tracking projects, models, bookmarks, along with metadata and small
-model artficats.  For large model artifacts such as
-:mod:`darrays<slycat.darray>`, the CouchDB database stores links to HDF5 files
-stored on disk.
+for projects, models, bookmarks, metadata, and small model artficats.  For
+large model artifacts such as :mod:`darrays<slycat.darray>`, the CouchDB
+database stores links to HDF5 files stored on disk.
 """
 
 from __future__ import absolute_import
@@ -15,37 +14,34 @@ import cherrypy
 import couchdb.client
 import uuid
 
-#################################################################################################################
-# Deprecated API, don't use in new code.
-
 class Database:
   """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
   def __init__(self, database):
-    self.database = database
+    self._database = database
 
   def __getitem__(self, *arguments, **keywords):
-    return self.database.__getitem__(*arguments, **keywords)
+    return self._database.__getitem__(*arguments, **keywords)
 
   def changes(self, *arguments, **keywords):
-    return self.database.changes(*arguments, **keywords)
+    return self._database.changes(*arguments, **keywords)
 
   def delete(self, *arguments, **keywords):
-    return self.database.delete(*arguments, **keywords)
+    return self._database.delete(*arguments, **keywords)
 
   def get_attachment(self, *arguments, **keywords):
-    return self.database.get_attachment(*arguments, **keywords)
+    return self._database.get_attachment(*arguments, **keywords)
 
   def put_attachment(self, *arguments, **keywords):
-    return self.database.put_attachment(*arguments, **keywords)
+    return self._database.put_attachment(*arguments, **keywords)
 
   def save(self, *arguments, **keywords):
     try:
-      return self.database.save(*arguments, **keywords)
+      return self._database.save(*arguments, **keywords)
     except couchdb.http.ServerError as e:
       raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
 
   def view(self, *arguments, **keywords):
-    return self.database.view(*arguments, **keywords)
+    return self._database.view(*arguments, **keywords)
 
   def scan(self, path, **keywords):
     for row in self.view(path, include_docs=True, **keywords):
