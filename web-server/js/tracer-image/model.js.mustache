@@ -188,8 +188,12 @@ Model.prototype.get_data_column = function(index, success_callback) {
   return this.get_column("loaded_data", index, success_callback || function(){});
 }
 
-Model.prototype.get_image_column = function() {
+Model.prototype.get_image_column = function(index, success_callback) {
   return this.get_column("loaded_images", index, success_callback || function(){});
+}
+
+Model.prototype.get_image = function(column_index, image_index_range, success_callback){
+  return this.get_item("loaded_images", column_index, image_index_range, success_callback || function(){});
 }
 
 Model.prototype.get_column = function(data_store, index, success_callback) {
@@ -209,7 +213,9 @@ Model.prototype.get_column = function(data_store, index, success_callback) {
       aid : "data-table",
       array : 0,
       attribute : index,
-      success : on_complete,
+      success : function(result){
+          on_complete(result);
+        },
       error : artifact_missing
    });
 };

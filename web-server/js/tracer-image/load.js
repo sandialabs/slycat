@@ -117,6 +117,10 @@ LoadingAnimation.prototype.animate = function(){
   this.state[0] += delta;
   this.state[1] -= delta;
 
+  if(this.state[1] < 0) {
+    this.state[1] = 0;
+  }
+
   this.group.selectAll("path")
       .data(this.pie(this.state))
     .transition()
