@@ -287,7 +287,7 @@ class connection(object):
 
   def find_project(self, name):
     """Return a project by name."""
-    projects = [project for project in self.get_projects() if project["name"] == name]
+    projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
       raise Exception("More than one project matched the given name.")
@@ -298,7 +298,7 @@ class connection(object):
 
   def find_or_create_project(self, name, description=""):
     """Looks-up a project by name, creating it if it doesn't already exist."""
-    projects = [project for project in self.get_projects() if project["name"] == name]
+    projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
       raise Exception("More than one project matched the given name.  Try using a different project name instead.")

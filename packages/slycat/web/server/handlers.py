@@ -62,20 +62,38 @@ def get_context():
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["projects-redirect"])
 
-def get_projects(_=None):
+def get_projects(revision=None, _=None):
+  if get_projects.monitor is None:
+    get_projects.monitor = slycat.web.server.database.couchdb.Monitor(name="Project change monitor", filter="slycat/projects")
+  if get_projects.timeout is None:
+    get_projects.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
+
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
-
 
   if accept == "text/html":
     context = get_context()
     return slycat.web.server.template.render("projects.html", context)
 
   if accept == "application/json":
-    database = slycat.web.server.database.couchdb.connect()
-    projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
-    projects = sorted(projects, key = lambda x: x["created"], reverse=True)
-    return json.dumps(projects)
+    if revision is not None:
+      revision = int(revision)
+    start_time = time.time()
+    with get_projects.monitor.changed:
+      while revision == get_projects.monitor.revision:
+        get_projects.monitor.changed.wait(1.0)
+        if time.time() - start_time > get_projects.timeout:
+          cherrypy.response.status = "204 No change."
+          return
+        if cherrypy.engine.state != cherrypy.engine.states.STARTED:
+          cherrypy.response.status = "204 Shutting down."
+          return
+      database = slycat.web.server.database.couchdb.connect()
+      projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
+      projects = sorted(projects, key = lambda x: x["created"], reverse=True)
+      return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
+get_projects.monitor = None
+get_projects.timeout = None
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
