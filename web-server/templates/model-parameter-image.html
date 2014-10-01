@@ -783,7 +783,7 @@ rights in this software.
         {
           if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
             && (category_columns != null) && (x_index != null) && (y_index != null) 
-            && (images_index != null) && (selected_simulations != null) )
+            && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null))
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -817,6 +817,7 @@ rights in this software.
               "y-variable" : y_index,
               "image-variable" : images_index,
               "color-variable" : color_variable,
+              hidden_simulations : hidden_simulations,
             });
 
             // Changing the x variable updates the controls ...
@@ -949,6 +950,7 @@ rights in this software.
               hidden_simulations_changed();
               $("#table").table("option", "hidden_simulations", hidden_simulations);
               $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+              $("#controls").controls("option", "hidden_simulations", hidden_simulations);
             });
 
             // Log changes to hidden selection ...
@@ -963,6 +965,18 @@ rights in this software.
               hidden_simulations_changed();
               $("#table").table("option", "hidden_simulations", hidden_simulations);
               $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+              $("#controls").controls("option", "hidden_simulations", hidden_simulations);
+            });
+
+            // Log changes to hidden selection ...
+            $("#controls").bind("show-all", function(event, selection)
+            {
+              hidden_simulations = [];
+
+              hidden_simulations_changed();
+              $("#table").table("option", "hidden_simulations", hidden_simulations);
+              $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+              $("#controls").controls("option", "hidden_simulations", hidden_simulations);
             });
           }
         }

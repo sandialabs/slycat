@@ -263,7 +263,7 @@ rights in this software.
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
-#barplot-table span.sortCCAComponent 
+#barplot-table span.sortCCAComponent
 {
   width: 15px;
   height: 15px;
@@ -308,12 +308,12 @@ rights in this software.
   background: transparent url(image-light.png) no-repeat center center;
 }
 .slick-header-button.icon-image-on,
-.slick-header-button.icon-image-off:hover 
+.slick-header-button.icon-image-off:hover
 {
   background: transparent url(image-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
-.slick-header-button.icon-y-off 
+.slick-header-button.icon-y-off
 {
   right: 16px;
   top: 4px;
@@ -322,12 +322,12 @@ rights in this software.
   background: transparent url(y-light.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
-.slick-header-button.icon-y-off:hover 
+.slick-header-button.icon-y-off:hover
 {
   background: transparent url(y-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
-.slick-header-button.icon-x-off 
+.slick-header-button.icon-x-off
 {
   right: 26px;
   top: 4px;
@@ -336,7 +336,7 @@ rights in this software.
   background: transparent url(x-light.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
-.slick-header-button.icon-x-off:hover 
+.slick-header-button.icon-x-off:hover
 {
   background: transparent url(x-gray.png) no-repeat center center;
 }
@@ -366,11 +366,14 @@ rights in this software.
   color: gray;
 }
 #controls select:disabled {
-  
+
 }
 #controls select {
   margin-right: 10px;
   padding: 2px 4px;
+}
+#controls button {
+  margin-right: 10px;
 }
 #scatterplot.resizing,
 #scatterplot .resize-handle:hover {
@@ -381,23 +384,27 @@ rights in this software.
 {
   cursor: move;
 }
+#scatterplot .close-button:hover,
+#scatterplot .pin-button:hover {
+  cursor: pointer;
+}
 #scatterplot g.open-image image.image {
 
 }
 #scatterplot .close-button,
-#scatterplot .resize-handle
+#scatterplot .resize-handle,
+#scatterplot .pin-button
 {
   visibility: hidden;
 }
 #scatterplot g.open-image:hover .close-button,
 #scatterplot g.open-image.resizing .close-button,
+#scatterplot g.open-image:hover .pin-button,
+#scatterplot g.open-image.resizing .pin-button,
 #scatterplot g.image-frame:hover .resize-handle,
 #scatterplot g.open-image.resizing .resize-handle
 {
   visibility: visible;
-}
-#scatterplot g.open-image g.pin-button {
-  display: none;
 }
 #scatterplot g.legend:hover {
   cursor: move;

@@ -8,23 +8,18 @@ rights in this software.
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 
-$.widget("tracer_image.scatterplot",
-{
-  options:
-  {
+$.widget("tracer_image.scatterplot", {
+  options: {
     object_ref : null,
     scatterplot_obj : null,
-    width : 300,
-    height : 300,
+    width : null,
+    height : null,
     //The parent to use for resizing purposes:
     display_pane : "",
     dimension_adjustments: {width: function(){return 0}, height: function(){return 0;}},
     pick_distance : 3,
     drag_threshold : 3,
     indices : [],
-    x_label : "X Label",
-    y_label : "Y Label",
-    v_label : "V Label",
     x : [],
     y : [],
     v : [],
@@ -32,7 +27,7 @@ $.widget("tracer_image.scatterplot",
     images : [],
     selection : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
-    border : 25,
+    border : 50,
     server_root : "",
     open_images : [],
     gradient : null,
@@ -41,8 +36,7 @@ $.widget("tracer_image.scatterplot",
     filtered_selection : [],
   },
 
-  _create: function()
-  {
+  _create: function() {
     var self = this;
 
     self.hover_timer = null;
@@ -53,6 +47,8 @@ $.widget("tracer_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
 
+    out = self;
+
     self.numeric_variables = [];
     for(var i = 0; i < model.metadata["column-count"]; i++) { // model is currently in global scope (init.js)
       if(model.metadata["column-types"][i] != 'string')
@@ -60,15 +56,22 @@ $.widget("tracer_image.scatterplot",
     }
 
     // Setup the scatterplot ...
-    self.svg = d3.select(self.element.get(0));
-    self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
-    self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
-    self.legend_layer = self.svg.append("g").attr("class", "legend");
-    self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
-    self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
-    self.selected_layer = self.svg.append("g");
-    self.selection_layer = self.svg.append("g");
-    self.image_layer = self.svg.append("g");
+    self.group = d3.select(self.element.get(0));
+
+    self.svg = d3.select($(self.group[0]).parents("svg")[0]);
+
+    self._build_x_axis();
+    self._build_y_axis();
+    self._build_color_legend();
+
+    self.datum_layer = self.group.append("g").attr("class", "datum-layer");
+    self.selected_layer = self.group.append("g");
+    self.selection_layer = self.group.append("g");
+
+    var top_layer = $(self.group[0]).parents("svg");
+    var image_layer_check = top_layer.find("g.image-layer")[0];
+
+    self.image_layer = image_layer_check ? d3.select(image_layer_check) : d3.select(top_layer[0]).append("g").attr("class", "image-layer");
 
     self.image_cache = {};
 
@@ -80,8 +83,6 @@ $.widget("tracer_image.scatterplot",
       update_height:true,
       update_x:true,
       update_y:true,
-      update_x_label:true,
-      update_y_label:true,
       update_color_domain:true,
       render_data:true,
       render_selection:true,
@@ -90,13 +91,13 @@ $.widget("tracer_image.scatterplot",
       update_legend_colors:true,
       update_legend_position:true,
       update_legend_axis:true,
-      update_v_label:true,
     });
 
     self.legend_layer
       .call(
         d3.behavior.drag()
           .on('drag', function(){
+            d3.event.sourceEvent.stopPropagation();
             // Make sure mouse is inside svg element
             if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
               var theElement = d3.select(this);
@@ -109,11 +110,13 @@ $.widget("tracer_image.scatterplot",
               theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
             }
           })
-          .on("dragstart", function() {
+          .on("dragstart", function(e) {
+            d3.event.sourceEvent.stopPropagation();
             self.state = "moving";
             d3.event.sourceEvent.stopPropagation(); // silence other listeners
           })
-          .on("dragend", function() {
+          .on("dragend", function(e) {
+            d3.event.sourceEvent.stopPropagation();
             self.state = "";
             // self._sync_open_images();
             d3.select(this).attr("data-status", "moved");
@@ -121,149 +124,8 @@ $.widget("tracer_image.scatterplot",
       )
       ;
 
-    self.element.mousedown(function(e)
-    {
-      //console.log("#scatterplot mousedown");
-      self.start_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
-      self.end_drag = null;
-    });
-
-    self.element.mousemove(function(e)
-    {
-      //console.log("#scatterplot mousemove");
-      if(self.start_drag) // Mouse is down ...
-      {
-        if(self.end_drag) // Already dragging ...
-        {
-          self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
-
-          var width = self.element.attr("width");
-          var height = self.element.attr("height");
-
-          self.selection_layer.selectAll(".rubberband")
-              .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
-              .attr("y", Math.min(self.start_drag[1], self.end_drag[1]))
-              .attr("width", Math.abs(self.start_drag[0] - self.end_drag[0]))
-              .attr("height", Math.abs(self.start_drag[1] - self.end_drag[1]))
-            ;
-        }
-        else
-        {
-          if(Math.abs(e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
-          {
-            self.state = "rubber-band-drag";
-            self.end_drag = [e.originalEvent.layerX, e.originalEvent.layerY];
-            self.selection_layer.append("rect")
-              .attr("class", "rubberband")
-              .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
-              .attr("y", Math.min(self.start_drag[1], self.end_drag[1]))
-              .attr("width", Math.abs(self.start_drag[0] - self.end_drag[0]))
-              .attr("height", Math.abs(self.start_drag[1] - self.end_drag[1]))
-              .attr("fill", "rgba(255, 255, 0, 0.3)")
-              .attr("stroke", "rgb(255, 255, 0)")
-              .attr("linewidth", 2)
-              ;
-          }
-        }
-      }
-    });
-
     self.element.mouseup(function(e)
     {
-      if(self.state == "resizing" || self.state == "moving")
-        return;
-
-      //console.log("#scatterplot mouseup");
-      if(!e.ctrlKey)
-      {
-        self.options.selection = [];
-        self.options.filtered_selection = [];
-      }
-
-      var x = self.options.x;
-      var y = self.options.y;
-      var count = x.length;
-
-      if(self.state == "rubber-band-drag") // Rubber-band selection ...
-      {
-        self.selection_layer.selectAll(".rubberband").remove();
-
-        if(self.start_drag && self.end_drag) {
-          var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
-          var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
-          var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
-          var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
-
-          for(var i = 0; i != count; ++i)
-          {
-            if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-            {
-              var index = self.options.selection.indexOf(self.options.indices[i]);
-              if(index == -1)
-                self.options.selection.push(self.options.indices[i]);
-            }
-          }
-        }
-      }
-      else // Pick selection ...
-      {
-        var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
-        var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
-        var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
-        var y2 = self.y_scale.invert(e.originalEvent.layerY - self.options.pick_distance);
-
-        for(var i = 0; i != count; ++i)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-          {
-            // Update the list of selected points ...
-            var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
-            {
-              // Selecting a new point.
-              self.options.selection.push(self.options.indices[i]);
-
-              // // If the URI for this point isn't already open, open it.
-              // var uri = self.options.images[self.options.indices[i]];
-              // if($(".open-image[data-uri='" + uri + "']").size() == 0)
-              // {
-              //   self._close_hover();
-
-              //   var width = self.svg.attr("width");
-              //   var height = self.svg.attr("height");
-              //   var open_width = Math.min(width, height) / 3;
-              //   var open_height = Math.min(width, height) / 3;
-
-              //   self._open_images([{
-              //     index : self.options.indices[i],
-              //     uri : self.options.images[self.options.indices[i]],
-              //     image_class : "open-image",
-              //     target_x : self.x_scale(self.options.x[i]),
-              //     target_y : self.y_scale(self.options.y[i]),
-              //     width: open_width,
-              //     height : open_height,
-              //     }]);
-              // }
-            }
-            else
-            {
-              // Deselecting an existing point.
-              self.options.selection.splice(index, 1);
-            }
-
-            break;
-          }
-        }
-      }
-
-      self.start_drag = null;
-      self.end_drag = null;
-      self.state = "";
-
-      self._filterIndices();
-      self.options.selection = self.options.filtered_selection.slice(0);
-      self._schedule_update({render_selection:true});
-      self.element.trigger("selection-changed", [self.options.selection]);
     });
     self._filterIndices();
   },
@@ -303,6 +165,52 @@ $.widget("tracer_image.scatterplot",
     self.options.filtered_selection = filtered_selection;
   },
 
+  _build_x_axis: function() {
+    var self = this;
+    self.x_axis_layer = self.group.append("g").attr("class", "x-axis");
+    self.x_control = new PlotControl({
+      plot: self.options.scatterplot_obj,
+      container: self.x_axis_layer,
+      control_type: 'x',
+      label_text: 'X variable:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.x_control.build();
+    // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
+    self.options.scatterplot_obj.movie.build_open_button(self.x_axis_layer);
+  },
+
+  _build_y_axis: function() {
+    var self = this;
+    self.y_axis_layer = self.group.append("g").attr("class", "y-axis");
+    self.y_control = new PlotControl({
+      plot: self.options.scatterplot_obj,
+      container: self.y_axis_layer,
+      control_type: 'y',
+      label_text: 'Y variable:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.y_control.build();
+  },
+
+  _build_color_legend: function() {
+    var self = this;
+    self.legend_layer = self.group.append("g").attr("class", "legend");
+
+    self.color_control = new PlotControl({
+      plot: self.options.scatterplot_obj,
+      container: self.legend_layer,
+      control_type: 'v',
+      label_text: 'Color variable:',
+      variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
+      column_names: model.metadata['column-names']
+    });
+    self.color_control.build();
+    self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
+  },
+
   _setOption: function(key, value)
   {
     var self = this;
@@ -314,21 +222,6 @@ $.widget("tracer_image.scatterplot",
     {
       self._filterIndices();
       self._schedule_update({update_indices:true, render_selection:true});
-    }
-
-    else if(key == "x_label")
-    {
-      self._schedule_update({update_x_label:true});
-    }
-
-    else if(key == "y_label")
-    {
-      self._schedule_update({update_y_label:true});
-    }
-
-    else if(key == "v_label")
-    {
-      self._schedule_update({update_v_label:true});
     }
 
     else if(key == "x")
@@ -367,17 +260,17 @@ $.widget("tracer_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
     {
-      self._schedule_update({update_height:true, update_y:true, update_y_label:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true, update_v_label:true,});
+      self._schedule_update({update_height:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_legend_axis:true});
     }
 
     else if(key == "border")
     {
-      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true, update_v_label:true,});
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_position:true});
     }
 
     else if(key == "gradient")
@@ -415,18 +308,24 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_width"])
     {
+      console.log("updating width!!!!!");
+      $(self.options.display_pane).resize();
       self.options.width = self.element.parents(self.options.display_pane).width() * self.options.scalar.x;
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
-      self.svg.attr("width", self.options.width);
+      self.group.attr("width", self.options.width);
+      self.options.scatterplot_obj.movie.resize();
     }
 
     if(self.updates["update_height"])
     {
+      console.log("updating height!!!!!");
+      $(self.options.display_pane).resize();
       self.options.height = self.element.parents(self.options.display_pane).height() * self.options.scalar.y;
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
-      self.svg.attr("height", self.options.height);
+      self.group.attr("height", self.options.height);
+      self.options.scatterplot_obj.movie.resize();
     }
 
     if(self.updates["update_indices"])
@@ -443,15 +342,22 @@ $.widget("tracer_image.scatterplot",
       var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var width_offset = (total_width - width) / 2;
+      var height_offset = (total_height - height) / 2;
 
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
-        .call(self.x_axis)
-        ;
+        .call(self.x_axis);
+
+      var range = self.x_scale.range();
+      var range_midpoint = (range[1] - range[0])/2 + range[0];
+      var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
+      self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
+      // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
+      self.options.scatterplot_obj.movie.open_control
+          .attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',40)');
     }
 
     if(self.updates["update_y"])
@@ -460,64 +366,21 @@ $.widget("tracer_image.scatterplot",
       var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var width_offset = (total_width - width) / 2;
+      var height_offset = (total_height - height) / 2;
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
       self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
-        .call(self.y_axis)
-        ;
-    }
+        .call(self.y_axis);
 
-    if(self.updates["update_x_label"])
-    {
-      var x = self.svg.attr("width") / 2;
-      var y = 40;
-
-      self.x_axis_layer.selectAll(".label").remove()
-      self.x_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.x_label)
-        ;
-      //debugger;
-      var $controls = $('<foreignObject class="controls x-control">')
-            .plot_control({
-              control_type: "x",
-              selected_variable: self.options.scatterplot_obj.x_index,
-              variables: self.numeric_variables.slice(0, self.numeric_variables.length-1),
-              select_id: "x-axis-switcher",
-              label_text: "X Axis:",
-              event_to_trigger: "x-selection-changed",
-              column_names: model.metadata['column-names']
-            });
-      var d3controls = d3.select($controls.toArray()); //translate jquery to d3
-      self.x_axis_layer.append(function() { return d3controls.node()[0]; });
-    }
-
-    if(self.updates["update_y_label"])
-    {
-      self.y_axis_layer.selectAll(".label").remove();
-
-      var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      var x = -(y_axis_width+15);
-      var y = self.svg.attr("height") / 2;
-
-      self.y_axis_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.y_label)
-        ;
+      var range = self.y_scale.range();
+      var range_midpoint = (range[1] - range[0])/2 + range[0];
+      var control_x_offset = -30 - Number(self.y_control.foreign_object.attr('width'));
+      var control_y_offset = range_midpoint - Number(self.y_control.foreign_object.attr('height'))/2; //account for control width
+      self.y_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',' + control_y_offset + ')');
     }
 
     if(self.updates["update_color_domain"])
@@ -536,35 +399,27 @@ $.widget("tracer_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var v = self.options.v;
-      var t = self.options.t;
       var indices = self.options.indices;
       var filtered_indices = self.options.filtered_indices;
-      // If b is a higher time (came later), then it goes after a:
-      filtered_indices.sort(function(a,b){ return t[a] - t[b]; });
 
       // Draw points ...
       var circle = self.datum_layer.selectAll(".datum")
-        .data(filtered_indices, function(d, i){
+        .data(filtered_indices.filter(function(d){return self.options.images[d].length > 0;}), function(d, i){
           return filtered_indices[i];
-        })
-        ;
+        });
       circle.exit()
-        .remove()
-        ;
+        .remove();
       circle.enter()
         .append("circle")
         .attr("class", "datum")
         .attr("r", 4)
-        .attr("stroke", "black")
-        .attr("linewidth", 1)
         .attr("data-index", function(d, i) { return d; })
         .on("mouseover", function(d, i) {
           self._schedule_hover(d);
         })
         .on("mouseout", function(d, i) {
           self._cancel_hover();
-        })
-        ;
+        });
       circle
         .attr("cx", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ); })
         .attr("cy", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ); })
@@ -574,23 +429,24 @@ $.widget("tracer_image.scatterplot",
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
-        })
-        ;
+        });
 
-
-      self.svg.select(".time-paths").remove();
+      self.group.select(".time-paths").remove();
 
       var make_line = d3.svg.line();
+      var color_scale = d3.scale.linear()
+        .domain([0, filtered_indices.length])
+        .range(["white", "black"]);
 
-      var time_line_group = self.svg.insert("g", ".datum-layer + g")
+      var time_line_group = self.group.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
 
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
-        .reduce(function(prev, next){
+        .reduce(function(prev, next, index){
           time_line_group.append("path")
-            .attr("stroke", "black")
+            .attr("stroke", color_scale(index))
             .attr("linewidth", 1)
-            .attr("d", make_line([prev, next]));
+            .attr("d", function(){return make_line([prev, next])});
           return next;
         });
     }
@@ -617,8 +473,6 @@ $.widget("tracer_image.scatterplot",
         .append("circle")
         .attr("class", "selection")
         .attr("r", 8)
-        .attr("stroke", "black")
-        .attr("linewidth", 1)
         .attr("data-index", function(d, i) {
           return d;
         })
@@ -650,8 +504,7 @@ $.widget("tracer_image.scatterplot",
     if(self.updates["open_images"])
     {
       // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
-      self.options.open_images.forEach(function(image)
-      {
+      self.options.open_images.forEach(function(image) {
         if(image.uri === undefined)
           image.uri = self.options.images[image.index];
         if(image.width === undefined)
@@ -661,8 +514,8 @@ $.widget("tracer_image.scatterplot",
       });
 
       // Transform the list of initial images so we can pass them to _open_images()
-      var width = Number(self.svg.attr("width"));
-      var height = Number(self.svg.attr("height"));
+      var width = Number(self.group.attr("width")); //self.group refers to <g class="scatterplot" ...>
+      var height = Number(self.group.attr("height"));
 
       var images = [];
       self.options.open_images.forEach(function(image, index)
@@ -698,22 +551,16 @@ $.widget("tracer_image.scatterplot",
       });
     }
 
-    if(self.updates["render_legend"])
-    {
+    if(self.updates["render_legend"]) {
       var gradient = self.legend_layer.append("defs").append("linearGradient");
       gradient.attr("id", "color-gradient")
         .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%")
-        ;
-
+        .attr("x2", "0%").attr("y2", "100%");
       var colorbar = self.legend_layer.append("rect")
         .classed("color", true)
-        .attr("width", 10)
-        .attr("height", 200)
         .attr("x", 0)
         .attr("y", 0)
-        .style("fill", "url(#color-gradient)")
-        ;
+        .style("fill", "url(#color-gradient)");
     }
 
     if(self.updates["update_legend_colors"])
@@ -730,68 +577,45 @@ $.widget("tracer_image.scatterplot",
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.svg.attr("width"));
-      var total_height = Number(self.svg.attr("height"));
+      var total_width = Number(self.group.attr("width"));
+      var total_height = Number(self.group.attr("height"));
       var width = Math.min(total_width, total_height);
       var height = Math.min(total_width, total_height);
+      var rectWidth = 10;
+      // rectHeight attr used to be set to 200 in render, but then overwritten to this. deleted former from render.
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var datum_layer_width = self.datum_layer.node().getBBox().width;
       var width_offset = (total_width + datum_layer_width) / 2;
-      var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
-
-      if( self.legend_layer.attr("data-status") != "moved" )
-      {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
+      if( self.legend_layer.attr("data-status") != "moved" ) {
+        var transx = parseInt(width_offset + 40);
+        var transy = parseInt((total_height/2)-(rectHeight/2)-10);
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
-          .attr("data-transy", transy)
-          ;
+          .attr("data-transy", transy);
       }
-
-      self.element
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
-        ;
+        .attr('width', rectWidth);
+
+      var legend_width = rectWidth + self.legend_axis_layer.node().getBBox().width;
+      var control_width = Number(self.color_control.foreign_object.attr('width'));
+      var control_height = Number(self.color_control.foreign_object.attr('height'));
+      //TODO: figure out how to use the <select>'s width instead of the <foreignObject>'s... then won't need to subtract the arbitrary -10
+      var horizontal_offset = (control_width - legend_width)/2 - 10;
+      // use (rectHeight + 10) y-transform to put control below legend
+      self.color_control.foreign_object.attr('transform', 'translate(-' + horizontal_offset + ',-' + (control_height + 5) + ')');
     }
 
-    if(self.updates["update_legend_axis"])
-    {
+    if(self.updates["update_legend_axis"]) {
       self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
-        .call(self.legend_axis)
-        ;
+        .call(self.legend_axis);
     }
 
-    if(self.updates["update_v_label"])
-    {
-      console.log("updating v label.");
-      self.legend_layer.selectAll(".label").remove();
-
-      self.element.parents("svg").resize();
-
-      // var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      // var x = -(y_axis_width+15);
-      // var y = self.svg.attr("height") / 2;
-      var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
-      var x = -15;
-      var y = rectHeight/2;
-
-      self.legend_layer.append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(self.options.v_label)
-        ;
-    }
-
-    self.updates = {}
+    self.updates = {}; // THIS LINE IS ABSOLUTELY CRITICAL, YOU WILL CRY LOOKING FOR THE BUG IF YOU ACCIDENTALLY REMOVE IT
   },
 
   _sync_open_images: function()
@@ -799,8 +623,8 @@ $.widget("tracer_image.scatterplot",
     var self = this;
 
     // Get the scatterplot width so we can convert absolute to relative coordinates.
-    var width = Number(self.svg.attr("width"));
-    var height = Number(self.svg.attr("height"));
+    var width = Number(self.group.attr("width"));
+    var height = Number(self.group.attr("height"));
     var open_images = [];
     $(".open-image").each(function(index, frame)
     {
@@ -851,7 +675,7 @@ $.widget("tracer_image.scatterplot",
     // Create scaffolding and status indicator if we already don't have one
     if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
 
-      // Define a default size for every image.
+      // Define a default size for every image. Should have come in set by hover height/width though.
       if(image.width === undefined)
         image.width = 200;
       if(image.height === undefined)
@@ -861,7 +685,7 @@ $.widget("tracer_image.scatterplot",
       if(image.x === undefined)
       {
         // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
+        var width = self.group.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
@@ -872,15 +696,14 @@ $.widget("tracer_image.scatterplot",
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
+        var height = self.group.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = parseInt((target_y / height) * (height - image.height));
       }
 
       // Tag associated point with class
       self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
-        .classed("openHover", true)
-        ;
+        .classed("openHover", true);
 
       var frame = self.image_layer.append("g")
         .attr("data-uri", image.uri)
@@ -895,7 +718,7 @@ $.widget("tracer_image.scatterplot",
             .on('drag', function(){
               //console.log("frame drag");
               // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+              if( 0 <= d3.event.y && d3.event.y <= $(self.svg[0]).height() && 0 <= d3.event.x && d3.event.x <= $(self.svg[0]).width() ){
                 var theElement = d3.select(this);
                 var transx = Number(theElement.attr("data-transx"));
                 var transy = Number(theElement.attr("data-transy"));
@@ -920,6 +743,7 @@ $.widget("tracer_image.scatterplot",
                 d3.event.sourceEvent.stopPropagation(); // silence other listeners
                 // Reset tracking of hover image if we are starting to drag a hover image
                 var frame = d3.select(this);
+
                 if(frame.classed("hover-image"))
                 {
                   self.opening_image = null;
@@ -962,14 +786,16 @@ $.widget("tracer_image.scatterplot",
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
       {
+        var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+
         frame.append("line")
           .attr("class", "leader")
           .attr("x1", (image.width / 2))
           .attr("y1", (image.height / 2))
-          .attr("x2", image.target_x - Number(frame.attr("data-transx")))
-          .attr("y2", image.target_y - Number(frame.attr("data-transy")))
-          .attr("data-targetx", image.target_x)
-          .attr("data-targety", image.target_y)
+          .attr("x2", image.target_x - Number(frame.attr("data-transx")) + Number(offsets[1]))
+          .attr("y2", image.target_y - Number(frame.attr("data-transy")) + Number(offsets[2]))
+          .attr("data-targetx", image.target_x + Number(offsets[1]))
+          .attr("data-targety", image.target_y + Number(offsets[2]))
           .style("stroke", "black")
           .style("stroke-width", 1.0)
           ;
@@ -984,8 +810,7 @@ $.widget("tracer_image.scatterplot",
         .attr("height", image.height + 1)
         .style("stroke", "black")
         .style("stroke-width", "1px")
-        .style("fill", "white")
-        ;
+        .style("fill", "white");
 
       // // Create the loading image ...
       // var timeout_image = frame.append("image")
@@ -1018,7 +843,7 @@ $.widget("tracer_image.scatterplot",
       if(image.x === undefined)
       {
         // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
+        var width = self.group.attr("width");
         var range = self.x_scale.range();
         var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
 
@@ -1029,7 +854,7 @@ $.widget("tracer_image.scatterplot",
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
+        var height = self.group.attr("height");
         var target_y = self.y_scale(self.options.y[image.index]);
         image.y = (target_y / height) * (height - image.height);
       }
@@ -1057,12 +882,14 @@ $.widget("tracer_image.scatterplot",
               //console.log("resize drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
-                var theImage = d3.select(this.parentNode).select("image.image");
+                var frame = d3.select(this.parentNode);
+                var theImage = frame.select("image.image");
                 var width = Number(theImage.attr("width"));
                 var height = Number(theImage.attr("height"));
-                var theRectangle = d3.select(this.parentNode).select("rect.outline");
+                var theRectangle = frame.select("rect.outline");
                 var theHandle = d3.select(this);
-                var theLine = d3.select(this.parentNode).select("line.leader");
+                var theLine = frame.select("line.leader");
+                var thePin = frame.select('.pin-button');
                 var ratio = Number(theImage.attr("data-ratio"));
                 var newWidth, newHeight;
                 var x = d3.event.x;
@@ -1083,9 +910,9 @@ $.widget("tracer_image.scatterplot",
                 theRectangle.attr("width", newWidth+1);
                 theRectangle.attr("height", newHeight+1);
                 theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
+                thePin.attr('transform',  'translate(' + (newWidth-20) + ',0)');
                 theLine.attr("x1", (newWidth / 2));
                 theLine.attr("y1", (newHeight / 2));
-
               }
             })
             .on("dragstart", function() {
@@ -1145,8 +972,7 @@ $.widget("tracer_image.scatterplot",
 
       // Create a close button ...
       var close_button = frame.append("g")
-        .attr("class", "close-button")
-        ;
+        .attr("class", "close-button");
 
       close_button.append("rect")
         .attr("x", 5)
@@ -1173,7 +999,6 @@ $.widget("tracer_image.scatterplot",
           self._sync_open_images();
         })
         ;
-
       close_button.append("path")
         .attr("d", "M" + (8) + " " + (8) + " l10 10 m0 -10 l-10 10")
         .style("stroke", "rgba(100%,100%,100%, 0.8)")
@@ -1184,8 +1009,7 @@ $.widget("tracer_image.scatterplot",
       // Create a pin button ...
       var pin_button = frame.append("g")
         .attr("class", "pin-button")
-        ;
-
+        .attr('transform', "translate(" + (image.width-20) + ",0)");
       pin_button.append("image")
         .attr("class", "pin-icon")
         .attr("x", 2)
@@ -1223,14 +1047,13 @@ $.widget("tracer_image.scatterplot",
           var theHandle = frame.select("g.resize-handle");
           var theLine = frame.select("line.leader");
           frame.classed("hover-image", false)
-            .classed("open-image", true)
-            ;
+            .classed("open-image", true);
+          var thePin = frame.select('.pin-button');
 
           // Adjust image position
           var imageHeight = 200;
           var imageWidth = 200;
-
-          var width = self.svg.attr("width");
+          var width = self.group.attr("width");
           var range = self.x_scale.range();
           var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
           var x, y;
@@ -1240,7 +1063,7 @@ $.widget("tracer_image.scatterplot",
           else
             x = width - ((width - range[1]) * (1.0 - relx)) - imageWidth;
 
-          var height = self.svg.attr("height");
+          var height = self.group.attr("height");
           var target_y = self.y_scale(self.options.y[image.index]);
           y = (target_y / height) * (height - imageHeight);
 
@@ -1256,6 +1079,7 @@ $.widget("tracer_image.scatterplot",
           theRectangle.attr("width", imageWidth+1);
           theRectangle.attr("height", imageHeight+1);
           theHandle.attr('transform', "translate(" + (imageWidth-9) + ", " + (imageHeight-9) + ")");
+          thePin.attr('transform',  'translate(' + (imageWidth-20) + ',0)');
 
           // Adjust line
           theLine
@@ -1278,8 +1102,7 @@ $.widget("tracer_image.scatterplot",
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in login.session_cache))
-    {
+    if(!(parser.hostname in login.session_cache)) {
       self._open_session(images);
       return;
     }
@@ -1290,13 +1113,11 @@ $.widget("tracer_image.scatterplot",
     xhr.image = image;
     xhr.open("GET", self.options.server_root + "remote/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
+    xhr.onload = function(e) {
       // If we get 404, the remote session no longer exists because it timed-out.
       // If we get 500, there was an internal error communicating to the remote host.
       // Either way, delete the cached session and create a new one.
-      if(this.status == 404 || this.status == 500)
-      {
+      if(this.status == 404 || this.status == 500) {
         delete login.session_cache[parser.hostname];
         self._open_session(images);
         return;
@@ -1304,8 +1125,7 @@ $.widget("tracer_image.scatterplot",
       // If we get 400, it means that the session is good and we're
       // communicating with the remote host, but something else went wrong
       // (probably file permissions issues).
-      if(this.status == 400)
-      {
+      if(this.status == 400) {
 	      console.log(this);
         window.alert("Couldn't load image " + this.image.uri + ": " + this.statusText);
         return;
@@ -1337,54 +1157,7 @@ $.widget("tracer_image.scatterplot",
 
   _open_session: function(images)
   {
-    var self = this;
-
-    if(images.length == 0)
-      return;
-    var image = images[0];
-
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-
-    $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
-    console.log(login.image_login);
-    self.login = login.image_login;
-    self.login.dialog(
-    {
-      buttons:
-      {
-        "Login": function()
-        {
-          $.ajax(
-          {
-            async : true,
-            type : "POST",
-            url : self.options.server_root + "remote",
-            contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
-            processData : false,
-            success : function(result)
-            {
-              login.session_cache[parser.hostname] = result.sid;
-              self.login.dialog("close");
-              self._open_images(images);
-            },
-            error : function(request, status, reason_phrase)
-            {
-              image.last_error = "Error opening remote session: " + reason_phrase;
-              self.login.dialog("close");
-              self._open_session(images);
-            }
-          });
-        },
-        Cancel: function()
-        {
-          $(this).dialog("close");
-        }
-      },
-    });
-    self.login.dialog("open");
+    login.show_prompt(images, this._open_images, this);
   },
 
   _schedule_hover: function(image_index)
@@ -1431,17 +1204,19 @@ $.widget("tracer_image.scatterplot",
       self._close_hover();
       self.opening_image = image_index;
 
-      var width = self.svg.attr("width");
-      var height = self.svg.attr("height");
-      var hover_width = Math.min(width, height) * 0.85;
-      var hover_height = Math.min(width, height) * 0.85;
+      var width = self.group.attr("width");
+      var height = self.group.attr("height"); // self.group is <g class="scatterplot" ...>
+      var hover_width = Math.min(width, height) * 0.85; //initial image width comes from this
+      var hover_height = Math.min(width, height) * 0.85; //initial image height comes from this
+
+      var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
 
       self._open_images([{
         index : self.options.indices[image_index],
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "hover-image",
-        x : self.x_scale(self.options.x[image_index]) + 10,
-        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, self.svg.attr("height") - hover_height - self.options.border - 10),
+        x : Number(offsets[1]) + self.x_scale(self.options.x[image_index]) + 10,
+        y : Number(offsets[2]) + Math.min(self.y_scale(self.options.y[image_index]) + 10, self.group.attr("height") - hover_height - self.options.border - 10),
         width : hover_width,
         height : hover_height,
         target_x : self.x_scale(self.options.x[image_index]),
@@ -1507,4 +1282,84 @@ $.widget("tracer_image.scatterplot",
       .classed("openHover", false)
       ;
   },
+
+  get_option: function(option)
+  {
+    return this.options[option];
+  },
+
+  handle_drag: function(drag_object, e)
+  {
+    var self = this;
+    if(self.state == "resizing" || self.state == "moving")
+      return;
+
+    //console.log("#scatterplot mouseup");
+    if(!e.ctrlKey)
+    {
+      self.options.selection = [];
+      self.options.filtered_selection = [];
+    }
+
+    var x = self.options.x;
+    var y = self.options.y;
+    var count = x.length;
+
+    if(drag_object.state == "rubber-band-drag") // Rubber-band selection ...
+    {
+      if(drag_object.drag_start && drag_object.drag_end) {
+        var x1 = self.x_scale.invert(Math.min(drag_object.drag_start[0], drag_object.drag_end[0]));
+        var y1 = self.y_scale.invert(Math.max(drag_object.drag_start[1], drag_object.drag_end[1]));
+        var x2 = self.x_scale.invert(Math.max(drag_object.drag_start[0], drag_object.drag_end[0]));
+        var y2 = self.y_scale.invert(Math.min(drag_object.drag_start[1], drag_object.drag_end[1]));
+
+        for(var i = 0; i != count; ++i)
+        {
+          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          {
+            var index = self.options.selection.indexOf(self.options.indices[i]);
+            if(index == -1)
+              self.options.selection.push(self.options.indices[i]);
+          }
+        }
+      }
+    }
+    else // Pick selection ...
+    {
+      var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
+      var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
+      var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
+      var y2 = self.y_scale.invert(e.originalEvent.layerY - self.options.pick_distance);
+
+      for(var i = 0; i != count; ++i)
+      {
+        if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+        {
+          // Update the list of selected points ...
+          var index = self.options.selection.indexOf(self.options.indices[i]);
+          if(index == -1)
+          {
+            // Selecting a new point.
+            self.options.selection.push(self.options.indices[i]);
+          }
+          else
+          {
+            // Deselecting an existing point.
+            self.options.selection.splice(index, 1);
+          }
+
+          break;
+        }
+      }
+    }
+
+    self.start_drag = null;
+    self.end_drag = null;
+    self.state = "";
+
+    self._filterIndices();
+    self.options.selection = self.options.filtered_selection.slice(0);
+    self._schedule_update({render_selection:true});
+    self.element.trigger("selection-changed", [self.options.selection]);
+  }
 });

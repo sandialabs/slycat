@@ -16,6 +16,7 @@ import sys
 import slycat.web.server.directory
 import slycat.web.server.handlers
 import slycat.web.server.marking
+import slycat.web.server.plugin
 
 class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
   """Custom logfile handler that ensures newly-created logfiles have a specific user and group."""
@@ -99,6 +100,7 @@ def start(config_file="config.ini"):
   dispatcher.connect("get-project-models", "/projects/:pid/models", slycat.web.server.handlers.get_project_models, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remote-file-as-image", "/remote/:sid/image/file{path:.*}", slycat.web.server.handlers.get_remote_file_as_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-file", "/remote/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("post-remote", "/remote", slycat.web.server.handlers.post_remote, conditions={"method" : ["POST"]})
@@ -142,7 +144,7 @@ def start(config_file="config.ini"):
         cherrypy.log.error("%s%s: %s" % (indent, key, value))
   log_configuration(configuration)
 
-  # We want fine-grained control over PyOpenSSL here ...
+  # We want fine-grained control over PyOpenSSL here.
   if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
     cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
     cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
@@ -152,4 +154,11 @@ def start(config_file="config.ini"):
     if "ssl-ciphers" in configuration["slycat"]:
       cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 
+  # Load plugin modules.
+  manager = slycat.web.server.plugin.manager
+  for directory in configuration["slycat"]["plugins"]:
+    manager.load(directory)
+  manager.register_plugins()
+
+  # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

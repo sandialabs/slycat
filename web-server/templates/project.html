@@ -244,9 +244,16 @@ rights in this software.
           </div>
 
           <div id="remote-pi-browse">
-            <p>Highlight the file to be analyzed:</p>
-            <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
-            <div id="remote-pi-browser"></div>
+            <div id="top-shelf" style="height:50px; padding-right:5px;margin-bottom:5px;">
+              <div id="dotfile-div" style="float:left;">
+                <p><input id="remote-pi-hide-dotfiles" type="checkbox">Hide Dotfiles</input></p>
+              </div>
+              <div id="pi-file-path-entry" style="float:left; margin-left:30px;">
+                <p><input id="remote-pi-path-entry" class="path-entry-input" style="width: 400px;" type="text" placeholder="File Path Entry"></input></p>
+              </div>
+              <button id="remote-pi-browse-next" style="float:right;margin-top:10px;">Next</button>
+            </div>
+            <div id="remote-pi-browser" style="margin-bottom:15px;"></div>
             <button id="remote-pi-browse-next">Next</button>
           </div>
 
@@ -748,6 +755,11 @@ rights in this software.
             }
           });
         });
+        $("#remote-cca-password").keypress(function(event){
+            if (event.keyCode == 13){
+              $("#remote-cca-connection-next").trigger("click");
+            }
+        });
         $("#remote-cca-connection-next").button().click(function()
         {
           $.ajax(
@@ -967,26 +979,24 @@ rights in this software.
           id: "#remote-hosts-model_name-message" where model_name is the actual abbreviation. This div will be where the sub-optimal 
           warning message is added or removed.
         */
-        $.each(["cca", "pi"], function(index, model_type){
-          $("#remote-" + model_type + "-hostname").combobox(
-            {{remote-hosts-arr}}
-          );
-          $("#remote-"+ model_type + "-hostname").change(function(){
+        $.each(["cca", "pi"], function(index, model_type)
+        {
+          $("#remote-" + model_type + "-hostname").combobox({{remote-hosts-arr}});
+          $("#remote-"+ model_type + "-hostname").on("change", function()
+          {
             var remote_host_array = $.parseJSON("{{{remote-hosts}}}");
-            if($(this).val() == ""){
-              $("#remote-hosts-" + model_type + "-message").html("");
-            }else{
-              $.each(remote_host_array, function(index, remote_host_object){
-                if (remote_host_object.name == $("#remote-" + model_type + "-hostname").val()){
-                  if(remote_host_object.hasOwnProperty("message")){
-                    $("#remote-hosts-" + model_type + "-message").html("<p>"+ remote_host_object.message +"</p>");
-                  }else{
-                    $("#remote-hosts-" + model_type + "-message").html("");
-                  }
-                  return false;
+            $("#remote-hosts-" + model_type + "-message").html("");
+            $.each(remote_host_array, function(index, remote_host_object)
+            {
+              if(remote_host_object.name == $("#remote-" + model_type + "-hostname").val())
+              {
+                if(remote_host_object.hasOwnProperty("message"))
+                {
+                  $("#remote-hosts-" + model_type + "-message").html("<p>"+ remote_host_object.message +"</p>");
                 }
-              });
-            }
+                return false;
+              }
+            });
           });
         });
 
@@ -1058,6 +1068,8 @@ rights in this software.
 
             // Clear password field
             $("#remote-pi-password").val("");
+            // Clear file path field
+            $(".path-entry-input").val("");
           }
         });
         $("#remote-pi-basics-next").button().click(function()
@@ -1086,6 +1098,11 @@ rights in this software.
               window.alert("Error creating model: " + reason_phrase);
             }
           });
+        });
+        $("#remote-pi-password").keypress(function(event){
+            if (event.keyCode == 13){
+              $("#remote-pi-connection-next").trigger("click");
+            }
         });
         $("#remote-pi-connection-next").button().click(function()
         {

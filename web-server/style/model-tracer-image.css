@@ -10,6 +10,11 @@ rights in this software.
   float: right;
 }
 
+.controls > body {
+  text-align: center;
+  color: black;
+}
+
 #table
 {
 	position: absolute;
@@ -28,8 +33,10 @@ rights in this software.
   user-select: none;
 }
 
-.x-axis path,
-.y-axis path
+.x-axis .tick path,
+.x-axis .domain,
+.y-axis .tick path,
+.y-axis .domain
 {
   fill: none;
   stroke: black;
@@ -371,34 +378,38 @@ rights in this software.
   margin-right: 10px;
   padding: 2px 4px;
 }
-#scatterplot.resizing,
-#scatterplot .resize-handle:hover {
+.image-layer.resizing,
+.image-layer .resize-handle:hover {
   cursor: nwse-resize;
 }
-#scatterplot rect.outline:hover,
-#scatterplot g.image-frame image.image
+.image-layer rect.outline:hover,
+.image-layer g.image-frame image.image
 {
   cursor: move;
 }
-#scatterplot g.open-image image.image {
+.image-layer g.open-image image.image {
 
 }
-#scatterplot .close-button,
-#scatterplot .resize-handle
+.image-layer .close-button:hover,
+.image-layer .pin-button:hover {
+  cursor: pointer;
+}
+.image-layer .close-button,
+.image-layer .resize-handle,
+.image-layer .pin-button
 {
   visibility: hidden;
 }
-#scatterplot g.open-image:hover .close-button,
-#scatterplot g.open-image.resizing .close-button,
-#scatterplot g.image-frame:hover .resize-handle,
-#scatterplot g.open-image.resizing .resize-handle
+.image-layer g.open-image:hover .close-button,
+.image-layer g.open-image.resizing .close-button,
+.image-layer g.open-image:hover .pin-button,
+.image-layer g.open-image.resizing .pin-button,
+.image-layer g.image-frame:hover .resize-handle,
+.image-layer g.open-image.resizing .resize-handle
 {
   visibility: visible;
 }
-#scatterplot g.open-image g.pin-button {
-  display: none;
-}
-#scatterplot g.legend:hover {
+.scatterplot g.legend:hover {
   cursor: move;
 }
 .legend-axis path,

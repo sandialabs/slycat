@@ -8,6 +8,9 @@ function Model() {
   this.image_columns = null;
   this.rating_columns = null;
   this.category_columns = null;
+  this.server_root = "{{server-root}}";
+  this.loaded_images = [];
+  this.loaded_data = [];
 }
 
 Model.prototype.load = function() {
@@ -126,7 +129,6 @@ Model.prototype.loaded = function() {
 
 Model.prototype.metadata_loaded = function() {
   console.debug("inside metadata loaded()");
-  console.debug(this);
 
   if(!this.indices && this.metadata) {
     var count = this.metadata["row-count"];
@@ -137,11 +139,12 @@ Model.prototype.metadata_loaded = function() {
 
   if(this.metadata && layout.bookmark) {
     grid.plots.forEach(function(plot) {
+      var grid_calls = [];
       plot.setup_labels();
       plot.setup_simulations();
 
-      plot.update_axis(plot.x_index, "x");
-      plot.update_axis(plot.y_index, "y");
+      grid_calls.push(plot.update_axis(plot.x_index, "x"));
+      grid_calls.push(plot.update_axis(plot.y_index, "y"));
 
       plot.v_index = model.metadata["column-count"] - 1;
       if("variable-selection" in layout.bookmark)
@@ -153,11 +156,10 @@ Model.prototype.metadata_loaded = function() {
         plot.v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           plot.v[i] = i;
-        plot.setup();
       }
       else
       {
-        plot.update_axis(plot.v_index, "v");
+        grid_calls.push(plot.update_axis(plot.v_index, "v"));
       }
 
       plot.images_index = model.image_columns[0];
@@ -166,20 +168,48 @@ Model.prototype.metadata_loaded = function() {
       }
       table.setup();
       console.debug("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
-      $.ajax({
+      grid_calls.push($.ajax({
         type : "GET",
         url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/"
           + plot.images_index + "/chunk?ranges=0," + model.metadata["row-count"],
         success : function(result)
         {
           plot.images = result;
-          // TODO set this up after all ajax requests are done -- plot.setup();
-          // TODO set this up after all ajax requests are done -- this.setup();
         },
         error: artifact_missing
-      });
-      plot.controls.setup();
+      }));
+      $.when.apply(this, grid_calls).done(function(){plot.setup.apply(plot)});
     });
     table.setup(); //TODO: decouple this from scatterplot - currently dependent
   }
+};
+
+Model.prototype.get_data_column = function(index, success_callback) {
+  return this.get_column("loaded_data", index, success_callback || function(){});
+}
+
+Model.prototype.get_image_column = function() {
+  return this.get_column("loaded_images", index, success_callback || function(){});
+}
+
+Model.prototype.get_column = function(data_store, index, success_callback) {
+  var self = this;
+  var on_complete = function(result){
+    success_callback(result);
+    self[data_store][index].resolve(result);
+  };
+
+  if(this[data_store][index]) {
+    return this[data_store][index].done(on_complete);
+  }
+
+  return this[data_store][index] = get_model_array_attribute({
+      server_root : "{{server-root}}",
+      mid : "{{_id}}",
+      aid : "data-table",
+      array : 0,
+      attribute : index,
+      success : on_complete,
+      error : artifact_missing
+   });
 };

@@ -76,7 +76,7 @@ Download the Image and Create a Container
 Now that you have the Docker daemon running and DOCKER_HOST set to connect to it,
 you're ready to download the Slycat image and create a container::
 
-  $ docker run -d -p 2222:22 -p 443:8092 --name slycat sandialabs/slycat
+  $ docker run -d -p 2222:22 -p 443:443 --name slycat sandialabs/slycat
 
 Docker will begin downloading the `sandialabs/slycat` image, and will create a
 container with the name `slycat` (you will use this name as a convenient way to

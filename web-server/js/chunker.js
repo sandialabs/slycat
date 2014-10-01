@@ -5,7 +5,6 @@ rights in this software.
 */
 var arrayset_metadata_cache = {};
 
-// TODO: RED FLAG... why?
 function is_little_endian()
 {
   if(this.result === undefined)
@@ -16,7 +15,7 @@ function is_little_endian()
 // Retrieve an array attribute's metadata asynchronously, calling a callback when it's ready ...
 function get_model_array_attribute_metadata(parameters, dfd)
 {
-  $.ajax({
+  return $.ajax({
     url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
     contentType : "application/json",
     success: function(metadata)
