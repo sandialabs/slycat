@@ -487,10 +487,10 @@ $.widget("tracer_image.scatterplot", {
         ;
       square
         .attr("x", function(d, i) {
-          return x_scale( x[$.inArray(d, indices)] ) - 4;
+          return x_scale( x[$.inArray(d, indices)] ) - 6;
         })
         .attr("y", function(d, i) {
-          return y_scale( y[$.inArray(d, indices)] ) - 4;
+          return y_scale( y[$.inArray(d, indices)] ) - 6;
         })
         .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
