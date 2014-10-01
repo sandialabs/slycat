@@ -59,12 +59,14 @@ Movie.prototype.build_movie = function() {
   self.d3_movie = self.d3_movie
     .data(self.plot.images.filter(function(d){return d.length > 0;}))
     .enter().append("image")
+    .attr("y", 1)
     .attr({ "xlink:href" : function(d) {return self.plot.image_url_for_session(d);},
       })
     .style("visibility", function(_,i) {return i == 0 ? "visible" : "hidden";})
     .each(function(d,i){
         $(this).load( function(){ self.loader.update(1); });
       });
+
   self.build_close_button(d3.select(self.container));
   self.built = true;
 };
@@ -144,8 +146,8 @@ Movie.prototype.resize = function() {
       .attr("width", self.width + 1)
       .attr("height", self.height + 1);
     self.frame
-      .attr("width", self.width + 1)
-      .attr("height", self.height + 1);
+      .attr("width", self.width + 3)
+      .attr("height", self.height + 3);
   }
 };
 
