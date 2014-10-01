@@ -277,10 +277,10 @@ def post_project_bookmarks(pid):
   return {"id" : bid}
 
 def get_models(revision=None, _=None):
+  if get_models.monitor is None:
+    get_models.monitor = slycat.web.server.database.couchdb.Monitor(name="Model change monitor", filter="slycat/models")
   if get_models.timeout is None:
     get_models.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-
-  slycat.web.server.model.start_database_monitor()
 
   accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
   cherrypy.response.headers["content-type"] = accept
@@ -292,9 +292,9 @@ def get_models(revision=None, _=None):
     if revision is not None:
       revision = int(revision)
     start_time = time.time()
-    with slycat.web.server.model.updated:
-      while revision == slycat.web.server.model.revision:
-        slycat.web.server.model.updated.wait(1.0)
+    with get_models.monitor.changed:
+      while revision == get_models.monitor.revision:
+        get_models.monitor.changed.wait(1.0)
         if time.time() - start_time > get_models.timeout:
           cherrypy.response.status = "204 No change."
           return
@@ -305,7 +305,8 @@ def get_models(revision=None, _=None):
       models = [model for model in database.scan("slycat/open-models")]
       projects = [database.get("project", model["project"]) for model in models]
       models = [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
-      return json.dumps({"revision" : slycat.web.server.model.revision, "models" : models})
+      return json.dumps({"revision" : get_models.monitor.revision, "models" : models})
+get_models.monitor = None
 get_models.timeout = None
 
 def get_model(mid, **kwargs):

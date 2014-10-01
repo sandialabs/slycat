@@ -17,22 +17,43 @@ import time
 import uuid
 
 class Monitor:
-  def __init__(self):
+  """Monitor database changes in a separate thread.
+
+  Uses a CouchDB continuous changes feed, and notifies
+  observers using a condition variable.
+  """
+  def __init__(self, name, filter):
+    self._filter = filter
+    self._revision = 0
     self._changed = threading.Condition()
+    self._thread = threading.Thread(name=name, target=self._run)
+    self._thread.daemon = True
+    self._thread.start()
+
+  @property
+  def revision(self):
+    """Current database revision.
+
+    The database revision number is a monotonically increasing integer
+    that is incremented whenever the database contents change (documents
+    are created, modified, or deleted).
+    """
+    return self._revision
 
   @property
   def changed(self):
+    """Condition variable that notifies all watchers when the database changes.
+    """
     return self._changed
 
-  def run(self):
-    database = slycat.web.server.database.couchdb.connect()
+  def _run(self):
+    database = connect()
     id_cache = set()
-    revision = 0
 
     # Initialize the cache ...
-    changes = database.changes(filter="slycat/models")
+    changes = database.changes(filter=self._filter)
     with self._changed:
-      revision = changes["last_seq"]
+      self._revision = changes["last_seq"]
       for change in changes["results"]:
         if "deleted" in change:
           if change["id"] in id_cache:
@@ -40,30 +61,26 @@ class Monitor:
         else:
           id_cache.add(change["id"])
 
-    cherrypy.log.error("Initialized id cache to revision %s, loaded %s ids." % (revision, len(id_cache)))
+    cherrypy.log.error("Initialized id cache to revision %s, loaded %s ids." % (self._revision, len(id_cache)))
 
     # Update the cache when the database changes ...
     while True:
       try:
-        for change in database.changes(filter="slycat/models", feed="continuous", since=revision):
+        for change in database.changes(filter=self._filter, feed="continuous", since=self._revision):
           with self._changed:
             if "deleted" in change:
               if change["id"] in id_cache:
-                revision = change["seq"]
+                self._revision = change["seq"]
                 self._changed.notify_all()
             elif "seq" in change:
               id_cache.add(change["id"])
-              revision = change["seq"]
+              self._revision = change["seq"]
               self._changed.notify_all()
-      except:
+      except Exception as e:
+        cherrypy.log.error("%s" % e)
         cherrypy.log.error("Waiting to reconnect to database.")
         time.sleep(1.0)
-        database = slycat.web.server.database.couchdb.connect()
-
-  def start(self):
-    self._thread = threading.Thread(name="Database Monitor", target=self.run)
-    self._thread.daemon = True
-    self._thread.start()
+        database = connect()
 
 class Database:
   """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
