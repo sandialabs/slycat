@@ -1,0 +1,6 @@
+h5py
+ipython
+numpy
+requests
+scipy
+pyzmq
