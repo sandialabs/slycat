@@ -881,7 +881,7 @@ $.widget("tracer_image.scatterplot", {
             .on('drag', function(){
               //console.log("resize drag");
               // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+              if( 0 <= d3.event.y && d3.event.y <= $(self.svg[0]).height() && 0 <= d3.event.x && d3.event.x <= $(self.svg[0]).width() ){
                 var frame = d3.select(this.parentNode);
                 var theImage = frame.select("image.image");
                 var width = Number(theImage.attr("width"));
