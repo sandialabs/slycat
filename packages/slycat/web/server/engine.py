@@ -155,14 +155,6 @@ def start(root_path, config_file):
   if "server-resources" not in configuration["slycat"]:
     configuration["slycat"]["server-resources"] = os.getcwd()
 
-  if "/js" not in configuration:
-    configuration["/js"] = {}
-  configuration["/js"].update({"tools.staticdir.on":True, "tools.staticdir.dir" : os.path.join(configuration["slycat"]["server-resources"], "js")})
-
-  if "/style" not in configuration:
-    configuration["/style"] = {}
-  configuration["/style"].update({"tools.staticdir.on":True, "tools.staticdir.dir" : os.path.join(configuration["slycat"]["server-resources"], "style")})
-
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
       if isinstance(value, dict):

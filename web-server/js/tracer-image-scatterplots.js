@@ -846,7 +846,7 @@ $.widget("tracer_image.scatterplot", {
       // // Create the loading image ...
       // var timeout_image = frame.append("image")
       //   .attr("class", "loading-image")
-      //   .attr("xlink:href", "/style/ajax-loader.gif")
+      //   .attr("xlink:href", "/css/ajax-loader.gif")
       //   .attr("x", (image.width / 2)-16)
       //   .attr("y", (image.height / 2)-16)
       //   .attr("width", 32)
@@ -1048,7 +1048,7 @@ $.widget("tracer_image.scatterplot", {
         .attr("y", 2)
         .attr("width", 16)
         .attr("height", 16)
-        .attr("xlink:href", "/style/pin.png")
+        .attr("xlink:href", "/css/pin.png")
         .on("mousedown", function(){
           //console.log("pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners

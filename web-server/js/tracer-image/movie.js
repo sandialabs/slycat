@@ -109,7 +109,7 @@ Movie.prototype.build_open_button = function(container) {
 
   self.open_control.append('image')
       .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
-        "style/play.png")
+        "css/play.png")
       .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
       .attr('width', width)
       .attr('height', height);
