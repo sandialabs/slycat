@@ -179,7 +179,6 @@ Movie.prototype.loop = function() {
   self.d3_movie.transition()
                .each("start", function(d,i){
                   update_selected_image(d,i);
-                  console.debug("Hide " + (i-1) + " Show )" + i);
                   if(i) {
                     d3.select(self.d3_movie[0][i-1]).style("visibility", "hidden");
                   }
