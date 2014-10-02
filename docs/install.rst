@@ -57,7 +57,7 @@ install instructions are platform-independent.
   * If your site uses SSL interception, you will need to get a copy of the
     interception certificate, and append it to /etc/ssl/cacerts.pem::
 
-    $ sudo vi /etc/ssl/cacerts.pem
+    $ sudo vi /etc/ssl/cacert.pem
 
   * Restart the Docker service and exit the VM::
 

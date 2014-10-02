@@ -15,7 +15,6 @@ import sys
 
 import slycat.web.server.directory
 import slycat.web.server.handlers
-import slycat.web.server.marking
 import slycat.web.server.plugin
 
 class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
@@ -34,9 +33,15 @@ class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
     #print "log file:", file.name, self.uid, self.gid, os.fstat(file.fileno())
     return file
 
-def start(config_file="config.ini"):
-  configuration = {}
+def start(root_path, config_file):
 
+  def abspath(path):
+    if os.path.isabs(path):
+      return path
+    return os.path.join(root_path, path)
+
+  configuration = {}
+  config_file = abspath(config_file)
   if os.path.exists(config_file):
     cherrypy.engine.autoreload.files.add(config_file)
     parser = ConfigParser.SafeConfigParser()
@@ -60,6 +65,8 @@ def start(config_file="config.ini"):
     cherrypy.log.error_log.handlers = []
     if configuration["slycat"]["error-log"] is not None:
       cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
+
+  cherrypy.log("Server root path: %s" % root_path)
 
   if os.path.exists(config_file):
     cherrypy.log("Loaded configuration from %s" % config_file)
@@ -147,18 +154,24 @@ def start(config_file="config.ini"):
   # We want fine-grained control over PyOpenSSL here.
   if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
     cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-    cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
-    cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
+    cherrypy.server.ssl_context.use_privatekey_file(abspath(configuration["global"]["server.ssl_private_key"]))
+    cherrypy.server.ssl_context.use_certificate_file(abspath(configuration["global"]["server.ssl_certificate"]))
     if "server.ssl_certificate_chain" in configuration["global"]:
-      cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
+      cherrypy.server.ssl_context.load_verify_locations(abspath(configuration["global"]["server.ssl_certificate_chain"]))
     if "ssl-ciphers" in configuration["slycat"]:
       cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
   for directory in configuration["slycat"]["plugins"]:
+    directory = abspath(directory)
     manager.load(directory)
   manager.register_plugins()
+
+  # Sanity-check to ensure that we have a marking plugin for every allowed marking type.
+  for allowed_marking in configuration["slycat"]["allowed-markings"]:
+    if allowed_marking not in manager.markings.keys():
+      raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

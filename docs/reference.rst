@@ -18,7 +18,6 @@ Reference Documentation
    slycat.web.server.directory.rst
    slycat.web.server.engine.rst
    slycat.web.server.handlers.rst
-   slycat.web.server.marking.rst
    slycat.web.server.model.rst
    slycat.web.server.model.cca.rst
    slycat.web.server.model.generic.rst

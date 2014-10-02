@@ -8,5 +8,5 @@ def register_slycat_plugin(context):
   def html(database, model):
     return "<h1>Hello, World!</h1>"
 
-  context.register_model("test", finish, html)
+  context.register_model("hello-world", finish, html)
 

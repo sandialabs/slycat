@@ -12,6 +12,7 @@ class Manager(object):
   def __init__(self):
     self._modules = []
     self._models = {}
+    self._markings = {}
 
   def load(self, directory):
     """Load a directory containing *.py files as plugin modules.
@@ -47,6 +48,11 @@ class Manager(object):
     """Returns a dict mapping model types to models."""
     return self._models
 
+  @property
+  def markings(self):
+    """Returns a dict mapping marking types to marking data."""
+    return self._markings
+
   def register_plugins(self):
     """Called to register plugins after all plugin modules have been loaded."""
     for module in self._modules:
@@ -74,6 +80,26 @@ class Manager(object):
 
     self._models[type] = {"finish":finish, "html":html}
     cherrypy.log.error("Registered new model '%s'" % type)
+
+  def register_marking(self, type, label, html):
+    """Called when a plugin is loaded to register a new marking type.
+
+    Parameters
+    ----------
+    type : string, required
+      A unique identifier for the new marking type.
+    label : string, required
+      Human-readable string used to represent the marking in the user interface.
+    html : string, required
+      HTML representation used to display the marking.  The HTML should contain
+      everything needed to properly format the marking, including inline CSS
+      styles.
+    """
+    if type in self._markings:
+      raise Exception("Marking type '%s' has already been registered." % type)
+
+    self._markings[type] = {"label":label, "html":html}
+    cherrypy.log.error("Registered new marking '%s'" % type)
 
 # Create a new, singleton instance of slycat.web.server.plugin.Manager()
 manager = Manager()

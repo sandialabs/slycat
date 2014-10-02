@@ -7,6 +7,7 @@ parser = optparse.OptionParser()
 parser.add_option("--config", default="config.ini", help="Path to a file containing configuration parameters.")
 options, arguments = parser.parse_args()
 
+import os
 import slycat.web.server.engine
-slycat.web.server.engine.start(options.config)
+slycat.web.server.engine.start(os.path.dirname(os.path.abspath(__file__)), options.config)
 

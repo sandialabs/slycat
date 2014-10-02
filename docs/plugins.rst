@@ -31,6 +31,25 @@ functionality.  This explicit registration process allows a single plugin module
 to register as many new capabilities as it wishes, and the registration API
 will expand as we add new categories of plugin functionality to the server.
 
+Marking Plugins
+---------------
+
+A marking plugin add a new type of marking to the Slycat server.  A marking
+consists of the following:
+
+* A unique string identifier called the `marking type`.
+* A human-readable label that will become part of the user interface when prompting end-users
+  to choose the marking for a model.
+* A block of HTML code that will be inserted into the user interface to display the marking.
+
+For example, the following is a marking plugin that allows models to be marked `Faculty Only`::
+
+  def register_slycat_plugin(context):
+    context.register_marking("faculty", "Faculty Only", """<div>FACULTY ONLY</div>""")
+
+In practice, most marking plugins will wish to include inline style information to control the
+appearance of the marking.
+
 Model Plugins
 -------------
 
@@ -49,7 +68,7 @@ a plugin model consists of the following:
   of the model directly from the Slycat browser user interface.
 
 Here is a bare-minimum example of a do-nothing plugin (a copy of this code is already located
-at `slycat/web-server/plugins/test_plugin.py`)::
+at `slycat/web-server/plugins/hello_world_plugin.py`)::
 
   def register_slycat_plugin(context):
 
@@ -61,7 +80,7 @@ at `slycat/web-server/plugins/test_plugin.py`)::
     def html(database, model):
       return "<h1>Hello, World!</h1>"
 
-    context.register_model("test", finish, html)
+    context.register_model("hello-world", finish, html)
 
 Note that finish() simply marks the model as "finished" so clients will know
 that the model is ready to view, and the html() function returns a familiar
@@ -69,24 +88,25 @@ message.
 
 If you save this code to a directory where the Slycat server can find it and
 restart the server, the plugin will be loaded into the server and register a
-new `test` model type.  To actually create an instance of a `test` model,
-you'll need some way to create it.  The easiest way is to use a script to
-create `test` model instances (again, the following code is already included in
-the Slycat source tree at `slycat/web-client/slycat-demo-test-model.py`)::
+new `hello-world` model type.  Of course, you'll need some way to actually
+create an instance of a `hello-world` model.  The easiest way is to use a
+script to create `hello-world` model instances (again, the following code is already
+included in the Slycat source tree at
+`slycat/web-client/slycat-hellow-world--model.py`)::
 
   import slycat.web.client
 
   parser = slycat.web.client.option_parser()
   parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
-  parser.add_argument("--model-name", default="Demo Test Model", help="New model name.  Default: %(default)s")
-  parser.add_argument("--project-name", default="Demo Test Project", help="New project name.  Default: %(default)s")
+  parser.add_argument("--model-name", default="Hello World Model", help="New model name.  Default: %(default)s")
+  parser.add_argument("--project-name", default="Hello World Project", help="New project name.  Default: %(default)s")
   arguments = parser.parse_args()
 
   connection = slycat.web.client.connect(arguments)
 
   pid = connection.find_or_create_project(arguments.project_name)
 
-  mid = connection.post_project_models(pid, "test", arguments.model_name, arguments.marking)
+  mid = connection.post_project_models(pid, "hello-world", arguments.model_name, arguments.marking)
 
   connection.post_model_finish(mid)
   connection.join_model(mid)
@@ -95,9 +115,7 @@ the Slycat source tree at `slycat/web-client/slycat-demo-test-model.py`)::
 
 In this case the script provides a simple command line interface for specifying the name and marking
 for the model, along with the name of a new or existing project to contain the new model.  Once the
-connection to the Slycat server has been made and the project identified or created, the new model
-is created and immediately finished (causing the finish() function to be called).  If you view the
-new model in a web browser, it will display "Hello, World!", which was returned from the plugin
+connection to the Slycat server has been made and a project identified or created, the new model
+is created and immediately finished (causing the finish() function to be called).  When you view the
+new model in a web browser, it will display "Hello, World!", which was the markup returned by the plugin
 html() function.
-
-

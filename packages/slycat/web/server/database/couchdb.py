@@ -13,24 +13,7 @@ from __future__ import absolute_import
 
 import cherrypy
 import couchdb.client
-import threading
 import uuid
-
-class Database(object):
-  def __init__(self, storage):
-    self._storage = storage
-
-def database(url=None, name=None):
-  with database._instance_lock:
-    if database._instance is None:
-      if url is None:
-        url = cherrypy.tree.apps[""].config["slycat"]["couchdb-host"]
-      if name is None:
-        name = cherrypy.tree.apps[""].config["slycat"]["couchdb-database"]
-      database._instance = Database(couchdb.client.Server(url=url)[name])
-  return database._instance
-database._instance = None
-database._instance_lock = threading.Lock()
 
 #################################################################################################################
 # Deprecated API, don't use in new code.
