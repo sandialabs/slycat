@@ -403,16 +403,17 @@ $.widget("tracer_image.scatterplot", {
       var filtered_indices = self.options.filtered_indices;
 
       // Draw points ...
-      var circle = self.datum_layer.selectAll(".datum")
+      var square = self.datum_layer.selectAll(".datum")
         .data(filtered_indices.filter(function(d){return self.options.images[d].length > 0;}), function(d, i){
           return filtered_indices[i];
         });
-      circle.exit()
+      square.exit()
         .remove();
-      circle.enter()
-        .append("circle")
+      square.enter()
+        .append("rect")
         .attr("class", "datum")
-        .attr("r", 4)
+        .attr("width", 8)
+        .attr("height", 8)
         .attr("data-index", function(d, i) { return d; })
         .on("mouseover", function(d, i) {
           self._schedule_hover(d);
@@ -420,9 +421,9 @@ $.widget("tracer_image.scatterplot", {
         .on("mouseout", function(d, i) {
           self._cancel_hover();
         });
-      circle
-        .attr("cx", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ); })
-        .attr("cy", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ); })
+      square
+        .attr("x", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ) - 4; })
+        .attr("y", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ) - 4; })
         .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
           if(Number.isNaN(value))
@@ -464,15 +465,16 @@ $.widget("tracer_image.scatterplot", {
 
       self.selected_layer.selectAll(".selection").remove();
 
-      var circle = self.selected_layer.selectAll(".selection")
+      var square = self.selected_layer.selectAll(".selection")
         .data(filtered_selection, function(d, i){
           return d;
         })
         ;
-      circle.enter()
-        .append("circle")
+      square.enter()
+        .append("rect")
         .attr("class", "selection")
-        .attr("r", 8)
+        .attr("width", 12)
+        .attr("height", 12)
         .attr("data-index", function(d, i) {
           return d;
         })
@@ -483,12 +485,12 @@ $.widget("tracer_image.scatterplot", {
           self._cancel_hover();
         })
         ;
-      circle
-        .attr("cx", function(d, i) {
-          return x_scale( x[$.inArray(d, indices)] );
+      square
+        .attr("x", function(d, i) {
+          return x_scale( x[$.inArray(d, indices)] ) - 6;
         })
-        .attr("cy", function(d, i) {
-          return y_scale( y[$.inArray(d, indices)] );
+        .attr("y", function(d, i) {
+          return y_scale( y[$.inArray(d, indices)] ) - 6;
         })
         .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
@@ -702,7 +704,7 @@ $.widget("tracer_image.scatterplot", {
       }
 
       // Tag associated point with class
-      self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
+      self.datum_layer.selectAll("square[data-index='" + image.index + "']")
         .classed("openHover", true);
 
       var frame = self.image_layer.append("g")
@@ -755,7 +757,7 @@ $.widget("tracer_image.scatterplot", {
                   frame.classed("hover-image", false).classed("open-image", true);
                   image.image_class = "open-image";
                   // Remove openHover class tag from any points that might have it
-                  self.datum_layer.selectAll("circle.openHover")
+                  self.datum_layer.selectAll("square.openHover")
                     .classed("openHover", false)
                     ;
                 }
@@ -881,7 +883,7 @@ $.widget("tracer_image.scatterplot", {
             .on('drag', function(){
               //console.log("resize drag");
               // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+              if( 0 <= d3.event.y && d3.event.y <= $(self.svg[0]).height() && 0 <= d3.event.x && d3.event.x <= $(self.svg[0]).width() ){
                 var frame = d3.select(this.parentNode);
                 var theImage = frame.select("image.image");
                 var width = Number(theImage.attr("width"));
@@ -934,7 +936,7 @@ $.widget("tracer_image.scatterplot", {
                 image.image_class = "open-image";
 
                 // Remove openHover class tag from any points that might have it
-                self.datum_layer.selectAll("circle.openHover")
+                self.datum_layer.selectAll("square.openHover")
                   .classed("openHover", false)
                   ;
               }
@@ -1037,7 +1039,7 @@ $.widget("tracer_image.scatterplot", {
           }
 
           // Remove openHover class tag from any points that might have it
-          self.datum_layer.selectAll("circle.openHover")
+          self.datum_layer.selectAll("square.openHover")
             .classed("openHover", false)
             ;
 
@@ -1199,7 +1201,7 @@ $.widget("tracer_image.scatterplot", {
     var self = this;
 
     // Verify that we don't already have an open hover for the associated point
-    if( self.datum_layer.select("circle.openHover[data-index='" + image_index + "']").empty() )
+    if( self.datum_layer.select("square.openHover[data-index='" + image_index + "']").empty() )
     {
       self._close_hover();
       self.opening_image = image_index;
@@ -1253,10 +1255,10 @@ $.widget("tracer_image.scatterplot", {
   {
     var self = this;
     var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
-    var circleEmpty = self.datum_layer.selectAll("circle[data-index='" + image_index + "']:hover").empty();
-    var selectedCircleEmpty = self.selected_layer.selectAll("circle[data-index='" + image_index + "']:hover").empty();
+    var squareEmpty = self.datum_layer.selectAll("square[data-index='" + image_index + "']:hover").empty();
+    var selectedSquareEmpty = self.selected_layer.selectAll("square[data-index='" + image_index + "']:hover").empty();
 
-    return !(hoverEmpty && circleEmpty && selectedCircleEmpty);
+    return !(hoverEmpty && squareEmpty && selectedSquareEmpty);
   },
 
   _close_hover: function()
@@ -1278,7 +1280,7 @@ $.widget("tracer_image.scatterplot", {
     self.image_layer.selectAll(".hover-image").remove();
 
     // Remove openHover class tag from any points that might have it
-    self.datum_layer.selectAll("circle.openHover")
+    self.datum_layer.selectAll("square.openHover")
       .classed("openHover", false)
       ;
   },

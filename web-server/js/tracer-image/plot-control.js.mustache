@@ -94,20 +94,12 @@ PlotControl.prototype.update_plot = function(variable) {
   var self = this;
   // TODO: either update plot.x_index, etc. here or strip out the index attributes from Scatterplot completely
   // since they become irrelevant once update is called
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : variable,
-    success : function(result)
-    {
+  model.get_data_column(variable, function(result){
       var option_to_update = {};
       option_to_update[self.control_type] = result;
       $(self.plot.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
-    },
-    error : artifact_missing
   });
+
   /* NOTE: color variable selection used to conditionally use index instead of fetching variable from server
      but the index was arbitrary and essentially just ended up representing time, which will usually be the first
      csv column and thus default selection anyway

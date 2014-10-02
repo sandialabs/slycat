@@ -79,23 +79,14 @@ ScatterPlot.prototype.resize = function() {
 
 ScatterPlot.prototype.update_axis = function(index, axis) {
   var self = this;
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : index,
-    success : function(result) {
+  return model.get_data_column(index, function(result) {
       self[axis] = result;
-      self.setup();
-      // TODO refactor to setup the table ONCE after all ajax requests// table.setup();
-    },
-    error : artifact_missing
   });
 };
 
 ScatterPlot.prototype.setup = function() {
   console.debug("inside PLOT setup()");
+
   // Setup the scatterplot ...
   if(!this.ready && layout.bookmark && model.indices && this.x && this.y && this.v && this.images
      && (this.selected_simulations != null) && (this.hidden_simulations != null))
@@ -171,17 +162,10 @@ ScatterPlot.prototype.setup = function() {
     // Changing the images variable updates the scatterplot ...
     $("#table").bind("images-selection-changed", function(event, variable) {
       console.debug("changing the images var updates the scatter plot -- ajax");
-      $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
-            variable + "/chunk?ranges=0," + model.metadata["row-count"],
-          success : function(result)
-          {
-            $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
-          },
-          error: artifact_missing
-        });
+      model.get_image_column(variable, function(result){
+          $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
+        }
+      );
     });
 
     // Log changes to open images ...

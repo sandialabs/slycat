@@ -24,10 +24,29 @@ function Movie(plot) {
   $(this.container).hide();
 }
 
+Movie.prototype.add_loader = function() {
+  var self = this;
+  this.show();
+  this.loader = new LoadingAnimation({
+    end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
+    selector : this.plot.grid_ref,
+    radius : function(){return 3*self.plot.scatterplot_obj.attr("height") / 8},
+    complete_callback : function(){
+        self.play();
+      },
+    resize_parent : $(this.plot.scatterplot_obj.scatterplot("get_option", "display_pane")),
+  });
+  this.loader.init();
+}
+
 Movie.prototype.build_movie = function() {
   var self = this;
   // TODO images for "image set"
   // TODO this may just work after LG fixes controls wrt image set??
+  
+  if(!self.built) {
+    self.add_loader();
+  }
 
   self.frame = d3.select(self.container).append("rect")
     .attr("class", "outline")
@@ -40,17 +59,24 @@ Movie.prototype.build_movie = function() {
   self.d3_movie = self.d3_movie
     .data(self.plot.images.filter(function(d){return d.length > 0;}))
     .enter().append("image")
-    .attr({ "xlink:href" : function(d) {
-             return self.plot.image_url_for_session(d);
-           }
-          }
-         );
+    .attr("y", 1)
+    .attr({ "xlink:href" : function(d) {return self.plot.image_url_for_session(d);},
+      })
+    .style("visibility", function(_,i) {return i == 0 ? "visible" : "hidden";})
+    .each(function(d,i){
+        $(this).load( function(){ self.loader.update(1); });
+      });
+
   self.build_close_button(d3.select(self.container));
   self.built = true;
 };
 
 Movie.prototype.build_open_button = function(container) {
   var self = this;
+
+  var width = 28,
+      height = 28;
+
   self.open_control = container.append('g')
     .classed('open-movie', true)
     .on('click', function() {
@@ -63,23 +89,18 @@ Movie.prototype.build_open_button = function(container) {
     .on('mouseup', function() {
       d3.event.stopPropagation();
     })
-    .attr('width', 20)
-    .attr('height', 20)
+    .attr('width', width)
+    .attr('height', height);
 
-  var radius = self.open_control.attr('width')/2
+  var radius = self.open_control.attr('width')/2;
 
-  self.open_control.append('circle')
-    .attr('r', radius)
-    .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',' + self.open_control.attr("width")/2 +')')
-    .attr('fill', 'transparent')
-    .attr('stroke', 'darkgreen')
-    .attr('stroke-width', 2);
+  self.open_control.append('image')
+      .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
+        "style/play.png")
+      .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
+      .attr('width', width)
+      .attr('height', height);
 
-  self.open_control.append('path')
-    .attr('fill', 'green')
-    .attr('stroke', 'darkgreen')
-    .attr('stroke-width', 2)
-    .attr('d', 'M' + radius/4 + ' ' + 3*radius/8 + 'L' + (2*radius - 2) + ' ' + radius + 'L' + radius/4 + ' ' + 13*radius/8 + 'Z')
 };
 
 Movie.prototype.build_close_button = function(container) {
@@ -125,8 +146,8 @@ Movie.prototype.resize = function() {
       .attr("width", self.width + 1)
       .attr("height", self.height + 1);
     self.frame
-      .attr("width", self.width + 1)
-      .attr("height", self.height + 1);
+      .attr("width", self.width + 3)
+      .attr("height", self.height + 3);
   }
 };
 
@@ -154,9 +175,18 @@ Movie.prototype.loop = function() {
     }
   };
 
-  self.d3_movie.transition().attr("opacity",0);
+  //TODO: Remove current image, substitute new image
   self.d3_movie.transition()
-               .attr("opacity",1).each("start", update_selected_image)
+               .each("start", function(d,i){
+                  update_selected_image(d,i);
+                  if(i) {
+                    d3.select(self.d3_movie[0][i-1]).style("visibility", "hidden");
+                  }
+                  else {
+                    d3.select(self.d3_movie[0][self.d3_movie[0].length - 1]).style("visibility", "hidden");
+                  }
+                  d3.select(self.d3_movie[0][i]).style("visibility", "visible");
+                })
                .delay(function(d,i){return i * self.interval;})
                .call(self.check_for_loop_end, self, self.loop)
 };
@@ -188,8 +218,10 @@ Movie.prototype.play = function(on_success) {
     if(!self.built) {
       self.build_movie();
     }
-    self.show();
-    self.loop();
+    else{
+      self.show();
+      self.loop();
+    }
     return true;
   }
 };
