@@ -136,7 +136,7 @@ LoadingAnimation.prototype.animate = function(){
             });
           }
         })
-      .each("end", function(){
+      .filter(function(d,i){return i == 0;}).each("end", function(){
           self.angles = self.pie(self.state).map(self.get_angles);
             if(self.state[1] <= 0) {
               self.remove();
