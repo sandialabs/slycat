@@ -43,11 +43,6 @@ if not os.path.exists(arguments.output_path):
 # default to the ID field for our inputs output
 arguments.inputs = arguments.inputs or [arguments.id_field] 
 
-# collect our row data in one place, otherwise to read the file over and over would require opening again and again
-with open(arguments.file, 'rb') as csvfile:
-  reader = csv.DictReader(csvfile, delimiter=arguments.file_delimiter)
-  rows = [row for row in reader]
-
 def generate_hdf5_file(data, attrs, filename):
   dimensions = [{"name": "row", "end": data.shape[1]}]
   attributes = [{"name": attr, "type": "float64"} for attr in attrs]
@@ -57,6 +52,14 @@ def generate_hdf5_file(data, attrs, filename):
     array = array_set.start_array(0, dimensions, attributes)
     for i, d in enumerate(data):
       array.set_data(i, slice(0, d.shape[0]), d)
+
+######################
+# Read in CSV        #
+######################
+# collect our row data in one place, otherwise to read the file over and over would require opening again and again
+with open(arguments.file, 'rb') as csvfile:
+  reader = csv.DictReader(csvfile, delimiter=arguments.file_delimiter)
+  rows = [row for row in reader]
 
 ######################
 # inputs.hdf5        #  
@@ -75,3 +78,9 @@ outputs = {i: numpy.array([[row[k] for k in arguments.outputs] for row in rows i
 # generate a timeseries-<i>.hdf5 file for each group of outputs by id field
 for i, outs in outputs.iteritems():
   generate_hdf5_file(outs, arguments.outputs, "timeseries-%s.hdf5" % i)
+
+# Examples of usage:
+# python slycat-csv-timeseries-to-hdf5.py <path to csv file> --outputs 'out1' 'out2' 'outN'
+# python slycat-csv-timeseries-to-hdf5.py <path to csv file> --outputs 'out1' 'out2' 'outN' --output-path 'path for output'
+# python slycat-csv-timeseries-to-hdf5.py <path to csv file> --id-field 'some-id' --outputs 'out1' 'out2' 'outN'
+# python slycat-csv-timeseries-to-hdf5.py <path to csv file> --id-field 'some-id' --inputs 'in1' 'in2' --outputs 'out1' 'out2' 'outN'
