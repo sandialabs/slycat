@@ -8,7 +8,7 @@
 # arguments:
 # id field - required, used to group rows into distinct timeseries
 # time field - required, contains the timestamp for each timeseries observation
-# value fields - required, one-to-many value fields for each timestamp
+# output fields - required, one-to-many output fields for each timestamp
 # input fields - optional, zero-to-many input fields for each timestamp, containing params used in timeseries generation
 # output path - required, output directory for hdf5 results
 
