@@ -170,25 +170,43 @@ Movie.prototype.loop = function() {
       .map(function(d){return d[1];});
   var update_selected_image = function(uri, index)
   {
-    if(!self.stopped) {
+    if(self.stopped) {
+      update_selected_image = function(){console.debug("stopped")};
+    }
+    else {
       table.select_rows([indices_with_images[index]]);
     }
   };
 
-  //TODO: Remove current image, substitute new image
+  // Reset the whole thing
   self.d3_movie.transition()
-               .each("start", function(d,i){
-                  update_selected_image(d,i);
-                  if(i) {
-                    d3.select(self.d3_movie[0][i-1]).style("visibility", "hidden");
-                  }
-                  else {
-                    d3.select(self.d3_movie[0][self.d3_movie[0].length - 1]).style("visibility", "hidden");
-                  }
-                  d3.select(self.d3_movie[0][i]).style("visibility", "visible");
-                })
-               .delay(function(d,i){return i * self.interval;})
-               .call(self.check_for_loop_end, self, self.loop)
+      .style("visibility", function(_,i){return i == 0 ? "visible" : "hidden";});
+
+  var add_transition = function(i){
+    d3.select(self.d3_movie[0][i]).transition()
+           .each("start", function(d){
+             update_selected_image(d,i);
+             if(i) {
+               d3.select(self.d3_movie[0][i-1]).style("visibility", "hidden");
+             }
+             else {
+               d3.select(self.d3_movie[0][self.d3_movie[0].length - 1]).style("visibility", "hidden");
+             }
+             d3.select(self.d3_movie[0][i]).style("visibility", "visible");
+           })
+           .delay(function(d,i){return self.interval;})
+           .call(self.check_for_loop_end, self, self.loop)
+           .each("end", function(d){
+            if(!self.stopped) {
+              //Register the next transition on each transition (Unless we've stopped):
+              add_transition(i+1);
+            }
+           });
+  }
+
+  //TODO: Remove current image, substitute new image
+  // Start with the first image
+  add_transition(0);
 };
 
 Movie.prototype.play = function(on_success) {
