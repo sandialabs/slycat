@@ -12,7 +12,7 @@ function Movie(plot) {
   this.stopped = true;
   this.container = this.plot.plot_ref + " .movie";
   this.frame = null;
-  this.d3_movie = d3.select(this.container).selectAll("image");
+  this.d3_movie = null;
   this.interval = 400;
   this.current_image = null;
   // TODO leverage bookmarker here for state of movie
@@ -20,6 +20,7 @@ function Movie(plot) {
   this.current_image_index = -1;
   this.height = null;
   this.width = null;
+  this.loaded_image_count = 0;
   this.open_control = null; //handle to foreignObject so SVG can manipulate
   $(this.container).hide();
 }
@@ -27,15 +28,22 @@ function Movie(plot) {
 Movie.prototype.add_loader = function() {
   var self = this;
   this.show();
-  this.loader = new LoadingAnimation({
-    end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
-    selector : this.plot.grid_ref,
-    radius : function(){return 3*self.plot.scatterplot_obj.attr("height") / 8},
-    complete_callback : function(){
-        self.play();
-      },
-    resize_parent : $(this.plot.scatterplot_obj.scatterplot("get_option", "display_pane")),
-  });
+  if(!this.loader){
+    this.loader = new LoadingAnimation({
+      start : this.loaded_image_count,
+      end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
+      selector : this.plot.grid_ref,
+      radius : function(){return 3*self.plot.scatterplot_obj.attr("height") / 8},
+      complete_callback : function(){
+          self.built = true;
+          self.play();
+        },
+      resize_parent : $(this.plot.scatterplot_obj.scatterplot("get_option", "display_pane")),
+    });
+  }
+  else {
+    this.loader.options.start = this.loaded_image_count;
+  }
   this.loader.init();
 }
 
@@ -48,27 +56,28 @@ Movie.prototype.build_movie = function() {
     self.add_loader();
   }
 
-  self.frame = d3.select(self.container).append("rect")
-    .attr("class", "outline")
-    .attr("x", 0)
-    .attr("y", 0)
-    .style("stroke", "black")
-    .style("stroke-width", "1px")
-    .style("fill", "white");
+  if(!self.d3_movie) {
+    self.frame = d3.select(self.container).append("rect")
+      .attr("class", "outline")
+      .attr("x", 0)
+      .attr("y", 0)
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("fill", "white");
 
-  self.d3_movie = self.d3_movie
-    .data(self.plot.images.filter(function(d){return d.length > 0;}))
-    .enter().append("image")
-    .attr("y", 1)
-    .attr({ "xlink:href" : function(d) {return self.plot.image_url_for_session(d);},
-      })
-    .style("visibility", function(_,i) {return i == 0 ? "visible" : "hidden";})
-    .each(function(d,i){
-        $(this).load( function(){ self.loader.update(1); });
-      });
+    self.d3_movie = d3.select(this.container).selectAll("image")
+      .data(self.plot.images.filter(function(d){return d.length > 0;}))
+      .enter().append("image")
+      .attr("y", 1)
+      .attr({ "xlink:href" : function(d) {return self.plot.image_url_for_session(d);},
+        })
+      .style("visibility", function(_,i) {return i == 0 ? "visible" : "hidden";})
+      .each(function(d,i){
+          $(this).load( function(){ self.loaded_image_count++; self.loader.update(1); });
+        });
+  }
 
   self.build_close_button(d3.select(self.container));
-  self.built = true;
 };
 
 Movie.prototype.build_open_button = function(container) {
@@ -171,7 +180,7 @@ Movie.prototype.loop = function() {
   var update_selected_image = function(uri, index)
   {
     if(self.stopped) {
-      update_selected_image = function(){console.debug("stopped")};
+      update_selected_image = function(){};
     }
     else {
       table.select_rows([indices_with_images[index]]);
@@ -199,7 +208,7 @@ Movie.prototype.loop = function() {
            .each("end", function(d){
             if(!self.stopped) {
               //Register the next transition on each transition (Unless we've stopped):
-              add_transition(i+1);
+              add_transition((i+1) % self.d3_movie[0].length);
             }
            });
   }
@@ -261,6 +270,10 @@ Movie.prototype.hide = function() {
   self.open = false;
   $(self.plot.plot_ref + ' .scatterplot').show();
   $('svg .image-layer').show();
+  if(this.loader) {
+    this.loader.remove();
+  }
+
 };
 
 Movie.prototype.next_image = function() {
