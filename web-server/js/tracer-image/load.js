@@ -2,8 +2,10 @@ function LoadingAnimation(options){
   this.options = {
     start : 0,
     end : 100,
+    errored : 0,
     complete_color : "#b8e186",
     incomplete_color : "#bababa",
+    error_color : "#f03b20",
     radius : function(){ return 120; },
     thickness : 20,
     selector : "#load_screen",
@@ -17,11 +19,12 @@ function LoadingAnimation(options){
   }
 
   this.color_scale = d3.scale.ordinal()
-      .range([this.options.complete_color, this.options.incomplete_color]);
+      .range([this.options.complete_color, this.options.incomplete_color, this.options.error_color]);
 
   this.get_angles = function(d){ return [d.startAngle, d.endAngle]; };
 
   this.transitions = 0;
+  this.errors = 0;
 
   this.resize_function = this.resize;
 }
@@ -34,8 +37,9 @@ LoadingAnimation.prototype.init = function(){
   this.target = $(this.options.selector);
 
   var loaded = this.options.start;
-  var unloaded = (this.options.end - this.options.start);
-  this.state = [loaded, unloaded];
+  var errored = this.options.errored;
+  var unloaded = this.options.end - (loaded + errored);
+  this.state = [loaded, unloaded, errored];
 
   this.group = d3.select(this.options.selector)
     .append("g");
@@ -61,8 +65,6 @@ LoadingAnimation.prototype.init = function(){
 
 LoadingAnimation.prototype.resize = function(initial_setup){
   var self = this;
-
-  console.debug("resize")
 
   if(this.update_interval || this.update_interval == 0) {
     clearInterval(this.update_interval);
@@ -109,13 +111,16 @@ LoadingAnimation.prototype.animate = function(){
   var self = this;
 
   var delta = this.transitions;
+  var error_delta = this.errors;
 
   this.transitions = 0;
+  this.errors = 0;
 
-  var change = [delta, -delta];
+  var change = [delta, -(delta + error_delta), error_delta];
 
-  this.state[0] += delta;
-  this.state[1] -= delta;
+  for(var i = 0; i < change.length; i++) {
+    this.state[i] += change[i];
+  }
 
   if(this.state[1] < 0) {
     this.state[1] = 0;
@@ -147,6 +152,10 @@ LoadingAnimation.prototype.animate = function(){
 
 LoadingAnimation.prototype.update = function(delta){
   this.transitions += delta;
+}
+
+LoadingAnimation.prototype.update_error = function(delta){
+  this.errors += delta;
 }
 
 LoadingAnimation.prototype.remove = function(){

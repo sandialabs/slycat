@@ -21,6 +21,7 @@ function Movie(plot) {
   this.height = null;
   this.width = null;
   this.loaded_image_count = 0;
+  this.errored_image_count = 0;
   this.open_control = null; //handle to foreignObject so SVG can manipulate
   $(this.container).hide();
 }
@@ -32,6 +33,7 @@ Movie.prototype.add_loader = function() {
     this.loader = new LoadingAnimation({
       start : this.loaded_image_count,
       end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
+      errored : this.errored_image_count,
       selector : this.plot.grid_ref,
       radius : function(){return 3*self.plot.scatterplot_obj.attr("height") / 8},
       complete_callback : function(){
@@ -73,7 +75,9 @@ Movie.prototype.build_movie = function() {
         })
       .style("visibility", function(_,i) {return i == 0 ? "visible" : "hidden";})
       .each(function(d,i){
-          $(this).load( function(){ self.loaded_image_count++; self.loader.update(1); });
+          $(this)
+            .load( function(){ self.loaded_image_count++; self.loader.update(1); })
+            .error( function(){ self.errored_image_count++; self.loader.update_error(1); });
         });
   }
 
