@@ -346,10 +346,22 @@ $.widget("tracer_image.scatterplot", {
       var height_offset = (total_height - height) / 2;
 
       self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
-      self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
+      self.x_axis = d3.svg.axis()
+          .scale(self.x_scale)
+          .orient("bottom")
+          .tickFormat(d3.format(".2g"));
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
         .call(self.x_axis);
+
+      //Check to see if any axis label overlaps the next one:
+      if(self.x_axis_layer.selectAll("text")[0].reduce(function(acc, x, i, arr){
+          return acc || (arr[i+1] && ($(x).position().left + $(x).width() > $(arr[i+1]).position().left));
+        }, false)){
+
+        self.x_axis_layer.selectAll("text")
+          .attr("y", function(d,i){return Number($(this).attr("y")) + (i%2 ? 12 : 0);});
+      }
 
       var range = self.x_scale.range();
       var range_midpoint = (range[1] - range[0])/2 + range[0];
