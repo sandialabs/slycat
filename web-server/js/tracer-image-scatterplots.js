@@ -345,11 +345,20 @@ $.widget("tracer_image.scatterplot", {
       var width_offset = (total_width - width) / 2;
       var height_offset = (total_height - height) / 2;
 
-      self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
+      var min = d3.min(self.options.x);
+      var max = d3.max(self.options.x);
+
+      var formatting = ".1g";
+      //Numbers such as .001 don't go to sci with .1g:
+      if((Math.abs(min) < .1 && min != 0) || (Math.abs(max) < .1 && max != 0)){
+        formatting = ".1e"
+      }
+
+      self.x_scale = d3.scale.linear().domain([min, max]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis()
           .scale(self.x_scale)
           .orient("bottom")
-          .tickFormat(d3.format(".2g"));
+          .tickFormat(d3.format(formatting));
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
         .call(self.x_axis);
