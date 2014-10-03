@@ -308,7 +308,6 @@ $.widget("tracer_image.scatterplot", {
 
     if(self.updates["update_width"])
     {
-      console.log("updating width!!!!!");
       $(self.options.display_pane).resize();
       self.options.width = self.element.parents(self.options.display_pane).width() * self.options.scalar.x;
       self.options.width += self.options.dimension_adjustments.width();
@@ -319,7 +318,6 @@ $.widget("tracer_image.scatterplot", {
 
     if(self.updates["update_height"])
     {
-      console.log("updating height!!!!!");
       $(self.options.display_pane).resize();
       self.options.height = self.element.parents(self.options.display_pane).height() * self.options.scalar.y;
       self.options.height += self.options.dimension_adjustments.height();
@@ -365,7 +363,7 @@ $.widget("tracer_image.scatterplot", {
 
       //Check to see if any axis label overlaps the next one:
       if(self.x_axis_layer.selectAll("text")[0].reduce(function(acc, x, i, arr){
-          return acc || (arr[i+1] && ($(x).position().left + $(x).width() > $(arr[i+1]).position().left));
+          return acc || (arr[i+1] && ($(x).position().left + x.getComputedTextLength() > $(arr[i+1]).position().left));
         }, false)){
 
         self.x_axis_layer.selectAll("text")
