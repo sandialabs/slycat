@@ -60,7 +60,7 @@ def get_context():
   return context
 
 def get_home():
-  raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["projects-redirect"])
+  raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["server-root"] + "projects")
 
 def get_projects(revision=None, _=None):
   if get_projects.monitor is None:

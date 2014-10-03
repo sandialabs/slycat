@@ -150,11 +150,6 @@ def start(root_path, config_file):
   dispatcher.connect("put-model-table", "/models/:mid/tables/:name", slycat.web.server.handlers.put_model_table, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
 
-  configuration["/"]["request.dispatch"] = dispatcher
-
-  if "server-resources" not in configuration["slycat"]:
-    configuration["slycat"]["server-resources"] = os.getcwd()
-
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
       if isinstance(value, dict):
@@ -165,6 +160,14 @@ def start(root_path, config_file):
           value = "********"
         cherrypy.log.error("%s%s: %s" % (indent, key, value))
   log_configuration(configuration)
+
+  # Setup our RESTful request dispatcher.
+  configuration["/"]["request.dispatch"] = dispatcher
+
+  # Generate absolute paths for static content directories.
+  for section in configuration.values():
+    if "tools.staticdir.dir" in section:
+      section["tools.staticdir.dir"] = abspath(section["tools.staticdir.dir"])
 
   # We want fine-grained control over PyOpenSSL here.
   if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
