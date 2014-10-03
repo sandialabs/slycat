@@ -5,7 +5,6 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.scatterplot_obj = null;
-  this.movie = null;
 
   this.x_index = null;
   this.y_index = null;
@@ -41,7 +40,6 @@ ScatterPlot.prototype.setup_dom = function() {
   var pane = group.append("g").attr({class: "scatterplot-pane"});
   pane.append("g").attr({class: "load-status"});
   pane.append("g").attr({class: "scatterplot"});
-  pane.append("g").attr({class: "movie"});
 };
 
 // TODO rename since x/y labels aren't used now
@@ -93,9 +91,6 @@ ScatterPlot.prototype.setup = function() {
   {
     var self = this;
     this.ready = true;
-
-    // add our movie here so it can immediately reference images
-    this.movie = new Movie(this);
 
     $(this.plot_ref + " .scatterplot-pane .load-status").hide();
 

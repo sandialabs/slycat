@@ -177,8 +177,6 @@ $.widget("tracer_image.scatterplot", {
       column_names: model.metadata['column-names']
     });
     self.x_control.build();
-    // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
-    self.options.scatterplot_obj.movie.build_open_button(self.x_axis_layer);
   },
 
   _build_y_axis: function() {
@@ -313,7 +311,6 @@ $.widget("tracer_image.scatterplot", {
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
       self.group.attr("width", self.options.width);
-      self.options.scatterplot_obj.movie.resize();
     }
 
     if(self.updates["update_height"])
@@ -323,7 +320,6 @@ $.widget("tracer_image.scatterplot", {
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
       self.group.attr("height", self.options.height);
-      self.options.scatterplot_obj.movie.resize();
     }
 
     if(self.updates["update_indices"])
@@ -374,9 +370,6 @@ $.widget("tracer_image.scatterplot", {
       var range_midpoint = (range[1] - range[0])/2 + range[0];
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
-      // TODO: refactor to put this somewhere separate. conveniently leveraging x-axis positioning for now.
-      self.options.scatterplot_obj.movie.open_control
-          .attr('transform', 'translate(' + (control_x_offset + Number(self.x_control.foreign_object.attr('width')) + 20) + ',40)');
     }
 
     if(self.updates["update_y"])
