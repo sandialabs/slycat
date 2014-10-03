@@ -383,6 +383,22 @@ def get_model_command(mid, command, **kwargs):
       return slycat.web.server.plugin.manager.model_commands[model["model-type"]][command]["handler"](database, model, command, **kwargs)
   raise cherrypy.HTTPError("400 Unknown command: %s" % command)
 
+def get_model_resource(mid, resource):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  cherrypy.log.error("%s" % resource)
+
+  if model["model-type"] in slycat.web.server.plugin.manager.model_resources:
+    for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[model["model-type"]].items():
+      cherrypy.log.error("%s %s" % (model_resource, model_path))
+      if model_resource == resource:
+        return cherrypy.lib.static.serve_file(model_path, debug=True)
+
+  raise cherrypy.HTTPError("400")
+
 @cherrypy.tools.json_in(on = True)
 def put_model(mid):
   database = slycat.web.server.database.couchdb.connect()

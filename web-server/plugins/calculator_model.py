@@ -19,4 +19,5 @@ def register_slycat_plugin(context):
   context.register_model("calculator", finish, html)
   context.register_model_command("calculator", "add", calculate)
   context.register_model_command("calculator", "subtract", calculate)
+  context.register_model_resource("calculator", "css/calculator.css", os.path.join(os.path.dirname(__file__), "calculator_model.css"))
 

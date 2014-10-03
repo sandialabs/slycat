@@ -13,6 +13,7 @@ class Manager(object):
     self._modules = []
     self._models = {}
     self._model_commands = {}
+    self._model_resources = {}
     self._markings = {}
 
   def load(self, directory):
@@ -55,6 +56,11 @@ class Manager(object):
     return self._model_commands
 
   @property
+  def model_resources(self):
+    """Returns a dict of dicts mapping model resources to filesystem paths."""
+    return self._model_resources
+
+  @property
   def markings(self):
     """Returns a dict mapping marking types to marking data."""
     return self._markings
@@ -70,7 +76,7 @@ class Manager(object):
           cherrypy.log.error(traceback.format_exc())
 
   def register_model(self, type, finish, html):
-    """Called when a plugin is loaded to register a new model type.
+    """Register a new model type.
 
     Parameters
     ----------
@@ -85,15 +91,15 @@ class Manager(object):
       raise Exception("Model type '%s' has already been registered." % type)
 
     self._models[type] = {"finish":finish, "html":html}
-    cherrypy.log.error("Registered new model '%s'" % type)
+    cherrypy.log.error("Registered model '%s'." % type)
 
   def register_model_command(self, type, command, handler):
-    """Called when a plugin is loaded to register a custom request handler associcated with a model type.
+    """Register a custom request handler associcated with a model type.
 
     Parameters
     ----------
     type : string, required
-      Unique identifier of the already-registered model type.
+      Unique identifier of an already-registered model type.
     command : string, required
       Unique-to-the model name of the request.
     handler : callback function, required
@@ -106,7 +112,28 @@ class Manager(object):
     if command in self._model_commands[type]:
       raise Exception("Command '%s' has already been registered with model '%s'." % (command, type))
     self._model_commands[type][command] = {"handler":handler}
-    cherrypy.log.error("Registered new model command: %s/%s" % (type, command))
+    cherrypy.log.error("Registered model '%s' command '%s'." % (type, command))
+
+  def register_model_resource(self, type, resource, path):
+    """Register a custom resource associated with a model type.
+
+    Parameters
+    ----------
+    type : string, required
+      Unique identifier of an already-registered model type.
+    resource : string, required
+      Server endpoint to retrieve the resource.
+    path : string, required
+      Absolute filesystem path of the resource to be retrieved.
+    """
+    if type not in self._models:
+      raise Exception("Unknown model type: %s." % type)
+    if type not in self._model_resources:
+      self._model_resources[type] = {}
+    if resource in self._model_resources[type]:
+      raise Exception("Resource '%s' has already been registered with model '%s'." % (resource, type))
+    self._model_resources[type][resource] = path
+    cherrypy.log.error("Registered model '%s' resource '%s' -> '%s'." % (type, resource, path))
 
   def register_marking(self, type, label, html):
     """Called when a plugin is loaded to register a new marking type.
@@ -126,7 +153,7 @@ class Manager(object):
       raise Exception("Marking type '%s' has already been registered." % type)
 
     self._markings[type] = {"label":label, "html":html}
-    cherrypy.log.error("Registered new marking '%s'" % type)
+    cherrypy.log.error("Registered marking '%s'." % type)
 
 # Create a new, singleton instance of slycat.web.server.plugin.Manager()
 manager = Manager()
