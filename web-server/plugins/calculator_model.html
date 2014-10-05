@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="dfa4f92571a344758ca545eba8615f11/resources/css/calculator.css">
-
 <div class="calculator" style="padding: 10px">
   <h1>Calculator</h1>
   <p id="operand-a"></p>
@@ -10,6 +8,12 @@
 </div>
 
 <script type="text/javascript">
+  var fileref=document.createElement("link")
+  fileref.setAttribute("rel", "stylesheet")
+  fileref.setAttribute("type", "text/css")
+  fileref.setAttribute("href", window.location.href + "/resources/css/calculator.css")
+  document.querySelector("head").appendChild(fileref);
+
   var request = new XMLHttpRequest();
   request.open("GET", "#")
   request.setRequestHeader("accept", "application/json");
