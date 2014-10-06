@@ -16,27 +16,30 @@ class Manager(object):
     self._model_resources = {}
     self._markings = {}
 
-  def load(self, directory):
-    """Load a directory containing *.py files as plugin modules.
+  def load(self, plugin_path):
+    if not os.path.isabs(plugin_path):
+      raise Exception("Plugin module path must be absolute: %s" % plugin_path)
+    if os.path.isdir(plugin_path):
+      self._load_directory(plugin_path)
+    else:
+      self._load_module(plugin_path)
 
-    Parameters
-    ----------
-    directory : string, required
-      Path to a directory containing plugin modules.
-    """
+  def _load_directory(self, plugin_directory):
     try:
-      cherrypy.log.error("Loading plugin modules from directory '%s'" % directory)
-      plugin_names = [x[:-3] for x in os.listdir(directory) if x.endswith(".py")]
-      for plugin_name in plugin_names:
-        cherrypy.log.error("Loading plugin '%s'" % os.path.join(directory, plugin_name + ".py"))
-        try:
-          module_fp, module_pathname, module_description = imp.find_module(plugin_name, [directory])
-          self._modules.append(imp.load_module(plugin_name, module_fp, module_pathname, module_description))
-        except Exception as e:
-          cherrypy.log.error(traceback.format_exc())
-        finally:
-          if module_fp:
-            module_fp.close()
+      cherrypy.log.error("Loading plugin modules from directory '%s'" % plugin_directory)
+      plugin_paths = [x for x in os.listdir(plugin_directory) if x.endswith(".py")]
+      for plugin_path in plugin_paths:
+        self._load_module(os.path.join(plugin_directory, plugin_path))
+    except Exception as e:
+      cherrypy.log.error(traceback.format_exc())
+
+  def _load_module(self, plugin_path):
+    try:
+      cherrypy.log.error("Loading plugin '%s'" % plugin_path)
+      plugin_directory, plugin_name = os.path.split(plugin_path)
+      module_fp, module_pathname, module_description = imp.find_module(plugin_name[:-3], [plugin_directory])
+      self._modules.append(imp.load_module(plugin_name[:-3], module_fp, module_pathname, module_description))
+      module_fp.close()
     except Exception as e:
       cherrypy.log.error(traceback.format_exc())
 

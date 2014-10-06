@@ -8,7 +8,7 @@ def register_slycat_plugin(context):
     slycat.web.server.model.update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def html(database, model):
-    return open(os.path.join(os.path.dirname(__file__), "calculator_model.html")).read()
+    return open(os.path.join(os.path.dirname(__file__), "ui.html")).read()
 
   def calculate(database, model, command, **kwargs):
     if command == "add":
@@ -19,5 +19,5 @@ def register_slycat_plugin(context):
   context.register_model("calculator", finish, html)
   context.register_model_command("calculator", "add", calculate)
   context.register_model_command("calculator", "subtract", calculate)
-  context.register_model_resource("calculator", "css/calculator.css", os.path.join(os.path.dirname(__file__), "calculator_model.css"))
+  context.register_model_resource("calculator", "ui.css", os.path.join(os.path.dirname(__file__), "ui.css"))
 
