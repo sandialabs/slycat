@@ -521,33 +521,36 @@ $.widget("tracer_image.scatterplot", {
     if(self.updates["open_images"])
     {
       // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
-      self.options.open_images.forEach(function(image) {
-        if(image.uri === undefined)
-          image.uri = self.options.images[image.index];
-        if(image.width === undefined)
-          image.width = 200;
-        if(image.height === undefined)
-          image.height = 200;
-      });
+      self.options.open_images.filter(function(image){return image.image_layer_id == self.image_layer.attr("id");})
+        .forEach(function(image) {
+          if(image.uri === undefined)
+            image.uri = self.options.images[image.index];
+          if(image.width === undefined)
+            image.width = 200;
+          if(image.height === undefined)
+            image.height = 200;
+        });
 
       // Transform the list of initial images so we can pass them to _open_images()
       var width = Number(self.group.attr("width")); //self.group refers to <g class="scatterplot" ...>
       var height = Number(self.group.attr("height"));
 
       var images = [];
-      self.options.open_images.forEach(function(image, index)
-      {
-        images.push({
-          index : image.index,
-          uri : image.uri.trim(),
-          image_class : "open-image",
-          x : width * image.relx,
-          y : height * image.rely,
-          width : image.width,
-          height : image.height,
-          target_x : self.x_scale(self.options.x[image.index]),
-          target_y : self.y_scale(self.options.y[image.index]),
-          });
+      self.options.open_images.filter(function(image){return image.image_layer_id == self.image_layer.attr("id");})
+        .forEach(function(image, index)
+        {
+          images.push({
+            index : image.index,
+            uri : image.uri.trim(),
+            image_class : "open-image",
+            x : width * image.relx,
+            y : height * image.rely,
+            width : image.width,
+            height : image.height,
+            target_x : self.x_scale(self.options.x[image.index]),
+            target_y : self.y_scale(self.options.y[image.index]),
+            image_layer_id : self.image_layer.attr("id")
+            });
       });
       self._open_images(images);
     }
@@ -654,6 +657,7 @@ $.widget("tracer_image.scatterplot", {
         rely : Number(frame.attr("data-transy")) / height,
         width : Number(image.attr("width")),
         height : Number(image.attr("height")),
+        image_layer_id : self.image_layer.attr("id")
         });
     });
     self.element.trigger("open-images-changed", [open_images]);
@@ -663,15 +667,18 @@ $.widget("tracer_image.scatterplot", {
   {
     var self = this;
 
+    var relevant_images = images.map(function(image){ image.image_layer_id = image.image_layer_id || "image_0_0"; return image})
+                            .filter(function(image){ return image.image_layer_id == self.image_layer.attr("id");});
+
     // If the list of images is empty, we're done.
-    if(images.length == 0)
+    if(relevant_images.length == 0)
       return;
 
-    var image = images[0];
+    var image = relevant_images[0];
 
     // Don't open images for hidden simulations
     if($.inArray(image.index, self.options.hidden_simulations) != -1) {
-      self._open_images(images.slice(1));
+      self._open_images(relevant_images.slice(1));
       return;
     }
 
@@ -1112,7 +1119,7 @@ $.widget("tracer_image.scatterplot", {
 
       if(!image.no_sync)
         self._sync_open_images();
-      self._open_images(images.slice(1));
+      self._open_images(relevant_images.slice(1));
       return;
     }
 
@@ -1120,7 +1127,7 @@ $.widget("tracer_image.scatterplot", {
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
     if(!(parser.hostname in login.session_cache)) {
-      self._open_session(images);
+      self._open_session(relevant_images);
       return;
     }
 
@@ -1136,7 +1143,7 @@ $.widget("tracer_image.scatterplot", {
       // Either way, delete the cached session and create a new one.
       if(this.status == 404 || this.status == 500) {
         delete login.session_cache[parser.hostname];
-        self._open_session(images);
+        self._open_session(relevant_images);
         return;
       }
       // If we get 400, it means that the session is good and we're
