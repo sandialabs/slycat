@@ -72,6 +72,9 @@ $.widget("tracer_image.scatterplot", {
     var image_layer_check = top_layer.find("g.image-layer")[0];
 
     self.image_layer = image_layer_check ? d3.select(image_layer_check) : d3.select(top_layer[0]).append("g").attr("class", "image-layer");
+    self.image_layer = self.image_layer.append("g")
+                          .classed("plot-image-layer", true)
+                          .attr("id", self.options.scatterplot_obj.plot_id.replace("plot", "images"));
 
     self.image_cache = {};
 
