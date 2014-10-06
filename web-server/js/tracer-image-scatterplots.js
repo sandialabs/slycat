@@ -1246,6 +1246,7 @@ $.widget("tracer_image.scatterplot", {
         target_x : self.x_scale(self.options.x[image_index]),
         target_y : self.y_scale(self.options.y[image_index]),
         no_sync : true,
+        image_layer_id : self.image_layer.attr("id")
         }]);
 
       // self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image_index, 0);}, 1000);
