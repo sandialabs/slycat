@@ -1085,15 +1085,18 @@ $.widget("tracer_image.scatterplot", {
           var range = self.x_scale.range();
           var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
           var x, y;
+          var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+          offsets = [Number(offsets[1]), Number(offsets[2])];
 
           if(relx < 0.5)
             x = relx * range[0];
           else
             x = width - ((width - range[1]) * (1.0 - relx)) - imageWidth;
+          x += offsets[0];
 
           var height = self.group.attr("height");
           var target_y = self.y_scale(self.options.y[image.index]);
-          y = (target_y / height) * (height - imageHeight);
+          y = (target_y / height) * (height - imageHeight) + offsets[1];
 
           frame
             .attr("data-transx", x)
@@ -1113,8 +1116,8 @@ $.widget("tracer_image.scatterplot", {
           theLine
             .attr("x1", (imageWidth / 2))
             .attr("y1", (imageHeight / 2))
-            .attr("x2", image.target_x - Number(frame.attr("data-transx")))
-            .attr("y2", image.target_y - Number(frame.attr("data-transy")))
+            .attr("x2", image.target_x - Number(frame.attr("data-transx")) + offsets[0])
+            .attr("y2", image.target_y - Number(frame.attr("data-transy")) + offsets[1])
             ;
 
           self._sync_open_images();
