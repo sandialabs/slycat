@@ -439,6 +439,7 @@ $.widget("tracer_image.scatterplot", {
         .on("click", function(d,i) {
           self.options.filtered_selection = [d];
           self.options.scatterplot_obj.selected_simulations_changed([d]);
+          table.select_rows([d]);
         });
       square
         .attr("x", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ) - 4; })
