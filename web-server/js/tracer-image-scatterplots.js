@@ -563,15 +563,16 @@ $.widget("tracer_image.scatterplot", {
     // Update leader targets anytime we resize or change our axes ...
     if(self.updates["update_leaders"])
     {
-      $(".open-image").each(function(index, frame)
+      var offset = self._get_plot_offsets();
+      $(self.image_layer[0][0]).find(".open-image").each(function(index, frame)
       {
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
         frame.find(".leader")
-          .attr("x2", self.x_scale(self.options.x[image_index])-Number(frame.attr("data-transx")) )
-          .attr("y2", self.y_scale(self.options.y[image_index])-Number(frame.attr("data-transy")) )
-          .attr("data-targetx", self.x_scale(self.options.x[image_index]))
-          .attr("data-targety", self.y_scale(self.options.y[image_index]))
+          .attr("x2", offset[0] + self.x_scale(self.options.x[image_index])-Number(frame.attr("data-transx")) )
+          .attr("y2", offset[1] + self.y_scale(self.options.y[image_index])-Number(frame.attr("data-transy")) )
+          .attr("data-targetx", offset[0] + self.x_scale(self.options.x[image_index]))
+          .attr("data-targety", offset[1] + self.y_scale(self.options.y[image_index]))
           ;
       });
     }
@@ -815,16 +816,16 @@ $.widget("tracer_image.scatterplot", {
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
       {
-        var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+        var offsets = self._get_plot_offsets();
 
         frame.append("line")
           .attr("class", "leader")
           .attr("x1", (image.width / 2))
           .attr("y1", (image.height / 2))
-          .attr("x2", image.target_x - Number(frame.attr("data-transx")) + Number(offsets[1]))
-          .attr("y2", image.target_y - Number(frame.attr("data-transy")) + Number(offsets[2]))
-          .attr("data-targetx", image.target_x + Number(offsets[1]))
-          .attr("data-targety", image.target_y + Number(offsets[2]))
+          .attr("x2", image.target_x - Number(frame.attr("data-transx")) + Number(offsets[0]))
+          .attr("y2", image.target_y - Number(frame.attr("data-transy")) + Number(offsets[1]))
+          .attr("data-targetx", image.target_x + Number(offsets[0]))
+          .attr("data-targety", image.target_y + Number(offsets[1]))
           .style("stroke", "black")
           .style("stroke-width", 1.0)
           ;
@@ -1086,8 +1087,7 @@ $.widget("tracer_image.scatterplot", {
           var range = self.x_scale.range();
           var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
           var x, y;
-          var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
-          offsets = [Number(offsets[1]), Number(offsets[2])];
+          var offsets = self._get_plot_offsets();
 
           if(relx < 0.5)
             x = relx * range[0];
@@ -1241,14 +1241,14 @@ $.widget("tracer_image.scatterplot", {
       var hover_width = Math.min(width, height) * 0.85; //initial image width comes from this
       var hover_height = Math.min(width, height) * 0.85; //initial image height comes from this
 
-      var offsets = $(self.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+      var offsets = self._get_plot_offsets();
 
       self._open_images([{
         index : self.options.indices[image_index],
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "hover-image",
-        x : Number(offsets[1]) + self.x_scale(self.options.x[image_index]) + 10,
-        y : Number(offsets[2]) + Math.min(self.y_scale(self.options.y[image_index]) + 10, self.group.attr("height") - hover_height - self.options.border - 10),
+        x : Number(offsets[0]) + self.x_scale(self.options.x[image_index]) + 10,
+        y : Number(offsets[1]) + Math.min(self.y_scale(self.options.y[image_index]) + 10, self.group.attr("height") - hover_height - self.options.border - 10),
         width : hover_width,
         height : hover_height,
         target_x : self.x_scale(self.options.x[image_index]),
@@ -1394,5 +1394,10 @@ $.widget("tracer_image.scatterplot", {
     self.options.selection = self.options.filtered_selection.slice(0);
     self._schedule_update({render_selection:true});
     self.element.trigger("selection-changed", [self.options.selection]);
+  },
+
+  _get_plot_offsets: function(){
+    var offsets = $(this.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
+    return [Number(offsets[1]), Number(offsets[2])];
   }
 });
