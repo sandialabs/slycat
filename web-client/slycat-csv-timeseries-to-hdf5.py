@@ -61,18 +61,22 @@ with open(arguments.file, 'rb') as csvfile:
   reader = csv.DictReader(csvfile, delimiter=arguments.file_delimiter)
   rows = [row for row in reader]
 
+# figure out the uniq set of our ids so we can group our outputs for later processing
+all_ids = map(lambda r:r[arguments.id_field], rows)
+ids = set(all_ids)
+
 ######################
 # inputs.hdf5        #  
 ######################
+first_input_ids = [all_ids.index(id) for id in ids]
+input_rows = [rows[id] for id in first_input_ids]
 #inputs = numpy.array([[row[k] for k in arguments.inputs] for row in rows], dtype="float64").T
-inputs = numpy.array([[rows[0][k] for k in arguments.inputs]], dtype="float64").T
+inputs = numpy.array([[row[k] for k in arguments.inputs] for row in input_rows], dtype="float64").T
 generate_hdf5_file(inputs, arguments.inputs, "inputs.hdf5")
 
 ######################
 # timeseries-N.hdf5  #
 ######################
-# figure out the uniq set of our ids so we can group our outputs for later processing
-ids = set(map(lambda r:r[arguments.id_field], rows))
 # group into an outputs dict by each of our ids and transpose for direct right to hdf5
 outputs = {i: numpy.array([[row[k] for k in arguments.outputs] for row in rows if row[arguments.id_field] == i], dtype="float64").T for i in ids}
 
