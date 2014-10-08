@@ -64,7 +64,8 @@ with open(arguments.file, 'rb') as csvfile:
 ######################
 # inputs.hdf5        #  
 ######################
-inputs = numpy.array([[row[k] for k in arguments.inputs] for row in rows], dtype="float64").T
+#inputs = numpy.array([[row[k] for k in arguments.inputs] for row in rows], dtype="float64").T
+inputs = numpy.array([[rows[0][k] for k in arguments.inputs]], dtype="float64").T
 generate_hdf5_file(inputs, arguments.inputs, "inputs.hdf5")
 
 ######################
