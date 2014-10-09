@@ -31,6 +31,7 @@ import slycat.web.server.ssh
 import slycat.web.server.streaming
 import slycat.web.server.template
 import stat
+import subprocess
 import sys
 import threading
 import time
@@ -56,8 +57,6 @@ def get_context():
   context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
   context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
-  context["help-email"] = cherrypy.request.app.config["site"]["help-email"]
-  context["version"] = cherrypy.request.app.config["site"]["version"]
   return context
 
 def get_home():
@@ -1215,4 +1214,23 @@ def get_agent_test():
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
   cherrypy.response.status = "204 Event logged."
+
+@cherrypy.tools.json_out(on = True)
+def get_configuration_markings():
+  return slycat.web.server.plugin.manager.markings
+
+@cherrypy.tools.json_out(on = True)
+def get_configuration_support_email():
+  return cherrypy.request.app.config["slycat"]["support-email"]
+
+@cherrypy.tools.json_out(on = True)
+def get_configuration_version():
+  if get_configuration_version.commit is None:
+    try:
+      get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE).communicate()[0].strip()
+    except:
+      get_configuration_version.commit = "unknown git revision"
+  return {"version" : slycat.__version__, "commit" : get_configuration_version.commit}
+get_configuration_version.commit = None
+
 
