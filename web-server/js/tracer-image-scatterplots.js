@@ -746,9 +746,10 @@ $.widget("tracer_image.scatterplot", {
         .call(
           d3.behavior.drag()
             .on('drag', function(){
+              var svg_container = $(self.svg[0]).parent();
               //console.log("frame drag");
               // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= $(self.svg[0]).height() && 0 <= d3.event.x && d3.event.x <= $(self.svg[0]).width() ){
+              if( 0 <= d3.event.y && d3.event.y <= svg_container.height() && 0 <= d3.event.x && d3.event.x <= svg_container.width() ){
                 var theElement = d3.select(this);
                 var transx = Number(theElement.attr("data-transx"));
                 var transy = Number(theElement.attr("data-transy"));
@@ -909,9 +910,10 @@ $.widget("tracer_image.scatterplot", {
         .call(
           d3.behavior.drag()
             .on('drag', function(){
+              var svg_container = $(self.svg[0]).parent();
               //console.log("resize drag");
               // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= $(self.svg[0]).height() && 0 <= d3.event.x && d3.event.x <= $(self.svg[0]).width() ){
+              if( 0 <= d3.event.y && d3.event.y <= svg_container.height() && 0 <= d3.event.x && d3.event.x <= svg_container.width() ){
                 var frame = d3.select(this.parentNode);
                 var theImage = frame.select("image.image");
                 var width = Number(theImage.attr("width"));
