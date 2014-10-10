@@ -15,6 +15,11 @@ Feature: slycat agent command interface
      When an exit command is received
      Then the agent should exit
 
+  Scenario: get-image command missing path
+    Given the slycat agent is running
+     When a get-image command without a path is received
+     Then the agent should return a missing path error
+
   Scenario: get-image command
     Given the slycat agent is running
      When a get-image command is received
