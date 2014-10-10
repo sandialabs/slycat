@@ -287,6 +287,11 @@ $.widget("tracer_image.scatterplot", {
     }
   },
 
+  force_update: function(updates)
+  {
+    this._schedule_update(updates);
+  },
+
   _schedule_update: function(updates)
   {
     var self = this;
@@ -540,24 +545,16 @@ $.widget("tracer_image.scatterplot", {
       var width = Number(self.group.attr("width")); //self.group refers to <g class="scatterplot" ...>
       var height = Number(self.group.attr("height"));
 
-      var images = [];
-      self.options.open_images.filter(function(image){return image.image_layer_id == self.image_layer.attr("id");})
-        .forEach(function(image, index)
+      self.options.open_images.forEach(function(image, index)
         {
-          images.push({
-            index : image.index,
-            uri : image.uri.trim(),
-            image_class : "open-image",
-            x : width * image.relx,
-            y : height * image.rely,
-            width : image.width,
-            height : image.height,
-            target_x : self.x_scale(self.options.x[image.index]),
-            target_y : self.y_scale(self.options.y[image.index]),
-            image_layer_id : self.image_layer.attr("id")
-            });
-      });
-      self._open_images(images);
+            image.image_class = "open-image";
+            image.x = width * image.relx;
+            image.y = height * image.rely;
+            image.target_x = self.x_scale(self.options.x[image.index]);
+            image.target_y = self.y_scale(self.options.y[image.index]);
+        });
+
+      self._open_images(self.options.open_images);
     }
 
     // Update leader targets anytime we resize or change our axes ...
@@ -663,7 +660,7 @@ $.widget("tracer_image.scatterplot", {
         rely : Number(frame.attr("data-transy")) / height,
         width : Number(image.attr("width")),
         height : Number(image.attr("height")),
-        image_layer_id : self.image_layer.attr("id")
+        image_layer_id : frame.closest(".plot-image-layer").attr("id")
         });
     });
     self.element.trigger("open-images-changed", [open_images]);
@@ -706,10 +703,8 @@ $.widget("tracer_image.scatterplot", {
     if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
 
       // Define a default size for every image. Should have come in set by hover height/width though.
-      if(image.width === undefined)
-        image.width = 200;
-      if(image.height === undefined)
-        image.height = 200;
+      image.width = image.width || 200;
+      image.height = image.height || 200;
 
       // Define a default position for every image.
       if(image.x === undefined)
@@ -865,10 +860,8 @@ $.widget("tracer_image.scatterplot", {
       var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
 
       // Define a default size for every image.
-      if(image.width === undefined)
-        image.width = 200;
-      if(image.height === undefined)
-        image.height = 200;
+      image.width = image.width || 200;
+      image.height = image.height || 200;
 
       // Define a default position for every image.
       if(image.x === undefined)
@@ -1191,7 +1184,7 @@ $.widget("tracer_image.scatterplot", {
 
   _open_session: function(images)
   {
-    login.show_prompt(images, this._open_images, this);
+    login.show_prompt(images, grid.open_images, grid);
   },
 
   _schedule_hover: function(image_index)

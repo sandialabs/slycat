@@ -146,3 +146,9 @@ Grid.prototype.setup = function() {
 Grid.prototype.drag_select = function() {
 
 };
+
+Grid.prototype.open_images = function(images) {
+  this.plots.forEach(function(plot){
+    plot.scatterplot_obj.scatterplot("force_update", {open_images: true});
+  });
+};
