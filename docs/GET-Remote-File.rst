@@ -11,9 +11,9 @@ session must have been created successfully using :ref:`POST Remote`.  The calle
 
 If the session doesn't exist or has timed-out, the server returns `404`.
 
-If the remote path is a reference, the server returns `400 Can't read directory.`
+If the remote path is a reference to a directory, the server returns `400 Can't read directory.`
 
-If the remote path doesn't exist, the server returns `400 File not found.` (ideally, this should be a 404, however that has undesirable side-effects for the client UI).
+If the remote path doesn't exist, the server returns `400 File not found.`
 
 If the session user doesn't have permissions to access the file, the server returns `400 Permission denied. Current permissions:` with a summary of the file permissions.
 
