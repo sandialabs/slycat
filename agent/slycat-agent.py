@@ -8,7 +8,7 @@ import sys
 def get_image(command):
   if "path" not in command:
     raise Exception("Missing path.")
-  image = "<image here>"
+  image = open(command["path"], "r").read()
   return "%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "size":len(image)}), image)
 
 sys.stdout.write("%s\n" % json.dumps({"message":"Ready."}))

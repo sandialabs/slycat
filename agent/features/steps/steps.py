@@ -48,10 +48,12 @@ def step_impl(context):
 
 @when(u'a get-image command is received')
 def step_impl(context):
-  context.agent.write("%s\n" % json.dumps({"action":"get-image", "path":"/foo/bar/baz.jpg"}))
+  context.agent.write("%s\n" % json.dumps({"action":"get-image", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
   context.agent.readline()
 
 @then(u'the agent should return the image')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.readline()), {"message":"Image retrieved.", "path":"/foo/bar/baz.jpg", "size":12})
-
+  metadata = json.loads(context.agent.readline())
+  nose.tools.assert_equal(metadata["message"], "Image retrieved.")
+  nose.tools.assert_equal(metadata["size"], 38845)
+  image = context.agent.read(metadata["size"])
