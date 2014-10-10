@@ -94,20 +94,19 @@ def teardown():
 
 def test_projects():
   projects = connection.get_projects()
-  nose.tools.assert_equal(projects, [])
+  nose.tools.assert_equal(projects["projects"], [])
 
   pid1 = connection.post_projects("foo")
   pid2 = connection.post_projects("bar")
   projects = connection.get_projects()
-  nose.tools.assert_is_instance(projects, list)
-  nose.tools.assert_equal(len(projects), 2)
-  for project in projects:
+  nose.tools.assert_equal(len(projects["projects"]), 2)
+  for project in projects["projects"]:
     require_valid_project(project)
 
   connection.delete_project(pid2)
   connection.delete_project(pid1)
   projects = connection.get_projects()
-  nose.tools.assert_equal(projects, [])
+  nose.tools.assert_equal(projects["projects"], [])
 
 def test_project():
   pid = connection.post_projects("project", "My test project.")
