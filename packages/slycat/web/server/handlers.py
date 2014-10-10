@@ -1225,12 +1225,15 @@ def get_configuration_support_email():
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_version():
-  if get_configuration_version.commit is None:
-    try:
-      get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE).communicate()[0].strip()
-    except:
-      get_configuration_version.commit = "unknown git revision"
+  with get_configuration_version.lock:
+    if not get_configuration_version.initialized:
+      get_configuration_version.initialized = True
+      try:
+        get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE).communicate()[0].strip()
+      except:
+        pass
   return {"version" : slycat.__version__, "commit" : get_configuration_version.commit}
+get_configuration_version.lock = threading.Lock()
+get_configuration_version.initialized = False
 get_configuration_version.commit = None
-
 
