@@ -10,20 +10,20 @@ def get_file(command):
   if "path" not in command:
     raise Exception("Missing path.")
   try:
-    contents = open(command["path"], "rb").read()
+    content = open(command["path"], "rb").read()
   except IOError as e:
     raise Exception(e.strerror + ".")
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"File retrieved.", "path":command["path"], "content-type":mimetypes.guess_type(command["path"], strict=False), "size":len(contents)}), contents))
+  sys.stdout.write("%s\n%s" % (json.dumps({"message":"File retrieved.", "path":command["path"], "content-type":mimetypes.guess_type(command["path"], strict=False), "size":len(content)}), content))
   sys.stdout.flush()
 
 def get_image(command):
   if "path" not in command:
     raise Exception("Missing path.")
   try:
-    image = open(command["path"], "rb").read()
+    content = open(command["path"], "rb").read()
   except IOError as e:
     raise Exception(e.strerror + ".")
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "content-type":mimetypes.guess_type(command["path"], strict=False), "size":len(image)}), image))
+  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "content-type":mimetypes.guess_type(command["path"], strict=False), "size":len(content)}), content))
   sys.stdout.flush()
 
 if __name__ == "__main__":
