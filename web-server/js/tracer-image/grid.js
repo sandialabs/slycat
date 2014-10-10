@@ -22,8 +22,9 @@ Grid.prototype.setup = function() {
 
   var update_plot_dimensions = function(plot_container, plot_loc) {
     return function() {
+      var min_width = self.plots[0] ? $(self.plots[0].plot_ref)[0].getBBox().width : 0;
       var single_pane_height = $(self.grid_ref).height()/self.size[1];
-      var single_pane_width = $(self.grid_ref).width()/self.size[0];
+      var single_pane_width = d3.max([$(self.grid_ref).width()/self.size[0], min_width]);
       plot_container.attr({
         transform: "translate(" +
             plot_loc[0]*single_pane_width + " " +
