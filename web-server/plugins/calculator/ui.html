@@ -1,5 +1,3 @@
-<link rel="stylesheet" type="text/css" href="/resources/calculator/ui.css"/>
-
 <div class="calculator">
   <h1>Calculator</h1>
   <p id="operand-a"></p>
@@ -10,6 +8,9 @@
 </div>
 
 <script type="text/javascript">
+  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/calculator/ui.css'>";
+
   var request = new XMLHttpRequest();
   request.open("GET", "#")
   request.setRequestHeader("accept", "application/json");
