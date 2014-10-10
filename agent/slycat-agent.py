@@ -6,6 +6,11 @@ import json
 import mimetypes
 import sys
 
+try:
+  import cStringIO as StringIO
+except:
+  import StringIO
+
 def get_file(command):
   if "path" not in command:
     raise Exception("Missing path.")
@@ -19,11 +24,24 @@ def get_file(command):
 def get_image(command):
   if "path" not in command:
     raise Exception("Missing path.")
+  content_type = command.get("content-type", "image/jpeg")
+
+  if content_type not in ["image/jpeg", "image/png"]:
+    raise Exception("Unsupported image type.")
+
   try:
-    content = open(command["path"], "rb").read()
+    import PIL.Image
+    image = PIL.Image.open(command["path"])
   except IOError as e:
     raise Exception(e.strerror + ".")
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "content-type":mimetypes.guess_type(command["path"], strict=False), "size":len(content)}), content))
+
+  content = StringIO.StringIO()
+  if content_type == "image/jpeg":
+    image.save(content, "JPEG")
+  elif content_type == "image/png":
+    image.save(content, "PNG")
+
+  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "content-type":[content_type, None], "size":len(content.getvalue())}), content.getvalue()))
   sys.stdout.flush()
 
 if __name__ == "__main__":
