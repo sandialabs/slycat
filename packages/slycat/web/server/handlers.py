@@ -72,8 +72,7 @@ def get_projects(revision=None, _=None):
   cherrypy.response.headers["content-type"] = accept
 
   if accept == "text/html":
-    context = get_context()
-    return slycat.web.server.template.render("projects.html", context)
+    return slycat.web.server.template.render("projects.html", get_context())
 
   if accept == "application/json":
     if revision is not None:
@@ -300,13 +299,10 @@ def get_models(revision=None, _=None):
   if get_models.timeout is None:
     get_models.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
 
-  accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
+  accept = cherrypy.lib.cptools.accept(media=["application/json"])
   cherrypy.response.headers["content-type"] = accept
 
-  if accept == "text/html":
-    context = get_context()
-    return slycat.web.server.template.render("models.html", context)
-  elif accept == "application/json":
+  if accept == "application/json":
     if revision is not None:
       revision = int(revision)
     start_time = time.time()
@@ -341,35 +337,44 @@ def get_model(mid, **kwargs):
   elif accept == "text/html":
     model_count = len(list(database.view("slycat/project-models", startkey=project["_id"], endkey=project["_id"])))
 
+    # Compatibility code for rendering pre-plugin models:
+    if "model-type" in model and model["model-type"] in ["cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
+      context = get_context()
+      context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+      context["security"] = cherrypy.request.security
+      context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
+      context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
+      context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
+      context["full-project"] = project
+      context.update(model)
+      context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
+      context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
+      context["new-model-name"] = "Model-%s" % (model_count + 1)
+      context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
+
+      if model["model-type"] == "timeseries":
+        context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
+        context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
+        context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
+        return slycat.web.server.template.render("model-timeseries.html", context)
+
+      if model["model-type"] in ["cca", "cca3"]:
+        return slycat.web.server.template.render("model-cca3.html", context)
+
+      if model["model-type"] == "parameter-image":
+        return slycat.web.server.template.render("model-parameter-image.html", context)
+
+      if model["model-type"] == "tracer-image":
+        return slycat.web.server.template.render("model-tracer-image.html", context)
+
+    # New code for rendering plugin models:
     context = get_context()
-    context["full-project"] = project
-    context.update(model)
-    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
-    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
-    context["new-model-name"] = "Model-%s" % (model_count + 1)
-    context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
-
-    if "model-type" in model and model["model-type"] == "timeseries":
-      context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
-      context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
-      context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
-      return slycat.web.server.template.render("model-timeseries.html", context)
-
-    if "model-type" in model and model["model-type"] in ["cca", "cca3"]:
-      return slycat.web.server.template.render("model-cca3.html", context)
-
-    if "model-type" in model and model["model-type"] == "parameter-image":
-      return slycat.web.server.template.render("model-parameter-image.html", context)
-
-    if "model-type" in model and model["model-type"] == "tracer-image":
-      return slycat.web.server.template.render("model-tracer-image.html", context)
-
+    context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
     if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
       context = {}
       context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
-      context["slycat-plugin-content"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
-
+      context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
     return slycat.web.server.template.render("model.html", context)
 
 def get_model_command(mid, command, **kwargs):
