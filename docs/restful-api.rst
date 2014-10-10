@@ -22,14 +22,16 @@ any programming language or library that supports HTTP requests.
    GET-Model-Array-Metadata.rst
    GET-Model-Arrayset-Metadata.rst
    GET-Model-Arrayset.rst
+   GET-Model-Command.rst
    GET-Model-File.rst
-   GET-Model-Table-Chunk.rst
-   GET-Model-Table-Metadata.rst
-   GET-Model-Table-Sort-Rank.rst
-   GET-Model-Table-Sorted-Indices.rst
-   GET-Model-Table-Unsorted-Indices.rst
+   GET-Model-Resource.rst
    GET-Model.rst
    GET-Models.rst
+   GET-Model-Table-Chunk.rst
+   GET-Model-Table-Metadata.rst
+   GET-Model-Table-Sorted-Indices.rst
+   GET-Model-Table-Sort-Rank.rst
+   GET-Model-Table-Unsorted-Indices.rst
    GET-Project-Models.rst
    GET-Project.rst
    GET-Projects.rst
@@ -51,6 +53,6 @@ any programming language or library that supports HTTP requests.
    PUT-Model-File.rst
    PUT-Model-Inputs.rst
    PUT-Model-Parameter.rst
-   PUT-Model-Table.rst
    PUT-Model.rst
+   PUT-Model-Table.rst
    PUT-Project.rst
