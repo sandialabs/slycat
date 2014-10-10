@@ -109,8 +109,8 @@ $.widget("parameter_image.table",
           }
         );
       }
-      // Special options for numeric columns
-      if( self.options.metadata["column-types"][column_index] != "string" && self.options.metadata["column-count"]-1 != column_index ) {
+      // Special options for non-image and non-index columns
+      else if( self.options.metadata["column-count"]-1 != column_index ) {
         column.headerCssClass += " headerNumeric";
         column.header.buttons.push(
           {

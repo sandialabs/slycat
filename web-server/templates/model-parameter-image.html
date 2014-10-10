@@ -787,11 +787,18 @@ rights in this software.
           {
             controls_ready = true;
             var numeric_variables = [];
+            var axes_variables = [];
 
             for(var i = 0; i < table_metadata["column-count"]; i++)
             {
               if(table_metadata["column-types"][i] != 'string')
+              {
                 numeric_variables.push(i);
+              }
+              if( image_columns.indexOf(i) == -1 && table_metadata["column-count"]-1 > i )
+              {
+                axes_variables.push(i);
+              }
             }
 
             var color_variable = table_metadata["column-count"] - 1;
@@ -806,8 +813,8 @@ rights in this software.
               model_name: "{{name}}",
               aid : "data-table",
               metadata: table_metadata,
-              x_variables: numeric_variables.slice(0, numeric_variables.length-1),
-              y_variables: numeric_variables.slice(0, numeric_variables.length-1),
+              x_variables: axes_variables,
+              y_variables: axes_variables,
               image_variables: image_columns,
               color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
               rating_variables : rating_columns,
