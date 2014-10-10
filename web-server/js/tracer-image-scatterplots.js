@@ -423,6 +423,7 @@ $.widget("tracer_image.scatterplot", {
       var filtered_indices = self.options.filtered_indices;
 
       // Draw points ...
+/*
       var square = self.datum_layer.selectAll(".datum")
         .data(filtered_indices.filter(function(d){return self.options.images[d].length > 0;}), function(d, i){
           return filtered_indices[i];
@@ -456,7 +457,7 @@ $.widget("tracer_image.scatterplot", {
           else
             return self.options.color(value);
         });
-
+*/
       self.group.select(".time-paths").remove();
 
       var make_line = d3.svg.line();
@@ -470,8 +471,12 @@ $.widget("tracer_image.scatterplot", {
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
         .reduce(function(prev, next, index){
           time_line_group.append("path")
+            .attr("stroke", self.options.color(v[index]))
+            .attr("stroke-width", 3)
+            .attr("d", function(){return make_line([prev, next])});
+          time_line_group.append("path")
             .attr("stroke", color_scale(index))
-            .attr("linewidth", 1)
+            .attr("stroke-width", 1)
             .attr("d", function(){return make_line([prev, next])});
           return next;
         });
@@ -489,7 +494,7 @@ $.widget("tracer_image.scatterplot", {
       var y_scale = self.y_scale;
 
       self.selected_layer.selectAll(".selection").remove();
-
+/*
       var square = self.selected_layer.selectAll(".selection")
         .data(filtered_selection, function(d, i){
           return d;
@@ -525,6 +530,7 @@ $.widget("tracer_image.scatterplot", {
             return self.options.color(value);
         })
         ;
+        */
     }
 
     // Used to open an initial list of images at startup only
@@ -607,7 +613,7 @@ $.widget("tracer_image.scatterplot", {
       var rectWidth = 10;
       // rectHeight attr used to be set to 200 in render, but then overwritten to this. deleted former from render.
       var rectHeight = parseInt((height - self.options.border - 40)/2);
-      var datum_layer_width = self.datum_layer.node().getBBox().width;
+      var datum_layer_width = self.x_axis_layer.node().getBBox().width;
       var width_offset = (total_width + datum_layer_width) / 2;
       if( self.legend_layer.attr("data-status") != "moved" ) {
         var transx = parseInt(width_offset + 40);
