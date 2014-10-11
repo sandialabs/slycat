@@ -5,7 +5,37 @@
 import cStringIO as StringIO
 import json
 import mimetypes
+import os
+import stat
 import sys
+
+def browse(command):
+  if "path" not in command:
+    raise Exception("Missing path.")
+  path = command["path"]
+  if not os.path.isabs(path):
+    raise Exception("Path must be absolute.")
+  if not os.path.exists(path):
+    raise Exception("No such file or directory.")
+  listing = {
+    "path":path,
+    "names":[],
+    "sizes":[],
+    "types":[],
+    }
+  if os.path.isdir(path):
+    for name in sorted(os.listdir(path)):
+      fstat = os.stat(os.path.join(path, name))
+      listing["names"].append(name)
+      listing["sizes"].append(fstat.st_size)
+      listing["types"].append("d" if stat.S_ISDIR(fstat.st_mode) else "f")
+  else:
+    fstat = os.stat(path)
+    listing["names"].append(os.path.basename(path))
+    listing["sizes"].append(fstat.st_size)
+    listing["types"].append("f")
+  sys.stdout.write("%s\n" % json.dumps(listing))
+  sys.stdout.flush()
 
 def get_file(command):
   if "path" not in command:
@@ -80,7 +110,9 @@ if __name__ == "__main__":
         raise Exception("Missing action.")
 
       action = command["action"]
-      if action == "get-file":
+      if action == "browse":
+        browse(command)
+      elif action == "get-file":
         get_file(command)
       elif action == "get-image":
         get_image(command)

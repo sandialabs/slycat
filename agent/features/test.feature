@@ -20,47 +20,72 @@ Feature: slycat-agent
      When an unknown command is received
      Then the agent should return an unknown command error
 
-  Scenario: get-file command without path
+  Scenario: browse without path
+    Given the slycat agent is running
+     When a browse command without a path is received
+     Then the agent should return a missing path error
+
+  Scenario: browse relative path
+    Given the slycat agent is running
+     When browsing a relative path
+     Then the agent should return a relative path error
+
+  Scenario: browse nonexistent file
+    Given the slycat agent is running
+     When browsing a nonexistent file
+     Then the agent should return a nonexistent file error
+
+  Scenario: browse directory
+    Given the slycat agent is running
+     When browsing a directory
+     Then the agent should return the directory information
+
+  Scenario: browse file
+    Given the slycat agent is running
+     When browsing a file
+     Then the agent should return the file information
+
+  Scenario: get file without path
     Given the slycat agent is running
      When a get-file command without a path is received
      Then the agent should return a missing path error
 
-  Scenario: get-file command nonexistent file
+  Scenario: get nonexistent file
     Given the slycat agent is running
      When a get-file command requests a nonexistent file
      Then the agent should return a nonexistent file error
 
-  Scenario: get-file command csv file
+  Scenario: get csv file
     Given the slycat agent is running
      When a get-file command requests a csv file
      Then the agent should return the csv file
 
-  Scenario: get-image command without path
+  Scenario: get image without path
     Given the slycat agent is running
      When a get-image command without a path is received
      Then the agent should return a missing path error
 
-  Scenario: get-image command nonexistent file
+  Scenario: get nonexistent image
     Given the slycat agent is running
      When a get-image command requests a nonexistent file
      Then the agent should return a nonexistent file error
 
-  Scenario: get-image command jpeg file
+  Scenario: get jpeg image
     Given the slycat agent is running
      When a get-image command requests a jpeg file
      Then the agent should return the jpeg file
 
-  Scenario: get-image command resized jpeg file
-    Given the slycat agent is running
-     When a get-image command requests a jpeg file with resizing
-     Then the agent should return the resized jpeg file
-
-  Scenario: get-image command resized jpeg file 2
+  Scenario: get jpeg image with maximum width
     Given the slycat agent is running
      When a get-image command requests a jpeg file with maximum width
      Then the agent should return the jpeg file with maximum width
 
-  Scenario: get-image command converted jpeg file
+  Scenario: get jpeg image with maximum size along both dimensions
+    Given the slycat agent is running
+     When a get-image command requests a jpeg file with maximum size
+     Then the agent should return the jpeg file with maximum size
+
+  Scenario: get jpeg image converted to png image
     Given the slycat agent is running
      When a get-image command requests a jpeg file converted to a png file
      Then the agent should return the converted png file
