@@ -1,6 +1,8 @@
+import cStringIO as StringIO
 import json
 import nose.tools
 import os
+import PIL.Image
 import subprocess
 
 @given("the slycat agent is running")
@@ -96,4 +98,49 @@ def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
   nose.tools.assert_equal(metadata["message"], "Image retrieved.")
   nose.tools.assert_equal(metadata["content-type"], ["image/jpeg", None])
-  content = context.agent.stdout.read(metadata["size"])
+  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+  image = PIL.Image.open(content)
+  nose.tools.assert_equal(image.size, (290, 634))
+
+@when(u'a get-image command requests a jpeg file with resizing')
+def step_impl(context):
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-size":500, "content-type":"image/jpeg", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
+  context.agent.stdin.flush()
+
+@then(u'the agent should return the resized jpeg file')
+def step_impl(context):
+  metadata = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(metadata["message"], "Image retrieved.")
+  nose.tools.assert_equal(metadata["content-type"], ["image/jpeg", None])
+  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+  image = PIL.Image.open(content)
+  nose.tools.assert_equal(image.size, (228, 500))
+
+@when(u'a get-image command requests a jpeg file with maximum width')
+def step_impl(context):
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-width":200, "content-type":"image/jpeg", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
+  context.agent.stdin.flush()
+
+@then(u'the agent should return the jpeg file with maximum width')
+def step_impl(context):
+  metadata = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(metadata["message"], "Image retrieved.")
+  nose.tools.assert_equal(metadata["content-type"], ["image/jpeg", None])
+  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+  image = PIL.Image.open(content)
+  nose.tools.assert_equal(image.size, (200, 437))
+
+@when(u'a get-image command requests a jpeg file converted to a png file')
+def step_impl(context):
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/png", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
+  context.agent.stdin.flush()
+
+@then(u'the agent should return the converted png file')
+def step_impl(context):
+  metadata = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(metadata["message"], "Image retrieved.")
+  nose.tools.assert_equal(metadata["content-type"], ["image/png", None])
+  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+  image = PIL.Image.open(content)
+  nose.tools.assert_equal(image.size, (290, 634))
+

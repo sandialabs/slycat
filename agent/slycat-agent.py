@@ -2,14 +2,10 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import cStringIO as StringIO
 import json
 import mimetypes
 import sys
-
-try:
-  import cStringIO as StringIO
-except:
-  import StringIO
 
 def get_file(command):
   if "path" not in command:
@@ -29,18 +25,32 @@ def get_image(command):
   if content_type not in ["image/jpeg", "image/png"]:
     raise Exception("Unsupported image type.")
 
+  # Load the requested image.
   try:
     import PIL.Image
     image = PIL.Image.open(command["path"])
   except IOError as e:
     raise Exception(e.strerror + ".")
 
+  # Optionally downsample the image.
+  size = image.size
+  if "max-size" in command:
+    size = (command["max-size"], command["max-size"])
+  if "max-width" in command:
+    size = (command["max-width"], size[1])
+  if "max-height" in command:
+    size = (size[0], command["max-height"])
+  if size != image.size:
+    image.thumbnail(size=size, resample=PIL.Image.ANTIALIAS)
+
+  # Save the image to the requested format.
   content = StringIO.StringIO()
   if content_type == "image/jpeg":
     image.save(content, "JPEG")
   elif content_type == "image/png":
     image.save(content, "PNG")
 
+  # Send the results back to the caller.
   sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "content-type":[content_type, None], "size":len(content.getvalue())}), content.getvalue()))
   sys.stdout.flush()
 

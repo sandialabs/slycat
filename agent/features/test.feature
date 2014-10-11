@@ -10,15 +10,15 @@ Feature: slycat-agent
      When a parsable but invalid command is received
      Then the agent should return an invalid command error
 
-  Scenario: unknown command
-    Given the slycat agent is running
-     When an unknown command is received
-     Then the agent should return an unknown command error
-
   Scenario: missing action command
     Given the slycat agent is running
      When a command without an action is received
      Then the agent should return a missing action error
+
+  Scenario: unknown command
+    Given the slycat agent is running
+     When an unknown command is received
+     Then the agent should return an unknown command error
 
   Scenario: get-file command without path
     Given the slycat agent is running
@@ -49,3 +49,19 @@ Feature: slycat-agent
     Given the slycat agent is running
      When a get-image command requests a jpeg file
      Then the agent should return the jpeg file
+
+  Scenario: get-image command resized jpeg file
+    Given the slycat agent is running
+     When a get-image command requests a jpeg file with resizing
+     Then the agent should return the resized jpeg file
+
+  Scenario: get-image command resized jpeg file 2
+    Given the slycat agent is running
+     When a get-image command requests a jpeg file with maximum width
+     Then the agent should return the jpeg file with maximum width
+
+  Scenario: get-image command converted jpeg file
+    Given the slycat agent is running
+     When a get-image command requests a jpeg file converted to a png file
+     Then the agent should return the converted png file
+
