@@ -95,17 +95,17 @@ def step_impl(context):
   nose.tools.assert_equal(listing["sizes"], [16])
   nose.tools.assert_equal(listing["types"], ["f"])
 
-@when(u'a get-file command without a path is received')
+@when(u'retrieving a file without a path')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file"}))
   context.agent.stdin.flush()
 
-@when(u'a get-file command requests a nonexistent file')
+@when(u'retrieving a nonexistent file')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":os.path.join(os.path.dirname(__file__), "foo.txt")}))
   context.agent.stdin.flush()
 
-@when(u'a get-file command requests a csv file')
+@when(u'retrieving a csv file')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":os.path.join(os.path.dirname(__file__), "test.csv")}))
   context.agent.stdin.flush()
@@ -123,17 +123,17 @@ def step_impl(context):
   print type(reference), len(reference), reference
   nose.tools.assert_equal(content, reference)
 
-@when(u'a get-image command without a path is received')
+@when(u'retrieving an image without a path')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image"}))
   context.agent.stdin.flush()
 
-@when(u'a get-image command requests a nonexistent file')
+@when(u'retrieving a nonexistent image')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":os.path.join(os.path.dirname(__file__), "foo.jpg")}))
   context.agent.stdin.flush()
 
-@when(u'a get-image command requests a jpeg file')
+@when(u'retrieving a jpeg file')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/jpeg", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
   context.agent.stdin.flush()
@@ -147,7 +147,7 @@ def step_impl(context):
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (290, 634))
 
-@when(u'a get-image command requests a jpeg file with maximum width')
+@when(u'retrieving a jpeg file with maximum width')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-width":200, "content-type":"image/jpeg", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
   context.agent.stdin.flush()
@@ -161,7 +161,7 @@ def step_impl(context):
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (200, 437))
 
-@when(u'a get-image command requests a jpeg file with maximum size')
+@when(u'retrieving a jpeg file with maximum size')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-size":500, "content-type":"image/jpeg", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
   context.agent.stdin.flush()
@@ -175,7 +175,7 @@ def step_impl(context):
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (228, 500))
 
-@when(u'a get-image command requests a jpeg file converted to a png file')
+@when(u'retrieving a jpeg file converted to a png file')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/png", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
   context.agent.stdin.flush()
