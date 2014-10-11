@@ -60,12 +60,12 @@ def step_impl(context):
 def step_impl(context):
   nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Path must be absolute."})
 
-@when(u'browsing a nonexistent file')
+@when(u'browsing a nonexistent path')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.join(os.path.dirname(__file__), "foo.bar")}))
   context.agent.stdin.flush()
 
-@then(u'the agent should return a nonexistent file error')
+@then(u'the agent should return a nonexistent path error')
 def step_impl(context):
   nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"No such file or directory."})
 

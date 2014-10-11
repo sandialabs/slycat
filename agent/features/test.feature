@@ -30,10 +30,10 @@ Feature: slycat-agent
      When browsing a relative path
      Then the agent should return a relative path error
 
-  Scenario: browse nonexistent file
+  Scenario: browse nonexistent path
     Given the slycat agent is running
-     When browsing a nonexistent file
-     Then the agent should return a nonexistent file error
+     When browsing a nonexistent path
+     Then the agent should return a nonexistent path error
 
   Scenario: browse directory
     Given the slycat agent is running
@@ -53,7 +53,7 @@ Feature: slycat-agent
   Scenario: get nonexistent file
     Given the slycat agent is running
      When retrieving a nonexistent file
-     Then the agent should return a nonexistent file error
+     Then the agent should return a nonexistent path error
 
   Scenario: get csv file
     Given the slycat agent is running
@@ -68,7 +68,7 @@ Feature: slycat-agent
   Scenario: get nonexistent image
     Given the slycat agent is running
      When retrieving a nonexistent image
-     Then the agent should return a nonexistent file error
+     Then the agent should return a nonexistent path error
 
   Scenario: get jpeg image
     Given the slycat agent is running
