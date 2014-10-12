@@ -30,6 +30,7 @@ the same client IP address is allowed to access the session.
 import cherrypy
 import datetime
 import hashlib
+import json
 import paramiko
 import socket
 import threading
@@ -54,14 +55,17 @@ class Session(object):
   ...   print session.username
 
   """
-  def __init__(self, username, hostname, ssh):
+  def __init__(self, username, hostname, client, ssh, stdin, stdout, stderr):
     now = datetime.datetime.utcnow()
     self._created = now
     self._accessed = now
     self._username = username
     self._hostname = hostname
+    self._client = client
     self._ssh = ssh
-    self._client = cherrypy.request.remote.ip
+    self._stdin = stdin
+    self._stdout = stdout
+    self._stderr = stderr
     self._lock = threading.Lock()
   def __enter__(self):
     self._lock.__enter__()
@@ -89,6 +93,18 @@ class Session(object):
     """Return a Paramiko ssh object."""
     return self._ssh
   @property
+  def stdin(self):
+    """Return the remote agent's stdin."""
+    return self._stdin
+  @property
+  def stdout(self):
+    """Return the remote agent's stdout."""
+    return self._stdout
+  @property
+  def stderr(self):
+    """Return the remote agent's stderr."""
+    return self._stderr
+  @property
   def client(self):
     """Return the IP address of the client that created the session."""
     return self._client
@@ -110,6 +126,11 @@ def create_session(hostname, username, password):
   sid : string
     A unique session identifier.
   """
+  if hostname not in cherrypy.request.app.config["slycat"]["remote-hosts"]:
+    raise cherrypy.HTTPError("400 Unknown remote host.")
+  if "agent" not in cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]:
+    raise cherrypy.HTTPError("400 No agent configured for remote host.")
+
   _start_session_monitor()
   cherrypy.log.error("Creating agent session for %s@%s from %s" % (username, hostname, cherrypy.request.remote.ip))
 
@@ -118,8 +139,11 @@ def create_session(hostname, username, password):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
+    stdin, stdout, stderr = ssh.exec_command(cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"])
+    startup = json.loads(stdout.readline())
+    cherrypy.log.error("Agent for %s@%s reported %s" % (username, hostname, startup))
     with session_cache_lock:
-      session_cache[sid] = Session(username, hostname, ssh)
+      session_cache[sid] = Session(username, hostname, cherrypy.request.remote.ip, ssh, stdin, stdout, stderr)
     return sid
   except paramiko.AuthenticationException as e:
     cherrypy.log.error("%s %s" % (type(e), str(e)))
