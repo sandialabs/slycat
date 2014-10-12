@@ -15,28 +15,105 @@ rights in this software.
   <body>
     <script type="text/javascript">
       var session = null;
+      create_session();
 
-      $.ajax(
+      function create_session()
       {
-        contentType : "application/json",
-        data: $.toJSON({
-          "hostname" : "localhost",
-          "username" : "slycat",
-          "password": "slycat",
-        }),
-        processData: false,
-        type : "POST",
-        url : "{{server-root}}agents",
-        success: function(result)
+        $.ajax(
         {
-          session = result["sid"];
-          document.querySelector("body").innerHTML += "<p>Created agent session " + session + "</p>";
-        },
-        error: function(request, status, reason_phrase)
+          contentType : "application/json",
+          data: $.toJSON({
+            "hostname" : "localhost",
+            "username" : "slycat",
+            "password": "slycat",
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents",
+          success: function(result)
+          {
+            session = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Created agent session " + session + "</p>";
+            browse();
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error creating agent: " + reason_phrase);
+          }
+        });
+      }
+
+      function browse()
+      {
+        $.ajax(
         {
-          window.alert("Error creating agent: " + reason_phrase);
-        }
-      });
+          contentType : "application/json",
+          data: $.toJSON({
+            "sid" : session,
+            "path" : "/home/slycat/src/slycat/artwork",
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents/browse",
+          success: function(result)
+          {
+            console.log("browse", result);
+            document.querySelector("body").innerHTML += "<p>Browse succeeded.</p>";
+            get_file();
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error browsing: " + reason_phrase);
+          }
+        });
+      }
+
+      function get_file()
+      {
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "sid" : session,
+            "path" : "/home/slycat/src/slycat/artwork/slycat-logo.jpg",
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents/file",
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>Get file succeeded.</p>";
+            get_image();
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error browsing: " + reason_phrase);
+          }
+        });
+      }
+
+      function get_image()
+      {
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "sid" : session,
+            "path" : "/home/slycat/src/slycat/artwork/slycat-logo.jpg",
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents/image",
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>Get image succeeded.</p>";
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error browsing: " + reason_phrase);
+          }
+        });
+      }
     </script>
   </body>
 </html>

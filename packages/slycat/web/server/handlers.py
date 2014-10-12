@@ -1095,101 +1095,45 @@ def post_agents():
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_agent_browse():
-  pass
-#  sid = cherrypy.request.json["sid"]
-#  path = cherrypy.request.json["path"]
-#  file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
-#  file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
-#  directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
-#  directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
-#
-#  with slycat.web.server.ssh.get_session(sid) as session:
-#    try:
-#      names = []
-#      sizes = []
-#      types = []
-#
-#      for attribute in sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename):
-#        filepath = os.path.join(path, attribute.filename)
-#        filetype = "d" if stat.S_ISDIR(attribute.st_mode) else "f"
-#
-#        if filetype == "d":
-#          if directory_reject is not None and directory_reject.search(filepath) is not None:
-#            if directory_allow is None or directory_allow.search(filepath) is None:
-#              continue
-#
-#        if filetype == "f":
-#          if file_reject is not None and file_reject.search(filepath) is not None:
-#            if file_allow is None or file_allow.search(filepath) is None:
-#              continue
-#
-#        names.append(attribute.filename)
-#        sizes.append(attribute.st_size)
-#        types.append(filetype)
-#
-#      response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
-#      return response
-#    except Exception as e:
-#      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
-#      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+  sid = cherrypy.request.json["sid"]
+  path = cherrypy.request.json["path"]
+  #file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
+  #file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
+  #directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
+  #directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
+
+  with slycat.web.server.agent.get_session(sid) as session:
+    session.stdin.write("%s\n" % json.dumps({"action":"browse", "path":path}))
+    session.stdin.flush()
+    return json.loads(session.stdout.readline())
 
 @cherrypy.tools.json_in(on = True)
 def post_agent_file():
-  pass
-#  #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
-#  #cherrypy.response.headers["content-type"] = accept
-#
-#  with slycat.web.server.ssh.get_session(sid) as session:
-#    try:
-#      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-#        raise cherrypy.HTTPError("400 Can't read directory.")
-#      return session.sftp.file(path).read()
-#    except Exception as e:
-#      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
-#      if str(e) == "Garbage packet received":
-#        raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
-#      if e.strerror == "No such file":
-#        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
-#        raise cherrypy.HTTPError("400 File not found.")
-#      if e.strerror == "Permission denied":
-#        # we know the file exists
-#        # we now know that the file is not available due to access controls
-#        remote_file = session.sftp.stat(path)
-#        permissions = remote_file.__str__().split()[0]
-#        directory = cherrypy.request.app.config["slycat"]["directory"]
-#        file_permissions = "%s %s %s" % (permissions, directory.username(remote_file.st_uid), directory.groupname(remote_file.st_gid))
-#        raise cherrypy.HTTPError("400 Permission denied. Current permissions: %s" % file_permissions)
-#      # catch all
-#      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+  sid = cherrypy.request.json["sid"]
+  path = cherrypy.request.json["path"]
+
+  with slycat.web.server.agent.get_session(sid) as session:
+    session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
+    session.stdin.flush()
+    metadata = json.loads(session.stdout.readline())
+    cherrypy.log.error("post_agent_file %s" % metadata)
+    content = session.stdout.read(metadata["size"])
+    cherrypy.response.headers["content-type"] = metadata["content-type"][0]
+    return content
 
 @cherrypy.tools.json_in(on = True)
 def post_agent_image():
-  pass
-#  #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
-#  #cherrypy.response.headers["content-type"] = accept
-#
-#  with slycat.web.server.ssh.get_session(sid) as session:
-#    try:
-#      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-#        raise cherrypy.HTTPError("400 Can't read directory.")
-#      return session.sftp.file(path).read()
-#    except Exception as e:
-#      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
-#      if str(e) == "Garbage packet received":
-#        raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
-#      if e.strerror == "No such file":
-#        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
-#        raise cherrypy.HTTPError("400 File not found.")
-#      if e.strerror == "Permission denied":
-#        # we know the file exists
-#        # we now know that the file is not available due to access controls
-#        remote_file = session.sftp.stat(path)
-#        permissions = remote_file.__str__().split()[0]
-#        directory = cherrypy.request.app.config["slycat"]["directory"]
-#        file_permissions = "%s %s %s" % (permissions, directory.username(remote_file.st_uid), directory.groupname(remote_file.st_gid))
-#        raise cherrypy.HTTPError("400 Permission denied. Current permissions: %s" % file_permissions)
-#      # catch all
-#      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+  sid = cherrypy.request.json["sid"]
+  path = cherrypy.request.json["path"]
+
+  with slycat.web.server.agent.get_session(sid) as session:
+    session.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":path}))
+    session.stdin.flush()
+    metadata = json.loads(session.stdout.readline())
+    cherrypy.log.error("post_agent_image %s" % metadata)
+    content = session.stdout.read(metadata["size"])
+    cherrypy.response.headers["content-type"] = metadata["content-type"][0]
+    return content
 
 def get_agent_test():
   return slycat.web.server.template.render("slycat-agent-test.html", {"slycat-server-root", cherrypy.request.app.config["slycat"]["server-root"]})
