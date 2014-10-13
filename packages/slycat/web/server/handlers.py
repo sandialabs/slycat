@@ -1125,9 +1125,23 @@ def post_agent_file():
 def post_agent_image():
   sid = cherrypy.request.json["sid"]
   path = cherrypy.request.json["path"]
+  content_type = cherrypy.request.json.get("content-type", None)
+  max_size = cherrypy.request.json.get("max-size", None)
+  max_width = cherrypy.request.json.get("max-width", None)
+  max_height = cherrypy.request.json.get("max-height", None)
+
+  command = {"action":"get-image", "path":path}
+  if content_type is not None:
+    command["content-type"] = content_type
+  if max_size is not None:
+    command["max-size"] = max_size
+  if max_width is not None:
+    command["max-width"] = max_width
+  if max_height is not None:
+    command["max-height"] = max_height
 
   with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":path}))
+    session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
     cherrypy.log.error("post_agent_image %s" % metadata)

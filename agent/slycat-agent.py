@@ -53,7 +53,7 @@ def get_image(command):
     raise Exception("Missing path.")
   path = command["path"]
   file_content_type = mimetypes.guess_type(path)
-  requested_content_type = command.get("content-type", file_content_type)
+  requested_content_type = command.get("content-type", file_content_type[0])
 
   # Optional fast path if the client hasn't requested anything that would alter the image contents:
   if "max-size" not in command and "max-width" not in command and "max-height" not in command and requested_content_type == file_content_type:
