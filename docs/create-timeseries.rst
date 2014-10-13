@@ -17,8 +17,8 @@ networking.
 Generate Timeseries Data
 ------------------------
 
-* For this example we'll ssh into the Slycat server, where the scripts
-  to be run are located.  Normally, you would run these scripts on the
+* For this example we'll ssh into the Slycat Docker container, where the scripts
+  to be run are already installed.  Normally, you would run these scripts on the
   system where your data was located::
 
   $ ssh slycat@<docker host ip> -p2222
