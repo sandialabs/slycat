@@ -422,42 +422,6 @@ $.widget("tracer_image.scatterplot", {
       var indices = self.options.indices;
       var filtered_indices = self.options.filtered_indices;
 
-      // Draw points ...
-/*
-      var square = self.datum_layer.selectAll(".datum")
-        .data(filtered_indices.filter(function(d){return self.options.images[d].length > 0;}), function(d, i){
-          return filtered_indices[i];
-        });
-      square.exit()
-        .remove();
-      square.enter()
-        .append("rect")
-        .attr("class", "datum")
-        .attr("width", 8)
-        .attr("height", 8)
-        .attr("data-index", function(d, i) { return d; })
-        .on("mouseover", function(d, i) {
-          self._schedule_hover(d);
-        })
-        .on("mouseout", function(d, i) {
-          self._cancel_hover();
-        })
-        .on("click", function(d,i) {
-          self.options.filtered_selection = [d];
-          self.options.scatterplot_obj.selected_simulations_changed([d]);
-          table.select_rows([d]);
-        });
-      square
-        .attr("x", function(d, i) { return self.x_scale( self.options.x[$.inArray(d, indices)] ) - 4; })
-        .attr("y", function(d, i) { return self.y_scale( self.options.y[$.inArray(d, indices)] ) - 4; })
-        .attr("fill", function(d, i) {
-          var value = v[$.inArray(d, indices)];
-          if(Number.isNaN(value))
-            return $("#color-switcher").colorswitcher("get_null_color");
-          else
-            return self.options.color(value);
-        });
-*/
       self.group.select(".time-paths").remove();
 
       var make_line = d3.svg.line();
@@ -468,16 +432,51 @@ $.widget("tracer_image.scatterplot", {
       var time_line_group = self.group.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
 
+      var get_closest_image_index = function(lower_node, upper_node){
+        //In a tie, go up.
+        var next_index,
+            next_args = [lower_node, upper_node];
+        if(lower_node['l'] < upper_node['l']){
+          next_index = upper_node['i'];
+          //TODO: Add weight to be the length of the path element.
+          next_args = [{l: lower_node['l'] + 1, i: lower_node['i'] - 1}, upper_node];
+        }
+        else {
+          next_index = lower_node['i'];
+          next_args = [lower_node, {l: upper_node['l'] + 1, i: upper_node['i' + 1]}];
+        }
+        
+
+        if(next_index >= 0 && next_index < self.options.images.length && self.options.images[next_index]) {
+          console.debug("Found " + self.options.images[next_index])
+          return next_index;
+        }
+
+        return get_closest_image_index.apply(this, next_args);
+      };
+
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
         .reduce(function(prev, next, index){
+          var find_closest = function(){ window.setTimeout(function(){
+          console.debug("Open closest");
+            var image_index = get_closest_image_index({l: 0, i: index-1}, {l: 0, i: index});
+            self.options.selection = [image_index];
+            self._schedule_update({render_selection:true});
+            self.element.trigger("selection-changed", [[image_index]]);
+            self._open_hover(image_index, true);
+          }, 50); };
           time_line_group.append("path")
             .attr("stroke", self.options.color(v[index]))
             .attr("stroke-width", 3)
-            .attr("d", function(){return make_line([prev, next])});
+            .attr("d", function(){return make_line([prev, next])})
+            .attr("index", index)
+            .on("click.find", find_closest);
           time_line_group.append("path")
             .attr("stroke", color_scale(index))
             .attr("stroke-width", 1)
-            .attr("d", function(){return make_line([prev, next])});
+            .attr("d", function(){return make_line([prev, next])})
+            .attr("index", index)
+            .on("click.find", find_closest);
           return next;
         });
     }
@@ -494,12 +493,11 @@ $.widget("tracer_image.scatterplot", {
       var y_scale = self.y_scale;
 
       self.selected_layer.selectAll(".selection").remove();
-/*
+      
       var square = self.selected_layer.selectAll(".selection")
         .data(filtered_selection, function(d, i){
           return d;
-        })
-        ;
+        });
       square.enter()
         .append("rect")
         .attr("class", "selection")
@@ -528,9 +526,7 @@ $.widget("tracer_image.scatterplot", {
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
-        })
-        ;
-        */
+        });
     }
 
     // Used to open an initial list of images at startup only
@@ -991,15 +987,13 @@ $.widget("tracer_image.scatterplot", {
         .attr("d", "M0,8 L8,0 M4,8 L8,4")
         .style("stroke", "#878787")
         .style("stroke-width", 1)
-        .style("pointer-events", "none")
-        ;
+        .style("pointer-events", "none");
 
       resize_handle.append("rect")
         .attr("class", "resize-handle-mousetarget")
         .attr("width", 10)
         .attr("height", 10)
-        .attr("fill", "transparent")
-        ;
+        .attr("fill", "transparent");
 
       // Create a close button ...
       var close_button = frame.append("g")
