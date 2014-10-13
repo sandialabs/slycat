@@ -70,6 +70,11 @@ Feature: slycat-agent
      When retrieving a nonexistent image
      Then the agent should return a nonexistent path error
 
+  Scenario: get image with unsupported content type
+    Given the slycat agent is running
+     When retrieving an image using an unsupported content type
+     Then the agent should return an unsupported content type error
+
   Scenario: get jpeg image
     Given the slycat agent is running
      When retrieving a jpeg file

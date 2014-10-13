@@ -133,6 +133,15 @@ def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":os.path.join(os.path.dirname(__file__), "foo.jpg")}))
   context.agent.stdin.flush()
 
+@when(u'retrieving an image using an unsupported content type')
+def step_impl(context):
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/tiff", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))
+  context.agent.stdin.flush()
+
+@then(u'the agent should return an unsupported content type error')
+def step_impl(context):
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Unsupported image type."})
+
 @when(u'retrieving a jpeg file')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/jpeg", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))}))

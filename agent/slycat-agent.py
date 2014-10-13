@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+import PIL.Image
 import cStringIO as StringIO
 import json
 import mimetypes
@@ -50,15 +51,20 @@ def get_file(command):
 def get_image(command):
   if "path" not in command:
     raise Exception("Missing path.")
-  content_type = command.get("content-type", "image/jpeg")
+  path = command["path"]
+  file_content_type = mimetypes.guess_type(path)
+  requested_content_type = command.get("content-type", file_content_type)
 
-  if content_type not in ["image/jpeg", "image/png"]:
+  # Optional fast path if the client hasn't requested anything that would alter the image contents:
+  if "max-size" not in command and "max-width" not in command and "max-height" not in command and requested_content_type == file_content_type:
+    get_file(command)
+
+  if requested_content_type not in ["image/jpeg", "image/png"]:
     raise Exception("Unsupported image type.")
 
   # Load the requested image.
   try:
-    import PIL.Image
-    image = PIL.Image.open(command["path"])
+    image = PIL.Image.open(path)
   except IOError as e:
     raise Exception(e.strerror + ".")
 
@@ -75,13 +81,13 @@ def get_image(command):
 
   # Save the image to the requested format.
   content = StringIO.StringIO()
-  if content_type == "image/jpeg":
+  if requested_content_type == "image/jpeg":
     image.save(content, "JPEG")
-  elif content_type == "image/png":
+  elif requested_content_type == "image/png":
     image.save(content, "PNG")
 
   # Send the results back to the caller.
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":command["path"], "content-type":[content_type, None], "size":len(content.getvalue())}), content.getvalue()))
+  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":path, "content-type":[requested_content_type, None], "size":len(content.getvalue())}), content.getvalue()))
   sys.stdout.flush()
 
 if __name__ == "__main__":
