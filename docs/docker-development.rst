@@ -71,7 +71,7 @@ Working Inside the Running Container
     username and password.
     
   * Add your username to the repository URL.  Then, you will only be prompted for your
-    github password whenr you push::
+    github password when you push::
 
       $ git remote set-url origin https://username@github.com/sandialabs/slycat
 
@@ -82,17 +82,29 @@ Working Inside the Running Container
 
 .. NOTE::
 
-  If you're working behind a proxy with an https:// URL, you'll need to let git know about it::
+  If you're working behind a proxy and using https:// for communication with github, you'll need to let git know about it::
   
     $ export https_proxy=http://your.proxy.name:80
+
+* If you need to install additional tools for development, use the `yum` and `pip` commands provided by the container to
+install them.
+
+.. NOTE::
+
+  If you're working behind a proxy, you'll need to add it to /etc/yum.conf to yum can download packages::
   
+    proxy=http://your.proxy.name:80
+    
+  And you'll need to specify the proxy when running pip::
+  
+    pip install --proxy=http://your.proxy.name:80 mypackage
 
 Working Outside the Running Container
 -------------------------------------
 
 Instead of working on the Slycat sources inside the running container, you may
 wish to edit them from the outside.  One advantage of this approach is that you
-can edit the sources using sophisticated graphical tools installed
+can edit the sources using more sophisticated graphical tools installed
 on your host system, instead of the minimalist command-line tools provided within
 the container.  Another benefit is that the setup you perform (configuring your git
 credentials, setting-up proxy information) is part of your host system and will be
