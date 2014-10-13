@@ -17,15 +17,15 @@ rights in this software.
       var hostname = "localhost";
       var username = "slycat";
       var password = "slycat";
-      var image_prefix = "/home/slycat/src/slycat/web-client/images/image-";
+      var image_prefix = "/home/slycat/src/slycat/web-client/images/small-";
       var image_suffix = ".jpg";
 
       var remote = null;
       var agent = null;
 
-      create_remote();
+      create_remote(0);
 
-      function create_remote()
+      function create_remote(index)
       {
         $.ajax(
         {
@@ -42,7 +42,7 @@ rights in this software.
           {
             remote = result["sid"];
             document.querySelector("body").innerHTML += "<p>Created remote session " + remote + "</p>";
-            remote_file(0);
+            remote_file(index);
           },
         });
       }
