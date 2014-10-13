@@ -41,33 +41,24 @@ Generate a CCA Model
   and "MPG", "Horsepower", and "Acceleration" as outputs. Uncheck
   "Origin".
 * Leave the "Scale inputs to unit variance." checkbox checked, and
-  click *Next*.
+  click *Run*.
 
 Wait for Model Completion
 -------------------------
 
-* The time to compute models can vary from seconds to days, depending
-  on the complexity of the model and the data. For this reason, Slycat
-  computes models in the background, allowing you to:
+The time to compute models can vary from seconds to hours, depending
+on the complexity of the model and the data. For this reason, Slycat
+computes models in the background, allowing you to:
 
   *  Continue interacting with existing projects and models.
   *  Create more than one model at a time.
-  *  Cancel computation for unwanted models.
 
-* To help you keep track of multiple models in varying states of
-  completion, Slycat provides a *Worker Pane* across the top of the
-  browser window, where each active model appears as an icon:
-
-  *  Models that are being computed will have a gear icon or a circular
-     progress bar icon.
-  *  Models that completed successfully will have a green check icon.
+This example is very small, so it should complete in a few seconds,
+and the browser will switch to a separate page containing the new model.
 
 View a CCA Model
 ----------------
 
-* Wait for the model icon in the Worker Pane to become a green
-  checkmark. The browser will switch to a separate page containing
-  the new model.
 * The bottom half of the model page features a table containing the raw
   data used to compute the model. Input variables are color-coded
   green, output variables are color-coded purple, and unused variables
