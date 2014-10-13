@@ -92,17 +92,17 @@ the remainder of these tutorials.
 Connect to Slycat with a Web Browser
 ------------------------------------
 
-* If you're running the Slycat container on a Linux host, you can open a web browser and point it to the Slycat server directly at https://localhost.
+Open a web browser and point it to the Slycat server at https://<docker host ip>
 
-* If you're running the Slycat container in a VM on a non-Linux host, you need to know the IP address of the VM::
+* If you're running the Slycat container on a Linux host, this will be `https://localhost`.
+
+* If you're running the Slycat container using boot2docker on another platform, this will be the IP address returned by::
 
     $ boot2docker ip
      
     The VM's Host only interface IP address is: 192.168.59.103
 
-Open a web browser and point it to the Slycat server at https://192.168.59.103
-... note that the IP address may be different on your machine, and that the `https://`
-is *required*.
+Note that the `https://` is *required*.
 
 * When prompted for a username and password, enter *slycat* for both.
 
