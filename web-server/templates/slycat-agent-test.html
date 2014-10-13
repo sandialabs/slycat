@@ -14,104 +14,121 @@ rights in this software.
   </head>
   <body>
     <script type="text/javascript">
-      var session = null;
-      create_session();
+      var hostname = "localhost";
+      var username = "slycat";
+      var password = "slycat";
+      var image_prefix = "/home/slycat/src/slycat/web-client/images/image-";
+      var image_suffix = ".jpg";
 
-      function create_session()
+      var remote = null;
+      var agent = null;
+
+      create_remote();
+
+      function create_remote()
       {
         $.ajax(
         {
           contentType : "application/json",
           data: $.toJSON({
-            "hostname" : "localhost",
-            "username" : "slycat",
-            "password": "slycat",
+            "hostname" : hostname,
+            "username" : username,
+            "password": password,
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}remote",
+          success: function(result)
+          {
+            remote = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Created remote session " + remote + "</p>";
+            remote_file(0);
+          },
+        });
+      }
+
+      function remote_file(index)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}remote/" + remote + "/file" + image_prefix + index + image_suffix,
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>Remote loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
+            if(index < 10)
+              remote_file(index + 1);
+            else
+              create_agent(index + 1);
+          },
+        });
+      }
+
+
+      function create_agent(index)
+      {
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "hostname" : hostname,
+            "username" : username,
+            "password": password,
           }),
           processData: false,
           type : "POST",
           url : "{{server-root}}agents",
           success: function(result)
           {
-            session = result["sid"];
-            document.querySelector("body").innerHTML += "<p>Created agent session " + session + "</p>";
-            browse();
+            agent = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Created agent session " + agent + "</p>";
+            agent_file(index);
           },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error creating agent: " + reason_phrase);
-          }
         });
       }
 
-      function browse()
+      function agent_file(index)
       {
         $.ajax(
         {
           contentType : "application/json",
           data: $.toJSON({
-            "sid" : session,
-            "path" : "/home/slycat/src/slycat/artwork",
-          }),
-          processData: false,
-          type : "POST",
-          url : "{{server-root}}agents/browse",
-          success: function(result)
-          {
-            console.log("browse", result);
-            document.querySelector("body").innerHTML += "<p>Browse succeeded.</p>";
-            get_file();
-          },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error browsing: " + reason_phrase);
-          }
-        });
-      }
-
-      function get_file()
-      {
-        $.ajax(
-        {
-          contentType : "application/json",
-          data: $.toJSON({
-            "sid" : session,
-            "path" : "/home/slycat/src/slycat/artwork/slycat-logo.jpg",
+            "sid" : agent,
+            "path" : image_prefix + index + image_suffix,
           }),
           processData: false,
           type : "POST",
           url : "{{server-root}}agents/file",
           success: function(result)
           {
-            document.querySelector("body").innerHTML += "<p>Get file succeeded.</p>";
-            get_image();
+            document.querySelector("body").innerHTML += "<p>Agent loaded file //" + hostname + image_prefix + index + image_suffix + ".</p>";
+            if(index < 20)
+              agent_file(index + 1);
+            else
+              agent_image(index + 1);
           },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error browsing: " + reason_phrase);
-          }
         });
       }
 
-      function get_image()
+      function agent_image(index)
       {
         $.ajax(
         {
           contentType : "application/json",
           data: $.toJSON({
-            "sid" : session,
-            "path" : "/home/slycat/src/slycat/artwork/slycat-logo.jpg",
+            "sid" : agent,
+            "path" : image_prefix + index + image_suffix,
+            "max-size" : "512",
           }),
           processData: false,
           type : "POST",
           url : "{{server-root}}agents/image",
           success: function(result)
           {
-            document.querySelector("body").innerHTML += "<p>Get image succeeded.</p>";
+            document.querySelector("body").innerHTML += "<p>Agent loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
+            if(index < 30)
+              agent_image(index + 1);
           },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error browsing: " + reason_phrase);
-          }
         });
       }
     </script>
