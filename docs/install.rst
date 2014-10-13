@@ -28,12 +28,18 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 
   $ boot2docker start
 
-* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy and paste the command into the terminal (note that the variable setting on your machine may differ from the following example)::
+* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy and paste the command into the terminal (note that the IP address or port when you run the command may differ from the following example)::
 
   $ export DOCKER_HOST=tcp://192.168.59.103:2375
 
 With Boot2Docker installed and running and the DOCKER_HOST environment variable set, the rest of the
 install instructions are platform-independent.
+
+Other Platforms
+~~~~~~~~~~~~~~~
+
+You will need to install the Docker engine on your host, following the instructions
+at https://docs.docker.com/installation/#installation
 
 .. NOTE::
 
@@ -59,16 +65,15 @@ install instructions are platform-independent.
 
     $ sudo vi /etc/ssl/cacert.pem
 
-  * Restart the Docker service and exit the VM::
+  * Restart the Docker service and exit the Boot2Docker VM::
 
     $ sudo /etc/init.d/docker restart
     $ exit
+    
+  * Restart the Boot2Docker VM, to ensure your modifications are flushed to disk::
+  
+    $ boot2docker restart
 
-Other Platforms
-~~~~~~~~~~~~~~~
-
-You will need to install the Docker engine on your host, following the instructions
-at https://docs.docker.com/installation/#installation
 
 Download the Image and Create a Container
 -----------------------------------------
