@@ -31,6 +31,10 @@ any programming language or library that supports HTTP requests.
    GET-Projects.rst
    GET-Remote-File.rst
    GET-User.rst
+   POST-Agents.rst
+   POST-Agent-Browse.rst
+   POST-Agent-File.rst
+   POST-Agent-Image.rst
    POST-Events.rst
    POST-Model-Finish.rst
    POST-Project-Bookmarks.rst
