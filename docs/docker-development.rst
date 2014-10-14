@@ -69,7 +69,7 @@ Working Inside the Running Container
 
   * Leave the repository URL unchanged, and push.  You will be prompted for your github
     username and password.
-    
+
   * Add your username to the repository URL.  Then, you will only be prompted for your
     github password when you push::
 
@@ -83,20 +83,21 @@ Working Inside the Running Container
 .. NOTE::
 
   If you're working behind a proxy and using https:// for communication with github, you'll need to let git know about it::
-  
+
     $ export https_proxy=http://your.proxy.name:80
 
-* If you need to install additional tools for development, use the `yum` and `pip` commands provided by the container to
-install them.
+* If you need to install additional tools for development, use the `yum` and
+  `pip` commands provided by the container to install them.
+
 
 .. NOTE::
 
   If you're working behind a proxy, you'll need to add it to /etc/yum.conf to yum can download packages::
-  
+
     proxy=http://your.proxy.name:80
-    
+
   And you'll need to specify the proxy when running pip::
-  
+
     pip install --proxy=http://your.proxy.name:80 mypackage
 
 Working Outside the Running Container
