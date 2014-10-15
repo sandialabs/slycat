@@ -215,7 +215,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+          if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
             self.columns[i].header.buttons[1].tooltip = "Set as x variable";
             self.columns[i].header.buttons[1].command = "x-on";
@@ -231,7 +231,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+          if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
             self.columns[i].header.buttons[2].tooltip = "Set as y variable";
             self.columns[i].header.buttons[2].command = "y-on";
@@ -381,7 +381,7 @@ $.widget("parameter_image.table",
     var self = this;
     for(var i in self.columns)
     {
-      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+      if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
         if( self.columns[i].id == self.options["x-variable"]){
           self.columns[i].header.buttons[1].cssClass = "icon-x-on";
           self.columns[i].header.buttons[1].tooltip = "Current x variable";
@@ -401,7 +401,7 @@ $.widget("parameter_image.table",
     var self = this;
     for(var i in self.columns)
     {
-      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+      if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
         if( self.columns[i].id == self.options["y-variable"]){
           self.columns[i].header.buttons[0].cssClass = "icon-y-on";
           self.columns[i].header.buttons[0].tooltip = "Current y variable";
