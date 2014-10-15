@@ -40,6 +40,26 @@ Feature: slycat-agent
      When browsing a directory
      Then the agent should return the directory information
 
+  Scenario: browse directory with file reject rule
+    Given the slycat agent is running
+     When browsing a directory with a file reject rule
+     Then the agent should return the directory information without the rejected files
+
+  Scenario: browse directory with file allow rule
+    Given the slycat agent is running
+     When browsing a directory with file reject and allow rules
+     Then the agent should return the directory information without the rejected files, with the allowed files
+
+  Scenario: browse directory with directory reject rule
+    Given the slycat agent is running
+     When browsing a directory with a directory reject rule
+     Then the agent should return the directory information without the rejected directories
+
+  Scenario: browse directory with directory allow rule
+    Given the slycat agent is running
+     When browsing a directory with directory reject and allow rules
+     Then the agent should return the directory information without the rejected directories, with the allowed directories
+
   Scenario: browse file
     Given the slycat agent is running
      When browsing a file

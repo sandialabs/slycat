@@ -1097,13 +1097,19 @@ def post_agents():
 def post_agent_browse():
   sid = cherrypy.request.json["sid"]
   path = cherrypy.request.json["path"]
-  #file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
-  #file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
-  #directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
-  #directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
+
+  command = {"action":"browse", "path":path}
+  if "file-reject" in cherrypy.request.json:
+    command["file-reject"] = cherrypy.request.json["file-reject"]
+  if "file-allow" in cherrypy.request.json:
+    command["file-allow"] = cherrypy.request.json["file-allow"]
+  if "directory-reject" in cherrypy.request.json:
+    command["directory-reject"] = cherrypy.request.json["directory-reject"]
+  if "directory-allow" in cherrypy.request.json:
+    command["directory-allow"] = cherrypy.request.json["directory-allow"]
 
   with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"browse", "path":path}))
+    session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     return json.loads(session.stdout.readline())
 

@@ -7,6 +7,7 @@ import cStringIO as StringIO
 import json
 import mimetypes
 import os
+import re
 import stat
 import sys
 
@@ -18,23 +19,44 @@ def browse(command):
     raise Exception("Path must be absolute.")
   if not os.path.exists(path):
     raise Exception("No such file or directory.")
+
+  file_reject = re.compile(command.get("file-reject")) if "file-reject" in command else None
+  file_allow = re.compile(command.get("file-allow")) if "file-allow" in command else None
+  directory_reject = re.compile(command.get("directory-reject")) if "directory-reject" in command else None
+  directory_allow = re.compile(command.get("directory-allow")) if "directory-allow" in command else None
+
+  if os.path.isdir(path):
+    names = sorted(os.listdir(path))
+  else:
+    path, name = os.path.split(path)
+    names = [name]
+
   listing = {
     "path":path,
     "names":[],
     "sizes":[],
     "types":[],
     }
-  if os.path.isdir(path):
-    for name in sorted(os.listdir(path)):
-      fstat = os.stat(os.path.join(path, name))
-      listing["names"].append(name)
-      listing["sizes"].append(fstat.st_size)
-      listing["types"].append("d" if stat.S_ISDIR(fstat.st_mode) else "f")
-  else:
-    fstat = os.stat(path)
-    listing["names"].append(os.path.basename(path))
+
+  for name in names:
+    fpath = os.path.join(path, name)
+    fstat = os.stat(fpath)
+    ftype = "d" if stat.S_ISDIR(fstat.st_mode) else "f"
+
+    if ftype == "d":
+      if directory_reject is not None and directory_reject.search(fpath) is not None:
+        if directory_allow is None or directory_allow.search(fpath) is None:
+          continue
+
+    if ftype == "f":
+      if file_reject is not None and file_reject.search(fpath) is not None:
+        if file_allow is None or file_allow.search(fpath) is None:
+          continue
+
+    listing["names"].append(name)
     listing["sizes"].append(fstat.st_size)
-    listing["types"].append("f")
+    listing["types"].append(ftype)
+
   sys.stdout.write("%s\n" % json.dumps(listing))
   sys.stdout.flush()
 
