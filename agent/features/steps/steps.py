@@ -84,7 +84,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with a file reject rule')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":".*[.]py$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected files')
@@ -95,7 +95,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with file reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":".*[.]py$", "file-allow":"hdf5[.]py$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "file-allow":"hdf5[.]py$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected files, with the allowed files')
@@ -106,7 +106,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with a directory reject rule')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":".*/t.*$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories')
@@ -117,7 +117,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with directory reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":".*/t.*$", "directory-allow":".*/timeseries$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "directory-allow":"timeseries$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories, with the allowed directories')
@@ -162,9 +162,7 @@ def step_impl(context):
   nose.tools.assert_equal(metadata["size"], 16)
   content = context.agent.stdout.read(metadata["size"])
   nose.tools.assert_equal(len(content), metadata["size"])
-  print type(content), len(content), content
   reference = "a,b\n1,2\n3,4\n5,6\n"
-  print type(reference), len(reference), reference
   nose.tools.assert_equal(content, reference)
 
 @when(u'retrieving an image without a path')
