@@ -23,6 +23,9 @@ $.widget("parameter_image.scatterplot",
     x : [],
     y : [],
     v : [],
+    x_string : false,
+    y_string : false,
+    v_string : false,
     images : [],
     selection : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
@@ -444,10 +447,26 @@ $.widget("parameter_image.scatterplot",
       var total_height = self.element.attr("height");
       var width = Math.min(self.element.attr("width"), self.element.attr("height"));
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var width_offset = (total_width - width) / 2;
+      var height_offset = (total_height - height) / 2;
+      var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border];
 
-      self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
+      if(!self.options.x_string)
+      {
+        self.x_scale = d3.scale.linear()
+          .domain([d3.min(self.options.x), d3.max(self.options.x)])
+          .range(range)
+          ;
+      }
+      else
+      {
+        var uniqueValues = d3.set(self.options.x).values();
+        self.x_scale = d3.scale.ordinal()
+          .domain(uniqueValues)
+          .rangePoints(range)
+          ;
+      }
+      
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")

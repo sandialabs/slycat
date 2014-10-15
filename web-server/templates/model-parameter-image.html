@@ -1109,7 +1109,7 @@ rights in this software.
               success : function(result)
               {
                 v = result;
-                $("#scatterplot").scatterplot("option", {v : v});
+                $("#scatterplot").scatterplot("option", {v_string: table_metadata["column-types"][variable]=="string", v : v});
               },
               error : artifact_missing
             });
@@ -1126,7 +1126,7 @@ rights in this software.
             attribute : variable,
             success : function(result)
             {
-              $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+              $("#scatterplot").scatterplot("option", {x_string: table_metadata["column-types"][variable]=="string", x: result, x_label:table_metadata["column-names"][variable]});
             },
             error : artifact_missing
           });
@@ -1142,7 +1142,7 @@ rights in this software.
             attribute : variable,
             success : function(result)
             {
-              $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+              $("#scatterplot").scatterplot("option", {y_string: table_metadata["column-types"][variable]=="string", y: result, y_label:table_metadata["column-names"][variable]});
             },
             error : artifact_missing
           });
