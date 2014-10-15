@@ -31,6 +31,11 @@ Syntax
 
   POST /agents/file
 
+Accepts
+^^^^^^^
+
+application/json
+
 Responses
 ---------
 

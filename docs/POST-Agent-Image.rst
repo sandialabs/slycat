@@ -33,13 +33,30 @@ Syntax
 
     POST /agents/image
 
+Accepts
+^^^^^^^
+
+application/json
+
+Parameters
+^^^^^^^^^^
+
+* sid - required remote agent session identifier.
+* path - required remote filesystem path.
+* content-type - optional image content type to return.  Currently limited to `image/jpeg` or `image/png`.  If the requested content type doesn't match the content type of the remote image, it will be converted.
+* max-size - optional maximum image size in pixels along either dimension.  Images larger than this size will be resized to fit, while maintaining their aspect ratio.
+* max-width - optional maximum image width.  Wider images will be resized to fit, while maintaining their aspect ratio.
+* max-height - optional maximum image height.  Taller images will be resized to fit, while maintaining their aspect ratio.
+
+Note that specifying max-size, max-width, max-height, or a content-type that doesn't match the type of the underlying file will reduce performance significantly as the agent must then decompress, load, and recompress the image in memory.
+
 Responses
 ---------
 
 Returns
 ^^^^^^^
 
-image/jpeg or image/png
+image/jpeg or image/png, depending on the type of the remote file and request content-type.
 
 Examples
 --------

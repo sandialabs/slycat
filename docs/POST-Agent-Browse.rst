@@ -22,7 +22,7 @@ Syntax
 
 ::
 
-    POST /agent/browse
+    POST /agents/browse
 
 Accepts
 ^^^^^^^
@@ -67,7 +67,7 @@ Sample Request
 
 ::
 
-  POST /remote/agent
+  POST /agents/browse
 
   {
     sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
