@@ -297,8 +297,8 @@ $.widget("parameter_image.scatterplot",
     // Remove hidden simulations and NaNs
     for(var i=length-1; i>=0; i--){
       var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-      var NaNValue = isNaN(x[i]) || isNaN(y[i]);
-      if(hidden || NaNValue) {
+
+      if(hidden || !self._validateValue(x[i]) || !self._validateValue(y[i])) {
         filtered_indices.splice(i, 1);
         var selectionIndex = $.inArray(indices[i], filtered_selection);
         if( selectionIndex > -1 ) {
@@ -309,6 +309,16 @@ $.widget("parameter_image.scatterplot",
 
     self.options.filtered_indices = filtered_indices;
     self.options.filtered_selection = filtered_selection;
+  },
+
+  _validateValue: function(value)
+  {
+    var self = this;
+    if(typeof value == "number" && !isNaN(value))
+      return true;
+    if(typeof value == "string" && value.trim() != "")
+      return true;
+    return false;
   },
 
   _setOption: function(key, value)
@@ -460,7 +470,7 @@ $.widget("parameter_image.scatterplot",
       }
       else
       {
-        var uniqueValues = d3.set(self.options.x).values();
+        var uniqueValues = d3.set(self.options.x).values().sort();
         self.x_scale = d3.scale.ordinal()
           .domain(uniqueValues)
           .rangePoints(range)
@@ -482,9 +492,24 @@ $.widget("parameter_image.scatterplot",
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
+      var range = [total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
+      if(!self.options.y_string)
+      {
+        self.y_scale = d3.scale.linear()
+          .domain([d3.min(self.options.y), d3.max(self.options.y)])
+          .range(range);
+      }
+      else
+      {
+        var uniqueValues = d3.set(self.options.y).values().sort();
+        self.y_scale = d3.scale.ordinal()
+          .domain(uniqueValues)
+          .rangePoints(range)
+          ;
+      }
+
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
@@ -570,7 +595,9 @@ $.widget("parameter_image.scatterplot",
         })
         ;
       circle
-        .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
+        .attr("cx", function(d, i) { 
+          return self.x_scale( x[d] ); 
+        })
         .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
         .attr("fill", function(d, i) {
           var value = v[d];
