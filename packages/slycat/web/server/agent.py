@@ -130,6 +130,8 @@ def create_session(hostname, username, password):
     raise cherrypy.HTTPError("400 Unknown remote host.")
   if "agent" not in cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]:
     raise cherrypy.HTTPError("400 No agent configured for remote host.")
+  if "command" not in cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]:
+    raise cherrypy.HTTPError("500 No startup command configured for remote agent.")
 
   _start_session_monitor()
   cherrypy.log.error("Creating agent session for %s@%s from %s" % (username, hostname, cherrypy.request.remote.ip))
@@ -139,7 +141,7 @@ def create_session(hostname, username, password):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
-    stdin, stdout, stderr = ssh.exec_command(cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"])
+    stdin, stdout, stderr = ssh.exec_command(cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]["command"])
     startup = json.loads(stdout.readline())
     cherrypy.log.error("Agent for %s@%s reported %s" % (username, hostname, startup))
     with session_cache_lock:
