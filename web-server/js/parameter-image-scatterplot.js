@@ -294,7 +294,7 @@ $.widget("parameter_image.scatterplot",
     var filtered_selection = selection.slice(0);
     var length = indices.length;
 
-    // Remove hidden simulations and NaNs
+    // Remove hidden simulations and NaNs and empty strings
     for(var i=length-1; i>=0; i--){
       var hidden = $.inArray(indices[i], hidden_simulations) > -1;
 

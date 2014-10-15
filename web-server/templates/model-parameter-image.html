@@ -695,6 +695,9 @@ rights in this software.
               x: x,
               y: y,
               v: v,
+              x_string: table_metadata["column-types"][x_index]=="string",
+              y_string: table_metadata["column-types"][y_index]=="string",
+              v_string: table_metadata["column-types"][v_index]=="string",
               images: images,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
@@ -1109,7 +1112,7 @@ rights in this software.
               success : function(result)
               {
                 v = result;
-                $("#scatterplot").scatterplot("option", {v_string: table_metadata["column-types"][variable]=="string", v : v});
+                $("#scatterplot").scatterplot("option", {v_string: table_metadata["column-types"][attribute]=="string", v : v});
               },
               error : artifact_missing
             });
