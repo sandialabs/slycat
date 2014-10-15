@@ -5,7 +5,7 @@ MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 RUN yum install -y make python-coverage python-nose python-sphinx python-sphinx_rtd_theme vim
 
 # Install Python modules for development.
-RUN pip install sphinxcontrib-napoleon
+RUN pip install behave sphinxcontrib-napoleon
 
 # Setup the Slycat user for development.
 USER slycat
