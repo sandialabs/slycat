@@ -78,9 +78,9 @@ def step_impl(context):
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
   nose.tools.assert_in("path", listing)
-  nose.tools.assert_equal(listing["names"], ["steps", "test.feature"])
+  nose.tools.assert_equal(listing["names"], ["slycat-agent.feature", "steps"])
   nose.tools.assert_in("sizes", listing)
-  nose.tools.assert_equal(listing["types"], ["d", "f"])
+  nose.tools.assert_equal(listing["types"], ["f", "d"])
 
 @when(u'browsing a directory with a file reject rule')
 def step_impl(context):
