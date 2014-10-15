@@ -103,11 +103,19 @@ to modify:
 * server.socket_port - TCP port number to listen on for requests.  Defaults to "8092" for development.  Typically set to "443" in production with SSL enabled, or "80" with SSL disabled.
 * server.ssl_certificate - Path to a certificate used for SSL encryption.  Leave blank to disable SSL.  Relative paths are relative to the slycat-web-server.py executable.
 * server.ssl_private_key - Path to a private key used for SSL encryption.  Leave blank to disable SSL.  Relative paths are relative to the slycat-web-server.py executable.
-  
+
 [slycat] Section
 ^^^^^^^^^^^^^^^^
 
 * allowed-markings - List of marking types that may be assigned to models.
-* plugins - List of filesystem plugin locations.  You may specify individual .py files to be loaded, or directories.  Every .py file will be loaded from a directory, but directories are *not* searched recursively.  Relative paths are relative to the slycat-web-server.py executable.
+* plugins - List of filesystem plugin locations.  You may specify individual .py files to be loaded, or directories.  Every .py file will be loaded from a directory, but directories are `not` searched recursively.  Relative paths are relative to the slycat-web-server.py executable.
+* remote-hosts - Dict mapping string hostnames to dicts containing host-specific configuration.  Each host dict may contain any of the following:
+
+    * agent - Optional dict configuring remote agent access on the host.  Some models require the Slycat Agent when accessing a remote host, and agents must be explicitly configured on a host to be used.  The agent dict must contain the following:
+
+        * command - Required string with the full remote command-line used to run the Slycat agent on the given host.  Typically `/full/path/to/python /full/path/to/slycat-agent.py`.  Since an agent session can be initiated by any user able to login to the remote host via ssh, you should specify required environment variables as part of this command, too (for example, with `env`).
+
+    * message - Optional string displayed by the user interface when this host is selected.  Use this to warn users of host limitations or suggest alternates.
+
 * server-admins - List of users allowed to administer the Slycat server.  Server administrators have full read/write access to all projects, regardless of project ACLs.
-  
+
