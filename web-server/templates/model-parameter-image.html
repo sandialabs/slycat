@@ -791,6 +791,7 @@ rights in this software.
             controls_ready = true;
             var numeric_variables = [];
             var axes_variables = [];
+            var color_variables = [];
 
             for(var i = 0; i < table_metadata["column-count"]; i++)
             {
@@ -801,6 +802,10 @@ rights in this software.
               if( image_columns.indexOf(i) == -1 && table_metadata["column-count"]-1 > i )
               {
                 axes_variables.push(i);
+              }
+              if( image_columns.indexOf(i) == -1 )
+              {
+                color_variables.push(i);
               }
             }
 
@@ -819,7 +824,7 @@ rights in this software.
               x_variables: axes_variables,
               y_variables: axes_variables,
               image_variables: image_columns,
-              color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
+              color_variables: color_variables,
               rating_variables : rating_columns,
               category_variables : category_columns,
               selection : selected_simulations,

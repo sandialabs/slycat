@@ -754,7 +754,24 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["update_legend_axis"])
     {
-      self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+      var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
+
+      if(!self.options.v_string)
+      {
+        self.legend_scale = d3.scale.linear()
+          .domain([d3.max(self.options.v), d3.min(self.options.v)])
+          .range(range)
+          ;
+      }
+      else
+      {
+        var uniqueValues = d3.set(self.options.v).values().sort().reverse();
+        self.legend_scale = d3.scale.ordinal()
+          .domain(uniqueValues)
+          .rangePoints(range)
+          ;
+      }
+
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
@@ -767,9 +784,6 @@ $.widget("parameter_image.scatterplot",
       console.log("updating v label.");
       self.legend_layer.selectAll(".label").remove();
 
-      // var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      // var x = -(y_axis_width+15);
-      // var y = self.svg.attr("height") / 2;
       var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
       var x = -15;
       var y = rectHeight/2;
