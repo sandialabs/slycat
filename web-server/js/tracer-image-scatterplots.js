@@ -433,9 +433,9 @@ $.widget("tracer_image.scatterplot", {
         .attr("class", "time-paths");
 
       var get_closest_image_index = function(lower_node, upper_node){
-        //In a tie, go up.
         var next_index,
             next_args = [lower_node, upper_node];
+        //In a tie, go up.
         if(lower_node['l'] < upper_node['l']){
           next_index = upper_node['i'];
           //TODO: Add weight to be the length of the path element.
@@ -455,11 +455,22 @@ $.widget("tracer_image.scatterplot", {
         return get_closest_image_index.apply(this, next_args);
       };
 
+      var offsets = this._get_plot_offsets();
+
       filtered_indices.map(function(d){return [self.x_scale(x[d]), self.y_scale(y[d])];})
         .reduce(function(prev, next, index){
-          var find_closest = function(){ window.setTimeout(function(){
-          console.debug("Open closest");
-            var image_index = get_closest_image_index({l: 0, i: index-1}, {l: 0, i: index});
+          // Get the endpoints in reverse order, we'll subtract the index later:
+          var endpoints = [next, prev];
+          var find_closest = function(){ 
+            var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
+            //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
+            var distance = endpoints.map(function(point){ return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]); });
+            console.debug(distance);
+            ////For reference, this is the more accurate way to do it:
+            //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
+          //Push this to the window's event thread, to avoid blocking user responses:
+          window.setTimeout(function(){
+            var image_index = get_closest_image_index.apply(this, distance.map(function(dist, j){return {l: dist, i: index - j}}));
             self.options.selection = [image_index];
             self._schedule_update({render_selection:true});
             self.element.trigger("selection-changed", [[image_index]]);
