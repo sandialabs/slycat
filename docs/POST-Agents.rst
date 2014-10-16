@@ -77,7 +77,7 @@ See Also
 --------
 
 -  :ref:`POST Agent Browse`
--  :ref:`POST Agent File`
--  :ref:`POST Agent Image`
+-  :ref:`GET Agent File`
+-  :ref:`GET Agent Image`
 
 

@@ -1,13 +1,14 @@
-.. _POST Agent File:
+.. _GET Agent File:
 
-POST Agent File
-===============
+GET Agent File
+==============
 Description
 -----------
 
-Uses an existing agent session to retrieve a remote file.  The
-session must have been created successfully using :ref:`POST Agents`.  The caller
-*must* supply the session id and the path on the remote filesystem to retrieve.
+Uses an existing agent session to retrieve a remote file.  The session must
+have been created successfully using :ref:`POST Agents`.  The caller *must*
+supply the session id and the absolute path on the remote filesystem to
+retrieve.
 
 If the session doesn't exist or has timed-out, the server returns `404`.
 
@@ -29,12 +30,7 @@ Syntax
 
 ::
 
-  POST /agents/file
-
-Accepts
-^^^^^^^
-
-application/json
+  GET /agents/(session)/file(path)
 
 Responses
 ---------
@@ -43,7 +39,7 @@ Returns
 ^^^^^^^
 
 The content of the file is returned in the body of the respone.  The MIME
-type of the response is determined by the requested file.
+type of the response is automatically determined using the filename.
 
 Examples
 --------
@@ -53,17 +49,12 @@ Sample Request
 
 ::
 
-  POST /agents/file
-
-  {
-    sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
-    path: "/home/fred/checklist.txt"
-  }
+  GET /agents/505d0e463d5ed4a32bb6b0fe9a000d36/file/home/fred/checklist.txt
 
 See Also
 --------
 
 * :ref:`POST Agents`
 * :ref:`POST Agent Browse`
-* :ref:`POST Agent Image`
+* :ref:`GET Agent Image`
 
