@@ -1164,7 +1164,7 @@ rights in this software.
         {
           var sid = session_cache[image_uri.hostname];
           image = document.createElement("img");
-          image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
+          image.src = "{{server-root}}remotes/" + sid + "/file" + image_uri.pathname;
           image.width = 100;
           image.style.position="absolute";
           image.style.left=10;

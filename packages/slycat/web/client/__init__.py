@@ -200,11 +200,11 @@ class connection(object):
     """Creates a new project, returning the project ID."""
     return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
-  def post_remote(self, hostname, username, password):
-    return self.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password}))["sid"]
+  def post_remotes(self, hostname, username, password):
+    return self.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password}))["sid"]
 
   def post_remote_browse(self, sid, path, file_reject=None, file_allow=None, directory_allow=None, directory_reject=None):
-    body = {"sid":sid, "path":path}
+    body = {}
     if file_reject is not None:
       body["file-reject"] = file_reject
     if file_allow is not None:
@@ -213,7 +213,7 @@ class connection(object):
       body["directory-reject"] = directory_reject
     if directory_allow is not None:
       body["directory-allow"] = directory_allow
-    return self.request("POST", "/remote/browse", headers={"content-type":"application/json"}, data=json.dumps(body))
+    return self.request("POST", "/remotes/" + sid + "/browse" + path, headers={"content-type":"application/json"}, data=json.dumps(body))
 
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))

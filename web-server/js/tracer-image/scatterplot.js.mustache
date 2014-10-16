@@ -230,14 +230,14 @@ ScatterPlot.prototype.display_image = function(uri) {
 
 ScatterPlot.prototype.image_url_for_session = function(file) {
   var sid = login.sid_for_file(file);
-  return "{{server-root}}remote/" + sid + "/image/file" + login.pathname_for_file(file);
+  return "{{server-root}}remotes/" + sid + "/file" + login.pathname_for_file(file);
 }
 
 ScatterPlot.prototype.load_image = function() {
   console.debug("inside load image");
   var sid = login.sid_for_file(file);
   image = document.createElement("img");
-  image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
+  image.src = "{{server-root}}remotes/" + sid + "/file" + image_uri.pathname;
   image.width = 100;
   image.style.position="absolute";
   image.style.left=10;

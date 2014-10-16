@@ -10,6 +10,7 @@ import hashlib
 import itertools
 import json
 import logging.handlers
+import mimetypes
 import numpy
 import os
 import Queue
@@ -1004,7 +1005,7 @@ def get_user(uid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_remote():
+def post_remotes():
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
   password = cherrypy.request.json["password"]
@@ -1012,9 +1013,7 @@ def post_remote():
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_remote_browse():
-  sid = cherrypy.request.json["sid"]
-  path = cherrypy.request.json["path"]
+def post_remote_browse(sid, path):
   file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
   file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
   directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
@@ -1050,16 +1049,9 @@ def post_remote_browse():
       cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
-# need the content type when requesting the image
-# GET /remote/:sid/image/file/:path vs /remote/:sid/file/:path
-def get_remote_file_as_image(sid, path):
-  accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
-  cherrypy.response.headers["content-type"] = accept
-  return get_remote_file(sid, path)
-
 def get_remote_file(sid, path):
-  #accept = cherrypy.lib.cptools.accept(["image/jpeg", "image/png"])
-  #cherrypy.response.headers["content-type"] = accept
+  content_type, encoding = mimetypes.guess_type(path, strict=False)
+  cherrypy.response.headers["content-type"] = content_type
 
   with slycat.web.server.ssh.get_session(sid) as session:
     try:

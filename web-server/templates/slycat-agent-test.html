@@ -37,7 +37,7 @@ rights in this software.
           }),
           processData: false,
           type : "POST",
-          url : "{{server-root}}remote",
+          url : "{{server-root}}remotes",
           success: function(result)
           {
             remote = result["sid"];
@@ -52,7 +52,7 @@ rights in this software.
         $.ajax(
         {
           type : "GET",
-          url : "{{server-root}}remote/" + remote + "/file" + image_prefix + index + image_suffix,
+          url : "{{server-root}}remotes/" + remote + "/file" + image_prefix + index + image_suffix,
           success: function(result)
           {
             document.querySelector("body").innerHTML += "<p>Remote loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";

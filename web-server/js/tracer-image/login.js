@@ -79,7 +79,7 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
         {
           async : true,
           type : "POST",
-          url : self.server_root + "remote",
+          url : self.server_root + "remotes",
           contentType : "application/json",
           data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
           processData : false,
