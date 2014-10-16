@@ -695,6 +695,9 @@ rights in this software.
               x: x,
               y: y,
               v: v,
+              x_string: table_metadata["column-types"][x_index]=="string",
+              y_string: table_metadata["column-types"][y_index]=="string",
+              v_string: table_metadata["column-types"][v_index]=="string",
               images: images,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
@@ -787,11 +790,18 @@ rights in this software.
           {
             controls_ready = true;
             var numeric_variables = [];
+            var axes_variables = [];
 
             for(var i = 0; i < table_metadata["column-count"]; i++)
             {
               if(table_metadata["column-types"][i] != 'string')
+              {
                 numeric_variables.push(i);
+              }
+              if( image_columns.indexOf(i) == -1 && table_metadata["column-count"]-1 > i )
+              {
+                axes_variables.push(i);
+              }
             }
 
             var color_variable = table_metadata["column-count"] - 1;
@@ -806,8 +816,8 @@ rights in this software.
               model_name: "{{name}}",
               aid : "data-table",
               metadata: table_metadata,
-              x_variables: numeric_variables.slice(0, numeric_variables.length-1),
-              y_variables: numeric_variables.slice(0, numeric_variables.length-1),
+              x_variables: axes_variables,
+              y_variables: axes_variables,
               image_variables: image_columns,
               color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
               rating_variables : rating_columns,
@@ -1102,7 +1112,7 @@ rights in this software.
               success : function(result)
               {
                 v = result;
-                $("#scatterplot").scatterplot("option", {v : v});
+                $("#scatterplot").scatterplot("option", {v_string: table_metadata["column-types"][attribute]=="string", v : v});
               },
               error : artifact_missing
             });
@@ -1119,7 +1129,7 @@ rights in this software.
             attribute : variable,
             success : function(result)
             {
-              $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+              $("#scatterplot").scatterplot("option", {x_string: table_metadata["column-types"][variable]=="string", x: result, x_label:table_metadata["column-names"][variable]});
             },
             error : artifact_missing
           });
@@ -1135,7 +1145,7 @@ rights in this software.
             attribute : variable,
             success : function(result)
             {
-              $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+              $("#scatterplot").scatterplot("option", {y_string: table_metadata["column-types"][variable]=="string", y: result, y_label:table_metadata["column-names"][variable]});
             },
             error : artifact_missing
           });

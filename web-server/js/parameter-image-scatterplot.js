@@ -23,6 +23,9 @@ $.widget("parameter_image.scatterplot",
     x : [],
     y : [],
     v : [],
+    x_string : false,
+    y_string : false,
+    v_string : false,
     images : [],
     selection : [],
     color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
@@ -188,20 +191,23 @@ $.widget("parameter_image.scatterplot",
       var x = self.options.x;
       var y = self.options.y;
       var count = x.length;
+      var x_coord, y_coord;
 
       if(self.state == "rubber-band-drag") // Rubber-band selection ...
       {
         self.selection_layer.selectAll(".rubberband").remove();
 
         if(self.start_drag && self.end_drag) {
-          var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
-          var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
-          var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
-          var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
+          var x1 = Math.min(self.start_drag[0], self.end_drag[0]);
+          var x2 = Math.max(self.start_drag[0], self.end_drag[0]);
+          var y1 = Math.min(self.start_drag[1], self.end_drag[1]);
+          var y2 = Math.max(self.start_drag[1], self.end_drag[1]);
 
           for(var i = 0; i != count; ++i)
           {
-            if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+            x_coord = self.x_scale(x[i]);
+            y_coord = self.y_scale(y[i]);
+            if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
             {
               var index = self.options.selection.indexOf(self.options.indices[i]);
               if(index == -1)
@@ -212,14 +218,16 @@ $.widget("parameter_image.scatterplot",
       }
       else // Pick selection ...
       {
-        var x1 = self.x_scale.invert(e.originalEvent.layerX - self.options.pick_distance);
-        var y1 = self.y_scale.invert(e.originalEvent.layerY + self.options.pick_distance);
-        var x2 = self.x_scale.invert(e.originalEvent.layerX + self.options.pick_distance);
-        var y2 = self.y_scale.invert(e.originalEvent.layerY - self.options.pick_distance);
+        var x1 = e.originalEvent.layerX - self.options.pick_distance;
+        var x2 = e.originalEvent.layerX + self.options.pick_distance;
+        var y1 = e.originalEvent.layerY - self.options.pick_distance;
+        var y2 = e.originalEvent.layerY + self.options.pick_distance;
 
         for(var i = 0; i != count; ++i)
         {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+          x_coord = self.x_scale(x[i]);
+          y_coord = self.y_scale(y[i]);
+          if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
           {
             // Update the list of selected points ...
             var index = self.options.selection.indexOf(self.options.indices[i]);
@@ -227,28 +235,6 @@ $.widget("parameter_image.scatterplot",
             {
               // Selecting a new point.
               self.options.selection.push(self.options.indices[i]);
-
-              // // If the URI for this point isn't already open, open it.
-              // var uri = self.options.images[self.options.indices[i]];
-              // if($(".open-image[data-uri='" + uri + "']").size() == 0)
-              // {
-              //   self._close_hover();
-
-              //   var width = self.svg.attr("width");
-              //   var height = self.svg.attr("height");
-              //   var open_width = Math.min(width, height) / 3;
-              //   var open_height = Math.min(width, height) / 3;
-
-              //   self._open_images([{
-              //     index : self.options.indices[i],
-              //     uri : self.options.images[self.options.indices[i]],
-              //     image_class : "open-image",
-              //     target_x : self.x_scale(self.options.x[i]),
-              //     target_y : self.y_scale(self.options.y[i]),
-              //     width: open_width,
-              //     height : open_height,
-              //     }]);
-              // }
             }
             else
             {
@@ -291,11 +277,11 @@ $.widget("parameter_image.scatterplot",
     var filtered_selection = selection.slice(0);
     var length = indices.length;
 
-    // Remove hidden simulations and NaNs
+    // Remove hidden simulations and NaNs and empty strings
     for(var i=length-1; i>=0; i--){
       var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-      var NaNValue = isNaN(x[i]) || isNaN(y[i]);
-      if(hidden || NaNValue) {
+
+      if(hidden || !self._validateValue(x[i]) || !self._validateValue(y[i])) {
         filtered_indices.splice(i, 1);
         var selectionIndex = $.inArray(indices[i], filtered_selection);
         if( selectionIndex > -1 ) {
@@ -306,6 +292,16 @@ $.widget("parameter_image.scatterplot",
 
     self.options.filtered_indices = filtered_indices;
     self.options.filtered_selection = filtered_selection;
+  },
+
+  _validateValue: function(value)
+  {
+    var self = this;
+    if(typeof value == "number" && !isNaN(value))
+      return true;
+    if(typeof value == "string" && value.trim() != "")
+      return true;
+    return false;
   },
 
   _setOption: function(key, value)
@@ -444,10 +440,26 @@ $.widget("parameter_image.scatterplot",
       var total_height = self.element.attr("height");
       var width = Math.min(self.element.attr("width"), self.element.attr("height"));
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var width_offset = (total_width - width) / 2
-      var height_offset = (total_height - height) / 2
+      var width_offset = (total_width - width) / 2;
+      var height_offset = (total_height - height) / 2;
+      var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border];
 
-      self.x_scale = d3.scale.linear().domain([d3.min(self.options.x), d3.max(self.options.x)]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
+      if(!self.options.x_string)
+      {
+        self.x_scale = d3.scale.linear()
+          .domain([d3.min(self.options.x), d3.max(self.options.x)])
+          .range(range)
+          ;
+      }
+      else
+      {
+        var uniqueValues = d3.set(self.options.x).values().sort();
+        self.x_scale = d3.scale.ordinal()
+          .domain(uniqueValues)
+          .rangePoints(range)
+          ;
+      }
+      
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
@@ -463,9 +475,24 @@ $.widget("parameter_image.scatterplot",
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
+      var range = [total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
+      if(!self.options.y_string)
+      {
+        self.y_scale = d3.scale.linear()
+          .domain([d3.min(self.options.y), d3.max(self.options.y)])
+          .range(range);
+      }
+      else
+      {
+        var uniqueValues = d3.set(self.options.y).values().sort();
+        self.y_scale = d3.scale.ordinal()
+          .domain(uniqueValues)
+          .rangePoints(range)
+          ;
+      }
+
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
@@ -551,7 +578,9 @@ $.widget("parameter_image.scatterplot",
         })
         ;
       circle
-        .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
+        .attr("cx", function(d, i) { 
+          return self.x_scale( x[d] ); 
+        })
         .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
         .attr("fill", function(d, i) {
           var value = v[d];
