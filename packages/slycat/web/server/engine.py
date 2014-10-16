@@ -11,6 +11,7 @@ import OpenSSL.SSL
 import os
 import pprint
 import pwd
+import re
 import sys
 
 import slycat.web.server.directory
@@ -32,6 +33,17 @@ class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
       os.fchown(file.fileno(), -1, self.gid)
     #print "log file:", file.name, self.uid, self.gid, os.fstat(file.fileno())
     return file
+
+class SessionIdFilter(logging.Filter):
+  """Python log filter to keep session ids out of logfiles."""
+  def __init__(self):
+    self._agent_pattern = re.compile("/agents/[^/]+/")
+    self._remote_pattern = re.compile("/remote/[^/]+/")
+
+  def filter(self, record):
+    record.msg = self._agent_pattern.sub("/agents/----/", record.msg)
+    record.msg = self._remote_pattern.sub("/remote/----/", record.msg)
+    return True
 
 def start(root_path, config_file):
 
@@ -57,6 +69,7 @@ def start(root_path, config_file):
   if isinstance(gid, basestring):
     gid = grp.getgrnam(gid).gr_gid
 
+  # Configure loggers.
   if configuration["slycat"]["access-log"] != "-":
     cherrypy.log.access_log.handlers = []
     if configuration["slycat"]["access-log"] is not None:
@@ -65,6 +78,8 @@ def start(root_path, config_file):
     cherrypy.log.error_log.handlers = []
     if configuration["slycat"]["error-log"] is not None:
       cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
+
+  cherrypy.log.access_log.handlers[-1].addFilter(SessionIdFilter())
 
   cherrypy.log("Server root path: %s" % root_path)
 
@@ -180,3 +195,4 @@ def start(root_path, config_file):
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)
+
