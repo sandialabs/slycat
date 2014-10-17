@@ -264,7 +264,10 @@ def step_impl(context, type):
 
 @then(u'the agent should return a {type} video')
 def step_impl(context, type):
-  result = json.loads(context.agent.stdout.readline())
-  nose.tools.assert_equal(result, {})
+  metadata = json.loads(context.agent.stdout.readline())
+  #nose.tools.assert_equal(metadata, {})
+  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+  with open("test.mp4", "wb") as file:
+    file.write(content.getvalue())
 
 

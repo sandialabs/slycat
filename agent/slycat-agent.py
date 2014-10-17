@@ -15,6 +15,7 @@ import re
 import stat
 import subprocess
 import sys
+import tempfile
 
 def browse(command):
   if "path" not in command:
@@ -129,19 +130,21 @@ def get_video(command, arguments):
   if command["content-type"] not in ["video/mp4", "video/webm"]:
     raise Exception("Unsupported video type.")
 
-  ffmpeg_command = [arguments.ffmpeg, "-y"]
-  ffmpeg_command += ["-c", "jpeg"]
-  for image in command["images"]:
-    ffmpeg_command.append("-i")
-    ffmpeg_command.append(image)
-  ffmpeg_command.append("-pix_fmt")
-  ffmpeg_command.append("yuv420p")
-  ffmpeg_command.append("test.mp4")
-  sys.stderr.write("%s\n" % " ".join(ffmpeg_command))
-  subprocess.call(ffmpeg_command)
+  fd, name = tempfile.mkstemp(suffix=".mp4")
+  os.close(fd)
 
-  content = StringIO.StringIO()
-  sys.stdout.write("%s\n" % json.dumps({"message":"Video retrieved.", "content-type":[command["content-type"], None], "size":len(content.getvalue())}))
+  ffmpeg_command = [arguments.ffmpeg, "-y"]
+  ffmpeg_command += ["-f", "concat"]
+  ffmpeg_command += ["-i", "-"]
+  ffmpeg_command.append(name)
+  ffmpeg = subprocess.Popen(ffmpeg_command, stdin=subprocess.PIPE)
+  for image in command["images"]:
+    ffmpeg.stdin.write("file %s\n" % image)
+  ffmpeg.communicate()
+
+  content = open(name, "rb").read()
+
+  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Video retrieved.", "content-type":[command["content-type"], None], "size":len(content)}), content))
   sys.stdout.flush()
 
 def main():
