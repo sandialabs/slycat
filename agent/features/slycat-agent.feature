@@ -48,7 +48,8 @@ Feature: slycat-agent
     Then the agent should return the directory information without the rejected directories, with the allowed directories
 
   Scenario: browse file
-    When browsing a file
+    Given a sample csv file
+    When browsing the csv file
     Then the agent should return the file information
 
   Scenario: get file without path
@@ -60,7 +61,8 @@ Feature: slycat-agent
     Then the agent should return a nonexistent path error
 
   Scenario: get csv file
-    When retrieving a csv file
+    Given a sample csv file
+    When retrieving the csv file
     Then the agent should return the csv file
 
   Scenario: get image without path
@@ -72,22 +74,37 @@ Feature: slycat-agent
     Then the agent should return a nonexistent path error
 
   Scenario: get image with unsupported content type
+    Given a sample jpeg image
     When retrieving an image using an unsupported content type
     Then the agent should return an unsupported content type error
 
   Scenario: get jpeg image
-    When retrieving a jpeg file
-    Then the agent should return the jpeg file
+    Given a sample jpeg image
+    When retrieving the jpeg image
+    Then the agent should return the jpeg image
 
   Scenario: get jpeg image with maximum width
-    When retrieving a jpeg file with maximum width
-    Then the agent should return the jpeg file with maximum width
+    Given a sample jpeg image
+    When retrieving the jpeg image with maximum width
+    Then the agent should return a jpeg image with maximum width
 
   Scenario: get jpeg image with maximum size along both dimensions
-    When retrieving a jpeg file with maximum size
-    Then the agent should return the jpeg file with maximum size
+    Given a sample jpeg image
+    When retrieving the jpeg image with maximum size
+    Then the agent should return a jpeg image with maximum size
 
   Scenario: get jpeg image converted to png image
-    When retrieving a jpeg file converted to a png file
-    Then the agent should return the converted png file
+    Given a sample jpeg image
+    When retrieving the jpeg image converted to a png image
+    Then the agent should return the converted png image
+
+  Scenario Outline: create video from sequence
+    Given a sequence of <source type> images
+    When creating a <target type> video
+    Then the agent should return a <target type> video
+
+    Examples:
+      | source type | target type |
+      | jpeg        | mp4         |
+      | jpeg        | webm        |
 
