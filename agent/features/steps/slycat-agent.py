@@ -1,8 +1,10 @@
+from __future__ import division
+
 import cStringIO as StringIO
 import json
 import nose.tools
 import os
-import PIL.Image
+import PIL.Image, PIL.ImageDraw
 import tempfile
 
 @when("an unparsable command is received")
@@ -247,14 +249,22 @@ def step_impl(context):
 
 @given(u'a sequence of {type} images')
 def step_impl(context, type):
-  assert False
+  def generate_image(type, index, count):
+    with tempfile.NamedTemporaryFile(suffix="." + type, delete=False) as file:
+      percent = index / (count - 1)
+      image = PIL.Image.new("RGB", (1024, 512), (int(255 * (1 - percent)), 0, int(255 * percent)))
+      image.save(file, type)
+      return file.name
+  context.image_sequence = [generate_image(type, index, 10) for index in range(10)]
 
 @when(u'creating a {type} video')
 def step_impl(context, type):
-  assert False
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-video", "content-type":"video/" + type, "images":context.image_sequence}))
+  context.agent.stdin.flush()
 
 @then(u'the agent should return a {type} video')
 def step_impl(context, type):
-  assert False
+  result = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(result, {})
 
 

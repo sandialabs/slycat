@@ -2,13 +2,18 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+# External dependencies
 import PIL.Image
+
+# Python standard library
+import argparse
 import cStringIO as StringIO
 import json
 import mimetypes
 import os
 import re
 import stat
+import subprocess
 import sys
 
 def browse(command):
@@ -112,7 +117,47 @@ def get_image(command):
   sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":path, "content-type":[requested_content_type, None], "size":len(content.getvalue())}), content.getvalue()))
   sys.stdout.flush()
 
-if __name__ == "__main__":
+def get_video(command, arguments):
+  if "images" not in command:
+    raise Exception("Missing images.")
+  if "content-type" not in command:
+    raise Exception("Missing content-type.")
+
+  if arguments.ffmpeg is None:
+    raise Exception("ffmpeg not configured.")
+
+  if command["content-type"] not in ["video/mp4", "video/webm"]:
+    raise Exception("Unsupported video type.")
+
+  ffmpeg_command = [arguments.ffmpeg, "-y"]
+  ffmpeg_command += ["-c", "jpeg"]
+  for image in command["images"]:
+    ffmpeg_command.append("-i")
+    ffmpeg_command.append(image)
+  ffmpeg_command.append("-pix_fmt")
+  ffmpeg_command.append("yuv420p")
+  ffmpeg_command.append("test.mp4")
+  sys.stderr.write("%s\n" % " ".join(ffmpeg_command))
+  subprocess.call(ffmpeg_command)
+
+  content = StringIO.StringIO()
+  sys.stdout.write("%s\n" % json.dumps({"message":"Video retrieved.", "content-type":[command["content-type"], None], "size":len(content.getvalue())}))
+  sys.stdout.flush()
+
+def main():
+  # Parse and sanity-check command-line arguments.
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--ffmpeg", default=None, help="Absolute path to an ffmpeg executable.")
+  arguments = parser.parse_args()
+
+  if arguments.ffmpeg is not None:
+    if not os.path.isabs(arguments.ffmpeg):
+      sys.stdout.write("%s\n" % json.dumps({"message":"--ffmpeg must specify an absolute path."}))
+      return
+    if not os.path.exists(arguments.ffmpeg):
+      sys.stdout.write("%s\n" % json.dumps({"message":"--ffmpeg must specify an existing file."}))
+      return
+
   # Setup some nonstandard MIME types.
   mimetypes.add_type("text/csv", ".csv", strict=False)
 
@@ -144,8 +189,13 @@ if __name__ == "__main__":
         get_file(command)
       elif action == "get-image":
         get_image(command)
+      elif action == "get-video":
+        get_video(command, arguments)
       else:
         raise Exception("Unknown command.")
     except Exception as e:
       sys.stdout.write("%s\n" % json.dumps({"message":e.message}))
       sys.stdout.flush()
+
+if __name__ == "__main__":
+  main()

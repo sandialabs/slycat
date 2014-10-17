@@ -106,5 +106,5 @@ Feature: slycat-agent
     Examples:
       | source type | target type |
       | jpeg        | mp4         |
-      | jpeg        | webm        |
+#      | jpeg        | webm        |
 
