@@ -38,11 +38,11 @@ class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
   def __init__(self):
     self._agent_pattern = re.compile("/agents/[^/]+/")
-    self._remote_pattern = re.compile("/remote/[^/]+/")
+    self._remote_pattern = re.compile("/remotes/[^/]+/")
 
   def filter(self, record):
     record.msg = self._agent_pattern.sub("/agents/----/", record.msg)
-    record.msg = self._remote_pattern.sub("/remote/----/", record.msg)
+    record.msg = self._remote_pattern.sub("/remotes/----/", record.msg)
     return True
 
 def start(root_path, config_file):
