@@ -1299,7 +1299,7 @@ $.widget("parameter_image.scatterplot",
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remote/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", self.options.server_root + "remotes/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1369,7 +1369,7 @@ $.widget("parameter_image.scatterplot",
           {
             async : true,
             type : "POST",
-            url : self.options.server_root + "remote",
+            url : self.options.server_root + "remotes",
             contentType : "application/json",
             data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
             processData : false,

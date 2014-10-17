@@ -458,17 +458,17 @@ def test_api():
 
   # Any logged-in user can create a remote session.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises(Exception):
-    project_outsider.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises(Exception):
-    project_reader.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises(Exception):
-    project_writer.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises(Exception):
-    project_admin.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
-  with nose.tools.assert_raises(Exception):
-    server_admin.request("POST", "/remote", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
+    server_outsider.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
+  with nose.tools.assert_raises_regexp(Exception, "^500"):
+    project_outsider.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
+  with nose.tools.assert_raises_regexp(Exception, "^500"):
+    project_reader.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
+  with nose.tools.assert_raises_regexp(Exception, "^500"):
+    project_writer.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
+  with nose.tools.assert_raises_regexp(Exception, "^500"):
+    project_admin.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
+  with nose.tools.assert_raises_regexp(Exception, "^500"):
+    server_admin.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"username":"nobody", "hostname":"nowhere.com", "password":"nothing"}))
 
   # Any logged-in user can request the home page.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
@@ -883,7 +883,7 @@ def test_json_hyperchunks():
 
 def test_remote_browse_filter():
   import pprint
-  sid = connection.post_remote("localhost", "slycat", "slycat")
+  sid = connection.post_remotes("localhost", "slycat", "slycat")
   directory = connection.post_remote_browse(sid, "/home/slycat/src/slycat/web-server")
   for name in ["plugins", "templates", "config.ini", "slycat-web-server.py", "web-server.pem"]:
     nose.tools.assert_in(name, directory["names"])

@@ -37,7 +37,7 @@ rights in this software.
           }),
           processData: false,
           type : "POST",
-          url : "{{server-root}}remote",
+          url : "{{server-root}}remotes",
           success: function(result)
           {
             remote = result["sid"];
@@ -52,7 +52,7 @@ rights in this software.
         $.ajax(
         {
           type : "GET",
-          url : "{{server-root}}remote/" + remote + "/file" + image_prefix + index + image_suffix,
+          url : "{{server-root}}remotes/" + remote + "/file" + image_prefix + index + image_suffix,
           success: function(result)
           {
             document.querySelector("body").innerHTML += "<p>Remote loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
@@ -91,14 +91,8 @@ rights in this software.
       {
         $.ajax(
         {
-          contentType : "application/json",
-          data: $.toJSON({
-            "sid" : agent,
-            "path" : image_prefix + index + image_suffix,
-          }),
-          processData: false,
-          type : "POST",
-          url : "{{server-root}}agents/file",
+          type : "GET",
+          url : "{{server-root}}agents/" + agent + "/file" + image_prefix + index + image_suffix,
           success: function(result)
           {
             document.querySelector("body").innerHTML += "<p>Agent loaded file //" + hostname + image_prefix + index + image_suffix + ".</p>";
@@ -114,15 +108,8 @@ rights in this software.
       {
         $.ajax(
         {
-          contentType : "application/json",
-          data: $.toJSON({
-            "sid" : agent,
-            "path" : image_prefix + index + image_suffix,
-            "max-size" : "512",
-          }),
-          processData: false,
-          type : "POST",
-          url : "{{server-root}}agents/image",
+          type : "GET",
+          url : "{{server-root}}agents/" + agent + "/image" + image_prefix + index + image_suffix + "?max-size=512",
           success: function(result)
           {
             document.querySelector("body").innerHTML += "<p>Agent loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";

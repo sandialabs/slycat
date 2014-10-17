@@ -11,6 +11,8 @@ any programming language or library that supports HTTP requests.
 
    DELETE-Model.rst
    DELETE-Project.rst
+   GET-Agent-File.rst
+   GET-Agent-Image.rst
    GET-Bookmark.rst
    GET-Home.rst
    GET-Model-Array-Attribute-Chunk.rst
@@ -19,35 +21,33 @@ any programming language or library that supports HTTP requests.
    GET-Model-Arrayset-Metadata.rst
    GET-Model-Arrayset.rst
    GET-Model-File.rst
-   GET-Model-Table-Chunk.rst
-   GET-Model-Table-Metadata.rst
-   GET-Model-Table-Sort-Rank.rst
-   GET-Model-Table-Sorted-Indices.rst
-   GET-Model-Table-Unsorted-Indices.rst
    GET-Model.rst
    GET-Models.rst
+   GET-Model-Table-Chunk.rst
+   GET-Model-Table-Metadata.rst
+   GET-Model-Table-Sorted-Indices.rst
+   GET-Model-Table-Sort-Rank.rst
+   GET-Model-Table-Unsorted-Indices.rst
    GET-Project-Models.rst
    GET-Project.rst
    GET-Projects.rst
    GET-Remote-File.rst
    GET-User.rst
-   POST-Agents.rst
    POST-Agent-Browse.rst
-   POST-Agent-File.rst
-   POST-Agent-Image.rst
+   POST-Agents.rst
    POST-Events.rst
    POST-Model-Finish.rst
    POST-Project-Bookmarks.rst
    POST-Project-Models.rst
    POST-Projects.rst
    POST-Remote-Browse.rst
-   POST-Remote.rst
+   POST-Remotes.rst
    PUT-Model-Arrayset-Array.rst
    PUT-Model-Arrayset-Data.rst
    PUT-Model-Arrayset.rst
    PUT-Model-File.rst
    PUT-Model-Inputs.rst
    PUT-Model-Parameter.rst
-   PUT-Model-Table.rst
    PUT-Model.rst
+   PUT-Model-Table.rst
    PUT-Project.rst

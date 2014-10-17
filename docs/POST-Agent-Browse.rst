@@ -22,7 +22,7 @@ Syntax
 
 ::
 
-    POST /agents/browse
+    POST /agents/(session)/browse(path)
 
 Accepts
 ^^^^^^^
@@ -32,8 +32,6 @@ application/json
 Parameters
 ^^^^^^^^^^
 
-* sid - required remote session identifier.
-* path - required remote filesystem path.
 * directory-reject - optional regular expression for filtering directories.
 * directory-allow - optional regular expression for retaining directories.
 * file-reject - optional regular expression for filtering files.
@@ -67,11 +65,10 @@ Sample Request
 
 ::
 
-  POST /agents/browse
+  POST /agents/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
 
   {
-    sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
-    path: "/home/fred"
+    file-reject: "[.]jpg$"
   }
 
 Sample Response
@@ -90,6 +87,6 @@ See Also
 --------
 
 * :ref:`POST Agents`
-* :ref:`POST Agent File`
-* :ref:`POST Agent Image`
+* :ref:`GET Agent File`
+* :ref:`GET Agent Image`
 

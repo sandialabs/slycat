@@ -11,6 +11,7 @@ import OpenSSL.SSL
 import os
 import pprint
 import pwd
+import re
 import sys
 
 import slycat.web.server.directory
@@ -32,6 +33,17 @@ class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
       os.fchown(file.fileno(), -1, self.gid)
     #print "log file:", file.name, self.uid, self.gid, os.fstat(file.fileno())
     return file
+
+class SessionIdFilter(logging.Filter):
+  """Python log filter to keep session ids out of logfiles."""
+  def __init__(self):
+    self._agent_pattern = re.compile("/agents/[^/]+/")
+    self._remote_pattern = re.compile("/remotes/[^/]+/")
+
+  def filter(self, record):
+    record.msg = self._agent_pattern.sub("/agents/----/", record.msg)
+    record.msg = self._remote_pattern.sub("/remotes/----/", record.msg)
+    return True
 
 def start(root_path, config_file):
 
@@ -57,6 +69,7 @@ def start(root_path, config_file):
   if isinstance(gid, basestring):
     gid = grp.getgrnam(gid).gr_gid
 
+  # Configure loggers.
   if configuration["slycat"]["access-log"] != "-":
     cherrypy.log.access_log.handlers = []
     if configuration["slycat"]["access-log"] is not None:
@@ -65,6 +78,8 @@ def start(root_path, config_file):
     cherrypy.log.error_log.handlers = []
     if configuration["slycat"]["error-log"] is not None:
       cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
+
+  cherrypy.log.access_log.handlers[-1].addFilter(SessionIdFilter())
 
   cherrypy.log("Server root path: %s" % root_path)
 
@@ -90,6 +105,8 @@ def start(root_path, config_file):
 
   dispatcher.connect("delete-model", "/models/:mid", slycat.web.server.handlers.delete_model, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("get-agent-file", "/agents/:sid/file{path:.*}", slycat.web.server.handlers.get_agent_file, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-agent-image", "/agents/:sid/image{path:.*}", slycat.web.server.handlers.get_agent_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-test", "/agent-test", slycat.web.server.handlers.get_agent_test, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-home", "/", slycat.web.server.handlers.get_home, conditions={"method" : ["GET"]})
@@ -108,20 +125,17 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-models", "/projects/:pid/models", slycat.web.server.handlers.get_project_models, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-remote-file-as-image", "/remote/:sid/image/file{path:.*}", slycat.web.server.handlers.get_remote_file_as_image, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-remote-file", "/remote/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remote-file", "/remotes/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
-  dispatcher.connect("post-agent-browse", "/agents/browse", slycat.web.server.handlers.post_agent_browse, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-agent-file", "/agents/file", slycat.web.server.handlers.post_agent_file, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-agent-image", "/agents/image", slycat.web.server.handlers.post_agent_image, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-agent-browse", "/agents/:sid/browse{path:.*}", slycat.web.server.handlers.post_agent_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-agents", "/agents", slycat.web.server.handlers.post_agents, conditions={"method" : ["POST"]})
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-remote-browse", "/remote/browse", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-remote", "/remote", slycat.web.server.handlers.post_remote, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-remote-browse", "/remotes/:sid/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:name/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:name/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset", "/models/:mid/arraysets/:name", slycat.web.server.handlers.put_model_arrayset, conditions={"method" : ["PUT"]})
@@ -180,3 +194,4 @@ def start(root_path, config_file):
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)
+
