@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ta<!DOCTYPE html>
 
 <!--
 Copyright 2013, Sandia Corporation. Under the terms of Contract
@@ -612,11 +612,11 @@ rights in this software.
               selected_simulations_changed(temp);
             });
 
-            // Changing the colormap updates the table ...
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
-            });
+            // // Changing the colormap updates the table ...
+            // $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            // {
+            //   $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
+            // });
 
             // Changing the table variable updates the scatterplot ...
             $("#table").bind("variable-selection-changed", function(event, selection)
@@ -1002,6 +1002,8 @@ rights in this software.
 
         function selected_colormap_changed(colormap)
         {
+          $("#table").table("option", "colormap", get_current_colormap());
+
           $.ajax(
           {
             type : "POST",
@@ -1012,13 +1014,34 @@ rights in this software.
 
         function selected_variable_changed(variable)
         {
+          v_index = Number(variable);
+          $("#table").table("option", "colormap", get_current_colormap());
+
           $.ajax(
           {
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
           });
           bookmarker.updateState({"variable-selection" : variable});
-          v_index = Number(variable);
+        }
+
+        function get_current_colormap()
+        {
+          // Check if numeric or string variable
+          var v_type = table_metadata["column-types"][v_index],
+              color_map
+              ;
+
+          if(v_type != "string")
+          {
+            color_map = $("#color-switcher").colorswitcher("get_color_map", undefined, table_statistics[v_index].min, table_statistics[v_index].max);
+          }
+          else
+          {
+            var uniqueValues = d3.set(v).values().sort();
+            color_map = $("#color-switcher").colorswitcher("get_color_map_ordinal", undefined, uniqueValues);;
+          }
+          return color_map;
         }
 
         function variable_sort_changed(variable, order)

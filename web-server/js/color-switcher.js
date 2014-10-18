@@ -188,16 +188,37 @@ $.widget("slycat.colorswitcher",
   // map may be polylinear, i.e. require more than two values for the domain.
   get_color_map: function(name, min, max)
   {
+    if(name === undefined)
+      name = this.options.colormap;
     if(min === undefined)
       min = 0.0;
     if(max === undefined)
       max = 1.0;
     var domain = []
-    var domain_scale = d3.scale.linear().domain([0, this.color_maps[name].colors.length]).range([min, max]);
+    var domain_scale = d3.scale.linear()
+      .domain([0, this.color_maps[name].colors.length-1])
+      .range([min, max]);
     for(var i in this.color_maps[name].colors)
       domain.push(domain_scale(i));
     result = d3.scale.linear().domain(domain).range(this.color_maps[name].colors);
     return result;
+  },
+
+  get_color_map_ordinal: function(name, values)
+  {
+    if(name === undefined)
+      name = this.options.colormap;
+    if(values === undefined)
+      values = [0, 1];
+
+    var tempOrdinal = d3.scale.ordinal().domain(values).rangePoints([0, 100], 0);
+    var tempColormap = this.get_color_map(name, 0, 100);
+    var rgbRange = [];
+    for(var i=0; i<values.length; i++)
+    {
+      rgbRange.push( tempColormap( tempOrdinal(values[i]) ) );
+    }
+    return d3.scale.ordinal().domain(values).range(rgbRange);
   },
 
   get_gradient_data: function(name)
