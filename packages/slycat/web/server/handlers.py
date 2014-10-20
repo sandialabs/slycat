@@ -1107,9 +1107,8 @@ def get_agent_file(sid, path):
     session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
-    #cherrypy.log.error("GET-Agent-File %s" % metadata)
     content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"][0]
+    cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
 
 def get_agent_image(sid, path, **kwargs):
@@ -1132,9 +1131,8 @@ def get_agent_image(sid, path, **kwargs):
     session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
-    #cherrypy.log.error("GET-Agent-Image %s" % metadata)
     content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"][0]
+    cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
 
 def get_agent_test():

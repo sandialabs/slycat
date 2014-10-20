@@ -5,7 +5,9 @@ import json
 import nose.tools
 import os
 import PIL.Image, PIL.ImageDraw
+import sys
 import tempfile
+import time
 
 @when("an unparsable command is received")
 def step_impl(context):
@@ -161,7 +163,7 @@ def step_impl(context):
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
   nose.tools.assert_equal(metadata["message"], "File retrieved.")
-  nose.tools.assert_equal(metadata["content-type"], ["text/csv", None])
+  nose.tools.assert_equal(metadata["content-type"], "text/csv")
   nose.tools.assert_equal(metadata["size"], 16)
   content = context.agent.stdout.read(metadata["size"])
   nose.tools.assert_equal(len(content), metadata["size"])
@@ -200,7 +202,7 @@ def step_impl(context):
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
   nose.tools.assert_equal(metadata["message"], "Image retrieved.")
-  nose.tools.assert_equal(metadata["content-type"], ["image/jpeg", None])
+  nose.tools.assert_equal(metadata["content-type"], "image/jpeg")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (290, 634))
@@ -214,7 +216,7 @@ def step_impl(context):
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
   nose.tools.assert_equal(metadata["message"], "Image retrieved.")
-  nose.tools.assert_equal(metadata["content-type"], ["image/jpeg", None])
+  nose.tools.assert_equal(metadata["content-type"], "image/jpeg")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (200, 437))
@@ -228,7 +230,7 @@ def step_impl(context):
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
   nose.tools.assert_equal(metadata["message"], "Image retrieved.")
-  nose.tools.assert_equal(metadata["content-type"], ["image/jpeg", None])
+  nose.tools.assert_equal(metadata["content-type"], "image/jpeg")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (228, 500))
@@ -242,7 +244,7 @@ def step_impl(context):
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
   nose.tools.assert_equal(metadata["message"], "Image retrieved.")
-  nose.tools.assert_equal(metadata["content-type"], ["image/png", None])
+  nose.tools.assert_equal(metadata["content-type"], "image/png")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (290, 634))
@@ -259,16 +261,31 @@ def step_impl(context, type):
 
 @when(u'creating a {type} video')
 def step_impl(context, type):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-video", "content-type":"video/" + type, "images":context.image_sequence}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"create-video", "content-type":"video/" + type, "images":context.image_sequence}))
   context.agent.stdin.flush()
+
+@then(u'the agent should return a video session id')
+def step_impl(context):
+  metadata = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(metadata["message"], "Creating video.")
+  nose.tools.assert_in("sid", metadata)
+  context.sid = metadata["sid"]
 
 @then(u'the agent should return a {type} video')
 def step_impl(context, type):
-  metadata = json.loads(context.agent.stdout.readline())
-  nose.tools.assert_equal(metadata["message"], "Video retrieved.")
-  nose.tools.assert_equal(metadata["content-type"], ["video/mp4", None])
-  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
-  with open("test.mp4", "wb") as file:
-    file.write(content.getvalue())
+  while True:
+    context.agent.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":context.sid}))
+    context.agent.stdin.flush()
 
+    metadata = json.loads(context.agent.stdout.readline())
+    if metadata["message"] == "Not ready.":
+      time.sleep(0.1)
+      continue
+
+    nose.tools.assert_equal(metadata["message"], "Video retrieved.")
+    nose.tools.assert_equal(metadata["content-type"], "video/mp4")
+    content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+    with open("test.mp4", "wb") as file:
+      file.write(content.getvalue())
+    break
 
