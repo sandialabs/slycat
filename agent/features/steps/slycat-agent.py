@@ -6,6 +6,7 @@ import nose.tools
 import os
 import PIL.Image, PIL.ImageDraw
 import sys
+import subprocess
 import tempfile
 import time
 
@@ -285,7 +286,18 @@ def step_impl(context, type):
     nose.tools.assert_equal(metadata["message"], "Video retrieved.")
     nose.tools.assert_equal(metadata["content-type"], "video/mp4")
     content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
-    with open("test.mp4", "wb") as file:
-      file.write(content.getvalue())
+
+    ffprobe = subprocess.Popen(["ffprobe", "-print_format", "json", "-show_format", "-show_streams", "-count_frames", "-"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = ffprobe.communicate(content.getvalue())
+    video_metadata = json.loads(stdout)
+    video_format = video_metadata["format"]
+    nose.tools.assert_equal(video_format["nb_streams"], 1)
+    nose.tools.assert_in("mp4", video_format["format_name"])
+    video_stream = video_metadata["streams"][0]
+    nose.tools.assert_equal(video_stream["codec_name"], "h264")
+    nose.tools.assert_equal(video_stream["codec_type"], "video")
+    nose.tools.assert_equal(video_stream["width"], 1024)
+    nose.tools.assert_equal(video_stream["height"], 512)
+    nose.tools.assert_equal(video_stream["nb_frames"], "10")
     break
 
