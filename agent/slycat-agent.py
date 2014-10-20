@@ -31,7 +31,7 @@ class VideoSession(threading.Thread):
     self._failed = None
   def run(self):
     try:
-      fd, path = tempfile.mkstemp(suffix=".mp4")
+      fd, path = tempfile.mkstemp(suffix=mimetypes.guess_extension(self._content_type, strict=False))
       os.close(fd)
       command = [self._ffmpeg, "-y"]
       command += ["-f", "concat"]
@@ -209,6 +209,7 @@ def main():
 
   # Setup some nonstandard MIME types.
   mimetypes.add_type("text/csv", ".csv", strict=False)
+  mimetypes.add_type("video/webm", ".webm", strict=False)
 
   # Let the caller know we're ready to handle commands.
   sys.stdout.write("%s\n" % json.dumps({"message":"Ready."}))
