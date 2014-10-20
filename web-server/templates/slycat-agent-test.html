@@ -129,11 +129,13 @@ rights in this software.
           images.push(image_prefix + i + image_suffix);
         console.log("images", images);
 
+        content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
+
         $.ajax(
         {
           contentType : "application/json",
           data: $.toJSON({
-            "content-type":"video/mp4",
+            "content-type":content_type,
             "images":images,
           }),
           processData: false,
