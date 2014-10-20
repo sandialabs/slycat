@@ -177,6 +177,21 @@ def create_video(command, arguments):
   sys.stdout.write("%s\n" % json.dumps({"message":"Creating video.", "sid":sid}))
   sys.stdout.flush()
 
+def video_status(command, arguments):
+  if "sid" not in command:
+    raise Exception("Missing session id.")
+  if command["sid"] not in session_cache:
+    raise Exception("Unknown session id.")
+  session = session_cache[command["sid"]]
+  if not isinstance(session, VideoSession):
+    raise Exception("Not a video session.")
+  if session.failed is not None:
+    raise Exception("Video creation failed: %s" % session.failed)
+  if session.result is None:
+    raise Exception("Not ready.")
+  sys.stdout.write("%s\n" % json.dumps({"message":"Video ready."}))
+  sys.stdout.flush()
+
 def get_video(command, arguments):
   if "sid" not in command:
     raise Exception("Missing session id.")
@@ -241,6 +256,8 @@ def main():
         get_image(command)
       elif action == "create-video":
         create_video(command, arguments)
+      elif action == "video-status":
+        video_status(command, arguments)
       elif action == "get-video":
         get_video(command, arguments)
       else:

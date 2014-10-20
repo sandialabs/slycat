@@ -277,7 +277,7 @@ def step_impl(context, type):
   nose.tools.assert_in(type, ["mp4", "webm"])
 
   while True:
-    context.agent.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":context.sid}))
+    context.agent.stdin.write("%s\n" % json.dumps({"action":"video-status", "sid":context.sid}))
     context.agent.stdin.flush()
 
     metadata = json.loads(context.agent.stdout.readline())
@@ -285,23 +285,29 @@ def step_impl(context, type):
       time.sleep(0.1)
       continue
 
-    nose.tools.assert_equal(metadata["message"], "Video retrieved.")
-    nose.tools.assert_equal(metadata["content-type"], "video/" + type)
-    content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
-
-    ffprobe = subprocess.Popen(["ffprobe", "-print_format", "json", "-show_format", "-show_streams", "-count_frames", "-"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = ffprobe.communicate(content.getvalue())
-    sys.stderr.write(stdout)
-    sys.stderr.flush()
-    video_metadata = json.loads(stdout)
-    video_format = video_metadata["format"]
-    nose.tools.assert_equal(video_format["nb_streams"], 1)
-    nose.tools.assert_in("mp4" if type == "mp4" else "webm", video_format["format_name"])
-    video_stream = video_metadata["streams"][0]
-    nose.tools.assert_equal(video_stream["codec_name"], "h264" if type == "mp4" else "vp8")
-    nose.tools.assert_equal(video_stream["codec_type"], "video")
-    nose.tools.assert_equal(video_stream["width"], 1024)
-    nose.tools.assert_equal(video_stream["height"], 512)
-    nose.tools.assert_equal(video_stream["nb_read_frames"], "10")
+    nose.tools.assert_equal(metadata, {"message":"Video ready."})
     break
+
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":context.sid}))
+  context.agent.stdin.flush()
+
+  metadata = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(metadata["message"], "Video retrieved.")
+  nose.tools.assert_equal(metadata["content-type"], "video/" + type)
+  content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
+
+  ffprobe = subprocess.Popen(["ffprobe", "-print_format", "json", "-show_format", "-show_streams", "-count_frames", "-"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout, stderr = ffprobe.communicate(content.getvalue())
+  sys.stderr.write(stdout)
+  sys.stderr.flush()
+  video_metadata = json.loads(stdout)
+  video_format = video_metadata["format"]
+  nose.tools.assert_equal(video_format["nb_streams"], 1)
+  nose.tools.assert_in("mp4" if type == "mp4" else "webm", video_format["format_name"])
+  video_stream = video_metadata["streams"][0]
+  nose.tools.assert_equal(video_stream["codec_name"], "h264" if type == "mp4" else "vp8")
+  nose.tools.assert_equal(video_stream["codec_type"], "video")
+  nose.tools.assert_equal(video_stream["width"], 1024)
+  nose.tools.assert_equal(video_stream["height"], 512)
+  nose.tools.assert_equal(video_stream["nb_read_frames"], "10")
 
