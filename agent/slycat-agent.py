@@ -137,10 +137,10 @@ def get_video(command, arguments):
   ffmpeg_command += ["-f", "concat"]
   ffmpeg_command += ["-i", "-"]
   ffmpeg_command.append(name)
-  ffmpeg = subprocess.Popen(ffmpeg_command, stdin=subprocess.PIPE)
+  ffmpeg = subprocess.Popen(ffmpeg_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   for image in command["images"]:
     ffmpeg.stdin.write("file %s\n" % image)
-  ffmpeg.communicate()
+  stdout, stderr = ffmpeg.communicate()
 
   content = open(name, "rb").read()
 
