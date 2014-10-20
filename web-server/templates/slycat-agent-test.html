@@ -17,11 +17,12 @@ rights in this software.
       var hostname = "localhost";
       var username = "slycat";
       var password = "slycat";
-      var image_prefix = "/home/slycat/src/slycat/web-client/images/small-";
+      var image_prefix = "/home/slycat/src/slycat/web-client/parameter-images/";
       var image_suffix = ".jpg";
 
       var remote = null;
       var agent = null;
+      var vsid = null;
 
       create_remote(0);
 
@@ -115,9 +116,59 @@ rights in this software.
             document.querySelector("body").innerHTML += "<p>Agent loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
             if(index < 30)
               agent_image(index + 1);
+            else
+              agent_video(index + 1);
           },
         });
       }
+
+      function agent_video(index)
+      {
+        var images = [];
+        for(var i = index; i < 100; ++i)
+          images.push(image_prefix + i + image_suffix);
+        console.log("images", images);
+
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "content-type":"video/mp4",
+            "images":images,
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents/" + agent + "/video",
+          success: function(result)
+          {
+            vsid = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Creating video " + vsid + "</p>";
+            query_video();
+          },
+        });
+      }
+
+      function query_video()
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}agents/" + agent + "/video/" + vsid + "/status",
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>" + result["message"] + "</p>";
+            if(result["message"] != "Video ready.")
+            {
+              setTimeout(query_video, 1000);
+            }
+            else
+            {
+              document.querySelector("body").innerHTML += "<video controls src='{{server-root}}agents/" + agent + "/video/" + vsid + "'>" + "</video>";
+            }
+          },
+        });
+      }
+
     </script>
   </body>
 </html>
