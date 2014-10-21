@@ -1105,7 +1105,7 @@ def post_agent_browse(sid, path):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_agent_video(sid):
+def post_agent_videos(sid):
   if "content-type" not in cherrypy.request.json:
     raise cherrypy.HTTPError("400 Missing content-type.")
   if "images" not in cherrypy.request.json:

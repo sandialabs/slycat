@@ -140,7 +140,7 @@ rights in this software.
           }),
           processData: false,
           type : "POST",
-          url : "{{server-root}}agents/" + agent + "/video",
+          url : "{{server-root}}agents/" + agent + "/videos",
           success: function(result)
           {
             vsid = result["sid"];
@@ -155,7 +155,7 @@ rights in this software.
         $.ajax(
         {
           type : "GET",
-          url : "{{server-root}}agents/" + agent + "/video/" + vsid + "/status",
+          url : "{{server-root}}agents/" + agent + "/videos/" + vsid + "/status",
           success: function(result)
           {
             document.querySelector("body").innerHTML += "<p>" + result["message"] + "</p>";
@@ -165,7 +165,7 @@ rights in this software.
             }
             else
             {
-              document.querySelector("body").innerHTML += "<video controls src='{{server-root}}agents/" + agent + "/video/" + vsid + "'>" + "</video>";
+              document.querySelector("body").innerHTML += "<video controls src='{{server-root}}agents/" + agent + "/videos/" + vsid + "'>" + "</video>";
             }
           },
         });
