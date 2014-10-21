@@ -43,6 +43,10 @@ if not os.path.exists(arguments.output_path):
 # default to the ID field for our inputs output
 arguments.inputs = arguments.inputs or [arguments.id_field] 
 
+# check to see if the #time_field is in the outputs and that it is the first one, if not, add it
+if len(arguments.outputs) or arguments.outputs[0] != arguments.time_field:
+  arguments.outputs = [arguments.time_field] + arguments.outputs
+
 def generate_hdf5_file(data, attrs, filename):
   dimensions = [{"name": "row", "end": data.shape[1]}]
   attributes = [{"name": attr, "type": "float64"} for attr in attrs]
