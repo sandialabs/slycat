@@ -77,7 +77,7 @@ generate_hdf5_file(inputs, arguments.inputs, "inputs.hdf5")
 ######################
 # timeseries-N.hdf5  #
 ######################
-# group into an outputs dict by each of our ids and transpose for direct right to hdf5
+# group into an outputs dict by each of our ids and transpose for direct write to hdf5
 outputs = {i: numpy.array([[row[k] for k in arguments.outputs] for row in rows if row[arguments.id_field] == i], dtype="float64").T for i in ids}
 
 # generate a timeseries-<i>.hdf5 file for each group of outputs by id field
