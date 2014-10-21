@@ -85,7 +85,11 @@ def generate_timeseries(job):
 
   return timeseries_index
 
-client = IPython.parallel.Client()
+try:
+  client = IPython.parallel.Client()
+except:
+  raise Exception("A running IPython parallel cluster is required to run this script.")
+
 workers = client.load_balanced_view()
 workers.map_sync(generate_timeseries, jobs)
 
