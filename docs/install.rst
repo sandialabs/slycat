@@ -71,10 +71,13 @@ at https://docs.docker.com/installation/#installation
 
     $ sudo /etc/init.d/docker restart
     $ exit
-    
-  * Restart the Boot2Docker VM, to ensure your modifications are flushed to disk::
-  
-    $ boot2docker restart
+
+.. WARNING::
+
+  * If your site uses SSL interception, you must append the certificate to
+    /etc/ssl/cacerts.pem and restart the Docker service before downloading
+    images every time you restart boot2docker.  We will provide updated
+    information when we have a process to install the certificate permanently.
 
 
 Download the Image and Create a Container
