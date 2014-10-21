@@ -28,6 +28,7 @@ import slycat.web.server.model.timeseries
 import slycat.web.server.model.tracer_image
 import slycat.web.server.plugin
 import slycat.web.server.ssh
+import slycat.web.server.streaming
 import slycat.web.server.template
 import stat
 import sys
@@ -1161,10 +1162,7 @@ def get_agent_video(sid, vsid):
     session.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
-    cherrypy.log.error("GET-Agent-Video %s" % metadata)
-    content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"]
-    return content
+    return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
 
 def get_agent_test():
   return slycat.web.server.template.render("slycat-agent-test.html", {"slycat-server-root", cherrypy.request.app.config["slycat"]["server-root"]})
