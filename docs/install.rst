@@ -28,11 +28,13 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 
   $ boot2docker start
 
-* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy and paste the command into the terminal (note that the IP address or port when you run the command may differ from the following example)::
+* Once the Boot2Docker VM begins running, a message on the console instructs you to set several environment variables.  Copy and paste the commands into the terminal (note that your configuration may look different)::
 
-  $ export DOCKER_HOST=tcp://192.168.59.103:2375
+  $ export DOCKER_CERT_PATH=/Users/fred/.boot2docker/certs/boot2docker-vm
+  $ export DOCKER_TLS_VERIFY=1
+  $ export DOCKER_HOST=tcp://192.168.59.103:2376
 
-With Boot2Docker installed and running and the DOCKER_HOST environment variable set, the rest of the
+With Boot2Docker installed and running and the DOCKER_* environment variables set, the rest of the
 install instructions are platform-independent.
 
 Other Platforms
