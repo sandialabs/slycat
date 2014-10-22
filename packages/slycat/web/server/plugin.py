@@ -78,6 +78,26 @@ class Manager(object):
           import traceback
           cherrypy.log.error(traceback.format_exc())
 
+  def register_marking(self, type, label, html):
+    """Register a new marking type.
+
+    Parameters
+    ----------
+    type : string, required
+      A unique identifier for the new marking type.
+    label : string, required
+      Human-readable string used to represent the marking in the user interface.
+    html : string, required
+      HTML representation used to display the marking.  The HTML should contain
+      everything needed to properly format the marking, including inline CSS
+      styles.
+    """
+    if type in self._markings:
+      raise Exception("Marking type '%s' has already been registered." % type)
+
+    self._markings[type] = {"label":label, "html":html}
+    cherrypy.log.error("Registered marking '%s'." % type)
+
   def register_model(self, type, finish, html):
     """Register a new model type.
 
@@ -135,28 +155,10 @@ class Manager(object):
       self._model_resources[type] = {}
     if resource in self._model_resources[type]:
       raise Exception("Resource '%s' has already been registered with model '%s'." % (resource, type))
+    if not os.path.isabs(path):
+      raise Exception("Resource '%s' must have an absolute path." % (resource))
     self._model_resources[type][resource] = path
     cherrypy.log.error("Registered model '%s' resource '%s' -> '%s'." % (type, resource, path))
-
-  def register_marking(self, type, label, html):
-    """Called when a plugin is loaded to register a new marking type.
-
-    Parameters
-    ----------
-    type : string, required
-      A unique identifier for the new marking type.
-    label : string, required
-      Human-readable string used to represent the marking in the user interface.
-    html : string, required
-      HTML representation used to display the marking.  The HTML should contain
-      everything needed to properly format the marking, including inline CSS
-      styles.
-    """
-    if type in self._markings:
-      raise Exception("Marking type '%s' has already been registered." % type)
-
-    self._markings[type] = {"label":label, "html":html}
-    cherrypy.log.error("Registered marking '%s'." % type)
 
 # Create a new, singleton instance of slycat.web.server.plugin.Manager()
 manager = Manager()
