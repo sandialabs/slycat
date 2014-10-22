@@ -19,5 +19,5 @@ web-client/*images
 web-client/*images.csv
 web-client/csv_to_hdf5_*
 .*.swp
-._.*
+._*
 .apdisk

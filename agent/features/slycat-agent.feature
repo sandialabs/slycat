@@ -101,7 +101,8 @@ Feature: slycat-agent
   Scenario Outline: create video from sequence
     Given a sequence of <source type> images
     When creating a <target type> video
-    Then the agent should return a <target type> video
+    Then the agent should return a video session id
+    And the agent should return a <target type> video
 
     Examples:
       | source type | target type |

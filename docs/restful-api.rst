@@ -13,6 +13,8 @@ any programming language or library that supports HTTP requests.
    DELETE-Project.rst
    GET-Agent-File.rst
    GET-Agent-Image.rst
+   GET-Agent-Video-Status.rst
+   GET-Agent-Video.rst
    GET-Bookmark.rst
    GET-Home.rst
    GET-Model-Array-Attribute-Chunk.rst
@@ -21,19 +23,20 @@ any programming language or library that supports HTTP requests.
    GET-Model-Arrayset-Metadata.rst
    GET-Model-Arrayset.rst
    GET-Model-File.rst
-   GET-Model.rst
-   GET-Models.rst
    GET-Model-Table-Chunk.rst
    GET-Model-Table-Metadata.rst
-   GET-Model-Table-Sorted-Indices.rst
    GET-Model-Table-Sort-Rank.rst
+   GET-Model-Table-Sorted-Indices.rst
    GET-Model-Table-Unsorted-Indices.rst
+   GET-Model.rst
+   GET-Models.rst
    GET-Project-Models.rst
    GET-Project.rst
    GET-Projects.rst
    GET-Remote-File.rst
    GET-User.rst
    POST-Agent-Browse.rst
+   POST-Agent-Video.rst
    POST-Agents.rst
    POST-Events.rst
    POST-Model-Finish.rst
@@ -48,6 +51,6 @@ any programming language or library that supports HTTP requests.
    PUT-Model-File.rst
    PUT-Model-Inputs.rst
    PUT-Model-Parameter.rst
-   PUT-Model.rst
    PUT-Model-Table.rst
+   PUT-Model.rst
    PUT-Project.rst
