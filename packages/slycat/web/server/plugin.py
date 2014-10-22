@@ -11,18 +11,12 @@ class Manager(object):
   """Manages server plugin modules."""
   def __init__(self):
     self._modules = []
+
+    self._markings = {}
     self._models = {}
     self._model_commands = {}
     self._model_resources = {}
-    self._markings = {}
-
-  def load(self, plugin_path):
-    if not os.path.isabs(plugin_path):
-      raise Exception("Plugin module path must be absolute: %s" % plugin_path)
-    if os.path.isdir(plugin_path):
-      self._load_directory(plugin_path)
-    else:
-      self._load_module(plugin_path)
+    self._model_wizards = {}
 
   def _load_directory(self, plugin_directory):
     try:
@@ -43,10 +37,28 @@ class Manager(object):
     except Exception as e:
       cherrypy.log.error(traceback.format_exc())
 
+  def load(self, plugin_path):
+    if not os.path.isabs(plugin_path):
+      raise Exception("Plugin module path must be absolute: %s" % plugin_path)
+    if os.path.isdir(plugin_path):
+      self._load_directory(plugin_path)
+    else:
+      self._load_module(plugin_path)
+
+  def register_plugins(self):
+    """Called to register plugins after all plugin modules have been loaded."""
+    for module in self._modules:
+      if hasattr(module, "register_slycat_plugin"):
+        try:
+          module.register_slycat_plugin(self)
+        except Exception as e:
+          import traceback
+          cherrypy.log.error(traceback.format_exc())
+
   @property
-  def modules(self):
-    """Returns a sequence of loaded plugin (literally: Python) modules."""
-    return self._modules
+  def markings(self):
+    """Returns a dict mapping marking types to marking data."""
+    return self._markings
 
   @property
   def models(self):
@@ -64,19 +76,9 @@ class Manager(object):
     return self._model_resources
 
   @property
-  def markings(self):
-    """Returns a dict mapping marking types to marking data."""
-    return self._markings
-
-  def register_plugins(self):
-    """Called to register plugins after all plugin modules have been loaded."""
-    for module in self._modules:
-      if hasattr(module, "register_slycat_plugin"):
-        try:
-          module.register_slycat_plugin(self)
-        except Exception as e:
-          import traceback
-          cherrypy.log.error(traceback.format_exc())
+  def model_wizards(self):
+    """Returns a dict of dicts mapping custom model-creation wizards to models."""
+    return self._model_wizards
 
   def register_marking(self, type, label, html):
     """Register a new marking type.
@@ -159,6 +161,25 @@ class Manager(object):
       raise Exception("Resource '%s' must have an absolute path." % (resource))
     self._model_resources[type][resource] = path
     cherrypy.log.error("Registered model '%s' resource '%s' -> '%s'." % (type, resource, path))
+
+  def register_model_wizard(self, type, wizard, label):
+    """Register a wizard for creating models of a given type.
+
+    Parameters
+    ----------
+    type : string, required
+      Unique identifier of an already-registered model type.
+    wizard : string, required
+      A unique identifier for the wizard.
+    label : string, required
+      Human-readable name for the wizard, displayed in the UI.
+    """
+    if type not in self._model_wizards:
+      self._model_wizards[type] = {}
+    if wizard in self._model_wizards[type]:
+      raise Exception("Wizard '%s' has already been registered with model '%s'." % (wizard, type))
+    self._model_wizards[type][wizard] = {"label":label}
+    cherrypy.log.error("Registered model '%s' wizard '%s' -> '%s'." % (type, wizard, label))
 
 # Create a new, singleton instance of slycat.web.server.plugin.Manager()
 manager = Manager()

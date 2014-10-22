@@ -108,7 +108,7 @@ to modify:
 ^^^^^^^^^^^^^^^^
 
 * allowed-markings - List of marking types that may be assigned to models.
-* plugins - List of filesystem plugin locations.  You may specify individual .py files to be loaded, or directories.  Every .py file will be loaded from a directory, but directories are `not` searched recursively.  Relative paths are relative to the slycat-web-server.py executable.
+* plugins - List of filesystem plugin locations.  You may specify individual .py files to be loaded, or directories.  If you specify a directory, every .py file in the directory will be loaded, but directories are `not` searched recursively.  Relative paths are relative to the slycat-web-server.py executable.
 * remote-hosts - Dict mapping string hostnames to dicts containing host-specific configuration.  Each host dict may contain any of the following:
 
     * agent - Optional dict configuring remote agent access on the host.  Some models require the Slycat Agent when accessing a remote host, and agents must be explicitly configured on a host to be used.  The agent dict must contain the following:
