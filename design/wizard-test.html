@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html ng-app="wizard-demo">
+  <head>
+    <title>Wizard Test</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+  </head>
+  <body ng-controller="wizard-controller">
+    <script type="text/javascript">
+      angular.module("wizard-demo", []).controller("wizard-controller", function($scope)
+      {
+        $scope.a = 1;
+        $scope.b = 2;
+        $scope.template = "";
+      });
+    </script>
+    <button ng-click="template='addition.html'">Addition</button>
+    <button ng-click="template='subtraction.html'">Subtraction</button>
+    <ng-include src="template"></ng-include>
+  </body>
+</html>
+
