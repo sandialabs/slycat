@@ -1225,6 +1225,10 @@ def get_configuration_markings():
   return slycat.web.server.plugin.manager.markings
 
 @cherrypy.tools.json_out(on = True)
+def get_configuration_model_wizards():
+  return slycat.web.server.plugin.manager.model_wizards
+
+@cherrypy.tools.json_out(on = True)
 def get_configuration_support_email():
   return cherrypy.request.app.config["slycat"]["support-email"]
 
