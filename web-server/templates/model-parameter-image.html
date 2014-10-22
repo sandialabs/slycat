@@ -920,6 +920,8 @@ rights in this software.
 
                     load_table_statistics([variable], function(){
                       $("#table").table("option", "statistics", table_statistics);
+                      var color_map = get_current_colormap();
+                      $("#table").table("option", "colormap", color_map);
                     });
                   },
                   error : function(jqXHR, textStatus, errorThrown)
