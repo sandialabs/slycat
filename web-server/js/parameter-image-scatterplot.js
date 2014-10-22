@@ -90,7 +90,6 @@ $.widget("parameter_image.scatterplot",
       update_y:true,
       update_x_label:true,
       update_y_label:true,
-      update_color_domain:true,
       render_data:true,
       render_selection:true,
       open_images:true,
@@ -348,7 +347,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "v")
     {
-      self._schedule_update({update_color_domain:true, render_data:true, render_selection:true, update_legend_axis:true});
+      self._schedule_update({render_data:true, render_selection:true, update_legend_axis:true});
     }
 
     else if(key == "images")
@@ -363,7 +362,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "color")
     {
-      self._schedule_update({update_color_domain:true, render_data:true, render_selection:true});
+      self._schedule_update({render_data:true, render_selection:true});
     }
 
     else if(key == "width")
@@ -392,6 +391,18 @@ $.widget("parameter_image.scatterplot",
       self._schedule_update({render_data:true, render_selection:true, });
       self._close_hidden_simulations();
     }
+  },
+
+  update_color_scale_and_v: function(data)
+  {
+    var self = this;
+    self.options.color = data.color;
+    self.options.v = data.v;
+    if(data.v_string !== undefined)
+    {
+      self.options.v_string = data.v_string;
+    }
+    self._schedule_update({render_data:true, render_selection:true, update_legend_axis:true});
   },
 
   _schedule_update: function(updates)
@@ -535,16 +546,16 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
-    if(self.updates["update_color_domain"])
-    {
-      var v_min = d3.min(self.options.v);
-      var v_max = d3.max(self.options.v);
-      var domain = []
-      var domain_scale = d3.scale.linear().domain([0, self.options.color.domain().length]).range([v_min, v_max]);
-      for(var i in self.options.color.domain())
-        domain.push(domain_scale(i));
-      self.options.color.domain(domain);
-    }
+    // if(self.updates["update_color_domain"])
+    // {
+    //   var v_min = d3.min(self.options.v);
+    //   var v_max = d3.max(self.options.v);
+    //   var domain = []
+    //   var domain_scale = d3.scale.linear().domain([0, self.options.color.domain().length]).range([v_min, v_max]);
+    //   for(var i in self.options.color.domain())
+    //     domain.push(domain_scale(i));
+    //   self.options.color.domain(domain);
+    // }
 
     if(self.updates["render_data"])
     {
@@ -584,7 +595,7 @@ $.widget("parameter_image.scatterplot",
         .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
         .attr("fill", function(d, i) {
           var value = v[d];
-          if(isNaN(value))
+          if(!self._validateValue(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
@@ -635,7 +646,7 @@ $.widget("parameter_image.scatterplot",
         })
         .attr("fill", function(d, i) {
           var value = v[d];
-          if(isNaN(value))
+          if(!self._validateValue(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
