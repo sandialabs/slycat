@@ -67,8 +67,8 @@ a plugin model consists of the following:
 * Future: a means for the model to reigster a "wizard" to be used for creating new instances
   of the model directly from the Slycat browser user interface.
 
-Here is a bare-minimum example of a do-nothing plugin (a copy of this code is already located
-at `slycat/web-server/plugins/hello_world_plugin.py`)::
+Here is a bare-minimum example of a do-nothing plugin (a copy of this code ships with Slycat, located
+at `slycat/web-server/plugins/hello_world_model.py`)::
 
   def register_slycat_plugin(context):
 
@@ -92,7 +92,7 @@ new `hello-world` model type.  Of course, you'll need some way to actually
 create an instance of a `hello-world` model.  The easiest way is to use a
 script to create `hello-world` model instances (again, the following code is already
 included in the Slycat source tree at
-`slycat/web-client/slycat-hellow-world--model.py`)::
+`slycat/web-client/slycat-hellow-world-model.py`)::
 
   import slycat.web.client
 
