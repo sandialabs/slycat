@@ -189,7 +189,12 @@ Model.prototype.get_data_column = function(index, success_callback) {
 }
 
 Model.prototype.get_image_column = function(index, success_callback) {
-  return this.get_column("loaded_images", index, success_callback || function(){});
+  $.ajax({
+    type : "GET",
+    url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" + index + "/chunk?ranges=0," + this.metadata["row-count"],
+    success: success_callback,
+    error: artifact_missing,
+  });
 }
 
 Model.prototype.get_image = function(column_index, image_index_range, success_callback){

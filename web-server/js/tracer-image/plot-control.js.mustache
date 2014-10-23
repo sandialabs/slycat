@@ -94,11 +94,16 @@ PlotControl.prototype.update_plot = function(variable) {
   var self = this;
   // TODO: either update plot.x_index, etc. here or strip out the index attributes from Scatterplot completely
   // since they become irrelevant once update is called
-  model.get_data_column(variable, function(result){
-      var option_to_update = {};
-      option_to_update[self.control_type] = result;
-      $(self.plot.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
-  });
+  var retrieve_func = model.get_data_column;
+  var callback = function(result){
+    var option_to_update = {};
+    option_to_update[self.control_type] = result;
+    $(self.plot.scatterplot_obj).scatterplot("option", option_to_update);
+  }
+  if(self.control_type == "images"){
+    retrieve_func = model.get_image_column;
+  }
+  retrieve_func.call(model, variable, callback);
 
   /* NOTE: color variable selection used to conditionally use index instead of fetching variable from server
      but the index was arbitrary and essentially just ended up representing time, which will usually be the first

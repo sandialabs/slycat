@@ -55,6 +55,8 @@ $.widget("tracer_image.scatterplot", {
         self.numeric_variables.push(i);
     }
 
+    self.image_variables = model.image_columns;
+
     // Setup the scatterplot ...
     self.group = d3.select(self.element.get(0));
 
@@ -62,6 +64,7 @@ $.widget("tracer_image.scatterplot", {
 
     self._build_x_axis();
     self._build_y_axis();
+    self._build_image_control();
     self._build_color_legend();
 
     self.datum_layer = self.group.append("g").attr("class", "datum-layer");
@@ -210,6 +213,22 @@ $.widget("tracer_image.scatterplot", {
     });
     self.color_control.build();
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
+  },
+
+  _build_image_control: function() {
+    var self = this;
+    self.image_control_layer = self.group.append("g").attr("class", "image-select");
+
+    self.image_control = new PlotControl({
+      plot: self.options.scatterplot_obj,
+      container: self.image_control_layer,
+      control_type: 'images',
+      label_text: 'Image set:',
+      variables: self.image_variables,
+      column_names: model.metadata['column-names'],
+    });
+    self.image_control.build();
+
   },
 
   _setOption: function(key, value)
