@@ -32,6 +32,24 @@ This explicit registration process allows a single plugin module to register as
 many new capabilities as it wishes, and the registration API will expand as we
 add new categories of plugin functionality to the server.
 
+.. NOTE::
+
+  You are free to register as many plugins or as many *types* of plugins as you
+  like within a plugin module - you are not obliged to split your code into one
+  plugin per module, unless you want to.  For example, if your organization
+  created a new type of model and had four in-house marking types, you could
+  put all five plugins in a single, organization-specific plugin module.
+
+.. WARNING::
+
+  Plugin module names must be globally unique - that is, the filename of all
+  plugin .py files loaded by the server must be unique.  Thus, you should not
+  use generic filenames like `plugin.py` for plugin modules. Instead,
+  incorporate functionality- or organziation-specific strings into the
+  filenames such as `bayesian-q-stat-model.py` or
+  `acme-dynamite-division-markings.py`.  All plugin modules shipped with Slycat
+  will have `slycat-` prepended to their filenames.
+
 Marking Plugins
 ---------------
 
@@ -121,3 +139,24 @@ connection to the Slycat server has been made and a project identified or create
 is created and immediately finished (causing the finish() function to be called).  When you view the
 new model in a web browser, it will display the "Hello, World!" content returned by the plugin's
 html() function.
+
+Model Command Plugins
+---------------------
+
+Typically, we assume that a Slycat model is created, artifacts are ingested,
+one-time server-side computation is performed (using a model plugin's
+`finish()` function), then a web browser provides interactive visualization of
+the results (using the output of a model plugin's `html()` function).
+
+However, in some circumstances this may be insufficient - a model may need to
+provide additional server-side computation under control by the client.  In
+this case, a model command plugin is used to register additional server-side
+`commands` that can be invoked by the client.
+
+Model Wizard Plugins
+--------------------
+
+To fully integrate a new model into Slycat, some way for users to create new
+instances of the model is required.  In the model plugin example above we assume
+that client-side scripts will be invoked by users to create model instances.  `Wizard`
+plugins provide a way for users to create new model instances using their web browsers.
