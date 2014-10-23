@@ -29,7 +29,7 @@ $.widget("parameter_image.table",
     "image-variable" : null,
     "x-variable" : null,
     "y-variable" : null,
-    colormap : null,
+    colorscale : null,
     hidden_simulations : [],
   },
 
@@ -44,8 +44,8 @@ $.widget("parameter_image.table",
 
     function cell_formatter(row, cell, value, columnDef, dataContext)
     {
-      if(columnDef.colormap)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      if(columnDef.colorscale)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
       else if(value==null)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
@@ -53,8 +53,8 @@ $.widget("parameter_image.table",
 
     function editable_cell_formatter(row, cell, value, columnDef, dataContext)
     {
-      if(columnDef.colormap)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      if(columnDef.colorscale)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
       else if(value==null)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
@@ -336,7 +336,7 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self._color_variables(value);
     }
-    else if(key == "colormap")
+    else if(key == "colorscale")
     {
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
@@ -441,14 +441,14 @@ $.widget("parameter_image.table",
     for(var i in columns)
     {
       var column = columns[i];
-      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
+      if(self.options.colorscale !== null && $.inArray(column.id, variables) != -1)
       {
-        column.colormap = self.options.colormap;
+        column.colorscale = self.options.colorscale;
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
       }
       else
       {
-        column.colormap = null;
+        column.colorscale = null;
         column.cssClass = column.cssClass.split(" ")[0];
       }
     }

@@ -28,7 +28,7 @@ $.widget("parameter_image.scatterplot",
     v_string : false,
     images : [],
     selection : [],
-    color : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     border : 25,
     server_root : "",
     open_images : [],
@@ -360,7 +360,7 @@ $.widget("parameter_image.scatterplot",
       self._schedule_update({render_selection:true});
     }
 
-    else if(key == "color")
+    else if(key == "colorscale")
     {
       self._schedule_update({render_data:true, render_selection:true});
     }
@@ -396,7 +396,7 @@ $.widget("parameter_image.scatterplot",
   update_color_scale_and_v: function(data)
   {
     var self = this;
-    self.options.color = data.color;
+    self.options.colorscale = data.colorscale;
     self.options.v = data.v;
     if(data.v_string !== undefined)
     {
@@ -546,17 +546,6 @@ $.widget("parameter_image.scatterplot",
         ;
     }
 
-    // if(self.updates["update_color_domain"])
-    // {
-    //   var v_min = d3.min(self.options.v);
-    //   var v_max = d3.max(self.options.v);
-    //   var domain = []
-    //   var domain_scale = d3.scale.linear().domain([0, self.options.color.domain().length]).range([v_min, v_max]);
-    //   for(var i in self.options.color.domain())
-    //     domain.push(domain_scale(i));
-    //   self.options.color.domain(domain);
-    // }
-
     if(self.updates["render_data"])
     {
       var x = self.options.x;
@@ -598,7 +587,7 @@ $.widget("parameter_image.scatterplot",
           if(!self._validateValue(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
-            return self.options.color(value);
+            return self.options.colorscale(value);
         })
         ;
     }
@@ -649,7 +638,7 @@ $.widget("parameter_image.scatterplot",
           if(!self._validateValue(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
-            return self.options.color(value);
+            return self.options.colorscale(value);
         })
         ;
     }
