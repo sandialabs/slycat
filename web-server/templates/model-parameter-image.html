@@ -489,7 +489,9 @@ rights in this software.
                 success : function(result)
                 {
                   v = result;
+                  update_current_colormap();
                   setup_scatterplot();
+                  setup_table();
                 },
                 error : artifact_missing
               });
@@ -554,7 +556,7 @@ rights in this software.
             };
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
 
             if("sort-variable" in bookmark && "sort-order" in bookmark)
             {
@@ -699,7 +701,7 @@ rights in this software.
               images: images,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
-              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+              color: $("#color-switcher").colorswitcher("get_color_scale", colormap),
               selection: selected_simulations,
               server_root: "{{server-root}}",
               open_images: open_images,
@@ -1039,12 +1041,12 @@ rights in this software.
 
           if(v_type != "string")
           {
-            color_map = $("#color-switcher").colorswitcher("get_color_map", undefined, table_statistics[v_index].min, table_statistics[v_index].max);
+            color_map = $("#color-switcher").colorswitcher("get_color_scale", undefined, table_statistics[v_index].min, table_statistics[v_index].max);
           }
           else
           {
             var uniqueValues = d3.set(v).values().sort();
-            color_map = $("#color-switcher").colorswitcher("get_color_map_ordinal", undefined, uniqueValues);;
+            color_map = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);;
           }
         }
 

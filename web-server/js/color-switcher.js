@@ -184,9 +184,8 @@ $.widget("slycat.colorswitcher",
   },
 
   // Return a d3 linear color scale with the current color map for the domain [0, 1].
-  // Callers should modify the domain to suit their own needs.  Note that a color
-  // map may be polylinear, i.e. require more than two values for the domain.
-  get_color_map: function(name, min, max)
+  // Callers should modify the domain by passing a min and max to suit their own needs.  
+  get_color_scale: function(name, min, max)
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -200,11 +199,18 @@ $.widget("slycat.colorswitcher",
       .range([min, max]);
     for(var i in this.color_maps[name].colors)
       domain.push(domain_scale(i));
-    result = d3.scale.linear().domain(domain).range(this.color_maps[name].colors);
-    return result;
+    return d3.scale.linear().domain(domain).range(this.color_maps[name].colors);
   },
 
-  get_color_map_ordinal: function(name, values)
+  // Deprecated
+  get_color_map: function(name, min, max)
+  {
+    return this.get_color_scale(name, min, max);
+  },
+
+  // Return a d3 ordinal color scale with the current color map for the domain [0, 1].
+  // Callers should modify the domain by passing an array of values to suit their own needs. 
+  get_color_scale_ordinal: function(name, values)
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -212,13 +218,19 @@ $.widget("slycat.colorswitcher",
       values = [0, 1];
 
     var tempOrdinal = d3.scale.ordinal().domain(values).rangePoints([0, 100], 0);
-    var tempColormap = this.get_color_map(name, 0, 100);
+    var tempColorscale = this.get_color_scale(name, 0, 100);
     var rgbRange = [];
     for(var i=0; i<values.length; i++)
     {
-      rgbRange.push( tempColormap( tempOrdinal(values[i]) ) );
+      rgbRange.push( tempColorscale( tempOrdinal(values[i]) ) );
     }
     return d3.scale.ordinal().domain(values).range(rgbRange);
+  },
+
+  // Deprecated
+  get_color_map_ordinal: function(name, values)
+  {
+    return this.get_color_scale_ordinal(name, values);
   },
 
   get_gradient_data: function(name)
@@ -241,7 +253,7 @@ $.widget("slycat.colorswitcher",
   {
     for(var j = 0; j != columns.length; ++j)
     {
-      columns[j].colorMap = this.get_color_map(name, columns[j].columnMin, columns[j].columnMax);
+      columns[j].colorMap = this.get_color_scale(name, columns[j].columnMin, columns[j].columnMax);
     }
   }
 });
