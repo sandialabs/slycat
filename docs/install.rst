@@ -20,7 +20,7 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 
 * Download the latest `Boot2Docker` installer from https://github.com/boot2docker/osx-installer/releases
 * Run the installer.  This will install a set of docker commands, plus a `VirtualBox <https://www.virtualbox.org>`_ hypervisor, if you don't already have one.
-* In a terminal window, initialize the Boot2Docker VM:
+* In a terminal window, initialize the Boot2Docker VM::
 
   $ boot2docker init
 
