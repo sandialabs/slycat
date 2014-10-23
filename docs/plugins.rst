@@ -14,22 +14,24 @@ General Functionality
 ---------------------
 
 A Slycat plugin is Python module (.py file) that is loaded into the Slycat Web
-Server at startup.  By default, the Slycat server searches for plugins in a
-directory named `plugins` in the same directory as the server itself.  This
-behavior can be customized by editing the `config.ini` file included with the
-Slycat source code, or by using a different config file altogether.  The
-`plugins` entry in `config.ini` is a Python list containing zero-or-more paths
-to plugin directories, so developers can append their own paths to the list to
-deploy their plugins.  Slycat will attempt to load every .py file it locates
-within every plugin directory specified in the configuration.
+Server at startup.  By default, Slycat ships with a set of plugins in the
+`web-server/plugins` directory.  The set of plugins to be loaded is specified
+in the server's `config.ini` file.  The `plugins` entry in `config.ini` is a
+Python list containing zero-or-more plugin locations, which may be individual
+.py files to be loaded, or directories.  Every .py file in a directory will be
+loaded as a plugin, but directories are not searched recursively. Relative
+paths are relative to the slycat-web-server.py executable.  Plugin developers
+can append their own paths to the list to deploy their plugins, by editing the
+`config.ini` file included with the Slycat source code, or by using a different
+config file altogether.
 
 Once all plugin modules have been loaded, the server will call the
-`slycat_register_plugin` function in each module, if it exists.  The function
-will be called with a `context` object as its sole argument.  The plugin code,
-in-turn, will use the API provided by the `context` object to register new
-functionality.  This explicit registration process allows a single plugin module
-to register as many new capabilities as it wishes, and the registration API
-will expand as we add new categories of plugin functionality to the server.
+`register_slycat_plugin` function in each module, if it exists.  The function
+will be called with a `context` object as its sole argument.  The plugin code
+uses the API provided by the `context` object to register new functionality.
+This explicit registration process allows a single plugin module to register as
+many new capabilities as it wishes, and the registration API will expand as we
+add new categories of plugin functionality to the server.
 
 Marking Plugins
 ---------------
