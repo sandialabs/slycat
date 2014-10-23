@@ -422,6 +422,17 @@ $.widget("tracer_image.scatterplot", {
       self.y_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',' + control_y_offset + ')');
     }
 
+    if(self.updates["update_y"] || self.updates["update_x"])
+    {
+      var total_height = self.options.height;
+      var height = Math.min(total_width, total_height);
+      var height_offset = (total_height - height) / 2;
+
+      var control_x_offset = Number(self.image_control.foreign_object.attr('width'));
+      var control_y_offset = (total_height - height_offset - self.options.border - 40);
+      self.image_control_layer.attr("transform", "translate(" + (self.y_axis_offset - control_x_offset - 30) + "," + (control_y_offset + 30) + ")");
+    }
+
     if(self.updates["update_color_domain"])
     {
       var v_min = d3.min(self.options.v);
