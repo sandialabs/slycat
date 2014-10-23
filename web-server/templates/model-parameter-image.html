@@ -477,7 +477,9 @@ rights in this software.
               v = new Float64Array(count);
               for(var i = 0; i != count; ++i)
                 v[i] = i;
+              update_current_colorscale();
               setup_scatterplot();
+              setup_table();
             }
             else
             {
@@ -520,7 +522,7 @@ rights in this software.
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
+          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && colorscale
             && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
             && (selected_simulations != null) && (hidden_simulations != null) )
           {
@@ -557,7 +559,7 @@ rights in this software.
             };
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            table_options.colorscale = $("#color-switcher").colorswitcher("get_color_scale", colormap);
+            table_options.colorscale = colorscale;
 
             if("sort-variable" in bookmark && "sort-order" in bookmark)
             {
@@ -673,7 +675,7 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images 
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images && colorscale
             && (selected_simulations != null) && (hidden_simulations != null))
           {
             scatterplot_ready = true;
@@ -702,7 +704,7 @@ rights in this software.
               images: images,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
-              colorscale: $("#color-switcher").colorswitcher("get_color_scale", colormap),
+              colorscale: colorscale,
               selection: selected_simulations,
               server_root: "{{server-root}}",
               open_images: open_images,
