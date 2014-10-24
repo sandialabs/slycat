@@ -55,6 +55,10 @@ ScatterPlot.prototype.setup_labels = function() {
   if("y-selection-" + this.plot_id in layout.bookmark) {
     this.y_index = Number(layout.bookmark["y-selection-" + this.plot_id]);
   }
+  if("images-selection-" + this.plot_id in layout.bookmark) {
+    var self = this;
+    model.get_image_column(layout.bookmark["images-selection-" + this.plot_id], function(result){ self.images = result; }, false);
+  }
 };
 
 ScatterPlot.prototype.setup_simulations = function() {

@@ -174,7 +174,7 @@ Model.prototype.metadata_loaded = function() {
           + plot.images_index + "/chunk?ranges=0," + model.metadata["row-count"],
         success : function(result)
         {
-          plot.images = result;
+          plot.images = plot.images || result;
         },
         error: artifact_missing
       }));

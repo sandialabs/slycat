@@ -40,7 +40,7 @@ PlotControl.prototype.build = function() {
       self.update_plot(this.value); //pass selected option index
     })
     .on('mousedown', function(){
-      event.stopPropagation();
+      d3.event.stopPropagation();
     });
 
   //build options for select
