@@ -4,11 +4,16 @@
     <meta charset="utf-8">
     <title>Wizard Test</title>
   </head>
-  <body>
+  <body ng-controller="wizard-controller">
     <table>
       <tr><td>a</td><td>{{a}}</td></tr>
       <tr><td>b</td><td>{{b}}</td></tr>
     </table>
+
+    <button ng-click="set_template('math')">Math Operations</button>
+    <button ng-click="set_template('string')">String Operations</button>
+    <ng-include src="template"></ng-include>
+
     <script src="require.js" data-main="main.js"></script>
   </body>
 </html>
