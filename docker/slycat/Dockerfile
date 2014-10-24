@@ -2,7 +2,8 @@ FROM sandialabs/sshd
 MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages.
-RUN yum install -y couchdb dejavu-serif-fonts git h5py numpy pyOpenSSL pystache python-couchdb python-devel python-ldap python-paramiko python-pillow python-pip python-requests python-routes python-zmq scipy
+RUN yum install -y --nogpgcheck http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+RUN yum install -y couchdb dejavu-serif-fonts ffmpeg git h5py numpy pyOpenSSL pystache python-couchdb python-devel python-ldap python-paramiko python-pillow python-pip python-requests python-routes python-zmq scipy
 
 # Install Python modules.
 RUN pip install cherrypy==3.2.6 ipython
