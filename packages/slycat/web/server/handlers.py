@@ -28,6 +28,7 @@ import slycat.web.server.model.timeseries
 import slycat.web.server.model.tracer_image
 import slycat.web.server.plugin
 import slycat.web.server.ssh
+import slycat.web.server.streaming
 import slycat.web.server.template
 import stat
 import sys
@@ -1102,14 +1103,27 @@ def post_agent_browse(sid, path):
     session.stdin.flush()
     return json.loads(session.stdout.readline())
 
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_agent_videos(sid):
+  if "content-type" not in cherrypy.request.json:
+    raise cherrypy.HTTPError("400 Missing content-type.")
+  if "images" not in cherrypy.request.json:
+    raise cherrypy.HTTPError("400 Missing images.")
+
+  command = {"action":"create-video", "content-type":cherrypy.request.json["content-type"], "images":cherrypy.request.json["images"]}
+  with slycat.web.server.agent.get_session(sid) as session:
+    session.stdin.write("%s\n" % json.dumps(command))
+    session.stdin.flush()
+    return json.loads(session.stdout.readline())
+
 def get_agent_file(sid, path):
   with slycat.web.server.agent.get_session(sid) as session:
     session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
-    #cherrypy.log.error("GET-Agent-File %s" % metadata)
     content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"][0]
+    cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
 
 def get_agent_image(sid, path, **kwargs):
@@ -1132,10 +1146,23 @@ def get_agent_image(sid, path, **kwargs):
     session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
-    #cherrypy.log.error("GET-Agent-Image %s" % metadata)
     content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"][0]
+    cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
+
+@cherrypy.tools.json_out(on = True)
+def get_agent_video_status(sid, vsid):
+  with slycat.web.server.agent.get_session(sid) as session:
+    session.stdin.write("%s\n" % json.dumps({"action":"video-status", "sid":vsid}))
+    session.stdin.flush()
+    return json.loads(session.stdout.readline())
+
+def get_agent_video(sid, vsid):
+  with slycat.web.server.agent.get_session(sid) as session:
+    session.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
+    session.stdin.flush()
+    metadata = json.loads(session.stdout.readline())
+    return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
 
 def get_agent_test():
   return slycat.web.server.template.render("slycat-agent-test.html", {"slycat-server-root", cherrypy.request.app.config["slycat"]["server-root"]})

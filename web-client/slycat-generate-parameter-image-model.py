@@ -9,9 +9,9 @@ import PIL.Image, PIL.ImageDraw, PIL.ImageFont
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--category-count", type=int, default=2, help="Category column count.  Default: %(default)s")
-parser.add_argument("--data-file", default="images.csv", help="Output data file.  Default: %(default)s")
+parser.add_argument("--data-file", default="parameter-images.csv", help="Output data file.  Default: %(default)s")
 parser.add_argument("--image-count", type=int, default=3, help="Image column count.  Default: %(default)s")
-parser.add_argument("--image-directory", default="images", help="Image directory.  Default: %(default)s")
+parser.add_argument("--image-directory", default="parameter-images", help="Image directory.  Default: %(default)s")
 parser.add_argument("--image-height", type=int, default=1000, help="Image height.  Default: %(default)s")
 parser.add_argument("--image-hostname", default="localhost", help="Image hostname.  Default: %(default)s")
 parser.add_argument("--image-width", type=int, default=1000, help="Image width.  Default: %(default)s")

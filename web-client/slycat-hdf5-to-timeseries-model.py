@@ -54,7 +54,10 @@ if arguments.model_description is None:
   arguments.model_description += "Cluster method: %s.\n" % arguments.cluster_type
   arguments.model_description += "Cluster distance metric: %s.\n" % arguments.cluster_metric
 
-pool = IPython.parallel.Client()
+try:
+  pool = IPython.parallel.Client()
+except:
+  raise Exception("A running IPython parallel cluster is required to run this script.")
 
 def mix(a, b, amount):
   return ((1.0 - amount) * a) + (amount * b)
