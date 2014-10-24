@@ -503,19 +503,28 @@ rights in this software.
             images_index = image_columns[0];
             if("images-selection" in bookmark)
               images_index = bookmark["images-selection"];
-            $.ajax(
+            setup_table();
+            if(image_columns.length > 0)
             {
-              type : "GET",
-              url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
-                + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
-              success : function(result)
+              $.ajax(
               {
-                images = result;
-                setup_scatterplot();
-                setup_table();
-              },
-              error: artifact_missing
-            });
+                type : "GET",
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
+                  + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+                success : function(result)
+                {
+                  images = result;
+                  setup_scatterplot();
+                  //setup_table();
+                },
+                error: artifact_missing
+              });
+            }
+            else
+            {
+              images = undefined;
+              setup_scatterplot();
+            }
             setup_controls();
           }
         }
@@ -523,7 +532,7 @@ rights in this software.
         function setup_table()
         {
           if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && colorscale
-            && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
+            && bookmark && (x_index != null) && (y_index != null) && (images_index !== null) 
             && (selected_simulations != null) && (hidden_simulations != null) )
           {
             table_ready = true;
@@ -675,7 +684,7 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images && colorscale
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
             && (selected_simulations != null) && (hidden_simulations != null))
           {
             scatterplot_ready = true;
@@ -777,9 +786,9 @@ rights in this software.
 
         function setup_controls()
         {
-          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
+          if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
             && (category_columns != null) && (x_index != null) && (y_index != null) 
-            && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null))
+            && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null))
           {
             controls_ready = true;
             var numeric_variables = [];

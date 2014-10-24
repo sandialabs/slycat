@@ -1404,6 +1404,10 @@ $.widget("parameter_image.scatterplot",
     if(self.state != "")
       return;
 
+    // Disable hovering when there are no image columns
+    if(self.options.images == null || self.options.images.length == 0)
+      return;
+
     // Disable hovering when there is no uri
     if(self.options.images[self.options.indices[image_index]].trim() == "")
       return;
