@@ -11,6 +11,10 @@ require.config(
   {
     "angular_amd" : ["angular"],
   },
-  deps:["app"],
+});
+
+require(["app"], function(app)
+{
+  angular.bootstrap(document, ["wizard-app"]);
 });
 

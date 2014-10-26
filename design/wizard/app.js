@@ -21,11 +21,10 @@ define(["angular"], function()
       {
         console.log("template " + template + ".js loaded");
         $scope.wizard_template = template + ".html";
+        $scope.$apply();
       });
     }
   });
-
-  angular.bootstrap(document, ["wizard-app"]);
 
   return app;
 });
