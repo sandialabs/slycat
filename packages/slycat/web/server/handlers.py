@@ -346,6 +346,8 @@ def get_model(mid, **kwargs):
       return slycat.web.server.template.render("model-tracer-image.html", context)
 
     if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
+      context = {}
+      context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
       context["slycat-plugin-content"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
 

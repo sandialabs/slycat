@@ -9,25 +9,25 @@ rights in this software.
 <html>
   <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="{{server-root}}style/slycat.css" type="text/css">
-    <link rel="stylesheet" href="{{server-root}}style/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css">
+    <link rel="stylesheet" href="{{slycat-server-root}}style/slycat.css" type="text/css">
+    <link rel="stylesheet" href="{{slycat-server-root}}style/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css">
     {{#stylesheets}}
-    <link rel="stylesheet" href="{{server-root}}{{path}}" type="text/css">
+    <link rel="stylesheet" href="{{slycat-server-root}}{{path}}" type="text/css">
     {{/stylesheets}}
-    <script type="text/javascript" src="{{server-root}}js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-2.1.1.min.js"></script>
     <!-- Uncompressed, development version of jQuery Migrate -->
-    <script type="text/javascript" src="{{server-root}}js/jquery-migrate-1.2.1.js"></script>
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-migrate-1.2.1.js"></script>
     <!-- Compressed, production version of jQuery Migrate. Use this instead of the one above when deploying. -->
-    <!-- <script type="text/javascript" src="{{server-root}}js/jquery-migrate-1.2.1.min.js"></script> -->
-    <script type="text/javascript" src="{{server-root}}js/jquery.json-2.4.min.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/jquery-ui-1.10.4.custom.min.js"></script>
+    <!-- <script type="text/javascript" src="{{slycat-server-root}}js/jquery-migrate-1.2.1.min.js"></script> -->
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery.json-2.4.min.js"></script>
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-ui-1.10.4.custom.min.js"></script>
     <title>{{name}} - Slycat Model</title>
   </head>
 
   <body>
-    <script src="{{server-root}}js/jquery.knob.js"></script>
-    <script src="{{server-root}}js/jquery.qtip.min.js"></script>
-    <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.min.css" />
+    <script src="{{slycat-server-root}}js/jquery.knob.js"></script>
+    <script src="{{slycat-server-root}}js/jquery.qtip.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{slycat-server-root}}style/jquery.qtip.min.css" />
     <div id="slycat-workers">
       <div id="slycat-workers-close" style="display: none;">Close</div>
       <div id="slycat-workers-container" class="slycat-workers-compact">
@@ -37,8 +37,8 @@ rights in this software.
 
     <div id="slycat-header">
       <div class="slycat-width-wrapper">
-        <a href="{{server-root}}projects">
-          <img id="slycat-logo" src="{{server-root}}style/slycat-small.png" title="A very sly cat." />
+        <a href="{{slycat-server-root}}projects">
+          <img id="slycat-logo" src="{{slycat-server-root}}style/slycat-small.png" title="A very sly cat." />
           <h1 id="slycat-title">Slycat <span id="slycat-version"></span></h1>
         </a>
         <ul id="slycat-user-actions">
@@ -131,7 +131,7 @@ rights in this software.
           $.ajax(
           {
             type : "PUT",
-            url : "{{server-root}}models/" + mid,
+            url : "{{slycat-server-root}}models/" + mid,
             contentType : "application/json",
             data : $.toJSON({
               "state" : "closed"
@@ -152,7 +152,7 @@ rights in this software.
             dataType : "text",
             type : "GET",
             cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-            url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
+            url : "{{slycat-server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
             success : function(text)
             {
               // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
@@ -186,8 +186,8 @@ rights in this software.
                 {
                   return $("<div class='slycat-worker'>")
                     .attr('id', model["_id"])
-                    .append($("<div>").addClass("slycat-message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                    .append($("<div>").addClass("slycat-name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("slycat-message").click(function(e){window.location="{{slycat-server-root}}models/" + model["_id"];}))
+                    .append($("<div>").addClass("slycat-name").click(function(e){window.location="{{slycat-server-root}}models/" + model["_id"];}))
                     .append($("<div>").addClass("slycat-close").append($("<button>").html("&times;").attr("title", "Close model.").click(
                       function(e){
                         close_model(model["_id"]);
@@ -231,7 +231,7 @@ rights in this software.
 
                   if(model["finished"]) {
                     line.click(function(e){
-                      window.location="{{server-root}}models/" + model["_id"];
+                      window.location="{{slycat-server-root}}models/" + model["_id"];
                       e.stopPropagation();
                     });
                   }
@@ -280,7 +280,7 @@ rights in this software.
                   if(true)
                   {
                     line.qtip('option','content.text',
-                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', "{{server-root}}models/" + model['_id']).text('View'))
+                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', "{{slycat-server-root}}models/" + model['_id']).text('View'))
                     );
 
                   }
@@ -316,8 +316,8 @@ rights in this software.
       <div class="slycat-width-wrapper">
         <button id="slycat-edit-model" class="slycat-edit-page" title="Edit this model's name and description.">Edit Model</button>
         <div id="slycat-breadcrumbs">
-          <a href="{{server-root}}projects">Projects</a> &rarr;
-          {{#full-project}}<a href="{{server-root}}projects/{{_id}}">{{name}}</a> &rarr;{{/full-project}}
+          <a href="{{slycat-server-root}}projects">Projects</a> &rarr;
+          {{#full-project}}<a href="{{slycat-server-root}}projects/{{_id}}">{{name}}</a> &rarr;{{/full-project}}
         </div>
         <h2>{{name}}</h2>
         <div>{{description}}</div>
@@ -347,7 +347,7 @@ rights in this software.
         $.ajax(
         {
           type : "PUT",
-          url : "{{server-root}}models/{{_id}}",
+          url : "{{slycat-server-root}}models/{{_id}}",
           contentType : "application/json",
           data : $.toJSON({
             "state" : "closed"
@@ -371,10 +371,10 @@ rights in this software.
               $.ajax(
               {
                 type : "DELETE",
-                url : "{{server-root}}models/{{_id}}",
+                url : "{{slycat-server-root}}models/{{_id}}",
                 success : function(details)
                 {
-                  window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+                  window.location.href = "{{slycat-server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
                 },
                 error : function(request, status, reason_phrase)
                 {
@@ -393,7 +393,7 @@ rights in this software.
               $.ajax(
               {
                 type : "PUT",
-                url : "{{server-root}}models/{{_id}}",
+                url : "{{slycat-server-root}}models/{{_id}}",
                 contentType : "application/json",
                 data : $.toJSON(model),
                 processData : false,
