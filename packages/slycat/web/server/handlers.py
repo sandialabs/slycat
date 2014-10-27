@@ -51,6 +51,7 @@ def get_context():
   """Helper function that populates a default context object for use expanding HTML templates."""
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+  context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["security"] = cherrypy.request.security
   context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
