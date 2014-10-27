@@ -52,7 +52,6 @@ def get_context():
   """Helper function that populates a default context object for use expanding HTML templates."""
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["security"] = cherrypy.request.security
   context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
@@ -372,7 +371,7 @@ def get_model(mid, **kwargs):
     context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
     if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
       context = {}
-      context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+      context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
       context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
     return slycat.web.server.template.render("model.html", context)
@@ -1214,7 +1213,7 @@ def get_agent_video(sid, vsid):
     return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
 
 def get_agent_test():
-  return slycat.web.server.template.render("slycat-agent-test.html", {"slycat-server-root", cherrypy.request.app.config["slycat"]["server-root"]})
+  return slycat.web.server.template.render("slycat-agent-test.html", get_context())
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
