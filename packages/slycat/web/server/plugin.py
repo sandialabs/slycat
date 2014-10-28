@@ -17,6 +17,7 @@ class Manager(object):
     self._model_commands = {}
     self._model_resources = {}
     self._model_wizards = {}
+    self._tools = {}
 
   def _load_directory(self, plugin_directory):
     try:
@@ -57,27 +58,27 @@ class Manager(object):
 
   @property
   def markings(self):
-    """Returns a dict mapping marking types to marking data."""
+    """Return a dict mapping marking types to marking data."""
     return self._markings
 
   @property
   def models(self):
-    """Returns a dict mapping model types to models."""
+    """Return a dict mapping model types to models."""
     return self._models
 
   @property
   def model_commands(self):
-    """Returns a dict of dicts mapping custom requests to models."""
+    """Return a dict of dicts mapping custom requests to models."""
     return self._model_commands
 
   @property
   def model_resources(self):
-    """Returns a dict of dicts mapping model resources to filesystem paths."""
+    """Return a dict of dicts mapping model resources to filesystem paths."""
     return self._model_resources
 
   @property
   def model_wizards(self):
-    """Returns a dict of dicts mapping custom model-creation wizards to models."""
+    """Return a dict of dicts mapping custom model-creation wizards to models."""
     return self._model_wizards
 
   def register_marking(self, type, label, html):
@@ -180,6 +181,25 @@ class Manager(object):
       raise Exception("Wizard '%s' has already been registered with model '%s'." % (wizard, type))
     self._model_wizards[type][wizard] = {"label":label}
     cherrypy.log.error("Registered model '%s' wizard '%s' -> '%s'." % (type, wizard, label))
+
+  def register_tool(self, name, hook_point, callable):
+    """Register a new cherrypy tool.
+
+    Parameters
+    ----------
+    name : string, required
+      A unique identifier for the new tool.
+    hook_point : string, required
+      CherryPy hook point where the tool will be installed.
+    callable : callable object, required
+      Object that will be called for every client request.
+      users.
+    """
+    if name in self._tools:
+      raise Exception("Tool '%s' has already been registered." % name)
+    self._tools[name] = (hook_point, callable)
+    setattr(cherrypy.tools, name, cherrypy.Tool(hook_point, callable))
+    cherrypy.log.error("Registered tool '%s' for '%s'." % (name, hook_point))
 
 # Create a new, singleton instance of slycat.web.server.plugin.Manager()
 manager = Manager()

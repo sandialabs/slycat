@@ -167,6 +167,8 @@ def start(root_path, config_file):
   log_configuration(configuration)
 
   # Setup our RESTful request dispatcher.
+  if "/" not in configuration:
+    configuration["/"] = {}
   configuration["/"]["request.dispatch"] = dispatcher
 
   # Generate absolute paths for static content directories.
