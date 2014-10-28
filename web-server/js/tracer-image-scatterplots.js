@@ -441,13 +441,10 @@ $.widget("tracer_image.scatterplot", {
 
     if(self.updates["update_y"] || self.updates["update_x"])
     {
-      var total_height = self.options.height;
-      var height = Math.min(total_width, total_height);
-      var height_offset = (total_height - height) / 2;
-
-      var control_x_offset = Number(self.image_control.foreign_object.attr('width'));
-      var control_y_offset = (total_height - height_offset - self.options.border - 40);
-      self.image_control_layer.attr("transform", "translate(" + (self.y_axis_offset - control_x_offset - 30) + "," + (control_y_offset + 30) + ")");
+      var domain = self.x_scale.range();
+      var domain_midpoint = (domain[1] - domain[0])/2 + domain[0];
+      var control_x_offset = domain_midpoint - Number(self.image_control.foreign_object.attr('width'))/2;
+      self.image_control_layer.attr("transform", "translate(" + control_x_offset + ",0)");
     }
 
     if(self.updates["update_color_domain"])
