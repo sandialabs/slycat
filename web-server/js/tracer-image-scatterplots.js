@@ -331,6 +331,17 @@ $.widget("tracer_image.scatterplot", {
     //console.log("parameter_image.scatterplot._update()", self.updates);
     self.update_timer = null;
 
+    function pickNumberFormat(min, max) {
+      /* There will likely be suboptimally formatted numbers - but before you spend too long trying to pick a better format,
+       be warned that like many things in JS, the number formats are completely insane and seem to deliberately violate
+       the principle of least surprise. This is a valiant but doomed attempt to make them less broken. */
+      var format = '.3g';
+      if ((Math.abs(min) < .001 && min != 0) || (Math.abs(max) < .001 && max != 0)) {
+        format = '.1e';
+      }
+      return format;
+    }
+
     if(self.updates["update_width"])
     {
       $(self.options.display_pane).resize();
@@ -366,20 +377,16 @@ $.widget("tracer_image.scatterplot", {
       var width_offset = (total_width - width) / 2;
       var height_offset = (total_height - height) / 2;
 
-      var min = d3.min(self.options.x);
-      var max = d3.max(self.options.x);
+      var x_min = d3.min(self.options.x);
+      var x_max = d3.max(self.options.x);
 
-      var formatting = ".1g";
-      //Numbers such as .001 don't go to sci with .1g:
-      if((Math.abs(min) < .1 && min != 0) || (Math.abs(max) < .1 && max != 0)){
-        formatting = ".1e"
-      }
-
-      self.x_scale = d3.scale.linear().domain([min, max]).range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
+      self.x_scale = d3.scale.linear()
+        .domain([x_min, x_max])
+        .range([0 + width_offset + self.options.border, total_width - width_offset - self.options.border]);
       self.x_axis = d3.svg.axis()
           .scale(self.x_scale)
           .orient("bottom")
-          .tickFormat(d3.format(formatting));
+          .tickFormat(d3.format(pickNumberFormat(x_min, x_max)));
       self.x_axis_layer
         .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
         .call(self.x_axis);
@@ -409,22 +416,16 @@ $.widget("tracer_image.scatterplot", {
       var height_offset = (total_height - height) / 2;
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      var min = d3.min(self.options.y);
-      var max = d3.max(self.options.y);
-
-      var format = '.1g';
-      if((Math.abs(min) < .1 && min != 0) || (Math.abs(max) < .1 && max != 0)){
-        // numbers such as .001 don't go to scientific notation with .1g:
-        format = '.1e';
-      }
+      var y_min = d3.min(self.options.y);
+      var y_max = d3.max(self.options.y);
 
       self.y_scale = d3.scale.linear()
-        .domain([min, max])
+        .domain([y_min, y_max])
         .range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
       self.y_axis = d3.svg.axis()
         .scale(self.y_scale)
         .orient("left")
-        .tickFormat(d3.format(format));
+        .tickFormat(d3.format(pickNumberFormat(y_min, y_max)));
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis);
@@ -451,8 +452,11 @@ $.widget("tracer_image.scatterplot", {
     {
       var v_min = d3.min(self.options.v);
       var v_max = d3.max(self.options.v);
-      var domain = []
-      var domain_scale = d3.scale.linear().domain([0, self.options.color.domain().length]).range([v_min, v_max]);
+      var domain = [];
+
+      var domain_scale = d3.scale.linear()
+        .domain([0, self.options.color.domain().length])
+        .range([v_min, v_max]);
       for(var i in self.options.color.domain())
         domain.push(domain_scale(i));
       self.options.color.domain(domain);
@@ -489,7 +493,7 @@ $.widget("tracer_image.scatterplot", {
           next_index = lower_node['i'];
           next_args = [lower_node, {l: upper_node['l'] + 1, i: upper_node['i' + 1]}];
         }
-        
+
 
         if(next_index >= 0 && next_index < self.options.images.length && self.options.images[next_index]) {
           console.debug("Found " + self.options.images[next_index])
@@ -505,7 +509,7 @@ $.widget("tracer_image.scatterplot", {
         .reduce(function(prev, next, index){
           // Get the endpoints in reverse order, we'll subtract the index later:
           var endpoints = [next, prev];
-          var find_closest = function(){ 
+          var find_closest = function(){
             var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
             //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
             var distance = endpoints.map(function(point){ return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]); });
@@ -548,7 +552,7 @@ $.widget("tracer_image.scatterplot", {
       var y_scale = self.y_scale;
 
       self.selected_layer.selectAll(".selection").remove();
-      
+
       var square = self.selected_layer.selectAll(".selection")
         .data(filtered_selection, function(d, i){
           return d;
@@ -688,8 +692,16 @@ $.widget("tracer_image.scatterplot", {
     }
 
     if(self.updates["update_legend_axis"]) {
-      self.legend_scale = d3.scale.linear().domain([d3.max(self.options.v), d3.min(self.options.v)]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
-      self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
+      var v_min = d3.min(self.options.v);
+      var v_max = d3.max(self.options.v);
+
+      self.legend_scale = d3.scale.linear()
+        .domain([v_max, v_min])
+        .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+      self.legend_axis = d3.svg.axis()
+        .scale(self.legend_scale)
+        .orient("right")
+        .tickFormat(d3.format(pickNumberFormat(v_min,v_max)));
       self.legend_axis_layer
         .attr("transform", "translate(" + (parseInt(self.legend_layer.select("rect.color").attr("width")) + 1) + ",0)")
         .call(self.legend_axis);
