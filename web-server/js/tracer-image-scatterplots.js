@@ -479,21 +479,26 @@ $.widget("tracer_image.scatterplot", {
 
       var time_line_group = self.group.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
+      var get_length = function(from_index, to_index){
+        var from = [self.x_scale(x[from_index]), self.y_scale(y[from_index])];
+        var to = [self.x_scale(x[to_index]), self.y_scale(y[to_index])];
+        return Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]);
+      }
 
       var get_closest_image_index = function(lower_node, upper_node){
         var next_index,
             next_args = [lower_node, upper_node];
+            console.debug(next_args);
         //In a tie, go up.
         if(lower_node['l'] < upper_node['l']){
           next_index = upper_node['i'];
           //TODO: Add weight to be the length of the path element.
-          next_args = [{l: lower_node['l'] + 1, i: lower_node['i'] - 1}, upper_node];
+          next_args = [lower_node, {l: upper_node['l'] + get_length(upper_node['i'], upper_node['i'] + 1), i: upper_node['i'] + 1}];
         }
         else {
           next_index = lower_node['i'];
-          next_args = [lower_node, {l: upper_node['l'] + 1, i: upper_node['i' + 1]}];
+          next_args = [{l: lower_node['l'] + get_length(lower_node['i'], lower_node['i'] - 1), i: lower_node['i'] - 1}, upper_node];
         }
-
 
         if(next_index >= 0 && next_index < self.options.images.length && self.options.images[next_index]) {
           console.debug("Found " + self.options.images[next_index])
@@ -518,7 +523,7 @@ $.widget("tracer_image.scatterplot", {
             //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
           //Push this to the window's event thread, to avoid blocking user responses:
           window.setTimeout(function(){
-            var image_index = get_closest_image_index.apply(this, distance.map(function(dist, j){return {l: dist, i: index - j}}));
+            var image_index = get_closest_image_index.apply(this, distance.map(function(dist, j){return {l: dist, i: index - j}}).sort(function(a,b){return a.i - b.i}));
             self.options.selection = [image_index];
             self._schedule_update({render_selection:true});
             self.element.trigger("selection-changed", [[image_index]]);
