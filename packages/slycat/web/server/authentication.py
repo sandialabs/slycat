@@ -6,21 +6,6 @@ import cherrypy
 import datetime
 import json
 
-def disable_authentication():
-  """CherryPy tool that provides no authentication."""
-  cherrypy.request.security = { "user" : "", "name" : "",  "roles": [] }
-cherrypy.tools.slycat_disable_authentication = cherrypy.Tool("on_start_resource", disable_authentication)
-
-def identity_authentication(realm, blacklist=["nobody"]):
-  """CherryPy tool that provides basic authentication for any user, so long as
-  their username and password are the same, and their username isn't part of a
-  blacklist.  Obviously, this is suitable only for testing."""
-  def checkpassword(realm, username, password):
-    return username and password and username == password and username not in blacklist
-  cherrypy.lib.auth_basic.basic_auth(realm, checkpassword)
-  cherrypy.request.security = { "user" : cherrypy.request.login, "name" : cherrypy.request.login,  "roles": [] }
-cherrypy.tools.slycat_identity_authentication = cherrypy.Tool("on_start_resource", identity_authentication)
-
 class ldap_authentication(cherrypy.Tool):
   """CherryPy tool that authenticates a user against an LDAP server."""
   def __init__(self):

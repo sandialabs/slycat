@@ -1,0 +1,46 @@
+<div class="calculator">
+  <h1>Calculator</h1>
+  <p id="operand-a"></p>
+  <p id="operand-b"></p>
+  <p id="result"></p>
+  <button id="add">Add</button>
+  <button id="subtract">Subtract</button>
+</div>
+
+<script type="text/javascript">
+  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/calculator/ui.css'>";
+
+  var request = new XMLHttpRequest();
+  request.open("GET", "#")
+  request.setRequestHeader("accept", "application/json");
+  request.onload = function()
+  {
+    var model = JSON.parse(this.responseText);
+    document.querySelector("#operand-a").innerHTML = "A: " + model["artifact:a"]
+    document.querySelector("#operand-b").innerHTML = "B: " + model["artifact:b"]
+    document.querySelector("#add").onclick = function()
+    {
+      var request = new XMLHttpRequest();
+      request.open("GET", window.location.href + "/commands/add");
+      request.onload = function()
+      {
+        var result = JSON.parse(this.responseText);
+        document.querySelector("#result").innerHTML = "A + B = " + result;
+      }
+      request.send();
+    };
+    document.querySelector("#subtract").onclick = function()
+    {
+      var request = new XMLHttpRequest();
+      request.open("GET", window.location.href + "/commands/subtract");
+      request.onload = function()
+      {
+        var result = JSON.parse(this.responseText);
+        document.querySelector("#result").innerHTML = "A - B = " + result;
+      }
+      request.send();
+    };
+  };
+  request.send();
+</script>

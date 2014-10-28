@@ -3,7 +3,6 @@ build
 .coverage
 docs/_build
 .DS_Store
-._.DS_Store
 .ipynb_checkpoints
 packages/cherrypy/test/access.log
 packages/cherrypy/test/error.log
@@ -20,3 +19,5 @@ web-client/*images
 web-client/*images.csv
 web-client/csv_to_hdf5_*
 .*.swp
+._*
+.apdisk

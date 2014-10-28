@@ -6,14 +6,14 @@ Description
 -----------
 
 Uses an existing session to retrieve a remote file.  The
-session must have been created successfully using :ref:`POST Remote`.  The caller
+session must have been created successfully using :ref:`POST Remotes`.  The caller
 *must* supply the session id and the path on the remote filesystem to retrieve.
 
 If the session doesn't exist or has timed-out, the server returns `404`.
 
-If the remote path is a reference, the server returns `400 Can't read directory.`
+If the remote path is a reference to a directory, the server returns `400 Can't read directory.`
 
-If the remote path doesn't exist, the server returns `400 File not found.` (ideally, this should be a 404, however that has undesirable side-effects for the client UI).
+If the remote path doesn't exist, the server returns `400 File not found.`
 
 If the session user doesn't have permissions to access the file, the server returns `400 Permission denied. Current permissions:` with a summary of the file permissions.
 
@@ -29,7 +29,7 @@ Syntax
 
 ::
 
-    GET /remote/(sid)/file(filepath)
+    GET /remotes/(sid)/file(filepath)
 
 Responses
 ---------
@@ -37,7 +37,8 @@ Responses
 Returns
 ^^^^^^^
 
-*/*
+Returns the file contents in the body of the response.  The content-type of the
+response is automatically determined based on the filename.
 
 Examples
 --------
@@ -47,11 +48,11 @@ Sample Request
 
 ::
 
-  GET /remote/505d0e463d5ed4a32bb6b0fe9a000d36/file/home/fred/test.csv
+  GET /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/file/home/fred/test.csv
 
 See Also
 --------
 
-* :ref:`POST Remote`
+* :ref:`POST Remotes`
 * :ref:`POST Remote Browse`
 

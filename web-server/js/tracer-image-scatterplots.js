@@ -915,7 +915,7 @@ $.widget("tracer_image.scatterplot", {
       // // Create the loading image ...
       // var timeout_image = frame.append("image")
       //   .attr("class", "loading-image")
-      //   .attr("xlink:href", "/style/ajax-loader.gif")
+      //   .attr("xlink:href", "/css/ajax-loader.gif")
       //   .attr("x", (image.width / 2)-16)
       //   .attr("y", (image.height / 2)-16)
       //   .attr("width", 32)
@@ -1113,7 +1113,7 @@ $.widget("tracer_image.scatterplot", {
         .attr("y", 2)
         .attr("width", 16)
         .attr("height", 16)
-        .attr("xlink:href", "/style/pin.png")
+        .attr("xlink:href", "/css/pin.png")
         .on("mousedown", function(){
           //console.log("pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
@@ -1210,7 +1210,7 @@ $.widget("tracer_image.scatterplot", {
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remote/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", self.options.server_root + "remotes/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e) {
       // If we get 404, the remote session no longer exists because it timed-out.

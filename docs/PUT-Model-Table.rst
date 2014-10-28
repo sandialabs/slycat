@@ -29,5 +29,5 @@ form/multipart
 See Also
 --------
 
--  :ref:`POST Browse`
+-  :ref:`POST Remote Browse`
 

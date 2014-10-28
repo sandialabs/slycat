@@ -20,7 +20,7 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 
 * Download the latest `Boot2Docker` installer from https://github.com/boot2docker/osx-installer/releases
 * Run the installer.  This will install a set of docker commands, plus a `VirtualBox <https://www.virtualbox.org>`_ hypervisor, if you don't already have one.
-* In a terminal window, initialize the Boot2Docker VM:
+* In a terminal window, initialize the Boot2Docker VM::
 
   $ boot2docker init
 
@@ -28,12 +28,20 @@ in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relativel
 
   $ boot2docker start
 
-* Once the Boot2Docker VM begins running, a message on the console instructs you to set the DOCKER_HOST environment variable.  Copy and paste the command into the terminal (note that the variable setting on your machine may differ from the following example)::
+* Once the Boot2Docker VM begins running, a message on the console instructs you to set several environment variables.  Copy and paste the commands into the terminal (note that your configuration may look different)::
 
-  $ export DOCKER_HOST=tcp://192.168.59.103:2375
+  $ export DOCKER_CERT_PATH=/Users/fred/.boot2docker/certs/boot2docker-vm
+  $ export DOCKER_TLS_VERIFY=1
+  $ export DOCKER_HOST=tcp://192.168.59.103:2376
 
-With Boot2Docker installed and running and the DOCKER_HOST environment variable set, the rest of the
+With Boot2Docker installed and running and the DOCKER_* environment variables set, the rest of the
 install instructions are platform-independent.
+
+Other Platforms
+~~~~~~~~~~~~~~~
+
+You will need to install the Docker engine on your host, following the instructions
+at https://docs.docker.com/installation/#installation
 
 .. NOTE::
 
@@ -59,16 +67,18 @@ install instructions are platform-independent.
 
     $ sudo vi /etc/ssl/cacert.pem
 
-  * Restart the Docker service and exit the VM::
+  * Restart the Docker service and exit the Boot2Docker VM::
 
     $ sudo /etc/init.d/docker restart
     $ exit
 
-Other Platforms
-~~~~~~~~~~~~~~~
+.. WARNING::
 
-You will need to install the Docker engine on your host, following the instructions
-at https://docs.docker.com/installation/#installation
+  * If your site uses SSL interception, you must append the certificate to
+    /etc/ssl/cacerts.pem and restart the Docker service before downloading
+    images every time you restart boot2docker.  We will provide updated
+    information when we have a process to install the certificate permanently.
+
 
 Download the Image and Create a Container
 -----------------------------------------
@@ -87,17 +97,17 @@ the remainder of these tutorials.
 Connect to Slycat with a Web Browser
 ------------------------------------
 
-* If you're running the Slycat container on a Linux host, you can open a web browser and point it to the Slycat server directly at https://localhost.
+Open a web browser and point it to the Slycat server at https://<docker host ip>
 
-* If you're running the Slycat container in a VM on a non-Linux host, you need to know the IP address of the VM::
+* If you're running the Slycat container on a Linux host, this will be `https://localhost`.
+
+* If you're running the Slycat container using boot2docker on another platform, this will be the IP address returned by::
 
     $ boot2docker ip
      
     The VM's Host only interface IP address is: 192.168.59.103
 
-Open a web browser and point it to the Slycat server at https://192.168.59.103
-... note that the IP address may be different on your machine, and that the `https://`
-is *required*.
+Note that the `https://` is *required*.
 
 * When prompted for a username and password, enter *slycat* for both.
 

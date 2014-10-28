@@ -1,7 +1,7 @@
-.. _POST Remote:
+.. _POST Remotes:
 
-POST Remote
-===========
+POST Remotes
+============
 Description
 -----------
 
@@ -27,7 +27,7 @@ Syntax
 
 ::
 
-    POST /remote
+    POST /remotes
 
 Accepts
 ^^^^^^^
@@ -50,7 +50,7 @@ Sample Request
 
 ::
 
-    POST /remote HTTP/1.1
+    POST /remotes HTTP/1.1
     Host: localhost:8092
     Content-Length: 45
     Accept-Encoding: gzip, deflate, compress

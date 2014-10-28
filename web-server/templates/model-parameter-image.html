@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ta<!DOCTYPE html>
 
 <!--
 Copyright 2013, Sandia Corporation. Under the terms of Contract
@@ -32,13 +32,13 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.slycateditors.js"></script>
 
     <!-- SlickGrid styles -->
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.headerbuttons.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick-default-theme.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick.headerbuttons.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick-slycat-theme.css" type="text/css"/>
 
     <!-- Page styles -->
-    <link rel="stylesheet" href="{{server-root}}style/model-parameter-image.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}css/model-parameter-image.css" type="text/css">
 
   </head>
 
@@ -138,6 +138,8 @@ rights in this software.
         var images = null;
         var selected_simulations = null;
         var hidden_simulations = null;
+        var colormap = null;
+        var colorscale = null;
 
         var table_ready = false;
         var scatterplot_ready = false;
@@ -390,6 +392,7 @@ rights in this software.
           var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
           $("#color-switcher").colorswitcher({colormap:colormap});
+
           $("#color-switcher").bind("colormap-changed", function(event, colormap)
           {
             selected_colormap_changed(colormap);
@@ -474,7 +477,9 @@ rights in this software.
               v = new Float64Array(count);
               for(var i = 0; i != count; ++i)
                 v[i] = i;
+              update_current_colorscale();
               setup_scatterplot();
+              setup_table();
             }
             else
             {
@@ -487,7 +492,9 @@ rights in this software.
                 success : function(result)
                 {
                   v = result;
+                  update_current_colorscale();
                   setup_scatterplot();
+                  setup_table();
                 },
                 error : artifact_missing
               });
@@ -496,27 +503,36 @@ rights in this software.
             images_index = image_columns[0];
             if("images-selection" in bookmark)
               images_index = bookmark["images-selection"];
-            $.ajax(
+            setup_table();
+            if(image_columns.length > 0)
             {
-              type : "GET",
-              url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
-                + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
-              success : function(result)
+              $.ajax(
               {
-                images = result;
-                setup_scatterplot();
-                setup_table();
-              },
-              error: artifact_missing
-            });
+                type : "GET",
+                url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" 
+                  + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+                success : function(result)
+                {
+                  images = result;
+                  setup_scatterplot();
+                  //setup_table();
+                },
+                error: artifact_missing
+              });
+            }
+            else
+            {
+              images = undefined;
+              setup_scatterplot();
+            }
             setup_controls();
           }
         }
 
         function setup_table()
         {
-          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) 
-            && bookmark && (x_index != null) && (y_index != null) && (images_index != null) 
+          if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && colorscale
+            && bookmark && (x_index != null) && (y_index != null) && (images_index !== null) 
             && (selected_simulations != null) && (hidden_simulations != null) )
           {
             table_ready = true;
@@ -552,7 +568,7 @@ rights in this software.
             };
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+            table_options.colorscale = colorscale;
 
             if("sort-variable" in bookmark && "sort-order" in bookmark)
             {
@@ -595,12 +611,6 @@ rights in this software.
               images_selection_changed(variable);
             });
 
-            // Log changes to the table variable selection ...
-            $("#table").bind("variable-selection-changed", function(event, selection)
-            {
-              selected_variable_changed(selection[0]);
-            });
-
             // Log changes to the table row selection ...
             $("#table").bind("row-selection-changed", function(event, selection)
             {
@@ -610,18 +620,6 @@ rights in this software.
               for(var i = 0; i != selection.length; ++i)
                 temp.push(selection[i]);
               selected_simulations_changed(temp);
-            });
-
-            // Changing the colormap updates the table ...
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
-            });
-
-            // Changing the table variable updates the scatterplot ...
-            $("#table").bind("variable-selection-changed", function(event, selection)
-            {
-              update_scatterplot_value(selection[0]);
             });
 
             // Changing the scatterplot selection updates the table row selection and controls ..
@@ -661,10 +659,24 @@ rights in this software.
               $("#table").table("option", "image-variable", variable);
             });
 
-            // Changing the color variable updates the table ...
+            // Handle table variable selection ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              // Changing the table variable updates the controls ...
+              $("#controls").controls("option", "color-variable", selection[0]);
+
+              // Handle changes to the table variable selection ...
+              handle_color_variable_change(selection[0]);
+            });
+
+            // Handle color variable selection ...
             $("#controls").bind("color-selection-changed", function(event, variable)
             {
+              // Changing the color variable updates the table ...
               $("#table").table("option", "variable-selection", [Number(variable)]);
+              
+              // Handle changes to the color variable ...
+              handle_color_variable_change(variable);
             });
           }
         }
@@ -672,7 +684,7 @@ rights in this software.
         function setup_scatterplot()
         {
           // Setup the scatterplot ...
-          if(!scatterplot_ready && bookmark && indices && x && y && v && images 
+          if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
             && (selected_simulations != null) && (hidden_simulations != null))
           {
             scatterplot_ready = true;
@@ -695,10 +707,13 @@ rights in this software.
               x: x,
               y: y,
               v: v,
+              x_string: table_metadata["column-types"][x_index]=="string",
+              y_string: table_metadata["column-types"][y_index]=="string",
+              v_string: table_metadata["column-types"][v_index]=="string",
               images: images,
               width: $("#scatterplot-pane").width(),
               height: $("#scatterplot-pane").height(),
-              color: $("#color-switcher").colorswitcher("get_color_map", colormap),
+              colorscale: colorscale,
               selection: selected_simulations,
               server_root: "{{server-root}}",
               open_images: open_images,
@@ -709,16 +724,6 @@ rights in this software.
             $("#scatterplot").bind("selection-changed", function(event, selection)
             {
               selected_simulations_changed(selection);
-            });
-
-            // Changing the color map updates the scatterplot ...
-            $("#color-switcher").bind("colormap-changed", function(event, colormap)
-            {
-              $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-              $("#scatterplot").scatterplot("option", {
-                color:    $("#color-switcher").colorswitcher("get_color_map", colormap),
-                gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
-              });
             });
 
             // Changing the x variable updates the scatterplot ...
@@ -781,17 +786,29 @@ rights in this software.
 
         function setup_controls()
         {
-          if( !controls_ready && table_metadata && (image_columns != null) && (rating_columns != null) 
+          if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
             && (category_columns != null) && (x_index != null) && (y_index != null) 
-            && (images_index != null) && (selected_simulations != null) && (hidden_simulations != null))
+            && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null))
           {
             controls_ready = true;
             var numeric_variables = [];
+            var axes_variables = [];
+            var color_variables = [];
 
             for(var i = 0; i < table_metadata["column-count"]; i++)
             {
               if(table_metadata["column-types"][i] != 'string')
+              {
                 numeric_variables.push(i);
+              }
+              if( image_columns.indexOf(i) == -1 && table_metadata["column-count"]-1 > i )
+              {
+                axes_variables.push(i);
+              }
+              if( image_columns.indexOf(i) == -1 )
+              {
+                color_variables.push(i);
+              }
             }
 
             var color_variable = table_metadata["column-count"] - 1;
@@ -806,10 +823,10 @@ rights in this software.
               model_name: "{{name}}",
               aid : "data-table",
               metadata: table_metadata,
-              x_variables: numeric_variables.slice(0, numeric_variables.length-1),
-              y_variables: numeric_variables.slice(0, numeric_variables.length-1),
+              x_variables: axes_variables,
+              y_variables: axes_variables,
               image_variables: image_columns,
-              color_variables: [numeric_variables[numeric_variables.length-1]].concat(numeric_variables.slice(0, numeric_variables.length-1)),
+              color_variables: color_variables,
               rating_variables : rating_columns,
               category_variables : category_columns,
               selection : selected_simulations,
@@ -836,30 +853,6 @@ rights in this software.
             $("#table").bind("images-selection-changed", function(event, variable)
             {
               $("#controls").controls("option", "image-variable", variable);
-            });
-
-            // Changing the table variable updates the controls ...
-            $("#table").bind("variable-selection-changed", function(event, selection)
-            {
-              $("#controls").controls("option", "color-variable", selection[0]);
-            });
-
-            // Changing the table variable updates the legend label ...
-            $("#table").bind("variable-selection-changed", function(event, selection)
-            {
-              $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][selection[0]]});
-            });
-
-            // Changing the color variable updates the scatterplot ...
-            $("#controls").bind("color-selection-changed", function(event, variable)
-            {
-              update_scatterplot_value(variable);
-            });
-
-            // Changing the color variable updates the legend label ...
-            $("#controls").bind("color-selection-changed", function(event, variable)
-            {
-              $("#scatterplot").scatterplot("option", {v_label:table_metadata["column-names"][variable]});
             });
 
             // Changing the value of a variable updates the database, table, and scatterplot ...
@@ -900,11 +893,13 @@ rights in this software.
                       update_scatterplot_x(variable);
                     if(variable == y_index)
                       update_scatterplot_y(variable);
-                    if(variable == v_index)
-                      update_scatterplot_value(variable);
 
                     load_table_statistics([variable], function(){
                       $("#table").table("option", "statistics", table_statistics);
+                      if(variable == v_index)
+                      {
+                        update_v(variable);
+                      }
                     });
                   },
                   error : function(jqXHR, textStatus, errorThrown)
@@ -931,12 +926,6 @@ rights in this software.
             $("#controls").bind("images-selection-changed", function(event, variable)
             {
               images_selection_changed(variable);
-            });
-
-            // Log changes to the color variable ...
-            $("#controls").bind("color-selection-changed", function(event, variable)
-            {
-              selected_variable_changed(Number(variable));
             });
 
             // Log changes to hidden selection ...
@@ -987,23 +976,90 @@ rights in this software.
 
         function selected_colormap_changed(colormap)
         {
+          update_current_colorscale();
+
+          // Changing the color map updates the table with a new color scale ...
+          $("#table").table("option", "colorscale", colorscale);
+
+          // Changing the color scale updates the scatterplot ...
+          $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+          $("#scatterplot").scatterplot("option", {
+            colorscale:    colorscale,
+            gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+          });
+
           $.ajax(
           {
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
           });
+
           bookmarker.updateState({"colormap" : colormap});
         }
 
-        function selected_variable_changed(variable)
+        function handle_color_variable_change(variable)
         {
+          v_index = Number(variable);
+
+          if(v_index == table_metadata["column-count"] - 1)
+          {
+            var count = table_metadata["row-count"];
+            for(var i = 0; i != count; ++i)
+              v[i] = i;
+            update_widgets_after_color_variable_change();
+          }
+          else
+          {
+            update_v(variable);
+          }
+
           $.ajax(
           {
             type : "POST",
             url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
           });
+
           bookmarker.updateState({"variable-selection" : variable});
-          v_index = Number(variable);
+        }
+
+        function update_v(variable)
+        {
+          get_model_array_attribute({
+            server_root : "{{server-root}}",
+            mid : "{{_id}}",
+            aid : "data-table",
+            array : 0,
+            attribute : variable,
+            success : function(result)
+            {
+              v = result;
+              update_widgets_after_color_variable_change();
+            },
+            error : artifact_missing
+          });
+        }
+
+        function update_widgets_after_color_variable_change()
+        {
+          update_current_colorscale();
+          $("#table").table("option", "colorscale", colorscale);
+          $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
+        }
+
+        function update_current_colorscale()
+        {
+          // Check if numeric or string variable
+          var v_type = table_metadata["column-types"][v_index];
+
+          if(v_type != "string")
+          {
+            colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, table_statistics[v_index].min, table_statistics[v_index].max);
+          }
+          else
+          {
+            var uniqueValues = d3.set(v).values().sort();
+            colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);;
+          }
         }
 
         function variable_sort_changed(variable, order)
@@ -1082,33 +1138,6 @@ rights in this software.
           bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
         }
 
-        function update_scatterplot_value(attribute)
-        {
-          if(attribute == table_metadata["column-count"] - 1)
-          {
-            var count = v.length;
-            for(var i = 0; i != count; ++i)
-              v[i] = i;
-            $("#scatterplot").scatterplot("option", {v : v});
-          }
-          else
-          {
-            get_model_array_attribute({
-              server_root : "{{server-root}}",
-              mid : "{{_id}}",
-              aid : "data-table",
-              array : 0,
-              attribute : attribute,
-              success : function(result)
-              {
-                v = result;
-                $("#scatterplot").scatterplot("option", {v : v});
-              },
-              error : artifact_missing
-            });
-          }
-        }
-
         function update_scatterplot_x(variable)
         {
           get_model_array_attribute({
@@ -1119,7 +1148,7 @@ rights in this software.
             attribute : variable,
             success : function(result)
             {
-              $("#scatterplot").scatterplot("option", {x: result, x_label:table_metadata["column-names"][variable]});
+              $("#scatterplot").scatterplot("option", {x_string: table_metadata["column-types"][variable]=="string", x: result, x_label:table_metadata["column-names"][variable]});
             },
             error : artifact_missing
           });
@@ -1135,7 +1164,7 @@ rights in this software.
             attribute : variable,
             success : function(result)
             {
-              $("#scatterplot").scatterplot("option", {y: result, y_label:table_metadata["column-names"][variable]});
+              $("#scatterplot").scatterplot("option", {y_string: table_metadata["column-types"][variable]=="string", y: result, y_label:table_metadata["column-names"][variable]});
             },
             error : artifact_missing
           });
@@ -1154,7 +1183,7 @@ rights in this software.
         {
           var sid = session_cache[image_uri.hostname];
           image = document.createElement("img");
-          image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
+          image.src = "{{server-root}}remotes/" + sid + "/file" + image_uri.pathname;
           image.width = 100;
           image.style.position="absolute";
           image.style.left=10;

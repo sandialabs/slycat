@@ -13,8 +13,9 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/file-browser.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.regex-selector.js"></script>
     <script type="text/javascript" src="{{server-root}}js/jquery.combobox.js"></script>
-    <link rel="stylesheet" href="{{server-root}}style/file-browser.css" type="text/css">
-    <link rel="stylesheet" href="{{server-root}}style/combobox.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}css/file-browser.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}css/combobox.css" type="text/css">
+    <link id="slycat-server-root" href="{{server-root}}">
   </head>
 
   <body>
@@ -772,7 +773,7 @@ rights in this software.
           {
             async : false,
             type : "POST",
-            url : "{{server-root}}remote",
+            url : "{{server-root}}remotes",
             contentType : "application/json",
             data: $.toJSON(
             {
@@ -1116,7 +1117,7 @@ rights in this software.
           {
             async : false,
             type : "POST",
-            url : "{{server-root}}remote",
+            url : "{{server-root}}remotes",
             contentType : "application/json",
             data: $.toJSON(
             {
@@ -1202,19 +1203,18 @@ rights in this software.
 
                     var controls = [];
 
+                    var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                    var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
+                    controls.push(input, output);
+                    input.prop("checked", true);
+
                     if(table["column-types"][index] != "string")
                     {
-                      var input = $("<input type='checkbox' name='inputs' class='remote-pi-input-variable' title='Treat variable as an input for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-                      var output = $("<input type='checkbox' name='outputs' class='remote-pi-output-variable' title='Treat variable as an output for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
                       var rating = $("<input type='checkbox' name='outputs' class='remote-pi-rating-variable' title='Treat variable as rating for analysis.'>").val(index).appendTo($("<td>").appendTo(row));
-                      controls.push(input, output, rating);
-
-                      input.attr("checked", "checked");
+                      controls.push(rating);
                     }
                     else
                     {
-                      $("<td>").appendTo(row);
-                      $("<td>").appendTo(row);
                       $("<td>").appendTo(row);
                     }
 
@@ -1234,7 +1234,8 @@ rights in this software.
                         {
                           if(columns.data[0][0].slice(0, 7) == "file://")
                           {
-                            image.attr("checked", "checked");
+                            input.prop("checked", false);
+                            image.prop("checked", true);
                           }
                         }
                       });
