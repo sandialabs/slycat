@@ -409,16 +409,33 @@ $.widget("tracer_image.scatterplot", {
       var height_offset = (total_height - height) / 2;
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = d3.scale.linear().domain([d3.min(self.options.y), d3.max(self.options.y)]).range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
-      self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
+      var min = d3.min(self.options.y);
+      var max = d3.max(self.options.y);
+
+      var format = '.1g';
+      if((Math.abs(min) < .1 && min != 0) || (Math.abs(max) < .1 && max != 0)){
+        // numbers such as .001 don't go to scientific notation with .1g:
+        format = '.1e';
+      }
+
+      self.y_scale = d3.scale.linear()
+        .domain([min, max])
+        .range([total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border]);
+      self.y_axis = d3.svg.axis()
+        .scale(self.y_scale)
+        .orient("left")
+        .tickFormat(d3.format(format));
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis);
 
       var range = self.y_scale.range();
       var range_midpoint = (range[1] - range[0])/2 + range[0];
-      var control_x_offset = -30 - Number(self.y_control.foreign_object.attr('width'));
       var control_y_offset = range_midpoint - Number(self.y_control.foreign_object.attr('height'))/2; //account for control width
+
+      var text_width = d3.max(self.y_axis_layer.selectAll('text')[0].map(function(textElem) { return textElem.getComputedTextLength(); }));
+      var control_x_offset = -15 - text_width - Number(self.y_control.foreign_object.attr('width')); // - ((tick to axis offset = 10) + 5)
+
       self.y_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',' + control_y_offset + ')');
     }
 
