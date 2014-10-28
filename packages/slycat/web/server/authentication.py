@@ -27,7 +27,7 @@ class ldap_authentication(cherrypy.Tool):
         else:
           user = self.sessions[session]["user"]
           entry = self.sessions[session]["entry"]
-          cherrypy.request.security = { "user" : user, "name" : entry["cn"][0], "roles" : entry["memberOf"] }
+          cherrypy.request.security = { "user" : user, "name" : entry["cn"][0], "roles" : entry.get("memberOf", []) }
           # Ensure that the user is logged correctly ...
           cherrypy.request.login = user
           return
@@ -49,7 +49,7 @@ class ldap_authentication(cherrypy.Tool):
         session = uuid.uuid4().hex
         self.sessions[session] = { "started" : datetime.datetime.utcnow(), "user" : username, "entry" : entry }
 
-        cherrypy.request.security = { "user" : username, "name" : entry["cn"][0], "roles" : entry["memberOf"] }
+        cherrypy.request.security = { "user" : username, "name" : entry["cn"][0], "roles" : entry.get("memberOf", []) }
 
         cherrypy.response.cookie["slycatauth"] = session
         cherrypy.response.cookie["slycatauth"]["path"] = "/"
