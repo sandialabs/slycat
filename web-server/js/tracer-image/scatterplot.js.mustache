@@ -116,9 +116,6 @@ ScatterPlot.prototype.setup = function() {
       scatterplot_obj: self,
       indices: model.indices,
       display_pane: "#grid-pane",
-      dimension_adjustments: {
-          width: function(){return 0;},
-          height: function(){return -1 * $(self.grid_ref + " .controls").height(); }}, //TODO what is this doing
       x: self.x,
       y: self.y,
       v: self.v,
