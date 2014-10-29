@@ -960,7 +960,9 @@ rights in this software.
             // Log changes to hidden selection ...
             $("#controls").bind("show-all", function(event, selection)
             {
-              hidden_simulations = [];
+              while(hidden_simulations.length > 0) {
+                hidden_simulations.pop();
+              }
 
               hidden_simulations_changed();
               $("#table").table("option", "hidden_simulations", hidden_simulations);
