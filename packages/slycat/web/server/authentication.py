@@ -5,35 +5,36 @@
 import cherrypy
 
 def project_acl(project):
-  """Extracts ACL information from a project."""
+  """Extract ACL information from a project."""
   if "acl" not in project:
     cherrypy.log.error("Project missing ACL: %s" % project)
     return {"administrators":{}, "writers":{}, "readers":{}}
   return project["acl"]
 
 def is_server_administrator():
+  """Return True if the current request is from a server administrator."""
   return cherrypy.request.security["user"] in cherrypy.request.app.config["slycat"]["server-admins"]
 
 def is_project_administrator(project):
+  """Return True if the current request is from a project administrator."""
   return cherrypy.request.security["user"] in [administrator["user"] for administrator in project_acl(project)["administrators"]]
 
 def is_project_writer(project):
+  """Return True if the current request is from a project writer."""
   return cherrypy.request.security["user"] in [writer["user"] for writer in project_acl(project)["writers"]]
 
 def is_project_reader(project):
+  """Return True if the current request is from a project reader."""
   return cherrypy.request.security["user"] in [reader["user"] for reader in project_acl(project)["readers"]]
 
-def is_worker_creator(worker):
-  return cherrypy.request.security["user"] == worker.status["creator"]
-
 def test_server_administrator():
-  """Tests to see that the current request is from a user with server administrator privileges."""
+  """Return True if the current request has server administrator privileges."""
   if is_server_administrator():
     return True
   raise False
 
 def test_project_administrator(project):
-  """Tests to see that the current request is from a user with administrator privileges."""
+  """Return True if the current request has project administrator privileges."""
   if is_server_administrator():
     return True
   if is_project_administrator(project):
@@ -41,7 +42,7 @@ def test_project_administrator(project):
   return False
 
 def test_project_writer(project):
-  """Tests to see that the current request is from a user with write privileges."""
+  """Return True if the current request has project write privileges."""
   if is_server_administrator():
     return True
   if is_project_administrator(project):
@@ -51,7 +52,7 @@ def test_project_writer(project):
   return False
 
 def test_project_reader(project):
-  """Tests to see that the current request is from a user with read privileges."""
+  """Return True if the current request has project read privileges."""
   if is_server_administrator():
     return True
   if is_project_administrator(project):
@@ -63,30 +64,22 @@ def test_project_reader(project):
   return False
 
 def require_server_administrator():
-  """Tests to see that the current request is from a user with server administrator privileges."""
+  """Raise an exception if the current request doesn't have server administrator privileges."""
   if not test_server_administrator():
     raise cherrypy.HTTPError(403)
 
 def require_project_administrator(project):
-  """Tests to see that the current request is from a user with administrator privileges."""
+  """Raise an exception if the current request doesn't have project administrator privileges."""
   if not test_project_administrator(project):
     raise cherrypy.HTTPError(403)
 
 def require_project_writer(project):
-  """Tests to see that the current request is from a user with write privileges."""
+  """Raise an exception if the current request doesn't have project write privileges."""
   if not test_project_writer(project):
     raise cherrypy.HTTPError(403)
 
 def require_project_reader(project):
-  """Tests to see that the current request is from a user with read privileges."""
+  """Raise an exception if the current request doesn't have project read privileges."""
   if not test_project_reader(project):
     raise cherrypy.HTTPError(403)
-
-def require_worker_creator(worker):
-  """Tests to see that the current request is from the user that created the given worker."""
-  if is_server_administrator():
-    return
-  if is_worker_creator(worker):
-    return
-  raise cherrypy.HTTPError(403)
 
