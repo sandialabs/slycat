@@ -293,6 +293,12 @@ $.widget("parameter_image.scatterplot",
     self.options.filtered_selection = filtered_selection;
   },
 
+  _filterValues: function(values)
+  {
+    var self = this;
+    
+  },
+
   _validateValue: function(value)
   {
     var self = this;
