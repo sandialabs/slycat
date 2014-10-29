@@ -138,9 +138,9 @@ Grid.prototype.setup = function() {
     }
   };
 
-  $(grid[0]).select(".datum-layer").mousemove(drag_move)
-    .mousedown(drag_start)
-    .mouseup(drag_end);
+  // $(grid[0]).select(".datum-layer").mousemove(drag_move)
+  //   .mousedown(drag_start)
+  //   .mouseup(drag_end);
 };
 
 

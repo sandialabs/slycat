@@ -68,6 +68,7 @@ $.widget("tracer_image.scatterplot", {
     self._build_color_legend();
 
     self.datum_layer = self.group.append("g").attr("class", "datum-layer");
+    self.brush = new SelectorBrush(self.options.scatterplot_obj.scatterplot_obj); // TODO - the object naming is clearly bad
     self.selected_layer = self.group.append("g");
     self.selection_layer = self.group.append("g");
 
@@ -446,6 +447,10 @@ $.widget("tracer_image.scatterplot", {
       var domain_midpoint = (domain[1] - domain[0])/2 + domain[0];
       var control_x_offset = domain_midpoint - Number(self.image_control.foreign_object.attr('width'))/2;
       self.image_control_layer.attr("transform", "translate(" + control_x_offset + ",0)");
+
+      //update brush since scale(s) changed in prior if-clauses
+      self.brush.rescale(self.x_scale, self.y_scale);
+      self.brush.initialize();
     }
 
     if(self.updates["update_color_domain"])
@@ -479,6 +484,10 @@ $.widget("tracer_image.scatterplot", {
 
       var time_line_group = self.group.insert("g", ".datum-layer + g")
         .attr("class", "time-paths");
+
+      self.brush.load_data_group(time_line_group);
+      self.brush.initialize();
+
       var get_length = function(from_index, to_index){
         var from = [self.x_scale(x[from_index]), self.y_scale(y[from_index])];
         var to = [self.x_scale(x[to_index]), self.y_scale(y[to_index])];
@@ -1388,6 +1397,24 @@ $.widget("tracer_image.scatterplot", {
     return this.options[option];
   },
 
+  brush_select: function(selection) {
+    var self = this;
+    var x = self.options.x;
+    var y = self.options.y;
+    var x_lo = selection[0][0];
+    var y_lo = selection[0][1];
+    var x_hi = selection[1][0];
+    var y_hi = selection[1][1];
+    self.options.selection = []; // empty previous selection
+    for(var i = 0; i <= x.length; ++i) {
+      if(x_lo <= x[i] && x[i] <= x_hi && y_lo <= y[i] && y[i] <= y_hi) {
+          self.options.selection.push(self.options.indices[i]);
+      }
+    }
+    self._schedule_update({ render_selection: true });
+    self.element.trigger("selection-changed", [self.options.selection]);
+  },
+
   handle_drag: function(drag_object, e)
   {
     var self = this;
@@ -1405,21 +1432,20 @@ $.widget("tracer_image.scatterplot", {
     var y = self.options.y;
     var count = x.length;
 
-    if(drag_object.state == "rubber-band-drag") // Rubber-band selection ...
-    {
+    if(drag_object.state == "rubber-band-drag") { // Rubber-band selection ...
       if(drag_object.drag_start && drag_object.drag_end) {
         var x1 = self.x_scale.invert(Math.min(drag_object.drag_start[0], drag_object.drag_end[0]));
         var y1 = self.y_scale.invert(Math.max(drag_object.drag_start[1], drag_object.drag_end[1]));
         var x2 = self.x_scale.invert(Math.max(drag_object.drag_start[0], drag_object.drag_end[0]));
         var y2 = self.y_scale.invert(Math.min(drag_object.drag_start[1], drag_object.drag_end[1]));
 
-        for(var i = 0; i != count; ++i)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-          {
+        for(var i = 0; i != count; ++i) {
+          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2) {
+            // if it's not already selected add it to the selection
             var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
+            if(index == -1) {
               self.options.selection.push(self.options.indices[i]);
+            }
           }
         }
       }
