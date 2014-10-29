@@ -58,9 +58,9 @@ def register_slycat_plugin(context):
               if username in members:
                 deny = operation_deny
             elif category == "groups":
-              for group in members:
-                group = connection.search_s(group_dn % group, ldap.SCOPE_BASE)[0][1]
-                if dn in group["uniqueMember"]:
+              for groupname in members:
+                group = connection.search_s(group_dn % groupname, ldap.SCOPE_BASE)[0][1]
+                if dn.lower() in [member.lower() for member in group["uniqueMember"]]:
                   deny = operation_deny
                   break
 
