@@ -160,3 +160,15 @@ To fully integrate a new model into Slycat, some way for users to create new
 instances of the model is required.  In the model plugin example above we assume
 that client-side scripts will be invoked by users to create model instances.  `Wizard`
 plugins provide a way for users to create new model instances using their web browsers.
+
+User Authentication Plugins
+---------------------------
+
+::
+
+  tools.slycat-ldap-authentication.on : True
+  tools.slycat-ldap-authentication.realm : "Slycat"
+  tools.slycat-ldap-authentication.server : "ldap://ldap.forumsys.com:389"
+  tools.slycat-ldap-authentication.user_dn : "uid=%%s,dc=example,dc=com"
+  tools.slycat-ldap-authentication.group_dn : "ou=%%s,dc=example,dc=com"
+  tools.slycat-ldap-authentication.rules : [("allow", "groups", ["mathematicians"]), ("allow", "users", ["einstein"])]
