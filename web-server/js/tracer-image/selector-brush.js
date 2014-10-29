@@ -3,6 +3,7 @@ function SelectorBrush(plot_container) {
   this.data_container = null;
   this.x_scale = null;
   this.y_scale = null;
+  this.drag_threshold = 5;
   this.brush = d3.svg.brush().on('brush', this.brush_action());
 }
 
@@ -11,8 +12,8 @@ SelectorBrush.prototype.brush_action = function() {
   var self = this;
   return (function() {
      // only update brush selection for a mouse drag, not for a click
-    var dragged_x = Math.abs(self.x_scale(self.brush.extent()[0][0]) - self.x_scale(self.brush.extent()[1][0])) > 5;
-    var dragged_y = Math.abs(self.y_scale(self.brush.extent()[0][1]) - self.y_scale(self.brush.extent()[1][1])) > 5;
+    var dragged_x = Math.abs(self.x_scale(self.brush.extent()[0][0]) - self.x_scale(self.brush.extent()[1][0])) > self.drag_threshold;
+    var dragged_y = Math.abs(self.y_scale(self.brush.extent()[0][1]) - self.y_scale(self.brush.extent()[1][1])) > self.drag_threshold;
     if (dragged_x || dragged_y) {
       self.plot_container.scatterplot("brush_select", self.brush.extent());
     }

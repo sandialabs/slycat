@@ -1397,14 +1397,14 @@ $.widget("tracer_image.scatterplot", {
     return this.options[option];
   },
 
-  brush_select: function(selection) {
+  brush_select: function(selection_bounds) {
     var self = this;
     var x = self.options.x;
     var y = self.options.y;
-    var x_lo = selection[0][0];
-    var y_lo = selection[0][1];
-    var x_hi = selection[1][0];
-    var y_hi = selection[1][1];
+    var x_lo = selection_bounds[0][0];
+    var y_lo = selection_bounds[0][1];
+    var x_hi = selection_bounds[1][0];
+    var y_hi = selection_bounds[1][1];
     self.options.selection = []; // empty previous selection
     for(var i = 0; i <= x.length; ++i) {
       if(x_lo <= x[i] && x[i] <= x_hi && y_lo <= y[i] && y[i] <= y_hi) {
