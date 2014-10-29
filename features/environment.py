@@ -4,8 +4,8 @@ import os
 import subprocess
 import sys
 
-source_root = os.path.dirname(os.path.dirname(__file__))
-slycat_agent = os.path.join(source_root, "agent", "slycat-agent.py")
+root_dir = os.path.dirname(os.path.dirname(__file__))
+slycat_agent = os.path.join(root_dir, "agent", "slycat-agent.py")
 ffmpeg = "/usr/bin/ffmpeg"
 
 def before_feature(context, feature):
