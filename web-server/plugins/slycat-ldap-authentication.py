@@ -5,7 +5,7 @@
 def register_slycat_plugin(context):
   import cherrypy
   import datetime
-  def authenticate(realm, server, user_dn, group_dn=None, rules=None, timeout=datetime.timedelta(minutes=5)):
+  def authenticate(realm, server, user_dn, group_dn=None, rules=None, network_timeout=datetime.timedelta(seconds=5), session_timeout=datetime.timedelta(minutes=5)):
     """Implements LDAP user authentication."""
     if cherrypy.request.scheme != "https":
       raise cherrypy.HTTPError("400 SSL connection required.")
@@ -14,7 +14,7 @@ def register_slycat_plugin(context):
       session = cherrypy.request.cookie["slycatauth"].value
       if session in authenticate.sessions:
         started = authenticate.sessions[session]["started"]
-        if datetime.datetime.utcnow() - started > timeout:
+        if datetime.datetime.utcnow() - started > session_timeout:
           del authenticate.sessions[session]
         else:
           user = authenticate.sessions[session]["user"]
@@ -36,6 +36,7 @@ def register_slycat_plugin(context):
         # Check the username and password.
         import ldap
         ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+        ldap.set_option(ldap.OPT_NETWORK_TIMEOUT, network_timeout.total_seconds())
         connection = ldap.initialize(server)
         connection.simple_bind_s(dn, password)
 
