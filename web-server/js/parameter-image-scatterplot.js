@@ -327,18 +327,27 @@ $.widget("parameter_image.scatterplot",
     return [];
   },
 
-  _createScale: function(string, values, range)
+  _createScale: function(string, values, range, reverse)
   {
     if(!string)
     {
+      var domain = [d3.min(values), d3.max(values)];
+      if(reverse === true)
+      {
+        domain.reverse();
+      }
       return d3.scale.linear()
-        .domain([d3.min(values), d3.max(values)])
+        .domain(domain)
         .range(range)
         ;
     }
     else
     {
       var uniqueValues = d3.set(values).values().sort();
+      if(reverse === true)
+      {
+        uniqueValues.reverse();
+      }
       return d3.scale.ordinal()
         .domain(uniqueValues)
         .rangePoints(range)
@@ -447,7 +456,7 @@ $.widget("parameter_image.scatterplot",
       self.options.filtered_x = self._filterValues(self.options.x);
       self.options.filtered_y = self._filterValues(self.options.y);
       self.options.filtered_v = self._filterValues(self.options.v);
-      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, });
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
       self._close_hidden_simulations();
     }
   },
@@ -514,7 +523,7 @@ $.widget("parameter_image.scatterplot",
       var height_offset = (total_height - height) / 2;
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.filtered_x, range);
+      self.x_scale = self._createScale(self.options.x_string, self.options.filtered_x, range, false);
       
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
@@ -534,7 +543,7 @@ $.widget("parameter_image.scatterplot",
       var range = [total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = self._createScale(self.options.y_string, self.options.filtered_y, range);
+      self.y_scale = self._createScale(self.options.y_string, self.options.filtered_y, range, false);
 
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
@@ -788,21 +797,7 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
-      if(!self.options.v_string)
-      {
-        self.legend_scale = d3.scale.linear()
-          .domain([d3.max(self.options.v), d3.min(self.options.v)])
-          .range(range)
-          ;
-      }
-      else
-      {
-        var uniqueValues = d3.set(self.options.v).values().sort().reverse();
-        self.legend_scale = d3.scale.ordinal()
-          .domain(uniqueValues)
-          .rangePoints(range)
-          ;
-      }
+      self.legend_scale = self._createScale(self.options.v_string, self.options.filtered_v, range, true);
 
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
