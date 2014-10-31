@@ -140,6 +140,7 @@ rights in this software.
         var hidden_simulations = null;
         var colormap = null;
         var colorscale = null;
+        var auto_scale = null;
 
         var table_ready = false;
         var scatterplot_ready = false;
@@ -428,6 +429,11 @@ rights in this software.
               x_index = Number(bookmark["x-selection"]);
             if("y-selection" in bookmark)
               y_index = Number(bookmark["y-selection"]);
+            auto_scale = true;
+            if("auto-scale" in bookmark)
+            {
+              auto_scale = bookmark["auto-scale"];
+            }
 
             // Set state of selected and hidden simulations
             selected_simulations = [];
@@ -685,7 +691,8 @@ rights in this software.
         {
           // Setup the scatterplot ...
           if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
-            && (selected_simulations != null) && (hidden_simulations != null))
+            && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
+            )
           {
             scatterplot_ready = true;
 
@@ -699,12 +706,6 @@ rights in this software.
             if("open-images-selection" in bookmark)
             {
               open_images = bookmark["open-images-selection"];
-            }
-
-            var auto_scale = true;
-            if("auto-scale" in bookmark)
-            {
-              auto_scale = bookmark["auto-scale"];
             }
 
             $("#scatterplot").scatterplot({
@@ -796,8 +797,9 @@ rights in this software.
         function setup_controls()
         {
           if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
-            && (category_columns != null) && (x_index != null) && (y_index != null) 
-            && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null))
+            && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
+            && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
+            )
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -824,12 +826,6 @@ rights in this software.
             if("variable-selection" in bookmark)
             {
               color_variable = [bookmark["variable-selection"]];
-            }
-
-            var auto_scale = true;
-            if("auto-scale" in bookmark)
-            {
-              auto_scale = bookmark["auto-scale"];
             }
 
             $("#controls").controls({
@@ -1143,6 +1139,7 @@ rights in this software.
 
         function auto_scale_option_changed(auto_scale)
         {
+          auto_scale = auto_scale;
           $("#scatterplot").scatterplot("option", "auto-scale", auto_scale);
           $.ajax(
           {

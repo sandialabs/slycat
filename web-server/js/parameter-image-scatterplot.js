@@ -878,9 +878,7 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
-      // Temporarily disabling legend auto-scaling
-      //self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
-      self.legend_scale = self._createScale(self.options.v_string, self.options.v, range, true);
+      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
 
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
