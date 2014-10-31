@@ -39,15 +39,31 @@ $.widget("parameter_image.scatterplot",
     filtered_x : [],
     filtered_y : [],
     filtered_v : [],
+    scale_x : [],
+    scale_y : [],
+    scale_v: [],
+    "auto-scale" : true,
   },
 
   _create: function()
   {
     var self = this;
 
-    self.options.filtered_x = self._filterValues(self.options.x);
-    self.options.filtered_y = self._filterValues(self.options.y);
-    self.options.filtered_v = self._filterValues(self.options.v);
+    if(self.options["auto-scale"])
+    {
+      self.options.filtered_x = self._filterValues(self.options.x);
+      self.options.filtered_y = self._filterValues(self.options.y);
+      self.options.filtered_v = self._filterValues(self.options.v);
+      self.options.scale_x = self.options.filtered_x;
+      self.options.scale_y = self.options.filtered_y;
+      self.options.scale_v = self.options.filtered_v;
+    }
+    else
+    {
+      self.options.scale_x = self.options.x;
+      self.options.scale_y = self.options.y;
+      self.options.scale_v = self.options.v;
+    }
 
     self.hover_timer = null;
     self.close_hover_timer = null;
@@ -395,7 +411,15 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "x")
     {
-      self.options.filtered_x = self._filterValues(self.options.x);
+      if(self.options["auto-scale"])
+      {
+        self.options.filtered_x = self._filterValues(self.options.x);
+        self.options.scale_x = self.options.filtered_x;
+      }
+      else
+      {
+        self.options.scale_x = self.options.x;
+      }
       self._filterIndices();
       self._close_hidden_simulations();
       self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
@@ -403,7 +427,15 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "y")
     {
-      self.options.filtered_y = self._filterValues(self.options.y);
+      if(self.options["auto-scale"])
+      {
+        self.options.filtered_y = self._filterValues(self.options.y);
+        self.options.scale_y = self.options.filtered_y;
+      }
+      else
+      {
+        self.options.scale_y = self.options.y;
+      }
       self._filterIndices();
       self._close_hidden_simulations();
       self._schedule_update({update_y:true, update_leaders:true, render_data:true, render_selection:true});
@@ -411,7 +443,15 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "v")
     {
-      self.options.filtered_v = self._filterValues(self.options.v);
+      if(self.options["auto-scale"])
+      {
+        self.options.filtered_v = self._filterValues(self.options.v);
+        self.options.scale_v = self.options.filtered_v;
+      }
+      else
+      {
+        self.options.scale_v = self.options.v;
+      }
       self._schedule_update({render_data:true, render_selection:true, update_legend_axis:true});
     }
 
@@ -453,11 +493,43 @@ $.widget("parameter_image.scatterplot",
     else if(key == "hidden_simulations")
     {
       self._filterIndices();
-      self.options.filtered_x = self._filterValues(self.options.x);
-      self.options.filtered_y = self._filterValues(self.options.y);
-      self.options.filtered_v = self._filterValues(self.options.v);
+      if(self.options["auto-scale"])
+      {
+        self.options.filtered_x = self._filterValues(self.options.x);
+        self.options.filtered_y = self._filterValues(self.options.y);
+        self.options.filtered_v = self._filterValues(self.options.v);
+        self.options.scale_x = self.options.filtered_x;
+        self.options.scale_y = self.options.filtered_y;
+        self.options.scale_v = self.options.filtered_v;
+      }
+      else
+      {
+        self.options.scale_x = self.options.x;
+        self.options.scale_y = self.options.y;
+        self.options.scale_v = self.options.v;
+      }
       self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
       self._close_hidden_simulations();
+    }
+
+    else if(key == "auto-scale")
+    {
+      if(self.options["auto-scale"])
+      {
+        self.options.filtered_x = self._filterValues(self.options.x);
+        self.options.filtered_y = self._filterValues(self.options.y);
+        self.options.filtered_v = self._filterValues(self.options.v);
+        self.options.scale_x = self.options.filtered_x;
+        self.options.scale_y = self.options.filtered_y;
+        self.options.scale_v = self.options.filtered_v;
+      }
+      else
+      {
+        self.options.scale_x = self.options.x;
+        self.options.scale_y = self.options.y;
+        self.options.scale_v = self.options.v;
+      }
+      self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
     }
   },
 
@@ -470,7 +542,15 @@ $.widget("parameter_image.scatterplot",
     {
       self.options.v_string = data.v_string;
     }
-    self.options.filtered_v = self._filterValues(self.options.v);
+    if(self.options["auto-scale"])
+    {
+      self.options.filtered_v = self._filterValues(self.options.v);
+      self.options.scale_v = self.options.filtered_v;
+    }
+    else
+    {
+      self.options.scale_v = self.options.v;
+    }
     self._schedule_update({render_data:true, render_selection:true, update_legend_axis:true});
   },
 
@@ -524,7 +604,7 @@ $.widget("parameter_image.scatterplot",
       var height_offset = (total_height - height) / 2;
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.filtered_x, range, false);
+      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false);
       
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
@@ -544,7 +624,7 @@ $.widget("parameter_image.scatterplot",
       var range = [total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = self._createScale(self.options.y_string, self.options.filtered_y, range, false);
+      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false);
 
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
@@ -798,7 +878,7 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
-      self.legend_scale = self._createScale(self.options.v_string, self.options.filtered_v, range, true);
+      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
 
       self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
       self.legend_axis_layer
