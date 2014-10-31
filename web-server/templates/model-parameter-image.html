@@ -817,6 +817,12 @@ rights in this software.
               color_variable = [bookmark["variable-selection"]];
             }
 
+            var auto_scale = true;
+            if("auto-scale" in bookmark)
+            {
+              auto_scale = bookmark["auto-scale"];
+            }
+
             $("#controls").controls({
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
@@ -834,6 +840,7 @@ rights in this software.
               "y-variable" : y_index,
               "image-variable" : images_index,
               "color-variable" : color_variable,
+              "auto-scale" : auto_scale,
               hidden_simulations : hidden_simulations,
             });
 
@@ -926,6 +933,12 @@ rights in this software.
             $("#controls").bind("images-selection-changed", function(event, variable)
             {
               images_selection_changed(variable);
+            });
+
+            // Log changes to the auto scale option ...
+            $("#controls").bind("auto-scale", function(event, auto_scale)
+            {
+              auto_scale_option_changed(auto_scale);
             });
 
             // Log changes to hidden selection ...
@@ -1117,6 +1130,16 @@ rights in this software.
           });
           bookmarker.updateState( {"images-selection" : variable} );
           y_index = Number(variable);
+        }
+
+        function auto_scale_option_changed(auto_scale)
+        {
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/auto-scale/" + auto_scale
+          });
+          bookmarker.updateState( {"auto-scale" : auto_scale} );
         }
 
         function open_images_changed(selection)
