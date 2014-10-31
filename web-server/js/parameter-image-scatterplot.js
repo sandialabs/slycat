@@ -470,6 +470,7 @@ $.widget("parameter_image.scatterplot",
     {
       self.options.v_string = data.v_string;
     }
+    self.options.filtered_v = self._filterValues(self.options.v);
     self._schedule_update({render_data:true, render_selection:true, update_legend_axis:true});
   },
 

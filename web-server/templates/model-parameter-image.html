@@ -1046,6 +1046,7 @@ rights in this software.
           update_current_colorscale();
           $("#table").table("option", "colorscale", colorscale);
           $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
+          $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
         }
 
         function update_current_colorscale()
