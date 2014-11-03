@@ -1405,7 +1405,7 @@ $.widget("tracer_image.scatterplot", {
 
     if (drop_existing_selection) {
       self.options.selection = [];
-      // self.options.filtered_selection = []; TODO waiting on data hiding re-implementation
+      self.options.filtered_selection = [];
     }
 
     for(var i = 0; i <= x.length; ++i) {
@@ -1426,7 +1426,9 @@ $.widget("tracer_image.scatterplot", {
         }
       }
     }
-    // TODO self._filterIndices() when data hiding is reimplemented
+
+    self._filterIndices();
+    self.options.selection = self.options.filtered_selection.slice(0);
     self._schedule_update({ render_selection: true });
     self.element.trigger("selection-changed", [self.options.selection]);
   },
