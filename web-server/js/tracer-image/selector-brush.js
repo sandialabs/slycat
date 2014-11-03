@@ -5,7 +5,7 @@ function SelectorBrush(plot_obj, plot_container) {
   this.x_scale = null;
   this.y_scale = null;
   this.drag_threshold = 5;
-  this.click_radius = 3;
+  //this.click_radius = 3; //now handled in scatterplot.updates['render_data']
   this.brush = d3.svg.brush()
     .on('brushstart', this.hide_other_brushes())
     .on('brush', this.select_points());
@@ -41,14 +41,15 @@ SelectorBrush.prototype.select_points = function() {
       self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
     }
     else {
+      //now handled in scatterplot.updates['render_data']
       // 'hi' values will be identical in the case of a click, so just use 'lo'
-      selection = {
-        "x_lo": self.x_scale.invert(self.x_scale(x_lo) - self.click_radius),
-        "y_lo": self.y_scale.invert(self.y_scale(y_lo) + self.click_radius), // + b/c pixels indexed from top to bottom
-        "x_hi": self.x_scale.invert(self.x_scale(x_lo) + self.click_radius),
-        "y_hi": self.y_scale.invert(self.y_scale(y_lo) - self.click_radius)
-      };
-      self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
+      // selection = {
+      //   "x_lo": self.x_scale.invert(self.x_scale(x_lo) - self.click_radius),
+      //   "y_lo": self.y_scale.invert(self.y_scale(y_lo) + self.click_radius), // + b/c pixels indexed from top to bottom
+      //   "x_hi": self.x_scale.invert(self.x_scale(x_lo) + self.click_radius),
+      //   "y_hi": self.y_scale.invert(self.y_scale(y_lo) - self.click_radius)
+      // };
+      //self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
     }
   });
 };
