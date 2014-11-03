@@ -298,30 +298,57 @@ Movie.prototype.increment_current_image_index = function() {
 
 Movie.prototype.build_server_movie = function() {
   var self = this;
-  var agent_id = login.get_agent(this.plot.images.filter(function(url){return url && url.length > 0})[0]);
+  self.agent_id = login.get_agent(this.plot.images.filter(function(url){return url && url.length > 0})[0]);
   console.debug("asdf");
 
   model.get_image_column(this.plot.images_index, function(images) {
     $.ajax({
       type: "POST",
-      url: "{{server-root}}agents/" + agent_id + "/videos",
-      data: {
-        "content-type": "video/mp4",
+      url: "{{server-root}}agents/" + self.agent_id + "/videos",
+      contentType: "application/json",
+      data: JSON.stringify({
+        "content-type": !$.browser["mozilla"] ? "video/mp4" : "video/webm",
         images: [images.filter(function(url){ return url != null && url.length > 0; })]
-      },
-      success: function(agent_id){
-        self.show_movie(agent_id);
+      }),
+      success: function(movie){
+        self.movie = movie;
+        console.debug(arguments);
+        self.show_movie();
       }
     });
   });
 }
 
-Movie.prototype.show_movie = function(movie_id) {
-  $(document).append("<video>").attr({
-        height: 300,
-        width: 300,
-        id: "test_video"
+Movie.prototype.show_movie = function() {
+  var width = $(this.plot.grid_ref).attr("width");
+  var height = $(this.plot.grid_ref).attr("height");
+  this.video = d3.select(this.plot.plot_ref)
+    .insert("foreignObject", ":first-child")
+      .attr({x: 0,
+        y: 0,
+        width: width,
+        height: height
       })
-    .append("<source>")
-      .attr({src: "{{server-root}}agents/{{_id}}/videos/" + movie_id})
+    .append("xhtml:body")
+      .style("background", "transparent")
+    .append("xhtml:video")
+     .attr({
+       src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
+       id: "test_video",
+       preload:true,
+       height: height,
+       width: width,
+       type: "video/webm"
+     });
+
+   this.video = new Popcorn(this.plot.plot_ref + " video");
+ }
+
+Movie.prototype.get_status = function() {
+  $.ajax({
+    type: "GET",
+    url : "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid + "/status",
+    success : console.debug,
+    error : console.debug
+  });
 }

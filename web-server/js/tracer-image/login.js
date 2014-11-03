@@ -134,3 +134,9 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
   });
   self.image_login.dialog("open");
 };
+
+Login.prototype.get_agent = function()
+{
+  parser = {hostname: "localhost"};
+  return this.session_cache[parser.hostname + "-agent"];
+};
