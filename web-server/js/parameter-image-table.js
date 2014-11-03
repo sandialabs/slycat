@@ -29,7 +29,7 @@ $.widget("parameter_image.table",
     "image-variable" : null,
     "x-variable" : null,
     "y-variable" : null,
-    colormap : null,
+    colorscale : null,
     hidden_simulations : [],
   },
 
@@ -44,8 +44,8 @@ $.widget("parameter_image.table",
 
     function cell_formatter(row, cell, value, columnDef, dataContext)
     {
-      if(columnDef.colormap)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      if(columnDef.colorscale)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
       else if(value==null)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
@@ -53,8 +53,8 @@ $.widget("parameter_image.table",
 
     function editable_cell_formatter(row, cell, value, columnDef, dataContext)
     {
-      if(columnDef.colormap)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+      if(columnDef.colorscale)
+        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
       else if(value==null)
         return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
       return value_formatter(value);
@@ -109,8 +109,8 @@ $.widget("parameter_image.table",
           }
         );
       }
-      // Special options for numeric columns
-      if( self.options.metadata["column-types"][column_index] != "string" && self.options.metadata["column-count"]-1 != column_index ) {
+      // Special options for non-image and non-index columns
+      else if( self.options.metadata["column-count"]-1 != column_index ) {
         column.headerCssClass += " headerNumeric";
         column.header.buttons.push(
           {
@@ -215,7 +215,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+          if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
             self.columns[i].header.buttons[1].tooltip = "Set as x variable";
             self.columns[i].header.buttons[1].command = "x-on";
@@ -231,7 +231,7 @@ $.widget("parameter_image.table",
       {
         for(var i in self.columns)
         {
-          if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+          if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
             self.columns[i].header.buttons[2].tooltip = "Set as y variable";
             self.columns[i].header.buttons[2].command = "y-on";
@@ -265,12 +265,10 @@ $.widget("parameter_image.table",
     self.grid.onHeaderClick.subscribe(function (e, args)
     {
       if( !self._array_equal([args.column.field], self.options["variable-selection"]) && 
-          ( (self.options.metadata["column-types"][args.column.id] != "string")
-            /* || (self.options["categories"].indexOf(args.column.field) != -1) */ )
+          self.options.images.indexOf(args.column.field) == -1
         )
       {
         self.options["variable-selection"] = [args.column.field];
-        self._color_variables(self.options["variable-selection"]);
         self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
       }
     });
@@ -338,7 +336,7 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self._color_variables(value);
     }
-    else if(key == "colormap")
+    else if(key == "colorscale")
     {
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
@@ -381,7 +379,7 @@ $.widget("parameter_image.table",
     var self = this;
     for(var i in self.columns)
     {
-      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+      if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
         if( self.columns[i].id == self.options["x-variable"]){
           self.columns[i].header.buttons[1].cssClass = "icon-x-on";
           self.columns[i].header.buttons[1].tooltip = "Current x variable";
@@ -401,7 +399,7 @@ $.widget("parameter_image.table",
     var self = this;
     for(var i in self.columns)
     {
-      if(self.options.metadata["column-types"][self.columns[i].id] != "string" && self.options.metadata["column-count"]-1 != self.columns[i].id){
+      if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
         if( self.columns[i].id == self.options["y-variable"]){
           self.columns[i].header.buttons[0].cssClass = "icon-y-on";
           self.columns[i].header.buttons[0].tooltip = "Current y variable";
@@ -443,78 +441,18 @@ $.widget("parameter_image.table",
     for(var i in columns)
     {
       var column = columns[i];
-      if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
+      if(self.options.colorscale !== null && $.inArray(column.id, variables) != -1)
       {
-        // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
-        column.colormap = self.options.colormap.copy();
-
-        if(self.options.metadata["column-types"][column.id] != "string")
-        {
-          var new_domain = []
-          var domain_scale = d3.scale.linear()
-            .domain([0, column.colormap.range().length])
-            .range([self.options.statistics[column.id]["min"], self.options.statistics[column.id]["max"]]);
-          for(var i in column.colormap.range())
-            new_domain.push(domain_scale(i));
-          column.colormap.domain(new_domain);
-          self.grid.invalidate();
-        }
-        else
-        {
-          // Get all the values for the current column
-
-          function getAllValues(column){
-            $.ajax(
-            {
-              type : "GET",
-              url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" 
-                + self.options.aid + "/arrays/0/chunk?rows=0-" + self.options.metadata['row-count'] + "&columns=" + column.id + "&sort=" + column.id + ":ascending",
-              success : function(result)
-              {
-                
-                var uniqueValues = d3.set(result.data[0]).values();
-                var tempOrdinal = d3.scale.ordinal().domain(uniqueValues).rangePoints([0, 100], 0);
-
-                var domain_scale = d3.scale.linear()
-                  .domain([0, column.colormap.range().length])
-                  .range([0, 100]);
-
-                var new_domain = []
-                for(var i in column.colormap.range())
-                  new_domain.push(domain_scale(i));
-
-                var tempColormap = self.options.colormap.copy();
-                tempColormap.domain(new_domain);
-
-                var rgbRange = [];
-                for(var i=0; i<uniqueValues.length; i++)
-                {
-                  rgbRange.push( tempColormap( tempOrdinal(uniqueValues[i]) ) );
-                }
-                var ordinalColormap = d3.scale.ordinal().domain(uniqueValues).range(rgbRange);
-
-                column.colormap = ordinalColormap;
-
-                self.grid.invalidate();
-              },
-              error: function(request, status, reason_phrase)
-              {
-                console.log("Error retrieving data table: " + reason_phrase);
-              }
-            });
-          }
-          getAllValues(column);
-        }
-
+        column.colorscale = self.options.colorscale;
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
       }
       else
       {
-        column.colormap = null;
+        column.colorscale = null;
         column.cssClass = column.cssClass.split(" ")[0];
-        self.grid.invalidate();
       }
     }
+    self.grid.invalidate();
   },
 
   _editCommandHandler: function (item,column,editCommand) {

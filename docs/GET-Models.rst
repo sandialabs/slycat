@@ -10,10 +10,6 @@ number. **Caveat:** Currently, only "open" models are returned. Models
 may be in any of the four states "waiting", "running", "finished", or
 "closed", and any model not "closed" is considered "open".
 
-The HTML representation provides a simple user interface for viewing
-open models and optionally closing them. Most clients will request the
-JSON representation and create their own user interface.
-
 Requests
 --------
 
@@ -41,7 +37,7 @@ Responses
 Returns
 ^^^^^^^
 
-text/html, application/json
+application/json
 
 Examples
 --------

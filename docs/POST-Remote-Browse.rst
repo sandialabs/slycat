@@ -6,7 +6,7 @@ Description
 -----------
 
 Uses an existing session to retrieve remote filesystem information.  The
-session must have been created successfully using :ref:`POST Remote`.  The caller
+session must have been created successfully using :ref:`POST Remotes`.  The caller
 *must* supply the session id, and the path on the remote filesystem to retrieve.
 The caller *may* supply additional parameters to filter directories and files in
 the results, based on regular expressions.
@@ -22,7 +22,7 @@ Syntax
 
 ::
 
-    POST /remote/browse
+    POST /remotes/(session)/browse(directory)
 
 Accepts
 ^^^^^^^
@@ -32,8 +32,6 @@ application/json
 Parameters
 ^^^^^^^^^^
 
-* sid - required remote session identifier.
-* path - required remote filesystem path.
 * directory-reject - optional regular expression for filtering directories.
 * directory-allow - optional regular expression for retaining directories.
 * file-reject - optional regular expression for filtering files.
@@ -67,11 +65,10 @@ Sample Request
 
 ::
 
-  POST /remote/browse
+  POST /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
 
   {
-    sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
-    path: "/home/fred"
+    file-reject:"[.]jpg$"
   }
 
 Sample Response
@@ -89,6 +86,6 @@ Sample Response
 See Also
 --------
 
-* :ref:`POST Remote`
+* :ref:`POST Remotes`
 * :ref:`GET Remote File`
 

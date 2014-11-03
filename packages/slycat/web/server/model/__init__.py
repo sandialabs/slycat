@@ -13,60 +13,7 @@ import slycat.table
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import sys
-import threading
-import time
 import uuid
-
-# Create a condition variable used to signal observers whenever a model is updated.
-updated = threading.Condition()
-# Keep track of model revisions
-revision = 0
-# Cache model ids
-id_cache = set()
-
-def database_monitor():
-  database = slycat.web.server.database.couchdb.connect()
-
-  # Initialize the cache ...
-  global updated, revision, id_cache
-  changes = database.changes(filter="slycat/models")
-  with updated:
-    revision = changes["last_seq"]
-    for change in changes["results"]:
-      if "deleted" in change:
-        if change["id"] in id_cache:
-          del id_cache[change["id"]]
-      else:
-        id_cache.add(change["id"])
-
-  cherrypy.log.error("Initialized id cache to revision %s, loaded %s ids." % (revision, len(id_cache)))
-
-  # Update the cache when the database changes ...
-  while True:
-    try:
-      for change in database.changes(filter="slycat/models", feed="continuous", since=revision):
-        with updated:
-          if "deleted" in change:
-            if change["id"] in id_cache:
-              revision = change["seq"]
-              updated.notify_all()
-          elif "seq" in change:
-            id_cache.add(change["id"])
-            revision = change["seq"]
-            updated.notify_all()
-    except:
-      cherrypy.log.error("Waiting to reconnect to database.")
-      time.sleep(1.0)
-      database = slycat.web.server.database.couchdb.connect()
-
-
-def start_database_monitor():
-  if start_database_monitor.thread is None:
-    cherrypy.log.error("Starting database monitor.")
-    start_database_monitor.thread = threading.Thread(name="Database Monitor", target=database_monitor)
-    start_database_monitor.thread.daemon = True
-    start_database_monitor.thread.start()
-start_database_monitor.thread = None
 
 def update(database, model, **kwargs):
   """Update the model, and signal any waiting threads that it's changed."""

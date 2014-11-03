@@ -30,13 +30,13 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/slickGrid/slick.autotooltips.js"></script>
 
     <!-- Page styles -->
-    <link rel="stylesheet" href="{{server-root}}style/model-timeseries.css" type="text/css">
+    <link rel="stylesheet" href="{{server-root}}css/model-timeseries.css" type="text/css">
 
     <!-- SlickGrid styles -->
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.grid.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-default-theme.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick.headerbuttons.css" type="text/css"/>
-    <link rel="stylesheet" href="{{server-root}}style/slickGrid/slick-slycat-theme.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick-default-theme.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick.headerbuttons.css" type="text/css"/>
+    <link rel="stylesheet" href="{{server-root}}css/slickGrid/slick-slycat-theme.css" type="text/css"/>
   </head>
 
   <body class="timeseries">
@@ -750,7 +750,7 @@ rights in this software.
             // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
             //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var colormap = $("#color-switcher").colorswitcher("option", "colormap");
-            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max);
+            var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max);
 
             $("#waveform-pane").css({
               "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
@@ -811,7 +811,7 @@ rights in this software.
                 "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
                 "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
                 });
-              $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
+              $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
             });
 
             // Log changes to the waveform selection
@@ -837,7 +837,7 @@ rights in this software.
             };
 
             var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-            table_options.colormap = $("#color-switcher").colorswitcher("get_color_map", colormap);
+            table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
 
             if(bookmark[initial_cluster + "-column-index"] !== undefined)
             {
@@ -883,7 +883,7 @@ rights in this software.
             // Changing the colormap updates the table ...
             $("#color-switcher").bind("colormap-changed", function(event, colormap)
             {
-              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_map", colormap));
+              $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
             });
 
             // Log changes to the table row selection
@@ -918,7 +918,7 @@ rights in this software.
                   var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
                   var parameters = {
                     color_array : array,
-                    color_scale : $("#color-switcher").colorswitcher("get_color_map", currentColormap, selected_column_min, selected_column_max),
+                    color_scale : $("#color-switcher").colorswitcher("get_color_scale", currentColormap, selected_column_min, selected_column_max),
                   }
                   $("#waveform-viewer").waveformplot("option", "color-options", parameters);
                   $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
@@ -943,7 +943,7 @@ rights in this software.
             // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
             //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
             var colormap = $("#color-switcher").colorswitcher("option", "colormap");
-            var color_scale = $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max);
+            var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max);
 
 
             $("#dendrogram-sparkline-backdrop").css({
@@ -997,7 +997,7 @@ rights in this software.
               $("#dendrogram-sparkline-backdrop").css({
                 "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
                 });
-              $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_map", colormap, selected_column_min, selected_column_max));
+              $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
             });
 
             // Changing table's sort order updated the dendrogram sort control

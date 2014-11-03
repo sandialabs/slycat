@@ -43,6 +43,10 @@ if not os.path.exists(arguments.output_path):
 # default to the ID field for our inputs output
 arguments.inputs = arguments.inputs or [arguments.id_field] 
 
+# check to see if the #time_field is in the outputs and that it is the first one, if not, add it
+if len(arguments.outputs) or arguments.outputs[0] != arguments.time_field:
+  arguments.outputs = [arguments.time_field] + arguments.outputs
+
 def generate_hdf5_file(data, attrs, filename):
   dimensions = [{"name": "row", "end": data.shape[1]}]
   attributes = [{"name": attr, "type": "float64"} for attr in attrs]
@@ -77,7 +81,7 @@ generate_hdf5_file(inputs, arguments.inputs, "inputs.hdf5")
 ######################
 # timeseries-N.hdf5  #
 ######################
-# group into an outputs dict by each of our ids and transpose for direct right to hdf5
+# group into an outputs dict by each of our ids and transpose for direct write to hdf5
 outputs = {i: numpy.array([[row[k] for k in arguments.outputs] for row in rows if row[arguments.id_field] == i], dtype="float64").T for i in ids}
 
 # generate a timeseries-<i>.hdf5 file for each group of outputs by id field

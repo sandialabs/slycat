@@ -12,6 +12,7 @@ Reference Documentation
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
    slycat.web.client.rst
+   slycat.web.server.agent.rst
    slycat.web.server.authentication.rst
    slycat.web.server.database.couchdb.rst
    slycat.web.server.database.hdf5.rst
