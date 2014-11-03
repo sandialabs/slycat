@@ -4,18 +4,40 @@ function SelectorBrush(plot_container) {
   this.x_scale = null;
   this.y_scale = null;
   this.drag_threshold = 5;
+  this.click_radius = 3;
   this.brush = d3.svg.brush().on('brush', this.brush_action());
 }
 
 SelectorBrush.prototype.brush_action = function() {
   // return a function so that object scope ('this') is captured in closure when registering callback
   var self = this;
-  return (function() {
+  return (function() { //this will implicitly be passed event when action is triggered
      // only update brush selection for a mouse drag, not for a click
-    var dragged_x = Math.abs(self.x_scale(self.brush.extent()[0][0]) - self.x_scale(self.brush.extent()[1][0])) > self.drag_threshold;
-    var dragged_y = Math.abs(self.y_scale(self.brush.extent()[0][1]) - self.y_scale(self.brush.extent()[1][1])) > self.drag_threshold;
+    var x_lo = self.brush.extent()[0][0];
+    var y_lo = self.brush.extent()[0][1];
+    var x_hi = self.brush.extent()[1][0];
+    var y_hi = self.brush.extent()[1][1];
+    var dragged_x = Math.abs(self.x_scale(x_lo) - self.x_scale(x_hi)) > self.drag_threshold;
+    var dragged_y = Math.abs(self.y_scale(y_lo) - self.y_scale(y_hi)) > self.drag_threshold;
+    var selection;
     if (dragged_x || dragged_y) {
-      self.plot_container.scatterplot("brush_select", self.brush.extent());
+      selection = {
+        "x_lo": x_lo,
+        "y_lo": y_lo,
+        "x_hi": x_hi,
+        "y_hi": y_hi
+      };
+      self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
+    }
+    else {
+      // 'hi' values will be identical in the case of a click, so just use 'lo'
+      selection = {
+        "x_lo": self.x_scale.invert(self.x_scale(x_lo) - self.click_radius),
+        "y_lo": self.y_scale.invert(self.y_scale(y_lo) + self.click_radius), // + b/c pixels indexed from top to bottom
+        "x_hi": self.x_scale.invert(self.x_scale(x_lo) + self.click_radius),
+        "y_hi": self.y_scale.invert(self.y_scale(y_lo) - self.click_radius)
+      };
+      self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
     }
   });
 };

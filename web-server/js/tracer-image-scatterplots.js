@@ -17,8 +17,6 @@ $.widget("tracer_image.scatterplot", {
     //The parent to use for resizing purposes:
     display_pane : "",
     dimension_adjustments: {width: function(){return 0}, height: function(){return 0;}},
-    pick_distance : 3,
-    drag_threshold : 3,
     indices : [],
     x : [],
     y : [],
@@ -218,7 +216,7 @@ $.widget("tracer_image.scatterplot", {
 
   _build_image_control: function() {
     var self = this;
-    self.image_control_layer = self.group.append("g").attr("class", "image-select");
+    self.image_control_layer = self.x_axis_layer.append("g").attr("class", "image-select");
 
     self.image_control = new PlotControl({
       plot: self.options.scatterplot_obj,
@@ -403,7 +401,8 @@ $.widget("tracer_image.scatterplot", {
 
       var range = self.x_scale.range();
       var range_midpoint = (range[1] - range[0])/2 + range[0];
-      var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2; //account for control width
+      //account for control width and leave space for image control
+      var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2 - 60;
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
     }
 
@@ -445,8 +444,8 @@ $.widget("tracer_image.scatterplot", {
     {
       var domain = self.x_scale.range();
       var domain_midpoint = (domain[1] - domain[0])/2 + domain[0];
-      var control_x_offset = domain_midpoint - Number(self.image_control.foreign_object.attr('width'))/2;
-      self.image_control_layer.attr("transform", "translate(" + control_x_offset + ",0)");
+      var image_control_offset = domain_midpoint - Number(self.image_control.foreign_object.attr('width'))/2 + 60;
+      self.image_control_layer.attr("transform", "translate(" + image_control_offset + ",30)");
 
       //update brush since scale(s) changed in prior if-clauses
       self.brush.rescale(self.x_scale, self.y_scale);
@@ -1397,25 +1396,40 @@ $.widget("tracer_image.scatterplot", {
     return this.options[option];
   },
 
-  brush_select: function(selection_bounds) {
+  brush_select: function(selection /* hash */, drop_existing_selection /* boolean */) {
     var self = this;
     var x = self.options.x;
     var y = self.options.y;
-    var x_lo = selection_bounds[0][0];
-    var y_lo = selection_bounds[0][1];
-    var x_hi = selection_bounds[1][0];
-    var y_hi = selection_bounds[1][1];
-    self.options.selection = []; // empty previous selection
+
+    if (drop_existing_selection) {
+      self.options.selection = [];
+      // self.options.filtered_selection = []; TODO waiting on data hiding re-implementation
+    }
+
     for(var i = 0; i <= x.length; ++i) {
-      if(x_lo <= x[i] && x[i] <= x_hi && y_lo <= y[i] && y[i] <= y_hi) {
+      if(selection.x_lo <= x[i] && x[i] <= selection.x_hi && selection.y_lo <= y[i] && y[i] <= selection.y_hi) {
+        if (drop_existing_selection) {
           self.options.selection.push(self.options.indices[i]);
+        }
+        else {
+          var index = self.options.selection.indexOf(self.options.indices[i]);
+          if(index == -1) { // not found
+            // select a new point
+            self.options.selection.push(self.options.indices[i]);
+          }
+          else {
+            // deselect an existing point
+            //self.options.selection.splice(index, 1);
+          }
+        }
       }
     }
+    // TODO self._filterIndices() when data hiding is reimplemented
     self._schedule_update({ render_selection: true });
     self.element.trigger("selection-changed", [self.options.selection]);
   },
 
-  handle_drag: function(drag_object, e)
+  /*handle_drag: function(drag_object, e)
   {
     var self = this;
     if(self.state == "resizing" || self.state == "moving")
@@ -1487,7 +1501,7 @@ $.widget("tracer_image.scatterplot", {
     self.options.selection = self.options.filtered_selection.slice(0);
     self._schedule_update({render_selection:true});
     self.element.trigger("selection-changed", [self.options.selection]);
-  },
+  },*/
 
   _get_plot_offsets: function(){
     var offsets = $(this.options.scatterplot_obj.grid_ref).attr("transform").split(new RegExp("[( ,)]"));
