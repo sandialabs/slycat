@@ -10,6 +10,10 @@ import subprocess
 import tempfile
 import time
 
+this_dir = os.path.dirname(__file__)
+parent_dir = os.path.dirname(os.path.dirname(__file__))
+root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
 @when("an unparsable command is received")
 def step_impl(context):
   context.agent.stdin.write("foo\n")
@@ -62,7 +66,7 @@ def step_impl(context):
 
 @when(u'browsing a nonexistent path')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.join(os.path.dirname(__file__), "foo.bar")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.join(this_dir, "foo.bar")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return a nonexistent path error')
@@ -71,7 +75,7 @@ def step_impl(context):
 
 @when(u'browsing a directory')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":parent_dir}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information')
@@ -84,7 +88,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with a file reject rule')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected files')
@@ -95,7 +99,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with file reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "file-allow":"hdf5[.]py$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "file-allow":"hdf5[.]py$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected files, with the allowed files')
@@ -106,7 +110,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with a directory reject rule')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories')
@@ -117,7 +121,7 @@ def step_impl(context):
 
 @when(u'browsing a directory with directory reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "directory-allow":"timeseries$", "path":os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../packages/slycat"))}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "directory-allow":"timeseries$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories, with the allowed directories')
@@ -152,7 +156,7 @@ def step_impl(context):
 
 @when(u'retrieving a nonexistent file')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":os.path.join(os.path.dirname(__file__), "foo.txt")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":os.path.join(this_dir, "foo.txt")}))
   context.agent.stdin.flush()
 
 @when(u'retrieving the csv file')
@@ -178,7 +182,7 @@ def step_impl(context):
 
 @when(u'retrieving a nonexistent image')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":os.path.join(os.path.dirname(__file__), "foo.jpg")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":os.path.join(this_dir, "foo.jpg")}))
   context.agent.stdin.flush()
 
 @when(u'retrieving an image using an unsupported content type')
@@ -192,7 +196,7 @@ def step_impl(context):
 
 @given(u'a sample jpeg image')
 def step_impl(context):
-  context.jpeg_image_path = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../../artwork/slycat-logo.jpg"))
+  context.jpeg_image_path = os.path.join(root_dir, "artwork/slycat-logo.jpg")
 
 @when(u'retrieving the jpeg image')
 def step_impl(context):
