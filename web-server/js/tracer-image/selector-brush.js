@@ -1,18 +1,29 @@
-function SelectorBrush(plot_container) {
+function SelectorBrush(plot_obj, plot_container) {
+  this.plot_obj = plot_obj;
   this.plot_container = plot_container;
   this.data_container = null;
   this.x_scale = null;
   this.y_scale = null;
   this.drag_threshold = 5;
   this.click_radius = 3;
-  this.brush = d3.svg.brush().on('brush', this.brush_action());
+  this.brush = d3.svg.brush()
+    .on('brushstart', this.hide_other_brushes())
+    .on('brush', this.select_points());
 }
 
-SelectorBrush.prototype.brush_action = function() {
+SelectorBrush.prototype.hide_other_brushes = function() {
+  // return a function so that object scope ('this') is captured in closure when registering callback
+  var self = this;
+  return (function() {
+    d3.selectAll('.scatterplot rect.extent').style('display', 'none');
+    d3.select(self.plot_obj.plot_ref).select('rect.extent').style('display', 'block');
+  });
+};
+
+SelectorBrush.prototype.select_points = function() {
   // return a function so that object scope ('this') is captured in closure when registering callback
   var self = this;
   return (function() { //this will implicitly be passed event when action is triggered
-     // only update brush selection for a mouse drag, not for a click
     var x_lo = self.brush.extent()[0][0];
     var y_lo = self.brush.extent()[0][1];
     var x_hi = self.brush.extent()[1][0];

@@ -111,9 +111,11 @@ ScatterPlot.prototype.setup = function() {
     var sized_parent = $("#grid-pane");
 
     this.scatterplot_obj = $(this.plot_ref + " .scatterplot");
+    this.selector_brush = new SelectorBrush(this, this.scatterplot_obj);
 
     this.scatterplot_obj.scatterplot({
       scatterplot_obj: self,
+      selector_brush: self.selector_brush,
       indices: model.indices,
       display_pane: "#grid-pane",
       x: self.x,
