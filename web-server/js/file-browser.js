@@ -226,11 +226,11 @@ $.widget("slycat.browser",
                 var entry = $("<div/>").appendTo(item);
                 //var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
-                concat_name = name;
-                if (name.length > 20){
-                  concat_name = name.substring(0,18)+"...";
-                }
-                var label = $("<span class='label'></span>").text(concat_name).appendTo(entry);
+                //concat_name = name;
+                //if (name.length > 20){
+                //  concat_name = name.substring(0,18)+"...";
+                //}
+                var label = $("<span class='label'></span>").text(name).appendTo(entry);
 
                 item.data("path", path.replace(/\/$/, "") + "/" + name);
                 item.bind("toggle-directory", toggle_directory(self));
