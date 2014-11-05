@@ -114,16 +114,16 @@ $.widget("slycat.browser",
     {
       return function()
       {
-        if($(this).hasClass("open")) // Collapse this node ...
-        {
+        //if($(this).hasClass("open")) // Collapse this node ...
+        //{
           //THIS IS GONE FOR REFACTOR
           //id = parseInt($(this).parent().parent()[0].id);
           //id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
           //toggle_all_folders_after_column(id,true);
           $(this).removeClass("open");
-        }
-        else // Expand this node ...
-        {
+        //}
+        //else // Expand this node ...
+        //{
           //THIS IS GONE FOR REFACTOR
           //If the folder we are expanding is the host, we want to prepend a / to the path input box.
           //if ($(this).hasClass("host")){
@@ -269,7 +269,7 @@ $.widget("slycat.browser",
               }
             }
           });
-        }
+        //}
 
         return false;
       }
