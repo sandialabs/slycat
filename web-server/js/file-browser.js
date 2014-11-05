@@ -195,21 +195,24 @@ $.widget("slycat.browser",
               //}
 
               //APPEND A FOLDER THAT WILL GO UP A LEVEL.
-              var item = $("<tr>").attr("id","up_dir").appendTo(container);
-              var entry = $("<div/>").appendTo(item);
-              var arrow = $("<span class='arrow'></span>").appendTo(entry);
-              var icon = $("<span class='icon'></span>").appendTo(entry);
-              var label = $("<span class='label'></span>").text("Move up a directory").appendTo(entry);
-              item_path = path.replace(/\/\.?\w*\/?$/, "");
-              if (item_path == ""){
-                item_path += "/"
+              if (path != "/"){
+                console.log(path);
+                var item = $("<tr>").attr("id","up_dir").appendTo(container);
+                var entry = $("<div/>").appendTo(item);
+                //var arrow = $("<span class='arrow'></span>").appendTo(entry);
+                var icon = $("<span class='icon'></span>").appendTo(entry);
+                var label = $("<span class='label'></span>").text("..").appendTo(entry);
+                item_path = path.replace(/\/\.?\w*\/?$/, "");
+                if (item_path == ""){
+                  item_path += "/"
+                }
+                item.data("path", item_path);
+                item.bind("toggle-directory", toggle_directory(self));
+                entry.click(select_item(self, item));
+                item.addClass("directory");
+                //arrow.click(click_arrow(item));
+                entry.dblclick(double_click_directory(item));
               }
-              item.data("path", item_path);
-              item.bind("toggle-directory", toggle_directory(self));
-              entry.click(select_item(self, item));
-              item.addClass("directory");
-              arrow.click(click_arrow(item));
-              entry.dblclick(double_click_directory(item));
               //END OF ADDING UP A DIRECTORY FOLDER.
               for(var i = 0; i != result.names.length; ++i)
               {
@@ -219,7 +222,7 @@ $.widget("slycat.browser",
 
                 var item = $("<tr>").attr("id",name.replace(".","dot")).appendTo(container);
                 var entry = $("<div/>").appendTo(item);
-                var arrow = $("<span class='arrow'></span>").appendTo(entry);
+                //var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
                 concat_name = name;
                 if (name.length > 20){
@@ -235,7 +238,7 @@ $.widget("slycat.browser",
                 if(type == "d")
                 {
                   item.addClass("directory");
-                  arrow.click(click_arrow(item));
+                  //arrow.click(click_arrow(item));
                   entry.dblclick(double_click_directory(item));
                 }
                 else if(type == "f")
@@ -276,11 +279,11 @@ $.widget("slycat.browser",
     var input_with_text = false;
     var item = $("<tr>").appendTo(container1);
     var entry = $("<div/>").appendTo(item);
-    var arrow = $("<span class='arrow'></span>").appendTo(entry);
+    //var arrow = $("<span class='arrow'></span>").appendTo(entry);
     var icon = $("<span class='icon'></span>").appendTo(entry);
     var label = $("<span class='label'></span>").text(self.options.root_label).appendTo(entry);
 
-    arrow.click(click_arrow(item));
+    //arrow.click(click_arrow(item));
     entry.dblclick(double_click_directory(item));
     item.data("path", self.options.root_path);
     item.bind("toggle-directory", toggle_directory(self));
