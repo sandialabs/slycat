@@ -4,9 +4,10 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 .top-shelf{
-  height:50px;
   padding-right:5px;
-  margin-bottom:5px;
+  background: none repeat scroll 0 0 white;
+  margin-top: -7px;
+  position: fixed;
 }
 .pull-left{
   float:left;
@@ -25,6 +26,7 @@ rights in this software.
 #remote-pi-browser{
   display: inline-block;
   margin-bottom:15px;
+  margin-top: 45px;
 }
 table.file-browser{
   float: left;
