@@ -235,13 +235,12 @@ Movie.prototype.play = function(on_success) {
   // TODO right now we just look at the first image
 
   if(!login.logged_into_host_for_file(self.plot.images[0])) {
-    self.stop();
-    var plot = $(self.plot.plot_ref + " .scatterplot");
-    var images = plot.scatterplot("get_option", "images")
+    var images = self.plot.images
       .filter(function(image){ return image.length > 0; })
       .map(function(image, index)
       {
-        return {index : image.index,
+        return {
+          index : image.index,
           uri : image.trim(),
           image_class : "open-image",
         }
@@ -304,7 +303,6 @@ Movie.prototype.increment_current_image_index = function() {
 Movie.prototype.build_server_movie = function() {
   var self = this;
   self.agent_id = login.get_agent(this.plot.images.filter(function(url){return url && url.length > 0})[0]);
-  console.debug("asdf");
 
   model.get_image_column(this.plot.images_index, function(images) {
     $.ajax({
@@ -353,9 +351,6 @@ Movie.prototype.show_movie = function() {
 Movie.prototype.build_movie_player = function(){
   var width = $(this.plot.grid_ref).attr("width");
   var height = $(this.plot.grid_ref).attr("height");
-  var offset = $(this.plot.grid_ref).attr("transform").split(/[( ,)]/);
-  var left = Number(offset[1]);
-  var top = Number(offset[2]);
 
   this.video = d3.select(this.plot.plot_ref)
     .insert("foreignObject", ":first-child")
@@ -373,21 +368,26 @@ Movie.prototype.build_movie_player = function(){
         width: width,
         controls: true,
       })
-    if(navigator.userAgent.match("WebKit")){
-      //WebKit has a bug with rendering video elements in an svg foreignObject:
-      this.video.attr("style", "position: relative; left: " + left + "px; top: " + top + "px;") 
-    }
-    this.video
-      .append("xhtml:source")
-        .attr({
-          src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
-          type: "video/" + this.video_type
-        });
 
-   this.video = new Popcorn(this.plot.plot_ref + " video");
+  if(navigator.userAgent.match("WebKit")){
+    var offset = $(this.plot.grid_ref).attr("transform").split(/[( ,)]/);
+    var left = Number(offset[1]);
+    var top = Number(offset[2]);
+    //WebKit has a bug with rendering video elements in an svg foreignObject:
+    this.video.attr("style", "position: relative; left: " + left + "px; top: " + top + "px;") 
+  }
 
-   this.setup_hooks();
- }
+  this.video
+    .append("xhtml:source")
+      .attr({
+        src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
+        type: "video/" + this.video_type
+      });
+
+  var self = this;
+  this.video = new Popcorn(this.plot.plot_ref + " video");
+  this.video.on("loadeddata", function(){self.setup_hooks.call(self);})
+}
 
 Movie.prototype.get_status = function() {
   $.ajax({
@@ -399,4 +399,35 @@ Movie.prototype.get_status = function() {
 }
 
 Movie.prototype.setup_hooks = function(){
-}
+  var self = this;
+  var indices = this.plot.images.map(function(x,i){return [x,i];}).filter(function(value){return value[0];});
+  //For now, our framerate is 25 frames/second, which is the default default for ffmpeg.
+  var fps = 25;
+  var timify = function(frame_number, repetitions){
+    var value = Math.floor(frame_number/fps);
+    for(var i = 0; i < repetitions; i++){
+      value = Math.floor(value/60);
+    }
+    return value;
+  };
+
+  var update_events = [];
+
+  for(var i = 0; i < this.video.duration() * fps; i++){
+    //In the SMPTE format: HH:MM:SS.Frame
+    var time = timify(i, 3) + ":" + (timify(i, 2) % 60) + ":" + (timify(i, 1) % 60) + "." + (i % fps);
+
+    var update_index = (function(idx, indices){
+      return function(){
+        console.debug(idx);
+        table.select_rows([indices[idx][1]]);
+      };
+    })(i, indices);
+
+    update_events[i] = update_index;
+  }
+
+  this.video.on("timeupdate", function(){
+    update_events[Math.floor(d3.min([self.video.currentTime() * fps, update_events.length - 1]))]();
+  });
+} 
