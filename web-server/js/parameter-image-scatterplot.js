@@ -312,7 +312,7 @@ $.widget("parameter_image.scatterplot",
     self.options.filtered_selection = filtered_selection;
   },
 
-  // Filters values in place, removing hidden_simulations
+  // Filters source values by removing hidden_simulations
   _filterValues: function(source)
   {
     var self = this;
