@@ -1,6 +1,6 @@
     <script src="{{server-root}}js/jquery.knob.js"></script>
     <script src="{{server-root}}js/jquery.qtip.min.js"></script>
-    <link type="text/css" rel="stylesheet" href="{{server-root}}style/jquery.qtip.min.css" />
+    <link type="text/css" rel="stylesheet" href="{{server-root}}css/jquery.qtip.min.css" />
     <div id="workers">
       <div id="workers-close" style="display: none;">Close</div>
       <div id="workers-container" class="workersCompact">
@@ -11,7 +11,7 @@
     <div id="header">
       <div class="width-wrapper">
         <a href="{{server-root}}projects" id="title-link">
-          <img id="logo" src="{{server-root}}style/slycat-small.png" title="A very sly cat." />
+          <img id="logo" src="{{server-root}}css/slycat-small.png" title="A very sly cat." />
           <h1 id="title">Slycat <span id="version"></span></h1>
         </a>
         <ul id="user-actions">
@@ -20,6 +20,11 @@
         </ul>
       </div>
       <div id="about-slycat-dialog" class="dialog" title="About Slycat" style="display: none;">
+        <p><h3>Slycat</h3></p>
+        <p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>
+        <p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>
+        <p id="about-slycat-help"></p>
+        <p id="about-slycat-version"></p>
       </div>
     </div>
 
@@ -48,20 +53,26 @@
 
         $('#slycat-info').click(function()
         {
-          aboutSlycatDialogOpen();
+          $("#about-slycat-dialog").dialog("open");
+          $.ajax(
+          {
+            type : "GET",
+            url : "{{server-root}}configuration/version",
+            success : function(version)
+            {
+              $("#about-slycat-version").html("Slycat version " + version.version + ", commit " + version.commit);
+            }
+          });
+          $.ajax(
+          {
+            type : "GET",
+            url : "{{server-root}}configuration/support-email",
+            success : function(email)
+            {
+              $("#about-slycat-help").html("Request help at <a href='mailto:" + email.address + "?subject=" + email.subject + "'>" + email.address + "</a>");
+            }
+          });
         });
-
-        $("<p><h3>Slycat</h3></p>").appendTo("#about-slycat-dialog");
-        $("<p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p>").appendTo("#about-slycat-dialog");
-        $("<p>The documentation is <a href='http://slycat.readthedocs.org/en/latest/'>here.</a></p>").appendTo("#about-slycat-dialog");
-        if( "{{help-email}}" !== "None")
-        {
-          $("<p>Request help at <a href=\"mailto:" + "{{help-email}}" + "\">" + "{{help-email}}"  + " </a></p>").appendTo("#about-slycat-dialog");
-        }
-        if( "{{version}}" !== "None")
-        {
-          $("<p>Version: " + "{{version}}" + "</p>").appendTo("#about-slycat-dialog");
-        }
 
         $('#about-slycat-dialog').dialog({
           modal: true,
@@ -73,11 +84,6 @@
             },
           },
         });
-
-        function aboutSlycatDialogOpen()
-        {
-          $("#about-slycat-dialog").dialog("open");
-        }
 
         $('#workers-close').click(function()
         {

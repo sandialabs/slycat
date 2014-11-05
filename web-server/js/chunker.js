@@ -15,7 +15,7 @@ function is_little_endian()
 // Retrieve an array attribute's metadata asynchronously, calling a callback when it's ready ...
 function get_model_array_attribute_metadata(parameters, dfd)
 {
-  $.ajax({
+  return $.ajax({
     url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
     contentType : "application/json",
     success: function(metadata)
@@ -150,6 +150,14 @@ function get_model_array_attribute(parameters) {
   function retrieve_model_array_attribute(parameters) {
     var ranges = [];
     var metadata = parameters.metadata;
+    var attribute = parameters.attribute;
+    var isStringAttribute = metadata.attributes[attribute].type == "string";
+    var byteorder = "&byteorder=" + (is_little_endian() ? "little" : "big");
+    if(isStringAttribute)
+    {
+      byteorder = "";
+    }
+
     for(var dimension in metadata.dimensions)
     {
       ranges.push(metadata.dimensions[dimension].begin);
@@ -158,20 +166,32 @@ function get_model_array_attribute(parameters) {
     ranges = ranges.join(",");
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + "&byteorder=" + (is_little_endian() ? "little" : "big"));
-    request.responseType = "arraybuffer";
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + byteorder);
+    if(!isStringAttribute)
+    {
+      request.responseType = "arraybuffer";
+    }
     request.success = parameters.success;
     request.attribute = parameters.attribute;
     request.metadata = metadata;
+    request.isStringAttribute = isStringAttribute;
     request.onload = function(e)
     {
       var buffer = this.response;
       var metadata = this.metadata;
       var attribute = this.metadata.attributes[this.attribute];
+      var result;
 
       if(metadata.dimensions.length == 1)
       {
-        var result = cast_array_buffer(buffer, attribute.type);
+        if(!this.isStringAttribute)
+        {
+          result = cast_array_buffer(buffer, attribute.type);
+        }
+        else
+        {
+          result = JSON.parse(this.responseText);
+        }
       }
       else if(metadata.dimensions.length == 2)
       {
@@ -179,7 +199,9 @@ function get_model_array_attribute(parameters) {
         var column_count = metadata.dimensions[1].end - metadata.dimensions[1].begin;
         var result = [];
         for(var i = 0; i != row_count; ++i)
-          result.push(cast_array_buffer(buffer, attribute.type, i * column_count, column_count))
+        {
+          result.push(cast_array_buffer(buffer, attribute.type, i * column_count, column_count));
+        }
       }
       else
       {

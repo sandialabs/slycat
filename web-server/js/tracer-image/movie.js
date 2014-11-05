@@ -12,7 +12,7 @@ function Movie(plot) {
   this.stopped = true;
   this.container = this.plot.plot_ref + " .movie";
   this.frame = null;
-  this.d3_movie = d3.select(this.container).selectAll("image");
+  this.d3_movie = null;
   this.interval = 400;
   this.current_image = null;
   // TODO leverage bookmarker here for state of movie
@@ -20,37 +20,76 @@ function Movie(plot) {
   this.current_image_index = -1;
   this.height = null;
   this.width = null;
+  this.loaded_image_count = 0;
+  this.errored_image_count = 0;
   this.open_control = null; //handle to foreignObject so SVG can manipulate
   $(this.container).hide();
+}
+
+Movie.prototype.add_loader = function() {
+  var self = this;
+  this.show();
+  if(!this.loader){
+    this.loader = new LoadingAnimation({
+      start : this.loaded_image_count,
+      end : this.plot.scatterplot_obj.scatterplot("get_option", "images").filter(function(x){return x.length > 0;}).length,
+      errored : this.errored_image_count,
+      selector : this.plot.grid_ref,
+      radius : function(){return 3*self.plot.scatterplot_obj.attr("height") / 8},
+      complete_callback : function(){
+          self.built = true;
+          self.play();
+        },
+      resize_parent : $(this.plot.scatterplot_obj.scatterplot("get_option", "display_pane")),
+    });
+  }
+  else {
+    this.loader.options.start = this.loaded_image_count;
+  }
+  this.loader.init();
 }
 
 Movie.prototype.build_movie = function() {
   var self = this;
   // TODO images for "image set"
   // TODO this may just work after LG fixes controls wrt image set??
+  
+  if(!self.built) {
+    self.add_loader();
+  }
 
-  self.frame = d3.select(self.container).append("rect")
-    .attr("class", "outline")
-    .attr("x", 0)
-    .attr("y", 0)
-    .style("stroke", "black")
-    .style("stroke-width", "1px")
-    .style("fill", "white");
+  if(!self.d3_movie) {
+    self.frame = d3.select(self.container).append("rect")
+      .attr("class", "outline")
+      .attr("x", 0)
+      .attr("y", 0)
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("fill", "white");
 
-  self.d3_movie = self.d3_movie
-    .data(self.plot.images.filter(function(d){return d.length > 0;}))
-    .enter().append("image")
-    .attr({ "xlink:href" : function(d) {
-             return self.plot.image_url_for_session(d);
-           }
-          }
-         );
+    self.d3_movie = d3.select(this.container).selectAll("image")
+      .data(self.plot.images.filter(function(d){return d.length > 0;}))
+      .enter().append("image")
+      .attr("y", 1)
+      .attr({ "xlink:href" : function(d) {return self.plot.image_url_for_session(d);},
+        })
+      .style("visibility", function(_,i) {return i == 0 ? "visible" : "hidden";})
+      .each(function(d,i){
+          $(this)
+            .load( function(){ self.loaded_image_count++; self.loader.update(1); })
+            .error( function(){ self.errored_image_count++; self.loader.update_error(1); });
+        });
+  }
+
   self.build_close_button(d3.select(self.container));
-  self.built = true;
 };
 
 Movie.prototype.build_open_button = function(container) {
   var self = this;
+
+  var width = 28,
+      height = 28;
+
   self.open_control = container.append('g')
     .classed('open-movie', true)
     .on('click', function() {
@@ -63,23 +102,18 @@ Movie.prototype.build_open_button = function(container) {
     .on('mouseup', function() {
       d3.event.stopPropagation();
     })
-    .attr('width', 20)
-    .attr('height', 20)
+    .attr('width', width)
+    .attr('height', height);
 
-  var radius = self.open_control.attr('width')/2
+  var radius = self.open_control.attr('width')/2;
 
-  self.open_control.append('circle')
-    .attr('r', radius)
-    .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',' + self.open_control.attr("width")/2 +')')
-    .attr('fill', 'transparent')
-    .attr('stroke', 'darkgreen')
-    .attr('stroke-width', 2);
+  self.open_control.append('image')
+      .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
+        "css/play.png")
+      .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
+      .attr('width', width)
+      .attr('height', height);
 
-  self.open_control.append('path')
-    .attr('fill', 'green')
-    .attr('stroke', 'darkgreen')
-    .attr('stroke-width', 2)
-    .attr('d', 'M' + radius/4 + ' ' + 3*radius/8 + 'L' + (2*radius - 2) + ' ' + radius + 'L' + radius/4 + ' ' + 13*radius/8 + 'Z')
 };
 
 Movie.prototype.build_close_button = function(container) {
@@ -125,8 +159,8 @@ Movie.prototype.resize = function() {
       .attr("width", self.width + 1)
       .attr("height", self.height + 1);
     self.frame
-      .attr("width", self.width + 1)
-      .attr("height", self.height + 1);
+      .attr("width", self.width + 3)
+      .attr("height", self.height + 3);
   }
 };
 
@@ -149,16 +183,43 @@ Movie.prototype.loop = function() {
       .map(function(d){return d[1];});
   var update_selected_image = function(uri, index)
   {
-    if(!self.stopped) {
+    if(self.stopped) {
+      update_selected_image = function(){};
+    }
+    else {
       table.select_rows([indices_with_images[index]]);
     }
   };
 
-  self.d3_movie.transition().attr("opacity",0);
+  // Reset the whole thing
   self.d3_movie.transition()
-               .attr("opacity",1).each("start", update_selected_image)
-               .delay(function(d,i){return i * self.interval;})
-               .call(self.check_for_loop_end, self, self.loop)
+      .style("visibility", function(_,i){return i == 0 ? "visible" : "hidden";});
+
+  var add_transition = function(i){
+    d3.select(self.d3_movie[0][i]).transition()
+           .each("start", function(d){
+             update_selected_image(d,i);
+             if(i) {
+               d3.select(self.d3_movie[0][i-1]).style("visibility", "hidden");
+             }
+             else {
+               d3.select(self.d3_movie[0][self.d3_movie[0].length - 1]).style("visibility", "hidden");
+             }
+             d3.select(self.d3_movie[0][i]).style("visibility", "visible");
+           })
+           .delay(function(d,i){return self.interval;})
+           .call(self.check_for_loop_end, self, self.loop)
+           .each("end", function(d){
+            if(!self.stopped) {
+              //Register the next transition on each transition (Unless we've stopped):
+              add_transition((i+1) % self.d3_movie[0].length);
+            }
+           });
+  }
+
+  //TODO: Remove current image, substitute new image
+  // Start with the first image
+  add_transition(0);
 };
 
 Movie.prototype.play = function(on_success) {
@@ -188,8 +249,10 @@ Movie.prototype.play = function(on_success) {
     if(!self.built) {
       self.build_movie();
     }
-    self.show();
-    self.loop();
+    else{
+      self.show();
+      self.loop();
+    }
     return true;
   }
 };
@@ -211,6 +274,10 @@ Movie.prototype.hide = function() {
   self.open = false;
   $(self.plot.plot_ref + ' .scatterplot').show();
   $('svg .image-layer').show();
+  if(this.loader) {
+    this.loader.remove();
+  }
+
 };
 
 Movie.prototype.next_image = function() {

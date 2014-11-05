@@ -10,6 +10,7 @@ rights in this software.
   <head>
 {{> head}}
     <title>Slycat Projects</title>
+    <link id="slycat-server-root" href="{{server-root}}">
   </head>
 
   <body>
@@ -53,7 +54,7 @@ rights in this software.
         success: function(projects)
         {
           var project_list = $("#project-list").empty();
-          $.each(projects, function(index, project)
+          $.each(projects.projects, function(index, project)
           {
             $("<li>")
               .append(

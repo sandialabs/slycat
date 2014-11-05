@@ -5,7 +5,6 @@ function ScatterPlot(plot_id, grid_ref, scalar) {
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.scatterplot_obj = null;
-  this.movie = null;
 
   this.x_index = null;
   this.y_index = null;
@@ -41,7 +40,6 @@ ScatterPlot.prototype.setup_dom = function() {
   var pane = group.append("g").attr({class: "scatterplot-pane"});
   pane.append("g").attr({class: "load-status"});
   pane.append("g").attr({class: "scatterplot"});
-  pane.append("g").attr({class: "movie"});
 };
 
 // TODO rename since x/y labels aren't used now
@@ -56,6 +54,10 @@ ScatterPlot.prototype.setup_labels = function() {
   }
   if("y-selection-" + this.plot_id in layout.bookmark) {
     this.y_index = Number(layout.bookmark["y-selection-" + this.plot_id]);
+  }
+  if("images-selection-" + this.plot_id in layout.bookmark) {
+    var self = this;
+    model.get_image_column(layout.bookmark["images-selection-" + this.plot_id], function(result){ self.images = result; }, false);
   }
 };
 
@@ -79,32 +81,20 @@ ScatterPlot.prototype.resize = function() {
 
 ScatterPlot.prototype.update_axis = function(index, axis) {
   var self = this;
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : index,
-    success : function(result) {
+  return model.get_data_column(index, function(result) {
       self[axis] = result;
-      self.setup();
-      // TODO refactor to setup the table ONCE after all ajax requests// table.setup();
-    },
-    error : artifact_missing
   });
 };
 
 ScatterPlot.prototype.setup = function() {
   console.debug("inside PLOT setup()");
+
   // Setup the scatterplot ...
   if(!this.ready && layout.bookmark && model.indices && this.x && this.y && this.v && this.images
      && (this.selected_simulations != null) && (this.hidden_simulations != null))
   {
     var self = this;
     this.ready = true;
-
-    // add our movie here so it can immediately reference images
-    this.movie = new Movie(this);
 
     $(this.plot_ref + " .scatterplot-pane .load-status").hide();
 
@@ -121,14 +111,13 @@ ScatterPlot.prototype.setup = function() {
     var sized_parent = $("#grid-pane");
 
     this.scatterplot_obj = $(this.plot_ref + " .scatterplot");
+    this.selector_brush = new SelectorBrush(this, this.scatterplot_obj);
 
     this.scatterplot_obj.scatterplot({
       scatterplot_obj: self,
+      selector_brush: self.selector_brush,
       indices: model.indices,
       display_pane: "#grid-pane",
-      dimension_adjustments: {
-          width: function(){return 0;},
-          height: function(){return -1 * $(self.grid_ref + " .controls").height(); }}, //TODO what is this doing
       x: self.x,
       y: self.y,
       v: self.v,
@@ -171,17 +160,10 @@ ScatterPlot.prototype.setup = function() {
     // Changing the images variable updates the scatterplot ...
     $("#table").bind("images-selection-changed", function(event, variable) {
       console.debug("changing the images var updates the scatter plot -- ajax");
-      $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
-            variable + "/chunk?ranges=0," + model.metadata["row-count"],
-          success : function(result)
-          {
-            $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
-          },
-          error: artifact_missing
-        });
+      model.get_image_column(variable, function(result){
+          $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
+        }
+      );
     });
 
     // Log changes to open images ...
@@ -251,14 +233,14 @@ ScatterPlot.prototype.display_image = function(uri) {
 
 ScatterPlot.prototype.image_url_for_session = function(file) {
   var sid = login.sid_for_file(file);
-  return "{{server-root}}remote/" + sid + "/image/file" + login.pathname_for_file(file);
+  return "{{server-root}}remotes/" + sid + "/file" + login.pathname_for_file(file);
 }
 
 ScatterPlot.prototype.load_image = function() {
   console.debug("inside load image");
   var sid = login.sid_for_file(file);
   image = document.createElement("img");
-  image.src = "{{server-root}}remote/" + sid + "/file" + image_uri.pathname;
+  image.src = "{{server-root}}remotes/" + sid + "/file" + image_uri.pathname;
   image.width = 100;
   image.style.position="absolute";
   image.style.left=10;

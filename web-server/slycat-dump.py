@@ -61,8 +61,8 @@ for project_id in arguments.project_id:
           logging.info("Dumping array set %s", value)
           project_arrays.add(value)
           shutil.copy(slycat.hdf5.path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
-      elif artifact_type == "json":
-        continue # JSON artifacts are stored in the model itself
+      elif artifact_type in ["file", "json"]:
+        continue # file artifacts are stored as document attachments, and json artifacts are stored document directly, so we don't have to do anything for them.
       else:
         logging.warning("Skipping unsupported artifact type: %s %s", artifact_name, artifact_type)
 

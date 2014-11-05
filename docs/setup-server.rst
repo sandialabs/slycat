@@ -11,9 +11,12 @@ Use the Docker Image
 --------------------
 
 Many administrators should be able to use the Slycat Docker image in production directly, 
-and we strongly urge you to give this approach a shot - after
-following the instructions to :ref:`Install Slycat`, you would simply make a few
-configuration changes (assigning real passwords to the root and slycat users, replacing
+and we strongly urge you to try this approach first - after
+following the instructions to :ref:`Install Slycat`, you can simply ssh into the running Docker container::
+
+  $ ssh slycat@<docker ip address> -p2222
+
+make a few configuration changes (assigning real passwords to the root and slycat users, replacing
 our self-signed server certificate with one of your own, changing the listening port, locking-down ssh access, etc.)
 then continue using the image in production.  Because the Slycat Docker image is a container
 rather than a VM, there is absolutely no performance penalty for using it in this configuration.
@@ -29,14 +32,14 @@ information on installing Slycat and its dependencies, because these files are t
 that we use to build the Slycat Docker image - thus they're an
 always-up-to-date and unambiguous specification of how to build a Slycat
 server.  Even if you don't use Docker, the Dockerfiles
-are easy to understand and adapt to your own processes.
+are easy to understand and adapt to your own workflow and platform.
 
 You will find our Dockerfiles in a set of directories located in the `docker`
 directory within the Slycat repo:
 
   https://github.com/sandialabs/slycat/tree/master/docker
 
-There, you will find four subdirectories - `supervisord`, `sshd`, and `slycat`
+There, you will find four subdirectories - `supervisord`, `sshd`, `slycat`, and `slycat-dev`
 - which are used to build four Docker images.  Each image builds on the
 previous, adding new functionality:
 
@@ -55,7 +58,7 @@ the Python h5py module and its compiled hdf5 library dependency using a single
 yum package, while another platform - such as Centos 6 - provides a yum package
 for hdf5, but no package for the Python h5py module, so you have to use pip to
 install it.  Unfortunately, we can't enumerate all the possibilities here, so
-you'll have to begin with the packages listed in the Dockerfile, and
+you'll have to begin with the packages listed in our Dockerfiles, and
 generalize to your platform.
 
 Configuring Slycat Web Server
@@ -87,7 +90,7 @@ The values for each setting in `config.ini` must be valid Python expressions.
 You should note that in the sample `config.ini` we provide, some values are
 simple scalars, such as `[global] server.socket_port`, while some values create
 object instances, such as `[slycat] directory`, which creates a directory
-object that will handle user lookups.  This provides great flexibility to
+object that handles looking-up user metadata.  This provides great flexibility to
 customize Slycat for your network.  Here are some common settings you may wish
 to modify:
 
@@ -100,11 +103,19 @@ to modify:
 * server.socket_port - TCP port number to listen on for requests.  Defaults to "8092" for development.  Typically set to "443" in production with SSL enabled, or "80" with SSL disabled.
 * server.ssl_certificate - Path to a certificate used for SSL encryption.  Leave blank to disable SSL.  Relative paths are relative to the slycat-web-server.py executable.
 * server.ssl_private_key - Path to a private key used for SSL encryption.  Leave blank to disable SSL.  Relative paths are relative to the slycat-web-server.py executable.
-  
+
 [slycat] Section
 ^^^^^^^^^^^^^^^^
 
 * allowed-markings - List of marking types that may be assigned to models.
-* plugins - List of directories from which plugins will be loaded.  Relative paths are relative to the slycat-web-server.py executable.
+* plugins - List of filesystem plugin locations.  You may specify individual .py files to be loaded, or directories.  If you specify a directory, every .py file in the directory will be loaded, but directories are `not` searched recursively.  Relative paths are relative to the slycat-web-server.py executable.
+* remote-hosts - Dict mapping string hostnames to dicts containing host-specific configuration.  Each host dict may contain any of the following:
+
+    * agent - Optional dict configuring remote agent access on the host.  Some models require the Slycat Agent when accessing a remote host, and agents must be explicitly configured on a host to be used.  The agent dict must contain the following:
+
+        * command - Required string with the full remote command-line used to run the Slycat agent on the given host.  Typically `/full/path/to/python /full/path/to/slycat-agent.py`.  Since an agent session can be initiated by any user able to login to the remote host via ssh, you should specify required environment variables as part of this command, too (for example, with `env`).
+
+    * message - Optional string displayed by the user interface when this host is selected.  Use this to warn users of host limitations or suggest alternates.
+
 * server-admins - List of users allowed to administer the Slycat server.  Server administrators have full read/write access to all projects, regardless of project ACLs.
-  
+

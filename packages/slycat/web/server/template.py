@@ -9,7 +9,7 @@ import pystache
 def render(path, context):
   """Render an HTML template using `Mustache <http://mustache.github.io>`_ syntax."""
   if render.templates is None:
-    render.templates = os.path.join(cherrypy.tree.apps[""].config["slycat"]["server-resources"], "templates")
+    render.templates = cherrypy.tree.apps[""].config["/templates"]["tools.staticdir.dir"]
   if render.renderer is None:
     render.renderer = pystache.Renderer(search_dirs = render.templates)
   return render.renderer.render(open(os.path.join(render.templates, path), "r").read(), context)

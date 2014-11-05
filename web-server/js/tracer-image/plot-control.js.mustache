@@ -22,7 +22,7 @@ PlotControl.prototype.build = function() {
   //build foreignObject SVG container
   self.foreign_object = self.container.append('foreignObject')
     .classed('controls ' + self.control_type + '-control', true) //need a class since d3 can't select foreignObject elements properly in Chrome
-    .attr('width', 100) //TODO: make this sizing not be stupid
+    .attr('width', 100) //This gets fixed at the end
     .attr('height', 50);
   var body = self.foreign_object.append('xhtml:body')
     .style('background', 'transparent');
@@ -40,7 +40,7 @@ PlotControl.prototype.build = function() {
       self.update_plot(this.value); //pass selected option index
     })
     .on('mousedown', function(){
-      event.stopPropagation();
+      d3.event.stopPropagation();
     });
 
   //build options for select
@@ -60,6 +60,9 @@ PlotControl.prototype.build = function() {
       })
       .appendTo(select);
   }
+
+  //Fix the foreign object width after we've drawn the control:
+  self.foreign_object.attr("width", select[0][0].clientWidth + 2);
 };
 
 
@@ -94,20 +97,17 @@ PlotControl.prototype.update_plot = function(variable) {
   var self = this;
   // TODO: either update plot.x_index, etc. here or strip out the index attributes from Scatterplot completely
   // since they become irrelevant once update is called
-  get_model_array_attribute({
-    server_root : "{{server-root}}",
-    mid : "{{_id}}",
-    aid : "data-table",
-    array : 0,
-    attribute : variable,
-    success : function(result)
-    {
-      var option_to_update = {};
-      option_to_update[self.control_type] = result;
-      $(self.plot.plot_ref + " .scatterplot").scatterplot("option", option_to_update);
-    },
-    error : artifact_missing
-  });
+  var retrieve_func = model.get_data_column;
+  var callback = function(result){
+    var option_to_update = {};
+    option_to_update[self.control_type] = result;
+    $(self.plot.scatterplot_obj).scatterplot("option", option_to_update);
+  }
+  if(self.control_type == "images"){
+    retrieve_func = model.get_image_column;
+  }
+  retrieve_func.call(model, variable, callback);
+
   /* NOTE: color variable selection used to conditionally use index instead of fetching variable from server
      but the index was arbitrary and essentially just ended up representing time, which will usually be the first
      csv column and thus default selection anyway

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <title>Slycat Agent Test</title>
+    <script type="text/javascript" src="{{server-root}}js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/jquery.json-2.4.min.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      var hostname = "localhost";
+      var username = "slycat";
+      var password = "slycat";
+      var image_prefix = "/home/slycat/src/slycat/web-client/parameter-images/";
+      var image_suffix = ".jpg";
+
+      var remote = null;
+      var agent = null;
+      var vsid = null;
+
+      create_remote(0);
+
+      function create_remote(index)
+      {
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "hostname" : hostname,
+            "username" : username,
+            "password": password,
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}remotes",
+          success: function(result)
+          {
+            remote = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Created remote session " + remote + "</p>";
+            remote_file(index);
+          },
+        });
+      }
+
+      function remote_file(index)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}remotes/" + remote + "/file" + image_prefix + index + image_suffix,
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>Remote loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
+            if(index < 10)
+              remote_file(index + 1);
+            else
+              create_agent(index + 1);
+          },
+        });
+      }
+
+
+      function create_agent(index)
+      {
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "hostname" : hostname,
+            "username" : username,
+            "password": password,
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents",
+          success: function(result)
+          {
+            agent = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Created agent session " + agent + "</p>";
+            agent_file(index);
+          },
+        });
+      }
+
+      function agent_file(index)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}agents/" + agent + "/file" + image_prefix + index + image_suffix,
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>Agent loaded file //" + hostname + image_prefix + index + image_suffix + ".</p>";
+            if(index < 20)
+              agent_file(index + 1);
+            else
+              agent_image(index + 1);
+          },
+        });
+      }
+
+      function agent_image(index)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}agents/" + agent + "/image" + image_prefix + index + image_suffix + "?max-size=512",
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>Agent loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
+            if(index < 30)
+              agent_image(index + 1);
+            else
+              agent_video(index + 1);
+          },
+        });
+      }
+
+      function agent_video(index)
+      {
+        var images = [];
+        for(var i = index; i < 100; ++i)
+          images.push(image_prefix + i + image_suffix);
+        console.log("images", images);
+
+        content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
+
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON({
+            "content-type":content_type,
+            "images":images,
+          }),
+          processData: false,
+          type : "POST",
+          url : "{{server-root}}agents/" + agent + "/videos",
+          success: function(result)
+          {
+            vsid = result["sid"];
+            document.querySelector("body").innerHTML += "<p>Creating video " + vsid + "</p>";
+            query_video();
+          },
+        });
+      }
+
+      function query_video()
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : "{{server-root}}agents/" + agent + "/videos/" + vsid + "/status",
+          success: function(result)
+          {
+            document.querySelector("body").innerHTML += "<p>" + result["message"] + "</p>";
+            if(result["message"] != "Video ready.")
+            {
+              setTimeout(query_video, 1000);
+            }
+            else
+            {
+              document.querySelector("body").innerHTML += "<video controls src='{{server-root}}agents/" + agent + "/videos/" + vsid + "'>" + "</video>";
+            }
+          },
+        });
+      }
+
+    </script>
+  </body>
+</html>

@@ -5,7 +5,7 @@ rights in this software.
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// Remote file browser widget, for use with the Slycat /remote API.
+// Remote file browser widget, for use with the Slycat /remotes API.
 
 $.widget("slycat.browser",
 {
@@ -157,14 +157,11 @@ $.widget("slycat.browser",
           $.ajax(
           {
             context : this,
-            type : "POST",
-            url : self.options.server_root + "remote/browse",
-            contentType : "application/json",
             processData : false,
-            data : $.toJSON({
-              sid : self.options.session,
-              path : $(this).data("path")
-            }),
+            data : $.toJSON({}),
+            type : "POST",
+            url : self.options.server_root + "remotes/" + self.options.session + "/browse" + $(this).data("path"),
+            contentType : "application/json",
             success : function(result)
             {
 

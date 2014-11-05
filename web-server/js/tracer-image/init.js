@@ -37,6 +37,3 @@ layout.setup();
 var grid = new Grid(grid_pane, [2,2], ScatterPlot);
 grid.setup();
 var login = new Login(grid_pane, model.server_root);
-
-// playing around with movie triggering, always first plot for now
-//grid.plots[0].movie.play();
