@@ -697,7 +697,15 @@ rights in this software.
 
             var open_images = [];
             if("open-images-selection" in bookmark)
+            {
               open_images = bookmark["open-images-selection"];
+            }
+
+            var auto_scale = true;
+            if("auto-scale" in bookmark)
+            {
+              auto_scale = bookmark["auto-scale"];
+            }
 
             $("#scatterplot").scatterplot({
               indices: indices,
@@ -719,6 +727,7 @@ rights in this software.
               open_images: open_images,
               gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
               hidden_simulations: hidden_simulations,
+              "auto-scale" : auto_scale,
               });
 
             $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -817,6 +826,12 @@ rights in this software.
               color_variable = [bookmark["variable-selection"]];
             }
 
+            var auto_scale = true;
+            if("auto-scale" in bookmark)
+            {
+              auto_scale = bookmark["auto-scale"];
+            }
+
             $("#controls").controls({
               "server-root" : "{{server-root}}",
               mid : "{{_id}}",
@@ -834,6 +849,7 @@ rights in this software.
               "y-variable" : y_index,
               "image-variable" : images_index,
               "color-variable" : color_variable,
+              "auto-scale" : auto_scale,
               hidden_simulations : hidden_simulations,
             });
 
@@ -928,6 +944,12 @@ rights in this software.
               images_selection_changed(variable);
             });
 
+            // Changing the auto scale option updates the scatterplot and logs it ...
+            $("#controls").bind("auto-scale", function(event, auto_scale)
+            {
+              auto_scale_option_changed(auto_scale);
+            });
+
             // Log changes to hidden selection ...
             $("#controls").bind("hide-selection", function(event, selection)
             {
@@ -960,7 +982,9 @@ rights in this software.
             // Log changes to hidden selection ...
             $("#controls").bind("show-all", function(event, selection)
             {
-              hidden_simulations = [];
+              while(hidden_simulations.length > 0) {
+                hidden_simulations.pop();
+              }
 
               hidden_simulations_changed();
               $("#table").table("option", "hidden_simulations", hidden_simulations);
@@ -1044,6 +1068,7 @@ rights in this software.
           update_current_colorscale();
           $("#table").table("option", "colorscale", colorscale);
           $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
+          $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
         }
 
         function update_current_colorscale()
@@ -1114,6 +1139,17 @@ rights in this software.
           });
           bookmarker.updateState( {"images-selection" : variable} );
           y_index = Number(variable);
+        }
+
+        function auto_scale_option_changed(auto_scale)
+        {
+          $("#scatterplot").scatterplot("option", "auto-scale", auto_scale);
+          $.ajax(
+          {
+            type : "POST",
+            url : "{{server-root}}events/models/{{_id}}/auto-scale/" + auto_scale
+          });
+          bookmarker.updateState( {"auto-scale" : auto_scale} );
         }
 
         function open_images_changed(selection)

@@ -17,6 +17,7 @@ $.widget("parameter_image.controls",
     "y-variable" : null,
     "image-variable" : null,
     "color-variable" : null,
+    "auto-scale" : true,
     x_variables : [],
     y_variables : [],
     image_variables : [],
@@ -114,6 +115,17 @@ $.widget("parameter_image.controls",
       .click(function(){
         self.element.trigger("show-all");
       })
+      .appendTo(this.element)
+      ;
+    
+    this.auto_scale = $("<input id='auto-scale-option' name='auto-scale-option' value='auto-scale' type='checkbox' checked='true'>")
+      .change(function(){
+        self.element.trigger("auto-scale", this.checked);
+      })
+      .appendTo(this.element)
+      ;
+
+    this.auto_scale_label = $("<label for='auto-scale-option'>Auto Scale</label>")
       .appendTo(this.element)
       ;
 
@@ -221,6 +233,7 @@ $.widget("parameter_image.controls",
     self._set_y_variables();
     self._set_image_variables();
     self._set_color_variables();
+    self._set_auto_scale();
     self._set_selection_control();
     self._set_show_all();
   },
@@ -394,6 +407,12 @@ $.widget("parameter_image.controls",
         .appendTo(this.color_select)
         ;
     }
+  },
+
+  _set_auto_scale: function()
+  { 
+    var self = this;
+    this.auto_scale.prop("checked", self.options["auto-scale"]);
   },
 
   _set_selection_control: function()
