@@ -63,6 +63,7 @@ Documentation:
    models.rst
    restful-api.rst
    reference.rst
+   support.rst
 
 
 Indices and tables
