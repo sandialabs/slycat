@@ -41,3 +41,4 @@ def register_slycat_plugin(context):
 
   # Register our new model type
   context.register_model("parameter-image-plus", finish, html)
+  context.register_model_resource("parameter-image-plus", "ui.css", os.path.join(os.path.dirname(__file__), "ui.css"))

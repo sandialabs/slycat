@@ -1,3 +1,7 @@
 <div>
 <pre>{{{formatted-model}}}</pre>
 </div>
+<script type="text/javascript">
+  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/ui.css'>";
+</script>
