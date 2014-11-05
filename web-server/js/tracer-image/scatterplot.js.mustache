@@ -225,10 +225,7 @@ ScatterPlot.prototype.hidden_simulations_changed = function() {
 
 ScatterPlot.prototype.display_image = function(uri) {
   console.debug("inside display image");
-  if(login.logged_into_host_for_file(file))
     this.load_image();
-  else
-    login.show_prompt([{uri: uri}], this.load_image, this);
 };
 
 ScatterPlot.prototype.image_url_for_session = function(file) {

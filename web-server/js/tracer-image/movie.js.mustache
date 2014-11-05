@@ -24,6 +24,11 @@ function Movie(plot) {
   this.errored_image_count = 0;
   this.open_control = null; //handle to foreignObject so SVG can manipulate
   $(this.container).hide();
+  
+  //Test for which video types are supported
+  var formats = {webm:"webm", h264:"mp4"};
+  this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
+                        .map(function(encoding){return formats[encoding];})[0];
 }
 
 Movie.prototype.add_loader = function() {
@@ -307,12 +312,13 @@ Movie.prototype.build_server_movie = function() {
       url: "{{server-root}}agents/" + self.agent_id + "/videos",
       contentType: "application/json",
       data: JSON.stringify({
-        "content-type": !$.browser["mozilla"] ? "video/mp4" : "video/webm",
-        images: [images.filter(function(url){ return url != null && url.length > 0; })]
+        "content-type": "video/" + self.video_type,
+        images: images
+                  .filter(function(url){ return url != null && url.length > 0; })
+                  .map(function(url){return url.slice(url.split("/", 3).join().length)})
       }),
       success: function(movie){
         self.movie = movie;
-        console.debug(arguments);
         self.show_movie();
       }
     });
@@ -320,26 +326,54 @@ Movie.prototype.build_server_movie = function() {
 }
 
 Movie.prototype.show_movie = function() {
+  var video_progress = "Creating video.";
+  var self = this;
+
+  var wait_until_build = function(){
+    setTimeout(function(){$.ajax({
+        type: "GET",
+        accepts: "application/json",
+        url: "{{server-root}}agents/" + self.agent_id + "/videos/" + self.movie.sid + "/status",
+        success: function(result){
+          if(result.message == "Creating video." || result.message == "Not ready."){
+            wait_until_build();
+            return;
+          }
+          self.build_movie_player();
+        },
+        error: function(){
+          console.debug(arguments);
+        }
+      });}, 1000);
+  }
+
+  wait_until_build();
+}
+
+Movie.prototype.build_movie_player = function(){
   var width = $(this.plot.grid_ref).attr("width");
   var height = $(this.plot.grid_ref).attr("height");
   this.video = d3.select(this.plot.plot_ref)
     .insert("foreignObject", ":first-child")
-      .attr({x: 0,
-        y: 0,
+      .attr({
         width: width,
         height: height
       })
     .append("xhtml:body")
       .style("background", "transparent")
     .append("xhtml:video")
-     .attr({
-       src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
-       id: "test_video",
-       preload:true,
-       height: height,
-       width: width,
-       type: "video/webm"
-     });
+      .attr({
+        id: "test_video",
+        preload:true,
+        height: height,
+        width: width,
+        controls: true
+      })
+      .append("xhtml:source")
+        .attr({
+          src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
+          type: "video/" + this.video_type
+        });
 
    this.video = new Popcorn(this.plot.plot_ref + " video");
  }
@@ -348,7 +382,7 @@ Movie.prototype.get_status = function() {
   $.ajax({
     type: "GET",
     url : "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid + "/status",
-    success : console.debug,
-    error : console.debug
+    success : function(){console.debug(arguments)},
+    error : function(){console.debug(arguments)},
   });
 }

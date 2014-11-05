@@ -77,7 +77,9 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
         contentType : args.contentType,
         data : args.data({hostname: parser.hostname, username: $("#remote-username").val(), password: $("#remote-password").val()}),
         processData : false,
-        success : args.success,
+        success : function(result){
+            login.session_cache[args.success] = result.sid;
+          },
         error : args.error
       }
     );
@@ -95,13 +97,11 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
             url : "remotes",
             contentType : "application/json",
             data : $.toJSON,
-            success : function(result)
-            {
-              login.session_cache[parser.hostname] = result.sid;
-            },
+            success : parser.hostname,
             error : function(request, status, reason_phrase)
             {
               image.last_error = "Error opening remote session: " + reason_phrase;
+              console.debug("An error occurred")
               self.image_login.dialog("close");
               self.show_prompt(images, callback, this_arg);
             }
@@ -111,10 +111,7 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
               url : "agents",
               contentType : "application/json",
               data : JSON.stringify,
-              success : function(result)
-              {
-                login.session_cache[parser.hostname + "-agent"] = result.sid;
-              },
+              success : parser.hostname + "-agent",
               error : function(request, status, reason_phrase)
               {
                 console.error("Error opening agent session: " + reason_phrase)
