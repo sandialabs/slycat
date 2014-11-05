@@ -526,7 +526,7 @@ $.widget("tracer_image.scatterplot", {
         // Get the endpoints in reverse order, we'll subtract the index later:
         var endpoints = [next, prev];
         var find_closest = function() {
-          var e = event;
+          var e = d3.event;
           var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
           //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
           var distance = endpoints.map(function(point) {
