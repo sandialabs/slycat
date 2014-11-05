@@ -17,10 +17,10 @@ rights in this software.
   margin-left: 30px;
 }
 .path-entry-input{
-  width: 300px;
+  width: 400px;
 }
 .remote-browser-next-button{
-  float: right;
+  margin-left: 50px;
   margin-top: 10px;
 }
 #remote-pi-browser{
@@ -65,13 +65,13 @@ ul.file-browser
   color: white;
 }
 
-.file-browser .arrow
+/*.file-browser .arrow
 {
   display: inline-block;
   vertical-align: middle;
   width: 18px;
   height: 18px;
-}
+}*/
 
 .file-browser .icon
 {
@@ -90,10 +90,11 @@ ul.file-browser
   margin-top: 2px;
 }
 
-.file-browser tr.host > div > .arrow, .file-browser tr.directory > div > .arrow
+/*.file-browser tr.host > div > .arrow, .file-browser tr.directory > div > .arrow
 {
   background: url(arrow-right-small.png) no-repeat center;
 }
+*/
 .file-browser tr.host.open > div, .file-browser tr.directory.open > div
 {
   background: #e7f6f7;
@@ -101,10 +102,11 @@ ul.file-browser
   border: 1px solid black;
   padding: 2px;
 }
+/*
 .file-browser tr.host.open > div > .arrow, .file-browser tr.directory.open > div > .arrow
 {
   background: url(arrow-down-small.png) no-repeat center;
-}
+}*/
 
 .file-browser tr.host > div > .icon, .file-browser tr.directory > div > .icon
 {
