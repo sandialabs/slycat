@@ -55,6 +55,10 @@ ScatterPlot.prototype.setup_labels = function() {
   if("y-selection-" + this.plot_id in layout.bookmark) {
     this.y_index = Number(layout.bookmark["y-selection-" + this.plot_id]);
   }
+  if("images-selection-" + this.plot_id in layout.bookmark) {
+    var self = this;
+    model.get_image_column(layout.bookmark["images-selection-" + this.plot_id], function(result){ self.images = result; }, false);
+  }
 };
 
 ScatterPlot.prototype.setup_simulations = function() {
@@ -107,14 +111,13 @@ ScatterPlot.prototype.setup = function() {
     var sized_parent = $("#grid-pane");
 
     this.scatterplot_obj = $(this.plot_ref + " .scatterplot");
+    this.selector_brush = new SelectorBrush(this, this.scatterplot_obj);
 
     this.scatterplot_obj.scatterplot({
       scatterplot_obj: self,
+      selector_brush: self.selector_brush,
       indices: model.indices,
       display_pane: "#grid-pane",
-      dimension_adjustments: {
-          width: function(){return 0;},
-          height: function(){return -1 * $(self.grid_ref + " .controls").height(); }}, //TODO what is this doing
       x: self.x,
       y: self.y,
       v: self.v,
