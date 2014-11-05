@@ -33,7 +33,8 @@ $.widget("slycat.browser",
       }
     }
 
-    function double_click_directory(item)
+    //function double_click_directory(item)
+    function click_directory(item)
     {
       return function()
       {
@@ -211,7 +212,8 @@ $.widget("slycat.browser",
                 entry.click(select_item(self, item));
                 item.addClass("directory");
                 //arrow.click(click_arrow(item));
-                entry.dblclick(double_click_directory(item));
+                entry.click(click_directory(item));
+                //entry.dblclick(double_click_directory(item));
               }
               //END OF ADDING UP A DIRECTORY FOLDER.
               for(var i = 0; i != result.names.length; ++i)
@@ -239,7 +241,8 @@ $.widget("slycat.browser",
                 {
                   item.addClass("directory");
                   //arrow.click(click_arrow(item));
-                  entry.dblclick(double_click_directory(item));
+                  entry.click(click_directory(item));
+                  //entry.dblclick(double_click_directory(item));
                 }
                 else if(type == "f")
                 {
@@ -284,7 +287,8 @@ $.widget("slycat.browser",
     var label = $("<span class='label'></span>").text(self.options.root_label).appendTo(entry);
 
     //arrow.click(click_arrow(item));
-    entry.dblclick(double_click_directory(item));
+    //entry.dblclick(double_click_directory(item));
+    entry.click(click_directory(item));
     item.data("path", self.options.root_path);
     item.bind("toggle-directory", toggle_directory(self));
     item.addClass("host");
