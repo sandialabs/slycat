@@ -353,6 +353,10 @@ Movie.prototype.show_movie = function() {
 Movie.prototype.build_movie_player = function(){
   var width = $(this.plot.grid_ref).attr("width");
   var height = $(this.plot.grid_ref).attr("height");
+  var offset = $(this.plot.grid_ref).attr("transform").split(/[( ,)]/);
+  var left = Number(offset[1]);
+  var top = Number(offset[2]);
+
   this.video = d3.select(this.plot.plot_ref)
     .insert("foreignObject", ":first-child")
       .attr({
@@ -367,8 +371,13 @@ Movie.prototype.build_movie_player = function(){
         preload:true,
         height: height,
         width: width,
-        controls: true
+        controls: true,
       })
+    if(navigator.userAgent.match("WebKit")){
+      //WebKit has a bug with rendering video elements in an svg foreignObject:
+      this.video.attr("style", "position: relative; left: " + left + "px; top: " + top + "px;") 
+    }
+    this.video
       .append("xhtml:source")
         .attr({
           src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
@@ -376,6 +385,8 @@ Movie.prototype.build_movie_player = function(){
         });
 
    this.video = new Popcorn(this.plot.plot_ref + " video");
+
+   this.setup_hooks();
  }
 
 Movie.prototype.get_status = function() {
@@ -385,4 +396,7 @@ Movie.prototype.get_status = function() {
     success : function(){console.debug(arguments)},
     error : function(){console.debug(arguments)},
   });
+}
+
+Movie.prototype.setup_hooks = function(){
 }
