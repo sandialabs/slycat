@@ -113,6 +113,8 @@ ScatterPlot.prototype.setup = function() {
     this.scatterplot_obj = $(this.plot_ref + " .scatterplot");
     this.selector_brush = new SelectorBrush(this, this.scatterplot_obj);
 
+    this.movie = new Movie(this);
+
     this.scatterplot_obj.scatterplot({
       scatterplot_obj: self,
       selector_brush: self.selector_brush,
@@ -146,8 +148,6 @@ ScatterPlot.prototype.setup = function() {
         gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
       });
     });
-
-    this.movie = new Movie(this);
 
 
     /* TODO: implement the table controls to sync with a 'selected plot'

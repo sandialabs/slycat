@@ -274,14 +274,10 @@ Movie.prototype.step = function() {
 
 Movie.prototype.hide = function() {
   var self = this;
-  $(self.container).hide();
-  self.open = false;
+  $(self.container).remove();
   $(self.plot.plot_ref + ' .scatterplot').show();
   $('svg .image-layer').show();
-  if(this.loader) {
-    this.loader.remove();
-  }
-
+  $('.open-movie').show();
 };
 
 Movie.prototype.next_image = function() {
@@ -303,6 +299,7 @@ Movie.prototype.increment_current_image_index = function() {
 Movie.prototype.build_server_movie = function() {
   var self = this;
   self.agent_id = login.get_agent(this.plot.images.filter(function(url){return url && url.length > 0})[0]);
+  $('.open-movie').hide();
 
   model.get_image_column(this.plot.images_index, function(images) {
     $.ajax({
@@ -349,14 +346,24 @@ Movie.prototype.show_movie = function() {
 }
 
 Movie.prototype.build_movie_player = function(){
-  var width = $(this.plot.grid_ref).attr("width");
+  var width = $(this.plot.grid_ref).attr("width") - 56;
   var height = $(this.plot.grid_ref).attr("height");
+  
+  $(this.plot.plot_ref + ' .scatterplot').hide();
+  $('svg .image-layer').hide();
 
   this.video = d3.select(this.plot.plot_ref)
-    .insert("foreignObject", ":first-child")
+    .insert("g", ":first-child")
+      .classed("movie", true)
+
+  this.build_close_button(d3.select(this.container));
+
+  this.video = this.video
+    .append("foreignObject")
       .attr({
         width: width,
-        height: height
+        height: height,
+        x: 28
       })
     .append("xhtml:body")
       .style("background", "transparent")
@@ -367,11 +374,12 @@ Movie.prototype.build_movie_player = function(){
         height: height,
         width: width,
         controls: true,
+        x: 28
       })
 
   if(navigator.userAgent.match("WebKit")){
     var offset = $(this.plot.grid_ref).attr("transform").split(/[( ,)]/);
-    var left = Number(offset[1]);
+    var left = Number(offset[1]) + 28;
     var top = Number(offset[2]);
     //WebKit has a bug with rendering video elements in an svg foreignObject:
     this.video.attr("style", "position: relative; left: " + left + "px; top: " + top + "px;") 
@@ -385,6 +393,7 @@ Movie.prototype.build_movie_player = function(){
       });
 
   var self = this;
+
   this.video = new Popcorn(this.plot.plot_ref + " video");
   this.video.on("loadeddata", function(){self.setup_hooks.call(self);})
 }
