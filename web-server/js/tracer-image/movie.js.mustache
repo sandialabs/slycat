@@ -27,6 +27,7 @@ function Movie(plot) {
   
   //Test for which video types are supported
   var formats = {webm:"webm", h264:"mp4"};
+  this.movie = [];
   this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
                         .map(function(encoding){return formats[encoding];})[0];
 }
@@ -298,29 +299,35 @@ Movie.prototype.increment_current_image_index = function() {
 
 Movie.prototype.build_server_movie = function() {
   var self = this;
+  var image_index = this.plot.images_index;
   self.agent_id = login.get_agent(this.plot.images.filter(function(url){return url && url.length > 0})[0]);
   $('.open-movie').hide();
 
-  model.get_image_column(this.plot.images_index, function(images) {
-    $.ajax({
-      type: "POST",
-      url: "{{server-root}}agents/" + self.agent_id + "/videos",
-      contentType: "application/json",
-      data: JSON.stringify({
-        "content-type": "video/" + self.video_type,
-        images: images
-                  .filter(function(url){ return url != null && url.length > 0; })
-                  .map(function(url){return url.slice(url.split("/", 3).join().length)})
-      }),
-      success: function(movie){
-        self.movie = movie;
-        self.show_movie();
-      }
+  if(!self.movie[image_index]){
+    model.get_image_column(this.plot.images_index, function(images) {
+      $.ajax({
+        type: "POST",
+        url: "{{server-root}}agents/" + self.agent_id + "/videos",
+        contentType: "application/json",
+        data: JSON.stringify({
+          "content-type": "video/" + self.video_type,
+          images: images
+                    .filter(function(url){ return url != null && url.length > 0; })
+                    .map(function(url){return url.slice(url.split("/", 3).join().length)})
+        }),
+        success: function(movie){
+          self.movie[image_index] = movie;
+          self.show_movie(image_index);
+        }
+      });
     });
-  });
+  }
+  else{
+    self.build_movie_player(image_index);
+  }
 }
 
-Movie.prototype.show_movie = function() {
+Movie.prototype.show_movie = function(image_index) {
   var video_progress = "Creating video.";
   var self = this;
 
@@ -328,13 +335,13 @@ Movie.prototype.show_movie = function() {
     setTimeout(function(){$.ajax({
         type: "GET",
         accepts: "application/json",
-        url: "{{server-root}}agents/" + self.agent_id + "/videos/" + self.movie.sid + "/status",
+        url: "{{server-root}}agents/" + self.agent_id + "/videos/" + self.movie[image_index].sid + "/status",
         success: function(result){
           if(result.message == "Creating video." || result.message == "Not ready."){
             wait_until_build();
             return;
           }
-          self.build_movie_player();
+          self.build_movie_player(image_index);
         },
         error: function(){
           console.debug(arguments);
@@ -345,7 +352,7 @@ Movie.prototype.show_movie = function() {
   wait_until_build();
 }
 
-Movie.prototype.build_movie_player = function(){
+Movie.prototype.build_movie_player = function(image_index){
   var width = $(this.plot.grid_ref).attr("width") - 56;
   var height = $(this.plot.grid_ref).attr("height");
   
@@ -388,7 +395,7 @@ Movie.prototype.build_movie_player = function(){
   this.video
     .append("xhtml:source")
       .attr({
-        src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid,
+        src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid,
         type: "video/" + this.video_type
       });
 
@@ -398,10 +405,10 @@ Movie.prototype.build_movie_player = function(){
   this.video.on("loadeddata", function(){self.setup_hooks.call(self);})
 }
 
-Movie.prototype.get_status = function() {
+Movie.prototype.get_status = function(image_index) {
   $.ajax({
     type: "GET",
-    url : "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie.sid + "/status",
+    url : "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid + "/status",
     success : function(){console.debug(arguments)},
     error : function(){console.debug(arguments)},
   });
