@@ -33,7 +33,6 @@ $.widget("slycat.browser",
       }
     }
 
-    //function double_click_directory(item)
     function click_directory(item)
     {
       return function()
@@ -114,43 +113,10 @@ $.widget("slycat.browser",
     {
       return function()
       {
-        //if($(this).hasClass("open")) // Collapse this node ...
-        //{
-          //THIS IS GONE FOR REFACTOR
-          //id = parseInt($(this).parent().parent()[0].id);
-          //id_to_show = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort()[0]-1;
-          //toggle_all_folders_after_column(id,true);
-          $(this).removeClass("open");
-        //}
-        //else // Expand this node ...
-        //{
-          //THIS IS GONE FOR REFACTOR
           //If the folder we are expanding is the host, we want to prepend a / to the path input box.
-          //if ($(this).hasClass("host")){
-          //  $(".path-entry-input").val("/")
-          //}
-          //var current_position = parseInt($(this).parent().parent().attr("id"));
-          //var slide = false;
-          //if (current_position >= 4){
-          //  slide = true;
-          //}
-          ////Remove the next column if it exists before adding new one. This covers the same level expansion.
-          //if($(".file-browser#"+(current_position+1)).length){
-          //  //We set a boolean so we know not to slide on this expansion
-          //  slide = false;
-          //  toggle_all_folders_after_column(current_position, slide);
-          //  //Need to remove the activated icon from the same column folder.
-          //  previous_dir = $(".file-browser#"+current_position).find(".directory.open");
-          //  previous_dir.removeClass("open");
-          //}
-          //if($(this).attr("id") != undefined && input_with_text == false){
-          //  folder_name = $(this).attr("id").replace("dot",".");
-          //  old_value = $(".path-entry-input").val().split("/");
-          //  old_value = old_value.splice(0,old_value.length-1).join("/");
-          //  $(".path-entry-input").val(old_value +"/"+ folder_name + "/");
-          //}
-          //input_with_text = false;
-          //Add text to the file path input when clicked.
+          if ($(this).hasClass("host")){
+            $(".path-entry-input").val("/")
+          }
           $(this).addClass("open");
 
           //This call gets the files and folders in the toggled/opened directory.
@@ -166,33 +132,13 @@ $.widget("slycat.browser",
             {
 
               var path = $(this).data("path");
-              //THIS IS GONE FOR REFACTOR
-              //This is where the horizontal sliding occurs.
-              //if (slide == true){
-              //  ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
-              //  min = ids[0];
-              //  //We hide the lowest numbered column.
-              //  $(".file-browser#"+min).hide();
-              //}
-              //console.log(current_position);
-
-              //$("<table>").addClass("file-browser").attr("id",current_position+1).appendTo(self.element);
-              //No matter what we append to the next table if we are expanding a folder.
-              //var container = $(".file-browser#"+(current_position+1));
               var container = $(".file-browser");
 
               //remove all previous folders and directories so that we are "moving" to the new folder.
               $(".file-browser").find("tr.directory").remove();          
               $(".file-browser").find("tr.file").remove();          
-              //THIS IS GONE FOR REFACTOR
-              //This is where we are saying that a folder is empty.
-              //if(result.names.length == 0){
-              //  var item = $("<tr>").attr("id","empty").appendTo(container);
-              //  var entry = $("<div/>").appendTo(item);
-              //  var label = $("<span class='label'></span>").text("Folder is empty.").appendTo(entry);
-              //}
 
-              //APPEND A FOLDER THAT WILL GO UP A LEVEL.
+              //This will add a folder that a user can click on to go up a directory
               if (path != "/"){
                 console.log(path);
                 var item = $("<tr>").attr("id","up_dir").appendTo(container);
@@ -208,11 +154,9 @@ $.widget("slycat.browser",
                 item.bind("toggle-directory", toggle_directory(self));
                 entry.click(select_item(self, item));
                 item.addClass("directory");
-                //arrow.click(click_arrow(item));
                 entry.click(click_directory(item));
-                //entry.dblclick(double_click_directory(item));
               }
-              //END OF ADDING UP A DIRECTORY FOLDER.
+              //Iterate over all results from ajax call and append them to the container. This is all files and folders in current directory.
               for(var i = 0; i != result.names.length; ++i)
               {
                 name = result.names[i];
@@ -221,12 +165,7 @@ $.widget("slycat.browser",
 
                 var item = $("<tr>").attr("id",name.replace(".","dot")).appendTo(container);
                 var entry = $("<div/>").appendTo(item);
-                //var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
-                //concat_name = name;
-                //if (name.length > 20){
-                //  concat_name = name.substring(0,18)+"...";
-                //}
                 var label = $("<span class='label'></span>").text(name).appendTo(entry);
 
                 item.data("path", path.replace(/\/$/, "") + "/" + name);
@@ -237,9 +176,7 @@ $.widget("slycat.browser",
                 if(type == "d")
                 {
                   item.addClass("directory");
-                  //arrow.click(click_arrow(item));
                   entry.click(click_directory(item));
-                  //entry.dblclick(double_click_directory(item));
                 }
                 else if(type == "f")
                 {
@@ -279,12 +216,9 @@ $.widget("slycat.browser",
     var input_with_text = false;
     var item = $("<tr>").appendTo(container1);
     var entry = $("<div/>").appendTo(item);
-    //var arrow = $("<span class='arrow'></span>").appendTo(entry);
     var icon = $("<span class='icon'></span>").appendTo(entry);
     var label = $("<span class='label'></span>").text(self.options.root_label).appendTo(entry);
 
-    //arrow.click(click_arrow(item));
-    //entry.dblclick(double_click_directory(item));
     entry.click(click_directory(item));
     item.data("path", self.options.root_path);
     item.bind("toggle-directory", toggle_directory(self));
@@ -294,7 +228,6 @@ $.widget("slycat.browser",
 
   _setOption: function(key, value)
   {
-    //console.log("slycat.browser._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "hide_dotfiles")
