@@ -91,7 +91,7 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
     {
       "Login": function()
       {
-        $.when([
+        $.when(
           create_session(
           {
             url : "remotes",
@@ -118,7 +118,7 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
               }
             }
           )
-        ]).done(function(){
+        ).then(function(){
             self.image_login.dialog("close");
             callback.call(this_arg, images);
         });

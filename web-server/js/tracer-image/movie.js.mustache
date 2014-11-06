@@ -99,7 +99,7 @@ Movie.prototype.build_open_button = function(container) {
     .classed('open-movie', true)
     .on('click', function() {
       d3.event.stopPropagation();
-      self.play();
+      self.agent_id ? self.build_server_movie.call(self) : login.show_prompt(self.plot.images.filter(function(uri){return uri;}).map(function(uri){return {uri: uri};}), self.build_server_movie, self);
     })
     .on('mousedown', function() {
       d3.event.stopPropagation();
@@ -114,7 +114,7 @@ Movie.prototype.build_open_button = function(container) {
 
   self.open_control.append('image')
       .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
-        "style/play.png")
+        "css/play.png")
       .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
       .attr('width', width)
       .attr('height', height);
@@ -418,9 +418,12 @@ Movie.prototype.setup_hooks = function(){
     var time = timify(i, 3) + ":" + (timify(i, 2) % 60) + ":" + (timify(i, 1) % 60) + "." + (i % fps);
 
     var update_index = (function(idx, indices){
-      return function(){
-        console.debug(idx);
-        table.select_rows([indices[idx][1]]);
+      return function(paused){
+        if(paused){
+          table.select_rows([indices[idx][1]]);
+          return;
+        }
+        $(".scatterplot").scatterplot("option", "selection", [indices[idx][1]]);
       };
     })(i, indices);
 
@@ -428,6 +431,10 @@ Movie.prototype.setup_hooks = function(){
   }
 
   this.video.on("timeupdate", function(){
-    update_events[Math.floor(d3.min([self.video.currentTime() * fps, update_events.length - 1]))]();
+    update_events[Math.floor(d3.min([self.video.currentTime() * fps, update_events.length - 1]))](self.video.paused());
+  });
+
+  this.video.on("pause", function(){
+    update_events[Math.floor(d3.min([self.video.currentTime() * fps, update_events.length - 1]))](true);
   });
 } 

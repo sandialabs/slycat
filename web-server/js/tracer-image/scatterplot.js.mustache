@@ -147,6 +147,9 @@ ScatterPlot.prototype.setup = function() {
       });
     });
 
+    this.movie = new Movie(this);
+
+
     /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the x variable updates the scatterplot ...
     $("#table").bind("x-selection-changed", function(event, variable) {
