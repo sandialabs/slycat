@@ -371,6 +371,32 @@ $.widget("parameter_image.scatterplot",
     }
   },
 
+  _getDefaultXPosition: function(imageIndex, imageWidth)
+  {
+    // We force the image to the left or right side of the screen, based on the target point position.
+    var self = this;
+    var width = self.svg.attr("width");
+    var range = self.x_scale.range();
+    var rangeLast = range.length - 1;
+    var relx = (self.x_scale(self.options.x[imageIndex]) - range[0]) / (range[rangeLast] - range[0]);
+    var x;
+
+    if(relx < 0.5)
+      x = relx * range[0];
+    else
+      x = width - ((width - range[rangeLast]) * (1.0 - relx)) - imageWidth;
+
+    return parseInt(x);
+  },
+
+  _getDefaultYPosition: function(imageIndex, imageHeight)
+  {
+    var self = this;
+    var height = self.svg.attr("height");
+    var target_y = self.y_scale(self.options.y[imageIndex]);
+    return parseInt((target_y / height) * (height - imageHeight));
+  },
+
   _validateValue: function(value)
   {
     var self = this;
@@ -976,21 +1002,11 @@ $.widget("parameter_image.scatterplot",
       // Define a default position for every image.
       if(image.x === undefined)
       {
-        // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
-        var range = self.x_scale.range();
-        var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
-
-        if(relx < 0.5)
-          image.x = parseInt(relx * range[0]);
-        else
-          image.x = parseInt(width - ((width - range[1]) * (1.0 - relx)) - image.width);
+        image.x = self._getDefaultXPosition(image.index, image.width);
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
-        var target_y = self.y_scale(self.options.y[image.index]);
-        image.y = parseInt((target_y / height) * (height - image.height));
+        image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
       // Tag associated point with class
@@ -1133,21 +1149,11 @@ $.widget("parameter_image.scatterplot",
       // Define a default position for every image.
       if(image.x === undefined)
       {
-        // We force the image to the left or right side of the screen, based on the target point position.
-        var width = self.svg.attr("width");
-        var range = self.x_scale.range();
-        var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
-
-        if(relx < 0.5)
-          image.x = relx * range[0];
-        else
-          image.x = width - ((width - range[1]) * (1.0 - relx)) - image.width;
+        image.x = self._getDefaultXPosition(image.index, image.width);
       }
       if(image.y === undefined)
       {
-        var height = self.svg.attr("height");
-        var target_y = self.y_scale(self.options.y[image.index]);
-        image.y = (target_y / height) * (height - image.height);
+        image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
       var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
@@ -1348,19 +1354,8 @@ $.widget("parameter_image.scatterplot",
           var imageHeight = 200;
           var imageWidth = 200;
 
-          var width = self.svg.attr("width");
-          var range = self.x_scale.range();
-          var relx = (self.x_scale(self.options.x[image.index]) - range[0]) / (range[1] - range[0]);
-          var x, y;
-
-          if(relx < 0.5)
-            x = relx * range[0];
-          else
-            x = width - ((width - range[1]) * (1.0 - relx)) - imageWidth;
-
-          var height = self.svg.attr("height");
-          var target_y = self.y_scale(self.options.y[image.index]);
-          y = (target_y / height) * (height - imageHeight);
+          var x = self._getDefaultXPosition(image.index, imageWidth);
+          var y = self._getDefaultYPosition(image.index, imageHeight);
 
           frame
             .attr("data-transx", x)
