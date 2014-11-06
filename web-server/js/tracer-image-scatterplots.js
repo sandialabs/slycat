@@ -490,6 +490,13 @@ $.widget("tracer_image.scatterplot", {
       self.selector_brush.load_data_group(time_line_group);
       self.selector_brush.initialize();
 
+      /*Workaround for #258:
+       * d3 brush creates an inverted cross on windows (For r,g,b, the cursor color becomes 256-r, 256-g, 256-b)
+       * For (128,128,128) the cursor "dissappears"
+       * Instead, use the parent's cursor.
+       */ 
+      d3.select($(time_line_group[0][0]).find(".background")[0]).style("cursor", "inherit")
+
       var get_length = function(from_index, to_index){
         var from = [self.x_scale(x[from_index]), self.y_scale(y[from_index])];
         var to = [self.x_scale(x[to_index]), self.y_scale(y[to_index])];
