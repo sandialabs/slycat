@@ -158,7 +158,8 @@ $.widget("tracer_image.scatterplot", {
     // Remove hidden simulations and NaNs
     for(var i=length-1; i>=0; i--){
       var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-      var NaNValue = Number.isNaN(x[i]) || Number.isNaN(y[i]);
+      var nan_check = Number.isNaN ? Number.isNaN : isNaN;
+      var NaNValue = nan_check(x[i]) || nan_check(y[i]);
       if(hidden || NaNValue) {
         filtered_indices.splice(i, 1);
         var selectionIndex = $.inArray(indices[i], filtered_selection);
@@ -583,6 +584,7 @@ $.widget("tracer_image.scatterplot", {
       var v = self.options.v;
       var indices = self.options.indices;
       var filtered_selection = self.options.filtered_selection;
+      var nan_check = Number.isNaN ? Number.isNaN : isNaN;
 
       var x_scale = self.x_scale;
       var y_scale = self.y_scale;
@@ -617,7 +619,7 @@ $.widget("tracer_image.scatterplot", {
         })
         .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
-          if(Number.isNaN(value))
+          if(nan_check(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
