@@ -880,9 +880,9 @@ $.widget("parameter_image.scatterplot",
       var width = Math.min(self.element.attr("width"), self.element.attr("height"));
       var height = Math.min(self.element.attr("width"), self.element.attr("height"));
       var rectHeight = parseInt((height - self.options.border - 40)/2);
-      var datum_layer_width = self.datum_layer.node().getBBox().width;
-      var width_offset = (total_width + datum_layer_width) / 2;
       var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
+      var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
+      var width_offset = (total_width + x_axis_layer_width) / 2;
 
       if( self.legend_layer.attr("data-status") != "moved" )
       {
