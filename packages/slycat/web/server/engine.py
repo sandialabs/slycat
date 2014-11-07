@@ -52,6 +52,7 @@ def start(root_path, config_file):
       return path
     return os.path.join(root_path, path)
 
+  # Load the configuration file.
   configuration = {}
   config_file = abspath(config_file)
   if os.path.exists(config_file):
@@ -59,6 +60,11 @@ def start(root_path, config_file):
     parser = ConfigParser.SafeConfigParser()
     parser.read(config_file)
     configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
+
+  # Configuration items we don't recognize are not allowed.
+  for key in configuration["slycat"].keys():
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "long-polling-timeout", "pidfile", "plugins", "projects-redirect", "remote-hosts", "server-admins", "server-root", "ssl-ciphers", "support-email", "uid", "umask"]:
+      raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
   uid = configuration["slycat"]["uid"]
