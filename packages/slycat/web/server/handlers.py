@@ -1094,31 +1094,42 @@ def post_remote_browse(sid, path):
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def get_remote_file(sid, path):
-  content_type, encoding = mimetypes.guess_type(path, strict=False)
-  cherrypy.response.headers["content-type"] = content_type
+  # If anything goes wrong, we're going to return a JSON description.
+  cherrypy.response.headers["content-type"] = "application/json"
 
   with slycat.web.server.ssh.get_session(sid) as session:
     try:
       if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-        raise cherrypy.HTTPError("400 Can't read directory.")
+        cherrypy.response.status = "400 Can't read directory."
+        return json.dumps({"message" : "Remote path %s:%s is a directory." % (session.hostname, path)})
+
+      content_type, encoding = mimetypes.guess_type(path, strict=False)
+      cherrypy.response.headers["content-type"] = content_type
       return session.sftp.file(path).read()
+
     except Exception as e:
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
+
       if str(e) == "Garbage packet received":
-        raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
+        cherrypy.response.status = "500 Remote access failed."
+        return json.dumps({"message" : "Remote access failed: %s" % str(e)})
+
       if e.strerror == "No such file":
         # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
-        raise cherrypy.HTTPError("400 File not found.")
+        cherrypy.response.status = "400 File not found."
+        return json.dumps({"message" : "The remote file %s:%s does not exist." % (session.hostname, path)})
+
       if e.strerror == "Permission denied":
-        # we know the file exists
-        # we now know that the file is not available due to access controls
-        remote_file = session.sftp.stat(path)
-        permissions = remote_file.__str__().split()[0]
-        directory = cherrypy.request.app.config["slycat"]["directory"]
-        file_permissions = "%s %s %s" % (permissions, directory.username(remote_file.st_uid), directory.groupname(remote_file.st_gid))
-        raise cherrypy.HTTPError("400 Permission denied. Current permissions: %s" % file_permissions)
-      # catch all
-      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+        # The file exists, but is not available due to access controls
+        cherrypy.response.status = "400 Permission denied."
+        return json.dumps({
+          "message" : "You do not have permission to retrieve %s:%s" % (session.hostname, path),
+          "hint" : "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path),
+        })
+
+      # Catchall
+      cherrypy.response.sdtatus = "400 Remote access failed."
+      return json.dumps({"message" : "Remote access failed: %s" % str(e)})
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
