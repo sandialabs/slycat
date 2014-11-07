@@ -41,4 +41,8 @@ def register_slycat_plugin(context):
 
   # Register our new model type
   context.register_model("parameter-image-plus", finish, html)
+  context.register_model_resource("parameter-image-plus", "slick.grid.css", os.path.join(os.path.dirname(__file__), "slick.grid.css"))
+  context.register_model_resource("parameter-image-plus", "slick-default-theme.css", os.path.join(os.path.dirname(__file__), "slick-default-theme.css"))
+  context.register_model_resource("parameter-image-plus", "slick.headerbuttons.css", os.path.join(os.path.dirname(__file__), "slick.headerbuttons.css"))
+  context.register_model_resource("parameter-image-plus", "slick-slycat-theme.css", os.path.join(os.path.dirname(__file__), "slick-slycat-theme.css"))
   context.register_model_resource("parameter-image-plus", "ui.css", os.path.join(os.path.dirname(__file__), "ui.css"))
