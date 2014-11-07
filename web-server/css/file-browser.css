@@ -118,6 +118,11 @@ ul.file-browser
   background: url(directory-forbidden-small.png) no-repeat center;
 }
 
+.file-browser tr.directory.up > div > .icon
+{
+  background: url(directory-up.png) no-repeat center;
+}
+
 .file-browser tr.file > div > .icon
 {
   background: url(file-small.png) no-repeat center;
