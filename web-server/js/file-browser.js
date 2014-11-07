@@ -140,10 +140,8 @@ $.widget("slycat.browser",
 
               //This will add a folder that a user can click on to go up a directory
               if (path != "/"){
-                console.log(path);
                 var item = $("<tr>").attr("id","up_dir").attr("class","up").appendTo(container);
                 var entry = $("<div/>").appendTo(item);
-                //var arrow = $("<span class='arrow'></span>").appendTo(entry);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
                 var label = $("<span class='label'></span>").text("..").appendTo(entry);
                 item_path = path.replace(/\/\.?\w*\/?$/, "");
