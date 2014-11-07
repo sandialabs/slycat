@@ -255,7 +255,7 @@ Movie.prototype.build_controls = function(container) {
       {name: "Go to Beginning", id: "begin", action: set_position(0), image: "css/rewind.png"},
       {name: "Step Back", id: "back", action: step(-1), image: "css/frame-rewind.png"},
       {name: "Step Forward", id: "forward", action: step(1), image: "css/frame-forward.png"},
-      {name: "Go to end", id: "end", action: set_position(this.video.duration()), image: "css/fast-forward.png"},
+      {name: "Go to end", id: "end", action: set_position(this.video.duration() - (1/this.fps)), image: "css/fast-forward.png"},
       {name: "Loop", id: "repeat", action: toggle_repeat, image: "css/repeat.png"}];
 
   var control_pane = container.append('rect')
@@ -279,6 +279,8 @@ Movie.prototype.build_controls = function(container) {
           id: "movie-" + control.id})
         .on("click", control.action);
   });
+
+  var repeat = $("#movie-repeat");
 
   container
     .insert('rect', '#movie-repeat')
