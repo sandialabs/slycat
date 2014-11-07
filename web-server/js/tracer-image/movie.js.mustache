@@ -30,6 +30,7 @@ function Movie(plot) {
   this.movie = [];
   this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
                         .map(function(encoding){return formats[encoding];})[0];
+  this.fps = 25;
 }
 
 Movie.prototype.add_loader = function() {
@@ -115,7 +116,7 @@ Movie.prototype.build_open_button = function(container) {
 
   self.open_control.append('image')
       .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
-        "css/play.png")
+        "css/build-movie.png")
       .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
       .attr('width', width)
       .attr('height', height);
@@ -327,6 +328,58 @@ Movie.prototype.build_server_movie = function() {
   }
 }
 
+Movie.prototype.build_controls = function(container) {
+  var self = this;
+
+  var toggle_pause_play = function(){
+    var video_update = self.video.paused() ? self.video.play() : self.video.pause();
+  }
+
+  var step = function(steps){
+    return function(){
+      var current_frame = self.video.currentTime() * self.fps;
+      self.video.currentTime((current_frame + steps)/self.fps);
+    }
+  }
+
+  var set_position = function(time){
+    return function(){
+      self.video.currentTime(time);
+    }
+  }
+
+  var controls = [{name: "Play", id: "play-pause", action: toggle_pause_play, image: "css/play.png"},
+      {name: "Go to Beginning", id: "begin", action: set_position(0), image: "css/rewind.png"},
+      {name: "Step Back", id: "back", action: step(-1), image: "css/frame-rewind.png"},
+      {name: "Step Forward", id: "forward", action: step(1), image: "css/frame-forward.png"},
+      {name: "Go to end", id: "end", action: set_position(this.video.duration()), image: "css/fast-forward.png"}];
+
+  var control_pane = container.append('rect')
+      .attr({
+        height: 30 * controls.length,
+        width: 34,
+        rx: 2,
+        ry: 2,
+        style: "fill: rgba(0, 0, 0, 0.2);",
+      })
+  var built_controls = {};
+
+  controls.forEach(function(control, index){
+    built_controls[control.id] = container
+      .append("image")
+        .attr({"xlink:href": "{{server-root}}" + control.image,
+          width: 28,
+          height: 28,
+          y: 30*index,
+          x: 2,
+          id: "movie-" + control.id})
+        .on("click", control.action);
+  });
+
+  this.video.on("playing", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/pause.png")})
+  this.video.on("pause", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/play.png")})
+}
+
 Movie.prototype.show_movie = function(image_index) {
   var video_progress = "Creating video.";
   var self = this;
@@ -380,8 +433,7 @@ Movie.prototype.build_movie_player = function(image_index){
         preload:true,
         height: height,
         width: width,
-        controls: true,
-        x: 28
+        x: 32
       })
 
   if(navigator.userAgent.match("WebKit")){
@@ -402,7 +454,10 @@ Movie.prototype.build_movie_player = function(image_index){
   var self = this;
 
   this.video = new Popcorn(this.plot.plot_ref + " video");
-  this.video.on("loadeddata", function(){self.setup_hooks.call(self);})
+  this.video.on("loadeddata", function(){
+      self.setup_hooks.call(self);
+      self.build_controls.call(self, d3.select(self.container).append("g").attr("transform", "translate(0,30)"));
+    })
 }
 
 Movie.prototype.get_status = function(image_index) {
@@ -418,9 +473,8 @@ Movie.prototype.setup_hooks = function(){
   var self = this;
   var indices = this.plot.images.map(function(x,i){return [x,i];}).filter(function(value){return value[0];});
   //For now, our framerate is 25 frames/second, which is the default default for ffmpeg.
-  var fps = 25;
   var timify = function(frame_number, repetitions){
-    var value = Math.floor(frame_number/fps);
+    var value = Math.floor(frame_number/self.fps);
     for(var i = 0; i < repetitions; i++){
       value = Math.floor(value/60);
     }
@@ -429,9 +483,9 @@ Movie.prototype.setup_hooks = function(){
 
   var update_events = [];
 
-  for(var i = 0; i < this.video.duration() * fps; i++){
+  for(var i = 0; i < this.video.duration() * this.fps; i++){
     //In the SMPTE format: HH:MM:SS.Frame
-    var time = timify(i, 3) + ":" + (timify(i, 2) % 60) + ":" + (timify(i, 1) % 60) + "." + (i % fps);
+    var time = timify(i, 3) + ":" + (timify(i, 2) % 60) + ":" + (timify(i, 1) % 60) + "." + (i % this.fps);
 
     var update_index = (function(idx, indices){
       return function(paused){
@@ -447,10 +501,10 @@ Movie.prototype.setup_hooks = function(){
   }
 
   this.video.on("timeupdate", function(){
-    update_events[Math.floor(d3.min([self.video.currentTime() * fps, update_events.length - 1]))](self.video.paused());
+    update_events[Math.floor(d3.min([self.video.currentTime() * self.fps, update_events.length - 1]))](self.video.paused());
   });
 
   this.video.on("pause", function(){
-    update_events[Math.floor(d3.min([self.video.currentTime() * fps, update_events.length - 1]))](true);
+    update_events[Math.floor(d3.min([self.video.currentTime() * self.fps, update_events.length - 1]))](true);
   });
 } 
