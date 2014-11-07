@@ -1120,7 +1120,7 @@ def get_remote_file(sid, path):
         # The file exists, but is not available due to access controls
         cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
         cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-        raise cherrypy.HTTPError("400 Permission denied.")
+        raise cherrypy.HTTPError("400 Access denied.")
 
       # Catchall
       cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
@@ -1171,6 +1171,21 @@ def get_agent_file(sid, path):
     session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
+
+    if metadata["message"] == "Path must be absolute.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Path not absolute.")
+    elif metadata["message"] == "Path not found.":
+      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 File not found.")
+    elif metadata["message"] == "Directory unreadable.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Can't read directory.")
+    elif metadata["message"] == "Access denied.":
+      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
+      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Access denied.")
+
     content = session.stdout.read(metadata["size"])
     cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
@@ -1195,6 +1210,21 @@ def get_agent_image(sid, path, **kwargs):
     session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
+
+    if metadata["message"] == "Path must be absolute.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Path not absolute.")
+    elif metadata["message"] == "Path not found.":
+      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 File not found.")
+    elif metadata["message"] == "Directory unreadable.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Can't read directory.")
+    elif metadata["message"] == "Access denied.":
+      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
+      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Access denied.")
+
     content = session.stdout.read(metadata["size"])
     cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
