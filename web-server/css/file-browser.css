@@ -104,10 +104,9 @@ ul.file-browser
 */
 .file-browser tr.host.open > div, .file-browser tr.directory.open > div
 {
-  background: #e7f6f7;
   color: black;
-  border: 1px solid black;
-  padding: 2px;
+  font-weight: bold;
+  margin-bottom: 2px;
 }
 /*
 .file-browser tr.host.open > div > .arrow, .file-browser tr.directory.open > div > .arrow
