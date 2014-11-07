@@ -214,8 +214,7 @@ $.widget("slycat.browser",
     var input_with_text = false;
     var item = $("<tr>").appendTo(container1);
     var entry = $("<div/>").appendTo(item);
-    var icon = $("<span class='icon'></span>").appendTo(entry);
-    var label = $("<span class='label'></span>").text(self.options.root_label).appendTo(entry);
+    var label = $("<span class='label'></span>").text("Host: " + self.options.root_label).appendTo(entry);
 
     entry.click(click_directory(item));
     item.data("path", self.options.root_path);
