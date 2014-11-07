@@ -16,10 +16,6 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
   {
     new_name : knockout.observable(""),
     new_description : knockout.observable(""),
-    projects :
-    {
-      url : server_root + "projects",
-    },
     edit_model : function()
     {
       state.new_name(state.model.name());
@@ -37,7 +33,6 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
     success : function(model)
     {
       state.model = km.fromJS(model);
-      document.title = state.model.name() + " - Slycat Model";
 
       // Get the owning project.
       $.ajax(

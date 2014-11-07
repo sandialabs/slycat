@@ -8,9 +8,18 @@ rights in this software.
 
 <html>
   <head>
-{{> head}}
-    <title>Slycat Model</title>
-    <link id="slycat-server-root" href="{{server-root}}">
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="{{slycat-server-root}}css/desktop.css" type="text/css">
+    <link rel="stylesheet" href="{{slycat-server-root}}css/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css">
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-2.1.1.min.js"></script>
+    <!-- Uncompressed, development version of jQuery Migrate -->
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-migrate-1.2.1.js"></script>
+    <!-- Compressed, production version of jQuery Migrate. Use this instead of the one above when deploying. -->
+    <!-- <script type="text/javascript" src="{{slycat-server-root}}js/jquery-migrate-1.2.1.min.js"></script> -->
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery.json-2.4.min.js"></script>
+    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-ui-1.10.4.custom.min.js"></script>
+    <title>{{slycat-model.name}} - Slycat Model</title>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
   </head>
 
   <body>
@@ -20,11 +29,11 @@ rights in this software.
       <div class="width-wrapper">
         <button data-bind="click: edit_model" class="edit-page" title="Edit this model's name and description.">Edit Model</button>
         <div id="breadcrumbs">
-          <a data-bind="attr: {href : projects.url}">Projects</a> &rarr;
-          <a data-bind="attr: {href : project.url}, text: project.name"></a> &rarr;
+          <a href="{{slycat-server-root}}projects">Projects</a> &rarr;
+          <a href="{{slycat-server-root}}projects/{{slycat-project._id}}">{{slycat-project.name}}</a> &rarr;
         </div>
-        <h2 data-bind="text: model.name"></h2>
-        <div data-bind="text: model.description"></div>
+        <h2>{{slycat-model.name}}</h2>
+        <div>{{slycat-model.description}}</div>
         <div id="edit-model-dialog" title="Edit Model">
           <form>
             <label for="new-model-name">Model Name</label>
@@ -43,6 +52,6 @@ rights in this software.
         {{{slycat-marking-html}}}
       </div>
     </div>
-    <script type="text/javascript" src="{{server-root}}js/require.js" data-main="{{server-root}}js/slycat-model-main.js"></script>
+    <script type="text/javascript" src="{{slycat-server-root}}js/require.js" data-main="{{slycat-server-root}}js/slycat-model-main.js"></script>
   </body>
 </html>
