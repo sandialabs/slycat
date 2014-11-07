@@ -533,38 +533,42 @@ $.widget("tracer_image.scatterplot", {
       }).reduce(function(prev, next, index) {
         // Get the endpoints in reverse order, we'll subtract the index later:
         var endpoints = [next, prev];
-        var find_closest = function() {
-          var e = d3.event;
-          var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
-          //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
-          var distance = endpoints.map(function(point) {
-            return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]);
-          });
-          console.debug(distance);
-          ////For reference, this is the more accurate way to do it:
-          //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
-          //Push this to the window's event thread, to avoid blocking user responses:
-          window.setTimeout(function() {
-            var image_index = get_closest_image_index
-              .apply(this, distance.map(function(dist, j) {
-                  return {l: dist, i: index - j};
-                }).sort(function(a,b){
-                  return a.i - b.i;
-                })
-              );
-            if (e.ctrlKey) {
-              var not_selected = (self.options.selection.indexOf(image_index) == -1);
-              if (not_selected) {
-                self.options.selection.push(image_index);
+        var find_closest = function(change_selection) {
+          return function() {
+            var e = d3.event;
+            var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
+            //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
+            var distance = endpoints.map(function(point) {
+              return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]);
+            });
+            console.debug(distance);
+            ////For reference, this is the more accurate way to do it:
+            //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
+            //Push this to the window's event thread, to avoid blocking user responses:
+            window.setTimeout(function() {
+              var image_index = get_closest_image_index
+                .apply(this, distance.map(function(dist, j) {
+                    return {l: dist, i: index - j};
+                  }).sort(function(a,b){
+                    return a.i - b.i;
+                  })
+                );
+              if (e.ctrlKey) {
+                var not_selected = (self.options.selection.indexOf(image_index) == -1);
+                if (not_selected) {
+                  self.options.selection.push(image_index);
+                }
               }
-            }
-            else {
-              self.options.selection = [image_index];
-            }
-            self._schedule_update({render_selection:true});
-            self.element.trigger("selection-changed", [self.options.selection]);
-            self._open_hover(image_index, true);
-          }, 50);
+              else {
+                self.options.selection = [image_index];
+              }
+              if(change_selection) {
+                self._schedule_update({render_selection:true});
+                self.element.trigger("selection-changed", [self.options.selection]);
+              }
+              self._open_hover(image_index, true);
+            }, 50);
+          };
         };
         // thicker line colored according to color var selected
         time_line_group.append("path")
@@ -572,14 +576,15 @@ $.widget("tracer_image.scatterplot", {
           .attr("stroke-width", 3)
           .attr("d", function(){return make_line([prev, next])})
           .attr("index", index)
-          .on('mousedown', find_closest);
+          .on('mousedown', find_closest(true))
+          .on('mouseover', find_closest(false));
         // thinner black/white timeline in center
         time_line_group.append("path")
           .attr("stroke", color_scale(index))
           .attr("stroke-width", 1)
           .attr("d", function(){return make_line([prev, next])})
           .attr("index", index)
-          .on('mousedown', find_closest);
+          .on('mousedown', find_closest(true));
         return next;
       });
     }
