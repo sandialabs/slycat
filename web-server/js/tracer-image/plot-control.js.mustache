@@ -121,28 +121,6 @@ PlotControl.prototype.update_plot = function(variable) {
   */
 };
 
-/* TODO: implement image-selection control. Excerpted from pre-refactor codebase:
-$(this.plot_ref + " .controls").bind("images-selection-changed", function(event, variable) {
- console.debug("GET models/id/attrs / image selection changed -- ajax");
- $.ajax(
- {
- type : "GET",
- url : "{{server-root}}models/{{_id}}/arraysets/data-table/arrays/0/attributes/" +
- variable + "/chunk?ranges=0," + model.metadata["row-count"],
- success : function(result)
- {
- $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
- },
- error: artifact_missing
- });
- });
-
- // Log changes to open images ...
- $(self.plot_ref + " .scatterplot").bind("open-images-changed", function(event, selection) {
- self.open_images_changed(selection);
- });
-*/
-
 /*
  For reference, how to translate jquery selection to D3 selection and append:
  var d3controls = d3.select($controls.toArray()); //translate jquery to d3

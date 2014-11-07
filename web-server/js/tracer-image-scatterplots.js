@@ -65,6 +65,7 @@ $.widget("tracer_image.scatterplot", {
     self._build_y_axis();
     self._build_image_control();
     self._build_color_legend();
+    self._build_movie_start();
 
     self.datum_layer = self.group.append("g").attr("class", "datum-layer");
     self.selector_brush = self.options.selector_brush;
@@ -231,6 +232,12 @@ $.widget("tracer_image.scatterplot", {
     });
     self.image_control.build();
 
+  },
+
+  _build_movie_start: function(){
+    this.movie_start_layer = this.x_axis_layer.append("g").attr({"class": "movie-start", transform:"translate(" + 50 + " 0)"});
+
+    this.options.scatterplot_obj.movie.build_open_button(this.movie_start_layer);
   },
 
   _setOption: function(key, value)
@@ -407,6 +414,7 @@ $.widget("tracer_image.scatterplot", {
       //account for control width and leave space for image control
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2 - 60;
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
+      self.movie_start_layer.attr('transform', 'translate(' + (control_x_offset - self.x_control.foreign_object.attr("width")/2 - 40) + ',30)');
     }
 
     if(self.updates["update_y"])

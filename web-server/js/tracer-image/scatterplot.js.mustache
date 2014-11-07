@@ -113,6 +113,8 @@ ScatterPlot.prototype.setup = function() {
     this.scatterplot_obj = $(this.plot_ref + " .scatterplot");
     this.selector_brush = new SelectorBrush(this, this.scatterplot_obj);
 
+    this.movie = new Movie(this);
+
     this.scatterplot_obj.scatterplot({
       scatterplot_obj: self,
       selector_brush: self.selector_brush,
@@ -146,6 +148,7 @@ ScatterPlot.prototype.setup = function() {
         gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
       });
     });
+
 
     /* TODO: implement the table controls to sync with a 'selected plot'
     // Changing the x variable updates the scatterplot ...
@@ -225,10 +228,7 @@ ScatterPlot.prototype.hidden_simulations_changed = function() {
 
 ScatterPlot.prototype.display_image = function(uri) {
   console.debug("inside display image");
-  if(login.logged_into_host_for_file(file))
     this.load_image();
-  else
-    login.show_prompt([{uri: uri}], this.load_image, this);
 };
 
 ScatterPlot.prototype.image_url_for_session = function(file) {

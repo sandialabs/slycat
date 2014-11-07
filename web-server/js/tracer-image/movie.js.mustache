@@ -24,6 +24,13 @@ function Movie(plot) {
   this.errored_image_count = 0;
   this.open_control = null; //handle to foreignObject so SVG can manipulate
   $(this.container).hide();
+  
+  //Test for which video types are supported
+  var formats = {webm:"webm", h264:"mp4"};
+  this.movie = [];
+  this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
+                        .map(function(encoding){return formats[encoding];})[0];
+  this.fps = 25;
 }
 
 Movie.prototype.add_loader = function() {
@@ -94,7 +101,7 @@ Movie.prototype.build_open_button = function(container) {
     .classed('open-movie', true)
     .on('click', function() {
       d3.event.stopPropagation();
-      self.play();
+      self.agent_id ? self.build_server_movie.call(self) : login.show_prompt(self.plot.images.filter(function(uri){return uri;}).map(function(uri){return {uri: uri};}), self.build_server_movie, self);
     })
     .on('mousedown', function() {
       d3.event.stopPropagation();
@@ -109,7 +116,7 @@ Movie.prototype.build_open_button = function(container) {
 
   self.open_control.append('image')
       .attr('xlink:href', this.plot.scatterplot_obj.scatterplot("get_option", "server_root") +
-        "css/play.png")
+        "css/build-movie.png")
       .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
       .attr('width', width)
       .attr('height', height);
@@ -230,13 +237,12 @@ Movie.prototype.play = function(on_success) {
   // TODO right now we just look at the first image
 
   if(!login.logged_into_host_for_file(self.plot.images[0])) {
-    self.stop();
-    var plot = $(self.plot.plot_ref + " .scatterplot");
-    var images = plot.scatterplot("get_option", "images")
+    var images = self.plot.images
       .filter(function(image){ return image.length > 0; })
       .map(function(image, index)
       {
-        return {index : image.index,
+        return {
+          index : image.index,
           uri : image.trim(),
           image_class : "open-image",
         }
@@ -270,14 +276,10 @@ Movie.prototype.step = function() {
 
 Movie.prototype.hide = function() {
   var self = this;
-  $(self.container).hide();
-  self.open = false;
+  $(self.container).remove();
   $(self.plot.plot_ref + ' .scatterplot').show();
   $('svg .image-layer').show();
-  if(this.loader) {
-    this.loader.remove();
-  }
-
+  $('.open-movie').show();
 };
 
 Movie.prototype.next_image = function() {
@@ -295,3 +297,214 @@ Movie.prototype.increment_current_image_index = function() {
   }
   this.current_image_index = this.current_image_index + 1;
 };
+
+Movie.prototype.build_server_movie = function() {
+  var self = this;
+  var image_index = this.plot.images_index;
+  self.agent_id = login.get_agent(this.plot.images.filter(function(url){return url && url.length > 0})[0]);
+  $('.open-movie').hide();
+
+  if(!self.movie[image_index]){
+    model.get_image_column(this.plot.images_index, function(images) {
+      $.ajax({
+        type: "POST",
+        url: "{{server-root}}agents/" + self.agent_id + "/videos",
+        contentType: "application/json",
+        data: JSON.stringify({
+          "content-type": "video/" + self.video_type,
+          images: images
+                    .filter(function(url){ return url != null && url.length > 0; })
+                    .map(function(url){return url.slice(url.split("/", 3).join().length)})
+        }),
+        success: function(movie){
+          self.movie[image_index] = movie;
+          self.show_movie(image_index);
+        }
+      });
+    });
+  }
+  else{
+    self.build_movie_player(image_index);
+  }
+}
+
+Movie.prototype.build_controls = function(container) {
+  var self = this;
+
+  var toggle_pause_play = function(){
+    var video_update = self.video.paused() ? self.video.play() : self.video.pause();
+  }
+
+  var step = function(steps){
+    return function(){
+      var current_frame = self.video.currentTime() * self.fps;
+      self.video.currentTime((current_frame + steps)/self.fps);
+    }
+  }
+
+  var set_position = function(time){
+    return function(){
+      self.video.currentTime(time);
+    }
+  }
+
+  var controls = [{name: "Play", id: "play-pause", action: toggle_pause_play, image: "css/play.png"},
+      {name: "Go to Beginning", id: "begin", action: set_position(0), image: "css/rewind.png"},
+      {name: "Step Back", id: "back", action: step(-1), image: "css/frame-rewind.png"},
+      {name: "Step Forward", id: "forward", action: step(1), image: "css/frame-forward.png"},
+      {name: "Go to end", id: "end", action: set_position(this.video.duration()), image: "css/fast-forward.png"}];
+
+  var control_pane = container.append('rect')
+      .attr({
+        height: 30 * controls.length,
+        width: 34,
+        rx: 2,
+        ry: 2,
+        style: "fill: rgba(0, 0, 0, 0.2);",
+      })
+  var built_controls = {};
+
+  controls.forEach(function(control, index){
+    built_controls[control.id] = container
+      .append("image")
+        .attr({"xlink:href": "{{server-root}}" + control.image,
+          width: 28,
+          height: 28,
+          y: 30*index,
+          x: 2,
+          id: "movie-" + control.id})
+        .on("click", control.action);
+  });
+
+  this.video.on("playing", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/pause.png")})
+  this.video.on("pause", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/play.png")})
+}
+
+Movie.prototype.show_movie = function(image_index) {
+  var video_progress = "Creating video.";
+  var self = this;
+
+  var wait_until_build = function(){
+    setTimeout(function(){$.ajax({
+        type: "GET",
+        accepts: "application/json",
+        url: "{{server-root}}agents/" + self.agent_id + "/videos/" + self.movie[image_index].sid + "/status",
+        success: function(result){
+          if(result.message == "Creating video." || result.message == "Not ready."){
+            wait_until_build();
+            return;
+          }
+          self.build_movie_player(image_index);
+        },
+        error: function(){
+          console.debug(arguments);
+        }
+      });}, 1000);
+  }
+
+  wait_until_build();
+}
+
+Movie.prototype.build_movie_player = function(image_index){
+  var width = $(this.plot.grid_ref).attr("width") - 56;
+  var height = $(this.plot.grid_ref).attr("height");
+  
+  $(this.plot.plot_ref + ' .scatterplot').hide();
+  $('svg .image-layer').hide();
+
+  this.video = d3.select(this.plot.plot_ref)
+    .insert("g", ":first-child")
+      .classed("movie", true)
+
+  this.build_close_button(d3.select(this.container));
+
+  this.video = this.video
+    .append("foreignObject")
+      .attr({
+        width: width,
+        height: height,
+        x: 28
+      })
+    .append("xhtml:body")
+      .style("background", "transparent")
+    .append("xhtml:video")
+      .attr({
+        id: "test_video",
+        preload:true,
+        height: height,
+        width: width,
+        x: 32
+      })
+
+  if(navigator.userAgent.match("WebKit")){
+    var offset = $(this.plot.grid_ref).attr("transform").split(/[( ,)]/);
+    var left = Number(offset[1]) + 28;
+    var top = Number(offset[2]);
+    //WebKit has a bug with rendering video elements in an svg foreignObject:
+    this.video.attr("style", "position: relative; left: " + left + "px; top: " + top + "px;") 
+  }
+
+  this.video
+    .append("xhtml:source")
+      .attr({
+        src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid,
+        type: "video/" + this.video_type
+      });
+
+  var self = this;
+
+  this.video = new Popcorn(this.plot.plot_ref + " video");
+  this.video.on("loadeddata", function(){
+      self.setup_hooks.call(self);
+      self.build_controls.call(self, d3.select(self.container).append("g").attr("transform", "translate(0,30)"));
+    })
+}
+
+Movie.prototype.get_status = function(image_index) {
+  $.ajax({
+    type: "GET",
+    url : "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid + "/status",
+    success : function(){console.debug(arguments)},
+    error : function(){console.debug(arguments)},
+  });
+}
+
+Movie.prototype.setup_hooks = function(){
+  var self = this;
+  var indices = this.plot.images.map(function(x,i){return [x,i];}).filter(function(value){return value[0];});
+  //For now, our framerate is 25 frames/second, which is the default default for ffmpeg.
+  var timify = function(frame_number, repetitions){
+    var value = Math.floor(frame_number/self.fps);
+    for(var i = 0; i < repetitions; i++){
+      value = Math.floor(value/60);
+    }
+    return value;
+  };
+
+  var update_events = [];
+
+  for(var i = 0; i < this.video.duration() * this.fps; i++){
+    //In the SMPTE format: HH:MM:SS.Frame
+    var time = timify(i, 3) + ":" + (timify(i, 2) % 60) + ":" + (timify(i, 1) % 60) + "." + (i % this.fps);
+
+    var update_index = (function(idx, indices){
+      return function(paused){
+        if(paused){
+          table.select_rows([indices[idx][1]]);
+          return;
+        }
+        $(".scatterplot").scatterplot("option", "selection", [indices[idx][1]]);
+      };
+    })(i, indices);
+
+    update_events[i] = update_index;
+  }
+
+  this.video.on("timeupdate", function(){
+    update_events[Math.floor(d3.min([self.video.currentTime() * self.fps, update_events.length - 1]))](self.video.paused());
+  });
+
+  this.video.on("pause", function(){
+    update_events[Math.floor(d3.min([self.video.currentTime() * self.fps, update_events.length - 1]))](true);
+  });
+} 
