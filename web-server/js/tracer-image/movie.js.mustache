@@ -7,7 +7,6 @@
 function Movie(plot) {
   // a plot has access to the image set for the specific cell of the grid
   this.plot = plot;
-  this.built = false;
   this.open = false;
   this.stopped = true;
   this.container = this.plot.plot_ref + " .movie";
@@ -139,7 +138,6 @@ Movie.prototype.build_close_button = function(container) {
     .attr("ry", 2)
     .style("fill", "rgba(0%,0%,0%,0.2)")
     .on("click", function() {
-      self.stop();
       self.hide();
     });
   close_button.append("path")
@@ -172,109 +170,6 @@ Movie.prototype.resize = function() {
       .attr("width", self.width + 3)
       .attr("height", self.height + 3);
   }
-};
-
-// when the movie is over (reached end of loop), repeat by calling loop again
-Movie.prototype.check_for_loop_end = function(transition, d3_obj, callback) {
-  var n = 0;
-  var self = this;
-  transition
-    .each(function() {++n;})
-    .each("end", function() {if(!--n && !self.stopped) callback.apply(d3_obj, arguments);});
-};
-
-Movie.prototype.loop = function() {
-  var self = this;
-  // see http://stackoverflow.com/questions/23875661/looping-through-a-set-of-images-using-d3js
-  // and see my jsfiddel related to this - http://jsfiddle.net/1270p51q/2/
-  var indices_with_images = this.plot.images
-      .map(function(d,i){return [d,i];})
-      .filter(function(d){return d[0].length > 0;})
-      .map(function(d){return d[1];});
-  var update_selected_image = function(uri, index)
-  {
-    if(self.stopped) {
-      update_selected_image = function(){};
-    }
-    else {
-      table.select_rows([indices_with_images[index]]);
-    }
-  };
-
-  // Reset the whole thing
-  self.d3_movie.transition()
-      .style("visibility", function(_,i){return i == 0 ? "visible" : "hidden";});
-
-  var add_transition = function(i){
-    d3.select(self.d3_movie[0][i]).transition()
-           .each("start", function(d){
-             update_selected_image(d,i);
-             if(i) {
-               d3.select(self.d3_movie[0][i-1]).style("visibility", "hidden");
-             }
-             else {
-               d3.select(self.d3_movie[0][self.d3_movie[0].length - 1]).style("visibility", "hidden");
-             }
-             d3.select(self.d3_movie[0][i]).style("visibility", "visible");
-           })
-           .delay(function(d,i){return self.interval;})
-           .call(self.check_for_loop_end, self, self.loop)
-           .each("end", function(d){
-            if(!self.stopped) {
-              //Register the next transition on each transition (Unless we've stopped):
-              add_transition((i+1) % self.d3_movie[0].length);
-            }
-           });
-  }
-
-  //TODO: Remove current image, substitute new image
-  // Start with the first image
-  add_transition(0);
-};
-
-Movie.prototype.play = function(on_success) {
-  var self = this;
-  this.stopped = false;
-  // TODO get ALL hostnames for the image set - assuming there can be more than one?
-  // TODO set the hostname to something ... loop over all hostnames and get session cache for that hostname
-  // TODO right now we just look at the first image
-
-  if(!login.logged_into_host_for_file(self.plot.images[0])) {
-    var images = self.plot.images
-      .filter(function(image){ return image.length > 0; })
-      .map(function(image, index)
-      {
-        return {
-          index : image.index,
-          uri : image.trim(),
-          image_class : "open-image",
-        }
-      });
-    login.show_prompt(images, function(){this.play(on_success)}, this);
-  } else {
-    if(on_success) {
-      on_success();
-    }
-    if(!self.built) {
-      self.build_movie();
-    }
-    else{
-      self.show();
-      self.loop();
-    }
-    return true;
-  }
-};
-
-Movie.prototype.stop = function() {
-  var self = this;
-  self.stopped = true;
-  self.hide();
-
-};
-
-Movie.prototype.step = function() {
-
 };
 
 Movie.prototype.hide = function() {
@@ -336,26 +231,32 @@ Movie.prototype.build_controls = function(container) {
 
   var toggle_pause_play = function(){
     var video_update = self.video.paused() ? self.video.play() : self.video.pause();
-  }
+  };
 
   var step = function(steps){
     return function(){
       var current_frame = self.video.currentTime() * self.fps;
       self.video.currentTime((current_frame + steps)/self.fps);
     }
-  }
+  };
 
   var set_position = function(time){
     return function(){
       self.video.currentTime(time);
     }
+  };
+
+  var toggle_repeat = function(){
+    self.video.loop(!self.video.loop());
+    d3.select("#movie-loop-toggle").attr("opacity", self.video.loop() ? 1 : 0)
   }
 
   var controls = [{name: "Play", id: "play-pause", action: toggle_pause_play, image: "css/play.png"},
       {name: "Go to Beginning", id: "begin", action: set_position(0), image: "css/rewind.png"},
       {name: "Step Back", id: "back", action: step(-1), image: "css/frame-rewind.png"},
       {name: "Step Forward", id: "forward", action: step(1), image: "css/frame-forward.png"},
-      {name: "Go to end", id: "end", action: set_position(this.video.duration()), image: "css/fast-forward.png"}];
+      {name: "Go to end", id: "end", action: set_position(this.video.duration()), image: "css/fast-forward.png"},
+      {name: "Loop", id: "repeat", action: toggle_repeat, image: "css/repeat.png"}];
 
   var control_pane = container.append('rect')
       .attr({
@@ -378,6 +279,23 @@ Movie.prototype.build_controls = function(container) {
           id: "movie-" + control.id})
         .on("click", control.action);
   });
+
+  container
+    .insert('rect', '#movie-repeat')
+      .attr({
+        id : "movie-loop-toggle",
+        width : repeat.attr("width"),
+        height : repeat.attr("height"),
+        x : repeat.attr("x"),
+        y : repeat.attr("y"),
+        rx : 2,
+        ry : 2,
+        fill : "#ff0",
+        "fill-opacity" : "0.3",
+        stroke : "#ff0",
+        "stroke-opacity" : "0.8",
+        opacity : 0
+      });
 
   this.video.on("playing", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/pause.png")})
   this.video.on("pause", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/play.png")})
