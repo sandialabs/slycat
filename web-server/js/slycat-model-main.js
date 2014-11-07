@@ -84,7 +84,7 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
           url : location.href,
           success : function(details)
           {
-            window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+            window.location.href = state.project.url;
           },
           error : function(request, status, reason_phrase)
           {

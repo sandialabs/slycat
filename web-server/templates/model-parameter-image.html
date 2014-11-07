@@ -140,6 +140,8 @@ rights in this software.
         var hidden_simulations = null;
         var colormap = null;
         var colorscale = null;
+        var auto_scale = null;
+        var filtered_v = null;
 
         var table_ready = false;
         var scatterplot_ready = false;
@@ -428,6 +430,11 @@ rights in this software.
               x_index = Number(bookmark["x-selection"]);
             if("y-selection" in bookmark)
               y_index = Number(bookmark["y-selection"]);
+            auto_scale = true;
+            if("auto-scale" in bookmark)
+            {
+              auto_scale = bookmark["auto-scale"];
+            }
 
             // Set state of selected and hidden simulations
             selected_simulations = [];
@@ -685,7 +692,8 @@ rights in this software.
         {
           // Setup the scatterplot ...
           if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
-            && (selected_simulations != null) && (hidden_simulations != null))
+            && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
+            )
           {
             scatterplot_ready = true;
 
@@ -699,12 +707,6 @@ rights in this software.
             if("open-images-selection" in bookmark)
             {
               open_images = bookmark["open-images-selection"];
-            }
-
-            var auto_scale = true;
-            if("auto-scale" in bookmark)
-            {
-              auto_scale = bookmark["auto-scale"];
             }
 
             $("#scatterplot").scatterplot({
@@ -796,8 +798,9 @@ rights in this software.
         function setup_controls()
         {
           if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
-            && (category_columns != null) && (x_index != null) && (y_index != null) 
-            && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null))
+            && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
+            && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
+            )
           {
             controls_ready = true;
             var numeric_variables = [];
@@ -824,12 +827,6 @@ rights in this software.
             if("variable-selection" in bookmark)
             {
               color_variable = [bookmark["variable-selection"]];
-            }
-
-            var auto_scale = true;
-            if("auto-scale" in bookmark)
-            {
-              auto_scale = bookmark["auto-scale"];
             }
 
             $("#controls").controls({
@@ -958,10 +955,7 @@ rights in this software.
                   hidden_simulations.push(selected_simulations[i]);
                 }
               }
-              hidden_simulations_changed();
-              $("#table").table("option", "hidden_simulations", hidden_simulations);
-              $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
-              $("#controls").controls("option", "hidden_simulations", hidden_simulations);
+              update_widgets_when_hidden_simulations_change();
             });
 
             // Log changes to hidden selection ...
@@ -973,10 +967,7 @@ rights in this software.
                   hidden_simulations.splice(index, 1);
                 }
               }
-              hidden_simulations_changed();
-              $("#table").table("option", "hidden_simulations", hidden_simulations);
-              $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
-              $("#controls").controls("option", "hidden_simulations", hidden_simulations);
+              update_widgets_when_hidden_simulations_change();
             });
 
             // Log changes to hidden selection ...
@@ -985,11 +976,7 @@ rights in this software.
               while(hidden_simulations.length > 0) {
                 hidden_simulations.pop();
               }
-
-              hidden_simulations_changed();
-              $("#table").table("option", "hidden_simulations", hidden_simulations);
-              $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
-              $("#controls").controls("option", "hidden_simulations", hidden_simulations);
+              update_widgets_when_hidden_simulations_change();
             });
           }
         }
@@ -1071,20 +1058,73 @@ rights in this software.
           $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
         }
 
+        function update_widgets_when_hidden_simulations_change()
+        {
+          hidden_simulations_changed();
+          if(auto_scale)
+          {
+            update_current_colorscale();
+            $("#table").table("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
+            // TODO this will result in 2 updates to canvas, one to redraw points according to hidden simulations and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
+            $("#scatterplot").scatterplot("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
+          }
+          else
+          {
+            $("#table").table("option", "hidden_simulations", hidden_simulations);
+            $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+          }
+          $("#controls").controls("option", "hidden_simulations", hidden_simulations);
+        }
+
         function update_current_colorscale()
         {
           // Check if numeric or string variable
           var v_type = table_metadata["column-types"][v_index];
+          if(auto_scale)
+            filtered_v = filterValues(v);
+          else
+            filtered_v = v;
 
           if(v_type != "string")
           {
-            colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, table_statistics[v_index].min, table_statistics[v_index].max);
+            colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, d3.min(filtered_v), d3.max(filtered_v));
           }
           else
           {
-            var uniqueValues = d3.set(v).values().sort();
+            var uniqueValues = d3.set(filtered_v).values().sort();
             colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);;
           }
+        }
+
+        // Filters source values by removing hidden_simulations
+        function filterValues(source)
+        {
+          var self = this;
+          hidden_simulations.sort(d3.ascending);
+          var length = hidden_simulations.length;
+
+          var filtered = cloneArrayBuffer(source);
+
+          for(var i=length-1; i>=0; i--)
+          {
+            filtered.splice(hidden_simulations[i], 1);
+          }
+
+          return filtered;
+        }
+
+        // Clones an ArrayBuffer or Array
+        function cloneArrayBuffer(source)
+        {
+          if(source.length > 1)
+          {
+            return Array.apply( [], source );
+          }
+          else if(source.length == 1)
+          {
+            return [source[0]];
+          }
+          return [];
         }
 
         function variable_sort_changed(variable, order)
@@ -1141,9 +1181,20 @@ rights in this software.
           y_index = Number(variable);
         }
 
-        function auto_scale_option_changed(auto_scale)
+        function auto_scale_option_changed(auto_scale_value)
         {
-          $("#scatterplot").scatterplot("option", "auto-scale", auto_scale);
+          auto_scale = auto_scale_value;
+          if(hidden_simulations.length > 0)
+          {
+            update_current_colorscale();
+            $("#table").table("option", "colorscale", colorscale);
+            // TODO this will result in 2 updates to canvas, one to redraw points accourding to scale and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
+            $("#scatterplot").scatterplot("option", {colorscale : colorscale, 'auto-scale' : auto_scale});
+          }
+          else
+          {
+            $("#scatterplot").scatterplot("option", "auto-scale", auto_scale);
+          }
           $.ajax(
           {
             type : "POST",
