@@ -1263,7 +1263,7 @@ $.widget("tracer_image.scatterplot", {
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remotes/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", self.options.server_root + "agents/" + login.session_cache[parser.hostname] + "/image" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e) {
       // If we get 404, the remote session no longer exists because it timed-out.

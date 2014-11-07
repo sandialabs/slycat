@@ -101,6 +101,9 @@ Movie.prototype.build_open_button = function(container) {
     .classed('open-movie', true)
     .on('click', function() {
       d3.event.stopPropagation();
+      if(!self.agent_id){
+        self.agent_id = login.get_agent(self.plot.images.filter(function(x){return x;})[0]);
+      }
       self.agent_id ? self.build_server_movie.call(self) : login.show_prompt(self.plot.images.filter(function(uri){return uri;}).map(function(uri){return {uri: uri};}), self.build_server_movie, self);
     })
     .on('mousedown', function() {

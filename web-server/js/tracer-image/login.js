@@ -79,6 +79,8 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
         processData : false,
         success : function(result){
             login.session_cache[args.success] = result.sid;
+            self.image_login.dialog("close");
+            callback.call(this_arg, images);
           },
         error : args.error
       }
@@ -91,37 +93,20 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
     {
       "Login": function()
       {
-        $.when(
-          create_session(
+        create_session(
           {
-            url : "remotes",
+            url : "agents",
             contentType : "application/json",
-            data : $.toJSON,
+            data : JSON.stringify,
             success : parser.hostname,
             error : function(request, status, reason_phrase)
             {
-              image.last_error = "Error opening remote session: " + reason_phrase;
-              console.debug("An error occurred")
+              console.error("Error opening agent session: " + reason_phrase)
               self.image_login.dialog("close");
               self.show_prompt(images, callback, this_arg);
             }
-          }),
-          create_session(
-            {
-              url : "agents",
-              contentType : "application/json",
-              data : JSON.stringify,
-              success : parser.hostname + "-agent",
-              error : function(request, status, reason_phrase)
-              {
-                console.error("Error opening agent session: " + reason_phrase)
-              }
-            }
-          )
-        ).then(function(){
-            self.image_login.dialog("close");
-            callback.call(this_arg, images);
-        });
+          }
+        )
       },
       Cancel: function()
       {
@@ -132,8 +117,10 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
   self.image_login.dialog("open");
 };
 
-Login.prototype.get_agent = function()
+Login.prototype.get_agent = function(image)
 {
-  parser = {hostname: "localhost"};
-  return this.session_cache[parser.hostname + "-agent"];
+  var parser = document.createElement("a");
+  parser.href = image.substr(0,5) == "file:" ? image.substr(5) : image;
+
+  return this.session_cache[parser.hostname];
 };
