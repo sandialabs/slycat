@@ -237,7 +237,7 @@ $.widget("tracer_image.scatterplot", {
   _build_movie_start: function(){
     this.movie_start_layer = this.x_axis_layer.append("g").attr({"class": "movie-start", transform:"translate(" + 50 + " 0)"});
 
-    this.options.scatterplot_obj.movie.build_open_button(this.movie_start_layer);
+    model.movie.build_open_button(this.movie_start_layer, this.options.scatterplot_obj);
   },
 
   _setOption: function(key, value)

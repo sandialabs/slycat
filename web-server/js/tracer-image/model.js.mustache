@@ -11,6 +11,7 @@ function Model() {
   this.server_root = "{{server-root}}";
   this.loaded_images = [];
   this.loaded_data = [];
+  this.movie = new Movie();
 }
 
 Model.prototype.load = function() {
