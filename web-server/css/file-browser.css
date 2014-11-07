@@ -28,6 +28,11 @@ rights in this software.
   margin-bottom:15px;
   margin-top: 45px;
 }
+#remote-cca-browser{
+  display: inline-block;
+  margin-bottom:15px;
+  margin-top: 45px;
+}
 table.file-browser{
   float: left;
   min-width: 80px;
