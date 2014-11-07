@@ -22,7 +22,7 @@ If the session user doesn't have permissions to access the file, the server retu
 
 For other errors, the server returns `400 Remote access failed.`.
 
-The response body for errors will contain JSON describing the error in greater detail.
+The server may provide additional detail describing the error in the `Slycat-Message` and `Slycat-Hint` response headers.
 
 Otherwise, the requested file is returned to the caller.
 
@@ -45,9 +45,9 @@ Returns
 Returns the file contents in the body of the response.  The content-type of the
 response is automatically determined based on the filename.
 
-If there is an error, returns application/json containing a `message` field
-with a human-readable description of the problem, and an optional `hint` field
-with a description of how to fix the problem.
+If there is an error, the response headers will include a `Slycat-Message`
+field with a human-readable description of the problem, and an optional
+`Slycat-Hint` field containin a description of how to fix the problem.
 
 Examples
 --------
