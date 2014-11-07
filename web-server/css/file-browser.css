@@ -84,6 +84,7 @@ ul.file-browser
   vertical-align: middle;
   width: 18px;
   height: 18px;
+  cursor: pointer;
 }
 
 .file-browser .label
@@ -93,6 +94,7 @@ ul.file-browser
   height: 12px;
   margin-left: 3px;
   margin-top: 2px;
+  cursor: pointer;
 }
 
 /*.file-browser tr.host > div > .arrow, .file-browser tr.directory > div > .arrow
