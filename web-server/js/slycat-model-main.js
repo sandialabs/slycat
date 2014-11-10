@@ -8,12 +8,12 @@ $(document).ready(function()
 {
   var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
 
-  $("button").button();
-
   var state =
   {
+    model : {},
     new_name : ko.observable(""),
     new_description : ko.observable(""),
+
     edit_model : function()
     {
       state.new_name(state.model.name());
@@ -31,20 +31,7 @@ $(document).ready(function()
     success : function(model)
     {
       state.model = ko.mapping.fromJS(model);
-
-      // Get the owning project.
-      $.ajax(
-      {
-        dataType : "json",
-        type : "GET",
-        url : server_root + "projects/" + model.project,
-        success : function(project)
-        {
-          state.project = ko.mapping.fromJS(project);
-          state.project.url = server_root + "projects/" + model.project;
-          ko.applyBindings(state);
-        }
-      });
+      ko.applyBindings(state);
 
       // Mark this model as closed, so it doesn't show-up in the header anymore.
       $.ajax(
@@ -57,6 +44,8 @@ $(document).ready(function()
       });
     },
   });
+
+  $("button").button();
 
   $("#edit-model-dialog").dialog(
   {
@@ -77,7 +66,7 @@ $(document).ready(function()
           url : location.href,
           success : function(details)
           {
-            window.location.href = state.project.url;
+            window.location.href = server_root + "projects/" + state.model.project();
           },
           error : function(request, status, reason_phrase)
           {
