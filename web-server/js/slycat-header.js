@@ -1,275 +1,270 @@
 (function()
 {
-  ko.components.register('slycat-header',
+  ko.components.register("slycat-header",
   {
     viewModel: function(params)
     {
-      this.server_root = document.querySelector("#slycat-server-root").getAttribute("href");
-      this.projects_url = this.server_root + "projects";
-      this.logo_url = this.server_root + "css/slycat-small.png";
+      var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
+      var current_revision = null;
 
-      $(document).ready(function()
+      this.projects_url = server_root + "projects";
+      this.logo_url = server_root + "css/slycat-small.png";
+      this.show_about = function()
       {
-/*
-        var current_revision = null;
-
-        var newWebkit  = $.browser.webkit  && parseFloat($.browser.version) >= 534.53;
-        var newChrome  = $.browser.chrome  && parseFloat($.browser.version) >= 17;
-        var newMozilla = $.browser.mozilla && parseFloat($.browser.version) >= 10;
-        // Warn IE8- users they need a better browser
-        if ($.browser.msie && parseInt($.browser.version,10)<9)
+        $("#about-slycat-dialog").dialog("open");
+        $.ajax(
         {
-          alert("Your browser doesn't provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
-        }
-        // Warn IE9+ users they might need to upgrade
-        // else if ($.browser.msie)
-        // {
-        //   alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
-        // }
-        // Warn everyone other than WebKit 534.53+ or Chrome 17+ or FF10+ they might need to upgrade
-        else if ( !(newWebkit || newChrome || newMozilla) ) {
-          alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
-        }
-
-        $('#slycat-info').click(function()
-        {
-          $("#about-slycat-dialog").dialog("open");
-          $.ajax(
+          type : "GET",
+          url : server_root + "configuration/version",
+          success : function(version)
           {
-            type : "GET",
-            url : "{{server-root}}configuration/version",
-            success : function(version)
-            {
-              $("#about-slycat-version").html("Slycat version " + version.version + ", commit " + version.commit);
-            }
-          });
-          $.ajax(
-          {
-            type : "GET",
-            url : "{{server-root}}configuration/support-email",
-            success : function(email)
-            {
-              $("#about-slycat-help").html("Request help at <a href='mailto:" + email.address + "?subject=" + email.subject + "'>" + email.address + "</a>");
-            }
-          });
-        });
-
-        $('#about-slycat-dialog').dialog({
-          modal: true,
-          autoOpen: false,
-          minWidth: 500,
-          buttons: {
-            'Close': function() {
-              $(this).dialog('close');
-            },
-          },
-        });
-
-        $('#workers-close').click(function()
-        {
-          $('#workers-close').slideUp();
-          $('#workers-container').switchClass("workersDetail","workersCompact");
-          window.setTimeout( "$('#workers-container .worker').each(function() { $(this).qtip('enable'); })", 250 ); // Enable tooltips when collapsing status bar. Added dealy otherwise tooltips appear before slideUp is finished
-        });
-
-        // Expand status bar when any part of it is clicked
-        $('#workers-container.workersCompact').click(function()
-        {
-          if($(this).hasClass('workersCompact'))
-          {
-            document.getSelection().removeAllRanges(); // Need to clear selection after click since for some reason clicking an icon selects the status text to the right of it
-            // Hide and disable all tooltips when expanding status bar
-            disable_tooltips($("#workers-container .worker"));
-            $('#workers-close').slideDown();
-            $('#workers-container').switchClass("workersCompact","workersDetail");
+            $("#about-slycat-version").html("Slycat version " + version.version + ", commit " + version.commit);
           }
         });
-
-        function close_model(mid)
+        $.ajax(
         {
-          $.ajax(
+          type : "GET",
+          url : server_root + "configuration/support-email",
+          success : function(email)
           {
-            type : "PUT",
-            url : "{{server-root}}models/" + mid,
-            contentType : "application/json",
-            data : $.toJSON({
-              "state" : "closed"
-            }),
-            processData : false
-          });
-        }
+            $("#about-slycat-help").html("Request help at <a href='mailto:" + email.address + "?subject=" + email.subject + "'>" + email.address + "</a>");
+          }
+        });
+      }
 
-        function disable_tooltips(selector)
-        {
-          selector.each(function() { $(this).qtip('hide').qtip('api').disable(true); });
-        }
+      var newWebkit  = $.browser.webkit  && parseFloat($.browser.version) >= 534.53;
+      var newChrome  = $.browser.chrome  && parseFloat($.browser.version) >= 17;
+      var newMozilla = $.browser.mozilla && parseFloat($.browser.version) >= 10;
+      // Warn IE8- users they need a better browser
+      if ($.browser.msie && parseInt($.browser.version,10)<9)
+      {
+        alert("Your browser doesn't provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+      }
+      // Warn IE9+ users they might need to upgrade
+      // else if ($.browser.msie)
+      // {
+      //   alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+      // }
+      // Warn everyone other than WebKit 534.53+ or Chrome 17+ or FF10+ they might need to upgrade
+      else if ( !(newWebkit || newChrome || newMozilla) )
+      {
+        alert("Your browser might not provide the features needed to use this application.  We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
+      }
 
-        function update()
+      $('#about-slycat-dialog').dialog({
+        modal: true,
+        autoOpen: false,
+        minWidth: 500,
+        buttons: {
+          'Close': function() {
+            $(this).dialog('close');
+          },
+        },
+      });
+
+      $('#workers-close').click(function()
+      {
+        $('#workers-close').slideUp();
+        $('#workers-container').switchClass("workersDetail","workersCompact");
+        window.setTimeout( "$('#workers-container .worker').each(function() { $(this).qtip('enable'); })", 250 ); // Enable tooltips when collapsing status bar. Added dealy otherwise tooltips appear before slideUp is finished
+      });
+
+      // Expand status bar when any part of it is clicked
+      $('#workers-container.workersCompact').click(function()
+      {
+        if($(this).hasClass('workersCompact'))
         {
-          $.ajax(
+          document.getSelection().removeAllRanges(); // Need to clear selection after click since for some reason clicking an icon selects the status text to the right of it
+          // Hide and disable all tooltips when expanding status bar
+          disable_tooltips($("#workers-container .worker"));
+          $('#workers-close').slideDown();
+          $('#workers-container').switchClass("workersCompact","workersDetail");
+        }
+      });
+
+      function close_model(mid)
+      {
+        $.ajax(
+        {
+          type : "PUT",
+          url : "{{server-root}}models/" + mid,
+          contentType : "application/json",
+          data : $.toJSON({
+            "state" : "closed"
+          }),
+          processData : false
+        });
+      }
+
+      function disable_tooltips(selector)
+      {
+        selector.each(function() { $(this).qtip('hide').qtip('api').disable(true); });
+      }
+
+      function update()
+      {
+        $.ajax(
+        {
+          dataType : "text",
+          type : "GET",
+          cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
+          url : server_root + "models" + (current_revision != null ? "?revision=" + current_revision : ""),
+          success : function(text)
           {
-            dataType : "text",
-            type : "GET",
-            cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-            url : "{{server-root}}models" + (current_revision != null ? "?revision=" + current_revision : ""),
-            success : function(text)
+            // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
+            var results = text? $.parseJSON(text) : null;
+            if(results != null)
             {
-              // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
-              var results = text? $.parseJSON(text) : null;
-              if(results != null)
+              current_revision = results.revision;
+              models = results.models;
+              models.sort(function(a, b)
               {
-                current_revision = results.revision;
-                models = results.models;
-                models.sort(function(a, b)
+                if(!a["finished"] && !b["finished"])
                 {
-                  if(!a["finished"] && !b["finished"])
-                  {
-                    if(a["started"] > b["started"])
-                      return -1;
-                    if(a["started"] == b["started"])
-                      return 0;
-                    return 1;
-                  };
-                  if(a["finished"] && b["finished"])
-                  {
-                    if(a["finished"] > b["finished"])
-                      return -1;
-                    if(a["finished"] == b["finished"])
-                      return 0;
-                    return 1;
-                  }
-                  return a["finished"] ? 1 : -1;
-                });
-
-                function create_model_scaffolding(model)
+                  if(a["started"] > b["started"])
+                    return -1;
+                  if(a["started"] == b["started"])
+                    return 0;
+                  return 1;
+                };
+                if(a["finished"] && b["finished"])
                 {
-                  return $("<div class='worker'>")
-                    .attr('id', model["_id"])
-                    .append($("<div>").addClass("message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                    .append($("<div>").addClass("name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                    .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(
-                      function(e){
-                        close_model(model["_id"]);
-                        e.stopPropagation();
-                      }
-                    )))
-                    .qtip({
-                      position: {
-                        adjust: {
-                          x: -14
-                        }
-                      },
-                      content: {
-                        text: ' ' // Need to initiate with some text otherwise tooltip is never created
-                      },
-                      hide: {
-                        delay: 500,
-                        fixed: true,
-                      },
-                      show: {
-                        solo: true
-                      },
-                    });
+                  if(a["finished"] > b["finished"])
+                    return -1;
+                  if(a["finished"] == b["finished"])
+                    return 0;
+                  return 1;
                 }
+                return a["finished"] ? 1 : -1;
+              });
 
-                $.each(models, function(index, model)
-                {
-                  var model_id = model["_id"];
-                  var line = $("#" + model_id ,"#workers #workers-container");
-                  if(line.length == 0)
-                    line = create_model_scaffolding(model).appendTo($("#workers #workers-container #workersWrapper"));
-
-                  line.toggleClass("finished", model["finished"] ? true : false)
-                    .addClass(model["result"])
-                    .addClass("updated") // Mark each model so we can remove the ones that no loner exist
-                    .qtip(
-                      'option',
-                      'content.title.text',
-                      (model["name"] || "")
-                    );
-
-                  if(model["finished"]) {
-                    line.click(function(e){
-                      window.location="{{server-root}}models/" + model["_id"];
-                      e.stopPropagation();
-                    });
-                  }
-
-                  if( $('#workers-container').hasClass('workersDetail') ) {
-                    disable_tooltips(line);
-                  }
-                  line.find(".message").text(model["message"] || "");
-                  line.find(".name").text(model["name"] || "");
-                  line.find(".close button").unbind('click').click(
+              function create_model_scaffolding(model)
+              {
+                return $("<div class='worker'>")
+                  .attr('id', model["_id"])
+                  .append($("<div>").addClass("message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                  .append($("<div>").addClass("name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                  .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(
                     function(e){
-                      close_model(model_id);
+                      close_model(model["_id"]);
                       e.stopPropagation();
                     }
-                  );
-
-                  // Set up progress indicator for workers with progress
-                  if(model.hasOwnProperty("progress")) {
-                    // If the line doesn't have a progress class, add the class and add a progress indicator if it's not finished yet
-                    if(!line.hasClass("progressDeterminate")) {
-                      line.addClass("progressDeterminate");
-                      if(!model["finished"]){
-                        line.append($("<input>").addClass("pie").attr("value", model["progress"]).knob({
-                          'min':0,
-                          'max':1,
-                          'readOnly':true,
-                          'displayInput':false,
-                          'fgColor':'#4D720C',
-                          'bgColor':'#D7D7D6',
-                          'width':15,
-                          'height':15,
-                          'thickness':0.4,
-                          'step':0.01,
-                        }));
+                  )))
+                  .qtip({
+                    position: {
+                      adjust: {
+                        x: -14
                       }
-                    }
-                    // Otherwise check if it's not finished and update the progress indicator with current value
-                    else if(!model["finished"]){
-                      line.find(".pie").val(model["progress"]).trigger('change');
-                    }
-                    else {
-                      line.find("input.pie").parent().remove();
-                    }
-                  }
-
-                  if(true)
-                  {
-                    line.qtip('option','content.text',
-                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', "{{server-root}}models/" + model['_id']).text('View'))
-                    );
-
-                  }
-                  else
-                  {
-                    line.qtip('option','content.text',
-                      $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a href="#">').text('Delete').click(close_model.bind(this, model_id)))
-                    );
-                  }
-
-                });
-
-                $("#workers-container .worker").not(".updated").remove(); // Remove any non-existing workers
-                $("#workers-container .worker").removeClass("updated"); // Clear the updated flag
+                    },
+                    content: {
+                      text: ' ' // Need to initiate with some text otherwise tooltip is never created
+                    },
+                    hide: {
+                      delay: 500,
+                      fixed: true,
+                    },
+                    show: {
+                      solo: true
+                    },
+                  });
               }
 
-              // Restart the request immediately.
-              window.setTimeout(update, 10);
-            },
-            error : function(request, status, reason_phrase)
-            {
-              // Rate-limit requests when there's an error.
-              window.setTimeout(update, 5000);
-            }
-          });
-        }
+              $.each(models, function(index, model)
+              {
+                var model_id = model["_id"];
+                var line = $("#" + model_id ,"#workers #workers-container");
+                if(line.length == 0)
+                  line = create_model_scaffolding(model).appendTo($("#workers #workers-container #workersWrapper"));
 
-        update();
-*/
-      });
+                line.toggleClass("finished", model["finished"] ? true : false)
+                  .addClass(model["result"])
+                  .addClass("updated") // Mark each model so we can remove the ones that no loner exist
+                  .qtip(
+                    'option',
+                    'content.title.text',
+                    (model["name"] || "")
+                  );
+
+                if(model["finished"]) {
+                  line.click(function(e){
+                    window.location="{{server-root}}models/" + model["_id"];
+                    e.stopPropagation();
+                  });
+                }
+
+                if( $('#workers-container').hasClass('workersDetail') ) {
+                  disable_tooltips(line);
+                }
+                line.find(".message").text(model["message"] || "");
+                line.find(".name").text(model["name"] || "");
+                line.find(".close button").unbind('click').click(
+                  function(e){
+                    close_model(model_id);
+                    e.stopPropagation();
+                  }
+                );
+
+                // Set up progress indicator for workers with progress
+                if(model.hasOwnProperty("progress")) {
+                  // If the line doesn't have a progress class, add the class and add a progress indicator if it's not finished yet
+                  if(!line.hasClass("progressDeterminate")) {
+                    line.addClass("progressDeterminate");
+                    if(!model["finished"]){
+                      line.append($("<input>").addClass("pie").attr("value", model["progress"]).knob({
+                        'min':0,
+                        'max':1,
+                        'readOnly':true,
+                        'displayInput':false,
+                        'fgColor':'#4D720C',
+                        'bgColor':'#D7D7D6',
+                        'width':15,
+                        'height':15,
+                        'thickness':0.4,
+                        'step':0.01,
+                      }));
+                    }
+                  }
+                  // Otherwise check if it's not finished and update the progress indicator with current value
+                  else if(!model["finished"]){
+                    line.find(".pie").val(model["progress"]).trigger('change');
+                  }
+                  else {
+                    line.find("input.pie").parent().remove();
+                  }
+                }
+
+                if(true)
+                {
+                  line.qtip('option','content.text',
+                    $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', "{{server-root}}models/" + model['_id']).text('View'))
+                  );
+
+                }
+                else
+                {
+                  line.qtip('option','content.text',
+                    $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a href="#">').text('Delete').click(close_model.bind(this, model_id)))
+                  );
+                }
+
+              });
+
+              $("#workers-container .worker").not(".updated").remove(); // Remove any non-existing workers
+              $("#workers-container .worker").removeClass("updated"); // Clear the updated flag
+            }
+
+            // Restart the request immediately.
+            window.setTimeout(update, 10);
+          },
+          error : function(request, status, reason_phrase)
+          {
+            // Rate-limit requests when there's an error.
+            window.setTimeout(update, 5000);
+          }
+        });
+      }
+
+      update();
     },
     template:
       '<div id="workers"> \
@@ -286,7 +281,7 @@
           </a> \
           <ul id="user-actions"> \
             <li id="login"><span id="login-status" class="session">{{#security}}{{name}} ({{user}}){{/security}}</span></li> \
-            <li id="slycat-info"> About Slycat </li> \
+            <li data-bind="click: show_about"> About Slycat </li> \
           </ul> \
         </div> \
         <div id="about-slycat-dialog" class="dialog" title="About Slycat" style="display: none;"> \
