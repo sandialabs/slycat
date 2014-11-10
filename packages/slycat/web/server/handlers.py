@@ -328,6 +328,7 @@ def get_model(mid, **kwargs):
       get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
       [
         "css/smoothness/jquery-ui-1.10.4.custom.min.css",
+        "css/jquery.qtip.min.css",
         "css/desktop.css",
       ])
       get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
@@ -336,8 +337,11 @@ def get_model(mid, **kwargs):
         "js/jquery-migrate-1.2.1.js",
         "js/jquery.json-2.4.min.js",
         "js/jquery-ui-1.10.4.custom.min.js",
+        "js/jquery.knob.js",
+        "js/jquery.qtip.min.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",
+        "js/slycat-header.js",
         "js/slycat-model-main.js",
       ])
       slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
