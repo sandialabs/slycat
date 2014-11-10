@@ -11,33 +11,56 @@ class Manager(object):
   """Manages resource bundles."""
   def __init__(self):
     self._bundles = {}
-    self._bundles_lock = threading.Lock()
+    self._bundle_lock = threading.Lock()
+    self._files = {}
+    self._file_lock = threading.Lock()
 
-  def create_bundle(self, content_type, resources):
-    key_hash = hashlib.md5()
-    key_hash.update(content_type)
-    content = ""
+  def add_bundle(self, content_type, paths):
+    with self._bundle_lock:
+      cherrypy.log.error("Bundling")
 
-    cherrypy.log.error("Bundling")
-    for resource in resources:
-      resource_path = resource["path"]
-      if not os.path.isabs(resource_path):
-        resource_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], resource_path)
-      cherrypy.log.error("  %s" % resource_path)
-      cherrypy.engine.autoreload.files.add(resource_path)
-      resource_content = open(resource_path, "rb").read()
-      key_hash.update(resource_content)
-      content += resource_content
+      key_hash = hashlib.md5()
+      key_hash.update(content_type)
+      content = ""
 
-    key = key_hash.hexdigest()
-    self._bundles[key] = (content_type, content)
-    cherrypy.log.error("  as %s" % key)
+      for path in paths:
+        if not os.path.isabs(path):
+          path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], path)
+        cherrypy.log.error("  %s" % path)
+        cherrypy.engine.autoreload.files.add(path)
+        resource_content = open(path, "rb").read()
+        key_hash.update(resource_content)
+        content += resource_content
 
-    return key
+      key = key_hash.hexdigest()
+      self._bundles[key] = (content_type, content)
+      cherrypy.log.error("  as %s" % key)
 
-  def bundle(self, key):
-    if key not in self._bundles:
-      raise cherrypy.HTTPError("404 Unknown bundle.")
-    return self._bundles[key]
+      return key
+
+  def add_directory(self, directory_path, resource_path):
+    with self._file_lock:
+      if not os.path.isabs(directory_path):
+        directory_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], directory_path)
+      for file_path in os.listdir(directory_path):
+        resource_file_path = os.path.join(resource_path, file_path)
+        file_path = os.path.join(directory_path, file_path)
+        cherrypy.log.error("Registering resource %s -> %s" % (resource_file_path, file_path))
+        self._files[resource_file_path] = file_path
+
+  def add_file(self, file_path, resource_path):
+    with self._file_lock:
+      if not os.path.isabs(file_path):
+        file_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], file_path)
+        cherrypy.log.error("Registering resource %s -> %s" % (resource_path, file_path))
+        self._files[resource_path] = file_path
+
+  @property
+  def bundles(self):
+    return self._bundles
+
+  @property
+  def files(self):
+    return self._files
 
 manager = Manager()

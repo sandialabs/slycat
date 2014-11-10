@@ -325,21 +325,22 @@ get_models.timeout = None
 def get_model(mid, **kwargs):
   if get_model.css_bundle is None:
     with get_model.bundle_lock:
-      get_model.css_bundle = slycat.web.server.resource.manager.create_bundle("text/css",
+      get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
       [
-        {"path":"css/desktop.css"},
-        {"path":"css/smoothness/jquery-ui-1.10.4.custom.min.css"},
+        "css/smoothness/jquery-ui-1.10.4.custom.min.css",
+        "css/desktop.css",
       ])
-      get_model.js_bundle = slycat.web.server.resource.manager.create_bundle("text/javascript",
+      get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
       [
-        {"path":"js/jquery-2.1.1.min.js"},
-        {"path":"js/jquery-migrate-1.2.1.js"},
-        {"path":"js/jquery.json-2.4.min.js"},
-        {"path":"js/jquery-ui-1.10.4.custom.min.js"},
-        {"path":"js/knockout-3.2.0.js"},
-        {"path":"js/knockout.mapping.js"},
-        {"path":"js/slycat-model-main.js"},
+        "js/jquery-2.1.1.min.js",
+        "js/jquery-migrate-1.2.1.js",
+        "js/jquery.json-2.4.min.js",
+        "js/jquery-ui-1.10.4.custom.min.js",
+        "js/knockout-3.2.0.js",
+        "js/knockout.mapping.js",
+        "js/slycat-model-main.js",
       ])
+      slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -1302,8 +1303,11 @@ get_configuration_version.initialized = False
 get_configuration_version.commit = None
 
 @cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
-def get_resource_bundle(bid):
-  content_type, content = slycat.web.server.resource.manager.bundle(bid)
-  cherrypy.response.headers["content-type"] = content_type
-  return content
-
+def get_global_resource(resource):
+  if resource in slycat.web.server.resource.manager.bundles:
+    content_type, content = slycat.web.server.resource.manager.bundles[resource]
+    cherrypy.response.headers["content-type"] = content_type
+    return content
+  if resource in slycat.web.server.resource.manager.files:
+    return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource], debug=True)
+  raise cherrypy.HTTPError(404)
