@@ -30,7 +30,7 @@ class Manager(object):
         cherrypy.engine.autoreload.files.add(path)
         resource_content = open(path, "rb").read()
         key_hash.update(resource_content)
-        content += resource_content
+        content += resource_content + "\n\n"
 
       key = key_hash.hexdigest()
       self._bundles[key] = (content_type, content)
