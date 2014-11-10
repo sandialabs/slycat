@@ -9,17 +9,10 @@ rights in this software.
 <html>
   <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="{{slycat-server-root}}css/desktop.css" type="text/css">
-    <link rel="stylesheet" href="{{slycat-server-root}}css/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css">
-    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-2.1.1.min.js"></script>
-    <!-- Uncompressed, development version of jQuery Migrate -->
-    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-migrate-1.2.1.js"></script>
-    <!-- Compressed, production version of jQuery Migrate. Use this instead of the one above when deploying. -->
-    <!-- <script type="text/javascript" src="{{slycat-server-root}}js/jquery-migrate-1.2.1.min.js"></script> -->
-    <script type="text/javascript" src="{{slycat-server-root}}js/jquery.json-2.4.min.js"></script>
-    <script type="text/javascript" src="{{slycat-server-root}}js/jquery-ui-1.10.4.custom.min.js"></script>
-    <title>{{slycat-model.name}} - Slycat Model</title>
     <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/bundles/{{slycat-css-bundle}}" type="text/css">
+    <script src="{{slycat-server-root}}resources/bundles/{{slycat-js-bundle}}" type="text/javascript">
+    <title>{{slycat-model.name}} - Slycat Model</title>
   </head>
 
   <body>
@@ -52,6 +45,5 @@ rights in this software.
         {{{slycat-marking-html}}}
       </div>
     </div>
-    <script type="text/javascript" src="{{slycat-server-root}}js/require.js" data-main="{{slycat-server-root}}js/slycat-model-main.js"></script>
   </body>
 </html>

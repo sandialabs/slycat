@@ -27,6 +27,7 @@ import slycat.web.server.model.parameter_image
 import slycat.web.server.model.timeseries
 import slycat.web.server.model.tracer_image
 import slycat.web.server.plugin
+import slycat.web.server.resource
 import slycat.web.server.ssh
 import slycat.web.server.streaming
 import slycat.web.server.template
@@ -322,6 +323,24 @@ get_models.monitor = None
 get_models.timeout = None
 
 def get_model(mid, **kwargs):
+  if get_model.css_bundle is None:
+    with get_model.bundle_lock:
+      get_model.css_bundle = slycat.web.server.resource.manager.create_bundle("text/css",
+      [
+        {"path":"css/desktop.css"},
+        {"path":"css/smoothness/jquery-ui-1.10.4.custom.min.css"},
+      ])
+      get_model.js_bundle = slycat.web.server.resource.manager.create_bundle("text/javascript",
+      [
+        {"path":"js/jquery-2.1.1.min.js"},
+        {"path":"js/jquery-migrate-1.2.1.js"},
+        {"path":"js/jquery.json-2.4.min.js"},
+        {"path":"js/jquery-ui-1.10.4.custom.min.js"},
+        {"path":"js/knockout-3.2.0.js"},
+        {"path":"js/knockout.mapping.js"},
+        {"path":"js/slycat-model-main.js"},
+      ])
+
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -369,10 +388,15 @@ def get_model(mid, **kwargs):
     context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
     context["slycat-model"] = model
     context["slycat-project"] = project
+    context["slycat-css-bundle"] = get_model.css_bundle
+    context["slycat-js-bundle"] = get_model.js_bundle
 
     if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
       context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
     return slycat.web.server.template.render("model.html", context)
+get_model.css_bundle = None
+get_model.js_bundle = None
+get_model.bundle_lock = threading.Lock()
 
 def get_model_command(mid, command, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -1276,4 +1300,10 @@ def get_configuration_version():
 get_configuration_version.lock = threading.Lock()
 get_configuration_version.initialized = False
 get_configuration_version.commit = None
+
+@cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
+def get_resource_bundle(bid):
+  content_type, content = slycat.web.server.resource.manager.bundle(bid)
+  cherrypy.response.headers["content-type"] = content_type
+  return content
 

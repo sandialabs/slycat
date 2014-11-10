@@ -1,12 +1,10 @@
-require.config(
-{
-  paths :
-  {
-    "knockout" : "knockout-3.2.0",
-  },
-});
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
 
-require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
+$(document).ready(function()
 {
   var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
 
@@ -14,8 +12,8 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
 
   var state =
   {
-    new_name : knockout.observable(""),
-    new_description : knockout.observable(""),
+    new_name : ko.observable(""),
+    new_description : ko.observable(""),
     edit_model : function()
     {
       state.new_name(state.model.name());
@@ -32,7 +30,7 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
     url : location.href,
     success : function(model)
     {
-      state.model = km.fromJS(model);
+      state.model = ko.mapping.fromJS(model);
 
       // Get the owning project.
       $.ajax(
@@ -42,9 +40,9 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
         url : server_root + "projects/" + model.project,
         success : function(project)
         {
-          state.project = km.fromJS(project);
+          state.project = ko.mapping.fromJS(project);
           state.project.url = server_root + "projects/" + model.project;
-          knockout.applyBindings(state);
+          ko.applyBindings(state);
         }
       });
 
@@ -121,6 +119,4 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
     {
     }
   });
-
 });
-

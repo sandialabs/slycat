@@ -60,10 +60,11 @@ def start(root_path, config_file):
     parser = ConfigParser.SafeConfigParser()
     parser.read(config_file)
     configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
+    configuration["slycat"]["root-path"] = root_path
 
   # Configuration items we don't recognize are not allowed.
   for key in configuration["slycat"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "long-polling-timeout", "pidfile", "plugins", "projects-redirect", "remote-hosts", "server-admins", "server-root", "ssl-ciphers", "support-email", "uid", "umask"]:
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "long-polling-timeout", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "ssl-ciphers", "support-email", "uid", "umask"]:
       raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
@@ -140,6 +141,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-file", "/remotes/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-resource-bundle", "/resources/bundles/:bid", slycat.web.server.handlers.get_resource_bundle, conditions={"method" : ["GET"]})
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("post-agent-browse", "/agents/:sid/browse{path:.*}", slycat.web.server.handlers.post_agent_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-agents", "/agents", slycat.web.server.handlers.post_agents, conditions={"method" : ["POST"]})
