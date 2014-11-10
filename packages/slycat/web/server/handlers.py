@@ -413,7 +413,6 @@ def get_model_command(mid, command, **kwargs):
 def get_model_resource(mtype, resource):
   if mtype in slycat.web.server.plugin.manager.model_resources:
     for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[mtype].items():
-      cherrypy.log.error("%s %s" % (model_resource, model_path))
       if model_resource == resource:
         return cherrypy.lib.static.serve_file(model_path, debug=True)
 
@@ -1309,5 +1308,5 @@ def get_global_resource(resource):
     cherrypy.response.headers["content-type"] = content_type
     return content
   if resource in slycat.web.server.resource.manager.files:
-    return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource], debug=True)
+    return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
