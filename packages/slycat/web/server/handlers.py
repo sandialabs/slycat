@@ -392,6 +392,7 @@ def get_model(mid, **kwargs):
         return slycat.web.server.template.render("model-tracer-image.html", context)
 
     # New code for rendering plugin models:
+    context = {}
     context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
     context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
     context["slycat-model"] = model
@@ -1071,10 +1072,12 @@ def get_bookmark(bid):
 
 @cherrypy.tools.json_out(on = True)
 def get_user(uid):
+  if uid == "-":
+    uid = cherrypy.request.security["user"]
   user = cherrypy.request.app.config["slycat"]["directory"].user(uid)
   if user is None:
     raise cherrypy.HTTPError(404)
-  # Only project administrators can get user details ...
+  # Only server administrators can get user details ...
   if slycat.web.server.authentication.is_server_administrator():
     user["server-administrator"] = uid in cherrypy.request.app.config["slycat"]["server-admins"]
   return user
