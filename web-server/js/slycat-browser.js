@@ -1,7 +1,5 @@
 (function()
 {
-  alert("Checking your browser.");
-
   var nag = false;
 
   var newWebkit  = $.browser.webkit  && parseFloat($.browser.version) >= 534.53;
