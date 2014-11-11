@@ -1077,9 +1077,11 @@ def get_user(uid):
   user = cherrypy.request.app.config["slycat"]["directory"].user(uid)
   if user is None:
     raise cherrypy.HTTPError(404)
-  # Only server administrators can get user details ...
+  # Only server administrators can get user details.
   if slycat.web.server.authentication.is_server_administrator():
     user["server-administrator"] = uid in cherrypy.request.app.config["slycat"]["server-admins"]
+  # Add the uid to the record, since the caller may not know it.
+  user["uid"] = uid
   return user
 
 @cherrypy.tools.json_in(on = True)

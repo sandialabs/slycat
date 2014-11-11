@@ -6,10 +6,13 @@
     {
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var current_revision = null;
+      var view_model = this;
 
-      this.projects_url = server_root + "projects";
-      this.logo_url = server_root + "css/slycat-small.png";
-      this.show_about = function()
+      view_model.projects_url = server_root + "projects";
+      view_model.logo_url = server_root + "css/slycat-small.png";
+      view_model.user = {uid : ko.observable(""), name : ko.observable("")};
+
+      view_model.show_about = function()
       {
         $("#about-slycat-dialog").dialog("open");
         $.ajax(
@@ -31,6 +34,18 @@
           }
         });
       }
+
+      // Get information about the currently-logged-in user.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "users/-",
+        success : function(user)
+        {
+          view_model.user.uid(user.uid);
+          view_model.user.name(user.name);
+        }
+      });
 
       $('#about-slycat-dialog').dialog({
         modal: true,
@@ -261,7 +276,7 @@
             <h1 id="title">Slycat <span id="version"></span></h1> \
           </a> \
           <ul id="user-actions"> \
-            <li id="login"><span id="login-status" class="session">{{#security}}{{name}} ({{user}}){{/security}}</span></li> \
+            <li id="login"><span id="login-status" class="session"><span data-bind="text: user.name"></span> (<span data-bind="text: user.uid"></span>)</span></li> \
             <li data-bind="click: show_about"> About Slycat </li> \
           </ul> \
         </div> \
