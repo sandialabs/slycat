@@ -329,7 +329,7 @@ def get_model(mid, **kwargs):
       [
         "css/smoothness/jquery-ui-1.10.4.custom.min.css",
         "css/jquery.qtip.min.css",
-        "css/desktop.css",
+        "css/slycat.css",
       ])
       get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
       [
