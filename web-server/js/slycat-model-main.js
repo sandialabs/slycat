@@ -1,25 +1,19 @@
-require.config(
-{
-  paths :
-  {
-    "knockout" : "knockout-3.2.0",
-  },
-});
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
 
-require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
+$(document).ready(function()
 {
   var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
 
-  $("button").button();
-
   var state =
   {
-    new_name : knockout.observable(""),
-    new_description : knockout.observable(""),
-    projects :
-    {
-      url : server_root + "projects",
-    },
+    model : {},
+    new_name : ko.observable(""),
+    new_description : ko.observable(""),
+
     edit_model : function()
     {
       state.new_name(state.model.name());
@@ -36,22 +30,8 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
     url : location.href,
     success : function(model)
     {
-      state.model = km.fromJS(model);
-      document.title = state.model.name() + " - Slycat Model";
-
-      // Get the owning project.
-      $.ajax(
-      {
-        dataType : "json",
-        type : "GET",
-        url : server_root + "projects/" + model.project,
-        success : function(project)
-        {
-          state.project = km.fromJS(project);
-          state.project.url = server_root + "projects/" + model.project;
-          knockout.applyBindings(state);
-        }
-      });
+      state.model = ko.mapping.fromJS(model);
+      ko.applyBindings(state);
 
       // Mark this model as closed, so it doesn't show-up in the header anymore.
       $.ajax(
@@ -64,6 +44,8 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
       });
     },
   });
+
+  $("button").button();
 
   $("#edit-model-dialog").dialog(
   {
@@ -84,7 +66,7 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
           url : location.href,
           success : function(details)
           {
-            window.location.href = state.project.url;
+            window.location.href = server_root + "projects/" + state.model.project();
           },
           error : function(request, status, reason_phrase)
           {
@@ -126,6 +108,4 @@ require(["knockout", "knockout.mapping", "domReady!"], function(knockout, km)
     {
     }
   });
-
 });
-

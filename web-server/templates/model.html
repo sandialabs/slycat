@@ -8,23 +8,25 @@ rights in this software.
 
 <html>
   <head>
-{{> head}}
-    <title>Slycat Model</title>
-    <link id="slycat-server-root" href="{{server-root}}">
+    <meta charset="utf-8"/>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    <title>{{slycat-model.name}} - Slycat Model</title>
   </head>
 
   <body>
-{{> header}}
+    <slycat-header></slycat-header>
 
     <div id="page-title">
       <div class="width-wrapper">
         <button data-bind="click: edit_model" class="edit-page" title="Edit this model's name and description.">Edit Model</button>
         <div id="breadcrumbs">
-          <a data-bind="attr: {href : projects.url}">Projects</a> &rarr;
-          <a data-bind="attr: {href : project.url}, text: project.name"></a> &rarr;
+          <a href="{{slycat-server-root}}projects">Projects</a> &rarr;
+          <a href="{{slycat-server-root}}projects/{{slycat-project._id}}">{{slycat-project.name}}</a> &rarr;
         </div>
-        <h2 data-bind="text: model.name"></h2>
-        <div data-bind="text: model.description"></div>
+        <h2>{{slycat-model.name}}</h2>
+        <div>{{slycat-model.description}}</div>
         <div id="edit-model-dialog" title="Edit Model">
           <form>
             <label for="new-model-name">Model Name</label>
@@ -43,6 +45,5 @@ rights in this software.
         {{{slycat-marking-html}}}
       </div>
     </div>
-    <script type="text/javascript" src="{{server-root}}js/require.js" data-main="{{server-root}}js/slycat-model-main.js"></script>
   </body>
 </html>

@@ -11,6 +11,6 @@ def register_slycat_plugin(context):
     def checkpassword(realm, username, password):
       return username and password and username == password and username not in blacklist
     cherrypy.lib.auth_basic.basic_auth(realm, checkpassword)
-    cherrypy.request.security = { "user" : cherrypy.request.login, "name" : cherrypy.request.login,  "roles": [] }
+    cherrypy.request.security = { "user" : cherrypy.request.login, "name" : cherrypy.request.login }
 
   context.register_tool("slycat-identity-authentication", "on_start_resource", authenticate)

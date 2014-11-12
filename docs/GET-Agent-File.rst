@@ -16,9 +16,9 @@ If the remote path is a reference to a directory, the server returns `400 Can't 
 
 If the remote path doesn't exist, the server returns `400 File not found.`
 
-If the session user doesn't have permissions to access the file, the server returns `400 Permission denied. Current permissions:` with a summary of the file permissions.
+If the session user doesn't have permissions to access the file, the server returns `400 Access denied.`.
 
-For other errors, the server returns `400 Remote access failed:` with additional error information.
+The server may provide additional detail describing the error in the `Slycat-Message` and `Slycat-Hint` response headers.
 
 Otherwise, the requested file is returned to the caller.
 
@@ -40,6 +40,10 @@ Returns
 
 The content of the file is returned in the body of the respone.  The MIME
 type of the response is automatically determined using the filename.
+
+If there is an error, the response headers will include a `Slycat-Message`
+field with a human-readable description of the problem, and an optional
+`Slycat-Hint` field containing a description of how to fix the problem.
 
 Examples
 --------

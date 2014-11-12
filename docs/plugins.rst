@@ -178,7 +178,7 @@ including custom authentication.  For example::
       def checkpassword(realm, username, password):
         return username and password and username in passwords and passwords[username] == passwords
       cherrypy.lib.auth_basic.basic_auth(realm, checkpassword)
-      cherrypy.request.security = { "user" : cherrypy.request.login, "name" : cherrypy.request.login,  "roles": [] }
+      cherrypy.request.security = { "user" : cherrypy.request.login, "name" : cherrypy.request.login }
 
     context.register_tool("my-authentication", "on_start_resource", authenticate)
 
