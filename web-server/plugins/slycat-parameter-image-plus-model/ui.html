@@ -61,7 +61,7 @@
     var rating_columns = null;
     var category_columns = null;
 
-    //var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+    var bookmarker = new bookmark_manager(server_root, "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
     var bookmark = null;
 
     var table_metadata = null;
@@ -88,8 +88,6 @@
 
     var session_cache = {};
     var image_uri = document.createElement("a");
-    console.log("blah");
-    alert("we are here");
   });
 </script>
 
