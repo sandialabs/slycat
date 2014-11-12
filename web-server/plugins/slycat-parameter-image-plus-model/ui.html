@@ -1,10 +1,49 @@
 <script type="text/javascript">
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/slick.grid.css'>";
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/slick-default-theme.css'>";
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/slick.headerbuttons.css'>";
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/slick-slycat-theme.css'>";
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/ui.css'>";
+
+  /* This JS is loaded by header
+  "js/jquery-2.1.1.min.js",
+  "js/jquery-migrate-1.2.1.js",
+  "js/jquery.json-2.4.min.js",
+  "js/jquery-ui-1.10.4.custom.min.js",
+  "js/jquery.knob.js",
+  "js/jquery.qtip.min.js",
+  "js/knockout-3.2.0.js",
+  "js/knockout.mapping.js",
+  "js/slycat-browser.js",
+  "js/slycat-header.js",
+  "js/slycat-model-main.js",
+  */
+  [
+    "resources/models/parameter-image-plus/jquery.layout-latest.min.js",
+    "resources/models/parameter-image-plus/jquery.ba-bbq.min.js",
+    "resources/models/parameter-image-plus/bookmarker.js",
+    "resources/models/parameter-image-plus/ui.js",
+  ].forEach(function(src) {
+    var script = document.createElement('script');
+    script.src = server_root + src;
+    script.async = false;
+    document.head.appendChild(script);
+  });
+
+  /* This CSS is loaded by header
+  "css/smoothness/jquery-ui-1.10.4.custom.min.css",
+  "css/jquery.qtip.min.css",
+  "css/slycat.css",
+  */
+  [
+    "resources/models/parameter-image-plus/slick.grid.css",
+    "resources/models/parameter-image-plus/slick-default-theme.css",
+    "resources/models/parameter-image-plus/slick.headerbuttons.css",
+    "resources/models/parameter-image-plus/slick-slycat-theme.css",
+    "resources/models/parameter-image-plus/ui.css",
+  ].forEach(function(src) {
+    var link = document.createElement('link');
+    link.href = server_root + src;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    document.head.appendChild(link);
+  });
 </script>
 <div class="parameter-image">
 
@@ -46,48 +85,3 @@
   </div>
 
 </div>
-
-<script type="text/javascript">
-  $(document).ready(function()
-  {
-  	//////////////////////////////////////////////////////////////////////////////////////////
-    // Setup global variables.
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    var model = null;
-    var input_columns = null;
-    var output_columns = null;
-    var image_columns = null;
-    var rating_columns = null;
-    var category_columns = null;
-
-    var bookmarker = new bookmark_manager(server_root, "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
-    var bookmark = null;
-
-    var table_metadata = null;
-    var table_statistics = null;
-    var indices = null;
-    var x_index = null;
-    var y_index = null;
-    var v_index = null;
-    var images_index = null;
-    var x = null;
-    var y = null;
-    var v = null;
-    var images = null;
-    var selected_simulations = null;
-    var hidden_simulations = null;
-    var colormap = null;
-    var colorscale = null;
-    var auto_scale = null;
-    var filtered_v = null;
-
-    var table_ready = false;
-    var scatterplot_ready = false;
-    var controls_ready = false;
-
-    var session_cache = {};
-    var image_uri = document.createElement("a");
-  });
-</script>
-

@@ -43,6 +43,15 @@ def register_slycat_plugin(context):
 
   # Register our new model type
   context.register_model("parameter-image-plus", finish, html)
+
+  context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  context.register_model_resource("parameter-image-plus", "jquery.layout-latest.min.js", os.path.join(os.path.dirname(__file__), "jquery.layout-latest.min.js"))
+  context.register_model_resource("parameter-image-plus", "jquery.ba-bbq.min.js", os.path.join(os.path.dirname(__file__), "jquery.ba-bbq.min.js"))
+  # context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  # context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  # context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  context.register_model_resource("parameter-image-plus", "ui.js", os.path.join(os.path.dirname(__file__), "ui.js"))
+
   context.register_model_resource("parameter-image-plus", "slick.grid.css", os.path.join(os.path.dirname(__file__), "slick.grid.css"))
   context.register_model_resource("parameter-image-plus", "slick-default-theme.css", os.path.join(os.path.dirname(__file__), "slick-default-theme.css"))
   context.register_model_resource("parameter-image-plus", "slick.headerbuttons.css", os.path.join(os.path.dirname(__file__), "slick.headerbuttons.css"))
