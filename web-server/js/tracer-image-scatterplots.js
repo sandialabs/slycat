@@ -502,7 +502,7 @@ $.widget("tracer_image.scatterplot", {
        * d3 brush creates an inverted cross on windows (For r,g,b, the cursor color becomes 256-r, 256-g, 256-b)
        * For (128,128,128) the cursor "dissappears"
        * Instead, use the parent's cursor.
-       */ 
+       */
       d3.select($(time_line_group[0][0]).find(".background")[0]).style("cursor", "inherit")
 
       var get_length = function(from_index, to_index){
@@ -1441,7 +1441,7 @@ $.widget("tracer_image.scatterplot", {
     return this.options[option];
   },
 
-  brush_select: function(selection /* hash */, drop_existing_selection /* boolean */) {
+  brush_select: function(selection /* hash */, drop_existing_selection /* boolean */, drag_finished /* boolean */) {
     var self = this;
     var x = self.options.x;
     var y = self.options.y;
@@ -1471,9 +1471,11 @@ $.widget("tracer_image.scatterplot", {
     }
 
     self._filterIndices();
-    self.options.selection = self.options.filtered_selection.slice(0);
-    self._schedule_update({ render_selection: true });
-    self.element.trigger("selection-changed", [self.options.selection]);
+    self.options.scatterplot_obj.grid_obj.global_soft_select(self.options.filtered_selection.slice(0));
+    if (drag_finished) {
+      // updates table selection and bookmarks
+      self.element.trigger("selection-changed", [self.options.selection]);
+    }
   },
 
   _get_plot_offsets: function(){

@@ -8,7 +8,8 @@ function SelectorBrush(plot_obj, plot_container) {
   //this.click_radius = 3; //now handled in scatterplot.updates['render_data']
   this.brush = d3.svg.brush()
     .on('brushstart', this.hide_other_brushes())
-    .on('brush', this.select_points());
+    .on('brush', this.select_points(false))
+    .on('brushend', this.select_points(true));
 }
 
 SelectorBrush.prototype.hide_other_brushes = function() {
@@ -20,7 +21,7 @@ SelectorBrush.prototype.hide_other_brushes = function() {
   });
 };
 
-SelectorBrush.prototype.select_points = function() {
+SelectorBrush.prototype.select_points = function(drag_finished /* boolean */) {
   // return a function so that object scope ('this') is captured in closure when registering callback
   var self = this;
   return (function() { //this will implicitly be passed event when action is triggered
@@ -38,7 +39,7 @@ SelectorBrush.prototype.select_points = function() {
         "x_hi": x_hi,
         "y_hi": y_hi
       };
-      self.plot_container.scatterplot("brush_select", selection, !d3.event.ctrlKey);
+      self.plot_container.scatterplot("brush_select", selection, !d3.event.ctrlKey, drag_finished);
     }
     else {
       //now handled in scatterplot.updates['render_data']

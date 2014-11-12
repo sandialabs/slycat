@@ -1,10 +1,11 @@
-function ScatterPlot(plot_id, grid_ref, scalar) {
+function ScatterPlot(plot_id, grid_ref, scalar, grid_obj) {
   console.log("Setup scatter plot");
 
   this.grid_ref = grid_ref; // DOM for parent
   this.plot_id = plot_id;
   this.plot_ref = "#" + plot_id;  // DOM plot ref
   this.scatterplot_obj = null;
+  this.grid_obj = grid_obj;
 
   this.x_index = null;
   this.y_index = null;
@@ -246,4 +247,16 @@ ScatterPlot.prototype.load_image = function() {
   image.style.left=10;
   image.style.top=10;
   $(this.plot_ref + " .scatterplot-pane").prepend(image);
+};
+
+/*
+ Visually renders a selection without sending requests - i.e. table selection and bookmarks aren't updated.
+ Currently used for a more performant mid-drag brush select.
+*/
+ScatterPlot.prototype.soft_select = function(selection) {
+  var self = this;
+  self.selected_simulations = selection;
+  self.scatterplot_obj.scatterplot({
+    selection: self.selected_simulations
+  });
 };
