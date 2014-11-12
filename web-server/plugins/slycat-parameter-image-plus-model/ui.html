@@ -1,5 +1,7 @@
 <script type="text/javascript">
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+  var project_id = "{{full-project._id}}";
+  var model_id = "{{_id}}";
 
   /* This JS is loaded by header
   "js/jquery-2.1.1.min.js",
@@ -15,13 +17,31 @@
   "js/slycat-model-main.js",
   */
   [
-    "resources/models/parameter-image-plus/jquery.layout-latest.min.js",
-    "resources/models/parameter-image-plus/jquery.ba-bbq.min.js",
-    "resources/models/parameter-image-plus/bookmarker.js",
-    "resources/models/parameter-image-plus/ui.js",
+    "jquery.layout-latest.min.js",
+    "jquery.ba-bbq.min.js",
+    "d3.min.js",
+    "bookmarker.js",
+    "chunker.js",
+    "color-switcher.js",
+    "parameter-controls.js",
+    "parameter-image-scatterplot.js",
+    "parameter-image-table.js",
+    "jquery.mousewheel.js",
+    "jquery.scrollintoview.min.js",
+
+    "jquery.event.drag-2.2.js",
+    "slick.core.js",
+    "slick.grid.js",
+    "slick.rowselectionmodel.js",
+    "slick.headerbuttons.js",
+    "slick.autotooltips.js",
+    "slick.slycateditors.js",
+
+    "ui.js",
+
   ].forEach(function(src) {
     var script = document.createElement('script');
-    script.src = server_root + src;
+    script.src = server_root + "resources/models/parameter-image-plus/" + src;
     script.async = false;
     document.head.appendChild(script);
   });
@@ -32,14 +52,14 @@
   "css/slycat.css",
   */
   [
-    "resources/models/parameter-image-plus/slick.grid.css",
-    "resources/models/parameter-image-plus/slick-default-theme.css",
-    "resources/models/parameter-image-plus/slick.headerbuttons.css",
-    "resources/models/parameter-image-plus/slick-slycat-theme.css",
-    "resources/models/parameter-image-plus/ui.css",
+    "slick.grid.css",
+    "slick-default-theme.css",
+    "slick.headerbuttons.css",
+    "slick-slycat-theme.css",
+    "ui.css",
   ].forEach(function(src) {
     var link = document.createElement('link');
-    link.href = server_root + src;
+    link.href = server_root + "resources/models/parameter-image-plus/" + src;
     link.rel = 'stylesheet';
     link.type = 'text/css';
     document.head.appendChild(link);

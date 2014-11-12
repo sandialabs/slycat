@@ -44,12 +44,26 @@ def register_slycat_plugin(context):
   # Register our new model type
   context.register_model("parameter-image-plus", finish, html)
 
-  context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  
   context.register_model_resource("parameter-image-plus", "jquery.layout-latest.min.js", os.path.join(os.path.dirname(__file__), "jquery.layout-latest.min.js"))
   context.register_model_resource("parameter-image-plus", "jquery.ba-bbq.min.js", os.path.join(os.path.dirname(__file__), "jquery.ba-bbq.min.js"))
-  # context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
-  # context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
-  # context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  context.register_model_resource("parameter-image-plus", "d3.min.js", os.path.join(os.path.dirname(__file__), "d3.min.js"))
+  context.register_model_resource("parameter-image-plus", "bookmarker.js", os.path.join(os.path.dirname(__file__), "bookmarker.js"))
+  context.register_model_resource("parameter-image-plus", "chunker.js", os.path.join(os.path.dirname(__file__), "chunker.js"))
+  context.register_model_resource("parameter-image-plus", "color-switcher.js", os.path.join(os.path.dirname(__file__), "color-switcher.js"))
+  context.register_model_resource("parameter-image-plus", "parameter-controls.js", os.path.join(os.path.dirname(__file__), "parameter-controls.js"))
+  context.register_model_resource("parameter-image-plus", "parameter-image-scatterplot.js", os.path.join(os.path.dirname(__file__), "parameter-image-scatterplot.js"))
+  context.register_model_resource("parameter-image-plus", "parameter-image-table.js", os.path.join(os.path.dirname(__file__), "parameter-image-table.js"))
+  context.register_model_resource("parameter-image-plus", "jquery.mousewheel.js", os.path.join(os.path.dirname(__file__), "jquery.mousewheel.js"))
+  context.register_model_resource("parameter-image-plus", "jquery.scrollintoview.min.js", os.path.join(os.path.dirname(__file__), "jquery.scrollintoview.min.js"))
+  context.register_model_resource("parameter-image-plus", "jquery.event.drag-2.2.js", os.path.join(os.path.dirname(__file__), "jquery.event.drag-2.2.js"))
+  context.register_model_resource("parameter-image-plus", "slick.core.js", os.path.join(os.path.dirname(__file__), "slick.core.js"))
+  context.register_model_resource("parameter-image-plus", "slick.grid.js", os.path.join(os.path.dirname(__file__), "slick.grid.js"))
+  context.register_model_resource("parameter-image-plus", "slick.rowselectionmodel.js", os.path.join(os.path.dirname(__file__), "slick.rowselectionmodel.js"))
+  context.register_model_resource("parameter-image-plus", "slick.headerbuttons.js", os.path.join(os.path.dirname(__file__), "slick.headerbuttons.js"))
+  context.register_model_resource("parameter-image-plus", "slick.autotooltips.js", os.path.join(os.path.dirname(__file__), "slick.autotooltips.js"))
+  context.register_model_resource("parameter-image-plus", "slick.slycateditors.js", os.path.join(os.path.dirname(__file__), "slick.slycateditors.js"))
+
   context.register_model_resource("parameter-image-plus", "ui.js", os.path.join(os.path.dirname(__file__), "ui.js"))
 
   context.register_model_resource("parameter-image-plus", "slick.grid.css", os.path.join(os.path.dirname(__file__), "slick.grid.css"))
