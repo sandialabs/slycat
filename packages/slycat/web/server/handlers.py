@@ -400,8 +400,14 @@ def get_model(mid, **kwargs):
     context["slycat-css-bundle"] = get_model.css_bundle
     context["slycat-js-bundle"] = get_model.js_bundle
 
-    if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
-      context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
+    if "model-type" in model:
+      mtype = model["model-type"]
+      context["slycat-model-type"] = mtype
+      if mtype in slycat.web.server.plugin.manager.models.keys():
+        context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[mtype]["html"](database, model)
+        if mtype in slycat.web.server.plugin.manager.model_bundles:
+          context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
+          context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
     return slycat.web.server.template.render("model.html", context)
 get_model.css_bundle = None
 get_model.js_bundle = None

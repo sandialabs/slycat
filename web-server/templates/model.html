@@ -11,7 +11,13 @@ rights in this software.
     <meta charset="utf-8"/>
     <link id="slycat-server-root" href="{{slycat-server-root}}">
     <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    {{#slycat-plugin-css-bundles}}
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/css">
+    {{/slycat-plugin-css-bundles}}
     <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    {{#slycat-plugin-js-bundles}}
+    <script src="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/javascript"></script>
+    {{/slycat-plugin-js-bundles}}
     <title>{{slycat-model.name}} - Slycat Model</title>
   </head>
 
