@@ -115,6 +115,9 @@ def register_slycat_plugin(context):
     "sort-desc-gray.png",
     "image-gray.png",
     "image-light.png",
+    "stripe1.png",
+    "stripe2.png",
+    "pin.png",
     #For development and debugging, loading ui.js dynamically inside model.
     "ui.js",
     #For development and debugging, loading ui.css dynamically inside model.

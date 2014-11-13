@@ -1451,7 +1451,7 @@ $.widget("parameter_image.scatterplot",
         .attr("y", 2)
         .attr("width", 16)
         .attr("height", 16)
-        .attr("xlink:href", "/css/pin.png")
+        .attr("xlink:href", server_root + "resources/models/parameter-image-plus/" + "pin.png")
         .on("mousedown", function(){
           //console.log("pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
