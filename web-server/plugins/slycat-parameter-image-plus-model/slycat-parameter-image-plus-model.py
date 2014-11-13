@@ -38,13 +38,14 @@ def register_slycat_plugin(context):
     context = dict()
     context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
     context["_id"] = model["_id"];
+    context["name"] = model["name"];
     context["full-project"] = database.get("project", model["project"]);
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
   context.register_model("parameter-image-plus", finish, html)
 
-  
+  # Register JS
   context.register_model_resource("parameter-image-plus", "jquery.layout-latest.min.js", os.path.join(os.path.dirname(__file__), "jquery.layout-latest.min.js"))
   context.register_model_resource("parameter-image-plus", "jquery.ba-bbq.min.js", os.path.join(os.path.dirname(__file__), "jquery.ba-bbq.min.js"))
   context.register_model_resource("parameter-image-plus", "d3.min.js", os.path.join(os.path.dirname(__file__), "d3.min.js"))
@@ -63,11 +64,27 @@ def register_slycat_plugin(context):
   context.register_model_resource("parameter-image-plus", "slick.headerbuttons.js", os.path.join(os.path.dirname(__file__), "slick.headerbuttons.js"))
   context.register_model_resource("parameter-image-plus", "slick.autotooltips.js", os.path.join(os.path.dirname(__file__), "slick.autotooltips.js"))
   context.register_model_resource("parameter-image-plus", "slick.slycateditors.js", os.path.join(os.path.dirname(__file__), "slick.slycateditors.js"))
-
   context.register_model_resource("parameter-image-plus", "ui.js", os.path.join(os.path.dirname(__file__), "ui.js"))
 
+  # Register CSS
   context.register_model_resource("parameter-image-plus", "slick.grid.css", os.path.join(os.path.dirname(__file__), "slick.grid.css"))
   context.register_model_resource("parameter-image-plus", "slick-default-theme.css", os.path.join(os.path.dirname(__file__), "slick-default-theme.css"))
   context.register_model_resource("parameter-image-plus", "slick.headerbuttons.css", os.path.join(os.path.dirname(__file__), "slick.headerbuttons.css"))
   context.register_model_resource("parameter-image-plus", "slick-slycat-theme.css", os.path.join(os.path.dirname(__file__), "slick-slycat-theme.css"))
   context.register_model_resource("parameter-image-plus", "ui.css", os.path.join(os.path.dirname(__file__), "ui.css"))
+
+  # Register images
+  images = [
+    "x-gray.png",
+    "x-light.png",
+    "y-gray.png",
+    "y-light.png",
+    "sort-asc-light.png",
+    "sort-asc-gray.png",
+    "sort-desc-light.png",
+    "sort-desc-gray.png",
+    "image-gray.png",
+    "image-light.png",
+  ]
+  for image in images:
+    context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.dirname(__file__), image))
