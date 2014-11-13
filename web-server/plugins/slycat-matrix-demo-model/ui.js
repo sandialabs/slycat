@@ -1,15 +1,7 @@
-<div class="calculator">
-  <h1>Calculator</h1>
-  <p id="operand-a"></p>
-  <p id="operand-b"></p>
-  <p id="result"></p>
-  <button id="add">Add</button>
-  <button id="subtract">Subtract</button>
-</div>
-
-<script type="text/javascript">
+(function()
+{
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/calculator/ui.css'>";
+  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/matrix-demo/ui.css'>";
 
   var request = new XMLHttpRequest();
   request.open("GET", "#")
@@ -43,4 +35,5 @@
     };
   };
   request.send();
-</script>
+
+})();
