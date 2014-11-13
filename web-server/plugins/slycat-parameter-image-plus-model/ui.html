@@ -3,60 +3,16 @@
   var project_id = "{{full-project._id}}";
   var model_id = "{{_id}}";
   var model_name = "{{name}}";
-
-  /* This JS is loaded by header
-  "js/jquery-2.1.1.min.js",
-  "js/jquery-migrate-1.2.1.js",
-  "js/jquery.json-2.4.min.js",
-  "js/jquery-ui-1.10.4.custom.min.js",
-  "js/jquery.knob.js",
-  "js/jquery.qtip.min.js",
-  "js/knockout-3.2.0.js",
-  "js/knockout.mapping.js",
-  "js/slycat-browser.js",
-  "js/slycat-header.js",
-  "js/slycat-model-main.js",
-  */
+  // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   [
-    "jquery.layout-latest.min.js",
-    "jquery.ba-bbq.min.js",
-    "d3.min.js",
-    "bookmarker.js",
-    "chunker.js",
-    "color-switcher.js",
-    "parameter-controls.js",
-    "parameter-image-scatterplot.js",
-    "parameter-image-table.js",
-    "jquery.mousewheel.js",
-    "jquery.scrollintoview.min.js",
-
-    "jquery.event.drag-2.2.js",
-    "slick.core.js",
-    "slick.grid.js",
-    "slick.rowselectionmodel.js",
-    "slick.headerbuttons.js",
-    "slick.autotooltips.js",
-    "slick.slycateditors.js",
-
     "ui.js",
-
   ].forEach(function(src) {
     var script = document.createElement('script');
     script.src = server_root + "resources/models/parameter-image-plus/" + src;
     script.async = false;
     document.head.appendChild(script);
   });
-
-  /* This CSS is loaded by header
-  "css/smoothness/jquery-ui-1.10.4.custom.min.css",
-  "css/jquery.qtip.min.css",
-  "css/slycat.css",
-  */
   [
-    "slick.grid.css",
-    "slick-default-theme.css",
-    "slick.headerbuttons.css",
-    "slick-slycat-theme.css",
     "ui.css",
   ].forEach(function(src) {
     var link = document.createElement('link');
