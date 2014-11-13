@@ -1,8 +1,12 @@
 (function()
 {
-  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/matrix-demo/ui.css'>";
+  $(document).ready(function()
+  {
+    var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+    document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/matrix-demo/ui.css'>";
 
+    $("#root").layout({ applyDefaultStyles: true });
+/*
   var request = new XMLHttpRequest();
   request.open("GET", "#")
   request.setRequestHeader("accept", "application/json");
@@ -35,5 +39,6 @@
     };
   };
   request.send();
-
+*/
+  });
 })();
