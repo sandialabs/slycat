@@ -419,6 +419,11 @@ def get_model_command(mid, command, **kwargs):
   raise cherrypy.HTTPError("400 Unknown command: %s" % command)
 
 def get_model_resource(mtype, resource):
+  if mtype in slycat.web.server.plugin.manager.model_bundles:
+    if resource in slycat.web.server.plugin.manager.model_bundles[mtype]:
+      content_type, content = slycat.web.server.plugin.manager.model_bundles[mtype][resource]
+      cherrypy.response.headers["content-type"] = content_type
+      return content
   if mtype in slycat.web.server.plugin.manager.model_resources:
     for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[mtype].items():
       if model_resource == resource:

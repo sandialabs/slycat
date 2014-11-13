@@ -12,6 +12,7 @@ def register_slycat_plugin(context):
   def html(database, model):
     context = dict()
     context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["js-bundle"] = js_bundle
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   def hadamard_product(database, model, command, **kwargs):
@@ -19,7 +20,13 @@ def register_slycat_plugin(context):
 
   context.register_model("matrix-demo", finish, html)
   context.register_model_command("matrix-demo", "hadamard-product", hadamard_product)
-  context.register_model_resource("matrix-demo", "ui.css", os.path.join(os.path.dirname(__file__), "ui.css"))
-  context.register_model_resource("matrix-demo", "ui.js", os.path.join(os.path.dirname(__file__), "ui.js"))
-  context.register_model_resource("matrix-demo", "jquery.layout-latest.min.js", os.path.join(os.path.dirname(__file__), "jquery.layout-latest.min.js"))
+
+  css_bundle = context.register_model_bundle("matrix-demo", "text/css", [
+    os.path.join(os.path.dirname(__file__), "ui.css"),
+    ])
+
+  js_bundle = context.register_model_bundle("matrix-demo", "text/javascript", [
+    os.path.join(os.path.dirname(__file__), "ui.js"),
+    os.path.join(os.path.dirname(__file__), "jquery.layout-latest.min.js"),
+    ])
 

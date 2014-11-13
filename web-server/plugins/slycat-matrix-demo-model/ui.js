@@ -2,8 +2,10 @@
 {
   $(document).ready(function()
   {
+/*
     var server_root = document.getElementById("slycat-server-root").getAttribute("href");
     document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/matrix-demo/ui.css'>";
+*/
 
     $("#root").layout({ applyDefaultStyles: true });
 /*

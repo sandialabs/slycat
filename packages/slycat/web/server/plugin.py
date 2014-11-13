@@ -3,6 +3,7 @@
 # rights in this software.
 
 import cherrypy
+import hashlib
 import imp
 import os
 import traceback
@@ -15,6 +16,7 @@ class Manager(object):
     self._markings = {}
     self._models = {}
     self._model_commands = {}
+    self._model_bundles = {}
     self._model_resources = {}
     self._model_wizards = {}
     self._tools = {}
@@ -70,6 +72,11 @@ class Manager(object):
   def model_commands(self):
     """Return a dict of dicts mapping custom requests to models."""
     return self._model_commands
+
+  @property
+  def model_bundles(self):
+    """Return a dict of dicts mapping model types to bundles."""
+    return self._model_bundles
 
   @property
   def model_resources(self):
@@ -139,6 +146,34 @@ class Manager(object):
       raise Exception("Command '%s' has already been registered with model '%s'." % (command, type))
     self._model_commands[type][command] = {"handler":handler}
     cherrypy.log.error("Registered model '%s' command '%s'." % (type, command))
+
+  def register_model_bundle(self, type, content_type, paths):
+    if type not in self._models:
+      raise Exception("Unknown model type: %s." % type)
+    if type not in self._model_bundles:
+      self._model_bundles[type] = {}
+
+    cherrypy.log.error("Bundling model '%s' resources" % type)
+
+    key_hash = hashlib.md5()
+    key_hash.update(content_type)
+    content = ""
+
+    for path in paths:
+      if not os.path.isabs(path):
+        raise Exception("Bundle file '%s' must be an absolute path." % (path))
+      cherrypy.log.error("  %s" % path)
+      cherrypy.engine.autoreload.files.add(path)
+      resource_content = open(path, "rb").read()
+      key_hash.update(resource_content)
+      content += resource_content + "\n\n"
+
+    key = key_hash.hexdigest()
+    self._model_bundles[type][key] = (content_type, content)
+    cherrypy.log.error("  as %s" % key)
+
+    return key
+
 
   def register_model_resource(self, type, resource, path):
     """Register a custom resource associated with a model type.
