@@ -160,6 +160,8 @@ class Manager(object):
       raise Exception("Resource '%s' has already been registered with model '%s'." % (resource, type))
     if not os.path.isabs(path):
       raise Exception("Resource '%s' must have an absolute path." % (resource))
+    if not os.path.exists(path):
+      raise Exception("Resource '%s' does not exist." % (resource))
     self._model_resources[type][resource] = path
     cherrypy.log.error("Registered model '%s' resource '%s' -> '%s'." % (type, resource, path))
 
