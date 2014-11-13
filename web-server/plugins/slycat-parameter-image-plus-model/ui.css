@@ -344,17 +344,20 @@ rights in this software.
   padding-top: 5px;
   padding-bottom: 35px;
 }
+#controls-pane {
+  
+}
+.center {
+  text-align: center;
+}
 #color-switcher {
-  margin: -16px 0 0 0;
+  margin: 0;
+  float: none;
+  display: inline-block;
 }
 #controls {
-  /*float: left;
-  margin-top: -3px;*/
-  position: absolute;
-  width: 100%;
-  left: 0;
-  text-align: center;
-  bottom: 0;
+  display: inline-block;
+  margin: 2px 0;
 }
 #controls label {
   font-weight: bold;

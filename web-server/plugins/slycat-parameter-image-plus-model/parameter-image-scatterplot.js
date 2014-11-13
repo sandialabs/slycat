@@ -43,6 +43,11 @@ $.widget("parameter_image.scatterplot",
     scale_y : [],
     scale_v: [],
     "auto-scale" : true,
+    canvas_square_size : 8,
+    canvas_square_border_size : 1,
+    canvas_selected_square_size : 16,
+    canvas_selected_square_border_size : 2,
+    hover_time : 250,
   },
 
   _create: function()
@@ -67,6 +72,8 @@ $.widget("parameter_image.scatterplot",
 
     self.hover_timer = null;
     self.close_hover_timer = null;
+
+    self.hover_timer_canvas = null;
 
     self.opening_image = null;
     self.state = "";
@@ -96,9 +103,17 @@ $.widget("parameter_image.scatterplot",
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
-    self.selected_layer = self.svg.append("g");
-    self.selection_layer = self.svg.append("g");
-    self.image_layer = self.svg.append("g");
+    self.selected_layer = self.svg.append("g").attr("class", "selected-layer");
+    self.canvas_datum = d3.select(self.element.get(0)).append("canvas")
+      .style({'position':'absolute'}).node()
+      ;
+    self.canvas_datum_layer = self.canvas_datum.getContext("2d");
+    self.canvas_selected = d3.select(self.element.get(0)).append("canvas")
+      .style({'position':'absolute'}).node()
+      ;
+    self.canvas_selected_layer = self.canvas_selected.getContext("2d");
+    self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
+    self.image_layer = self.svg.append("g").attr("class", "image-layer");
 
     self.session_cache = {};
     self.image_cache = {};
@@ -160,8 +175,11 @@ $.widget("parameter_image.scatterplot",
 
     self.element.mousemove(function(e)
     {
-      //console.log("#scatterplot mousemove");
-      if(self.start_drag) // Mouse is down ...
+      if(self.start_drag === null)
+      {
+        self._schedule_hover_canvas(e);
+      }
+      else if(self.start_drag) // Mouse is down ...
       {
         if(self.end_drag) // Already dragging ...
         {
@@ -196,6 +214,10 @@ $.widget("parameter_image.scatterplot",
           }
         }
       }
+    });
+
+    self.element.mouseout(function(e){
+      self._cancel_hover_canvas();
     });
 
     self.element.mouseup(function(e)
@@ -245,7 +267,7 @@ $.widget("parameter_image.scatterplot",
         var y1 = e.originalEvent.layerY - self.options.pick_distance;
         var y2 = e.originalEvent.layerY + self.options.pick_distance;
 
-        for(var i = 0; i != count; ++i)
+        for(var i = count - 1; i > -1; i--)
         {
           x_coord = self.x_scale(x[i]);
           y_coord = self.y_scale(y[i]);
@@ -289,9 +311,7 @@ $.widget("parameter_image.scatterplot",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-
     var filtered_indices = self._cloneArrayBuffer(indices);
-
     var filtered_selection = selection.slice(0);
     var length = indices.length;
 
@@ -332,15 +352,24 @@ $.widget("parameter_image.scatterplot",
   // Clones an ArrayBuffer or Array
   _cloneArrayBuffer: function(source)
   {
-    if(source.length > 1)
+    // Array.apply method of turning an ArrayBuffer into a normal array is very fast (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
+    // if(source.length > 1)
+    // {
+    //   return Array.apply( [], source );
+    // }
+    // else if(source.length == 1)
+    // {
+    //   return [source[0]];
+    // }
+    // return [];
+
+    // For loop method is much shower (around 300ms for 250K) but works in WebKit. Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
+    var clone = [];
+    for(var i = 0; i < source.length; i++)
     {
-      return Array.apply( [], source );
+      clone.push(source[i]);
     }
-    else if(source.length == 1)
-    {
-      return [source[0]];
-    }
-    return [];
+    return clone;
   },
 
   _createScale: function(string, values, range, reverse)
@@ -604,12 +633,46 @@ $.widget("parameter_image.scatterplot",
     {
       self.element.attr("width", self.options.width);
       self.svg.attr("width", self.options.width);
+
+      var total_width = self.options.width;
+      var total_height = self.options.height;
+      var width = Math.min(total_width, total_height);
+      var width_offset = (total_width - width) / 2;
+      d3.select(self.canvas_datum)
+        .style({
+          "left" : (width_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
+        })
+        .attr("width", (width - (2 * self.options.border)) + self.options.canvas_square_size)
+        ;
+      d3.select(self.canvas_selected)
+        .style({
+          "left" : (width_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
+        })
+        .attr("width", (width - (2 * self.options.border)) + self.options.canvas_selected_square_size)
+        ;
     }
 
     if(self.updates["update_height"])
     {
       self.element.attr("height", self.options.height);
       self.svg.attr("height", self.options.height);
+
+      var total_width = self.options.width;
+      var total_height = self.options.height;
+      var height = Math.min(total_width, total_height);
+      var height_offset = (total_height - height) / 2;
+      d3.select(self.canvas_datum)
+        .style({
+          "top" : (height_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
+        })
+        .attr("height", height - (2 * self.options.border) - 40 + self.options.canvas_square_size)
+        ;
+      d3.select(self.canvas_selected)
+        .style({
+          "top" : (height_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
+        })
+        .attr("height", height - (2 * self.options.border) - 40 + self.options.canvas_selected_square_size)
+        ;
     }
 
     if(self.updates["update_indices"])
@@ -629,8 +692,10 @@ $.widget("parameter_image.scatterplot",
       var width_offset = (total_width - width) / 2;
       var height_offset = (total_height - height) / 2;
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border];
+      var range_canvas = [0, width - (2 * self.options.border)];
 
       self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false);
+      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false);
       
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
@@ -648,9 +713,11 @@ $.widget("parameter_image.scatterplot",
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
       var range = [total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border];
+      var range_canvas = [height - (2 * self.options.border) - 40, 0];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
       self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false);
+      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false);
 
       self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
       self.y_axis_layer
@@ -696,99 +763,168 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_data"])
     {
-      var x = self.options.x;
-      var y = self.options.y;
-      var v = self.options.v;
-      var indices = self.options.indices;
-      var filtered_indices = self.options.filtered_indices;
+      var x = self.options.x,
+          y = self.options.y,
+          v = self.options.v,
+          filtered_indices = self.options.filtered_indices,
+          canvas = self.canvas_datum_layer,
+          i = -1, 
+          n = filtered_indices.length, 
+          cx, 
+          cy,
+          color,
+          square_size = self.options.canvas_square_size,
+          border_width = self.options.canvas_square_border_size,
+          half_border_width = border_width / 2,
+          fillWidth = fillHeight = square_size - (2 * border_width),
+          strokeWidth = strokeHeight = square_size - border_width;
 
-      // Draw points ...
-      var circle = self.datum_layer.selectAll(".datum")
-        .data(filtered_indices, function(d, i){
-          return d;
-        })
-        ;
-      circle.exit()
-        .remove()
-        ;
-      circle.enter()
-        .append("circle")
-        .attr("class", "datum")
-        .attr("r", 4)
-        .attr("stroke", "black")
-        .attr("linewidth", 1)
-        .attr("data-index", function(d, i) { return d; })
-        .on("mouseover", function(d, i) {
-          self._schedule_hover(d);
-        })
-        .on("mouseout", function(d, i) {
-          self._cancel_hover();
-        })
-        ;
-      circle
-        .attr("cx", function(d, i) { 
-          return self.x_scale( x[d] ); 
-        })
-        .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
-        .attr("fill", function(d, i) {
-          var value = v[d];
-          if(!self._validateValue(value))
-            return $("#color-switcher").colorswitcher("get_null_color");
-          else
-            return self.options.colorscale(value);
-        })
-        ;
+      // Draw points on canvas ...
+      var time = Date;
+      if(window.performance)
+        time = window.performance;
+      var start = time.now();
+      
+      canvas.clearRect(0, 0, self.canvas_datum.width, self.canvas_datum.height);
+      canvas.strokeStyle = "black";
+      canvas.lineWidth = border_width;
+
+      while (++i < n) {
+        var index = filtered_indices[i];
+        var value = v[index];
+        if(!self._validateValue(value))
+          color = $("#color-switcher").colorswitcher("get_null_color");
+        else
+          color = self.options.colorscale(value); 
+        canvas.fillStyle = color;
+        cx = Math.round( self.x_scale_canvas( x[index] ) );
+        cy = Math.round( self.y_scale_canvas( y[index] ) );
+        canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
+        canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+      }
+      // Test point for checking position and border
+      // canvas.fillStyle = "white";
+      // canvas.fillRect(0 + 0.5, 0 + 0.5, width, height);
+      // canvas.strokeRect(0 + 0.5, 0 + 0.5, width, height);
+      var end = time.now();
+      console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
+
+      // Draw points on svg ...
+      // var start = performance.now();
+      // var circle = self.datum_layer.selectAll(".datum")
+      //   .data(filtered_indices, function(d, i){ 
+      //     return d;
+      //   })
+      //   ;
+      // circle.exit()
+      //   .remove()
+      //   ;
+      // circle.enter()
+      //   .append("circle")
+      //   .attr("class", "datum")
+      //   .attr("r", 4)
+      //   .attr("stroke", "black")
+      //   .attr("linewidth", 1)
+      //   .attr("data-index", function(d, i) { return d; })
+      //   .on("mouseover", function(d, i) { 
+      //     self._schedule_hover(d);
+      //   })
+      //   .on("mouseout", function(d, i) { 
+      //     self._cancel_hover(); 
+      //   })
+      //   ;
+      // circle
+      //   .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
+      //   .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
+      //   .attr("fill", function(d, i) { 
+      //     var value = v[d];
+      //     if(isNaN(value))
+      //       return $("#color-switcher").colorswitcher("get_null_color");
+      //     else
+      //       return self.options.color(value); 
+      //   })
+      //   ;
+      // var end = performance.now();
+      // console.log("Time to render " + filtered_indices.length + " svg points: " + (end-start) + " milliseconds.");
     }
 
     if(self.updates["render_selection"])
     {
-      var x = self.options.x;
-      var y = self.options.y;
-      var v = self.options.v;
-      var indices = self.options.indices;
-      var filtered_selection = self.options.filtered_selection;
+      var x = self.options.x,
+          y = self.options.y,
+          v = self.options.v,
+          filtered_selection = self.options.filtered_selection,
+          canvas = self.canvas_selected_layer,
+          i = -1,
+          n = filtered_selection.length,
+          cx, 
+          cy,
+          color,
+          square_size = self.options.canvas_selected_square_size,
+          border_width = self.options.canvas_selected_square_border_size,
+          half_border_width = border_width / 2,
+          fillWidth = fillHeight = square_size - (2 * border_width),
+          strokeWidth = strokeHeight = square_size - border_width;
+      
+      canvas.clearRect(0, 0, self.canvas_selected.width, self.canvas_selected.height);
+      canvas.strokeStyle = "black";
+      canvas.lineWidth = border_width;
 
-      var x_scale = self.x_scale;
-      var y_scale = self.y_scale;
+      while (++i < n) {
+        var index = filtered_selection[i];
+        var value = v[index];
+        if(!self._validateValue(value))
+          color = $("#color-switcher").colorswitcher("get_null_color");
+        else
+          color = self.options.colorscale(value); 
+        canvas.fillStyle = color;
+        cx = Math.round( self.x_scale_canvas( x[index] ) );
+        cy = Math.round( self.y_scale_canvas( y[index] ) );
+        canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
+        canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+      }
 
-      self.selected_layer.selectAll(".selection").remove();
+      // var x_scale = self.x_scale;
+      // var y_scale = self.y_scale;
 
-      var circle = self.selected_layer.selectAll(".selection")
-        .data(filtered_selection, function(d, i){
-          return d;
-        })
-        ;
-      circle.enter()
-        .append("circle")
-        .attr("class", "selection")
-        .attr("r", 8)
-        .attr("stroke", "black")
-        .attr("linewidth", 1)
-        .attr("data-index", function(d, i) {
-          return d;
-        })
-        .on("mouseover", function(d, i) {
-          self._schedule_hover(d);
-        })
-        .on("mouseout", function(d, i) {
-          self._cancel_hover();
-        })
-        ;
-      circle
-        .attr("cx", function(d, i) {
-          return x_scale( x[d] );
-        })
-        .attr("cy", function(d, i) {
-          return y_scale( y[d] );
-        })
-        .attr("fill", function(d, i) {
-          var value = v[d];
-          if(!self._validateValue(value))
-            return $("#color-switcher").colorswitcher("get_null_color");
-          else
-            return self.options.colorscale(value);
-        })
-        ;
+      // self.selected_layer.selectAll(".selection").remove();
+
+      // var circle = self.selected_layer.selectAll(".selection")
+      //   .data(filtered_selection, function(d, i){
+      //     return d;
+      //   })
+      //   ;
+      // circle.enter()
+      //   .append("circle")
+      //   .attr("class", "selection")
+      //   .attr("r", 8)
+      //   .attr("stroke", "black")
+      //   .attr("linewidth", 1)
+      //   .attr("data-index", function(d, i) {
+      //     return d;
+      //   })
+      //   .on("mouseover", function(d, i) {
+      //     self._schedule_hover(d);
+      //   })
+      //   .on("mouseout", function(d, i) {
+      //     self._cancel_hover();
+      //   })
+      //   ;
+      // circle
+      //   .attr("cx", function(d, i) {
+      //     return x_scale( x[d] );
+      //   })
+      //   .attr("cy", function(d, i) {
+      //     return y_scale( y[d] );
+      //   })
+      //   .attr("fill", function(d, i) {
+      //     var value = v[d];
+      //     if(isNaN(value))
+      //       return $("#color-switcher").colorswitcher("get_null_color");
+      //     else
+      //       return self.options.color(value);
+      //   })
+      //   ;
     }
 
     // Used to open an initial list of images at startup only
@@ -1315,7 +1451,7 @@ $.widget("parameter_image.scatterplot",
         .attr("y", 2)
         .attr("width", 16)
         .attr("height", 16)
-        .attr("xlink:href", "/css/pin.png")
+        .attr("xlink:href", server_root + "resources/models/parameter-image-plus/" + "pin.png")
         .on("mousedown", function(){
           //console.log("pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
@@ -1420,7 +1556,7 @@ $.widget("parameter_image.scatterplot",
       // (probably file permissions issues).
       if(this.status == 400)
       {
-	      console.log(this);
+        console.log(this);
         console.log(this.getAllResponseHeaders());
         var message = this.getResponseHeader("slycat-message");
         var hint = this.getResponseHeader("slycat-hint");
@@ -1514,6 +1650,79 @@ $.widget("parameter_image.scatterplot",
     self.login.dialog("open");
   },
 
+  _schedule_hover_canvas: function(e)
+  {
+    var self = this;
+    self._cancel_hover_canvas();
+
+    // Disable hovering whenever anything else is going on ...
+    if(self.state != "")
+      return;
+
+    self.hover_timer_canvas = window.setTimeout( function(){ self._open_hover_canvas(e) }, self.options.hover_time );
+  },
+
+  _open_hover_canvas: function(e)
+  {
+    var self = this;
+
+    // Disable hovering whenever anything else is going on ...
+    if(self.state != "")
+      return;
+
+    var x = e.originalEvent.layerX,
+        y = e.originalEvent.layerY,
+        filtered_indices = self.options.filtered_indices,
+        filtered_selection = self.options.filtered_selection,
+        square_size = self.options.canvas_square_size,
+        shift = (square_size / 2),
+        selected_square_size = self.options.canvas_selected_square_size,
+        selected_shift = (selected_square_size / 2),
+        index;
+
+    var selected_match = self._open_first_match(x, y, filtered_selection, selected_shift, selected_square_size);
+    if(!selected_match)
+      self._open_first_match(x, y, filtered_indices, shift, square_size);
+  },
+
+  _open_first_match: function(x, y, indices, shift, size)
+  {
+    var self = this,
+        xvalues = self.options.x,
+        yvalues = self.options.y;
+    for(var i = indices.length-1; i > -1; i-- )
+    {
+      index = indices[i];
+      x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
+      y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
+      x2 = x1 + size;
+      y2 = y1 + size;
+
+      if(x >= x1 && x <= x2 && y >= y1 && y <= y2)
+      {
+        // Disable hovering when there is no uri
+        if(self.options.images[index].trim() != "")
+        {
+          self._open_hover(index);
+        }
+
+        return true;
+      }
+    }
+    return false;
+  },
+
+  _cancel_hover_canvas: function()
+  {
+    var self = this;
+
+    if(self.hover_timer_canvas)
+    {
+      window.clearTimeout(self.hover_timer_canvas);
+      self.hover_timer_canvas = null;
+    }
+  },
+
   _schedule_hover: function(image_index)
   {
     var self = this;
@@ -1539,7 +1748,7 @@ $.widget("parameter_image.scatterplot",
     self._cancel_hover();
 
     // Start the timer for the new hover ...
-    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, 250);
+    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, self.options.hover_time);
   },
 
   _cancel_hover: function()
