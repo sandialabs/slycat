@@ -14,11 +14,19 @@ def register_slycat_plugin(context):
     context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
+  def product(database, model, command, **kwargs):
+    pass
+
   def hadamard_product(database, model, command, **kwargs):
-      return json.dumps(model["artifact:a"] + model["artifact:b"])
+    pass
+
+  def kronecker_product(database, model, command, **kwargs):
+    pass
 
   context.register_model("matrix-demo", finish, html)
+  context.register_model_command("matrix-demo", "product", product)
   context.register_model_command("matrix-demo", "hadamard-product", hadamard_product)
+  context.register_model_command("matrix-demo", "kroneker-product", kroneker_product)
 
   context.register_model_bundle("matrix-demo", "text/css", [
     os.path.join(os.path.dirname(__file__), "ui.css"),
