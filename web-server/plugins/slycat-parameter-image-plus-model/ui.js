@@ -168,18 +168,24 @@ function artifact_missing()
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout.
 //////////////////////////////////////////////////////////////////////////////////////////
+$("#parameter-image-plus-layout").height($(window).height() - 300);
+$(window).resize(function()
+{
+  $("#parameter-image-plus-layout").height($(window).height() - 300);
+});
 
-$(".parameter-image").layout(
+$("#parameter-image-plus-layout").layout(
 {
   north:
   {
+    size: 32,
   },
   center:
   {
   },
   south:
   {
-    size: $("body").height() / 2,
+    size: $("#parameter-image-plus-layout").height() / 4,
     resizeWhileDragging: false,
     onresize: function()
     {

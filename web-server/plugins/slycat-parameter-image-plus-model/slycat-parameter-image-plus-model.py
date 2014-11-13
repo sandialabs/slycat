@@ -97,7 +97,7 @@ def register_slycat_plugin(context):
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
     #For development and debugging, loading ui.css dynamically inside model.
-    "ui.css",
+    #"ui.css",
   ]
   context.register_model_bundle("parameter-image-plus", "text/css", [
     os.path.join(os.path.dirname(__file__), css) for css in stylesheets

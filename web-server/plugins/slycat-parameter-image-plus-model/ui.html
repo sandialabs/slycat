@@ -22,11 +22,13 @@
     document.head.appendChild(link);
   });
 </script>
-<div class="parameter-image" style="height: 600px;">
+<div class="parameter-image" id="parameter-image-plus-layout">
 
-	<div class="ui-layout-north">
-		<div id="color-switcher"></div>
-    <div id="controls"></div>
+	<div id="controls-pane" class="ui-layout-north">
+    <div class="center">
+      <div id="controls"></div>
+      <div id="color-switcher"></div>
+    </div>
     <div id="status-messages" style="display: none;"></div>
     <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
       <p>
