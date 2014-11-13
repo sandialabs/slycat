@@ -3,8 +3,14 @@
   $(document).ready(function()
   {
     var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-    $("#matrix-demo-model").layout({ applyDefaultStyles: true });
 
+    $("#matrix-demo-model").height($(window).height() - 300);
+    $(window).resize(function()
+    {
+      $("#matrix-demo-model").height($(window).height() - 300);
+    });
+
+    $("#matrix-demo-model").layout({ applyDefaultStyles: true});
 /*
   var request = new XMLHttpRequest();
   request.open("GET", "#")
