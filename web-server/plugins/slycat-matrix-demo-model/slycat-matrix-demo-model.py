@@ -26,7 +26,7 @@ def register_slycat_plugin(context):
   context.register_model("matrix-demo", finish, html)
   context.register_model_command("matrix-demo", "product", product)
   context.register_model_command("matrix-demo", "hadamard-product", hadamard_product)
-  context.register_model_command("matrix-demo", "kroneker-product", kroneker_product)
+  context.register_model_command("matrix-demo", "kronecker-product", kronecker_product)
 
   context.register_model_bundle("matrix-demo", "text/css", [
     os.path.join(os.path.dirname(__file__), "ui.css"),
