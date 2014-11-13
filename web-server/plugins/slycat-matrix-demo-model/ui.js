@@ -2,48 +2,50 @@
 {
   $(document).ready(function()
   {
-    var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-
+    // Setup the default window layout.
     $("#matrix-demo-model").height($(window).height() - 300);
+
+    $("#matrix-demo-model").layout(
+    {
+      applyDefaultStyles: true,
+      west:
+      {
+        size: $(window).width() / 3,
+      },
+      east:
+      {
+        size: $(window).width() / 3,
+      },
+    });
+
+    // When resizing the window, adjust the height of the layout.
     $(window).resize(function()
     {
       $("#matrix-demo-model").height($(window).height() - 300);
     });
 
-    $("#matrix-demo-model").layout({ applyDefaultStyles: true});
-/*
-  var request = new XMLHttpRequest();
-  request.open("GET", "#")
-  request.setRequestHeader("accept", "application/json");
-  request.onload = function()
-  {
-    var model = JSON.parse(this.responseText);
-    document.querySelector("#operand-a").innerHTML = "A: " + model["artifact:a"]
-    document.querySelector("#operand-b").innerHTML = "B: " + model["artifact:b"]
-    document.querySelector("#add").onclick = function()
+    // Load and display the two matrix artifacts stored in the model.
+    //var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+
+    function get_matrix(aid, callback)
     {
-      var request = new XMLHttpRequest();
-      request.open("GET", window.location.href + "/commands/add");
-      request.onload = function()
+      $.ajax(
       {
-        var result = JSON.parse(this.responseText);
-        document.querySelector("#result").innerHTML = "A + B = " + result;
-      }
-      request.send();
-    };
-    document.querySelector("#subtract").onclick = function()
+        type : "GET",
+        url : location.href + "/arraysets/" + aid + "/metadata",
+        success : function(metadata)
+        {
+          callback(metadata);
+        },
+      });
+    }
+
+    function display_matrix(metadata, data)
     {
-      var request = new XMLHttpRequest();
-      request.open("GET", window.location.href + "/commands/subtract");
-      request.onload = function()
-      {
-        var result = JSON.parse(this.responseText);
-        document.querySelector("#result").innerHTML = "A - B = " + result;
-      }
-      request.send();
-    };
-  };
-  request.send();
-*/
+      console.log(metadata);
+    }
+
+    get_matrix("A", display_matrix);
+    get_matrix("B", display_matrix);
   });
 })();
