@@ -29,7 +29,7 @@ def register_slycat_plugin(context):
     ])
 
   context.register_model_bundle("matrix-demo", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), "ui.js"),
     os.path.join(os.path.dirname(__file__), "jquery.layout-latest.min.js"),
+    os.path.join(os.path.dirname(__file__), "ui.js"),
     ])
 
