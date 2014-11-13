@@ -32,20 +32,39 @@
       $.ajax(
       {
         type : "GET",
-        url : location.href + "/arraysets/" + aid + "/metadata",
+        url : location.href + "/arraysets/" + aid + "/arrays/0/metadata",
         success : function(metadata)
         {
-          callback(metadata);
+          $.ajax(
+          {
+            type : "GET",
+            url : location.href + "/arraysets/" + aid + "/arrays/0/attributes/0/chunk?ranges=0," + metadata.dimensions[0].end + ",0," + metadata.dimensions[1].end,
+            success : function(data)
+            {
+              callback(metadata, data);
+            },
+          });
         },
       });
     }
 
     function display_matrix(metadata, data)
     {
+      console.log(this);
       console.log(metadata);
+      console.log(data);
+      for(var i = 0; i != metadata.dimensions[0].end; ++i)
+      {
+        var row = $("<tr>").appendTo(this);
+        for(var j = 0; j != metadata.dimensions[1].end; ++j)
+        {
+          var cell = $("<td>").appendTo(row);
+          cell.text(data[i][j]);
+        }
+      }
     }
 
-    get_matrix("A", display_matrix);
-    get_matrix("B", display_matrix);
+    get_matrix("A", display_matrix.bind($("#matrix-a")));
+    get_matrix("B", display_matrix.bind($("#matrix-b")));
   });
 })();
