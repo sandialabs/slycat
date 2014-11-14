@@ -312,11 +312,6 @@ class connection(object):
     model = {key : value for key, value in kwargs.items() if value is not None}
     self.put_model(mid, model)
 
-  def update_model(self, mid, **kwargs):
-    """Updates the model state/result/progress/message."""
-    model = {key : value for key, value in kwargs.items() if value is not None}
-    self.put_model(mid, model)
-
   def join_model(self, mid):
     """Wait for a model to complete before returning.
 
