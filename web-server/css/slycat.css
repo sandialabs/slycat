@@ -4,7 +4,10 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-/* General styles for all elements */
+/*****************************************************************************
+ * Styles that should, for the most part, be obsoleted by bootstrap
+ **/
+
 h1, h2, h3, h4, h5, fieldset, legend, dl, dt, dd, cite
 {
   padding: 0;
@@ -357,12 +360,6 @@ a#title-link h1:hover
 {
   border-width: 0 0 1px 0;
   border-radius: 4px 4px 0 0;
-}
-
-#content
-{
-  padding: 20px 0;
-  background-color: #D2D1D0;
 }
 
 #models-wrapper,
@@ -1049,3 +1046,13 @@ a.clicker {
   top: 0;
   width: 100%;
 }
+
+/*****************************************************************************
+ * Styles that should, for the most part, still be relevant with bootstrap
+ **/
+
+.slycat-model-content
+{
+  background-color: #D2D1D0;
+}
+
