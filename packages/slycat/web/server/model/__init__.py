@@ -15,6 +15,36 @@ import slycat.web.server.database.hdf5
 import sys
 import uuid
 
+########################################################################################################################
+# Functions that are intended to be used by plugin code
+
+def get_array_attribute_chunk(database, model, aid, array, attribute, hyperslice):
+  artifact = model["artifact:%s" % aid]
+  artifact_type = model["artifact-types"][aid]
+  assert artifact_type  == "hdf5"
+
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact) as file:
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
+      hdf5_array = hdf5_arrayset[array]
+      data = hdf5_array.get_data(attribute)[hyperslice]
+      return data
+
+def get_array_metadata(database, model, aid, array):
+  artifact = model["artifact:%s" % aid]
+  artifact_type = model["artifact-types"][aid]
+  assert artifact_type == "hdf5"
+
+  with slycat.web.server.database.hdf5.lock:
+    with slycat.web.server.database.hdf5.open(artifact, "r+") as file: # We open the file with writing enabled because retrieving statistics may need to update the cache.
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
+      hdf5_array = hdf5_arrayset[array]
+      metadata = dict(dimensions=hdf5_array.dimensions, attributes=hdf5_array.attributes, statistics=[hdf5_array.get_statistics(attribute) for attribute in range(len(hdf5_array.attributes))])
+  return metadata
+
+########################################################################################################################
+# Internal implementation functions that shouldn't be used in plugin code
+
 def update(database, model, **kwargs):
   """Update the model, and signal any waiting threads that it's changed."""
   for name, value in kwargs.items():

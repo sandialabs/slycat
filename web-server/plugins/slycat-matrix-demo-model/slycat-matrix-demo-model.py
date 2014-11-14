@@ -28,17 +28,23 @@ def register_slycat_plugin(context):
           {"name":"values", "type":"float64"},
         ]
       },
-      "data": matrix.tolist(), 
+      "data": matrix.tolist(),
     })
 
   def product(database, model, command, **kwargs):
-    return matrix_result(numpy.random.random((4, 4)))
+    A = slycat.web.server.model.get_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
+    B = slycat.web.server.model.get_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
+    return matrix_result(numpy.dot(A, B))
 
   def hadamard_product(database, model, command, **kwargs):
-    return matrix_result(numpy.random.random((4, 4)))
+    A = slycat.web.server.model.get_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
+    B = slycat.web.server.model.get_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
+    return matrix_result(A * B)
 
   def kronecker_product(database, model, command, **kwargs):
-    return matrix_result(numpy.random.random((4, 4)))
+    A = slycat.web.server.model.get_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
+    B = slycat.web.server.model.get_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
+    return matrix_result(numpy.kron(A, B))
 
   context.register_model("matrix-demo", finish, html)
   context.register_model_command("matrix-demo", "product", product)
