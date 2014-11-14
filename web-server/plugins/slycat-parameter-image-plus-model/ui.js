@@ -183,6 +183,10 @@ $("#parameter-image-plus-layout").layout(
   center:
   {
   },
+  west:
+  {
+    size: $("#parameter-image-plus-layout").width() / 2,
+  },
   south:
   {
     size: $("#parameter-image-plus-layout").height() / 4,
