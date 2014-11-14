@@ -89,22 +89,32 @@ if arguments.cluster_columns is None:
   arguments.cluster_columns = arguments.image_columns
 
 ###########################################################################################
-# Compute a hierarchical clustering for each cluster column.
+# Create a mapping from unique cluster names to column rows.
 
-clusters = {}
-for index, (name, column) in enumerate(columns):
+clusters = collections.defaultdict(list)
+for column_index, (name, column) in enumerate(columns):
   if name not in arguments.cluster_columns:
     continue
   if name not in arguments.image_columns:
     continue
-  clusters[name] = index
+  for row_index, row in enumerate(column):
+    if row:
+      clusters[name].append((row_index, column_index))
 
-for name, column_index in clusters.items():
+import pprint
+pprint.pprint(dict(clusters))
+
+###########################################################################################
+# Compute a hierarchical clustering for each cluster column.
+
+cluster_linkages = {}
+cluster_exemplars = {}
+for index, (name, storage) in enumerate(sorted(clusters.items())):
   progress_begin = float(index) / float(len(clusters))
   progress_end = float(index + 1) / float(len(clusters))
 
-  # Compute a distance matrix comparing every series to every other ...
-  observation_count = len(column)
+  # Compute a distance matrix comparing every image to every other ...
+  observation_count = len(storage)
   distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
   for i in range(0, observation_count):
     slycat.web.client.log.info("Computing distance for %s, %s of %s" % (name, i+1, observation_count))
@@ -118,6 +128,53 @@ for name, column_index in clusters.items():
   slycat.web.client.log.info("Clustering %s" % name)
   distance = scipy.spatial.distance.squareform(distance_matrix)
   linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type), metric=str(arguments.cluster_metric))
+  cluster_linkages[name] = linkage
+
+  # Identify exemplar waveforms for each cluster ...
+  summed_distances = numpy.zeros(shape=(observation_count))
+  exemplars = dict()
+  cluster_membership = []
+
+  for i in range(observation_count):
+    exemplars[i] = i
+    cluster_membership.append(set([i]))
+
+  slycat.web.client.log.info("Identifying examplars for %s" % (name))
+  for i in range(len(linkage)):
+    cluster_id = i + observation_count
+    (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
+    cluster1 = int(f_cluster1)
+    cluster2 = int(f_cluster2)
+    # Housekeeping: assemble the membership of the new cluster
+    cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
+    # We need to update the distance from each member of the new
+    # cluster to all the other members of the cluster.  That means
+    # that for all the members of cluster1, we need to add in the
+    # distances to members of cluster2, and for all members of
+    # cluster2, we need to add in the distances to members of
+    # cluster1.
+    for cluster1_member in cluster_membership[cluster1]:
+      for cluster2_member in cluster_membership[cluster2]:
+        summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
+
+    for cluster2_member in cluster_membership[int(cluster2)]:
+      for cluster1_member in cluster_membership[cluster1]:
+        summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
+
+    min_summed_distance = None
+    max_summed_distance = None
+
+    exemplar_id = 0
+    for member in cluster_membership[cluster_id]:
+      if min_summed_distance is None or summed_distances[member] < min_summed_distance:
+        min_summed_distance = summed_distances[member]
+        exemplar_id = member
+
+      if max_summed_distance is None or summed_distances[member] > min_summed_distance:
+        max_summed_distance = summed_distances[member]
+
+    exemplars[cluster_id] = exemplar_id
+  cluster_exemplars[name] = exemplars
 
 ###########################################################################################
 # Ingest the raw data into Slycat.
@@ -137,6 +194,14 @@ connection.put_model_parameter(mid, "cluster-metric", arguments.cluster_metric)
 
 # Store an alphabetized collection of cluster names.
 connection.put_model_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
+
+# Store each cluster.
+for key in clusters.keys():
+  connection.put_model_file(mid, "cluster-%s" % key, json.dumps({
+    "linkage" : cluster_linkages[key].tolist(),
+    "exemplars" : cluster_exemplars[key],
+    "input-indices" : [row_index for row_index, column_index in clusters[key]],
+    }), "application/json")
 
 # Upload our observations as "data-table".
 connection.put_model_arrayset(mid, "data-table")
