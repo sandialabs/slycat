@@ -467,7 +467,7 @@ def post_model_finish(mid):
   if model["model-type"] not in slycat.web.server.plugin.manager.models.keys() + ["cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
-  slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
+  slycat.web.server.update_model(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
   if model["model-type"] in slycat.web.server.plugin.manager.models.keys():
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
   elif model["model-type"] == "cca":

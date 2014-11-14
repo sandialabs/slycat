@@ -4,10 +4,10 @@ def register_slycat_plugin(context):
   import json
   import numpy
   import os
-  import slycat.web.server.model
+  import slycat.web.server
 
   def finish(database, model):
-    slycat.web.server.model.update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+    slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def html(database, model):
     return open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read()
@@ -32,18 +32,18 @@ def register_slycat_plugin(context):
     })
 
   def product(database, model, command, **kwargs):
-    A = slycat.web.server.model.get_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
-    B = slycat.web.server.model.get_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
+    A = slycat.web.server.get_model_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
+    B = slycat.web.server.get_model_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
     return matrix_result(numpy.dot(A, B))
 
   def hadamard_product(database, model, command, **kwargs):
-    A = slycat.web.server.model.get_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
-    B = slycat.web.server.model.get_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
+    A = slycat.web.server.get_model_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
+    B = slycat.web.server.get_model_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
     return matrix_result(A * B)
 
   def kronecker_product(database, model, command, **kwargs):
-    A = slycat.web.server.model.get_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
-    B = slycat.web.server.model.get_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
+    A = slycat.web.server.get_model_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
+    B = slycat.web.server.get_model_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
     return matrix_result(numpy.kron(A, B))
 
   context.register_model("matrix-demo", finish, html)
