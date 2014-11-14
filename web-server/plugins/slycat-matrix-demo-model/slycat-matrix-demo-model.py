@@ -1,6 +1,8 @@
 def register_slycat_plugin(context):
+  import cherrypy
   import datetime
   import json
+  import numpy
   import os
   import slycat.web.server.model
 
@@ -10,14 +12,33 @@ def register_slycat_plugin(context):
   def html(database, model):
     return open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read()
 
+  def matrix_result(matrix):
+    cherrypy.response.headers["content-type"] = "application/json"
+
+    return json.dumps({
+      "metadata":
+      {
+        "dimensions":
+        [
+          {"name":"row", "type":"int64", "begin":0, "end":matrix.shape[0]},
+          {"name":"column", "type":"int64", "begin":0, "end":matrix.shape[1]},
+        ],
+        "attributes":
+        [
+          {"name":"values", "type":"float64"},
+        ]
+      },
+      "data": matrix.tolist(), 
+    })
+
   def product(database, model, command, **kwargs):
-    pass
+    return matrix_result(numpy.random.random((4, 4)))
 
   def hadamard_product(database, model, command, **kwargs):
-    pass
+    return matrix_result(numpy.random.random((4, 4)))
 
   def kronecker_product(database, model, command, **kwargs):
-    pass
+    return matrix_result(numpy.random.random((4, 4)))
 
   context.register_model("matrix-demo", finish, html)
   context.register_model_command("matrix-demo", "product", product)
