@@ -83,7 +83,7 @@
         $.ajax(
         {
           type : "PUT",
-          url : "{{server-root}}models/" + mid,
+          url : server_root + "models/" + mid,
           contentType : "application/json",
           data : $.toJSON({
             "state" : "closed"
@@ -138,8 +138,8 @@
               {
                 return $("<div class='worker'>")
                   .attr('id', model["_id"])
-                  .append($("<div>").addClass("message").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
-                  .append($("<div>").addClass("name").click(function(e){window.location="{{server-root}}models/" + model["_id"];}))
+                  .append($("<div>").addClass("message").click(function(e){window.location=server_root + "models/" + model["_id"];}))
+                  .append($("<div>").addClass("name").click(function(e){window.location=server_root = "models/" + model["_id"];}))
                   .append($("<div>").addClass("close").append($("<button>").html("&times;").attr("title", "Close model.").click(
                     function(e){
                       close_model(model["_id"]);
@@ -183,7 +183,7 @@
 
                 if(model["finished"]) {
                   line.click(function(e){
-                    window.location="{{server-root}}models/" + model["_id"];
+                    window.location=server_root + "models/" + model["_id"];
                     e.stopPropagation();
                   });
                 }
@@ -232,7 +232,7 @@
                 if(true)
                 {
                   line.qtip('option','content.text',
-                    $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', "{{server-root}}models/" + model['_id']).text('View'))
+                    $('<div>').append($('<div>').text((model["message"] || ""))).append($('<a>').attr('href', server_root + "models/" + model['_id']).text('View'))
                   );
 
                 }
