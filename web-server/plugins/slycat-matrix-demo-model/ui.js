@@ -2,48 +2,69 @@
 {
   $(document).ready(function()
   {
-    var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-
+    // Setup the default window layout.
     $("#matrix-demo-model").height($(window).height() - 300);
+
+    $("#matrix-demo-model").layout(
+    {
+      applyDefaultStyles: true,
+      west:
+      {
+        size: $(window).width() / 3,
+      },
+      east:
+      {
+        size: $(window).width() / 3,
+      },
+    });
+
+    // When resizing the window, adjust the height of the layout.
     $(window).resize(function()
     {
       $("#matrix-demo-model").height($(window).height() - 300);
     });
 
-    $("#matrix-demo-model").layout({ applyDefaultStyles: true});
-/*
-  var request = new XMLHttpRequest();
-  request.open("GET", "#")
-  request.setRequestHeader("accept", "application/json");
-  request.onload = function()
-  {
-    var model = JSON.parse(this.responseText);
-    document.querySelector("#operand-a").innerHTML = "A: " + model["artifact:a"]
-    document.querySelector("#operand-b").innerHTML = "B: " + model["artifact:b"]
-    document.querySelector("#add").onclick = function()
+    // Load and display the two matrix artifacts stored in the model.
+    //var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+
+    function get_matrix(aid, callback)
     {
-      var request = new XMLHttpRequest();
-      request.open("GET", window.location.href + "/commands/add");
-      request.onload = function()
+      $.ajax(
       {
-        var result = JSON.parse(this.responseText);
-        document.querySelector("#result").innerHTML = "A + B = " + result;
-      }
-      request.send();
-    };
-    document.querySelector("#subtract").onclick = function()
+        type : "GET",
+        url : location.href + "/arraysets/" + aid + "/arrays/0/metadata",
+        success : function(metadata)
+        {
+          $.ajax(
+          {
+            type : "GET",
+            url : location.href + "/arraysets/" + aid + "/arrays/0/attributes/0/chunk?ranges=0," + metadata.dimensions[0].end + ",0," + metadata.dimensions[1].end,
+            success : function(data)
+            {
+              callback(metadata, data);
+            },
+          });
+        },
+      });
+    }
+
+    function display_matrix(metadata, data)
     {
-      var request = new XMLHttpRequest();
-      request.open("GET", window.location.href + "/commands/subtract");
-      request.onload = function()
+      console.log(this);
+      console.log(metadata);
+      console.log(data);
+      for(var i = 0; i != metadata.dimensions[0].end; ++i)
       {
-        var result = JSON.parse(this.responseText);
-        document.querySelector("#result").innerHTML = "A - B = " + result;
+        var row = $("<tr>").appendTo(this);
+        for(var j = 0; j != metadata.dimensions[1].end; ++j)
+        {
+          var cell = $("<td>").appendTo(row);
+          cell.text(data[i][j]);
+        }
       }
-      request.send();
-    };
-  };
-  request.send();
-*/
+    }
+
+    get_matrix("A", display_matrix.bind($("#matrix-a")));
+    get_matrix("B", display_matrix.bind($("#matrix-b")));
   });
 })();
