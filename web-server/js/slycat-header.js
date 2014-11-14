@@ -4,33 +4,63 @@
   {
     viewModel: function(params)
     {
+      //$(function () { $('[data-toggle="tooltip"]').tooltip() })
+      $(function () { $('[data-toggle="popover"]').popover() })
+
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var current_revision = null;
       var view_model = this;
 
       view_model.projects_url = server_root + "projects";
+      view_model.project_name = params.project_name;
+      view_model.project_url = server_root + "projects/" + params.project_id;
+      view_model.model_name = params.model_name;
+      view_model.model_description = params.model_description;
+      view_model.new_name = ko.observable("");
+      view_model.new_description = ko.observable("");
       view_model.logo_url = server_root + "css/slycat-small.png";
       view_model.user = {uid : ko.observable(""), name : ko.observable("")};
+      view_model.version = ko.observable("");
+
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/version",
+        success : function(version)
+        {
+          view_model.version("Version " + version.version + ", commit " + version.commit);
+        }
+      });
 
       view_model.show_about = function()
       {
-        $("#about-slycat-dialog").dialog("open");
-        $.ajax(
-        {
-          type : "GET",
-          url : server_root + "configuration/version",
-          success : function(version)
-          {
-            $("#about-slycat-version").html("Slycat version " + version.version + ", commit " + version.commit);
-          }
+        $('#slycat-about').dialog({
+          modal: true,
+          autoOpen: false,
+          minWidth: 500,
+          buttons: {
+            'Close': function() {
+              $(this).dialog('close');
+            },
+          },
         });
+        $("#slycat-about").dialog("open");
+      }
+
+      view_model.open_documentation = function()
+      {
+        window.open("http://slycat.readthedocs.org");
+      }
+
+      view_model.support_request = function()
+      {
         $.ajax(
         {
           type : "GET",
           url : server_root + "configuration/support-email",
           success : function(email)
           {
-            $("#about-slycat-help").html("Request help at <a href='mailto:" + email.address + "?subject=" + email.subject + "'>" + email.address + "</a>");
+            window.location.href = "mailto:" + email.address + "?subject=" + email.subject;
           }
         });
       }
@@ -47,17 +77,7 @@
         }
       });
 
-      $('#about-slycat-dialog').dialog({
-        modal: true,
-        autoOpen: false,
-        minWidth: 500,
-        buttons: {
-          'Close': function() {
-            $(this).dialog('close');
-          },
-        },
-      });
-
+/*
       $('#workers-close').click(function()
       {
         $('#workers-close').slideUp();
@@ -261,33 +281,58 @@
       }
 
       update();
+*/
     },
-    template:
-      '<div id="workers"> \
-        <div id="workers-close" style="display: none;">Close</div> \
-        <div id="workers-container" class="workersCompact"> \
-          <div id="workersWrapper"></div> \
-        </div> \
+    template: ' \
+<div class="bootstrap-styles"> \
+  <nav class="navbar navbar-default" role="navigation"> \
+    <div class="container"> \
+      <div class="navbar-header"> \
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-header-content"> \
+          <span class="sr-only">Toggle navigation</span> \
+          <span class="icon-bar"></span> \
+          <span class="icon-bar"></span> \
+          <span class="icon-bar"></span> \
+        </button> \
+        <a class="navbar-brand" data-bind="attr:{href:projects_url}">Slycat</a> \
       </div> \
-      <div id="header"> \
-        <div class="width-wrapper"> \
-          <a data-bind="attr: {href:projects_url}" id="title-link"> \
-            <img id="logo" data-bind="attr: {src:logo_url}" title="A very sly cat." /> \
-            <h1 id="title">Slycat <span id="version"></span></h1> \
-          </a> \
-          <ul id="user-actions"> \
-            <li id="login"><span id="login-status" class="session"><span data-bind="text: user.name"></span> (<span data-bind="text: user.uid"></span>)</span></li> \
-            <li data-bind="click: show_about"> About Slycat </li> \
-          </ul> \
-        </div> \
-        <div id="about-slycat-dialog" class="dialog" title="About Slycat" style="display: none;"> \
-          <p><h3>Slycat</h3></p> \
-          <p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
-          <p>The documentation is <a href="http://slycat.readthedocs.org/en/latest">here.</a></p> \
-          <p id="about-slycat-help"></p> \
-          <p id="about-slycat-version"></p> \
-        </div> \
-      </div>'
+      <div class="collapse navbar-collapse" id="slycat-header-content"> \
+        <ol class="breadcrumb navbar-left"> \
+          <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
+          <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
+          <li class="active"><a data-toggle="popover" data-placement="bottom" data-content="Description." data-bind="text:model_name"></a></li> \
+        </ol> \
+        <ul class="nav navbar-nav navbar-right"> \
+          <li><button type="button" class="btn btn-xs btn-warning navbar-btn">Edit Model</button></li> \
+          <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
+          <li class="dropdown"> \
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help <span class="caret"></span></a> \
+            <ul class="dropdown-menu" role="menu"> \
+              <li><a data-bind="click:show_about">About Slycat</a></li> \
+              <li><a data-bind="click:support_request">Support Request</a></li> \
+              <li><a data-bind="click:open_documentation">Documentation</a></li> \
+            </ul> \
+          </li> \
+        </ul> \
+      </div> \
+    </div> \
+  </nav> \
+  <div id="slycat-about" class="dialog" title="About Slycat" style="display: none;"> \
+    <h3>Slycat</h3> \
+    <p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
+    <p data-bind="text: version"></p> \
+  </div> \
+  <div id="slycat-edit-model" class="dialog" title="Edit Model" style="display: none;"> \
+    <form> \
+      <label for="new-model-name">Model Name</label> \
+      <input id="new-model-name" class="text ui-widget-content ui-corner-all" data-bind="value: new_name" /> \
+      <label for="new-model-description">Description</label> \
+      <textarea id="new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20" data-bind="value: new_description"></textarea> \
+    </form> \
+  </div> \
+</div> \
+'
+
   });
 
 }());
