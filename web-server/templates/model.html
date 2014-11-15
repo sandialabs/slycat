@@ -23,27 +23,6 @@ rights in this software.
 
   <body>
     <slycat-header params="model_name:'{{slycat-model.name}}', model_description:'{{slycat-model.description}}', project_name:'{{slycat-project.name}}', project_id:'{{slycat-project._id}}'"></slycat-header>
-
-    <div id="page-title">
-      <div class="width-wrapper">
-        <button data-bind="click: edit_model" class="edit-page" title="Edit this model's name and description.">Edit Model</button>
-        <div id="breadcrumbs">
-          <a href="{{slycat-server-root}}projects">Projects</a> &rarr;
-          <a href="{{slycat-server-root}}projects/{{slycat-project._id}}">{{slycat-project.name}}</a> &rarr;
-        </div>
-        <h2>{{slycat-model.name}}</h2>
-        <div>{{slycat-model.description}}</div>
-        <div id="edit-model-dialog" title="Edit Model">
-          <form>
-            <label for="new-model-name">Model Name</label>
-            <input id="new-model-name" class="text ui-widget-content ui-corner-all" data-bind="value: new_name" />
-            <label for="new-model-description">Description</label>
-            <textarea id="new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20" data-bind="value: new_description"></textarea>
-          </form>
-        </div>
-      </div>
-    </div>
-
     <div class="slycat-model-content">
       <div class="container-fluid">
         {{{slycat-marking-html}}}

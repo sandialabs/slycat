@@ -4,41 +4,73 @@
   {
     viewModel: function(params)
     {
-      //$(function () { $('[data-toggle="tooltip"]').tooltip() })
       $(function () { $('[data-toggle="popover"]').popover() })
 
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var current_revision = null;
-      var view_model = this;
+      var component = this;
 
-      view_model.projects_url = server_root + "projects";
-      view_model.project_name = params.project_name;
-      view_model.project_url = server_root + "projects/" + params.project_id;
-      view_model.model_name = params.model_name;
-      view_model.model_description = params.model_description;
-      view_model.new_name = ko.observable("");
-      view_model.new_description = ko.observable("");
-      view_model.logo_url = server_root + "css/slycat-small.png";
-      view_model.user = {uid : ko.observable(""), name : ko.observable("")};
-      view_model.version = ko.observable("");
-      view_model.brand_image = server_root + "css/slycat-brand.png";
+      component.projects_url = server_root + "projects";
+      component.project_name = params.project_name;
+      component.project_url = server_root + "projects/" + params.project_id;
+      component.model_name = ko.observable(params.model_name);
+      component.model_description = ko.observable(params.model_description);
+      component.new_model_name = ko.observable(params.model_name);
+      component.new_model_description = ko.observable(params.model_description);
+      component.new_name = ko.observable("");
+      component.new_description = ko.observable("");
+      component.logo_url = server_root + "css/slycat-small.png";
+      component.user = {uid : ko.observable(""), name : ko.observable("")};
+      component.version = ko.observable("");
+      component.brand_image = server_root + "css/slycat-brand.png";
 
-      $.ajax(
+      component.delete_model = function()
       {
-        type : "GET",
-        url : server_root + "configuration/version",
-        success : function(version)
+        if(window.confirm("Delete " + component.model_name() + "? All data will be deleted immediately, and this cannot be undone."))
         {
-          view_model.version("Version " + version.version + ", commit " + version.commit);
+          $.ajax(
+          {
+            type : "DELETE",
+            url : location.href,
+            success : function()
+            {
+              window.location.href = component.project_url;
+            }
+          });
         }
-      });
+      }
 
-      view_model.open_documentation = function()
+      component.save_model_changes = function()
+      {
+        component.model_name(component.new_model_name());
+        component.model_description(component.new_model_description());
+
+        var model =
+        {
+          "name" : component.new_model_name(),
+          "description" : component.new_model_description(),
+        };
+
+        $.ajax(
+        {
+          type : "PUT",
+          url : location.href,
+          contentType : "application/json",
+          data : $.toJSON(model),
+          processData : false,
+          error : function(request, status, reason_phrase)
+          {
+            window.alert("Error updating model: " + reason_phrase);
+          }
+        });
+      }
+
+      component.open_documentation = function()
       {
         window.open("http://slycat.readthedocs.org");
       }
 
-      view_model.support_request = function()
+      component.support_request = function()
       {
         $.ajax(
         {
@@ -51,6 +83,17 @@
         });
       }
 
+      // Get information about the current server version.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/version",
+        success : function(version)
+        {
+          component.version("Version " + version.version + ", commit " + version.commit);
+        }
+      });
+
       // Get information about the currently-logged-in user.
       $.ajax(
       {
@@ -58,8 +101,8 @@
         url : server_root + "users/-",
         success : function(user)
         {
-          view_model.user.uid(user.uid);
-          view_model.user.name(user.name);
+          component.user.uid(user.uid);
+          component.user.name(user.name);
         }
       });
 
@@ -289,7 +332,7 @@
           <li class="active"><a data-toggle="popover" data-placement="bottom" data-content="Description." data-bind="text:model_name"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li><button type="button" class="btn btn-xs btn-warning navbar-btn">Edit Model</button></li> \
+          <li><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help <span class="caret"></span></a> \
@@ -320,13 +363,31 @@
       </div> \
     </div> \
   </div> \
-  <div id="slycat-edit-model" class="dialog" title="Edit Model" style="display: none;"> \
-    <form> \
-      <label for="new-model-name">Model Name</label> \
-      <input id="new-model-name" class="text ui-widget-content ui-corner-all" data-bind="value: new_name" /> \
-      <label for="new-model-description">Description</label> \
-      <textarea id="new-model-description" class="text ui-widget-content ui-corner-all" rows="3" cols="20" data-bind="value: new_description"></textarea> \
-    </form> \
+  <div class="modal fade" id="slycat-edit-model"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-header"> \
+          <h3 class="modal-title">Edit Model</h3> \
+        </div> \
+        <div class="modal-body"> \
+          <form role="form"> \
+            <div class="form-group"> \
+              <label for="slycat-model-name">Name</label> \
+              <input id="slycat-model-name" class="form-control" type="text" data-bind="value:new_model_name"></input> \
+            </div> \
+            <div class="form-group"> \
+              <label for="slycat-model-description">Description</label> \
+              <textarea id="slycat-model-description" class="form-control" rows="3" data-bind="value:new_model_description"></textarea> \
+            </div> \
+          </form> \
+        </div> \
+        <div class="modal-footer"> \
+          <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
+          <button class="btn btn-primary" data-bind="click:save_model_changes" data-dismiss="modal">Save Changes</button> \
+          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
+        </div> \
+      </div> \
+    </div> \
   </div> \
 </div> \
 '
