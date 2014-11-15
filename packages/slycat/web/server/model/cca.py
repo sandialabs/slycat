@@ -9,6 +9,7 @@ import cherrypy
 import datetime
 import numpy
 import slycat.hdf5
+import slycat.web.server
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import threading
@@ -41,12 +42,12 @@ def compute(mid):
 
       X = numpy.empty((row_count, len(input_columns)))
       for j, input in enumerate(input_columns):
-        update(database, model, progress=mix(0.0, 0.25, float(j) / float(len(input_columns))))
+        slycat.web.server.update_model(database, model, progress=mix(0.0, 0.25, float(j) / float(len(input_columns))))
         X[:,j] = array.get_data(input)[...]
 
       Y = numpy.empty((row_count, len(output_columns)))
       for j, output in enumerate(output_columns):
-        update(database, model, progress=mix(0.25, 0.50, float(j) / float(len(output_columns))))
+        slycat.web.server.update_model(database, model, progress=mix(0.25, 0.50, float(j) / float(len(output_columns))))
         Y[:,j] = array.get_data(output)[...]
 
     # Remove rows containing NaNs ...
@@ -56,11 +57,11 @@ def compute(mid):
     Y = Y[good]
 
     # Compute the CCA ...
-    update(database, model, message="Computing CCA.")
+    slycat.web.server.update_model(database, model, message="Computing CCA.")
     x, y, x_loadings, y_loadings, r, wilks = cca(X, Y, scale_inputs=scale_inputs)
-    update(database, model, progress=0.75)
+    slycat.web.server.update_model(database, model, progress=0.75)
 
-    update(database, model, message="Storing results.")
+    slycat.web.server.update_model(database, model, message="Storing results.")
     component_count = x.shape[1]
     sample_count = x.shape[0]
 
@@ -74,18 +75,18 @@ def compute(mid):
     start_array(database, model, "canonical-variables", 0, [dict(name="input", type="float64"), dict(name="output", type="float64")], [dict(name="component", end=component_count), dict(name="sample", end=sample_count)])
     store_array_attribute(database, model, "canonical-variables", 0, 0, (slice(0, component_count), slice(0, sample_count)), x.T)
     store_array_attribute(database, model, "canonical-variables", 0, 1, (slice(0, component_count), slice(0, sample_count)), y.T)
-    update(database, model, progress=0.80)
+    slycat.web.server.update_model(database, model, progress=0.80)
 
     # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
     start_arrayset(database, model, "input-structure-correlation")
     start_array(database, model, "input-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="input", end=len(input_columns))])
     store_array_attribute(database, model, "input-structure-correlation", 0, 0, (slice(0, component_count), slice(0, len(input_columns))), x_loadings.T)
-    update(database, model, progress=0.85)
+    slycat.web.server.update_model(database, model, progress=0.85)
 
     start_arrayset(database, model, "output-structure-correlation")
     start_array(database, model, "output-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="output", end=len(output_columns))])
     store_array_attribute(database, model, "output-structure-correlation", 0, 0, (slice(0, component_count), slice(0, len(output_columns))), y_loadings.T)
-    update(database, model, progress=0.90)
+    slycat.web.server.update_model(database, model, progress=0.90)
 
     # Store statistics as a vector of component r2/p attributes
     start_arrayset(database, model, "cca-statistics")
@@ -93,7 +94,7 @@ def compute(mid):
     store_array_attribute(database, model, "cca-statistics", 0, 0, slice(0, component_count), r)
     store_array_attribute(database, model, "cca-statistics", 0, 1, slice(0, component_count), wilks)
 
-    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+    slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   except:
     cherrypy.log.error("%s" % traceback.format_exc())
