@@ -24,22 +24,6 @@
       component.version = ko.observable("");
       component.brand_image = server_root + "css/slycat-brand.png";
 
-      component.delete_model = function()
-      {
-        if(window.confirm("Delete " + component.model_name() + "? All data will be deleted immediately, and this cannot be undone."))
-        {
-          $.ajax(
-          {
-            type : "DELETE",
-            url : location.href,
-            success : function()
-            {
-              window.location.href = component.project_url;
-            }
-          });
-        }
-      }
-
       component.save_model_changes = function()
       {
         component.model_name(component.new_model_name());
@@ -54,7 +38,7 @@
         $.ajax(
         {
           type : "PUT",
-          url : location.href,
+          url : server_root + "models/" + params.model_id,
           contentType : "application/json",
           data : $.toJSON(model),
           processData : false,
@@ -63,6 +47,22 @@
             window.alert("Error updating model: " + reason_phrase);
           }
         });
+      }
+
+      component.delete_model = function()
+      {
+        if(window.confirm("Delete " + component.model_name() + "? All data will be deleted immediately, and this cannot be undone."))
+        {
+          $.ajax(
+          {
+            type : "DELETE",
+            url : server_root + "models/" + params.model_id,
+            success : function()
+            {
+              window.location.href = server_root + "projects/" + params.project_id;
+            }
+          });
+        }
       }
 
       component.open_documentation = function()
@@ -83,17 +83,6 @@
         });
       }
 
-      // Get information about the current server version.
-      $.ajax(
-      {
-        type : "GET",
-        url : server_root + "configuration/version",
-        success : function(version)
-        {
-          component.version("Version " + version.version + ", commit " + version.commit);
-        }
-      });
-
       // Get information about the currently-logged-in user.
       $.ajax(
       {
@@ -106,6 +95,17 @@
         }
       });
 
+      // Get information about the current server version.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/version",
+        success : function(version)
+        {
+          component.version("Version " + version.version + ", commit " + version.commit);
+        }
+      });
+
 /*
       // Mark this model as closed, so it doesn't show-up in the header anymore.
       $.ajax(
@@ -114,7 +114,7 @@
         data : $.toJSON({ "state" : "closed" }),
         processData : false,
         type : "PUT",
-        url : location.href,
+        url : server_root + "models/" + params.model_id,
       });
 */
 
