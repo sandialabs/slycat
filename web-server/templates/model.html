@@ -12,11 +12,11 @@ rights in this software.
     <link id="slycat-server-root" href="{{slycat-server-root}}">
     <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
     {{#slycat-plugin-css-bundles}}
-    <link rel="stylesheet" href="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/css">
+      <link rel="stylesheet" href="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/css">
     {{/slycat-plugin-css-bundles}}
     <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
     {{#slycat-plugin-js-bundles}}
-    <script src="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/javascript"></script>
+      <script src="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/javascript"></script>
     {{/slycat-plugin-js-bundles}}
     <title>{{slycat-model.name}} - Slycat Model</title>
   </head>
@@ -24,11 +24,9 @@ rights in this software.
   <body>
     <slycat-header params="model_name:'{{slycat-model.name}}', model_description:'{{slycat-model.description}}', project_name:'{{slycat-project.name}}', project_id:'{{slycat-project._id}}'"></slycat-header>
     <div class="slycat-model-content">
-      <div class="container-fluid">
-        {{{slycat-marking-html}}}
-        {{{slycat-plugin-html}}}
-        {{{slycat-marking-html}}}
-      </div>
+      {{{slycat-marking-html}}}
+      {{{slycat-plugin-html}}}
+      {{{slycat-marking-html}}}
     </div>
   </body>
 </html>

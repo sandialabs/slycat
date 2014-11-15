@@ -107,6 +107,18 @@
       });
 
 /*
+      // Mark this model as closed, so it doesn't show-up in the header anymore.
+      $.ajax(
+      {
+        contentType : "application/json",
+        data : $.toJSON({ "state" : "closed" }),
+        processData : false,
+        type : "PUT",
+        url : location.href,
+      });
+*/
+
+/*
       $('#workers-close').click(function()
       {
         $('#workers-close').slideUp();

@@ -327,19 +327,14 @@ def get_model(mid, **kwargs):
     with get_model.bundle_lock:
       get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
       [
-        "css/smoothness/jquery-ui-1.10.4.custom.min.css",
-        "css/jquery.qtip.min.css",
         "css/namespaced-bootstrap.css",
         "css/slycat.css",
       ])
       get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
       [
         "js/jquery-2.1.1.min.js",
-        "js/jquery-migrate-1.2.1.js",
         "js/jquery.json-2.4.min.js",
         "js/jquery-ui-1.10.4.custom.min.js",
-        "js/jquery.knob.js",
-        "js/jquery.qtip.min.js",
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",
