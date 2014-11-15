@@ -4,36 +4,95 @@
   {
     viewModel: function(params)
     {
+      $(function () { $('[data-toggle="popover"]').popover() })
+
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var current_revision = null;
-      var view_model = this;
+      var component = this;
 
-      view_model.projects_url = server_root + "projects";
-      view_model.logo_url = server_root + "css/slycat-small.png";
-      view_model.user = {uid : ko.observable(""), name : ko.observable("")};
+      component.projects_url = server_root + "projects";
+      component.project_name = params.project_name;
+      component.project_url = server_root + "projects/" + params.project_id;
+      component.model_name = ko.observable(params.model_name);
+      component.model_description = ko.observable(params.model_description);
+      component.new_model_name = ko.observable(params.model_name);
+      component.new_model_description = ko.observable(params.model_description);
+      component.new_name = ko.observable("");
+      component.new_description = ko.observable("");
+      component.logo_url = server_root + "css/slycat-small.png";
+      component.user = {uid : ko.observable(""), name : ko.observable("")};
+      component.version = ko.observable("");
+      component.brand_image = server_root + "css/slycat-brand.png";
 
-      view_model.show_about = function()
+      component.delete_model = function()
       {
-        $("#about-slycat-dialog").dialog("open");
+        if(window.confirm("Delete " + component.model_name() + "? All data will be deleted immediately, and this cannot be undone."))
+        {
+          $.ajax(
+          {
+            type : "DELETE",
+            url : location.href,
+            success : function()
+            {
+              window.location.href = component.project_url;
+            }
+          });
+        }
+      }
+
+      component.save_model_changes = function()
+      {
+        component.model_name(component.new_model_name());
+        component.model_description(component.new_model_description());
+
+        var model =
+        {
+          "name" : component.new_model_name(),
+          "description" : component.new_model_description(),
+        };
+
         $.ajax(
         {
-          type : "GET",
-          url : server_root + "configuration/version",
-          success : function(version)
+          type : "PUT",
+          url : location.href,
+          contentType : "application/json",
+          data : $.toJSON(model),
+          processData : false,
+          error : function(request, status, reason_phrase)
           {
-            $("#about-slycat-version").html("Slycat version " + version.version + ", commit " + version.commit);
+            window.alert("Error updating model: " + reason_phrase);
           }
         });
+      }
+
+      component.open_documentation = function()
+      {
+        window.open("http://slycat.readthedocs.org");
+      }
+
+      component.support_request = function()
+      {
         $.ajax(
         {
           type : "GET",
           url : server_root + "configuration/support-email",
           success : function(email)
           {
-            $("#about-slycat-help").html("Request help at <a href='mailto:" + email.address + "?subject=" + email.subject + "'>" + email.address + "</a>");
+            window.location.href = "mailto:" + email.address + "?subject=" + email.subject;
           }
         });
       }
+
+      // Get information about the current server version.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/version",
+        success : function(version)
+        {
+          component.version("Version " + version.version + ", commit " + version.commit);
+        }
+      });
 
       // Get information about the currently-logged-in user.
       $.ajax(
@@ -42,22 +101,12 @@
         url : server_root + "users/-",
         success : function(user)
         {
-          view_model.user.uid(user.uid);
-          view_model.user.name(user.name);
+          component.user.uid(user.uid);
+          component.user.name(user.name);
         }
       });
 
-      $('#about-slycat-dialog').dialog({
-        modal: true,
-        autoOpen: false,
-        minWidth: 500,
-        buttons: {
-          'Close': function() {
-            $(this).dialog('close');
-          },
-        },
-      });
-
+/*
       $('#workers-close').click(function()
       {
         $('#workers-close').slideUp();
@@ -261,33 +310,88 @@
       }
 
       update();
+*/
     },
-    template:
-      '<div id="workers"> \
-        <div id="workers-close" style="display: none;">Close</div> \
-        <div id="workers-container" class="workersCompact"> \
-          <div id="workersWrapper"></div> \
+    template: ' \
+<div class="bootstrap-styles"> \
+  <nav class="navbar navbar-default" role="navigation"> \
+    <div class="container"> \
+      <div class="navbar-header"> \
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-header-content"> \
+          <span class="sr-only">Toggle navigation</span> \
+          <span class="icon-bar"></span> \
+          <span class="icon-bar"></span> \
+          <span class="icon-bar"></span> \
+        </button> \
+        <a class="navbar-brand" data-bind="attr:{href:projects_url}">Slycat</a> \
+      </div> \
+      <div class="collapse navbar-collapse" id="slycat-header-content"> \
+        <ol class="breadcrumb navbar-left"> \
+          <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
+          <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
+          <li class="active"><a data-toggle="popover" data-placement="bottom" data-content="Description." data-bind="text:model_name"></a></li> \
+        </ol> \
+        <ul class="nav navbar-nav navbar-right"> \
+          <li><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
+          <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
+          <li class="dropdown"> \
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help <span class="caret"></span></a> \
+            <ul class="dropdown-menu" role="menu"> \
+              <li><a data-toggle="modal" data-target="#slycat-about">About Slycat</a></li> \
+              <li><a data-bind="click:support_request">Support Request</a></li> \
+              <li><a data-bind="click:open_documentation">Documentation</a></li> \
+            </ul> \
+          </li> \
+        </ul> \
+      </div> \
+    </div> \
+  </nav> \
+  <div class="modal fade" id="slycat-about"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-body"> \
+          <div class="jumbotron"> \
+            <img data-bind="attr:{src:brand_image}"/> \
+            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
+          </div> \
+          <p data-bind="text:version"></p> \
+          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p> \
+        </div> \
+        <div class="modal-footer"> \
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
         </div> \
       </div> \
-      <div id="header"> \
-        <div class="width-wrapper"> \
-          <a data-bind="attr: {href:projects_url}" id="title-link"> \
-            <img id="logo" data-bind="attr: {src:logo_url}" title="A very sly cat." /> \
-            <h1 id="title">Slycat <span id="version"></span></h1> \
-          </a> \
-          <ul id="user-actions"> \
-            <li id="login"><span id="login-status" class="session"><span data-bind="text: user.name"></span> (<span data-bind="text: user.uid"></span>)</span></li> \
-            <li data-bind="click: show_about"> About Slycat </li> \
-          </ul> \
+    </div> \
+  </div> \
+  <div class="modal fade" id="slycat-edit-model"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-header"> \
+          <h3 class="modal-title">Edit Model</h3> \
         </div> \
-        <div id="about-slycat-dialog" class="dialog" title="About Slycat" style="display: none;"> \
-          <p><h3>Slycat</h3></p> \
-          <p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
-          <p>The documentation is <a href="http://slycat.readthedocs.org/en/latest">here.</a></p> \
-          <p id="about-slycat-help"></p> \
-          <p id="about-slycat-version"></p> \
+        <div class="modal-body"> \
+          <form role="form"> \
+            <div class="form-group"> \
+              <label for="slycat-model-name">Name</label> \
+              <input id="slycat-model-name" class="form-control" type="text" data-bind="value:new_model_name"></input> \
+            </div> \
+            <div class="form-group"> \
+              <label for="slycat-model-description">Description</label> \
+              <textarea id="slycat-model-description" class="form-control" rows="3" data-bind="value:new_model_description"></textarea> \
+            </div> \
+          </form> \
         </div> \
-      </div>'
+        <div class="modal-footer"> \
+          <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
+          <button class="btn btn-primary" data-bind="click:save_model_changes" data-dismiss="modal">Save Changes</button> \
+          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
+        </div> \
+      </div> \
+    </div> \
+  </div> \
+</div> \
+'
+
   });
 
 }());

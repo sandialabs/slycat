@@ -8,11 +8,19 @@
     <table id="matrix-b"></table>
   </div>
   <div class="ui-layout-east">
-    <ul>
-      <li><button id="product">Matrix Product</button></li>
-      <li><button id="hadamard-product">Hadamard Product</button></li>
-      <li><button id="kronecker-product">Kronecker Product</button></li>
-    </ul>
+    <div class="bootstrap-styles">
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-default" id="product">
+          <input type="radio" name="options" autocomplete="off">Matrix Product
+        </label>
+        <label class="btn btn-default" id="hadamard-product">
+          <input type="radio" name="options" autocomplete="off">Hadamard Product
+        </label>
+        <label class="btn btn-default" id="kronecker-product">
+          <input type="radio" name="options" autocomplete="off">Kronecker Product
+        </label>
+      </div>
+    </div>
     <table id="matrix-product"></table>
   </div>
 </div>

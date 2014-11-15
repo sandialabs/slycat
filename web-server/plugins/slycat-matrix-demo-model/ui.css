@@ -4,20 +4,3 @@
   font-size: 120%;
 }
 
-ul
-{
-  list-style: none;
-  padding: 0;
-}
-
-li
-{
-  float: left;
-  margin: 0;
-  padding: 0;
-}
-
-table
-{
-  clear: both;
-}
