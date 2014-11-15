@@ -4,8 +4,6 @@
   {
     viewModel: function(params)
     {
-      $(function () { $('[data-toggle="popover"]').popover() })
-
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var current_revision = null;
       var component = this;
@@ -341,7 +339,7 @@
         <ol class="breadcrumb navbar-left"> \
           <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
           <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
-          <li class="active"><a data-toggle="popover" data-placement="bottom" data-content="Description." data-bind="text:model_name"></a></li> \
+          <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model_description}}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-right"> \
           <li><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \

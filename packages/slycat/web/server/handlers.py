@@ -339,6 +339,7 @@ def get_model(mid, **kwargs):
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",
+        "js/knockstrap.js",
         "js/slycat-browser.js",
         "js/slycat-header.js",
         "js/slycat-model-main.js",
