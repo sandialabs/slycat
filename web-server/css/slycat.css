@@ -44,6 +44,11 @@ body
   color: rgb(119, 119, 119);
 }
 
+.bootstrap-styles .modal .jumbotron
+{
+  padding: 48px;
+}
+
 .slycat-model-content
 {
   background-color: #D2D1D0;

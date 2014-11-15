@@ -21,6 +21,7 @@
       view_model.logo_url = server_root + "css/slycat-small.png";
       view_model.user = {uid : ko.observable(""), name : ko.observable("")};
       view_model.version = ko.observable("");
+      view_model.brand_image = server_root + "css/slycat-brand.png";
 
       $.ajax(
       {
@@ -31,21 +32,6 @@
           view_model.version("Version " + version.version + ", commit " + version.commit);
         }
       });
-
-      view_model.show_about = function()
-      {
-        $('#slycat-about').dialog({
-          modal: true,
-          autoOpen: false,
-          minWidth: 500,
-          buttons: {
-            'Close': function() {
-              $(this).dialog('close');
-            },
-          },
-        });
-        $("#slycat-about").dialog("open");
-      }
 
       view_model.open_documentation = function()
       {
@@ -308,7 +294,7 @@
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help <span class="caret"></span></a> \
             <ul class="dropdown-menu" role="menu"> \
-              <li><a data-bind="click:show_about">About Slycat</a></li> \
+              <li><a data-toggle="modal" data-target="#slycat-about">About Slycat</a></li> \
               <li><a data-bind="click:support_request">Support Request</a></li> \
               <li><a data-bind="click:open_documentation">Documentation</a></li> \
             </ul> \
@@ -317,10 +303,22 @@
       </div> \
     </div> \
   </nav> \
-  <div id="slycat-about" class="dialog" title="About Slycat" style="display: none;"> \
-    <h3>Slycat</h3> \
-    <p>Slycat is a web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
-    <p data-bind="text: version"></p> \
+  <div class="modal fade" id="slycat-about"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-body"> \
+          <div class="jumbotron"> \
+            <img data-bind="attr:{src:brand_image}"/> \
+            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
+          </div> \
+          <p data-bind="text:version"></p> \
+          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p> \
+        </div> \
+        <div class="modal-footer"> \
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
+        </div> \
+      </div> \
+    </div> \
   </div> \
   <div id="slycat-edit-model" class="dialog" title="Edit Model" style="display: none;"> \
     <form> \
