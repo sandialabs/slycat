@@ -14,6 +14,10 @@ var category_columns = null;
 var bookmarker = new bookmark_manager(server_root, project_id, model_id);
 var bookmark = null;
 
+var clusters = null; // This is just the list of cluster names
+var cluster_index = null; // This is the index of the currently selected cluster
+
+
 var table_metadata = null;
 var table_statistics = null;
 var indices = null;
@@ -108,6 +112,24 @@ function model_loaded()
         "state" : "closed"
       }),
       processData : false
+    });
+
+    // Load list of clusters.
+    $.ajax({
+      url : server_root + "models/" + model_id + "/files/clusters",
+      contentType : "application/json",
+      success: function(result)
+      {
+        clusters = result;
+        // clusters_data = new Array(clusters.length);
+        // waveforms_data = new Array(clusters.length);
+        // waveforms_metadata = new Array(clusters.length);
+        // setup_cluster();
+        // setup_widgets();
+        // setup_waveforms();
+        setup_controls();
+      },
+      error: artifact_missing
     });
 
     // Load data table metadata.
@@ -263,6 +285,8 @@ function metadata_loaded()
     {
       auto_scale = bookmark["auto-scale"];
     }
+
+    cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
     // Set state of selected and hidden simulations
     selected_simulations = [];
@@ -628,6 +652,7 @@ function setup_controls()
   if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
+    && (cluster_index != null) && (clusters != null)
     )
   {
     controls_ready = true;
@@ -663,6 +688,7 @@ function setup_controls()
       model_name: model_name,
       aid : "data-table",
       metadata: table_metadata,
+      clusters : clusters,
       x_variables: axes_variables,
       y_variables: axes_variables,
       image_variables: image_columns,
@@ -670,6 +696,7 @@ function setup_controls()
       rating_variables : rating_columns,
       category_variables : category_columns,
       selection : selected_simulations,
+      cluster_index : cluster_index,
       "x-variable" : x_index,
       "y-variable" : y_index,
       "image-variable" : images_index,
@@ -749,6 +776,12 @@ function setup_controls()
           },
         });
       }
+    });
+
+    // Log changes to the cluster variable ...
+    $("#controls").bind("cluster-selection-changed", function(event, variable)
+    {
+      cluster_selection_changed(variable);
     });
 
     // Log changes to the x variable ...
@@ -975,6 +1008,17 @@ function selected_simulations_changed(selection)
   });
   bookmarker.updateState( {"simulation-selection" : selection} );
   selected_simulations = selection;
+}
+
+function cluster_selection_changed(variable)
+{
+  $.ajax(
+  {
+    type : "POST",
+    url : server_root + "events/models/" + model_id + "/select/cluster/" + variable
+  });
+  bookmarker.updateState( {"cluster-index" : variable} );
+  cluster_index = variable;
 }
 
 function x_selection_changed(variable)

@@ -78,7 +78,8 @@ def register_slycat_plugin(context):
     "parameter-controls.js",
     "parameter-image-scatterplot.js",
     "parameter-image-table.js",
-    #For development and debugging, loading ui.js dynamically inside model.
+    #For development and debugging, loading some js dynamically inside model.
+    #"parameter-image-dendrogram.js",
     #"ui.js",
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
@@ -118,9 +119,9 @@ def register_slycat_plugin(context):
     "stripe1.png",
     "stripe2.png",
     "pin.png",
-    #For development and debugging, loading ui.js dynamically inside model.
+    #For development and debugging, loading some js and css dynamically inside model.
+    "parameter-image-dendrogram.js",
     "ui.js",
-    #For development and debugging, loading ui.css dynamically inside model.
     "ui.css",
   ]
   for image in images:
