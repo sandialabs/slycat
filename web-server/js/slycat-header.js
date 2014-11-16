@@ -185,7 +185,7 @@
               <!-- ko foreach: finished_models --> \
                 <li> \
                   <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
-                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false"><span class="glyphicon glyphicon-ok"></span></button> \
+                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{\'btn-success\':$data.result()===\'succeeded\',\'btn-danger\':$data.result()!==\'succeeded\'}"><span class="glyphicon glyphicon-ok"></span></button> \
                     <span data-bind="text:name"></span> \
                   </a> \
                 </li> \
@@ -196,7 +196,7 @@
                   <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
                     <span data-bind="text:name"></span> \
                   </a> \
-                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:$data.progress() * 100.0}"> \
+                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:$data.progress() * 100.0,type:$data.state()===\'running\' ? \'success\' : null}"> \
                 </li> \
               <!-- /ko --> \
             </ul> \
