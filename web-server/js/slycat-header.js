@@ -144,6 +144,10 @@
             {
               current_revision = results.revision;
               ko.mapping.fromJS(results.models, component.open_models);
+              component.open_models.sort(function(left, right)
+              {
+                return left.created() == right.created() ? 0 : (left.created() < right.created() ? -1 : 1);
+              });
             }
 
             // Restart the request immediately.
