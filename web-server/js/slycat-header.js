@@ -22,7 +22,28 @@
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.observable("");
       component.brand_image = server_root + "css/slycat-brand.png";
-      component.open_models = ko.mapping.fromJS([]);
+      var open_models_mapping =
+      {
+        key: function(model)
+        {
+          return ko.utils.unwrapObservable(model._id);
+        },
+        create: function(options)
+        {
+          var result = ko.mapping.fromJS(options.data);
+          result.progress_percent = ko.pureComputed(function()
+          {
+            return result.progress() * 100;
+          });
+          result.progress_type = ko.pureComputed(function()
+          {
+            return result.state() === "running" ? "success" : null;
+          });
+          console.log("create open model", result);
+          return result;
+        },
+      }
+      component.open_models = ko.mapping.fromJS([], open_models_mapping);
       component.finished_models = component.open_models.filter(function(model)
       {
         return model.state() == "finished";
@@ -143,11 +164,11 @@
             if(results)
             {
               current_revision = results.revision;
-              ko.mapping.fromJS(results.models, component.open_models);
-              component.open_models.sort(function(left, right)
+              results.models.sort(function(left, right)
               {
-                return left.created() == right.created() ? 0 : (left.created() < right.created() ? -1 : 1);
+                return left.created == right.created ? 0 : (left.created < right.created ? -1 : 1);
               });
+              ko.mapping.fromJS(results.models, component.open_models);
             }
 
             // Restart the request immediately.
@@ -200,7 +221,7 @@
                   <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
                     <span data-bind="text:name"></span> \
                   </a> \
-                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:$data.progress() * 100.0,type:$data.state()===\'running\' ? \'success\' : null}"> \
+                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}"> \
                 </li> \
               <!-- /ko --> \
             </ul> \

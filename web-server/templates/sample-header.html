@@ -2,27 +2,70 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="../css/namespaced-bootstrap.css">
-    <style>
-      .foo
-      {
-        width: 100px;
-        height: 100px;
-        background-color: yellow;
-      }
-
-      .bar-one
-      {
-        border: 2px solid red;
-      }
-    </style>
+    <script type="text/javascript" src="../js/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="../js/knockout-3.2.0.js"></script>
+    <script type="text/javascript" src="../js/knockout.mapping.js"></script>
+    <script type="text/javascript" src="../js/knockstrap.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.js"></script>
   </head>
   <body class="bootstrap-styles">
-    <div class="foo" data-bind="css:{'bar-one':true}">
+    <div class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">Menu</a>
+      <ul class="dropdown-menu">
+        <!-- ko foreach: models -->
+          <li>
+            <a data-bind="attr:{href:$parent.model_root + $data._id()}">
+              <button type="button" class="btn btn-default btn-xs">&times;</button>
+              <span data-bind="text:_id"></span>
+            </a>
+          </li>
+        <!-- /ko -->
+        <li class="divider"></li>
+        <!-- ko foreach: models -->
+        <li>
+          <a>
+            <span data-bind="text:_id"></span>
+          </a>
+          <div style="height:10px; margin:0 10px" data-bind="progress:{value:ppercent,type:ptype}"></div>
+        </li>
+        <!-- /ko -->
+      </ul>
     </div>
-    <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span></button>
+    <script type="text/javascript">
+      var mapping =
+      {
+        key : function(item)
+        {
+          return ko.utils.unwrapObservable(item._id);
+        },
+        create : function(options)
+        {
+          var result = ko.mapping.fromJS(options.data);
+          result.ppercent = ko.pureComputed(function()
+          {
+            return result.progress() * 100;
+          });
+          result.ptype = ko.pureComputed(function()
+          {
+            return result.progress() < 0.3 ? "danger" : (result.progress() < 0.7 ? "warning" : "success");
+          });
+          return result;
+        }
+      };
+
+      var component = {};
+      component.model_root = "/models";
+      component.models = ko.mapping.fromJS([],mapping);
+      ko.applyBindings(component);
+
+      function update()
+      {
+        var models = [];
+        for(var i = 0; i!= 8; ++i)
+          models.push({_id:i, progress:Math.random()});
+        ko.mapping.fromJS(models, component.models);
+      }
+      window.setInterval(update, 1000);
+    </script>
   </body>
-  <script type="text/javascript">
-    ko.applyBindings();
-  </script>
 </html>
