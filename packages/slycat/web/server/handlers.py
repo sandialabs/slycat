@@ -348,6 +348,7 @@ def get_model(mid, **kwargs):
       slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
       slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
       slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
+      slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)

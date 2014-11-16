@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="../css/namespaced-bootstrap.css">
     <style>
       .foo
       {
@@ -16,9 +17,10 @@
     </style>
     <script type="text/javascript" src="../js/knockout-3.2.0.js"></script>
   </head>
-  <body>
+  <body class="bootstrap-styles">
     <div class="foo" data-bind="css:{'bar-one':true}">
     </div>
+    <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span></button>
   </body>
   <script type="text/javascript">
     ko.applyBindings();
