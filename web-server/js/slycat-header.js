@@ -23,13 +23,13 @@
       component.version = ko.observable("");
       component.brand_image = server_root + "css/slycat-brand.png";
       component.open_models = ko.mapping.fromJS([]);
-      component.finished_model_count = ko.pureComputed(function()
+      component.finished_models = component.open_models.filter(function(model)
       {
-        return component.open_models().length;
+        return model.state() == "finished";
       });
-      component.running_model_count = ko.pureComputed(function()
+      component.running_models = component.open_models.filter(function(model)
       {
-        return component.open_models().length;
+        return model.state() != "finished";
       });
 
       component.close_model = function(model)
@@ -178,24 +178,25 @@
           <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
           <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model_description}}"></a></li> \
         </ol> \
-        <ul class="nav navbar-nav navbar-left"> \
+        <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \
-            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_model_count"></span> / <span data-bind="text:finished_model_count"></span></span><span class="caret"></span></a> \
+            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
             <ul class="dropdown-menu" role="menu"> \
-              <!-- ko foreach: open_models --> \
+              <!-- ko foreach: finished_models --> \
                 <li> \
                   <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
-                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model"><span class="glyphicon glyphicon-ok"></span></button> \
+                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false"><span class="glyphicon glyphicon-ok"></span></button> \
                     <span data-bind="text:name"></span> \
                   </a> \
                 </li> \
               <!-- /ko --> \
-              <li class="divider"></li> \
-              <!-- ko foreach: open_models --> \
+              <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li> \
+              <!-- ko foreach: running_models --> \
                 <li> \
                   <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
                     <span data-bind="text:name"></span> \
                   </a> \
+                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:$data.progress() * 100.0}"> \
                 </li> \
               <!-- /ko --> \
             </ul> \
