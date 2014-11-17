@@ -449,7 +449,7 @@ def put_model(mid):
 
   save_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished"]:
+    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished", "marking"]:
       if value != model.get(key):
         model[key] = value
         save_model = True
@@ -1303,7 +1303,7 @@ def post_events(event):
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_markings():
-  return slycat.web.server.plugin.manager.markings
+  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items()]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_model_wizards():

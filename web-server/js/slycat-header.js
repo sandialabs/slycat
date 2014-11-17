@@ -14,10 +14,10 @@
       component.project_url = server_root + "projects/" + params.project_id;
       component.model_name = ko.observable(params.model_name);
       component.model_description = ko.observable(params.model_description);
+      component.model_marking = ko.observable(params.model_marking);
       component.new_model_name = ko.observable(params.model_name);
       component.new_model_description = ko.observable(params.model_description);
-      component.new_name = ko.observable("");
-      component.new_description = ko.observable("");
+      component.new_model_marking = ko.observable(params.model_marking);
       component.logo_url = server_root + "css/slycat-small.png";
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.observable("");
@@ -39,7 +39,6 @@
           {
             return result.state() === "running" ? "success" : null;
           });
-          console.log("create open model", result);
           return result;
         },
       }
@@ -52,6 +51,7 @@
       {
         return model.state() != "finished";
       });
+      component.markings = ko.mapping.fromJS([]);
 
       component.close_model = function(model)
       {
@@ -67,13 +67,11 @@
 
       component.save_model_changes = function()
       {
-        component.model_name(component.new_model_name());
-        component.model_description(component.new_model_description());
-
         var model =
         {
           "name" : component.new_model_name(),
           "description" : component.new_model_description(),
+          "marking" : component.new_model_marking(),
         };
 
         $.ajax(
@@ -83,6 +81,21 @@
           contentType : "application/json",
           data : $.toJSON(model),
           processData : false,
+          success : function()
+          {
+            if(component.new_model_marking() !== component.model_marking())
+            {
+              // Since marking changes have the potential to alter the page
+              // structure in arbitrary ways, just reload.
+              document.location.reload(true);
+            }
+            else
+            {
+              component.model_name(component.new_model_name());
+              component.model_description(component.new_model_description());
+              component.model_marking(component.new_model_marking());
+            }
+          },
           error : function(request, status, reason_phrase)
           {
             window.alert("Error updating model: " + reason_phrase);
@@ -147,6 +160,17 @@
         }
       });
 
+      // Get the set of allowed server markings.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/markings",
+        success : function(markings)
+        {
+          ko.mapping.fromJS(markings, component.markings);
+        }
+      });
+
       // Get information about open models.
       var current_revision = null;
       function get_models()
@@ -186,7 +210,7 @@
     },
     template: ' \
 <div class="bootstrap-styles"> \
-  <nav class="navbar navbar-default" role="navigation"> \
+  <nav class="navbar navbar-default"> \
     <div class="container"> \
       <div class="navbar-header"> \
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-header-content"> \
@@ -206,7 +230,7 @@
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
-            <ul class="dropdown-menu" role="menu"> \
+            <ul class="dropdown-menu"> \
               <!-- ko foreach: finished_models --> \
                 <li> \
                   <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
@@ -231,8 +255,8 @@
           <li><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help <span class="caret"></span></a> \
-            <ul class="dropdown-menu" role="menu"> \
+            <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
+            <ul class="dropdown-menu"> \
               <li><a data-toggle="modal" data-target="#slycat-about">About Slycat</a></li> \
               <li><a data-bind="click:support_request">Support Request</a></li> \
               <li><a data-bind="click:open_documentation">Documentation</a></li> \
@@ -266,14 +290,24 @@
           <h3 class="modal-title">Edit Model</h3> \
         </div> \
         <div class="modal-body"> \
-          <form role="form"> \
+          <form class="form-horizontal"> \
             <div class="form-group"> \
-              <label for="slycat-model-name">Name</label> \
-              <input id="slycat-model-name" class="form-control" type="text" data-bind="value:new_model_name"></input> \
+              <label for="slycat-model-name" class="col-sm-2 control-label">Name</label> \
+              <div class="col-sm-10"> \
+                <input id="slycat-model-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_model_name"></input> \
+              </div> \
             </div> \
             <div class="form-group"> \
-              <label for="slycat-model-description">Description</label> \
-              <textarea id="slycat-model-description" class="form-control" rows="3" data-bind="value:new_model_description"></textarea> \
+              <label for="slycat-model-description" class="col-sm-2 control-label">Description</label> \
+              <div class="col-sm-10"> \
+                <textarea id="slycat-model-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_model_description"></textarea> \
+              </div> \
+            </div> \
+            <div class="form-group"> \
+              <label for="slycat-model-marking" class="col-sm-2 control-label">Marking</label> \
+              <div class="col-sm-10"> \
+                <select id="slycat-model-marking" class="form-control" data-bind="options:markings,optionsValue:\'type\',optionsText:\'label\',value:new_model_marking,valueAllowUnset:true"></select> \
+              </div> \
             </div> \
           </form> \
         </div> \
