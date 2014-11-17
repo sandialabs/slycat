@@ -36,7 +36,7 @@ parser.add_argument("--marking", default="", help="Marking type.  Default: %(def
 parser.add_argument("--model-description", default=None, help="New model description.  Defaults to a summary of the input parameters.")
 parser.add_argument("--model-name", default=None, help="New model name.  Defaults to the name of the input data directory.")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
-parser.add_argument("--project-name", default="HDF5-Timeseries", help="New or existing project name.  Default: %(default)s")
+parser.add_argument("--project-name", default="Timeseries Project", help="New or existing project name.  Default: %(default)s")
 arguments = parser.parse_args()
 
 if arguments.cluster_sample_count < 1:

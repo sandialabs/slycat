@@ -3,12 +3,9 @@ import slycat.web.client
 parser = slycat.web.client.option_parser()
 parser.add_argument("--name", default="World", help="Name.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
-parser.add_argument("--model-name", default=None, help="New model name.")
-parser.add_argument("--project-name", default="Hello World Project", help="New project name.  Default: %(default)s")
+parser.add_argument("--model-name", default="Sample Hello World Model", help="New model name.  Default: %(default)s")
+parser.add_argument("--project-name", default="Sample Hello World Project", help="New project name.  Default: %(default)s")
 arguments = parser.parse_args()
-
-if arguments.model_name is None:
-  arguments.model_name = "Hello, %s" % arguments.name
 
 connection = slycat.web.client.connect(arguments)
 

@@ -13,11 +13,11 @@ parser.add_argument("file", default="-", help="Input CSV file.  Use - for stdin.
 parser.add_argument("--input", default=[], nargs="+", help="Input column(s).")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
-parser.add_argument("--model-name", default="CSV-to-CCA", help="New model name.  Default: %(default)s")
+parser.add_argument("--model-name", default="CCA from CSV", help="New model name.  Default: %(default)s")
 parser.add_argument("--no-join", default=False, action="store_true", help="Don't wait for the model to finish.")
 parser.add_argument("--output", default=[], nargs="+", help="Output column(s).")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
-parser.add_argument("--project-name", default="CSV-to-CCA", help="New project name.  Default: %(default)s")
+parser.add_argument("--project-name", default="CCA from CSV", help="New project name.  Default: %(default)s")
 parser.add_argument("--scale-inputs", default=False, action="store_true", help="Enable input scaling.")
 arguments = parser.parse_args()
 
