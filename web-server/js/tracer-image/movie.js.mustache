@@ -65,6 +65,7 @@ Movie.prototype.build_open_button = function(container, plot) {
         self.agent_id = login.get_agent(plot.images.filter(function(x){return x;})[0]);
       }
       self.agent_id ? self.build_server_movie.call(self, plot) : login.show_prompt(plot.images.filter(function(uri){return uri;}).map(function(uri){return {uri: uri};}), function(){self.build_server_movie(plot)}, self);
+      plot.movie = self;
     })
     .on('mousedown', function() {
       d3.event.stopPropagation();
@@ -120,16 +121,19 @@ Movie.prototype.show = function() {
 
 Movie.prototype.resize = function(plot) {
   var self = this;
-  if (self.built && self.open) { // a) prevent it from breaking if called before movie built, b) unnecessary to update while hidden
-    var plot = $(plot.plot_ref + ' .scatterplot');
-    self.height = Number(plot.attr("height"));
-    self.width = Number(plot.attr("width"));
-    self.d3_movie
-      .attr("width", self.width + 1)
-      .attr("height", self.height + 1);
-    self.frame
-      .attr("width", self.width + 3)
-      .attr("height", self.height + 3);
+  if(self.video){
+    var scatter_plot = $(plot.plot_ref + ' .scatterplot');
+    var height = Number(scatter_plot.attr("height"));
+    var width = Number(scatter_plot.attr("width"));
+    self.foreign_object
+      .attr({
+        width: width - 56,
+        height : height
+      })
+    $(self.video.video)
+      .attr("width", width - 56)
+      .attr("height", height);
+    this.adjust_style_for_webkit(plot);
   }
 };
 
@@ -139,6 +143,7 @@ Movie.prototype.hide = function(plot) {
   $(plot.plot_ref + ' .scatterplot').show();
   $('svg .image-layer').show();
   $('.open-movie').show();
+  plot.movie = null;
 };
 
 Movie.prototype.build_server_movie = function(plot) {
@@ -286,13 +291,15 @@ Movie.prototype.build_movie_player = function(plot, image_index){
 
   this.build_close_button(plot, d3.select(plot.plot_ref + " .movie"));
 
-  this.video = this.video
+  this.foreign_object = this.video
     .append("foreignObject")
       .attr({
         width: width,
         height: height,
         x: 28
       })
+
+  this.video = this.foreign_object
     .append("xhtml:body")
       .style("background", "transparent")
     .append("xhtml:video")
@@ -326,6 +333,8 @@ Movie.prototype.build_movie_player = function(plot, image_index){
       self.setup_hooks.call(self, plot);
       self.build_controls.call(self, d3.select(plot.plot_ref + " .movie").append("g").attr("transform", "translate(0,30)"));
     })
+
+  this.adjust_style_for_webkit(plot);
 }
 
 Movie.prototype.get_status = function(image_index) {
@@ -376,3 +385,16 @@ Movie.prototype.setup_hooks = function(plot){
     update_events[Math.floor(d3.min([self.video.currentTime() * self.fps, update_events.length - 1]))](true);
   });
 } 
+
+if(navigator.userAgent.match("WebKit")){
+  Movie.prototype.adjust_style_for_webkit = function(plot){
+    var offset = $(plot.grid_ref).attr("transform").split(/[( ,)]/);
+    var left = Number(offset[1]) + 28;
+    var top = Number(offset[2]);
+    //WebKit has a bug with rendering video elements in an svg foreignObject:
+    $(this.video.video).attr("style", "position: relative; left: " + left + "px; top: " + top + "px;") 
+  }
+}
+else {
+  Movie.prototype.adjust_style_for_webkit = function(){}
+}

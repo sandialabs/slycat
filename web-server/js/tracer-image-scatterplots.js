@@ -358,6 +358,9 @@ $.widget("tracer_image.scatterplot", {
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
       self.group.attr("width", self.options.width);
+      if(this.options.scatterplot_obj.movie) {
+        model.movie.resize(self.options.scatterplot_obj);
+      }
     }
 
     if(self.updates["update_height"])
@@ -367,6 +370,9 @@ $.widget("tracer_image.scatterplot", {
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
       self.group.attr("height", self.options.height);
+      if(this.options.scatterplot_obj.movie) {
+        model.movie.resize(self.options.scatterplot_obj);
+      }
     }
 
     if(self.updates["update_indices"])
