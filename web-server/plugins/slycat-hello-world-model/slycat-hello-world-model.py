@@ -6,7 +6,8 @@ def register_slycat_plugin(context):
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def html(database, model):
-    return "<div style='margin:12px; text-align:center; font-weight: bold; font-size: 24px;'>Hello, World!</div>"
+    name = model["artifact:name"]
+    return "<div style='margin:12px; text-align:center; font-weight: bold; font-size: 24px;'>Hello, %s!</div>" % name
 
   context.register_model("hello-world", finish, html)
 
