@@ -6,6 +6,7 @@ from slycat.web.server.model import *
 
 import cherrypy
 import datetime
+import slycat.web.server
 import slycat.web.server.database.couchdb
 import threading
 import traceback

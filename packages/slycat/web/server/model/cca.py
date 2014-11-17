@@ -9,6 +9,7 @@ import cherrypy
 import datetime
 import numpy
 import slycat.hdf5
+import slycat.web.server
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import threading

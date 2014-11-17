@@ -21,3 +21,4 @@ web-client/csv_to_hdf5_*
 .*.swp
 ._*
 .apdisk
+.idea
