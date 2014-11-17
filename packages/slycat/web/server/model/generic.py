@@ -17,14 +17,14 @@ def compute(mid):
 
     # Do useful work here
 
-    update(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+    slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   except:
     cherrypy.log.error("%s" % traceback.format_exc())
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
-    update(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
+    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
 def finish(database, model):
   thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})
