@@ -88,7 +88,7 @@ class Manager(object):
     """Return a dict of dicts mapping custom model-creation wizards to models."""
     return self._model_wizards
 
-  def register_marking(self, type, label, html):
+  def register_marking(self, type, label, badge, page_before=None, page_after=None):
     """Register a new marking type.
 
     Parameters
@@ -97,15 +97,24 @@ class Manager(object):
       A unique identifier for the new marking type.
     label : string, required
       Human-readable string used to represent the marking in the user interface.
-    html : string, required
-      HTML representation used to display the marking.  The HTML should contain
-      everything needed to properly format the marking, including inline CSS
-      styles.
+    badge : string, required
+      HTML representation used to display the marking as a "badge".  The HTML
+      must contain everything needed to properly format the marking, including
+      inline CSS styles.
+    page_before : string, optional
+      HTML representation used to display the marking at the top of an HTML page.
+      If left unspecified, the badge representation will be used instead.
+    page_after : string, optional
+      HTML representation used to display the marking at the bottom of an HTML page.
+      If left unspecified, the badge representation will be used instead.
+
+    Note that the page_before and page_after markup need not be self-contained, i.e. they
+    may be used together to define a "container" that encloses the page markup.
     """
     if type in self._markings:
       raise Exception("Marking type '%s' has already been registered." % type)
 
-    self._markings[type] = {"label":label, "html":html}
+    self._markings[type] = {"label":label, "badge":badge, "page-before":page_before, "page-after": page_after}
     cherrypy.log.error("Registered marking '%s'." % type)
 
   def register_model(self, type, finish, html):

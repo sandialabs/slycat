@@ -122,7 +122,7 @@ def get_project(pid):
     models = sorted(models, key=lambda x: x["created"], reverse=True)
 
     for model in models:
-      model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
+      model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
     context = get_context()
     context.update(project)
@@ -394,9 +394,12 @@ def get_model(mid, **kwargs):
         return slycat.web.server.template.render("model-tracer-image.html", context)
 
     # New code for rendering plugin models:
+    marking = slycat.web.server.plugin.manager.markings[model["marking"]]
+
     context = {}
     context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-    context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
+    context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking["page-before"]
+    context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking["page-after"]
     context["slycat-model"] = model
     context["slycat-project"] = project
     context["slycat-css-bundle"] = get_model.css_bundle
