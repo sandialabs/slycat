@@ -163,10 +163,8 @@ Model.prototype.metadata_loaded = function() {
         grid_calls.push(plot.update_axis(plot.v_index, "v"));
       }
 
-      plot.images_index = model.image_columns[0];
-      if("images-selection" in layout.bookmark) {
-        plot.images_index = layout.bookmark["images-selection"];
-      }
+      plot.images_index = layout.bookmark["images-selection-" + plot.plot_id] || model.image_columns[0];
+
       table.setup();
       console.debug("GET models/id/arraysets/data-table/arrays/0/attrs -- ajax");
       grid_calls.push($.ajax({
