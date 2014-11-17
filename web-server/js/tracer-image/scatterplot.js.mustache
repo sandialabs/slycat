@@ -162,10 +162,11 @@ ScatterPlot.prototype.setup = function() {
     });*/
 
     // Changing the images variable updates the scatterplot ...
-    $("#table").bind("images-selection-changed", function(event, variable) {
+    $(self.plot_ref + " .scatterplot").bind("images-selection-changed", function(event, variable) {
       console.debug("changing the images var updates the scatter plot -- ajax");
+      self.images_index = variable;
       model.get_image_column(variable, function(result){
-          $(self.plot_ref + " .scatterplot").scatterplot("option", "images", result);
+          $(self.plot_ref + " .scatterplot").scatterplot("option", {images: result});
         }
       );
     });

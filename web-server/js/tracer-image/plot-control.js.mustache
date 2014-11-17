@@ -105,6 +105,11 @@ PlotControl.prototype.update_plot = function(variable) {
   }
   if(self.control_type == "images"){
     retrieve_func = model.get_image_column;
+    var old_callback = callback;
+    callback = function(result){
+      old_callback(result);
+      $(self.plot.plot_ref + " .scatterplot").trigger("images-selection-changed", variable);
+    }
   }
   retrieve_func.call(model, variable, callback);
 
