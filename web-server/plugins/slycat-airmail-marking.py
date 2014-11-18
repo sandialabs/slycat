@@ -8,9 +8,9 @@ def register_slycat_plugin(context):
     </div>
   </div>"""
 
-  page_begin = """<div style="background: repeating-linear-gradient(135deg, blue, blue 12.5%, white 12.5%, white 25%, red 25%, red 37.5%, white 37.5%, white 50%) top left fixed; background-size: 80px 80px; padding:5px;">"""
+  page_begin = """<div style="background: repeating-linear-gradient(135deg, blue, blue 12.5%, white 12.5%, white 25%, red 25%, red 37.5%, white 37.5%, white 50%) top left fixed; background-size: 80px 80px; padding:5px;"><div style="background: #f2f2f2">"""
 
-  page_end = """</div>"""
+  page_end = """</div></div>"""
 
   context.register_marking("airmail", "Airmail", badge, page_begin, page_end)
 
