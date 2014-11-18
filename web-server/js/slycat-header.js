@@ -53,7 +53,7 @@
       });
       component.markings = ko.mapping.fromJS([]);
 
-      component.close_model = function(model)
+      component.close_model_by_id = function(id)
       {
         $.ajax(
         {
@@ -61,8 +61,13 @@
           data : $.toJSON({ "state" : "closed" }),
           processData : false,
           type : "PUT",
-          url : server_root + "models/" + model._id(),
+          url : server_root + "models/" + id,
         });
+      }
+
+      component.close_model = function(model)
+      {
+        component.close_model_by_id(model._id());
       }
 
       component.save_model_changes = function()
@@ -136,6 +141,10 @@
           }
         });
       }
+
+      // If we're on a model page, close the model.
+      if(params.model_id)
+        component.close_model_by_id(params.model_id);
 
       // Get information about the currently-logged-in user.
       $.ajax(
