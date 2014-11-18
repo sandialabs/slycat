@@ -376,7 +376,7 @@ def get_model(mid, **kwargs):
       context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
       model_count = len(list(database.view("slycat/project-models", startkey=project["_id"], endkey=project["_id"])))
       context["new-model-name"] = "Model-%s" % (model_count + 1)
-      context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
+      context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
       if mtype == "timeseries":
         context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
