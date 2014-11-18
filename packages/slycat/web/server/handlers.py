@@ -342,8 +342,8 @@ def get_model(mid, **kwargs):
         "js/knockout-projections.js",
         "js/knockstrap.js",
         "js/slycat-browser.js",
-        "js/slycat-header.js",
-        "js/slycat-model-main.js",
+        "js/slycat-navbar.js",
+        "js/slycat-model.js",
       ])
       slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
       slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
@@ -411,7 +411,7 @@ def get_model(mid, **kwargs):
       if mtype in slycat.web.server.plugin.manager.model_bundles:
         context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
         context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
-    return slycat.web.server.template.render("model.html", context)
+    return slycat.web.server.template.render("slycat-model.html", context)
 get_model.css_bundle = None
 get_model.js_bundle = None
 get_model.bundle_lock = threading.Lock()

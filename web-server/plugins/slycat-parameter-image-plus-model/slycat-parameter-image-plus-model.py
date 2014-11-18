@@ -57,8 +57,8 @@ def register_slycat_plugin(context):
     # "js/knockout-3.2.0.js",
     # "js/knockout.mapping.js",
     # "js/slycat-browser.js",
-    # "js/slycat-header.js",
-    # "js/slycat-model-main.js",
+    # "js/slycat-navbar.js",
+    # "js/slycat-model.js",
     # End JS loaded by header
     "jquery.layout-latest.min.js", 
     "jquery.ba-bbq.min.js",

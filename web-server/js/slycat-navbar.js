@@ -1,6 +1,6 @@
 (function()
 {
-  ko.components.register("slycat-header",
+  ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
     {
@@ -222,7 +222,7 @@
   <nav class="navbar navbar-default"> \
     <div class="container"> \
       <div class="navbar-header"> \
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-header-content"> \
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-navbar-content"> \
           <span class="sr-only">Toggle navigation</span> \
           <span class="icon-bar"></span> \
           <span class="icon-bar"></span> \
@@ -230,7 +230,7 @@
         </button> \
         <a class="navbar-brand" data-bind="attr:{href:projects_url}">Slycat</a> \
       </div> \
-      <div class="collapse navbar-collapse" id="slycat-header-content"> \
+      <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
           <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
           <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \

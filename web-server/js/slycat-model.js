@@ -6,6 +6,6 @@ rights in this software.
 
 $(document).ready(function()
 {
-  // We have to do this or the slycat-header component won't be expanded.
+  // We have to do this or the slycat-navbar component won't be expanded.
   ko.applyBindings({});
 });
