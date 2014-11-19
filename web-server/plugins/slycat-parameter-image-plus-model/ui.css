@@ -425,3 +425,102 @@ rights in this software.
 #scatterplot canvas {
   z-index: -1;
 }
+
+/* dendrogram styles */
+#dendrogram-pane #dendrogram-sort-control 
+{
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  cursor: pointer;
+  background: #DBD9EB url(sort-dendrogram.png) no-repeat center center;;
+  padding: 4px;
+  margin: 0 0 5px 18px;
+  height: 17px;
+  min-width: 17px;
+}
+
+#dendrogram-pane #dendrogram-sort-control.selected
+{
+  background: #7767B0 url(sort-dendrogram-selected.png) no-repeat center center;
+  color: #FFFFFF;
+  cursor: default;
+}
+
+#dendrogram-viewer .node .glyph circle
+{
+  stroke: grey;
+}
+
+#dendrogram-viewer .node.selected .glyph circle
+{
+  fill: #7767b0 !important;
+  stroke: black;
+}
+
+#dendrogram-viewer .node .glyph text
+{
+  cursor: pointer;
+}
+
+#dendrogram-viewer .node .subtree
+{
+  cursor: pointer;
+}
+
+#dendrogram-viewer .node .subtree path
+{
+  stroke: none;
+}
+
+/* Hiding the additional glyph initially */
+#dendrogram-viewer .node .subtree path.filled-glyph
+{
+  display: none;
+}
+/* Showing it for selected nodes */
+#dendrogram-viewer .node.selected .subtree path.filled-glyph
+{
+  display: inline;
+}
+
+#dendrogram-viewer .node.selected .subtree text
+{
+  fill: white;
+}
+
+#dendrogram-viewer .node .sparkline path
+{
+  fill: none;
+  stroke: black;
+}
+
+#dendrogram-viewer .link
+{
+  fill: none;
+  stroke: #C9C9C9;
+}
+#dendrogram-sparkline-backdrop {
+  height: 100%;
+  width: 130px;
+  position: absolute;
+  right: 0;
+  z-index: -1;
+}
+#dendrogram-viewer g.sparkline path {
+  stroke-linecap: round;
+}
+#dendrogram-viewer g.sparkline path:hover,
+#dendrogram-viewer g.sparkline path.highlight
+{
+  stroke-width: 4px;
+}
+#dendrogram-viewer g.sparkline path.highlight {
+  
+}
+#dendrogram-viewer g.sparkline path.nullValue {
+  stroke-dasharray: 2px, 2px;
+}
+#dendrogram-viewer g.sparkline path.highlight.nullValue {
+  stroke-dasharray: 2px, 5px;
+}

@@ -119,6 +119,8 @@ def register_slycat_plugin(context):
     "stripe1.png",
     "stripe2.png",
     "pin.png",
+    "sort-dendrogram-selected.png",
+    "sort-dendrogram.png",
     #For development and debugging, loading some js and css dynamically inside model.
     "parameter-image-dendrogram.js",
     "ui.js",
