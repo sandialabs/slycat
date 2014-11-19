@@ -7,21 +7,23 @@
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var component = this;
 
-      component.server_root = server_root;
-      component.model_root = server_root + "models/";
-      component.projects_url = server_root + "projects";
-      component.project_name = params.project_name;
-      component.project_url = server_root + "projects/" + params.project_id;
-      component.model_name = ko.observable(params.model_name);
+      component.alerts = ko.mapping.fromJS([]);
+      component.brand_image = server_root + "css/slycat-brand.png";
+      component.logo_url = server_root + "css/slycat-small.png";
+      component.model = ko.mapping.fromJS({});
       component.model_description = ko.observable(params.model_description);
       component.model_marking = ko.observable(params.model_marking);
-      component.new_model_name = ko.observable(params.model_name);
+      component.model_name = ko.observable(params.model_name);
+      component.model_root = server_root + "models/";
       component.new_model_description = ko.observable(params.model_description);
       component.new_model_marking = ko.observable(params.model_marking);
-      component.logo_url = server_root + "css/slycat-small.png";
+      component.new_model_name = ko.observable(params.model_name);
+      component.project_name = params.project_name;
+      component.projects_url = server_root + "projects";
+      component.project_url = server_root + "projects/" + params.project_id;
+      component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.observable("");
-      component.brand_image = server_root + "css/slycat-brand.png";
       var open_models_mapping =
       {
         key: function(model)
@@ -53,7 +55,7 @@
       });
       component.markings = ko.mapping.fromJS([]);
 
-      component.close_model_by_id = function(id)
+      component.close_model = function(model)
       {
         $.ajax(
         {
@@ -61,13 +63,8 @@
           data : $.toJSON({ "state" : "closed" }),
           processData : false,
           type : "PUT",
-          url : server_root + "models/" + id,
+          url : server_root + "models/" + model._id(),
         });
-      }
-
-      component.close_model = function(model)
-      {
-        component.close_model_by_id(model._id());
       }
 
       component.save_model_changes = function()
@@ -142,9 +139,31 @@
         });
       }
 
-      // If we're on a model page, close the model.
+      // If there's a current model, load it.
       if(params.model_id)
-        component.close_model_by_id(params.model_id);
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : server_root + "models/" + params.model_id,
+          success : function(model)
+          {
+            ko.mapping.fromJS(model, component.model);
+
+            if(model.state == "waiting")
+              component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
+
+            if(model.state == "running")
+              component.alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
+
+            if(model.result == "failed")
+              component.alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message})
+
+            if(model.state == "finished")
+            component.close_model(component.model);
+          },
+        });
+      }
 
       // Get information about the currently-logged-in user.
       $.ajax(
@@ -275,6 +294,12 @@
       </div> \
     </div> \
   </nav> \
+  <!-- ko foreach: alerts --> \
+    <div class="alert slycat-navbar-alert" data-bind="css:{\'alert-danger\':$data.type === \'danger\',\'alert-info\':$data.type === \'info\',\'alert-success\':$data.type === \'success\'}"> \
+      <p data-bind="text:message"></p> \
+      <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
+    </div> \
+  <!-- /ko --> \
   <div class="modal fade" id="slycat-about"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
