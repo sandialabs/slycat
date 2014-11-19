@@ -10,12 +10,11 @@
       component.alerts = ko.mapping.fromJS([]);
       component.brand_image = server_root + "css/slycat-brand.png";
       component.logo_url = server_root + "css/slycat-small.png";
-      component.model = ko.mapping.fromJS({});
-      component.model_description = ko.observable(params.model_description);
+      component.model = ko.mapping.fromJS({description:""});
       component.model_marking = ko.observable(params.model_marking);
       component.model_name = ko.observable(params.model_name);
       component.model_root = server_root + "models/";
-      component.new_model_description = ko.observable(params.model_description);
+      component.new_model_description = ko.observable("");
       component.new_model_marking = ko.observable(params.model_marking);
       component.new_model_name = ko.observable(params.model_name);
       component.project_name = params.project_name;
@@ -94,7 +93,7 @@
             else
             {
               component.model_name(component.new_model_name());
-              component.model_description(component.new_model_description());
+              component.model.description(component.new_model_description());
               component.model_marking(component.new_model_marking());
             }
           },
@@ -149,6 +148,7 @@
           success : function(model)
           {
             ko.mapping.fromJS(model, component.model);
+            component.new_model_description(model.description);
 
             if(model.state == "waiting")
               component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
@@ -253,7 +253,7 @@
         <ol class="breadcrumb navbar-left"> \
           <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
           <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
-          <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model_description}}"></a></li> \
+          <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model.description()}}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \
