@@ -7,7 +7,7 @@ def register_slycat_plugin(context):
 
   def html(database, model):
     name = model["artifact:name"]
-    return "<div style='padding:12px; text-align:center; font-weight: bold; font-size: 24px;'>Hello, %s!</div>" % name
+    return "<div style='-webkit-flex:1;flex:1;padding:12px; text-align:center; font-weight: bold; font-size: 24px;'>Hello, %s!</div>" % name
 
   context.register_model("hello-world", finish, html)
 
