@@ -3,8 +3,6 @@
   $(document).ready(function()
   {
     // Setup the default window layout.
-    $("#matrix-demo-model").height($(window).height() - 300);
-
     $("#matrix-demo-model").layout(
     {
       applyDefaultStyles: true,
