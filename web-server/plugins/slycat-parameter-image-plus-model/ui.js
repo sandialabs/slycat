@@ -190,7 +190,7 @@ $("#parameter-image-plus-layout").layout(
 {
   north:
   {
-    size: 32,
+    size: 28,
   },
   center:
   {

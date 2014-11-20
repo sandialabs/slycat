@@ -355,6 +355,28 @@ rights in this software.
   float: none;
   display: inline-block;
 }
+#color-switcher .label {
+  font-weight: bold;
+}
+#color-switcher .color {
+  background-color: #DBD9EB;
+  padding: 4px;
+}
+#color-switcher .color:hover {
+  cursor: pointer;
+}
+#color-switcher .selected:hover {
+  cursor: default;
+}
+#color-switcher .selected {
+  background-color: #7767B0 !important;
+  color: white;
+}
+#color-switcher,
+#controls
+{
+  font-size: small;
+}
 #controls {
   display: inline-block;
   margin: 2px 0;
@@ -523,4 +545,33 @@ rights in this software.
 }
 #dendrogram-viewer g.sparkline path.highlight.nullValue {
   stroke-dasharray: 2px, 5px;
+}
+
+/* ui layout */
+.ui-layout-resizer
+{
+  background: #ddc;
+}
+.ui-layout-resizer-hover
+{
+  background: #fc6;
+}
+.ui-layout-resizer-dragging
+{
+  background: #fc6;
+}
+.ui-layout-toggler
+{
+  background: #ccb;
+}
+.ui-layout-toggler-hover
+{
+  background: #fc6;
+}
+.ui-layout-pane, .ui-layout-container
+{
+  background: white;
+  padding: 0;
+  border: 0;
+  margin: 0;
 }
