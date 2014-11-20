@@ -418,7 +418,7 @@ $.widget("timeseries.dendrogram",
       var node_glyph = node_enter.append("svg:g")
         .attr("class", "glyph")
         .on("click", function(d) {
-          if(d3.event.ctrlKey) {
+          if(d3.event.ctrlKey || d3.event.metaKey) {
             if(d.selected) {
               unselect_node(self, d);
             } else {
@@ -749,7 +749,7 @@ $.widget("timeseries.dendrogram",
     var self = this;
     var data_table_indexes = getDataTableIndexesFromChildren(d);
 
-    if(!event.ctrlKey){
+    if(!event.ctrlKey && !event.metaKey){
       self.options.highlight = data_table_indexes;
     }
     else {
