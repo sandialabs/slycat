@@ -15,9 +15,6 @@ packages/cherrypy/test/test.error.log
 packages/cherrypy/test/test_misc_tools.log
 *.pyc
 slycat.egg-info
-web-client/*images
-web-client/*images.csv
-web-client/csv_to_hdf5_*
 .*.swp
 .#*
 ._*

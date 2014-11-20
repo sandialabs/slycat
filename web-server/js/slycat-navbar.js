@@ -1,27 +1,28 @@
 (function()
 {
-  ko.components.register("slycat-header",
+  ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
     {
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var component = this;
 
-      component.server_root = server_root;
-      component.model_root = server_root + "models/";
-      component.projects_url = server_root + "projects";
-      component.project_name = params.project_name;
-      component.project_url = server_root + "projects/" + params.project_id;
-      component.model_name = ko.observable(params.model_name);
-      component.model_description = ko.observable(params.model_description);
-      component.new_model_name = ko.observable(params.model_name);
-      component.new_model_description = ko.observable(params.model_description);
-      component.new_name = ko.observable("");
-      component.new_description = ko.observable("");
+      component.alerts = ko.mapping.fromJS([]);
+      component.brand_image = server_root + "css/slycat-brand.png";
       component.logo_url = server_root + "css/slycat-small.png";
+      component.model = ko.mapping.fromJS({description:""});
+      component.model_marking = ko.observable(params.model_marking);
+      component.model_name = ko.observable(params.model_name);
+      component.model_root = server_root + "models/";
+      component.new_model_description = ko.observable("");
+      component.new_model_marking = ko.observable(params.model_marking);
+      component.new_model_name = ko.observable(params.model_name);
+      component.project_name = params.project_name;
+      component.projects_url = server_root + "projects";
+      component.project_url = server_root + "projects/" + params.project_id;
+      component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.observable("");
-      component.brand_image = server_root + "css/slycat-brand.png";
       var open_models_mapping =
       {
         key: function(model)
@@ -39,7 +40,6 @@
           {
             return result.state() === "running" ? "success" : null;
           });
-          console.log("create open model", result);
           return result;
         },
       }
@@ -52,6 +52,7 @@
       {
         return model.state() != "finished";
       });
+      component.markings = ko.mapping.fromJS([]);
 
       component.close_model = function(model)
       {
@@ -67,13 +68,11 @@
 
       component.save_model_changes = function()
       {
-        component.model_name(component.new_model_name());
-        component.model_description(component.new_model_description());
-
         var model =
         {
           "name" : component.new_model_name(),
           "description" : component.new_model_description(),
+          "marking" : component.new_model_marking(),
         };
 
         $.ajax(
@@ -83,6 +82,21 @@
           contentType : "application/json",
           data : $.toJSON(model),
           processData : false,
+          success : function()
+          {
+            if(component.new_model_marking() !== component.model_marking())
+            {
+              // Since marking changes have the potential to alter the page
+              // structure in arbitrary ways, just reload.
+              document.location.reload(true);
+            }
+            else
+            {
+              component.model_name(component.new_model_name());
+              component.model.description(component.new_model_description());
+              component.model_marking(component.new_model_marking());
+            }
+          },
           error : function(request, status, reason_phrase)
           {
             window.alert("Error updating model: " + reason_phrase);
@@ -124,6 +138,33 @@
         });
       }
 
+      // If there's a current model, load it.
+      if(params.model_id)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : server_root + "models/" + params.model_id,
+          success : function(model)
+          {
+            ko.mapping.fromJS(model, component.model);
+            component.new_model_description(model.description);
+
+            if(model.state == "waiting")
+              component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
+
+            if(model.state == "running")
+              component.alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
+
+            if(model.result == "failed")
+              component.alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message})
+
+            if(model.state == "finished")
+            component.close_model(component.model);
+          },
+        });
+      }
+
       // Get information about the currently-logged-in user.
       $.ajax(
       {
@@ -144,6 +185,17 @@
         success : function(version)
         {
           component.version("Version " + version.version + ", commit " + version.commit);
+        }
+      });
+
+      // Get the set of allowed server markings.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/markings",
+        success : function(markings)
+        {
+          ko.mapping.fromJS(markings, component.markings);
         }
       });
 
@@ -186,10 +238,10 @@
     },
     template: ' \
 <div class="bootstrap-styles"> \
-  <nav class="navbar navbar-default" role="navigation"> \
+  <nav class="navbar navbar-default"> \
     <div class="container"> \
       <div class="navbar-header"> \
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-header-content"> \
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-navbar-content"> \
           <span class="sr-only">Toggle navigation</span> \
           <span class="icon-bar"></span> \
           <span class="icon-bar"></span> \
@@ -197,19 +249,19 @@
         </button> \
         <a class="navbar-brand" data-bind="attr:{href:projects_url}">Slycat</a> \
       </div> \
-      <div class="collapse navbar-collapse" id="slycat-header-content"> \
+      <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
           <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
           <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
-          <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model_description}}"></a></li> \
+          <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model.description()}}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
-            <ul class="dropdown-menu" role="menu"> \
+            <ul class="dropdown-menu"> \
               <!-- ko foreach: finished_models --> \
                 <li> \
-                  <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
+                  <a data-bind="attr:{href:$parent.model_root + $data._id()},popover:{trigger:\'hover\',content:$data.message()}"> \
                     <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{\'btn-success\':$data.result()===\'succeeded\',\'btn-danger\':$data.result()!==\'succeeded\'}"><span class="glyphicon glyphicon-ok"></span></button> \
                     <span data-bind="text:name"></span> \
                   </a> \
@@ -231,8 +283,8 @@
           <li><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help <span class="caret"></span></a> \
-            <ul class="dropdown-menu" role="menu"> \
+            <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
+            <ul class="dropdown-menu"> \
               <li><a data-toggle="modal" data-target="#slycat-about">About Slycat</a></li> \
               <li><a data-bind="click:support_request">Support Request</a></li> \
               <li><a data-bind="click:open_documentation">Documentation</a></li> \
@@ -242,6 +294,12 @@
       </div> \
     </div> \
   </nav> \
+  <!-- ko foreach: alerts --> \
+    <div class="alert slycat-navbar-alert" data-bind="css:{\'alert-danger\':$data.type === \'danger\',\'alert-info\':$data.type === \'info\',\'alert-success\':$data.type === \'success\'}"> \
+      <p data-bind="text:message"></p> \
+      <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
+    </div> \
+  <!-- /ko --> \
   <div class="modal fade" id="slycat-about"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
@@ -266,14 +324,24 @@
           <h3 class="modal-title">Edit Model</h3> \
         </div> \
         <div class="modal-body"> \
-          <form role="form"> \
+          <form class="form-horizontal"> \
             <div class="form-group"> \
-              <label for="slycat-model-name">Name</label> \
-              <input id="slycat-model-name" class="form-control" type="text" data-bind="value:new_model_name"></input> \
+              <label for="slycat-model-name" class="col-sm-2 control-label">Name</label> \
+              <div class="col-sm-10"> \
+                <input id="slycat-model-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_model_name"></input> \
+              </div> \
             </div> \
             <div class="form-group"> \
-              <label for="slycat-model-description">Description</label> \
-              <textarea id="slycat-model-description" class="form-control" rows="3" data-bind="value:new_model_description"></textarea> \
+              <label for="slycat-model-description" class="col-sm-2 control-label">Description</label> \
+              <div class="col-sm-10"> \
+                <textarea id="slycat-model-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_model_description"></textarea> \
+              </div> \
+            </div> \
+            <div class="form-group"> \
+              <label for="slycat-model-marking" class="col-sm-2 control-label">Marking</label> \
+              <div class="col-sm-10"> \
+                <select id="slycat-model-marking" class="form-control" data-bind="options:markings,optionsValue:\'type\',optionsText:\'label\',value:new_model_marking,valueAllowUnset:true"></select> \
+              </div> \
             </div> \
           </form> \
         </div> \

@@ -16,7 +16,7 @@ var bookmark = null;
 
 var clusters = null; // This is just the list of cluster names
 var cluster_index = null; // This is the index of the currently selected cluster
-
+var clusters_data = null; // This holds data for each cluster
 
 var table_metadata = null;
 var table_statistics = null;
@@ -39,6 +39,8 @@ var filtered_v = null;
 var table_ready = false;
 var scatterplot_ready = false;
 var controls_ready = false;
+var dendrogram_ready = false;
+var cluster_ready = false;
 
 var session_cache = {};
 var image_uri = document.createElement("a");
@@ -102,18 +104,6 @@ function model_loaded()
     // Display progress as the load happens ...
     $(".load-status").text("Loading data.");
 
-    // Mark this model as closed, so it doesn't show-up in the header anymore.
-    $.ajax(
-    {
-      type : "PUT",
-      url : server_root + "models/" + model_id,
-      contentType : "application/json",
-      data : $.toJSON({
-        "state" : "closed"
-      }),
-      processData : false
-    });
-
     // Load list of clusters.
     $.ajax({
       url : server_root + "models/" + model_id + "/files/clusters",
@@ -121,13 +111,10 @@ function model_loaded()
       success: function(result)
       {
         clusters = result;
-        // clusters_data = new Array(clusters.length);
-        // waveforms_data = new Array(clusters.length);
-        // waveforms_metadata = new Array(clusters.length);
-        // setup_cluster();
-        // setup_widgets();
-        // setup_waveforms();
+        clusters_data = new Array(clusters.length);
+        retrieve_current_cluster();
         setup_controls();
+        setup_dendrogram();
       },
       error: artifact_missing
     });
@@ -150,6 +137,9 @@ function model_loaded()
     bookmarker.get_state(function(state)
     {
       bookmark = state;
+      cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
+      retrieve_current_cluster();
+      setup_controls();
       setup_colorswitcher();
       metadata_loaded();
     });
@@ -200,7 +190,7 @@ $("#parameter-image-plus-layout").layout(
 {
   north:
   {
-    size: 32,
+    size: 28,
   },
   center:
   {
@@ -238,6 +228,40 @@ $("#model-pane").layout(
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup the rest of the UI as data is received.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+function build_dendrogram_node_options(cluster_index)
+{
+  var dendrogram_options = {
+    cluster: cluster_index,
+  };
+  
+  dendrogram_options.collapsed_nodes = bookmark[cluster_index  + "-collapsed-nodes"];
+  dendrogram_options.expanded_nodes = bookmark[cluster_index  + "-expanded-nodes"];
+  dendrogram_options.selected_nodes = bookmark[cluster_index  + "-selected-nodes"];
+  dendrogram_options.highlight = bookmark[cluster_index  + "-selected-row-simulations"];
+
+  return dendrogram_options;
+}
+
+function retrieve_current_cluster()
+{
+  if(!cluster_ready && cluster_index != null && clusters != null)
+  {
+    cluster_ready = true;
+
+    $.ajax(
+    {
+      url : server_root + "models/" + model_id + "/files/cluster-" + clusters[cluster_index],
+      contentType : "application/json",
+      success : function(cluster_data)
+      {
+        clusters_data[cluster_index] = cluster_data;
+        setup_dendrogram();
+      },
+      error: artifact_missing
+    });
+  }
+}
 
 function setup_colorswitcher()
 {
@@ -285,8 +309,6 @@ function metadata_loaded()
     {
       auto_scale = bookmark["auto-scale"];
     }
-
-    cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
     // Set state of selected and hidden simulations
     selected_simulations = [];
@@ -339,6 +361,7 @@ function metadata_loaded()
       update_current_colorscale();
       setup_scatterplot();
       setup_table();
+      setup_dendrogram();
     }
     else
     {
@@ -354,6 +377,7 @@ function metadata_loaded()
           update_current_colorscale();
           setup_scatterplot();
           setup_table();
+          setup_dendrogram();
         },
         error : artifact_missing
       });
@@ -385,6 +409,35 @@ function metadata_loaded()
       setup_scatterplot();
     }
     setup_controls();
+  }
+}
+
+function setup_dendrogram()
+{
+  if(!dendrogram_ready && bookmark && clusters != null && cluster_index != null && clusters_data != null 
+    && clusters_data[cluster_index] !== undefined && colorscale && v && selected_simulations != null)
+  {
+    dendrogram_ready = true;
+    console.log("dendrogram ready to be initiated.");
+
+    $("#dendrogram-pane .load-status").css("display", "none");
+
+    var dendrogram_options = build_dendrogram_node_options(cluster_index);
+    dendrogram_options.clusters=clusters;
+    dendrogram_options.cluster_data=clusters_data[cluster_index];
+    dendrogram_options.color_scale=colorscale;
+    dendrogram_options.color_array=v;
+
+    if(bookmark["sort-variable"] != undefined) {
+      dendrogram_options.dendrogram_sort_order = false;
+    }
+
+    dendrogram_options["highlight"] = selected_simulations;
+
+    $("#dendrogram-viewer").dendrogram(dendrogram_options);
+
+
+
   }
 }
 

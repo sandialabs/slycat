@@ -11,8 +11,6 @@ $.widget("parameter_image.dendrogram",
 {
   options:
   {
-  	"server-root" : "",
-    mid : null,
   	clusters:[],
   	cluster: 0,
   	cluster_data:null,
@@ -40,8 +38,6 @@ $.widget("parameter_image.dendrogram",
   	var collapsed_nodes = this.options.collapsed_nodes;
   	var expanded_nodes = this.options.expanded_nodes;
     var selected_nodes = this.options.selected_nodes;
-  	var server_root = self.options["server-root"];
-  	var mid = self.options.mid;
 
   	var linkage = cluster_data["linkage"];
     var input_indices = cluster_data["input-indices"];
@@ -418,7 +414,7 @@ $.widget("parameter_image.dendrogram",
       var node_glyph = node_enter.append("svg:g")
         .attr("class", "glyph")
         .on("click", function(d) {
-          if(d3.event.ctrlKey) {
+          if(d3.event.ctrlKey || d3.event.metaKey) {
             if(d.selected) {
               unselect_node(self, d);
             } else {
@@ -492,8 +488,8 @@ $.widget("parameter_image.dendrogram",
       self._set_highlight();
       
       get_model_arrayset_metadata({
-        server_root : self.options["server-root"],
-        mid : self.options.mid,
+        server_root : server_root,
+        mid : model_id,
         aid : "preview-" + self.options.clusters[self.options.cluster],
         success : function(parameters)
         {
@@ -502,8 +498,8 @@ $.widget("parameter_image.dendrogram",
               $(this).attr("d", "");
             } else {
               get_model_arrayset({
-                server_root : self.options["server-root"],
-                mid : self.options.mid,
+                server_root : server_root,
+                mid : model_id,
                 aid : "preview-" + self.options.clusters[self.options.cluster],
                 arrays : d["exemplar"] + ":" + (d["exemplar"]+1),
                 element : this,
@@ -749,7 +745,7 @@ $.widget("parameter_image.dendrogram",
     var self = this;
     var data_table_indexes = getDataTableIndexesFromChildren(d);
 
-    if(!event.ctrlKey){
+    if(!event.ctrlKey && !d3.event.metaKey){
       self.options.highlight = data_table_indexes;
     }
     else {

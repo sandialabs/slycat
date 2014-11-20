@@ -226,7 +226,7 @@ $.widget("parameter_image.scatterplot",
         return;
 
       //console.log("#scatterplot mouseup");
-      if(!e.ctrlKey)
+      if(!e.ctrlKey && !e.metaKey)
       {
         self.options.selection = [];
         self.options.filtered_selection = [];

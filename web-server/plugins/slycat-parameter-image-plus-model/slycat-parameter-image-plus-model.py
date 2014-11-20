@@ -57,8 +57,8 @@ def register_slycat_plugin(context):
     # "js/knockout-3.2.0.js",
     # "js/knockout.mapping.js",
     # "js/slycat-browser.js",
-    # "js/slycat-header.js",
-    # "js/slycat-model-main.js",
+    # "js/slycat-navbar.js",
+    # "js/slycat-model.js",
     # End JS loaded by header
     "jquery.layout-latest.min.js", 
     "jquery.ba-bbq.min.js",
@@ -119,6 +119,8 @@ def register_slycat_plugin(context):
     "stripe1.png",
     "stripe2.png",
     "pin.png",
+    "sort-dendrogram-selected.png",
+    "sort-dendrogram.png",
     #For development and debugging, loading some js and css dynamically inside model.
     "parameter-image-dendrogram.js",
     "ui.js",

@@ -2,7 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-"""Demonstrates uploading data to a Slycat generic model.
+"""Create a Slycat generic model.
 
 A Slycat generic model is a container for data that doesn't do any computation.
 Use generic models to stuff custom data into Slycat Web Server and/or as a
@@ -14,8 +14,8 @@ import slycat.web.client
 
 parser = slycat.web.client.option_parser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
-parser.add_argument("--model-name", default="Demo Generic Model", help="New model name.  Default: %(default)s")
-parser.add_argument("--project-name", default="Demo Generic Project", help="New project name.  Default: %(default)s")
+parser.add_argument("--model-name", default="Sample Generic Model", help="New model name.  Default: %(default)s")
+parser.add_argument("--project-name", default="Sample Generic Project", help="New project name.  Default: %(default)s")
 arguments = parser.parse_args()
 
 # Setup a connection to the Slycat Web Server.
@@ -26,19 +26,6 @@ pid = connection.find_or_create_project(arguments.project_name)
 
 # Create the new, empty model.
 mid = connection.post_project_models(pid, "generic", arguments.model_name, arguments.marking)
-
-# Store arbitrary data as name-value pairs in the model.
-connection.put_model_parameter(mid, "name", "Fred")
-connection.put_model_parameter(mid, "pi", 3.1416)
-
-# Start an array set (a collection of zero-to-many arrays).
-connection.put_model_arrayset(mid, "data")
-
-# Start an array (a dense, multi-dimension, multi-attribute array).
-connection.put_model_arrayset_array(mid, "data", 0, [dict(name="i", end=10)], [dict(name="range", type="int64")])
-
-# Store values into an array attribute.
-connection.put_model_arrayset_data(mid, "data", (0, 0, numpy.index_exp[...], numpy.arange(10)))
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web
 # Server know that it can perform any required computation.

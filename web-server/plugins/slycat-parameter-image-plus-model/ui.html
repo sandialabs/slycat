@@ -59,7 +59,17 @@
     </div>
   </div>
 
-  <div id="dendrogram-pane" class="ui-layout-west">Dendrogram</div>
+  <div id="dendrogram-pane" class="ui-layout-west">
+    <div class="load-status"></div>
+    <svg id="dendrogram-viewer" width="100%" height="100%">
+      <defs>
+        <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7767b0" stop-opacity="1" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
 
   <div id="table-pane" class="ui-layout-south">
     <div class="load-status"></div>

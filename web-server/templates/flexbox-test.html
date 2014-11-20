@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="../js/jquery-2.1.1.min.js"></script>
+    <style type="text/css">
+      body
+      {
+        background: #f2f2f2;
+        font-family: Arial, sans-serif;
+        margin: 0;
+      }
+
+      .navbar
+      {
+        background: rgb(215, 215, 215);
+        height: 50px;
+      }
+
+      .content
+      {
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-direction: column;
+        flex-direction: column;
+      }
+
+      .marking
+      {
+        background: repeating-linear-gradient(135deg, blue, blue 12.5%, white 12.5%, white 25%, red 25%, red 37.5%, white 37.5%, white 50%) top left fixed;
+        background-size: 80px 80px;
+        padding:5px;
+        -webkit-flex: 1;
+        flex: 1;
+        display: -webkit-flex;
+        display: flex;
+      }
+
+      .marking-background
+      {
+        background: #f2f2f2;
+        -webkit-flex: 1;
+        flex: 1;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-direction: column;
+        flex-direction: column;
+      }
+
+      .model
+      {
+        background: #eef;
+        -webkit-flex: 1;
+        flex: 1;
+        padding: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+    </div>
+    <div class="content">
+      <div class="marking">
+        <div class="marking-background">
+          <div class="model">
+            This my model.  There are many like it but this one is mine.
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      $(document).ready(function()
+      {
+        function size_content()
+        {
+          $(".content").css("min-height", $(window).height() - $(".navbar").height());
+        }
+
+        $(window).resize(function()
+        {
+          size_content();
+        });
+
+        size_content();
+      });
+    </script>
+  </body>
+</html>

@@ -54,7 +54,6 @@ function(new_document, old_document, user_context)
       require(new_document["project"] == old_document["project"], "Model project id cannot be modified.");
       require(new_document["created"] == old_document["created"], "Model creation time cannot be modified.");
       require(new_document["creator"] == old_document["creator"], "Model creator creator cannot be modified.");
-      require(new_document["marking"] == old_document["marking"], "Model marking cannot be modified.");
     }
   }
   else if(new_document["type"] == "hdf5")

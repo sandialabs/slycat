@@ -8,10 +8,10 @@ import os
 import PIL.Image, PIL.ImageDraw, PIL.ImageFont
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data-file", default="tracer-images.csv", help="Output data file.  Default: %(default)s")
+parser.add_argument("--data-file", default="sample-tracer-images.csv", help="Output data file.  Default: %(default)s")
 parser.add_argument("--image-step", type=int, default=10, help="Image step.  Default: %(default)s")
 parser.add_argument("--image-count", type=int, default=3, help="Image column count.  Default: %(default)s")
-parser.add_argument("--image-directory", default="tracer-images", help="Image directory.  Default: %(default)s")
+parser.add_argument("--image-directory", default="sample-tracer-images", help="Image directory.  Default: %(default)s")
 parser.add_argument("--image-height", type=int, default=1000, help="Image height.  Default: %(default)s")
 parser.add_argument("--image-hostname", default="localhost", help="Image hostname.  Default: %(default)s")
 parser.add_argument("--image-width", type=int, default=1000, help="Image width.  Default: %(default)s")
