@@ -81,7 +81,7 @@ $.widget("cca.scatterplot",
 
     this.element.mouseup(function(e)
     {
-      if(!e.ctrlKey)
+      if(!e.ctrlKey && !e.metaKey)
         self.options.selection = [];
 
       var x = self.options.x;
