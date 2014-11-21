@@ -16,5 +16,6 @@ packages/cherrypy/test/test_misc_tools.log
 *.pyc
 slycat.egg-info
 .*.swp
+.#*
 ._*
 .apdisk
