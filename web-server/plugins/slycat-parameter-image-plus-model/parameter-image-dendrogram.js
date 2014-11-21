@@ -45,10 +45,10 @@ $.widget("parameter_image.dendrogram",
 	  var subtrees = [];
 
     for(var i=0; i<input_indices.length; i++){
-      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[i], selected: false, "waveform-index" : i, "data-table-index" : input_indices[i]});
+      subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[i], selected: false, "image-index" : i, "data-table-index" : input_indices[i]});
     }
     for(var i=0; i<linkage.length; i++){
-      subtrees.push({"node-index":subtrees.length, children:[subtrees[linkage[i][0]], subtrees[linkage[i][1]]], leaves:linkage[i][3], exemplar:exemplars[i + input_indices.length], selected: false, "waveform-index" : null, "data-table-index" : null});
+      subtrees.push({"node-index":subtrees.length, children:[subtrees[linkage[i][0]], subtrees[linkage[i][1]]], leaves:linkage[i][3], exemplar:exemplars[i + input_indices.length], selected: false, "image-index" : null, "data-table-index" : null});
     }
 
     var padding = 20;
@@ -89,7 +89,8 @@ $.widget("parameter_image.dendrogram",
     nodes.forEach(function(d) { max_depth = Math.max(max_depth, d.depth); });
 
     // We have collapse/expand/selected node data. Let's go ahead and apply it.
-    if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_nodes!=null) ){
+    if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_nodes!=null) )
+    {
       nodes.forEach(function(d) { 
         if(selected_nodes != null && selected_nodes.length>0) {
           if( selected_nodes.indexOf(d["node-index"]) > -1 ) {
@@ -105,14 +106,23 @@ $.widget("parameter_image.dendrogram",
       });
     }
     // We have no data on expanded / collapsed nodes. Let's go ahead and just show the top four levels.
-    if( (expanded_nodes==null) && (collapsed_nodes==null) ) {
+    if( (expanded_nodes==null) && (collapsed_nodes==null) ) 
+    {
       // Start showing the top four levels of the tree ...
-      nodes.forEach(function(d) { if(d.depth == 3) toggle(d); });
+      nodes.forEach(function(d, index) { 
+        if(d.depth == 3) 
+        {
+          toggle(d);
+        }
+      });
     }
     // We have no selected node data. Let's select the root node.
-    if(selected_nodes == null){
+    if(selected_nodes == null)
+    {
       select_node(self, root, true);
-    } else {
+    } 
+    else 
+    {
       // We had selected node data, so let's style them and trigger the node-selection-changed event
       style_selected_nodes();
       color_links();
@@ -152,7 +162,7 @@ $.widget("parameter_image.dendrogram",
     function find_selected_nodes(d, selection)
     {
       if(d.selected)
-        selection.push({"node-index" : d["node-index"], "waveform-index" : d["waveform-index"], "data-table-index" : d["data-table-index"]});
+        selection.push({"node-index" : d["node-index"], "image-index" : d["image-index"], "data-table-index" : d["data-table-index"]});
       if(d.children)
         for(var i=0; i<d.children.length; i++)
           find_selected_nodes(d.children[i], selection);

@@ -43,6 +43,12 @@ rights in this software.
   padding: 1em;
 }
 
+/* Model */
+#parameter-image-plus-layout {
+  -webkit-flex: 1;
+  flex: 1;
+}
+
 /* New CCA table styles */
 #barplot-table {
   /*height: 250px;*/

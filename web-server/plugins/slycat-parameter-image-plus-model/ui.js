@@ -180,11 +180,6 @@ function artifact_missing()
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout.
 //////////////////////////////////////////////////////////////////////////////////////////
-$("#parameter-image-plus-layout").height($(window).height() - 300);
-$(window).resize(function()
-{
-  $("#parameter-image-plus-layout").height($(window).height() - 300);
-});
 
 $("#parameter-image-plus-layout").layout(
 {
@@ -194,10 +189,22 @@ $("#parameter-image-plus-layout").layout(
   },
   center:
   {
+    // resizeWhileDragging: false,
+    // onresize: function() { 
+    //   $("#scatterplot").scatterplot("option", {
+    //     width: $("#scatterplot-pane").width(), 
+    //     height: $("#scatterplot-pane").height()
+    //   }); 
+    // },
   },
   west:
   {
     size: $("#parameter-image-plus-layout").width() / 2,
+    resizeWhileDragging : false,
+    onresize: function() 
+    { 
+      $("#dendrogram-viewer").dendrogram("resize_canvas");
+    }
   },
   south:
   {
@@ -436,8 +443,57 @@ function setup_dendrogram()
 
     $("#dendrogram-viewer").dendrogram(dendrogram_options);
 
+    // Log and bookmark changes to the node selection ...
+    $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+    {
+      selected_node_changed(parameters);
+    });
 
+    // Changing the selected dendrogram node updates the waveform plot ...
+    $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+    {
+      // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
+      if(parameters.skip_bookmarking != true) {
+        // $("#waveform-viewer").waveformplot("option", "selection", getWaveformIndexes(parameters.selection));
 
+        // if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
+        //   $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+
+        var visible_simulations = getNodeIndexes(parameters.selection, "image-index");
+
+        while(hidden_simulations.length > 0) {
+          hidden_simulations.pop();
+        }
+      
+        for(var i = 0; i < indices.length; i++)
+        {
+          var index = indices[i];
+          if(visible_simulations.indexOf(index) < 0)
+          {
+            hidden_simulations.push(index);
+          }
+        }
+        update_widgets_when_hidden_simulations_change();
+      }
+    });
+
+    // Bookmark changes to expanded and collapsed nodes ...
+    $("#dendrogram-viewer").bind("expanded-collapsed-nodes-changed", function(event, nodes)
+    {
+      expanded_collapsed_nodes_changed(nodes);
+    });
+
+    // Log changes to node toggle ...
+    $("#dendrogram-viewer").bind("node-toggled", function(event, node)
+    {
+      node_toggled(node);
+    });
+
+    // Log changes to the waveform selection
+    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, selection)
+    {
+      // selected_simulations_changed(selection);
+    });
   }
 }
 
@@ -835,6 +891,7 @@ function setup_controls()
     $("#controls").bind("cluster-selection-changed", function(event, variable)
     {
       cluster_selection_changed(variable);
+      $("#dendrogram-viewer").dendrogram("resize_canvas");
     });
 
     // Log changes to the x variable ...
@@ -898,6 +955,55 @@ function setup_controls()
 //////////////////////////////////////////////////////////////////////////////////////////
 // Event handlers.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+function selected_node_changed(parameters)
+{
+  if(parameters.node != null && parameters.node["node-index"] != null)
+  {
+    $.ajax(
+    {
+      type : "POST",
+      url : server_root + "events/models/" + model_id + "/select/node/" + parameters.node["node-index"],
+    });
+  }
+  if(parameters.skip_bookmarking != true) 
+  {
+    var state = {};
+    state[ cluster_index + "-selected-nodes" ] = getNodeIndexes(parameters.selection, "node-index");
+    state[ cluster_index + "-selected-image-indexes" ] = getNodeIndexes(parameters.selection, "image-index");
+    bookmarker.updateState(state);
+  }
+}
+
+function getNodeIndexes(nodes, indexName)
+{
+  var node_indexes = [];
+  var node_index = null;
+
+  for(var i=0; i<nodes.length; i++)
+  {
+    node_index = nodes[i][indexName];
+    if(node_index != null)
+      node_indexes.push(node_index);
+  }
+
+  return node_indexes;
+}
+
+function expanded_collapsed_nodes_changed(nodes){
+  var cluster_state = {};
+  cluster_state[ cluster_index + "-expanded-nodes"] = nodes.expanded;
+  cluster_state[ cluster_index + "-collapsed-nodes"] = nodes.collapsed;
+  bookmarker.updateState(cluster_state);
+}
+
+function node_toggled(node){
+  $.ajax(
+  {
+    type : "POST",
+    url : server_root + "events/models/" + model_id + "/toggle/node/" + node["node-index"],
+  });
+}
 
 function selected_colormap_changed(colormap)
 {
