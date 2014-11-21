@@ -12,6 +12,7 @@ API Reference
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
    slycat.web.client.rst
+   slycat.web.server.rst
    slycat.web.server.agent.rst
    slycat.web.server.authentication.rst
    slycat.web.server.database.couchdb.rst

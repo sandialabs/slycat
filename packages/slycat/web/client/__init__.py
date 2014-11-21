@@ -27,7 +27,7 @@ log.addHandler(logging.StreamHandler())
 log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 log.propagate = False
 
-def require_array_ranges(ranges):
+def _require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
   if ranges is None:
     return None
@@ -41,7 +41,7 @@ def require_array_ranges(ranges):
     raise Exception("Not a valid ranges object.")
 
 class option_parser(argparse.ArgumentParser):
-  """Returns an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
+  """Return an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
@@ -72,7 +72,7 @@ class option_parser(argparse.ArgumentParser):
 
     return arguments
 
-class connection(object):
+class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
@@ -82,7 +82,7 @@ class connection(object):
     self.session = requests.Session()
 
   def request(self, method, path, **keywords):
-    """Makes a request with the given method and path, returning the body of
+    """Makes a request with the given HTTP method and path, returning the body of
     the response.  Additional keyword arguments must be compatible with the
     Python Requests library, http://docs.python-requests.org/en/latest"""
 
@@ -117,7 +117,17 @@ class connection(object):
   # Low-level functions that map directly to the underlying RESTful API
 
   def delete_model(self, mid):
-    """Deletes an existing model."""
+    """Delete an existing model.
+
+    Parameters
+    ----------
+    mid : string, required
+      The unique model identifier.
+
+    See Also
+    --------
+    :ref:`DELETE Model`
+    """
     self.request("DELETE", "/models/%s" % (mid))
 
   def delete_project(self, pid):
@@ -129,7 +139,7 @@ class connection(object):
 
   def get_model_array_attribute_chunk(self, mid, name, array, attribute, ranges, type=None):
     """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
-    ranges = require_array_ranges(ranges)
+    ranges = _require_array_ranges(ranges)
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
     if type is None or type == "string":
@@ -331,5 +341,5 @@ def connect(arguments, **keywords):
     keywords["verify"] = False
   elif arguments.verify is not None:
     keywords["verify"] = arguments.verify
-  return connection(auth=(arguments.user, arguments.password if arguments.password is not None else getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
+  return Connection(auth=(arguments.user, arguments.password if arguments.password is not None else getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 
