@@ -22,8 +22,8 @@ API Reference
    slycat.web.server.handlers.rst
    slycat.web.server.model.rst
    slycat.web.server.model.cca.rst
-   slycat.web.server.model.generic.rst
    slycat.web.server.model.parameter_image.rst
    slycat.web.server.model.timeseries.rst
+   slycat.web.server.plugin.rst
    slycat.web.server.ssh.rst
    slycat.web.server.template.rst

@@ -131,14 +131,83 @@ class Connection(object):
     self.request("DELETE", "/models/%s" % (mid))
 
   def delete_project(self, pid):
-    """Deletes an existing project."""
+    """Delete an existing project.
+
+    Parameters
+    ----------
+    pid : string, required
+      The unique project identifier.
+
+    See Also
+    --------
+    :ref:`DELETE Project`
+    """
     self.request("DELETE", "/projects/%s" % (pid))
 
   def get_bookmark(self, bid):
+    """Retrieve an existing bookmark.
+
+    Parameters
+    ----------
+    bid : string, required
+      The unique bookmark identifier.
+
+    Returns
+    -------
+    bookmark : object
+      The bookmark object, which is an arbitrary collection of
+      JSON-compatible data.
+
+    See Also
+    --------
+    :ref:`GET Bookmark`
+    """
     return self.request("GET", "/bookmarks/%s" % (bid))
 
+  def get_model(self, mid):
+    """Retrieve an existing model.
+
+    Parameters
+    ----------
+    mid : string, required
+      The unique model identifier
+
+    Returns
+    -------
+    model : object
+      The model object, which is an arbitrary collection of
+      JSON-compatible data.
+
+    See Also
+    --------
+    :Ref:`GET Model`
+    """
+    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
+
   def get_model_array_attribute_chunk(self, mid, name, array, attribute, ranges, type=None):
-    """Returns a hyperslice from an array artifact attribute.  Uses JSON to transfer the data unless the attribute type is specified."""
+    """Return a hyperslice from an array artifact attribute.
+
+    Uses JSON to transfer the data unless the attribute type is specified.
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+    name : string, required
+      Arrayset artifact name.
+    array : integer, required
+      Zero-based array index.
+    attribute : integer, required
+      Zero-based attribute index.
+    ranges : hyperslice, required.
+      Range of values to retrieve along each dimension.
+    type : numpy dtype, optional
+      Output data type.
+
+    Returns
+    -------
+    chunk : Python list, or numpy ndarray
+    """
     ranges = _require_array_ranges(ranges)
     if ranges is None:
       raise Exception("An explicit chunk range is required.")
@@ -156,10 +225,6 @@ class Connection(object):
   def get_model_array_metadata(self, mid, name, array):
     """Returns the metadata for an array artifacat."""
     return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_model(self, mid):
-    """Returns a single model."""
-    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
   def get_model_file(self, mid, name):
     return self.request("GET", "/models/%s/files/%s" % (mid, name))
@@ -185,21 +250,90 @@ class Connection(object):
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
 
   def get_project(self, pid):
-    """Returns a single project."""
+    """Retrieve an existing project.
+
+    Parameters
+    ----------
+    pid : string, required
+      Unique project identifier.
+
+    Returns
+    -------
+    project : Arbitrary collection of JSON-compatible data.
+
+    See Also
+    --------
+    :ref:`GET Project`
+    """
     return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
   def get_projects(self):
-    """Returns all projects."""
+    """Retrieve all projects.
+
+    Returns
+    -------
+    projects : List of projects.  Each project is an arbitrary collection of JSON-compatible data.
+
+    See Also
+    --------
+    :ref:`GET Projects`
+    """
     return self.request("GET", "/projects", headers={"accept":"application/json"})
 
   def get_user(self, uid):
+    """Retrieve directory information about an existing user.
+
+    Parameters
+    ----------
+    uid : string, required
+      Unique user identifier.
+
+    Returns
+    -------
+    user : Arbitrary collection of JSON-compatible data.
+
+    See Also
+    --------
+    :ref:`GET User`
+    """
     return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
 
   def post_model_finish(self, mid):
-    """Completes a model."""
+    """Notify the server that a model is fully initialized.
+
+    When called, the server will perform one-time computation
+    for the given model type.
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+
+    See Also
+    --------
+    :ref:`POST Models Finish`
+    """
     self.request("POST", "/models/%s/finish" % (mid))
 
   def post_project_bookmarks(self, pid, bookmark):
+    """Store a bookmark.
+
+    Parameters
+    ----------
+    pid : string, required
+      Unique project identifier.
+    bookmark : object
+      Arbitrary collection of JSON-compatible data.
+
+    Returns
+    -------
+    bid : string
+      Unique bookmark identifier.
+
+    See Also
+    --------
+    :ref:`POST Project Bookmarks`
+    """
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
   def post_project_models(self, pid, type, name, marking="", description=""):
@@ -296,7 +430,26 @@ class Connection(object):
   # Convenience functions that layer additional functionality atop the RESTful API
 
   def find_project(self, name):
-    """Return a project by name."""
+    """Return a project identified by name.
+
+    Parameters
+    ----------
+    name : string, required
+      The name of the project to return.
+
+    Returns
+    -------
+    project : The matching project, which is an arbitrary collection of JSON-compatible data.
+
+    Raises
+    ------
+    Exception
+      If a project with a matching name can't be found, or more than one project matches the name.
+
+    See Also
+    --------
+    :func:`find_or_create_project`, :func:`get_projects`
+    """
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
@@ -307,7 +460,29 @@ class Connection(object):
       raise Exception("No project matched the given name.")
 
   def find_or_create_project(self, name, description=""):
-    """Looks-up a project by name, creating it if it doesn't already exist."""
+    """Return a project identified by name, or newly created.
+
+    Parameters
+    ----------
+    name : string, required
+      The name of the project to return (or create).
+    description: string, optional
+      Description to use for the new project (if a new project is created).
+
+    Returns
+    -------
+    pid : string
+      Unique identifier of the matching (or newly created) project.
+
+    Raises
+    ------
+    Exception
+      If more than one project matches the given name.
+
+    See Also
+    --------
+    :func:`post_projects`
+    """
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
