@@ -464,7 +464,7 @@ function setup_dendrogram()
         while(hidden_simulations.length > 0) {
           hidden_simulations.pop();
         }
-      
+
         for(var i = 0; i < indices.length; i++)
         {
           var index = indices[i];
@@ -890,8 +890,9 @@ function setup_controls()
     // Log changes to the cluster variable ...
     $("#controls").bind("cluster-selection-changed", function(event, variable)
     {
+      variable = parseInt(variable);
       cluster_selection_changed(variable);
-      $("#dendrogram-viewer").dendrogram("resize_canvas");
+      update_dendrogram(variable)
     });
 
     // Log changes to the x variable ...
@@ -1178,6 +1179,30 @@ function cluster_selection_changed(variable)
   });
   bookmarker.updateState( {"cluster-index" : variable} );
   cluster_index = variable;
+}
+
+function update_dendrogram(cluster_index)
+{
+  // Retrieve cluster data if it's not already in the cache
+  if(clusters_data[cluster_index] === undefined) {
+     $.ajax(
+    {
+      url : server_root + "models/" + model_id + "/files/cluster-" + clusters[cluster_index],
+      contentType : "application/json",
+      success : function(cluster_data)
+      {
+        clusters_data[cluster_index] = cluster_data;
+        var dendrogram_options = build_dendrogram_node_options(cluster_index);
+        dendrogram_options.cluster_data = clusters_data[cluster_index];
+        $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
+      },
+      error: artifact_missing
+    });
+  } else {
+    var dendrogram_options = build_dendrogram_node_options(cluster_index);
+    dendrogram_options.cluster_data = clusters_data[cluster_index];
+    $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
+  }
 }
 
 function x_selection_changed(variable)
