@@ -93,6 +93,7 @@ def register_slycat_plugin(context):
     # "css/jquery.qtip.min.css",
     # "css/slycat.css",
     # End CSS loaded by header
+    "jquery-ui-1.10.4.custom.min.css",
     "slick.grid.css",
     "slick-default-theme.css",
     "slick.headerbuttons.css",
