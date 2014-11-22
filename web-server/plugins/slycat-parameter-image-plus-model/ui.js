@@ -432,7 +432,7 @@ function setup_dendrogram()
     var dendrogram_options = build_dendrogram_node_options(cluster_index);
     dendrogram_options.clusters=clusters;
     dendrogram_options.cluster_data=clusters_data[cluster_index];
-    dendrogram_options.color_scale=colorscale;
+    dendrogram_options.colorscale=colorscale;
     dendrogram_options.color_array=v;
 
     if(bookmark["sort-variable"] != undefined) {
@@ -473,7 +473,7 @@ function setup_dendrogram()
             hidden_simulations.push(index);
           }
         }
-        update_widgets_when_hidden_simulations_change();
+        update_widgets_when_hidden_simulations_change(true);
       }
     });
 
@@ -1077,9 +1077,10 @@ function update_widgets_after_color_variable_change()
   $("#table").table("option", "colorscale", colorscale);
   $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
   $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
+  $("#dendrogram-viewer").dendrogram("color-options", {color_array : v, colorscale : colorscale});
 }
 
-function update_widgets_when_hidden_simulations_change()
+function update_widgets_when_hidden_simulations_change(skip_dendrogram_update)
 {
   hidden_simulations_changed();
   if(auto_scale)
@@ -1088,11 +1089,19 @@ function update_widgets_when_hidden_simulations_change()
     $("#table").table("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
     // TODO this will result in 2 updates to canvas, one to redraw points according to hidden simulations and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
     $("#scatterplot").scatterplot("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
+    if(!skip_dendrogram_update)
+    {
+      $("#dendrogram-viewer").dendrogram("option", {hidden_simulations : hidden_simulations, colorscale : colorscale})
+    }
   }
   else
   {
     $("#table").table("option", "hidden_simulations", hidden_simulations);
     $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+    if(!skip_dendrogram_update)
+    {
+      $("#dendrogram-viewer").dendrogram("option", "hidden_simulations", hidden_simulations)
+    }
   }
   $("#controls").controls("option", "hidden_simulations", hidden_simulations);
 }

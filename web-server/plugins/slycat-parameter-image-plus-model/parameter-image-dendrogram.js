@@ -18,10 +18,11 @@ $.widget("parameter_image.dendrogram",
   	expanded_nodes:null,
     selected_nodes:null,
     color_array: null,
-    color_scale: null,
+    colorscale: null,
     data_table_index_array: null,
     dendrogram_sort_order: true,
     highlight: [],
+    hidden_simulations: [],
   },
 
   _create: function()
@@ -124,8 +125,8 @@ $.widget("parameter_image.dendrogram",
     else 
     {
       // We had selected node data, so let's style them and trigger the node-selection-changed event
-      style_selected_nodes();
-      color_links();
+      self._style_selected_nodes();
+      self._color_links();
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
@@ -134,21 +135,6 @@ $.widget("parameter_image.dendrogram",
 
     // Initial update for the diagram ...
   	update_subtree(root, true);
-
-    function getNodeIndexes(nodes)
-    {
-      var node_indexes = [];
-      var node_index = null;
-
-      for(var i=0; i<nodes.length; i++)
-      {
-        node_index = nodes[i]["node-index"];
-        if(node_index != null)
-          node_indexes.push(node_index);
-      }
-
-      return node_indexes;
-    }
 
 		// Helper function that draws dendrogram links with right-angles.
     function path(d, i)
@@ -195,15 +181,15 @@ $.widget("parameter_image.dendrogram",
       select_subtree(d);
 
       // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
-      style_selected_nodes();
+      context._style_selected_nodes();
 
       // Colors the lines between the nodes to show what's selected
-      color_links();
+      context._color_links();
 
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
-      context.options.selected_nodes = getNodeIndexes(selection);
+      context.options.selected_nodes = context._getNodeIndexes(selection);
       
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
     }
@@ -228,53 +214,17 @@ $.widget("parameter_image.dendrogram",
       prune_tree(root);
 
       // Sets the "selected" class on all selected nodes, thus coloring the circles in blue
-      style_selected_nodes();
+      context._style_selected_nodes();
 
       // Colors the lines between the nodes to show what's selected
-      color_links();
+      context._color_links();
 
       // Find all selected nodes
       var selection = [];
       find_selected_nodes(root, selection);
-      context.options.selected_nodes = getNodeIndexes(selection);
+      context.options.selected_nodes = context._getNodeIndexes(selection);
 
       context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
-    }
-
-    function style_selected_nodes(){
-      self.container.selectAll(".node")
-        .classed("selected", function(d) { return d.selected; })
-        ;
-    }
-
-		function color_links(){
-      self.container.selectAll("path.link").attr("style", function(d){
-        if(checkChildren(d.target)){
-          if(d.source.selected)
-            return "stroke: black;"
-          else
-            return "stroke: #646464;"
-        }
-      });
-
-      // Checks if target or any of its children are selected
-      function checkChildren(target){
-        if(target.selected)
-          return true;
-        else if(target.children){
-          for(var i=0; i<target.children.length; i++){
-            if(checkChildren(target.children[i]))
-              return true
-          }
-        }
-        else if(target._children){
-          for(var i=0; i<target._children.length; i++){
-            if(checkChildren(target._children[i]))
-              return true
-          }
-        }
-        return false;
-      }
     }
 
     function prune_tree(d){
@@ -470,12 +420,12 @@ $.widget("parameter_image.dendrogram",
         // Can't set attr here because we download waveforms asynchronously. Instead doing this below.
         //.attr("d", sparkline)
         .style("stroke", function(d, i){
-          if(self.options.color_scale !== null && self.options.color_array != null){
+          if(self.options.colorscale !== null && self.options.color_array != null){
             var index = d["data-table-index"];
             if(index != null) {
               var value = self.options.color_array[index];
               if(value != null)
-                return self.options.color_scale(value);
+                return self.options.colorscale(value);
               else
                 return $("#color-switcher").colorswitcher("get_null_color");
             }
@@ -626,7 +576,7 @@ $.widget("parameter_image.dendrogram",
         .remove()
         ;
 
-      color_links();
+      self._color_links();
 
       // Stash the old positions for transition.
       nodes.forEach(function(d)
@@ -688,7 +638,7 @@ $.widget("parameter_image.dendrogram",
         if(index != null) {
           var value = self.options.color_array[index];
           if(value != null)
-            return self.options.color_scale(value);
+            return self.options.colorscale(value);
           else
             return $("#color-switcher").colorswitcher("get_null_color");
         }
@@ -811,6 +761,101 @@ $.widget("parameter_image.dendrogram",
       ;
   },
 
+  _set_hidden_simulations: function()
+  {
+    console.log("setting hidden simulations in dendrogram");
+    var self = this;
+
+    var selection = [];
+    
+    update_selected_nodes(self.root, selection);
+    
+    self.options.selected_nodes = self._getNodeIndexes(selection);
+
+    self._style_selected_nodes();
+    self._color_links();
+
+    self.element.trigger("node-selection-changed", {node:null, skip_bookmarking:false, selection:selection});
+
+    function update_selected_nodes(d, selection)
+    {
+      var image_index = d["image-index"];
+      if(image_index != null)
+      {
+        if(self.options.hidden_simulations.indexOf(image_index) > -1)
+        {
+          d.selected = false;
+        }
+        else
+        {
+          d.selected = true;
+          selection.push({"node-index" : d["node-index"], "image-index" : d["image-index"], "data-table-index" : d["data-table-index"]});
+        }
+      }
+      if(d.children)
+        for(var i=0; i<d.children.length; i++)
+          update_selected_nodes(d.children[i], selection);
+      if(d._children)
+        for(var i=0; i<d._children.length; i++)
+          update_selected_nodes(d._children[i], selection);
+    }
+  },
+
+  _style_selected_nodes: function()
+  {
+    var self = this;
+    self.container.selectAll(".node")
+      .classed("selected", function(d) { return d.selected; })
+      ;
+  },
+
+  _color_links: function()
+  {
+    var self = this;
+    self.container.selectAll("path.link").attr("style", function(d){
+      if(checkChildren(d.target)){
+        if(d.source.selected)
+          return "stroke: black;"
+        else
+          return "stroke: #646464;"
+      }
+    });
+
+    // Checks if target or any of its children are selected
+    function checkChildren(target){
+      if(target.selected)
+        return true;
+      else if(target.children){
+        for(var i=0; i<target.children.length; i++){
+          if(checkChildren(target.children[i]))
+            return true
+        }
+      }
+      else if(target._children){
+        for(var i=0; i<target._children.length; i++){
+          if(checkChildren(target._children[i]))
+            return true
+        }
+      }
+      return false;
+    }
+  },
+
+  _getNodeIndexes: function(nodes)
+  {
+    var node_indexes = [];
+    var node_index = null;
+
+    for(var i=0; i<nodes.length; i++)
+    {
+      node_index = nodes[i]["node-index"];
+      if(node_index != null)
+        node_indexes.push(node_index);
+    }
+
+    return node_indexes;
+  },
+
   resize_canvas: function()
   {
     this._set_cluster();
@@ -828,10 +873,10 @@ $.widget("parameter_image.dendrogram",
     else if(key == "color-options")
     {
       this.options.color_array = value.color_array;
-      this.options.color_scale = value.color_scale;
+      this.options.colorscale = value.colorscale;
       this._set_color();
     }
-    else if(key == "color_scale")
+    else if(key == "colorscale")
     {
       this._set_color();
     }
@@ -844,6 +889,10 @@ $.widget("parameter_image.dendrogram",
       if(value == undefined)
         this.options.highlight = [];
       this._set_highlight();
+    }
+    else if(key == "hidden_simulations")
+    {
+      this._set_hidden_simulations();
     }
   },
 
