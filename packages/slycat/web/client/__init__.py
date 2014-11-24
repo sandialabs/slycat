@@ -419,7 +419,31 @@ class Connection(object):
     self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
   def put_model_parameter(self, mid, name, value, input=True):
-    """Sets a model parameter value."""
+    """Store a model parameter artifact.
+
+    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+    as part of its database record, so they should be limited in size (larger data should be stored using
+    arraysets or files).
+
+    To get the value of a parameter artifact, use :func:`get_model` and read the value
+    directly from the model record.  An artifact named `foo` will be accessible in the
+    record as `model["artifact:foo"]`.
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+    name : string, required
+      Unique (within the model) artifact name.
+    value : object, required
+      An arbitrary collection of JSON-compatible data.
+    input : boolean, optional
+      Marks whether this artifact is a model input.
+
+    See Also
+    --------
+    :ref:`PUT Model Parameter`
+    """
     self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
