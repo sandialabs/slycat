@@ -1319,7 +1319,7 @@ def get_configuration_version():
     if not get_configuration_version.initialized:
       get_configuration_version.initialized = True
       try:
-        get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE).communicate()[0].strip()
+        get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], cwd=os.path.dirname(__file__), stdout=subprocess.PIPE).communicate()[0].strip()
       except:
         pass
   return {"version" : slycat.__version__, "commit" : get_configuration_version.commit}
