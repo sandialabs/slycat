@@ -184,13 +184,21 @@ def start(root_path, config_file):
     if "tools.staticdir.dir" in section:
       section["tools.staticdir.dir"] = abspath(section["tools.staticdir.dir"])
 
+  # Ensure SSL related paths are absolute.
+  if "server.ssl_private_key" in configuration["global"]:
+    configuration["global"]["server.ssl_private_key"] = abspath(configuration["global"]["server.ssl_private_key"])
+  if "server.ssl_certificate" in configuration["global"]:
+    configuration["global"]["server.ssl_certificate"] = abspath(configuration["global"]["server.ssl_certificate"])
+  if "server.ssl_certificate_chain" in configuration["global"]:
+    configuration["global"]["server.ssl_certificate_chain"] = abspath(configuration["global"]["server.ssl_certificate_chain"])
+
   # We want fine-grained control over PyOpenSSL here.
   if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
     cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-    cherrypy.server.ssl_context.use_privatekey_file(abspath(configuration["global"]["server.ssl_private_key"]))
-    cherrypy.server.ssl_context.use_certificate_file(abspath(configuration["global"]["server.ssl_certificate"]))
+    cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
+    cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
     if "server.ssl_certificate_chain" in configuration["global"]:
-      cherrypy.server.ssl_context.load_verify_locations(abspath(configuration["global"]["server.ssl_certificate_chain"]))
+      cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
     if "ssl-ciphers" in configuration["slycat"]:
       cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 
