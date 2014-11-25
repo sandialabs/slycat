@@ -12,11 +12,15 @@
       component.logo_url = server_root + "css/slycat-small.png";
       component.model = ko.mapping.fromJS({description:""});
       component.model_marking = ko.observable(params.model_marking);
+      component.model_id = params.model_id;
       component.model_name = ko.observable(params.model_name);
       component.model_root = server_root + "models/";
+      component.new_project_name = ko.observable(params.project_name);
+      component.new_project_description = ko.observable(params.project_description);
       component.new_model_description = ko.observable("");
       component.new_model_marking = ko.observable(params.model_marking);
       component.new_model_name = ko.observable(params.model_name);
+      component.project_id = params.project_id;
       component.project_name = params.project_name;
       component.projects_url = server_root + "projects";
       component.project_url = server_root + "projects/" + params.project_id;
@@ -63,6 +67,33 @@
           processData : false,
           type : "PUT",
           url : server_root + "models/" + model._id(),
+        });
+      }
+
+      component.create_project = function()
+      {
+        var project =
+        {
+          "name" : component.new_project_name(),
+          "description" : component.new_project_description(),
+        };
+        console.log("new project", project);
+
+        $.ajax(
+        {
+          contentType : "application/json",
+          data: $.toJSON(project),
+          processData: false,
+          type : "POST",
+          url : server_root + "projects",
+          success: function(result)
+          {
+            window.location.href = server_root + "projects/" + result.id;
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("Error creating project: " + reason_phrase);
+          }
         });
       }
 
@@ -251,9 +282,9 @@
       </div> \
       <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
-          <li><a data-bind="attr:{href:projects_url}">Projects</a></li> \
-          <li><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
-          <li class="active"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model.description()}}"></a></li> \
+          <li data-bind="css:{active:!(project_id && model_id)}"><a data-bind="attr:{href:projects_url}">Projects</a></li> \
+          <li data-bind="visible: project_id, css:{active:project_id && !model_id}"><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
+          <li data-bind="visible: model_id, css:{active:model_id}"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model.description()}}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \
@@ -280,7 +311,8 @@
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
+          <li><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
+          <li data-bind="visible: model_id"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
@@ -313,6 +345,35 @@
         </div> \
         <div class="modal-footer"> \
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
+        </div> \
+      </div> \
+    </div> \
+  </div> \
+  <div class="modal fade" id="slycat-create-project"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-header"> \
+          <h3 class="modal-title">Create Project</h3> \
+        </div> \
+        <div class="modal-body"> \
+          <form class="form-horizontal"> \
+            <div class="form-group"> \
+              <label for="slycat-project-name" class="col-sm-2 control-label">Name</label> \
+              <div class="col-sm-10"> \
+                <input id="slycat-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_project_name"></input> \
+              </div> \
+            </div> \
+            <div class="form-group"> \
+              <label for="slycat-project-description" class="col-sm-2 control-label">Description</label> \
+              <div class="col-sm-10"> \
+                <textarea id="slycat-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_project_description"></textarea> \
+              </div> \
+            </div> \
+          </form> \
+        </div> \
+        <div class="modal-footer"> \
+          <button class="btn btn-primary" data-bind="click:create_project" data-dismiss="modal">Create Project</button> \
+          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
       </div> \
     </div> \

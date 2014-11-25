@@ -71,7 +71,35 @@ def get_projects(revision=None, _=None):
   cherrypy.response.headers["content-type"] = accept
 
   if accept == "text/html":
-    return slycat.web.server.template.render("projects.html", get_context())
+    if get_projects.css_bundle is None:
+      with get_projects.bundle_lock:
+        get_projects.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
+        [
+          "css/namespaced-bootstrap.css",
+          "css/slycat.css",
+        ])
+        get_projects.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
+        [
+          "js/jquery-2.1.1.min.js",
+          "js/jquery-migrate-1.2.1.js",
+          "js/jquery.json-2.4.min.js",
+          "js/jquery-ui-1.10.4.custom.min.js",
+          "js/bootstrap.js",
+          "js/knockout-3.2.0.js",
+          "js/knockout.mapping.js",
+          "js/knockout-projections.js",
+          "js/knockstrap.js",
+          "js/slycat-browser.js",
+          "js/slycat-navbar.js",
+          "js/slycat-projects.js",
+        ])
+        slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+
+    context = {}
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["slycat-css-bundle"] = get_projects.css_bundle
+    context["slycat-js-bundle"] = get_projects.js_bundle
+    return slycat.web.server.template.render("slycat-projects.html", context)
 
   if accept == "application/json":
     if revision is not None:
@@ -92,10 +120,16 @@ def get_projects(revision=None, _=None):
       return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
 get_projects.monitor = None
 get_projects.timeout = None
+get_projects.css_bundle = None
+get_projects.js_bundle = None
+get_projects.bundle_lock = threading.Lock()
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_projects():
+  if "name" not in cherrypy.request.json:
+    raise cherrypy.HTTPError("400 Missing project name.")
+
   database = slycat.web.server.database.couchdb.connect()
   pid, rev = database.save({
     "type" : "project",

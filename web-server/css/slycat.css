@@ -71,3 +71,9 @@ slycat-navbar .alert pre
   flex-direction: column;
 }
 
+#slycat-projects .container
+{
+  padding-top: 12px;
+}
+
+
