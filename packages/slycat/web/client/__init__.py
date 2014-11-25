@@ -419,7 +419,31 @@ class Connection(object):
     self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
   def put_model_parameter(self, mid, name, value, input=True):
-    """Sets a model parameter value."""
+    """Store a model parameter artifact.
+
+    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+    as part of its database record, so they should be limited in size (larger data should be stored using
+    arraysets or files).
+
+    To get the value of a parameter artifact, use :func:`get_model` and read the value
+    directly from the model record.  An artifact named `foo` will be accessible in the
+    record as `model["artifact:foo"]`.
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+    name : string, required
+      Unique (within the model) artifact name.
+    value : object, required
+      An arbitrary collection of JSON-compatible data.
+    input : boolean, optional
+      Marks whether this artifact is a model input.
+
+    See Also
+    --------
+    :ref:`PUT Model Parameter`
+    """
     self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
@@ -493,16 +517,45 @@ class Connection(object):
       return self.post_projects(name, description)
 
   def update_model(self, mid, **kwargs):
-    """Updates the model state/result/progress/message."""
+    """Update model state.
+
+    This function provides a more convenient alternative to :func:`put_model`.
+
+    See Also
+    --------
+    :func:`put_model`
+    """
     model = {key : value for key, value in kwargs.items() if value is not None}
     self.put_model(mid, model)
 
   def join_model(self, mid):
     """Wait for a model to complete before returning.
 
-    Note that a model that hasn't been finished will never complete - you should
+    A Slycat model goes through several distinct phases over its lifetime:
+
+    1. The model is created.
+    2. Input artifacts are pushed into the model.
+    3. The model is marked "finished".
+    4. Optional one-time computation is performed on the server, storing output artifacts.
+    5. The model is complete and ready to be viewed.
+
+    Use this function in scripts that have performed steps 1, 2, and 3 and need to wait until
+    step 4 completes.
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+
+    Notes
+    -----
+    A model that hasn't been finished will never complete - you should
     ensure that post_model_finish() is called successfully before calling
     join_model().
+
+    See Also
+    --------
+    :func:`post_model_finish`
     """
     while True:
       model = self.request("GET", "/models/%s" % (mid), headers={"accept":"application/json"})
