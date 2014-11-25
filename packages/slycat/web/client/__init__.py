@@ -517,16 +517,45 @@ class Connection(object):
       return self.post_projects(name, description)
 
   def update_model(self, mid, **kwargs):
-    """Updates the model state/result/progress/message."""
+    """Update model state.
+
+    This function provides a more convenient alternative to :func:`put_model`.
+
+    See Also
+    --------
+    :func:`put_model`
+    """
     model = {key : value for key, value in kwargs.items() if value is not None}
     self.put_model(mid, model)
 
   def join_model(self, mid):
     """Wait for a model to complete before returning.
 
-    Note that a model that hasn't been finished will never complete - you should
+    A Slycat model goes through several distinct phases over its lifetime:
+
+    1. The model is created.
+    2. Input artifacts are pushed into the model.
+    3. The model is marked "finished".
+    4. Optional one-time computation is performed on the server, storing output artifacts.
+    5. The model is complete and ready to be viewed.
+
+    Use this function in scripts that have performed steps 1, 2, and 3 and need to wait until
+    step 4 completes.
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+
+    Notes
+    -----
+    A model that hasn't been finished will never complete - you should
     ensure that post_model_finish() is called successfully before calling
     join_model().
+
+    See Also
+    --------
+    :func:`post_model_finish`
     """
     while True:
       model = self.request("GET", "/models/%s" % (mid), headers={"accept":"application/json"})
