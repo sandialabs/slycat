@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    <title>{{slycat-project.name}} - Slycat Project</title>
+  </head>
+
+  <body>
+    <slycat-navbar params="project_id:'{{slycat-project._id}}', project_name:'{{slycat-project.name}}'"></slycat-navbar>
+    <div class="bootstrap-styles">
+      <div id="slycat-project" class="slycat-content">
+        <div class="container">
+          <div class="panel panel-default">
+<!--
+            <div class="panel-heading">
+              <span class="h4" data-bind="text:project.name"></span>
+            </div>
+-->
+            <div class="panel-body">
+              <p data-bind="text:project.description"></p>
+              <p><span>Project Members:</span>
+                <!-- ko foreach:project.acl.administrators -->
+                  <span data-bind="tooltip:{title:'Project administrator'}">
+                    <span data-bind="text:user"></span>
+                  </span>
+                <!-- /ko -->
+                <!-- ko foreach:project.acl.writers -->
+                  <span data-bind="tooltip:{title:'Project writer'}">
+                    <span data-bind="text:user"></span>
+                  </span>
+                <!-- /ko -->
+                <!-- ko foreach:project.acl.readers -->
+                  <span data-bind="tooltip:{title:'Project reader'}">
+                    <span data-bind="text:user"></span>
+                  </span>
+                <!-- /ko -->
+              </p>
+              <p>
+                <small>
+                  <em>
+                    Created <span data-bind="text:project.created"></span>
+                    by <span data-bind="text:project.creator"></span>.
+                  </em>
+                </small>
+              </p>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="list-group" data-bind="foreach: models">
+              <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
+                <span class="label label-default" data-bind="text:$data['model-type']() + ' model'"></span>
+                <strong data-bind="text:name"></strong>
+                <div class="label" style="display: inline-block;" ng-bind-html="markings[model.marking].html"></div>
+                <span data-bind="visible: result() == 'failed'" class="label label-danger" popover-placement="right" popover="{{model.message}}" popover-title="Error message:" popover-trigger="mouseenter" class="bg-danger">Failed</span>
+                <p>
+                  <small>
+                    <span data-bind="text:description"></span>
+                    <em>
+                      Created <span data-bind="text:created"></span>
+                      by <span data-bind="text:creator"></span>
+                    </em>
+                  </small>
+                </p>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

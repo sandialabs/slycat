@@ -4,29 +4,26 @@
   {
     viewModel: function(params)
     {
+      console.log("slycat-navbar", $.toJSON(params));
+
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var component = this;
 
       component.alerts = ko.mapping.fromJS([]);
-      component.brand_image = server_root + "css/slycat-brand.png";
-      component.logo_url = server_root + "css/slycat-small.png";
       component.model = ko.mapping.fromJS({description:""});
       component.model_marking = ko.observable(params.model_marking);
       component.model_id = params.model_id;
       component.model_name = ko.observable(params.model_name);
       component.model_root = server_root + "models/";
-      component.new_project_name = ko.observable(params.project_name);
-      component.new_project_description = ko.observable(params.project_description);
+      component.new_project_name = ko.observable("");
+      component.new_project_description = ko.observable("");
       component.new_model_description = ko.observable("");
       component.new_model_marking = ko.observable(params.model_marking);
       component.new_model_name = ko.observable(params.model_name);
-      component.project_id = params.project_id;
-      component.project_name = params.project_name;
-      component.projects_url = server_root + "projects";
-      component.project_url = server_root + "projects/" + params.project_id;
+      component.project = ko.mapping.fromJS({_id:params.project_id,name:params.project_name,description:""});
       component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
-      component.version = ko.observable("");
+      component.version = ko.mapping.fromJS({version:"", commit:""});
       var open_models_mapping =
       {
         key: function(model)
@@ -77,7 +74,6 @@
           "name" : component.new_project_name(),
           "description" : component.new_project_description(),
         };
-        console.log("new project", project);
 
         $.ajax(
         {
@@ -97,7 +93,33 @@
         });
       }
 
-      component.save_model_changes = function()
+      component.save_project = function()
+      {
+        var project =
+        {
+          "name" : component.new_project_name(),
+          "description" : component.new_project_description(),
+        };
+
+        $.ajax(
+        {
+          type : "PUT",
+          url : server_root + "projects/" + params.project_id,
+          contentType : "application/json",
+          data : $.toJSON(project),
+          processData : false,
+          success : function()
+          {
+            document.location.reload(true);
+          },
+          error : function(request, status, reason_phrase)
+          {
+            window.alert("Error updating project: " + reason_phrase);
+          }
+        });
+      }
+
+      component.save_model = function()
       {
         var model =
         {
@@ -169,6 +191,23 @@
         });
       }
 
+      // If there's a current project, load it.
+      if(params.project_id)
+      {
+        $.ajax(
+        {
+          dataType: "json",
+          type : "GET",
+          url : server_root + "projects/" + params.project_id,
+          success : function(project)
+          {
+            ko.mapping.fromJS(project, component.project);
+            component.new_project_name(project.name);
+            component.new_project_description(project.description);
+          },
+        });
+      }
+
       // If there's a current model, load it.
       if(params.model_id)
       {
@@ -215,7 +254,7 @@
         url : server_root + "configuration/version",
         success : function(version)
         {
-          component.version("Version " + version.version + ", commit " + version.commit);
+          ko.mapping.fromJS(version, component.version);
         }
       });
 
@@ -278,12 +317,12 @@
           <span class="icon-bar"></span> \
           <span class="icon-bar"></span> \
         </button> \
-        <a class="navbar-brand" data-bind="attr:{href:projects_url}">Slycat</a> \
+        <a class="navbar-brand" data-bind="attr:{href:server_root + \'projects\'}">Slycat</a> \
       </div> \
       <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
-          <li data-bind="css:{active:!(project_id && model_id)}"><a data-bind="attr:{href:projects_url}">Projects</a></li> \
-          <li data-bind="visible: project_id, css:{active:project_id && !model_id}"><a data-bind="text:project_name, attr:{href:project_url}"></a></li> \
+          <li data-bind="visible: true, css:{active:!project._id && !model_id}"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
+          <li data-bind="visible: project._id, css:{active:project._id && !model_id}"><a data-bind="text:project.name, attr:{href:server_root + \'projects/\' + project._id()}"></a></li> \
           <li data-bind="visible: model_id, css:{active:model_id}"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model.description()}}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
@@ -311,7 +350,8 @@
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
+          <li data-bind="visible: !project._id && !model_id"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
+          <li data-bind="visible: project._id && !model_id"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
           <li data-bind="visible: model_id"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
@@ -337,10 +377,10 @@
       <div class="modal-content"> \
         <div class="modal-body"> \
           <div class="jumbotron"> \
-            <img data-bind="attr:{src:brand_image}"/> \
+            <img data-bind="attr:{src:server_root + \'css/slycat-brand.png\'}"/> \
             <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
           </div> \
-          <p data-bind="text:version"></p> \
+          <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p> \
           <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p> \
         </div> \
         <div class="modal-footer"> \
@@ -354,6 +394,35 @@
       <div class="modal-content"> \
         <div class="modal-header"> \
           <h3 class="modal-title">Create Project</h3> \
+        </div> \
+        <div class="modal-body"> \
+          <form class="form-horizontal"> \
+            <div class="form-group"> \
+              <label for="slycat-create-project-name" class="col-sm-2 control-label">Name</label> \
+              <div class="col-sm-10"> \
+                <input id="slycat-create-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_project_name"></input> \
+              </div> \
+            </div> \
+            <div class="form-group"> \
+              <label for="slycat-create-project-description" class="col-sm-2 control-label">Description</label> \
+              <div class="col-sm-10"> \
+                <textarea id="slycat-create-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_project_description"></textarea> \
+              </div> \
+            </div> \
+          </form> \
+        </div> \
+        <div class="modal-footer"> \
+          <button class="btn btn-primary" data-bind="click:create_project" data-dismiss="modal">Create Project</button> \
+          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
+        </div> \
+      </div> \
+    </div> \
+  </div> \
+  <div class="modal fade" id="slycat-edit-project"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-header"> \
+          <h3 class="modal-title">Edit Project</h3> \
         </div> \
         <div class="modal-body"> \
           <form class="form-horizontal"> \
@@ -372,7 +441,38 @@
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-primary" data-bind="click:create_project" data-dismiss="modal">Create Project</button> \
+          <button class="btn btn-success pull-left" data-toggle="modal" data-target="#slycat-add-project-member">Add Project Member</button> \
+          <button class="btn btn-primary" data-bind="click:save_project" data-dismiss="modal">Save Project</button> \
+          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
+        </div> \
+      </div> \
+    </div> \
+  </div> \
+  <div class="modal fade" id="slycat-add-project-member"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-header"> \
+          <h3 class="modal-title">Add Project Member</h3> \
+        </div> \
+        <div class="modal-body"> \
+          <form role="form"> \
+            <div class="form-group"> \
+              <label>Permissions</label> \
+              <div class="btn-group" style="width:100%"> \
+                <label class="btn btn-primary" ng-model="group.current" btn-radio="\'reader\'">Reader</label> \
+                <label class="btn btn-primary" ng-model="group.current" btn-radio="\'writer\'">Writer</label> \
+                <label class="btn btn-primary" ng-model="group.current" btn-radio="\'administrator\'">Administrator</label> \
+              </div> \
+              <p class="help-block">{{group.description[group.current]}}</p> \
+            <div> \
+            <div class="form-group"> \
+              <label>Username</label> \
+              <input type="text" class="form-control input-sm" title="Username" placeholder="Username" ng-model="member.uid"></input> \
+            </div> \
+          </form> \
+        </div> \
+        <div class="modal-footer"> \
+          <button class="btn btn-success" data-bind="">Add Member</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
       </div> \
@@ -407,8 +507,8 @@
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
-          <button class="btn btn-primary" data-bind="click:save_model_changes" data-dismiss="modal">Save Changes</button> \
+          <button class="btn btn-danger pull-left" data-bind="click:delete_model">delete model</button> \
+          <button class="btn btn-primary" data-bind="click:save_model" data-dismiss="modal">Save Changes</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
       </div> \

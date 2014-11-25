@@ -151,29 +151,61 @@ def get_project(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project)
 
+  if accept == "application/json":
+    return json.dumps(project)
+
   if accept == "text/html":
+    if get_project.css_bundle is None:
+      with get_project.bundle_lock:
+        get_project.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
+        [
+          "css/namespaced-bootstrap.css",
+          "css/slycat.css",
+        ])
+        get_project.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
+        [
+          "js/jquery-2.1.1.min.js",
+          "js/jquery-migrate-1.2.1.js",
+          "js/jquery.json-2.4.min.js",
+          "js/jquery-ui-1.10.4.custom.min.js",
+          "js/bootstrap.js",
+          "js/knockout-3.2.0.js",
+          "js/knockout.mapping.js",
+          "js/knockout-projections.js",
+          "js/knockstrap.js",
+          "js/slycat-browser.js",
+          "js/slycat-navbar.js",
+          "js/slycat-project.js",
+        ])
+        slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+
     models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
     models = sorted(models, key=lambda x: x["created"], reverse=True)
 
     for model in models:
       model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
-    context = get_context()
-    context.update(project)
-    context["models"] = models
-    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
-    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
-    context["can-administer"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project)
-    context["acl-json"] = json.dumps(project["acl"])
-    context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
-    context["remote-hosts"] = json.dumps(get_remote_host_dict()).replace('"','\\"')
-    context["remote-hosts-arr"] = [host for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
-    context["new-model-name"] = "Model-%s" % (len(models) + 1)
+    context = {}
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["slycat-css-bundle"] = get_project.css_bundle
+    context["slycat-js-bundle"] = get_project.js_bundle
+    context["slycat-project"] = project
+#    context = get_context()
+#    context.update(project)
+#    context["models"] = models
+#    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
+#    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
+#    context["can-administer"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project)
+#    context["acl-json"] = json.dumps(project["acl"])
+#    context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
+#    context["remote-hosts"] = json.dumps(get_remote_host_dict()).replace('"','\\"')
+#    context["remote-hosts-arr"] = [host for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
+#    context["new-model-name"] = "Model-%s" % (len(models) + 1)
 
-    return slycat.web.server.template.render("project.html", context)
-
-  if accept == "application/json":
-    return json.dumps(project)
+    return slycat.web.server.template.render("slycat-project.html", context)
+get_project.css_bundle = None
+get_project.js_bundle = None
+get_project.bundle_lock = threading.Lock()
 
 def get_remote_host_dict():
   remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
