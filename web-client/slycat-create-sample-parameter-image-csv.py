@@ -69,7 +69,12 @@ os.mkdir(arguments.image_directory)
 for index in numpy.arange(arguments.row_count * arguments.image_count):
   image = PIL.Image.new("RGB", (arguments.image_width, arguments.image_height), "white")
   draw = PIL.ImageDraw.Draw(image)
-  draw.text((100, 100), "%s" % index, "black", font)
+  draw.rectangle(
+    (
+      (numpy.random.randint(0, arguments.image_width), numpy.random.randint(0, arguments.image_height)),
+      (numpy.random.randint(0, arguments.image_width), numpy.random.randint(0, arguments.image_height)),
+    ),
+    fill=numpy.random.choice(["black", "darkgreen", "goldenrod", "lightcyan"])
+    )
   image.save(os.path.join(arguments.image_directory, "%s.jpg" % index))
-
 
