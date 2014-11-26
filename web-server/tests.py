@@ -79,13 +79,13 @@ def setup():
   time.sleep(9.0)
 
   global connection, server_admin, project_admin, project_writer, project_reader, project_outsider, server_outsider
-  connection = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
-  server_admin = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
-  project_admin = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("foo", "foo"))
-  project_writer = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("bar", "bar"))
-  project_reader = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("baz", "baz"))
-  project_outsider = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("blah", "blah"))
-  server_outsider = slycat.web.client.connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False)
+  connection = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
+  server_admin = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("slycat", "slycat"))
+  project_admin = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("foo", "foo"))
+  project_writer = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("bar", "bar"))
+  project_reader = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("baz", "baz"))
+  project_outsider = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False, auth=("blah", "blah"))
+  server_outsider = slycat.web.client.Connection(host="https://localhost:8093", proxies={"http":"", "https":""}, verify=False)
 
 def teardown():
   global server_process
