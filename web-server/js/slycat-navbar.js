@@ -10,16 +10,13 @@
       var component = this;
 
       component.alerts = ko.mapping.fromJS([]);
-      component.model = ko.mapping.fromJS({description:""});
+      component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, description:"", marking:params.model_marking});
       component.model_marking = ko.observable(params.model_marking);
-      component.model_id = params.model_id;
-      component.model_name = ko.observable(params.model_name);
-      component.model_root = server_root + "models/";
-      component.new_project_name = ko.observable("");
-      component.new_project_description = ko.observable("");
       component.new_model_description = ko.observable("");
       component.new_model_marking = ko.observable(params.model_marking);
       component.new_model_name = ko.observable(params.model_name);
+      component.new_project_description = ko.observable("");
+      component.new_project_name = ko.observable("");
       component.project = ko.mapping.fromJS({_id:params.project_id,name:params.project_name,description:""});
       component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
@@ -145,7 +142,7 @@
             }
             else
             {
-              component.model_name(component.new_model_name());
+              component.model.naem(component.new_model_name());
               component.model.description(component.new_model_description());
               component.model_marking(component.new_model_marking());
             }
@@ -159,7 +156,7 @@
 
       component.delete_model = function()
       {
-        if(window.confirm("Delete " + component.model_name() + "? All data will be deleted immediately, and this cannot be undone."))
+        if(window.confirm("Delete " + component.model.name() + "? All data will be deleted immediately, and this cannot be undone."))
         {
           $.ajax(
           {
@@ -321,9 +318,9 @@
       </div> \
       <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
-          <li data-bind="visible: true, css:{active:!project._id && !model_id}"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
-          <li data-bind="visible: project._id, css:{active:project._id && !model_id}"><a data-bind="text:project.name, attr:{href:server_root + \'projects/\' + project._id()}"></a></li> \
-          <li data-bind="visible: model_id, css:{active:model_id}"><a id="slycat-model-description" data-bind="text:model_name,popover:{options:{content:model.description()}}"></a></li> \
+          <li data-bind="visible: true"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
+          <li data-bind="visible: project._id"><a data-bind="text:project.name, attr:{href:server_root + \'projects/\' + project._id()}"></a></li> \
+          <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{options:{content:model.description()}}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \
@@ -331,7 +328,7 @@
             <ul class="dropdown-menu"> \
               <!-- ko foreach: finished_models --> \
                 <li> \
-                  <a data-bind="attr:{href:$parent.model_root + $data._id()},popover:{trigger:\'hover\',content:$data.message()}"> \
+                  <a data-bind="attr:{href:$parent.server_root + \'models/\' + $data._id()},popover:{trigger:\'hover\',content:$data.message()}"> \
                     <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{\'btn-success\':$data.result()===\'succeeded\',\'btn-danger\':$data.result()!==\'succeeded\'}"><span class="glyphicon glyphicon-ok"></span></button> \
                     <span data-bind="text:name"></span> \
                   </a> \
@@ -340,7 +337,7 @@
               <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li> \
               <!-- ko foreach: running_models --> \
                 <li> \
-                  <a data-bind="attr:{href:$parent.model_root + $data._id()}"> \
+                  <a data-bind="attr:{href:$parent.server_root + \'models/\' + $data._id()}"> \
                     <span data-bind="text:name"></span> \
                   </a> \
                   <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}"> \
@@ -350,9 +347,9 @@
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li data-bind="visible: !project._id && !model_id"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
-          <li data-bind="visible: project._id && !model_id"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
-          <li data-bind="visible: model_id"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
+          <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
+          <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
@@ -464,7 +461,7 @@
                 <label class="btn btn-primary" ng-model="group.current" btn-radio="\'administrator\'">Administrator</label> \
               </div> \
               <p class="help-block">{{group.description[group.current]}}</p> \
-            <div> \
+            </div> \
             <div class="form-group"> \
               <label>Username</label> \
               <input type="text" class="form-control input-sm" title="Username" placeholder="Username" ng-model="member.uid"></input> \

@@ -8,10 +8,11 @@ $(document).ready(function()
 {
   var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
 
-  var model = {}
+  var model = {};
   model.server_root = server_root;
   model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
   model.models = ko.mapping.fromJS([]);
+  model.markings = ko.mapping.fromJS([]);
 
   // Load information about the project.
   $.ajax(
@@ -37,6 +38,18 @@ $(document).ready(function()
     },
   });
 
+  // Load available markings.
+  $.ajax(
+  {
+    dataType : "json",
+    type : "GET",
+    url : server_root + "configuration/markings",
+    success : function(markings)
+    {
+      ko.mapping.fromJS(markings, model.markings);
+    },
+  });
+  
   // Size the page content to consume available space
   function size_content()
   {

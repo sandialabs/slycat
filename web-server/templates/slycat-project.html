@@ -56,12 +56,12 @@ rights in this software.
             </div>
           </div>
 
-          <div class="panel panel-default">
+          <div class="panel panel-default" data-bind="visible: models().length">
             <div class="list-group" data-bind="foreach: models">
               <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
                 <span class="label label-default" data-bind="text:$data['model-type']() + ' model'"></span>
                 <strong data-bind="text:name"></strong>
-                <div class="label" style="display: inline-block;" ng-bind-html="markings[model.marking].html"></div>
+                <div class="label" style="display: inline-block;"></div>
                 <span data-bind="visible: result() == 'failed'" class="label label-danger" popover-placement="right" popover="{{model.message}}" popover-title="Error message:" popover-trigger="mouseenter" class="bg-danger">Failed</span>
                 <p>
                   <small>
