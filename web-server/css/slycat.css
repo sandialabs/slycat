@@ -31,6 +31,15 @@ body
   margin: 0;
 }
 
+.bootstrap-styles .navbar-brand
+{
+  background: url("slycat-logo-navbar.png") transparent 0 15px no-repeat;
+  background-size: auto 20px;
+  padding-right: 0;
+  text-align: right;
+  width: 155px;
+}
+
 .bootstrap-styles .navbar .breadcrumb
 {
   background-color: transparent;
