@@ -10,14 +10,31 @@
       var component = this;
 
       component.alerts = ko.mapping.fromJS([]);
-      component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, description:"", marking:params.model_marking});
-      component.model_marking = ko.observable(params.model_marking);
+      component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
+      component.model_popover = ko.pureComputed(function()
+      {
+        return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
+      });
       component.new_model_description = ko.observable("");
       component.new_model_marking = ko.observable(params.model_marking);
       component.new_model_name = ko.observable(params.model_name);
       component.new_project_description = ko.observable("");
       component.new_project_name = ko.observable("");
-      component.project = ko.mapping.fromJS({_id:params.project_id,name:params.project_name,description:""});
+      component.project = ko.mapping.fromJS({_id:params.project_id,name:params.project_name,acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
+      component.project_popover = ko.pureComputed(function()
+      {
+        var members = [];
+        for(var i = 0; i != component.project.acl.administrators().length; ++i)
+          members.push(component.project.acl.administrators()[i].user());
+        for(var i = 0; i != component.project.acl.writers().length; ++i)
+          members.push(component.project.acl.writers()[i].user());
+        for(var i = 0; i != component.project.acl.readers().length; ++i)
+          members.push(component.project.acl.readers()[i].user());
+        var result = "<p>" + component.project.description() + "</p>";
+        result += "<p><small>Members: " + members.join(",") + "</small></p>";
+        result += "<p><small><em>Created " + component.project.created() + " by " + component.project.creator() + "</em></small></p>";
+        return result;
+      });
       component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.mapping.fromJS({version:"", commit:""});
@@ -142,9 +159,9 @@
             }
             else
             {
-              component.model.naem(component.new_model_name());
+              component.model.name(component.new_model_name());
               component.model.description(component.new_model_description());
-              component.model_marking(component.new_model_marking());
+              component.model.marking(component.new_model_marking());
             }
           },
           error : function(request, status, reason_phrase)
@@ -319,8 +336,8 @@
       <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
           <li data-bind="visible: true"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
-          <li data-bind="visible: project._id"><a data-bind="text:project.name, attr:{href:server_root + \'projects/\' + project._id()}"></a></li> \
-          <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{options:{content:model.description()}}"></a></li> \
+          <li data-bind="visible: project._id"><a data-bind="text:project.name,popover:{trigger:\'hover\',html:true,content:project_popover()},attr:{href:server_root + \'projects/\' + project._id()}"></a></li> \
+          <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
           <li class="dropdown"> \

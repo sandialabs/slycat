@@ -20,42 +20,6 @@ rights in this software.
     <div class="bootstrap-styles">
       <div id="slycat-project" class="slycat-content">
         <div class="container">
-          <div class="panel panel-default">
-<!--
-            <div class="panel-heading">
-              <span class="h4" data-bind="text:project.name"></span>
-            </div>
--->
-            <div class="panel-body">
-              <p data-bind="text:project.description"></p>
-              <p><span>Project Members:</span>
-                <!-- ko foreach:project.acl.administrators -->
-                  <span data-bind="tooltip:{title:'Project administrator'}">
-                    <span data-bind="text:user"></span>
-                  </span>
-                <!-- /ko -->
-                <!-- ko foreach:project.acl.writers -->
-                  <span data-bind="tooltip:{title:'Project writer'}">
-                    <span data-bind="text:user"></span>
-                  </span>
-                <!-- /ko -->
-                <!-- ko foreach:project.acl.readers -->
-                  <span data-bind="tooltip:{title:'Project reader'}">
-                    <span data-bind="text:user"></span>
-                  </span>
-                <!-- /ko -->
-              </p>
-              <p>
-                <small>
-                  <em>
-                    Created <span data-bind="text:project.created"></span>
-                    by <span data-bind="text:project.creator"></span>.
-                  </em>
-                </small>
-              </p>
-            </div>
-          </div>
-
           <div class="panel panel-default" data-bind="visible: models().length">
             <div class="list-group" data-bind="foreach: models">
               <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
