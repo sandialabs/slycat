@@ -151,7 +151,7 @@
           processData : false,
           success : function()
           {
-            if(component.new_model_marking() !== component.model_marking())
+            if(component.new_model_marking() !== component.model.marking())
             {
               // Since marking changes have the potential to alter the page
               // structure in arbitrary ways, just reload.
