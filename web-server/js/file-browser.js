@@ -70,8 +70,8 @@ $.widget("slycat.browser",
         if(current_path != path){
           enter_directory(path)
         }else{
-          $(".file-browser").find('tr').hide();
-          $(".file-browser").find('tr:regex(id,^'+$(this).val().replace(".","dot").split("/").splice(-1).join("/")+')').show();
+          //$(".file-browser").find('tr').hide();
+          //$(".file-browser").find('tr:regex(id,^'+$(this).val().replace(".","dot").split("/").splice(-1).join("/")+')').show();
           //Always show the up dir directory
           $("tr#up_dir").show();
         }
