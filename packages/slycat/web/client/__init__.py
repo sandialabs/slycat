@@ -453,6 +453,31 @@ class Connection(object):
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
 
+  def get_model_parameter(self, mid, name):
+    """Retrieve a model parameter artifact.
+
+    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+    as part of its database record, so they should be limited in size (larger data should be stored using
+    arraysets or files).
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+    name : string, required
+      Unique (within the model) artifact name.
+
+    Returns
+    -------
+    parameter : JSON-compatible object
+
+    See Also
+    --------
+    :ref:`PUT Model Parameter`
+    """
+    model = self.get_model(mid)
+    return model["artifact:" + name]
+
   def find_project(self, name):
     """Return a project identified by name.
 
