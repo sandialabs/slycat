@@ -22,8 +22,6 @@ import slycat.web.server.agent
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
-import slycat.web.server.model.parameter_image
-import slycat.web.server.model.tracer_image
 import slycat.web.server.plugin
 import slycat.web.server.resource
 import slycat.web.server.ssh
@@ -229,7 +227,7 @@ def post_project_models(pid):
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
   model_type = cherrypy.request.json["model-type"]
-  allowed_model_types = slycat.web.server.plugin.manager.models.keys() + ["parameter-image", "tracer-image"]
+  allowed_model_types = slycat.web.server.plugin.manager.models.keys()
   if model_type not in allowed_model_types:
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
@@ -466,16 +464,12 @@ def post_model_finish(mid):
 
   if model["state"] != "waiting":
     raise cherrypy.HTTPError("400 Only waiting models can be finished.")
-  if model["model-type"] not in slycat.web.server.plugin.manager.models.keys() + ["parameter-image", "tracer-image"]:
+  if model["model-type"] not in slycat.web.server.plugin.manager.models.keys():
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
   slycat.web.server.update_model(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
   if model["model-type"] in slycat.web.server.plugin.manager.models.keys():
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
-  elif model["model-type"] == "parameter-image":
-    slycat.web.server.model.parameter_image.finish(database, model)
-  elif model["model-type"] == "tracer-image":
-    slycat.web.server.model.tracer_image.finish(database, model)
   cherrypy.response.status = "202 Finishing model."
 
 def put_model_file(mid, name, input=None, file=None):
