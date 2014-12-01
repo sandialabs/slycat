@@ -57,57 +57,38 @@ $.widget("slycat.browser",
       }
     }
 
-    //THIS IS GONE FOR REFACTOR
-    //This method will take a column id and collapse all folder after it while updating the file path input field to be correct.
-    //function toggle_all_folders_after_column(column_id, slide_boolean){
-    //  visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
-    //  max = visible_column_ids[visible_column_ids.length-1];
-    //  for(var i = (column_id+1); i <= max; i++){
-    //    $(".file-browser#"+i).remove();
-    //    visible_column_ids = $(".file-browser:visible").map(function(){return parseInt(this.id);}).sort();
-    //    if(slide_boolean){
-    //      column_to_show = visible_column_ids[0] - 1;
-    //      $(".file-browser#"+column_to_show).show();
-    //    }
-    //  }
-    //  new_value = $(".path-entry-input").val().split("/").splice(0,column_id-1).join("/")+"/";
-    //  //Undo the autocomplete hiding of rows.
-    //  $(".file-browser#"+column_id).find("tr").show();
-    //  $(".path-entry-input").val(new_value);
-    //}
+    //This will store the current path the user is on. Will be used to decide if we need to change directories.
+    var current_path = ""
 
-    //THIS IS GONE FOR REFACTOR
-    //Watch what they type into the file path input field and click, or unclick folders based on it.
-    //$(".path-entry-input").keypress(function(event){
-    //  if(event.which == 47){
-    //    folder_array = $(this).val().split("/");
-    //    latest_folder = folder_array[folder_array.length-1];
-    //    //Click the folder
-    //    input_with_text = true;
-    //    $("tr#"+latest_folder.replace(".","dot")).find(".arrow").click();
-    //  }else if (event.which == 8){
-    //    //Backspace was pressed
-    //    folder_array = $(this).val().split("/");
-    //    latest_folder = folder_array[folder_array.length-1];
-    //    if (latest_folder == ""){
-    //      path_to_add = folder_array[folder_array.length-2];
-    //      column = folder_array.length-1;
-    //      toggle_all_folders_after_column(column, true);
-    //      previous_dir = $(".file-browser#"+column).find(".directory.open");
-    //      previous_dir.removeClass("open");
-    //      //Random character appended so that the backspace will take effect on it. Hacky? Yes. Future fix desired.
-    //      $(this).val($(this).val()+path_to_add+"r");
-    //    }
-    //  }
-    //});
+    //When the user keyup occurs, if the last character is not a '/', we need to filter the results to what they typed. (optional)
+    $(".path-entry-input").keyup(function(event){
+      //If the last character of the path is a slash, go into that directory. This works with typing or pasting.
+      if($(this).val().slice(-1) =='/'){
+        enter_directory($(this).val())
+      }else{
+        path = $(this).val().split('/').slice(0,-1).join('/')+'/'
+        if(current_path != path){
+          enter_directory(path)
+        }else{
+          $(".file-browser").find('tr').hide();
+          $(".file-browser").find('tr:regex(id,^'+$(this).val().replace(".","dot").split("/").splice(-1).join("/")+')').show();
+          //Always show the up dir directory
+          $("tr#up_dir").show();
+        }
+      }
+    });
 
-    //THIS IS GONE FOR REFACTOR
-    //This is where the autocomplete happens.
-    //$(".path-entry-input").keyup(function(event){
-    //  column_id = $(this).val().split("/").length-1;
-    //  $(".file-browser#"+(column_id+1)).find('tr').hide();
-    //  matches = $(".file-browser#"+(column_id+1)).find('tr:regex(id,^'+$(this).val().replace(".","dot").split("/").splice(column_id,1).join("/")+')').show();
-    //});
+    function enter_directory(path){
+      var item = $("<tr>");
+      var entry = $("<div/>").appendTo(item);
+      item.data("path", path);
+      item.bind("toggle-directory", toggle_directory(self));
+      entry.click(select_item(self, item));
+      item.addClass("directory");
+      entry.click(click_directory(item));
+      entry.trigger("click");
+      current_path = path;
+    }
 
     function toggle_directory(self)
     {
@@ -139,6 +120,7 @@ $.widget("slycat.browser",
               $(".file-browser").find("tr.file").remove();          
 
               //This will add a folder that a user can click on to go up a directory
+              //TODO: This does not work with /dev/disk/by-path
               if (path != "/"){
                 var item = $("<tr>").attr("id","up_dir").attr("class","up").appendTo(container);
                 var entry = $("<div/>").appendTo(item);
@@ -243,5 +225,3 @@ $.widget("slycat.browser",
     return this.element.find(".selected").map(function() { return $(this).data("path"); }).get();
   },
 });
-
-
