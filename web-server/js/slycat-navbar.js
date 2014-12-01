@@ -181,6 +181,22 @@
         });
       }
 
+      component.delete_project = function()
+      {
+        if(window.confirm("Delete " + component.project.name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
+        {
+          $.ajax(
+          {
+            type : "DELETE",
+            url : server_root + "projects/" + params.project_id,
+            success : function()
+            {
+              window.location.href = server_root + "projects";
+            }
+          });
+        }
+      }
+
       component.save_model = function()
       {
         var model =
@@ -518,6 +534,7 @@
           </form> \
         </div> \
         <div class="modal-footer"> \
+          <button class="btn btn-danger pull-left" data-bind="click:delete_project">Delete Project</button> \
           <button class="btn btn-success pull-left" data-toggle="modal" data-target="#slycat-add-project-member">Add Project Member</button> \
           <button class="btn btn-primary" data-bind="click:save_project" data-dismiss="modal">Save Project</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
@@ -588,7 +605,7 @@
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-danger pull-left" data-bind="click:delete_model">delete model</button> \
+          <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
           <button class="btn btn-primary" data-bind="click:save_model" data-dismiss="modal">Save Changes</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
