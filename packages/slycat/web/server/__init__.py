@@ -83,3 +83,21 @@ def put_model_arrayset_data(database, model, name, hyperchunks):
           data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
 
         hdf5_array.set_data(attribute, hyperslice, data_hyperslice)
+
+def put_model_file(database, model, name, value, content_type, input=False):
+  fid = database.write_file(model, content=value, content_type=content_type)
+  model = database[model["_id"]] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
+  model["artifact:%s" % name] = fid
+  model["artifact-types"][name] = "file"
+  if input:
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+  database.save(model)
+  return model
+
+def put_model_parameter(database, model, name, value, input=False):
+  model["artifact:%s" % name] = value
+  model["artifact-types"][name] = "json"
+  if input:
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+  database.save(model)
+

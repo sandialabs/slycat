@@ -22,6 +22,7 @@ import slycat.web.server.agent
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
+import slycat.web.server.model
 import slycat.web.server.plugin
 import slycat.web.server.resource
 import slycat.web.server.ssh
@@ -489,7 +490,7 @@ def put_model_file(mid, name, input=None, file=None):
   #filename = file.filename
   content_type = file.content_type
 
-  slycat.web.server.model.store_file_artifact(database, model, name, data, content_type, input)
+  slycat.web.server.put_model_file(database, model, name, data, content_type, input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
@@ -538,7 +539,7 @@ def put_model_parameter(mid, name):
   value = require_parameter("value")
   input = require_boolean_parameter("input")
 
-  slycat.web.server.model.store_parameter(database, model, name, value, input)
+  slycat.web.server.put_model_parameter(database, model, name, value, input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_arrayset(mid, name):

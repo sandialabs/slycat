@@ -19,12 +19,6 @@ import uuid
 # Deprecated functions that shouldn't be used in new code.  Prefer to use the
 # functions in slycat.web.server wherever possible.
 
-def load_json_artifact(model, name):
-  """Retrieve a json artifact from a model."""
-  if model["artifact-types"][name] != "json":
-    raise Exception("Not a json artifact.")
-  return model["artifact:%s" % name]
-
 def load_hdf5_artifact(model, name):
   """Retrieve an hdf5 artifact from a model."""
   if model["artifact-types"][name] not in ["hdf5"]:
@@ -61,26 +55,6 @@ def store_table_file(database, model, name, data, filename, nan_row_filtering, i
     database.save(model)
     arrayset = slycat.hdf5.ArraySet(file)
     arrayset.store_array(0, array)
-
-def store_parameter(database, model, name, value, input=False):
-  model["artifact:%s" % name] = value
-  model["artifact-types"][name] = "json"
-  if input:
-    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
-  database.save(model)
-
-def store_file_artifact(database, model, name, value, content_type, input=False):
-  fid = database.write_file(model, content=value, content_type=content_type)
-  model = database[model["_id"]] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
-  model["artifact:%s" % name] = fid
-  model["artifact-types"][name] = "file"
-  if input:
-    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
-  database.save(model)
-  return model
-
-def store_json_file_artifact(database, model, name, value, input=False):
-  return store_file_artifact(database, model, name, json.dumps(value, separators=(",",":")), "application/json", input)
 
 def store_arrayset_data(database, model, name, hyperchunks, data, byteorder):
   slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
