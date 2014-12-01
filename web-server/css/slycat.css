@@ -4,247 +4,79 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-/* General styles for all elements */
-h1, h2, h3, h4, h5, fieldset, legend, dl, dt, dd, cite
+html
 {
-  padding: 0;
-  border: 0;
-  margin: 0;
+  font-family: sans-serif;
+  font-size: 10px;
+  -ms-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-text-size-adjust: 100%;
 }
 
 body
 {
-  padding: 0;
+  background-color: rgb(215, 215, 215);
+  color: #333333;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.42857;
   margin: 0;
-  background: #232323;
-  font-size: small;
-  font-family: helvetica, arial, sans-serif;
-  color: #665;
 }
 
-a
+.bootstrap-styles .navbar
 {
-  color: #800;
-  text-decoration: none;
-}
-
-#slycat-workers
-{
-  background: black;
-}
-
-#slycat-workers table
-{
-  table-layout: fixed;
-  width: 960px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#slycat-workers .name
-{
-  white-space: nowrap;
-  overflow: hidden;
-  width: 400px;
-  text-overflow: ellipsis;
-}
-
-#slycat-workers .message
-{
-  white-space: nowrap;
-  overflow: hidden;
-  width: 500px;
-  text-overflow: ellipsis;
-}
-
-#slycat-workers .slycat-close button
-{
-  background-color: #444;
-  border-radius: 2px;
+  background-color: rgb(215, 215, 215);
   border: 0;
-  color: #888;
-  height: 15px;
+  border-radius: 0;
   margin: 0;
-  padding: 0;
-  width: 16px;
-  position: relative;
-  top: -4px;
 }
 
-#slycat-workers .slycat-close button:hover
+.bootstrap-styles .navbar-brand
 {
-  background-color: #d88;
+  background: url("slycat-logo-navbar.png") transparent 0 15px no-repeat;
+  background-size: auto 20px;
+  padding-right: 0;
+  text-align: right;
+  width: 155px;
 }
 
-#slycat-workers tr.finished.succeeded
+.bootstrap-styles .navbar .breadcrumb
 {
-  color: #8c8;
+  background-color: transparent;
+  margin: 8px 0 0 0;
 }
 
-#slycat-workers tr.finished.stopped
+.bootstrap-styles .navbar .breadcrumb a
 {
-  color: #ee8;
+  color: rgb(136, 0, 0);
 }
 
-#slycat-workers tr.finished.failed
+.bootstrap-styles .navbar .breadcrumb > li + li:before
 {
-  color: #c88;
+  color: rgb(119, 119, 119);
 }
 
-#slycat-workers .ui-progressbar
+.bootstrap-styles .modal .jumbotron
 {
-  height: 1em;
+  padding: 48px;
 }
 
-#slycat-workers {
-  color: #8F887C;
-}
-#slycat-workers-close {
-  text-align: center;
-}
-#slycat-workers-close:hover {
-  color: white;
-  cursor: pointer;
-}
-#slycat-workers-container {
-  width: 960px;
-  margin: 0 auto;
-}
-#slycat-workers-container .slycat-worker {
-  padding-left: 23px;
-}
-#slycat-workers-container .slycat-worker:hover
+slycat-navbar .alert
 {
-  color: white;
-  cursor: pointer;
-}
-#slycat-workers-container .slycat-message,
-#slycat-workers-container .slycat-name,
-#slycat-workers-container .slycat-close,
-{
-  display: inline-block;
-}
-#slycat-workers-container .slycat-message,
-#slycat-workers-container .slycat-name
-{
-  width: auto;
-  max-width: 500px;
-  margin-right: 0.4em;
-}
-#slycat-workers-container .slycat-worker {
-  background-image: url(1363132633_gear.png);
-  background-repeat: no-repeat;
-}
-#slycat-workers-container .slycat-progress-determinate {
-  background-image: none;
-  position: relative;
-}
-#slycat-workers-container .succeeded {
-  background-image: url(1359513602_onebit_34.png);
-  background-repeat: no-repeat;
-  background-size: auto 16px;
-}
-#slycat-workers-container .failed {
-  background-image: url(1359513595_onebit_33.png);
-  background-repeat: no-repeat;
-  background-size: auto 16px;
-}
-.slycat-worker canvas {
-  position: absolute;
-  left: 0px;
+  margin: 0 !important;
 }
 
-#slycat-workers-container.slycat-workers-compact {
-  cursor: pointer;
-  padding-top: 4px;
-  margin-bottom: -4px;
-}
-#slycat-workers-container.slycat-workers-compact .slycat-worker {
-  display: inline-block;
-  height: 20px;
-}
-#slycat-workers-container.slycat-workers-compact .slycat-worker *,
+slycat-navbar .alert pre
 {
-  display: none;
-}
-#slycat-workers-container.slycat-workers-compact .slycat-worker canvas {
-  display: block;
+  margin: 12px 0 0 0;
 }
 
-.slycat-width-wrapper
+.slycat-content
 {
-  width: 960px;
-  margin: 0 auto;
-}
-
-#slycat-header
-{
-  min-height: 60px;
-  background-color: #333333;
-  color: white;
-  padding: 20px 0 20px 0;
-}
-
-#slycat-logo
-{
-  height: 60px; /* The header is 60px min height, so we should keep the logo the same */
-  float: left;
-  margin: 0 10px 0 0;
-}
-
-#slycat-title
-{
-  float: left;
-  font-weight: normal;
-  color: white;
-}
-
-#slycat-version
-{
-  color: yellow;
-  font-size: 85%;
-}
-
-#slycat-user-actions
-{
-  list-style: none outside none;
-  float: right;
-  margin-top: 0;
-}
-
-#slycat-user-actions li
-{
-  margin-left: 20px;
-}
-
-#slycat-page-title
-{
-  background-color: #D7D7D7;
-  color: #383838;
-  padding: 20px 0;
-  border-bottom: 1px solid #BBBBBB;
-}
-
-#slycat-page-title h2
-{
-  font-weight: normal;
-  font-size: 2.5em;
-}
-
-#slycat-breadcrumbs a:hover
-{
-  text-decoration: underline;
-}
-
-.slycat-edit-page
-{
-  float: right;
-  clear: right;
-}
-
-#slycat-content
-{
-  padding: 20px 0;
-  background-color: #D2D1D0;
+  background-color: #f2f2f2;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
 }
 

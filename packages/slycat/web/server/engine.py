@@ -52,6 +52,7 @@ def start(root_path, config_file):
       return path
     return os.path.join(root_path, path)
 
+  # Load the configuration file.
   configuration = {}
   config_file = abspath(config_file)
   if os.path.exists(config_file):
@@ -59,6 +60,12 @@ def start(root_path, config_file):
     parser = ConfigParser.SafeConfigParser()
     parser.read(config_file)
     configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
+    configuration["slycat"]["root-path"] = root_path
+
+  # Configuration items we don't recognize are not allowed.
+  for key in configuration["slycat"].keys():
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "long-polling-timeout", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
+      raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
   uid = configuration["slycat"]["uid"]
@@ -115,6 +122,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-model-wizards", "/configuration/model-wizards", slycat.web.server.handlers.get_configuration_model_wizards, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-support-email", "/configuration/support-email", slycat.web.server.handlers.get_configuration_support_email, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-version", "/configuration/version", slycat.web.server.handlers.get_configuration_version, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-global-resource", "/resources/global/{resource:.*}", slycat.web.server.handlers.get_global_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-home", "/", slycat.web.server.handlers.get_home, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-statistics", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/statistics", slycat.web.server.handlers.get_model_array_attribute_statistics, conditions={"method" : ["GET"]})
@@ -176,13 +184,21 @@ def start(root_path, config_file):
     if "tools.staticdir.dir" in section:
       section["tools.staticdir.dir"] = abspath(section["tools.staticdir.dir"])
 
+  # Ensure SSL related paths are absolute.
+  if "server.ssl_private_key" in configuration["global"]:
+    configuration["global"]["server.ssl_private_key"] = abspath(configuration["global"]["server.ssl_private_key"])
+  if "server.ssl_certificate" in configuration["global"]:
+    configuration["global"]["server.ssl_certificate"] = abspath(configuration["global"]["server.ssl_certificate"])
+  if "server.ssl_certificate_chain" in configuration["global"]:
+    configuration["global"]["server.ssl_certificate_chain"] = abspath(configuration["global"]["server.ssl_certificate_chain"])
+
   # We want fine-grained control over PyOpenSSL here.
   if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
     cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-    cherrypy.server.ssl_context.use_privatekey_file(abspath(configuration["global"]["server.ssl_private_key"]))
-    cherrypy.server.ssl_context.use_certificate_file(abspath(configuration["global"]["server.ssl_certificate"]))
+    cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
+    cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
     if "server.ssl_certificate_chain" in configuration["global"]:
-      cherrypy.server.ssl_context.load_verify_locations(abspath(configuration["global"]["server.ssl_certificate_chain"]))
+      cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
     if "ssl-ciphers" in configuration["slycat"]:
       cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 

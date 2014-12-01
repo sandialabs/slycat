@@ -38,7 +38,7 @@ SelectorBrush.prototype.select_points = function() {
         "x_hi": x_hi,
         "y_hi": y_hi
       };
-      self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
+      self.plot_container.scatterplot("brush_select", selection, !(event.ctrlKey || event.metaKey));
     }
     else {
       //now handled in scatterplot.updates['render_data']

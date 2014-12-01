@@ -15,12 +15,9 @@ import slycat.web.server.database.hdf5
 import sys
 import uuid
 
-def update(database, model, **kwargs):
-  """Update the model, and signal any waiting threads that it's changed."""
-  for name, value in kwargs.items():
-    if name in ["state", "result", "started", "finished", "progress", "message"]:
-      model[name] = value
-  database.save(model)
+###############################################################################
+# Deprecated functions that shouldn't be used in new code.  Prefer to use the
+# functions in slycat.web.server wherever possible.
 
 def load_json_artifact(model, name):
   """Retrieve a json artifact from a model."""
@@ -39,7 +36,7 @@ def mix(a, b, amount):
   return ((1.0 - amount) * a) + (amount * b)
 
 def copy_model_inputs(database, source, target):
-  update(database, target, message="Copying existing model inputs.")
+  slycat.web.server.update_model(database, target, message="Copying existing model inputs.")
   for name in source["input-artifacts"]:
     original_type = source["artifact-types"][name]
     original_value = source["artifact:%s" % name]
@@ -52,7 +49,7 @@ def copy_model_inputs(database, source, target):
   database.save(target)
 
 def store_table_file(database, model, name, data, filename, nan_row_filtering, input=False):
-  update(database, model, message="Loading table %s from %s." % (name, filename))
+  slycat.web.server.update_model(database, model, message="Loading table %s from %s." % (name, filename))
   try:
     array = slycat.table.parse(data)
   except:
@@ -91,7 +88,7 @@ def store_json_file_artifact(database, model, name, value, input=False):
 
 def start_arrayset(database, model, name, input=False):
   """Start a model array set artifact."""
-  update(database, model, message="Starting array set %s." % (name))
+  slycat.web.server.update_model(database, model, message="Starting array set %s." % (name))
   storage = uuid.uuid4().hex
   with slycat.web.server.database.hdf5.create(storage) as file:
     arrayset = slycat.hdf5.start_arrayset(file)
@@ -103,14 +100,14 @@ def start_arrayset(database, model, name, input=False):
     database.save(model)
 
 def start_array(database, model, name, array_index, attributes, dimensions):
-  update(database, model, message="Starting array set %s array %s." % (name, array_index))
+  slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (name, array_index))
   storage = model["artifact:%s" % name]
 
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def store_array_attribute(database, model, name, array_index, attribute_index, hyperslice, data, byteorder=None):
-  update(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
+  slycat.web.server.update_model(database, model, message="Storing array set %s array %s attribute %s." % (name, array_index, attribute_index))
   storage = model["artifact:%s" % name]
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     hdf5_array = slycat.hdf5.ArraySet(file)[array_index]
@@ -132,7 +129,7 @@ def store_array_attribute(database, model, name, array_index, attribute_index, h
     hdf5_array.set_data(attribute_index, hyperslice, data)
 
 def store_arrayset_data(database, model, name, hyperchunks, data, byteorder):
-  update(database, model, message="Storing data to array set %s." % (name))
+  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
 
   if byteorder is None:
     data = json.load(data.file)
