@@ -120,13 +120,12 @@ $.widget("slycat.browser",
               $(".file-browser").find("tr.file").remove();          
 
               //This will add a folder that a user can click on to go up a directory
-              //TODO: This does not work with /dev/disk/by-path
               if (path != "/"){
                 var item = $("<tr>").attr("id","up_dir").attr("class","up").appendTo(container);
                 var entry = $("<div/>").appendTo(item);
                 var icon = $("<span class='icon'></span>").appendTo(entry);
                 var label = $("<span class='label'></span>").text("..").appendTo(entry);
-                item_path = path.replace(/\/\.?\w*\/?$/, "");
+                item_path = path.replace(/\/\.?(\w|\-)*\/?$/, "");
                 if (item_path == ""){
                   item_path += "/"
                 }
