@@ -21,6 +21,11 @@
           return "Administrators can view all data in a project, add, modify, and delete models, modify or delete the project, and add or remove project members.";
       });
       component.new_user = ko.observable("");
+      component.model_wizards = ko.mapping.fromJS([]);
+      component.model_wizard_count = ko.pureComputed(function()
+      {
+        return component.model_wizards().length;
+      });
       component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
       component.model_popover = ko.pureComputed(function()
       {
@@ -197,6 +202,11 @@
         }
       }
 
+      component.create_model = function(item)
+      {
+        console.log("create_model", ko.mapping.toJS(item));
+      }
+
       component.save_model = function()
       {
         var model =
@@ -311,6 +321,17 @@
           },
         });
       }
+
+      // Get the set of available model wizards.
+      $.ajax(
+      {
+        type : "GET",
+        url : server_root + "configuration/model-wizards",
+        success : function(wizards)
+        {
+          ko.mapping.fromJS(wizards, component.model_wizards);
+        }
+      });
 
       // Get information about the currently-logged-in user.
       $.ajax(
@@ -429,6 +450,12 @@
         <ul class="nav navbar-nav navbar-right"> \
           <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
           <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li class="dropdown" data-bind="visible: model_wizard_count"> \
+            <a class="dropdown-toggle" data-toggle="dropdown">Create Model <span class="caret"></span></a> \
+            <ul class="dropdown-menu" data-bind="foreach: model_wizards"> \
+              <li><a data-bind="text: label, click:$parent.create_model"></a></li> \
+            </ul> \
+          </li> \
           <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \

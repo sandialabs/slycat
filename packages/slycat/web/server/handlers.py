@@ -1363,7 +1363,7 @@ def get_configuration_markings():
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_model_wizards():
-  return slycat.web.server.plugin.manager.model_wizards
+  return [{"model":model_type, "wizard":wizard_type, "label":wizard["label"]} for model_type, wizards in slycat.web.server.plugin.manager.model_wizards.items() for wizard_type, wizard in wizards.items()]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_support_email():
