@@ -67,7 +67,7 @@ $.widget("timeseries.waveformplot",
       .on("click", function(d){
         // unselect all the waveforms when someone clicks in the panel but not on a waveform. 
         // But only if they are regular clicking. Ctrl+click probably means they're trying to select another waveform.
-        if(!d3.event.ctrlKey) {
+        if(!d3.event.ctrlKey && !d3.event.metaKey) {
           self.options.highlight = [];
           self._select();
           self.element.trigger("waveform-selection-changed", [self.options.highlight]);
@@ -201,7 +201,7 @@ $.widget("timeseries.waveformplot",
         })
         .attr("class", "unselected")
         .on("click", function(d){
-          if(d3.event.ctrlKey) {
+          if(d3.event.ctrlKey || d3.event.metaKey) {
             self.options.highlight.push(d['input-index']);
           } else {
             self.options.highlight = [d['input-index']];
@@ -338,7 +338,7 @@ $.widget("timeseries.waveformplot",
       })
       .attr("class", "highlight")
       .on("click", function(d){
-        if(d3.event.ctrlKey) {
+        if(d3.event.ctrlKey || d3.event.metaKey) {
           var index = self.options.highlight.indexOf(d['input-index']);
           if (index > -1) {
             self.options.highlight.splice(index, 1);

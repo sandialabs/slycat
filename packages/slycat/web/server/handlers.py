@@ -22,11 +22,9 @@ import slycat.web.server.agent
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
-import slycat.web.server.model.cca
-import slycat.web.server.model.parameter_image
-import slycat.web.server.model.timeseries
-import slycat.web.server.model.tracer_image
+import slycat.web.server.model
 import slycat.web.server.plugin
+import slycat.web.server.resource
 import slycat.web.server.ssh
 import slycat.web.server.streaming
 import slycat.web.server.template
@@ -54,7 +52,6 @@ def get_context():
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["security"] = cherrypy.request.security
   context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
-  context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
   context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
   return context
 
@@ -122,7 +119,7 @@ def get_project(pid):
     models = sorted(models, key=lambda x: x["created"], reverse=True)
 
     for model in models:
-      model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
+      model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
     context = get_context()
     context.update(project)
@@ -231,7 +228,7 @@ def post_project_models(pid):
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
   model_type = cherrypy.request.json["model-type"]
-  allowed_model_types = slycat.web.server.plugin.manager.models.keys() + ["cca", "timeseries", "parameter-image", "tracer-image"]
+  allowed_model_types = slycat.web.server.plugin.manager.models.keys()
   if model_type not in allowed_model_types:
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
@@ -323,6 +320,34 @@ get_models.monitor = None
 get_models.timeout = None
 
 def get_model(mid, **kwargs):
+  if get_model.css_bundle is None:
+    with get_model.bundle_lock:
+      get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
+      [
+        "css/namespaced-bootstrap.css",
+        "css/slycat.css",
+      ])
+      get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
+      [
+        "js/jquery-2.1.1.min.js",
+        "js/jquery-migrate-1.2.1.js",
+        "js/jquery.json-2.4.min.js",
+        "js/jquery-ui-1.10.4.custom.min.js",
+        "js/bootstrap.js",
+        "js/knockout-3.2.0.js",
+        "js/knockout.mapping.js",
+        "js/knockout-projections.js",
+        "js/knockstrap.js",
+        "js/slycat-browser.js",
+        "js/slycat-navbar.js",
+        "js/slycat-model.js",
+      ])
+      slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
+      slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
+      slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
+      slycat.web.server.resource.manager.add_file("css/slycat-logo-navbar.png", "slycat-logo-navbar.png")
+      slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -334,44 +359,60 @@ def get_model(mid, **kwargs):
   if accept == "application/json":
     return json.dumps(model)
   elif accept == "text/html":
-    model_count = len(list(database.view("slycat/project-models", startkey=project["_id"], endkey=project["_id"])))
-
-    context = get_context()
-    context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-    context["security"] = cherrypy.request.security
-    context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
-    context["stylesheets"] = {"path" : path for path in cherrypy.request.app.config["slycat"]["stylesheets"]}
-    context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
-    context["full-project"] = project
-    context.update(model)
-    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
-    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
-    context["new-model-name"] = "Model-%s" % (model_count + 1)
-    context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
+    mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
-    if "model-type" in model and model["model-type"] in ["cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
-      if model["model-type"] == "timeseries":
+    if mtype in ["cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
+      context = get_context()
+      context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+      context["security"] = cherrypy.request.security
+      context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
+      context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
+      context["full-project"] = project
+      context.update(model)
+      context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
+      context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
+      model_count = len(list(database.view("slycat/project-models", startkey=project["_id"], endkey=project["_id"])))
+      context["new-model-name"] = "Model-%s" % (model_count + 1)
+      context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
+
+      if mtype == "timeseries":
         context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
         context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
         context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
         return slycat.web.server.template.render("model-timeseries.html", context)
 
-      if model["model-type"] in ["cca", "cca3"]:
+      if mtype in ["cca", "cca3"]:
         return slycat.web.server.template.render("model-cca3.html", context)
 
-      if model["model-type"] == "parameter-image":
+      if mtype == "parameter-image":
         return slycat.web.server.template.render("model-parameter-image.html", context)
 
-      if model["model-type"] == "tracer-image":
+      if mtype == "tracer-image":
         return slycat.web.server.template.render("model-tracer-image.html", context)
 
     # New code for rendering plugin models:
-    context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
-    if "model-type" in model and model["model-type"] in slycat.web.server.plugin.manager.models.keys():
-      context["slycat-marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["html"]
-      context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[model["model-type"]]["html"](database, model)
-    return slycat.web.server.template.render("model.html", context)
+    marking = slycat.web.server.plugin.manager.markings[model["marking"]]
+
+    context = {}
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking["page-before"]
+    context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking["page-after"]
+    context["slycat-model"] = model
+    context["slycat-project"] = project
+    context["slycat-css-bundle"] = get_model.css_bundle
+    context["slycat-js-bundle"] = get_model.js_bundle
+
+    context["slycat-model-type"] = mtype
+    if mtype in slycat.web.server.plugin.manager.models.keys():
+      context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[mtype]["html"](database, model)
+      if mtype in slycat.web.server.plugin.manager.model_bundles:
+        context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
+        context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
+    return slycat.web.server.template.render("slycat-model.html", context)
+get_model.css_bundle = None
+get_model.js_bundle = None
+get_model.bundle_lock = threading.Lock()
 
 def get_model_command(mid, command, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -385,9 +426,13 @@ def get_model_command(mid, command, **kwargs):
   raise cherrypy.HTTPError("400 Unknown command: %s" % command)
 
 def get_model_resource(mtype, resource):
+  if mtype in slycat.web.server.plugin.manager.model_bundles:
+    if resource in slycat.web.server.plugin.manager.model_bundles[mtype]:
+      content_type, content = slycat.web.server.plugin.manager.model_bundles[mtype][resource]
+      cherrypy.response.headers["content-type"] = content_type
+      return content
   if mtype in slycat.web.server.plugin.manager.model_resources:
     for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[mtype].items():
-      cherrypy.log.error("%s %s" % (model_resource, model_path))
       if model_resource == resource:
         return cherrypy.lib.static.serve_file(model_path, debug=True)
 
@@ -402,7 +447,7 @@ def put_model(mid):
 
   save_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished"]:
+    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished", "marking"]:
       if value != model.get(key):
         model[key] = value
         save_model = True
@@ -420,20 +465,12 @@ def post_model_finish(mid):
 
   if model["state"] != "waiting":
     raise cherrypy.HTTPError("400 Only waiting models can be finished.")
-  if model["model-type"] not in slycat.web.server.plugin.manager.models.keys() + ["cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
+  if model["model-type"] not in slycat.web.server.plugin.manager.models.keys():
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
 
-  slycat.web.server.model.update(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
+  slycat.web.server.update_model(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
   if model["model-type"] in slycat.web.server.plugin.manager.models.keys():
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
-  elif model["model-type"] == "cca":
-    slycat.web.server.model.cca.finish(database, model)
-  elif model["model-type"] == "timeseries":
-    slycat.web.server.model.timeseries.finish(database, model)
-  elif model["model-type"] == "parameter-image":
-    slycat.web.server.model.parameter_image.finish(database, model)
-  elif model["model-type"] == "tracer-image":
-    slycat.web.server.model.tracer_image.finish(database, model)
   cherrypy.response.status = "202 Finishing model."
 
 def put_model_file(mid, name, input=None, file=None):
@@ -453,7 +490,7 @@ def put_model_file(mid, name, input=None, file=None):
   #filename = file.filename
   content_type = file.content_type
 
-  slycat.web.server.model.store_file_artifact(database, model, name, data, content_type, input)
+  slycat.web.server.put_model_file(database, model, name, data, content_type, input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
@@ -502,7 +539,7 @@ def put_model_parameter(mid, name):
   value = require_parameter("value")
   input = require_boolean_parameter("input")
 
-  slycat.web.server.model.store_parameter(database, model, name, value, input)
+  slycat.web.server.put_model_parameter(database, model, name, value, input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_arrayset(mid, name):
@@ -513,7 +550,7 @@ def put_model_arrayset(mid, name):
 
   input = require_boolean_parameter("input")
 
-  slycat.web.server.model.start_arrayset(database, model, name, input)
+  slycat.web.server.put_model_arrayset(database, model, name, input)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_arrayset_array(mid, name, array):
@@ -526,7 +563,7 @@ def put_model_arrayset_array(mid, name, array):
   array_index = int(array)
   attributes = cherrypy.request.json["attributes"]
   dimensions = cherrypy.request.json["dimensions"]
-  slycat.web.server.model.start_array(database, model, name, array_index, attributes, dimensions)
+  slycat.web.server.put_model_array(database, model, name, array_index, attributes, dimensions)
 
 def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
   cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
@@ -1039,12 +1076,16 @@ def get_bookmark(bid):
 
 @cherrypy.tools.json_out(on = True)
 def get_user(uid):
+  if uid == "-":
+    uid = cherrypy.request.security["user"]
   user = cherrypy.request.app.config["slycat"]["directory"].user(uid)
   if user is None:
     raise cherrypy.HTTPError(404)
-  # Only project administrators can get user details ...
+  # Only server administrators can get user details.
   if slycat.web.server.authentication.is_server_administrator():
     user["server-administrator"] = uid in cherrypy.request.app.config["slycat"]["server-admins"]
+  # Add the uid to the record, since the caller may not know it.
+  user["uid"] = uid
   return user
 
 @cherrypy.tools.json_in(on = True)
@@ -1094,31 +1135,37 @@ def post_remote_browse(sid, path):
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def get_remote_file(sid, path):
-  content_type, encoding = mimetypes.guess_type(path, strict=False)
-  cherrypy.response.headers["content-type"] = content_type
-
   with slycat.web.server.ssh.get_session(sid) as session:
     try:
       if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+        cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
         raise cherrypy.HTTPError("400 Can't read directory.")
+
+      content_type, encoding = mimetypes.guess_type(path, strict=False)
+      cherrypy.response.headers["content-type"] = content_type
       return session.sftp.file(path).read()
+
     except Exception as e:
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
+
       if str(e) == "Garbage packet received":
-        raise cherrypy.HTTPError("500 Remote access failed: %s" % str(e))
+        cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
+        raise cherrypy.HTTPError("500 Remote access failed.")
+
       if e.strerror == "No such file":
         # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
+        cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
         raise cherrypy.HTTPError("400 File not found.")
+
       if e.strerror == "Permission denied":
-        # we know the file exists
-        # we now know that the file is not available due to access controls
-        remote_file = session.sftp.stat(path)
-        permissions = remote_file.__str__().split()[0]
-        directory = cherrypy.request.app.config["slycat"]["directory"]
-        file_permissions = "%s %s %s" % (permissions, directory.username(remote_file.st_uid), directory.groupname(remote_file.st_gid))
-        raise cherrypy.HTTPError("400 Permission denied. Current permissions: %s" % file_permissions)
-      # catch all
-      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+        # The file exists, but is not available due to access controls
+        cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
+        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
+        raise cherrypy.HTTPError("400 Access denied.")
+
+      # Catchall
+      cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
+      raise cherrypy.HTTPError("400 Remote access failed.")
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -1165,6 +1212,21 @@ def get_agent_file(sid, path):
     session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
+
+    if metadata["message"] == "Path must be absolute.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Path not absolute.")
+    elif metadata["message"] == "Path not found.":
+      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 File not found.")
+    elif metadata["message"] == "Directory unreadable.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Can't read directory.")
+    elif metadata["message"] == "Access denied.":
+      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
+      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Access denied.")
+
     content = session.stdout.read(metadata["size"])
     cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
@@ -1189,6 +1251,21 @@ def get_agent_image(sid, path, **kwargs):
     session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
+
+    if metadata["message"] == "Path must be absolute.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Path not absolute.")
+    elif metadata["message"] == "Path not found.":
+      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 File not found.")
+    elif metadata["message"] == "Directory unreadable.":
+      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Can't read directory.")
+    elif metadata["message"] == "Access denied.":
+      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
+      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
+      raise cherrypy.HTTPError("400 Access denied.")
+
     content = session.stdout.read(metadata["size"])
     cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
@@ -1216,7 +1293,7 @@ def post_events(event):
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_markings():
-  return slycat.web.server.plugin.manager.markings
+  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items()]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_model_wizards():
@@ -1232,7 +1309,7 @@ def get_configuration_version():
     if not get_configuration_version.initialized:
       get_configuration_version.initialized = True
       try:
-        get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE).communicate()[0].strip()
+        get_configuration_version.commit = subprocess.Popen(["git", "rev-parse", "HEAD"], cwd=os.path.dirname(__file__), stdout=subprocess.PIPE).communicate()[0].strip()
       except:
         pass
   return {"version" : slycat.__version__, "commit" : get_configuration_version.commit}
@@ -1240,3 +1317,12 @@ get_configuration_version.lock = threading.Lock()
 get_configuration_version.initialized = False
 get_configuration_version.commit = None
 
+@cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
+def get_global_resource(resource):
+  if resource in slycat.web.server.resource.manager.bundles:
+    content_type, content = slycat.web.server.resource.manager.bundles[resource]
+    cherrypy.response.headers["content-type"] = content_type
+    return content
+  if resource in slycat.web.server.resource.manager.files:
+    return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
+  raise cherrypy.HTTPError(404)

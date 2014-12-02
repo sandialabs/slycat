@@ -19,7 +19,7 @@ def register_slycat_plugin(context):
         else:
           user = authenticate.sessions[session]["user"]
           entry = authenticate.sessions[session]["entry"]
-          cherrypy.request.security = { "user" : user, "name" : entry["cn"][0], "roles" : [] }
+          cherrypy.request.security = { "user" : user, "name" : entry["cn"][0] }
           # Ensure that the user is logged correctly ...
           cherrypy.request.login = user
           return
@@ -72,7 +72,7 @@ def register_slycat_plugin(context):
         session = uuid.uuid4().hex
         entry = connection.search_s(dn, ldap.SCOPE_BASE)[0][1]
         authenticate.sessions[session] = { "started" : datetime.datetime.utcnow(), "user" : username, "entry" : entry }
-        cherrypy.request.security = { "user" : username, "name" : entry["cn"][0], "roles" : [] }
+        cherrypy.request.security = { "user" : username, "name" : entry["cn"][0] }
 
         cherrypy.response.cookie["slycatauth"] = session
         cherrypy.response.cookie["slycatauth"]["path"] = "/"

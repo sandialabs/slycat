@@ -39,18 +39,7 @@ SelectorBrush.prototype.select_points = function(drag_finished /* boolean */) {
         "x_hi": x_hi,
         "y_hi": y_hi
       };
-      self.plot_container.scatterplot("brush_select", selection, !d3.event.ctrlKey, drag_finished);
-    }
-    else {
-      //now handled in scatterplot.updates['render_data']
-      // 'hi' values will be identical in the case of a click, so just use 'lo'
-      // selection = {
-      //   "x_lo": self.x_scale.invert(self.x_scale(x_lo) - self.click_radius),
-      //   "y_lo": self.y_scale.invert(self.y_scale(y_lo) + self.click_radius), // + b/c pixels indexed from top to bottom
-      //   "x_hi": self.x_scale.invert(self.x_scale(x_lo) + self.click_radius),
-      //   "y_hi": self.y_scale.invert(self.y_scale(y_lo) - self.click_radius)
-      // };
-      //self.plot_container.scatterplot("brush_select", selection, !event.ctrlKey);
+      self.plot_container.scatterplot("brush_select", selection, !(event.ctrlKey || event.metaKey), drag_finished);
     }
   });
 };

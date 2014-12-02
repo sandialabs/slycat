@@ -17,6 +17,9 @@ Syntax
 
     GET /users/(uid)
 
+As a special case, callers may pass `-` as the uid to request information about
+the currently-logged-in user.
+
 Responses
 ---------
 

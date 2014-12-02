@@ -8,5 +8,5 @@ parser = slycat.web.client.option_parser()
 arguments = parser.parse_args()
 
 connection = slycat.web.client.connect(arguments)
-for project in connection.get_projects():
+for project in connection.get_projects()["projects"]:
   connection.delete_project(project["_id"])

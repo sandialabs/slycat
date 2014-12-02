@@ -8,6 +8,7 @@ import PIL.Image
 # Python standard library
 import argparse
 import cStringIO as StringIO
+import errno
 import json
 import mimetypes
 import os
@@ -62,7 +63,7 @@ def browse(command):
   if not os.path.isabs(path):
     raise Exception("Path must be absolute.")
   if not os.path.exists(path):
-    raise Exception("No such file or directory.")
+    raise Exception("Path not found.")
 
   file_reject = re.compile(command.get("file-reject")) if "file-reject" in command else None
   file_allow = re.compile(command.get("file-allow")) if "file-allow" in command else None
@@ -108,12 +109,25 @@ def browse(command):
 def get_file(command):
   if "path" not in command:
     raise Exception("Missing path.")
+  path = command["path"]
+  if not os.path.isabs(path):
+    raise Exception("Path must be absolute.")
+  if not os.path.exists(path):
+    raise Exception("Path not found.")
+  if os.path.isdir(path):
+    raise Exception("Directory unreadable.")
+
   try:
-    content = open(command["path"], "rb").read()
+    content = open(path, "rb").read()
   except IOError as e:
+    if e.errno == errno.EACCES:
+      raise Exception("Access denied.")
     raise Exception(e.strerror + ".")
-  content_type, encoding = mimetypes.guess_type(command["path"], strict=False)
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"File retrieved.", "path":command["path"], "content-type":content_type, "size":len(content)}), content))
+  except Exception as e:
+    raise Exception(e.strerror + ".")
+
+  content_type, encoding = mimetypes.guess_type(path, strict=False)
+  sys.stdout.write("%s\n%s" % (json.dumps({"message":"File retrieved.", "path":path, "content-type":content_type, "size":len(content)}), content))
   sys.stdout.flush()
 
 # Handle the 'get-image' command.
@@ -121,12 +135,31 @@ def get_image(command):
   if "path" not in command:
     raise Exception("Missing path.")
   path = command["path"]
-  file_content_type = mimetypes.guess_type(path)
-  requested_content_type = command.get("content-type", file_content_type[0])
+  if not os.path.isabs(path):
+    raise Exception("Path must be absolute.")
+  if not os.path.exists(path):
+    raise Exception("Path not found.")
+  if os.path.isdir(path):
+    raise Exception("Directory unreadable.")
+
+  file_content_type, encoding = mimetypes.guess_type(path)
+  requested_content_type = command.get("content-type", file_content_type)
 
   # Optional fast path if the client hasn't requested anything that would alter the image contents:
   if "max-size" not in command and "max-width" not in command and "max-height" not in command and requested_content_type == file_content_type:
-    get_file(command)
+    try:
+      content = open(path, "rb").read()
+    except IOError as e:
+      if e.errno == errno.EACCES:
+        raise Exception("Access denied.")
+      raise Exception(e.strerror + ".")
+    except Exception as e:
+      raise Exception(e.strerror + ".")
+
+    content_type, encoding = mimetypes.guess_type(path, strict=False)
+    sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":path, "content-type":content_type, "size":len(content)}), content))
+    sys.stdout.flush()
+    return
 
   if requested_content_type not in ["image/jpeg", "image/png"]:
     raise Exception("Unsupported image type.")

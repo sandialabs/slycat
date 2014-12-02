@@ -1,7 +1,79 @@
-<div>
-<pre>{{{formatted-model}}}</pre>
-</div>
 <script type="text/javascript">
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  document.querySelector("head").innerHTML += "<link rel='stylesheet' type='text/css' href='" + server_root + "resources/models/parameter-image-plus/ui.css'>";
+  var project_id = "{{full-project._id}}";
+  var model_id = "{{_id}}";
+  var model_name = "{{name}}";
+  // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
+  [
+    "parameter-image-dendrogram.js",
+    "ui.js",
+  ].forEach(function(src) {
+    var script = document.createElement('script');
+    script.src = server_root + "resources/models/parameter-image-plus/" + src;
+    script.async = false;
+    document.head.appendChild(script);
+  });
+  [
+    "ui.css",
+  ].forEach(function(src) {
+    var link = document.createElement('link');
+    link.href = server_root + "resources/models/parameter-image-plus/" + src;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    document.head.appendChild(link);
+  });
 </script>
+<div class="parameter-image" id="parameter-image-plus-layout">
+
+	<div id="controls-pane" class="ui-layout-north">
+    <div class="center">
+      <div id="controls"></div>
+      <div id="color-switcher"></div>
+    </div>
+    <div id="status-messages" style="display: none;"></div>
+    <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
+      <p>
+         <label for="value">Set values for <span id="set-value-form-variable">variable</span>:</label>
+         <input type="text" id="value" />
+         <input type="hidden" id="variable-index" />
+         <div class='dialogErrorMessage'></div>
+      </p>
+    </div>
+    <div id="clear-value-form" class="dialog" title="Clear Values" style="display: none;">
+      <p>
+         <label for="variableIndex">Clear values for <span id="clear-value-form-variable">variable</span>?</label>
+         <input type="hidden" id="variable-index" />
+      </p>
+    </div>
+    <div id="csv-save-choice-form" class="dialog" title="Download Choice" style="display: none;">
+      <p>
+         <label id="csv-save-choice-label"></label>
+      </p>
+    </div>
+	</div>
+
+	<div id="model-pane" class="ui-layout-center">
+  	<div id="scatterplot-pane" class="ui-layout-center">
+      <div class="load-status"></div>
+      <div id="scatterplot"></div>
+    </div>
+  </div>
+
+  <div id="dendrogram-pane" class="ui-layout-west">
+    <div class="load-status"></div>
+    <svg id="dendrogram-viewer" width="100%" height="100%">
+      <defs>
+        <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7767b0" stop-opacity="1" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div id="table-pane" class="ui-layout-south">
+    <div class="load-status"></div>
+    <div id="table"></div>
+  </div>
+
+</div>

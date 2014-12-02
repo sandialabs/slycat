@@ -69,9 +69,9 @@ def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.join(this_dir, "foo.bar")}))
   context.agent.stdin.flush()
 
-@then(u'the agent should return a nonexistent path error')
+@then(u'the agent should return a path not found error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"No such file or directory."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Path not found."})
 
 @when(u'browsing a directory')
 def step_impl(context):
@@ -133,12 +133,12 @@ def step_impl(context):
 @given(u'a sample csv file')
 def step_impl(context):
   with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as file:
-    context.csv_file_path = file.name
+    context.path = file.name
     file.write("""a,b\n1,2\n3,4\n5,6\n""")
 
 @when(u'browsing the csv file')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":context.csv_file_path}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":context.path}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the file information')
@@ -149,20 +149,42 @@ def step_impl(context):
   nose.tools.assert_equal(listing["sizes"], [16])
   nose.tools.assert_equal(listing["types"], ["f"])
 
+#########################################################################################
+# File retrieval
+
 @when(u'retrieving a file without a path')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file"}))
   context.agent.stdin.flush()
 
-@when(u'retrieving a nonexistent file')
+@given(u'a relative path')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":os.path.join(this_dir, "foo.txt")}))
+  context.path = "foo.txt"
+
+@given(u'a directory path')
+def step_impl(context):
+  context.path = root_dir
+
+@then(u'the agent should return a directory unreadable error')
+def step_impl(context):
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Directory unreadable."})
+
+@given(u'a nonexistent file')
+def step_impl(context):
+  context.path = os.path.join(this_dir, "foo.txt")
+
+@given(u'the file has no permissions')
+def step_impl(context):
+  os.chmod(context.path, 0x000)
+
+@when(u'retrieving a file')
+def step_impl(context):
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":context.path}))
   context.agent.stdin.flush()
 
-@when(u'retrieving the csv file')
+@then(u'the agent should return an access denied error')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":context.csv_file_path}))
-  context.agent.stdin.flush()
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Access denied."})
 
 @then(u'the agent should return the csv file')
 def step_impl(context):
@@ -175,32 +197,51 @@ def step_impl(context):
   reference = "a,b\n1,2\n3,4\n5,6\n"
   nose.tools.assert_equal(content, reference)
 
+###########################################################################################
+# Image retrieval
+
+@given(u'a sample jpeg image')
+def step_impl(context):
+  with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as file:
+    context.path = file.name
+    file.write(open(os.path.join(root_dir, "artwork/slycat-logo.jpg"), "rb").read())
+
+@given(u'a nonexistent image')
+def step_impl(context):
+  context.path = os.path.join(this_dir, "nonexistent.jpg")
+
 @when(u'retrieving an image without a path')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image"}))
   context.agent.stdin.flush()
 
-@when(u'retrieving a nonexistent image')
+@when(u'retrieving an image')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":os.path.join(this_dir, "foo.jpg")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "path":context.path}))
   context.agent.stdin.flush()
 
-@when(u'retrieving an image using an unsupported content type')
+@when(u'retrieving an image with an unsupported content type')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/tiff", "path":context.jpeg_image_path}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/tiff", "path":context.path}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return an unsupported content type error')
 def step_impl(context):
   nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Unsupported image type."})
 
-@given(u'a sample jpeg image')
+@when(u'retrieving an image with maximum width')
 def step_impl(context):
-  context.jpeg_image_path = os.path.join(root_dir, "artwork/slycat-logo.jpg")
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-width":200, "content-type":"image/jpeg", "path":context.path}))
+  context.agent.stdin.flush()
 
-@when(u'retrieving the jpeg image')
+@when(u'retrieving an image with maximum size')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/jpeg", "path":context.jpeg_image_path}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-size":500, "content-type":"image/jpeg", "path":context.path}))
+  context.agent.stdin.flush()
+
+@when(u'retrieving an image converted to a png image')
+def step_impl(context):
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/png", "path":context.path}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the jpeg image')
@@ -212,11 +253,6 @@ def step_impl(context):
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (290, 634))
 
-@when(u'retrieving the jpeg image with maximum width')
-def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-width":200, "content-type":"image/jpeg", "path":context.jpeg_image_path}))
-  context.agent.stdin.flush()
-
 @then(u'the agent should return a jpeg image with maximum width')
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
@@ -225,11 +261,6 @@ def step_impl(context):
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (200, 437))
-
-@when(u'retrieving the jpeg image with maximum size')
-def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "max-size":500, "content-type":"image/jpeg", "path":context.jpeg_image_path}))
-  context.agent.stdin.flush()
 
 @then(u'the agent should return a jpeg image with maximum size')
 def step_impl(context):
@@ -240,11 +271,6 @@ def step_impl(context):
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (228, 500))
 
-@when(u'retrieving the jpeg image converted to a png image')
-def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"get-image", "content-type":"image/png", "path":context.jpeg_image_path}))
-  context.agent.stdin.flush()
-
 @then(u'the agent should return the converted png image')
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())
@@ -253,6 +279,9 @@ def step_impl(context):
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
   nose.tools.assert_equal(image.size, (290, 634))
+
+####################################################################################################
+# Video creation
 
 @given(u'a sequence of {type} images')
 def step_impl(context, type):

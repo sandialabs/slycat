@@ -6,6 +6,6 @@ def register_slycat_plugin(context):
   import cherrypy
   def authenticate():
     """A do-nothing authentication plugin."""
-    cherrypy.request.security = { "user" : "", "name" : "",  "roles": [] }
+    cherrypy.request.security = { "user" : "", "name" : "" }
 
   context.register_tool("slycat-disable-authentication", "on_start_resource", authenticate)
