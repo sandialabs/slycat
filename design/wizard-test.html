@@ -5,30 +5,22 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/curl/0.7.3/curl-kitchen-sink/curl.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/js/bootstrap.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap-wizard/1.2/jquery.bootstrap.wizard.js"></script>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/css/bootstrap.css"/>
   </head>
   <body>
     <div class="container">
       <h1 class="h1">Wizard Test</h1>
-      <button type="button" class="btn btn-default" data-bind="click: load_wizard" data-toggle="modal" data-target="#wizard-container">Wizard me!</button>
+      <button type="button" class="btn btn-default" data-bind="click: show_wizard" data-toggle="modal" data-target="#wizard-dialog">Wizard me!</button>
     </div>
 
-    <div class="modal fade" id="wizard-container">
+    <div class="modal fade" id="wizard-dialog">
       <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">Modal title</h4>
-          </div>
           <div class="modal-body">
             <div data-bind="if: wizard">
               <div data-bind="component: wizard">
               </div>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -44,8 +36,9 @@
 
       var model = {};
       model.wizard = ko.observable(false);
-      model.load_wizard = function()
+      model.show_wizard = function()
       {
+        model.wizard(false);
         model.wizard("my-wizard");
       }
       ko.applyBindings(model);
