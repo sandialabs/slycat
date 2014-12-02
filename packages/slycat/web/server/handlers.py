@@ -68,13 +68,14 @@ def get_projects(revision=None, _=None):
   cherrypy.response.headers["content-type"] = accept
 
   if accept == "text/html":
-    if get_projects.css_bundle is None:
-      with get_projects.bundle_lock:
+    with get_projects.bundle_lock:
+      if get_projects.css_bundle is None:
         get_projects.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
         [
           "css/namespaced-bootstrap.css",
           "css/slycat.css",
         ])
+      if get_projects.js_bundle is None:
         get_projects.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
         [
           "js/jquery-2.1.1.min.js",
@@ -115,11 +116,13 @@ def get_projects(revision=None, _=None):
       projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
       projects = sorted(projects, key = lambda x: x["created"], reverse=True)
       return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
+
 get_projects.monitor = None
 get_projects.timeout = None
+
+get_projects.bundle_lock = threading.Lock()
 get_projects.css_bundle = None
 get_projects.js_bundle = None
-get_projects.bundle_lock = threading.Lock()
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -152,13 +155,14 @@ def get_project(pid):
     return json.dumps(project)
 
   if accept == "text/html":
-    if get_project.css_bundle is None:
-      with get_project.bundle_lock:
+    with get_project.bundle_lock:
+      if get_project.css_bundle is None:
         get_project.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
         [
           "css/namespaced-bootstrap.css",
           "css/slycat.css",
         ])
+      if get_project.js_bundle is None:
         get_project.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
         [
           "js/jquery-2.1.1.min.js",
@@ -170,6 +174,7 @@ def get_project(pid):
           "js/knockout.mapping.js",
           "js/knockout-projections.js",
           "js/knockstrap.js",
+          "js/curl.js",
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
           "js/slycat-project.js",
@@ -187,22 +192,12 @@ def get_project(pid):
     context["slycat-css-bundle"] = get_project.css_bundle
     context["slycat-js-bundle"] = get_project.js_bundle
     context["slycat-project"] = project
-#    context = get_context()
-#    context.update(project)
-#    context["models"] = models
-#    context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
-#    context["can-write"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_project_writer(project)
-#    context["can-administer"] = slycat.web.server.authentication.is_server_administrator() or slycat.web.server.authentication.is_project_administrator(project)
-#    context["acl-json"] = json.dumps(project["acl"])
-#    context["if-remote-hosts"] = len(cherrypy.request.app.config["slycat"]["remote-hosts"])
-#    context["remote-hosts"] = json.dumps(get_remote_host_dict()).replace('"','\\"')
-#    context["remote-hosts-arr"] = [host for host in cherrypy.request.app.config["slycat"]["remote-hosts"]]
-#    context["new-model-name"] = "Model-%s" % (len(models) + 1)
 
     return slycat.web.server.template.render("slycat-project.html", context)
+
+get_project.bundle_lock = threading.Lock()
 get_project.css_bundle = None
 get_project.js_bundle = None
-get_project.bundle_lock = threading.Lock()
 
 def get_remote_host_dict():
   remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
@@ -386,34 +381,6 @@ get_models.monitor = None
 get_models.timeout = None
 
 def get_model(mid, **kwargs):
-  if get_model.css_bundle is None:
-    with get_model.bundle_lock:
-      get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
-      [
-        "css/namespaced-bootstrap.css",
-        "css/slycat.css",
-      ])
-      get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
-      [
-        "js/jquery-2.1.1.min.js",
-        "js/jquery-migrate-1.2.1.js",
-        "js/jquery.json-2.4.min.js",
-        "js/jquery-ui-1.10.4.custom.min.js",
-        "js/bootstrap.js",
-        "js/knockout-3.2.0.js",
-        "js/knockout.mapping.js",
-        "js/knockout-projections.js",
-        "js/knockstrap.js",
-        "js/slycat-browser.js",
-        "js/slycat-navbar.js",
-        "js/slycat-model.js",
-      ])
-      slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
-      slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
-      slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
-      slycat.web.server.resource.manager.add_file("css/slycat-logo-navbar.png", "slycat-logo-navbar.png")
-      slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
-
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -424,7 +391,38 @@ def get_model(mid, **kwargs):
 
   if accept == "application/json":
     return json.dumps(model)
+
   elif accept == "text/html":
+    with get_model.bundle_lock:
+      if get_model.css_bundle is None:
+        get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
+        [
+          "css/namespaced-bootstrap.css",
+          "css/slycat.css",
+        ])
+      if get_model.js_bundle is None:
+        get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
+        [
+          "js/jquery-2.1.1.min.js",
+          "js/jquery-migrate-1.2.1.js",
+          "js/jquery.json-2.4.min.js",
+          "js/jquery-ui-1.10.4.custom.min.js",
+          "js/bootstrap.js",
+          "js/knockout-3.2.0.js",
+          "js/knockout.mapping.js",
+          "js/knockout-projections.js",
+          "js/knockstrap.js",
+          "js/curl.js",
+          "js/slycat-browser.js",
+          "js/slycat-navbar.js",
+          "js/slycat-model.js",
+        ])
+        slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
+        slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
+        slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
+        slycat.web.server.resource.manager.add_file("css/slycat-logo-navbar.png", "slycat-logo-navbar.png")
+        slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+
     mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
@@ -476,9 +474,10 @@ def get_model(mid, **kwargs):
         context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
         context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
     return slycat.web.server.template.render("slycat-model.html", context)
+
+get_model.bundle_lock = threading.Lock()
 get_model.css_bundle = None
 get_model.js_bundle = None
-get_model.bundle_lock = threading.Lock()
 
 def get_model_command(mid, command, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
