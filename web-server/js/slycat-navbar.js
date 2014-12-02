@@ -423,8 +423,16 @@
           <li data-bind="visible: project._id"><a data-bind="text:project.name,popover:{trigger:\'hover\',html:true,content:project_popover()},attr:{href:server_root + \'projects/\' + project._id()}"></a></li> \
           <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
         </ol> \
-        <ul class="nav navbar-nav navbar-left" data-bind="visible: open_models().length"> \
-          <li class="dropdown"> \
+        <ul class="nav navbar-nav navbar-left"> \
+          <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
+          <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li class="dropdown" data-bind="visible: project._id() && model_wizard_count"> \
+            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create Model <span class="caret"></span></button> \
+            <ul class="dropdown-menu" data-bind="foreach: model_wizards"> \
+              <li><a data-bind="text: label, click:$parent.create_model"></a></li> \
+            </ul> \
+          </li> \
+          <li class="dropdown" data-bind="visible:open_models().length"> \
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
               <!-- ko foreach: finished_models --> \
@@ -448,14 +456,6 @@
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
-          <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
-          <li class="dropdown" data-bind="visible: model_wizard_count"> \
-            <a class="dropdown-toggle" data-toggle="dropdown">Create Model <span class="caret"></span></a> \
-            <ul class="dropdown-menu" data-bind="foreach: model_wizards"> \
-              <li><a data-bind="text: label, click:$parent.create_model"></a></li> \
-            </ul> \
-          </li> \
           <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
