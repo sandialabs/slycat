@@ -1,5 +1,7 @@
 (function()
 {
+  curl({ apiName : "require" });
+
   ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
@@ -9,6 +11,7 @@
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var component = this;
 
+      component.wizard = ko.observable(false);
       component.alerts = ko.mapping.fromJS([]);
       component.permission = ko.observable("reader");
       component.permission_description = ko.pureComputed(function()
@@ -204,7 +207,9 @@
 
       component.create_model = function(item)
       {
-        console.log("create_model", ko.mapping.toJS(item));
+        component.wizard(false);
+        component.wizard(item.type());
+        $("#slycat-model-wizard").modal("show");
       }
 
       component.save_model = function()
@@ -330,6 +335,13 @@
         success : function(wizards)
         {
           ko.mapping.fromJS(wizards, component.model_wizards);
+          for(var i = 0; i != wizards.length; ++i)
+          {
+            ko.components.register(wizards[i].type,
+            {
+              require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
+            });
+          }
         }
       });
 
@@ -635,6 +647,18 @@
           <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
           <button class="btn btn-primary" data-bind="click:save_model" data-dismiss="modal">Save Changes</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
+        </div> \
+      </div> \
+    </div> \
+  </div> \
+  <div class="modal fade" id="slycat-model-wizard"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-body"> \
+          <div data-bind="if: wizard"> \
+            <div data-bind="component: wizard"> \
+            </div> \
+          </div> \
         </div> \
       </div> \
     </div> \

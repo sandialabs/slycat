@@ -503,6 +503,14 @@ def get_model_resource(mtype, resource):
 
   raise cherrypy.HTTPError("404")
 
+def get_model_wizard_resource(wtype, resource):
+  if wtype in slycat.web.server.plugin.manager.model_wizard_resources:
+    for wizard_resource, wizard_path in slycat.web.server.plugin.manager.model_wizard_resources[wtype].items():
+      if wizard_resource == resource:
+        return cherrypy.lib.static.serve_file(wizard_path, debug=True)
+
+  raise cherrypy.HTTPError("404")
+
 @cherrypy.tools.json_in(on = True)
 def put_model(mid):
   database = slycat.web.server.database.couchdb.connect()
@@ -1359,7 +1367,7 @@ def get_configuration_markings():
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_model_wizards():
-  return [{"model":model_type, "wizard":wizard_type, "label":wizard["label"]} for model_type, wizards in slycat.web.server.plugin.manager.model_wizards.items() for wizard_type, wizard in wizards.items()]
+  return [dict([("type", type)] + wizard.items()) for type, wizard in slycat.web.server.plugin.manager.model_wizards.items()]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_support_email():
