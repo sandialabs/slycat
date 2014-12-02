@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-debug.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/curl/0.7.3/curl-kitchen-sink/curl.js"></script>
+  </head>
+  <body>
+    <div data-bind="component: wizard">
+    </div>
+    <script type="text/javascript">
+      curl({apiName:"require"});
+      ko.components.register("my-wizard",
+      {
+        require:"my-wizard"
+      });
+
+      var model = {};
+      model.wizard = ko.observable("my-wizard");
+      ko.applyBindings(model);
+
+/*
+      curl("my-wizard.js").then(function(module)
+      {
+        console.log(module);
+      });
+*/
+    </script>
+  </body>
+</html>
+
