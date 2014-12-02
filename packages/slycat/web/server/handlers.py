@@ -1350,9 +1350,6 @@ def get_agent_video(sid, vsid):
     metadata = json.loads(session.stdout.readline())
     return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
 
-def get_agent_test():
-  return slycat.web.server.template.render("slycat-agent-test.html", get_context())
-
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
   cherrypy.response.status = "204 Event logged."
