@@ -13,6 +13,16 @@ $(document).ready(function()
   model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
   model.models = ko.mapping.fromJS([]);
   model.markings = ko.mapping.fromJS([]);
+  model.badge = function(marking)
+  {
+    for(var i = 0; i != model.markings().length; ++i)
+    {
+      if(model.markings()[i].type() == marking)
+        return model.markings()[i].badge();
+    }
+  }
+
+  window.model = model;
 
   // Load information about the project.
   $.ajax(

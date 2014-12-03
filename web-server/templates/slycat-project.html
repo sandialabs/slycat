@@ -25,7 +25,7 @@ rights in this software.
               <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
                 <span class="label label-default" data-bind="text:$data['model-type']() + ' model'"></span>
                 <strong data-bind="text:name"></strong>
-                <div class="label" style="display: inline-block;"></div>
+                <div class="pull-right" style="display: inline-block" data-bind="html:$parent.badge($data.marking())"></div>
                 <span class="label label-danger" data-bind="visible:result() == 'failed',popover:{placement:'right', trigger:'hover', content:message}">Failed</span>
                 <p>
                   <small>
