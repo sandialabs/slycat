@@ -79,8 +79,8 @@ def register_slycat_plugin(context):
     "parameter-image-scatterplot.js",
     "parameter-image-table.js",
     #For development and debugging, loading some js dynamically inside model.
-    #"parameter-image-dendrogram.js",
-    #"ui.js",
+    "parameter-image-dendrogram.js",
+    "ui.js"
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
     os.path.join(os.path.dirname(__file__), js) for js in javascripts
@@ -99,7 +99,7 @@ def register_slycat_plugin(context):
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
     #For development and debugging, loading ui.css dynamically inside model.
-    #"ui.css",
+    "ui.css"
   ]
   context.register_model_bundle("parameter-image-plus", "text/css", [
     os.path.join(os.path.dirname(__file__), css) for css in stylesheets
