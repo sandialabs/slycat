@@ -19,3 +19,4 @@ slycat.egg-info
 .#*
 ._*
 .apdisk
+web-client/images*

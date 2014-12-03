@@ -3,7 +3,7 @@ function Grid(grid_ref, size, type) {
   this.size = size || [2,2];
   this.plots = [];
   this.plot_type = type || ScatterPlot;
-
+  this.selected_simulations = [];
   this.drag_threshold = 3;
 };
 
@@ -41,7 +41,7 @@ Grid.prototype.setup = function() {
         });
       update_plot_dimensions(cell, [i,j])();
       $(this.grid_ref).resize(update_plot_dimensions(cell, [i,j]));
-      plot = new this.plot_type("plot_" + i + "_" + j, "#" + cell.attr("id"), {x: 1/this.size[0], y: 1/this.size[1]});
+      plot = new this.plot_type("plot_" + i + "_" + j, "#" + cell.attr("id"), {x: 1/this.size[0], y: 1/this.size[1]}, self);
       console.debug("GOT EHRE after plot");
       this.plots.push(plot);
     }
@@ -76,5 +76,17 @@ Grid.prototype.setup = function() {
 Grid.prototype.open_images = function(images) {
   this.plots.forEach(function(plot){
     plot.scatterplot_obj.scatterplot("force_update", {open_images: true});
+  });
+};
+
+/*
+ Visually renders a selection on ALL plots without sending requests - i.e. table selection and bookmarks aren't updated.
+ Currently used for a more performant mid-drag brush select.
+*/
+Grid.prototype.global_soft_select = function(selection) {
+  var self = this;
+  self.selected_simulations = selection;
+  self.plots.forEach(function(plot) {
+    plot.soft_select(self.selected_simulations);
   });
 };

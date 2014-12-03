@@ -65,6 +65,7 @@ $.widget("tracer_image.scatterplot", {
     self._build_y_axis();
     self._build_image_control();
     self._build_color_legend();
+    self._build_movie_start();
 
     self.datum_layer = self.group.append("g").attr("class", "datum-layer");
     self.selector_brush = self.options.selector_brush;
@@ -158,7 +159,8 @@ $.widget("tracer_image.scatterplot", {
     // Remove hidden simulations and NaNs
     for(var i=length-1; i>=0; i--){
       var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-      var NaNValue = Number.isNaN(x[i]) || Number.isNaN(y[i]);
+      var nan_check = Number.isNaN ? Number.isNaN : isNaN;
+      var NaNValue = nan_check(x[i]) || nan_check(y[i]);
       if(hidden || NaNValue) {
         filtered_indices.splice(i, 1);
         var selectionIndex = $.inArray(indices[i], filtered_selection);
@@ -230,6 +232,12 @@ $.widget("tracer_image.scatterplot", {
     });
     self.image_control.build();
 
+  },
+
+  _build_movie_start: function(){
+    this.movie_start_layer = this.x_axis_layer.append("g").attr({"class": "movie-start", transform:"translate(" + 50 + " 0)"});
+
+    model.movie.build_open_button(this.movie_start_layer, this.options.scatterplot_obj);
   },
 
   _setOption: function(key, value)
@@ -350,6 +358,9 @@ $.widget("tracer_image.scatterplot", {
       self.options.width += self.options.dimension_adjustments.width();
       self.element.attr("width", self.options.width);
       self.group.attr("width", self.options.width);
+      if(this.options.scatterplot_obj.movie) {
+        model.movie.resize(self.options.scatterplot_obj);
+      }
     }
 
     if(self.updates["update_height"])
@@ -359,6 +370,9 @@ $.widget("tracer_image.scatterplot", {
       self.options.height += self.options.dimension_adjustments.height();
       self.element.attr("height", self.options.height);
       self.group.attr("height", self.options.height);
+      if(this.options.scatterplot_obj.movie) {
+        model.movie.resize(self.options.scatterplot_obj);
+      }
     }
 
     if(self.updates["update_indices"])
@@ -406,6 +420,7 @@ $.widget("tracer_image.scatterplot", {
       //account for control width and leave space for image control
       var control_x_offset = range_midpoint - Number(self.x_control.foreign_object.attr('width'))/2 - 60;
       self.x_control.foreign_object.attr('transform', 'translate(' + control_x_offset + ',30)');
+      self.movie_start_layer.attr('transform', 'translate(' + (control_x_offset - self.x_control.foreign_object.attr("width")/2 - 40) + ',30)');
     }
 
     if(self.updates["update_y"])
@@ -489,6 +504,13 @@ $.widget("tracer_image.scatterplot", {
       self.selector_brush.load_data_group(time_line_group);
       self.selector_brush.initialize();
 
+      /*Workaround for #258:
+       * d3 brush creates an inverted cross on windows (For r,g,b, the cursor color becomes 256-r, 256-g, 256-b)
+       * For (128,128,128) the cursor "dissappears"
+       * Instead, use the parent's cursor.
+       */
+      d3.select($(time_line_group[0][0]).find(".background")[0]).style("cursor", "inherit")
+
       var get_length = function(from_index, to_index){
         var from = [self.x_scale(x[from_index]), self.y_scale(y[from_index])];
         var to = [self.x_scale(x[to_index]), self.y_scale(y[to_index])];
@@ -525,38 +547,42 @@ $.widget("tracer_image.scatterplot", {
       }).reduce(function(prev, next, index) {
         // Get the endpoints in reverse order, we'll subtract the index later:
         var endpoints = [next, prev];
-        var find_closest = function() {
-          var e = event;
-          var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
-          //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
-          var distance = endpoints.map(function(point) {
-            return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]);
-          });
-          console.debug(distance);
-          ////For reference, this is the more accurate way to do it:
-          //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
-          //Push this to the window's event thread, to avoid blocking user responses:
-          window.setTimeout(function() {
-            var image_index = get_closest_image_index
-              .apply(this, distance.map(function(dist, j) {
-                  return {l: dist, i: index - j};
-                }).sort(function(a,b){
-                  return a.i - b.i;
-                })
-              );
-            if (e.ctrlKey) {
-              var not_selected = (self.options.selection.indexOf(image_index) == -1);
-              if (not_selected) {
-                self.options.selection.push(image_index);
+        var find_closest = function(change_selection) {
+          return function() {
+            var e = d3.event;
+            var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
+            //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
+            var distance = endpoints.map(function(point) {
+              return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]);
+            });
+            console.debug(distance);
+            ////For reference, this is the more accurate way to do it:
+            //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
+            //Push this to the window's event thread, to avoid blocking user responses:
+            window.setTimeout(function() {
+              var image_index = get_closest_image_index
+                .apply(this, distance.map(function(dist, j) {
+                    return {l: dist, i: index - j};
+                  }).sort(function(a,b){
+                    return a.i - b.i;
+                  })
+                );
+              if (e.ctrlKey) {
+                var not_selected = (self.options.selection.indexOf(image_index) == -1);
+                if (not_selected) {
+                  self.options.selection.push(image_index);
+                }
               }
-            }
-            else {
-              self.options.selection = [image_index];
-            }
-            self._schedule_update({render_selection:true});
-            self.element.trigger("selection-changed", [self.options.selection]);
-            self._open_hover(image_index, true);
-          }, 50);
+              else {
+                self.options.selection = [image_index];
+              }
+              if(change_selection) {
+                self._schedule_update({render_selection:true});
+                self.element.trigger("selection-changed", [self.options.selection]);
+              }
+              self._open_hover(image_index, true);
+            }, 50);
+          };
         };
         // thicker line colored according to color var selected
         time_line_group.append("path")
@@ -564,14 +590,15 @@ $.widget("tracer_image.scatterplot", {
           .attr("stroke-width", 3)
           .attr("d", function(){return make_line([prev, next])})
           .attr("index", index)
-          .on('mousedown', find_closest);
+          .on('mousedown', find_closest(true))
+          .on('mouseover', find_closest(false));
         // thinner black/white timeline in center
         time_line_group.append("path")
           .attr("stroke", color_scale(index))
           .attr("stroke-width", 1)
           .attr("d", function(){return make_line([prev, next])})
           .attr("index", index)
-          .on('mousedown', find_closest);
+          .on('mousedown', find_closest(true));
         return next;
       });
     }
@@ -583,6 +610,7 @@ $.widget("tracer_image.scatterplot", {
       var v = self.options.v;
       var indices = self.options.indices;
       var filtered_selection = self.options.filtered_selection;
+      var nan_check = Number.isNaN ? Number.isNaN : isNaN;
 
       var x_scale = self.x_scale;
       var y_scale = self.y_scale;
@@ -617,7 +645,7 @@ $.widget("tracer_image.scatterplot", {
         })
         .attr("fill", function(d, i) {
           var value = v[$.inArray(d, indices)];
-          if(Number.isNaN(value))
+          if(nan_check(value))
             return $("#color-switcher").colorswitcher("get_null_color");
           else
             return self.options.color(value);
@@ -1241,7 +1269,7 @@ $.widget("tracer_image.scatterplot", {
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remotes/" + login.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", self.options.server_root + "agents/" + login.session_cache[parser.hostname] + "/image" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e) {
       // If we get 404, the remote session no longer exists because it timed-out.
@@ -1419,7 +1447,7 @@ $.widget("tracer_image.scatterplot", {
     return this.options[option];
   },
 
-  brush_select: function(selection /* hash */, drop_existing_selection /* boolean */) {
+  brush_select: function(selection /* hash */, drop_existing_selection /* boolean */, drag_finished /* boolean */) {
     var self = this;
     var x = self.options.x;
     var y = self.options.y;
@@ -1449,9 +1477,11 @@ $.widget("tracer_image.scatterplot", {
     }
 
     self._filterIndices();
-    self.options.selection = self.options.filtered_selection.slice(0);
-    self._schedule_update({ render_selection: true });
-    self.element.trigger("selection-changed", [self.options.selection]);
+    self.options.scatterplot_obj.grid_obj.global_soft_select(self.options.filtered_selection.slice(0));
+    if (drag_finished) {
+      // updates table selection and bookmarks
+      self.element.trigger("selection-changed", [self.options.selection]);
+    }
   },
 
   _get_plot_offsets: function(){

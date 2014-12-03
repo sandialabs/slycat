@@ -69,33 +69,44 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
   $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
   $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
 
+  var create_session = function(args){
+    return $.ajax(
+      {
+        type: "POST",
+        url: self.server_root + args.url,
+        contentType : args.contentType,
+        data : args.data({hostname: parser.hostname, username: $("#remote-username").val(), password: $("#remote-password").val()}),
+        processData : false,
+        success : function(result){
+            login.session_cache[args.success] = result.sid;
+            self.image_login.dialog("close");
+            callback.call(this_arg, images);
+          },
+        error : args.error
+      }
+    );
+  }
+
   self.image_login.dialog(
   {
     buttons:
     {
       "Login": function()
       {
-        $.ajax(
-        {
-          async : true,
-          type : "POST",
-          url : self.server_root + "remotes",
-          contentType : "application/json",
-          data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
-          processData : false,
-          success : function(result)
+        create_session(
           {
-            login.session_cache[parser.hostname] = result.sid;
-            self.image_login.dialog("close");
-            callback.call(this_arg, images);
-          },
-          error : function(request, status, reason_phrase)
-          {
-            image.last_error = "Error opening remote session: " + reason_phrase;
-            self.image_login.dialog("close");
-            self.show_prompt(images, callback, this_arg);
+            url : "agents",
+            contentType : "application/json",
+            data : JSON.stringify,
+            success : parser.hostname,
+            error : function(request, status, reason_phrase)
+            {
+              console.error("Error opening agent session: " + reason_phrase)
+              self.image_login.dialog("close");
+              self.show_prompt(images, callback, this_arg);
+            }
           }
-        });
+        )
       },
       Cancel: function()
       {
@@ -104,4 +115,12 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
     },
   });
   self.image_login.dialog("open");
+};
+
+Login.prototype.get_agent = function(image)
+{
+  var parser = document.createElement("a");
+  parser.href = image.substr(0,5) == "file:" ? image.substr(5) : image;
+
+  return this.session_cache[parser.hostname];
 };
