@@ -438,6 +438,7 @@
         <ul class="nav navbar-nav navbar-left"> \
           <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
           <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="dropdown" data-bind="visible: project._id() && model_wizard_count"> \
             <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create Model <span class="caret"></span></button> \
             <ul class="dropdown-menu" data-bind="foreach: model_wizards"> \
@@ -468,7 +469,6 @@
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
