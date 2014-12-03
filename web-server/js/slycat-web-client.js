@@ -1,7 +1,5 @@
-define("slycat-web-client", [], function()
+define("slycat-web-client", ["slycat-server-root"], function(server_root)
 {
-  var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
-
   var module = {};
 
   module.post_project_models = function(params)

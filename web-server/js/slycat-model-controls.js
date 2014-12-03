@@ -1,13 +1,9 @@
-define("slycat-model-controls", [], function()
+define("slycat-model-controls", ["slycat-server-root"], function(server_root)
 {
-  var server_root = $("#slycat-server-root").attr("href");
-
   ko.components.register("slycat-model-controls",
   {
     viewModel: function(params)
     {
-      console.log("slycat-model-controls", params);
-
       var component = this;
       component.name = ko.observable("New Model");
       component.description = ko.observable("");
