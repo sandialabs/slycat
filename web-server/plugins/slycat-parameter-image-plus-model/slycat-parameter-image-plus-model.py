@@ -122,10 +122,6 @@ def register_slycat_plugin(context):
     "pin.png",
     "sort-dendrogram-selected.png",
     "sort-dendrogram.png",
-    #For development and debugging, loading some js and css dynamically inside model.
-    "parameter-image-dendrogram.js",
-    "ui.js",
-    "ui.css",
   ]
   for image in images:
     context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.dirname(__file__), image))
