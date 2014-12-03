@@ -87,6 +87,7 @@ def get_projects(revision=None, _=None):
           "js/knockout.mapping.js",
           "js/knockout-projections.js",
           "js/knockstrap.js",
+          "js/curl.js",
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
           "js/slycat-projects.js",
