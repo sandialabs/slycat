@@ -1,6 +1,4 @@
-var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
-
-define(["slycat-web-client", "text!" + server_root + "resources/wizards/hello-world/ui.html"], function(client, html)
+define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/hello-world/ui.html"], function(client, html)
 {
   function constructor(params)
   {

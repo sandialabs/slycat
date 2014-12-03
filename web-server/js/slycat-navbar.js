@@ -6,8 +6,6 @@
   {
     viewModel: function(params)
     {
-      console.log("slycat-navbar", $.toJSON(params));
-
       var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var component = this;
 
