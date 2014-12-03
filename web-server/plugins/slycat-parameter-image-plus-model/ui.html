@@ -5,8 +5,9 @@
   var model_name = "{{name}}";
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   [
-    "parameter-image-dendrogram.js",
-    "ui.js",
+    // TODO these requests break, currently loaded in server bundle
+    //"parameter-image-dendrogram.js",
+    //"ui.js",
   ].forEach(function(src) {
     var script = document.createElement('script');
     script.src = server_root + "resources/models/parameter-image-plus/" + src;
@@ -14,7 +15,7 @@
     document.head.appendChild(script);
   });
   [
-    "ui.css",
+    //"ui.css",
   ].forEach(function(src) {
     var link = document.createElement('link');
     link.href = server_root + "resources/models/parameter-image-plus/" + src;

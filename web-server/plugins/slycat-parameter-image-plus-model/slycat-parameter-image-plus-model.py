@@ -47,7 +47,7 @@ def register_slycat_plugin(context):
 
   # Register JS
   javascripts = [
-    # This JS is loaded by header 
+    # This JS is loaded by header
     # "js/jquery-2.1.1.min.js",
     # "js/jquery-migrate-1.2.1.js",
     # "js/jquery.json-2.4.min.js",
@@ -60,7 +60,7 @@ def register_slycat_plugin(context):
     # "js/slycat-navbar.js",
     # "js/slycat-model.js",
     # End JS loaded by header
-    "jquery.layout-latest.min.js", 
+    "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
     "jquery.mousewheel.js",
@@ -83,7 +83,7 @@ def register_slycat_plugin(context):
     "ui.js"
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), js) for js in javascripts
+    os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
     ])
 
   # Register CSS
@@ -102,7 +102,7 @@ def register_slycat_plugin(context):
     "ui.css"
   ]
   context.register_model_bundle("parameter-image-plus", "text/css", [
-    os.path.join(os.path.dirname(__file__), css) for css in stylesheets
+    os.path.join(os.path.join(os.path.dirname(__file__), "css"), css) for css in stylesheets
     ])
 
   # Register images and other resources
@@ -124,4 +124,4 @@ def register_slycat_plugin(context):
     "sort-dendrogram.png",
   ]
   for image in images:
-    context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.dirname(__file__), image))
+    context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
