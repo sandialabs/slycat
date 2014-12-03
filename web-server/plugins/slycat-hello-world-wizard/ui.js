@@ -7,10 +7,10 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     component.project = ko.mapping.fromJS({_id:params.project_id});
     component.model = ko.observable(null);
     component.recipient = ko.observable("World");
+    component.mid = ko.observable(null);
 
     component.create = function()
     {
-      console.log("create", ko.mapping.toJS(component.model));
       component.tab(1);
     }
 
@@ -25,6 +25,8 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
         marking : component.model().marking(),
         success : function(mid)
         {
+          component.mid(mid);
+
           client.put_model_parameter(
           {
             mid : mid,
