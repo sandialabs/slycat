@@ -178,6 +178,7 @@ def get_project(pid):
           "js/curl.js",
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
+          "js/slycat-model-controls.js",
           "js/slycat-project.js",
         ])
         slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
@@ -416,6 +417,7 @@ def get_model(mid, **kwargs):
           "js/curl.js",
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
+          "js/slycat-model-controls.js",
           "js/slycat-model.js",
         ])
         slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")

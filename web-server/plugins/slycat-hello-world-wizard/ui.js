@@ -4,30 +4,62 @@ define(["text!" + server_root + "resources/wizards/hello-world/ui.html"], functi
 {
   function constructor(params)
   {
-    var model = {};
-    model.tab = ko.observable(0);
-    model.name = ko.observable("New Model");
-    model.description = ko.observable("");
-    model.cancel = function()
+    var component = {};
+    component.tab = ko.observable(0);
+    component.project = ko.mapping.fromJS({_id:params.project_id});
+    component.model = ko.observable(null);
+    component.recipient = ko.observable("World");
+
+    component.create = function()
     {
-      console.log("cancel");
+      console.log("create", ko.mapping.toJS(component.model));
+      component.tab(1);
     }
-    model.create = function()
+
+    component.finish = function()
     {
-      console.log("create", model.name(), model.description());
-      model.tab(1);
+      $.ajax(
+      {
+        contentType : "application/json",
+        data : $.toJSON(
+        {
+          "model-type" : "hello-world",
+          name : component.model().name(),
+          description : component.model().description(),
+          marking : component.model().marking(),
+        }),
+        type : "POST",
+        url : server_root + "projects/" + component.project._id() + "/models",
+        success : function(result)
+        {
+          var mid = result.id;
+          $.ajax(
+          {
+            contentType: "application/json",
+            data : $.toJSON(
+            {
+              value : component.recipient(),
+              input : true,
+            }),
+            type: "PUT",
+            url : server_root + "models/" + mid + "/parameters/name",
+            success : function()
+            {
+              $.ajax(
+              {
+                type : "POST",
+                url : server_root + "models/" + mid + "/finish",
+                success : function()
+                {
+                  component.tab(2);
+                }
+              });
+            }
+          });
+        }
+      });
     }
-    model.load = function()
-    {
-      console.log("load");
-      model.tab(2);
-    }
-    model.finish = function()
-    {
-      console.log("finish");
-      model.tab(3);
-    }
-    return model;
+    return component;
   }
 
   return { viewModel: constructor, template: html };

@@ -656,7 +656,7 @@
       <div class="modal-content"> \
         <div class="modal-body"> \
           <div data-bind="if: wizard"> \
-            <div data-bind="component: wizard"> \
+            <div data-bind="component:{name:wizard,params:{project_id:project._id}}"> \
             </div> \
           </div> \
         </div> \
