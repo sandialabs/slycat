@@ -1,5 +1,7 @@
-(function()
+define("slycat-model-controls", [], function()
 {
+  var server_root = $("#slycat-server-root").attr("href");
+
   ko.components.register("slycat-model-controls",
   {
     viewModel: function(params)
@@ -48,5 +50,4 @@
 '
   });
 
-}());
-
+});
