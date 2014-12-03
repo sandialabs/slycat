@@ -1,6 +1,6 @@
 var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
 
-define(["text!" + server_root + "resources/wizards/hello-world/ui.html"], function(html)
+define(["slycat-web-client", "text!" + server_root + "resources/wizards/hello-world/ui.html"], function(client, html)
 {
   function constructor(params)
   {
@@ -18,37 +18,26 @@ define(["text!" + server_root + "resources/wizards/hello-world/ui.html"], functi
 
     component.finish = function()
     {
-      $.ajax(
+      client.post_project_models(
       {
-        contentType : "application/json",
-        data : $.toJSON(
+        pid : component.project._id(),
+        type : "hello-world",
+        name : component.model().name(),
+        description : component.model().description(),
+        marking : component.model().marking(),
+        success : function(mid)
         {
-          "model-type" : "hello-world",
-          name : component.model().name(),
-          description : component.model().description(),
-          marking : component.model().marking(),
-        }),
-        type : "POST",
-        url : server_root + "projects/" + component.project._id() + "/models",
-        success : function(result)
-        {
-          var mid = result.id;
-          $.ajax(
+          client.put_model_parameter(
           {
-            contentType: "application/json",
-            data : $.toJSON(
-            {
-              value : component.recipient(),
-              input : true,
-            }),
-            type: "PUT",
-            url : server_root + "models/" + mid + "/parameters/name",
+            mid : mid,
+            name : "name",
+            value : component.recipient(),
+            input : true,
             success : function()
             {
-              $.ajax(
+              client.post_model_finish(
               {
-                type : "POST",
-                url : server_root + "models/" + mid + "/finish",
+                mid : mid,
                 success : function()
                 {
                   component.tab(2);

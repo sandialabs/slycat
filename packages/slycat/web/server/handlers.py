@@ -90,6 +90,7 @@ def get_projects(revision=None, _=None):
           "js/curl.js",
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
+          "js/slycat-web-client.js",
           "js/slycat-projects.js",
         ])
         slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
@@ -179,6 +180,7 @@ def get_project(pid):
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
           "js/slycat-model-controls.js",
+          "js/slycat-web-client.js",
           "js/slycat-project.js",
         ])
         slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
@@ -418,6 +420,7 @@ def get_model(mid, **kwargs):
           "js/slycat-browser.js",
           "js/slycat-navbar.js",
           "js/slycat-model-controls.js",
+          "js/slycat-web-client.js",
           "js/slycat-model.js",
         ])
         slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
@@ -502,7 +505,7 @@ def get_model_resource(mtype, resource):
   if mtype in slycat.web.server.plugin.manager.model_resources:
     for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[mtype].items():
       if model_resource == resource:
-        return cherrypy.lib.static.serve_file(model_path, debug=True)
+        return cherrypy.lib.static.serve_file(model_path)
 
   raise cherrypy.HTTPError("404")
 
@@ -510,7 +513,7 @@ def get_model_wizard_resource(wtype, resource):
   if wtype in slycat.web.server.plugin.manager.model_wizard_resources:
     for wizard_resource, wizard_path in slycat.web.server.plugin.manager.model_wizard_resources[wtype].items():
       if wizard_resource == resource:
-        return cherrypy.lib.static.serve_file(wizard_path, debug=True)
+        return cherrypy.lib.static.serve_file(wizard_path)
 
   raise cherrypy.HTTPError("404")
 
