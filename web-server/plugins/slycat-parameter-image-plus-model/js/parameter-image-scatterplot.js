@@ -1611,8 +1611,8 @@ $.widget("parameter_image.scatterplot",
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
 
-    $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
+    $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+    $("#remote-error", self.login).text(image.last_error).css("display", image.last_error ? "block" : "none");
     self.login.dialog(
     {
       buttons:
@@ -1625,7 +1625,7 @@ $.widget("parameter_image.scatterplot",
             type : "POST",
             url : self.options.server_root + "remotes",
             contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username").val(), "password":$("#remote-password").val()}),
+            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.login).val(), "password":$("#remote-password", self.login).val()}),
             processData : false,
             success : function(result)
             {

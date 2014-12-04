@@ -44,8 +44,8 @@ var cluster_ready = false;
 
 var session_cache = {};
 var image_uri = document.createElement("a");
-// var grid_pane = "#parameter-image-plus-layout";
-// var login = new Login(grid_pane, server_root);
+var grid_pane = "#parameter-image-plus-layout";
+var login_agent = new Login(grid_pane, server_root);
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
@@ -441,6 +441,7 @@ function setup_dendrogram()
     dendrogram_options.colorscale = colorscale;
     dendrogram_options.color_array = v;
     dendrogram_options.images = images;
+    dendrogram_options.login_agent = login_agent;
 
     if(bookmark["sort-variable"] != undefined) {
       dendrogram_options.dendrogram_sort_order = false;

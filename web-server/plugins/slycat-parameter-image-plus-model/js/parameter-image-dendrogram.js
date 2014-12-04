@@ -24,6 +24,7 @@ $.widget("parameter_image.dendrogram",
     highlight: [],
     hidden_simulations: [],
     images : [],
+    login_agent : null,
   },
 
   _create: function()
@@ -416,6 +417,28 @@ $.widget("parameter_image.dendrogram",
         .style("opacity", 1e-6)
         .style("display", "none")
         ;
+
+      var parser = document.createElement("a");
+
+      node_thumbnail.each(function(d,i){
+        // If we don't have a session for the image hostname, create one.
+        var parser = document.createElement("a");
+        var exemplar = d.exemplar;
+        if(exemplar != undefined)
+        {
+          var image = self.options.images[exemplar];
+          parser.href = image.substr(0, 5) == "file:" ? image.substr(5) : image;
+          if(!(parser.hostname in self.options.login_agent.session_cache)) {
+
+          }
+        }
+        // var image = ;
+        // parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+        // if(!(parser.hostname in login.session_cache)) {
+        //   self._open_session(relevant_images);
+        //   return;
+        // }
+      });
 
       // Sparkline
       var node_sparkline = node_enter.append("svg:g")

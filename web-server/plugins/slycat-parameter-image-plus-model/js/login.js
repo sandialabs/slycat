@@ -17,13 +17,13 @@ function Login(grid_ref, server_root) {
     height: 300,
     modal: true,
     close: function() {
-      $("#remote-password").val("");
+      $("#remote-password", self.image_login).val("");
     }
   });
 
-  $("#remote-password").keypress(function(event){ 
+  $("#remote-password", self.image_login).keypress(function(event){ 
     if (event.keyCode == 13) { 
-      $('.ui-dialog-buttonset').find('button:contains(Login)').trigger('click');
+      $('.ui-dialog-buttonset', self.image_login).find('button:contains(Login)').trigger('click');
     }
   });
 };
@@ -66,8 +66,8 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
   var parser = document.createElement("a");
   parser.href = image.uri.substr(0,5) == "file:" ? image.uri.substr(5) : image.uri;
 
-  $("#remote-hostname").text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-  $("#remote-error").text(image.last_error).css("display", image.last_error ? "block" : "none");
+  $("#remote-hostname", self.image_login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+  $("#remote-error", self.image_login).text(image.last_error).css("display", image.last_error ? "block" : "none");
 
   var create_session = function(args){
     return $.ajax(
@@ -75,7 +75,7 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
         type: "POST",
         url: self.server_root + args.url,
         contentType : args.contentType,
-        data : args.data({hostname: parser.hostname, username: $("#remote-username").val(), password: $("#remote-password").val()}),
+        data : args.data({hostname: parser.hostname, username: $("#remote-username", self.image_login).val(), password: $("#remote-password", self.image_login).val()}),
         processData : false,
         success : function(result){
             login.session_cache[args.success] = result.sid;
