@@ -23,7 +23,6 @@ import collections
 import json
 import numpy
 import os
-import PIL.Image
 import re
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
@@ -33,6 +32,7 @@ import urlparse
 def image_cache(path):
   if path not in image_cache.storage:
     print "loading", path
+    import PIL.Image
     image_cache.storage[path] = numpy.asarray(PIL.Image.open(path))
   return image_cache.storage[path]
 image_cache.storage = {}
@@ -137,7 +137,7 @@ if arguments.distance_matrix is not None:
 # If we're using an external CSV distance matrix, there can only be one cluster column.
 
   if arguments.cluster_distance == "csv" and len(arguments.cluster_columns) != 1:
-    raise Exception("Only one column can be clustered with --cluster-distance=csv")
+    raise Exception("Only one column can be clustered with --cluster-distance=csv ... currently selected columns: %s" % arguments.cluster_columns)
 
 ###########################################################################################
 # Create a mapping from unique cluster names to column rows.
