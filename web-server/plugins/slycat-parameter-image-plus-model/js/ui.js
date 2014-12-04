@@ -44,6 +44,8 @@ var cluster_ready = false;
 
 var session_cache = {};
 var image_uri = document.createElement("a");
+// var grid_pane = "#parameter-image-plus-layout";
+// var login = new Login(grid_pane, server_root);
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
@@ -405,6 +407,7 @@ function metadata_loaded()
         {
           images = result;
           setup_scatterplot();
+          setup_dendrogram();
           //setup_table();
         },
         error: artifact_missing
@@ -414,6 +417,7 @@ function metadata_loaded()
     {
       images = undefined;
       setup_scatterplot();
+      setup_dendrogram();
     }
     setup_controls();
   }
@@ -422,7 +426,9 @@ function metadata_loaded()
 function setup_dendrogram()
 {
   if(!dendrogram_ready && bookmark && clusters != null && cluster_index != null && clusters_data != null 
-    && clusters_data[cluster_index] !== undefined && colorscale && v && selected_simulations != null)
+    && clusters_data[cluster_index] !== undefined && colorscale && v && selected_simulations != null
+    && images !== null
+    )
   {
     dendrogram_ready = true;
     console.log("dendrogram ready to be initiated.");
@@ -430,10 +436,11 @@ function setup_dendrogram()
     $("#dendrogram-pane .load-status").css("display", "none");
 
     var dendrogram_options = build_dendrogram_node_options(cluster_index);
-    dendrogram_options.clusters=clusters;
-    dendrogram_options.cluster_data=clusters_data[cluster_index];
-    dendrogram_options.colorscale=colorscale;
-    dendrogram_options.color_array=v;
+    dendrogram_options.clusters = clusters;
+    dendrogram_options.cluster_data = clusters_data[cluster_index];
+    dendrogram_options.colorscale = colorscale;
+    dendrogram_options.color_array = v;
+    dendrogram_options.images = images;
 
     if(bookmark["sort-variable"] != undefined) {
       dendrogram_options.dendrogram_sort_order = false;
@@ -571,12 +578,6 @@ function setup_table()
     $("#table").bind("y-selection-changed", function(event, variable)
     {
       y_selection_changed(variable);
-    });
-
-    // Log changes to the images variable ...
-    $("#table").bind("images-selection-changed", function(event, variable)
-    {
-      images_selection_changed(variable);
     });
 
     // Log changes to the table row selection ...
@@ -721,31 +722,11 @@ function setup_scatterplot()
     // Changing the images variable updates the scatterplot ...
     $("#table").bind("images-selection-changed", function(event, variable)
     {
-      $.ajax(
-      {
-        type : "GET",
-        url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" + 
-          variable + "/chunk?ranges=0," + table_metadata["row-count"],
-        success : function(result)
-        {
-          $("#scatterplot").scatterplot("option", "images", result);
-        },
-        error: artifact_missing
-      });
+      handle_image_variable_change(variable);
     });
     $("#controls").bind("images-selection-changed", function(event, variable)
     {
-      $.ajax(
-      {
-        type : "GET",
-        url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" + 
-          variable + "/chunk?ranges=0," + table_metadata["row-count"],
-        success : function(result)
-        {
-          $("#scatterplot").scatterplot("option", "images", result);
-        },
-        error: artifact_missing
-      });
+      handle_image_variable_change(variable);
     });
 
     // Log changes to open images ...
@@ -761,7 +742,7 @@ function setup_controls()
   if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
-    && (cluster_index != null) && (clusters != null)
+    // && (cluster_index != null) && (clusters != null)
     )
   {
     controls_ready = true;
@@ -797,7 +778,7 @@ function setup_controls()
       model_name: model_name,
       aid : "data-table",
       metadata: table_metadata,
-      clusters : clusters,
+      // clusters : clusters,
       x_variables: axes_variables,
       y_variables: axes_variables,
       image_variables: image_columns,
@@ -805,7 +786,7 @@ function setup_controls()
       rating_variables : rating_columns,
       category_variables : category_columns,
       selection : selected_simulations,
-      cluster_index : cluster_index,
+      // cluster_index : cluster_index,
       "x-variable" : x_index,
       "y-variable" : y_index,
       "image-variable" : images_index,
@@ -888,12 +869,12 @@ function setup_controls()
     });
 
     // Log changes to the cluster variable ...
-    $("#controls").bind("cluster-selection-changed", function(event, variable)
-    {
-      variable = parseInt(variable);
-      cluster_selection_changed(variable);
-      update_dendrogram(variable)
-    });
+    // $("#controls").bind("cluster-selection-changed", function(event, variable)
+    // {
+    //   variable = parseInt(variable);
+    //   cluster_selection_changed(variable);
+    //   update_dendrogram(variable);
+    // });
 
     // Log changes to the x variable ...
     $("#controls").bind("x-selection-changed", function(event, variable)
@@ -905,12 +886,6 @@ function setup_controls()
     $("#controls").bind("y-selection-changed", function(event, variable)
     {
       y_selection_changed(variable);
-    });
-
-    // Log changes to the images variable ...
-    $("#controls").bind("images-selection-changed", function(event, variable)
-    {
-      images_selection_changed(variable);
     });
 
     // Changing the auto scale option updates the scatterplot and logs it ...
@@ -1054,6 +1029,48 @@ function handle_color_variable_change(variable)
   bookmarker.updateState({"variable-selection" : variable});
 }
 
+function handle_image_variable_change(variable)
+{
+  images_index = Number(variable);
+
+  // Determine cluster variable from image variable
+  // TODO this needs improvement because we are not guaranteed unique variable names. List of clusters should provide indexes on the variables, instead of just names.
+  cluster_index = clusters.indexOf( table_metadata["column-names"][images_index] );
+
+  // Get entire data column for current image variable and pass it to scatterplot and dendrogram
+  $.ajax(
+  {
+    type : "GET",
+    url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" + 
+      images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+    success : function(result)
+    {
+      images = result;
+      // Passing new images to both scatterplot and dendrogram
+      $("#scatterplot").scatterplot("option", "images", images);
+      $("#dendrogram-viewer").dendrogram("option", "images", images);
+      // Updating dendrogram with new cluster data, which will trigger refresh and thus render new images too
+      update_dendrogram(cluster_index);
+    },
+    error: artifact_missing
+  });
+
+  // Log changes to and bookmark the images variable ...
+  images_selection_changed(images_index);
+  // Log changes to and bookmark the cluster variable ...
+  cluster_selection_changed(cluster_index);
+}
+
+function images_selection_changed(variable)
+{
+  $.ajax(
+  {
+    type : "POST",
+    url : server_root + "events/models/" + model_id + "/select/images/" + variable
+  });
+  bookmarker.updateState( {"images-selection" : variable} );
+}
+
 function update_v(variable)
 {
   get_model_array_attribute({
@@ -1187,7 +1204,6 @@ function cluster_selection_changed(variable)
     url : server_root + "events/models/" + model_id + "/select/cluster/" + variable
   });
   bookmarker.updateState( {"cluster-index" : variable} );
-  cluster_index = variable;
 }
 
 function update_dendrogram(cluster_index)
@@ -1233,16 +1249,6 @@ function y_selection_changed(variable)
     url : server_root + "events/models/" + model_id + "/select/y/" + variable
   });
   bookmarker.updateState( {"y-selection" : variable} );
-}
-
-function images_selection_changed(variable)
-{
-  $.ajax(
-  {
-    type : "POST",
-    url : server_root + "events/models/" + model_id + "/select/images/" + variable
-  });
-  bookmarker.updateState( {"images-selection" : variable} );
   y_index = Number(variable);
 }
 

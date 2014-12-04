@@ -74,13 +74,14 @@ def register_slycat_plugin(context):
     "slick.slycateditors.js",
     "bookmarker.js",
     "chunker.js",
+    "login.js",
     "color-switcher.js",
     "parameter-controls.js",
     "parameter-image-scatterplot.js",
     "parameter-image-table.js",
     #For development and debugging, loading some js dynamically inside model.
-    "parameter-image-dendrogram.js",
-    "ui.js"
+    #"parameter-image-dendrogram.js",
+    #"ui.js"
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
@@ -125,3 +126,10 @@ def register_slycat_plugin(context):
   ]
   for image in images:
     context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
+
+  devs = [
+    "js/parameter-image-dendrogram.js",
+    "js/ui.js",
+  ]
+  for dev in devs:
+    context.register_model_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))

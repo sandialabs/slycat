@@ -11,11 +11,11 @@ $.widget("parameter_image.dendrogram",
 {
   options:
   {
-  	clusters:[],
-  	cluster: 0,
-  	cluster_data:null,
-  	collapsed_nodes:null,
-  	expanded_nodes:null,
+    clusters:[],
+    cluster: 0,
+    cluster_data:null,
+    collapsed_nodes:null,
+    expanded_nodes:null,
     selected_nodes:null,
     color_array: null,
     colorscale: null,
@@ -23,6 +23,7 @@ $.widget("parameter_image.dendrogram",
     dendrogram_sort_order: true,
     highlight: [],
     hidden_simulations: [],
+    images : [],
   },
 
   _create: function()
@@ -32,18 +33,18 @@ $.widget("parameter_image.dendrogram",
 
   _set_cluster: function()
   {
-  	var self = this;
-  	self.container = d3.select("#dendrogram-viewer");
+    var self = this;
+    self.container = d3.select("#dendrogram-viewer");
 
-  	var cluster_data = this.options.cluster_data;
-  	var collapsed_nodes = this.options.collapsed_nodes;
-  	var expanded_nodes = this.options.expanded_nodes;
+    var cluster_data = this.options.cluster_data;
+    var collapsed_nodes = this.options.collapsed_nodes;
+    var expanded_nodes = this.options.expanded_nodes;
     var selected_nodes = this.options.selected_nodes;
 
-  	var linkage = cluster_data["linkage"];
+    var linkage = cluster_data["linkage"];
     var input_indices = cluster_data["input-indices"];
-	  var exemplars = cluster_data["exemplars"];
-	  var subtrees = [];
+    var exemplars = cluster_data["exemplars"];
+    var subtrees = [];
 
     for(var i=0; i<input_indices.length; i++){
       subtrees.push({"node-index":subtrees.length, leaves:1, exemplar:exemplars[i], selected: false, "image-index" : i, "data-table-index" : input_indices[i]});
@@ -57,11 +58,11 @@ $.widget("parameter_image.dendrogram",
     var diagram_height = this.element.parent().height() - padding - padding;
 
     var layout = d3.layout.cluster()
-	    .size([diagram_height, diagram_width]) // Width and height are transposed here because the layout defaults top-to-buttom.
-	    .separation(function() { return 1; })
-	    ;
+      .size([diagram_height, diagram_width]) // Width and height are transposed here because the layout defaults top-to-buttom.
+      .separation(function() { return 1; })
+      ;
 
-	  self.container.selectAll("g").remove();
+    self.container.selectAll("g").remove();
 
     self.sortControl = $('<div id="dendrogram-sort-control"></div>')
       .appendTo('#dendrogram-pane')
@@ -75,7 +76,7 @@ $.widget("parameter_image.dendrogram",
       ;
     this._set_dendrogram_sort_order_state();
 
-	  var vis = self.container.append("svg:g")
+    var vis = self.container.append("svg:g")
       .attr("transform", "translate(" + padding + "," + padding + ")")
       ;
 
@@ -134,9 +135,9 @@ $.widget("parameter_image.dendrogram",
     }
 
     // Initial update for the diagram ...
-  	update_subtree(root, true);
+    update_subtree(root, true);
 
-		// Helper function that draws dendrogram links with right-angles.
+    // Helper function that draws dendrogram links with right-angles.
     function path(d, i)
     {
       if(d.target._children) {
@@ -265,7 +266,7 @@ $.widget("parameter_image.dendrogram",
       }
     }
 
-		function update_subtree(source, skip_bookmarking)
+    function update_subtree(source, skip_bookmarking)
     {
       var duration = d3.event && d3.event.altKey ? 5000 : 500;
 
@@ -406,6 +407,14 @@ $.widget("parameter_image.dendrogram",
           update_subtree(d);
           d3.event.stopPropagation();
         })
+        ;
+
+      // Thumbnail
+      var node_thumbnail = node_enter.append("svg:g")
+        .attr("class", "thumbnail")
+        .attr("transform", function(d) { return d.leaves > 1 ? "translate(55, 0)" : "translate(15, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
+        .style("opacity", 1e-6)
+        .style("display", "none")
         ;
 
       // Sparkline
@@ -893,6 +902,10 @@ $.widget("parameter_image.dendrogram",
     else if(key == "hidden_simulations")
     {
       this._set_hidden_simulations();
+    }
+    else if(key == "images")
+    {
+      // We don't need to do anything when images are updated, because they are always followed by cluster_data, which triggers a refresh
     }
   },
 

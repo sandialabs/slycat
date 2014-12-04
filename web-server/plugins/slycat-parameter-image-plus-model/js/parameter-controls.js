@@ -13,13 +13,13 @@ $.widget("parameter_image.controls",
     model_name : null,
     aid : null,
     metadata : null,
-    cluster_index : null,
+    // cluster_index : null,
     "x-variable" : null,
     "y-variable" : null,
     "image-variable" : null,
     "color-variable" : null,
     "auto-scale" : true,
-    clusters : [],
+    // clusters : [],
     x_variables : [],
     y_variables : [],
     image_variables : [],
@@ -34,18 +34,18 @@ $.widget("parameter_image.controls",
   {
     var self = this;
 
-    if(self.options.clusters.length > 0)
-    {
-      this.cluster_label = $("<label for='cluster-switcher'>Cluster:</label>")
-        .appendTo(this.element)
-        ;
-      this.cluster_select = $("<select id='cluster-switcher' name='cluster-switcher' />")
-        .change(function(){
-          self.element.trigger("cluster-selection-changed", this.value);
-        })
-        .appendTo(this.element)
-        ;
-    }
+    // if(self.options.clusters.length > 0)
+    // {
+    //   this.cluster_label = $("<label for='cluster-switcher'>Cluster:</label>")
+    //     .appendTo(this.element)
+    //     ;
+    //   this.cluster_select = $("<select id='cluster-switcher' name='cluster-switcher' />")
+    //     .change(function(){
+    //       self.element.trigger("cluster-selection-changed", this.value);
+    //     })
+    //     .appendTo(this.element)
+    //     ;
+    // }
 
     this.x_label = $("<label for='x-axis-switcher'>X Axis:</label>")
       .appendTo(this.element)
@@ -244,10 +244,10 @@ $.widget("parameter_image.controls",
       $("#csv-save-choice-form").dialog("open");
     }
 
-    if(self.options.clusters.length > 0)
-    {
-      self._set_clusters();
-    }
+    // if(self.options.clusters.length > 0)
+    // {
+    //   self._set_clusters();
+    // }
     self._set_x_variables();
     self._set_y_variables();
     self._set_image_variables();
@@ -359,21 +359,21 @@ $.widget("parameter_image.controls",
     return rowMajorOutput;
   },
 
-  _set_clusters: function()
-  { 
-    var self = this;
-    this.cluster_select.empty();
-    for(var i = 0; i < this.options.clusters.length; i++) {
-      $("<option />")
-        .text(this.options.clusters[i])
-        .attr("value", i)
-        .attr("selected", function(){
-          return self.options.cluster_index == i ? "selected" : false;
-        })
-        .appendTo(this.cluster_select)
-        ;
-    }
-  },
+  // _set_clusters: function()
+  // { 
+  //   var self = this;
+  //   this.cluster_select.empty();
+  //   for(var i = 0; i < this.options.clusters.length; i++) {
+  //     $("<option />")
+  //       .text(this.options.clusters[i])
+  //       .attr("value", i)
+  //       .attr("selected", function(){
+  //         return self.options.cluster_index == i ? "selected" : false;
+  //       })
+  //       .appendTo(this.cluster_select)
+  //       ;
+  //   }
+  // },
 
   _set_x_variables: function()
   { 
@@ -537,11 +537,11 @@ $.widget("parameter_image.controls",
     self._set_selection();
   },
 
-  _set_selected_cluster: function()
-  {
-    var self = this;
-    this.cluster_select.val(self.options.cluster_index);
-  },
+  // _set_selected_cluster: function()
+  // {
+  //   var self = this;
+  //   this.cluster_select.val(self.options.cluster_index);
+  // },
 
   _set_selected_x: function()
   {
@@ -596,10 +596,10 @@ $.widget("parameter_image.controls",
     //console.log("sparameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
 
-    if(key == "cluster_index")
-    {
-      self._set_selected_cluster();
-    }
+    // if(key == "cluster_index")
+    // {
+    //   self._set_selected_cluster();
+    // }
     if(key == "x-variable")
     {
       self._set_selected_x();
