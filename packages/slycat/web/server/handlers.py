@@ -1400,6 +1400,10 @@ get_configuration_version.lock = threading.Lock()
 get_configuration_version.initialized = False
 get_configuration_version.commit = None
 
+@cherrypy.tools.json_out(on = True)
+def get_configuration_remote_hosts():
+  return cherrypy.request.app.config["slycat"]["remote-hosts"]
+
 @cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
 def get_global_resource(resource):
   if resource in slycat.web.server.resource.manager.bundles:
