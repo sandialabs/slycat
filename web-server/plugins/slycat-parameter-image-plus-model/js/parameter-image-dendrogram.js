@@ -29,6 +29,26 @@ $.widget("parameter_image.dendrogram",
 
   _create: function()
   {
+    var self = this;
+
+    this.session_cache = {};
+    this.image_cache = {};
+
+    // Setup the login dialog ...
+    this.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
+    this.login.appendTo(this.element);
+    this.login.dialog(
+    {
+      autoOpen: false,
+      width: 700,
+      height: 300,
+      modal: true,
+      close: function()
+      {
+        $("#remote-password").val("");
+      }
+    });
+
     this._set_cluster();
   },
 
@@ -418,27 +438,34 @@ $.widget("parameter_image.dendrogram",
         .style("display", "none")
         ;
 
-      var parser = document.createElement("a");
-
+      var imagesToOpen = [];
       node_thumbnail.each(function(d,i){
-        // If we don't have a session for the image hostname, create one.
-        var parser = document.createElement("a");
-        var exemplar = d.exemplar;
-        if(exemplar != undefined)
-        {
-          var image = self.options.images[exemplar];
-          parser.href = image.substr(0, 5) == "file:" ? image.substr(5) : image;
-          if(!(parser.hostname in self.options.login_agent.session_cache)) {
-
-          }
-        }
-        // var image = ;
-        // parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-        // if(!(parser.hostname in login.session_cache)) {
-        //   self._open_session(relevant_images);
-        //   return;
-        // }
+        var blah2;
+        imagesToOpen.push(this);
       });
+      self._open_images(imagesToOpen);
+
+      // var parser = document.createElement("a");
+
+      // node_thumbnail.each(function(d,i){
+      //   // If we don't have a session for the image hostname, create one.
+      //   var parser = document.createElement("a");
+      //   var exemplar = d.exemplar;
+      //   if(exemplar != undefined)
+      //   {
+      //     var image = self.options.images[exemplar];
+      //     parser.href = image.substr(0, 5) == "file:" ? image.substr(5) : image;
+      //     if(!(parser.hostname in self.options.login_agent.session_cache)) {
+
+      //     }
+      //   }
+      //   // var image = ;
+      //   // parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+      //   // if(!(parser.hostname in login.session_cache)) {
+      //   //   self._open_session(relevant_images);
+      //   //   return;
+      //   // }
+      // });
 
       // Sparkline
       var node_sparkline = node_enter.append("svg:g")
@@ -560,6 +587,11 @@ $.widget("parameter_image.dendrogram",
         .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
         ;
 
+      node_update.select(".thumbnail")
+        .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
+        .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
+        ;
+
       node_update.select(".glyph text")
         .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
         ;
@@ -573,6 +605,10 @@ $.widget("parameter_image.dendrogram",
         ;
       
       node_exit.select(".sparkline")
+        .each("start", function() { d3.select(this).style("display", "none"); })
+        ;
+
+      node_exit.select(".thumbnail")
         .each("start", function() { d3.select(this).style("display", "none"); })
         ;
       
@@ -658,6 +694,167 @@ $.widget("parameter_image.dendrogram",
 
       self.element.trigger("node-toggled", d);
     }
+  },
+
+  _open_images: function(images)
+  {
+    var blah;
+    console.log("opening images");
+    var self = this;
+    // If the list of images is empty, we're done.
+    if(images.length == 0)
+      return;
+
+    var image = images[0];
+    image.exemplar = image.__data__.exemplar;
+
+    // Don't open images without exemplars
+    if(image.exemplar == undefined) {
+      self._open_images(images.slice(1));
+      return;
+    }
+
+    image.uri = self.options.images[image.exemplar];
+
+    // If the image is already in the cache, display it.
+    if(image.uri in self.image_cache)
+    {
+      console.log("displaying image: " + image.uri);
+
+      var url_creator = window.URL || window.webkitURL;
+      var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
+
+      // Create the image ...
+      var svgImage = d3.select(image).append("image")
+        .attr("class", "image")
+        .attr("xlink:href", image_url)
+        .attr("x", 0.5)
+        .attr("y", 0.5)
+        .attr("width", 50)
+        .attr("height", 50)
+        //.attr("data-ratio", image.width / image.height)
+        ;
+
+
+
+
+      self._open_images(images.slice(1));
+      return;
+    }
+
+    // If we don't have a session for the image hostname, create one.
+    var parser = document.createElement("a");
+    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+    if(!(parser.hostname in self.session_cache))
+    {
+      self._open_session(images);
+      return;
+    }
+
+    // Retrieve the image.
+    console.log("Loading image " + image.uri + " from server");
+    var xhr = new XMLHttpRequest();
+    xhr.image = image;
+    xhr.open("GET", server_root + "remotes/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function(e)
+    {
+      // If we get 404, the remote session no longer exists because it timed-out.
+      // If we get 500, there was an internal error communicating to the remote host.
+      // Either way, delete the cached session and create a new one.
+      if(this.status == 404 || this.status == 500)
+      {
+        delete self.session_cache[parser.hostname];
+        self._open_session(images);
+        return;
+      }
+      // If we get 400, it means that the session is good and we're
+      // communicating with the remote host, but something else went wrong
+      // (probably file permissions issues).
+      if(this.status == 400)
+      {
+        console.log(this);
+        console.log(this.getAllResponseHeaders());
+        var message = this.getResponseHeader("slycat-message");
+        var hint = this.getResponseHeader("slycat-hint");
+
+        if(message && hint)
+        {
+          window.alert(message + "\n\n" + hint);
+        }
+        else if(message)
+        {
+          window.alert(message);
+        }
+        else
+        {
+          window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
+        }
+        return;
+      }
+
+      // We received the image, so put it in the cache and start-over.
+      var array_buffer_view = new Uint8Array(this.response);
+      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
+      self.image_cache[image.uri] = blob;
+      // Adding lag for testing purposed. This should not exist in production.
+      // setTimeout(function(){
+      self._open_images(images);
+      return;
+      // }, 5000);
+    }
+    xhr.send();
+
+  },
+
+  _open_session: function(images)
+  {
+    var self = this;
+
+    if(images.length == 0)
+      return;
+    var image = images[0];
+
+    var parser = document.createElement("a");
+    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+
+    $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+    $("#remote-error", self.login).text(image.last_error).css("display", image.last_error ? "block" : "none");
+    self.login.dialog(
+    {
+      buttons:
+      {
+        "Login": function()
+        {
+          $.ajax(
+          {
+            async : true,
+            type : "POST",
+            url : server_root + "remotes",
+            contentType : "application/json",
+            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.login).val(), "password":$("#remote-password", self.login).val()}),
+            processData : false,
+            success : function(result)
+            {
+              self.session_cache[parser.hostname] = result.sid;
+              self.login.dialog("close");
+              self._open_images(images);
+            },
+            error : function(request, status, reason_phrase)
+            {
+              image.last_error = "Error opening remote session: " + reason_phrase;
+              self.login.dialog("close");
+              self._open_session(images);
+            }
+          });
+        },
+        Cancel: function()
+        {
+          $(this).dialog("close");
+        }
+      },
+    });
+    self.login.dialog("open");
   },
 
   _set_color: function()
