@@ -61,28 +61,22 @@ csv_distance.matrix = None
 
 if __name__ == "__main__":
   parser = slycat.web.client.option_parser()
-  parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
-  parser.add_argument("--cluster-distance", default="euclidean-rgb", choices=["identity", "jaccard-rgb", "euclidean-rgb", "csv"], help="Hierarchical clustering distance metric.  Default: %(default)s")
-  parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
+  parser.add_argument("--cluster-distance", default="euclidean-rgb", choices=["identity", "jaccard-rgb", "euclidean-rgb", "csv"], help="Hierarchical clustering distance metric.  Default: %(default)s")
+  parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
+  parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
   parser.add_argument("--image-columns", default=None, nargs="*", help="Image column names.")
   parser.add_argument("--input-columns", default=[], nargs="*", help="Input column names.")
-  parser.add_argument("input", help="Input CSV file")
   parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
   parser.add_argument("--model-description", default=None, help="New model description.  Defaults to a summary of the input parameters.")
   parser.add_argument("--model-name", default=None, help="New model name.  Default: Based on the input CSV file name.")
   parser.add_argument("--output-columns", default=[], nargs="*", help="Output column names.")
   parser.add_argument("--project-name", default="Parameter Image Plus Project", help="New project name.  Default: %(default)s")
+  parser.add_argument("input", help="Input CSV file")
   arguments = parser.parse_args()
 
-  if arguments.model_name is None:
-    arguments.model_name = os.path.basename(arguments.input)
-
-  if arguments.model_description is None:
-    arguments.model_description = ""
-    arguments.model_description += "Input file: %s.\n" % os.path.abspath(arguments.input)
-    arguments.model_description += "Cluster linkage: %s.\n" % arguments.cluster_linkage
-    arguments.model_description += "Cluster distance: %s.\n" % arguments.cluster_distance
+  if arguments.cluster_distance == "csv" and arguments.distance_matrix is None:
+    raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-distance=csv")
 
   distance_metrics = {
     "identity" : identity_distance,
@@ -94,9 +88,6 @@ if __name__ == "__main__":
     distance_metric = distance_metrics[arguments.cluster_distance]
   else:
     raise Exception("Unsupported distance metric: %s" % arguments.cluster_distance)
-
-  if arguments.cluster_distance == "csv" and arguments.distance_matrix is None:
-    raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-distance=csv")
 
   ###########################################################################################
   # Parse the input CSV file.
@@ -248,6 +239,18 @@ if __name__ == "__main__":
   pid = connection.find_or_create_project(arguments.project_name)
 
   # Create the new, empty model.
+  if arguments.model_name is None:
+    arguments.model_name = os.path.basename(arguments.input)
+
+  if arguments.model_description is None:
+    arguments.model_description = ""
+    arguments.model_description += "Input file: %s.\n" % os.path.abspath(arguments.input)
+    arguments.model_description += "Cluster linkage: %s.\n" % arguments.cluster_linkage
+    arguments.model_description += "Cluster distance: %s.\n" % arguments.cluster_distance
+    if arguments.cluster_distance == "csv":
+      arguments.model_description += "Distance matrix: %s.\n" % arguments.distance_matrix
+    arguments.model_description += "Cluster columns: %s.\n" % ", ".join(arguments.cluster_columns)
+
   mid = connection.post_project_models(pid, "parameter-image-plus", arguments.model_name, arguments.marking, arguments.model_description)
 
   # Store clustering parameters.
