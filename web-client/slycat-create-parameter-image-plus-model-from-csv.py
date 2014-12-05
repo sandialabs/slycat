@@ -33,27 +33,47 @@ def image_cache(path):
   if path not in image_cache.storage:
     slycat.web.client.log.info("Loading %s" % path)
     import PIL.Image
-    image_cache.storage[path] = numpy.asarray(PIL.Image.open(path))
+    try:
+      image_cache.storage[path] = numpy.asarray(PIL.Image.open(path))
+    except Exception as e:
+      slycat.web.client.log.error(str(e))
+      image_cache.storage[path] = None
   return image_cache.storage[path]
 image_cache.storage = {}
 
 def identity_distance(left_index, left_path, right_index, right_path):
-  """Do-nothing distance metric for two images that always returns 1."""
+  """Do-nothing distance measure for two images that always returns 1."""
   return 1.0
 
 def jaccard_rgb_distance(left_index, left_path, right_index, right_path):
   left_image = image_cache(left_path)
   right_image = image_cache(right_path)
+  # If both images are nonexistent, return a zero distance so they'll cluster together.
+  if left_image is None and right_image is None:
+    return 0.0
+  # If one image is nonexistent and the other is not, make them as far apart as possible.
+  if left_image is None or right_image is None:
+    return numpy.finfo("float64").max / 100000
+  # If the image dimensions don't match, make them as far apart as possible.
   if left_image.shape != right_image.shape:
-    return numpy.finfo("float64").max
+    return numpy.finfo("float64").max / 100000
+  # The images exist and have identical dimensions, so compute their distance.
   return scipy.spatial.distance.jaccard(left_image.ravel(), right_image.ravel())
 
 def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
-  try:
-    return scipy.spatial.distance.euclidean(image_cache(left_path).ravel(), image_cache(right_path).ravel())
-  except Exception as e: # An exception could mean mismatched image dimensions, or nonexistent images
-    slycat.web.client.log.error(str(e))
-    return numpy.finfo("float64").max
+  left_image = image_cache(left_path)
+  right_image = image_cache(right_path)
+  # If both images are nonexistent, return a zero distance so they'll cluster together.
+  if left_image is None and right_image is None:
+    return 0.0
+  # If one image is nonexistent and the other is not, make them as far apart as possible.
+  if left_image is None or right_image is None:
+    return numpy.finfo("float64").max / 100000
+  # If the image dimensions don't match, make them as far apart as possible.
+  if left_image.shape != right_image.shape:
+    return numpy.finfo("float64").max / 100000
+  # The images exist and have identical dimensions, so compute their distance.
+  return scipy.spatial.distance.euclidean(image_cache(left_path).ravel(), image_cache(right_path).ravel())
 
 def csv_distance(left_index, left_path, right_index, right_path):
   return csv_distance.matrix[left_index, right_index]
@@ -62,9 +82,10 @@ csv_distance.matrix = None
 if __name__ == "__main__":
   parser = slycat.web.client.option_parser()
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
-  parser.add_argument("--cluster-distance", default="euclidean-rgb", choices=["identity", "jaccard-rgb", "euclidean-rgb", "csv"], help="Hierarchical clustering distance metric.  Default: %(default)s")
+  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard-rgb", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
   parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
+  parser.add_argument("--dry-run", default=False, action="store_true", help="Don't actually create a model on the server.")
   parser.add_argument("--image-columns", default=None, nargs="*", help="Image column names.")
   parser.add_argument("--input-columns", default=[], nargs="*", help="Input column names.")
   parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
@@ -75,19 +96,19 @@ if __name__ == "__main__":
   parser.add_argument("input", help="Input CSV file")
   arguments = parser.parse_args()
 
-  if arguments.cluster_distance == "csv" and arguments.distance_matrix is None:
+  if arguments.cluster_measure == "csv" and arguments.distance_matrix is None:
     raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-distance=csv")
 
-  distance_metrics = {
+  measures = {
     "identity" : identity_distance,
     "jaccard-rgb" : jaccard_rgb_distance,
     "euclidean-rgb" : euclidean_rgb_distance,
     "csv" : csv_distance,
     }
-  if arguments.cluster_distance in distance_metrics:
-    distance_metric = distance_metrics[arguments.cluster_distance]
+  if arguments.cluster_measure in measures:
+    cluster_measure = measures[arguments.cluster_measure]
   else:
-    raise Exception("Unsupported distance metric: %s" % arguments.cluster_distance)
+    raise Exception("Unsupported distance measure: %s" % arguments.cluster_measure)
 
   ###########################################################################################
   # Parse the input CSV file.
@@ -135,7 +156,7 @@ if __name__ == "__main__":
   ###########################################################################################
   # If we're using an external CSV distance matrix, there can only be one cluster column.
 
-  if arguments.cluster_distance == "csv" and len(arguments.cluster_columns) != 1:
+  if arguments.cluster_measure == "csv" and len(arguments.cluster_columns) != 1:
     raise Exception("Only one column can be clustered with --cluster-distance=csv ... currently selected columns: %s" % arguments.cluster_columns)
 
   ###########################################################################################
@@ -175,10 +196,10 @@ if __name__ == "__main__":
         row_j, column_j = storage[j]
         uri_j = columns[column_j][1][row_j]
         path_j = urlparse.urlparse(uri_j).path
-        distance = distance_metric(i, path_i, j, path_j)
+        distance = cluster_measure(i, path_i, j, path_j)
         distance_matrix[i, j] = distance
         distance_matrix[j, i] = distance
-        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s" % (arguments.cluster_distance, name, i, j, distance))
+        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s" % (arguments.cluster_measure, name, i, j, distance))
 
     # Use the distance matrix to cluster observations ...
     slycat.web.client.log.info("Clustering %s" % name)
@@ -235,64 +256,63 @@ if __name__ == "__main__":
   ###########################################################################################
   # Ingest the raw data into Slycat.
 
-  # Create a new project to contain our model.
-  pid = connection.find_or_create_project(arguments.project_name)
+  if not arguments.dry_run:
+    # Create a new project to contain our model.
+    pid = connection.find_or_create_project(arguments.project_name)
 
-  # Create the new, empty model.
-  if arguments.model_name is None:
-    arguments.model_name = os.path.basename(arguments.input)
+    # Create the new, empty model.
+    if arguments.model_name is None:
+      arguments.model_name = os.path.basename(arguments.input)
 
-  if arguments.model_description is None:
-    arguments.model_description = ""
-    arguments.model_description += "Input file: %s.\n" % os.path.abspath(arguments.input)
-    arguments.model_description += "Cluster linkage: %s.\n" % arguments.cluster_linkage
-    arguments.model_description += "Cluster distance: %s.\n" % arguments.cluster_distance
-    if arguments.cluster_distance == "csv":
-      arguments.model_description += "Distance matrix: %s.\n" % arguments.distance_matrix
-    arguments.model_description += "Cluster columns: %s.\n" % ", ".join(arguments.cluster_columns)
+    if arguments.model_description is None:
+      arguments.model_description = ""
+      arguments.model_description += "Input file: %s.\n" % os.path.abspath(arguments.input)
+      arguments.model_description += "Cluster linkage: %s.\n" % arguments.cluster_linkage
+      arguments.model_description += "Cluster distance: %s.\n" % arguments.cluster_measure
+      if arguments.cluster_measure == "csv":
+        arguments.model_description += "Distance matrix: %s.\n" % arguments.distance_matrix
+      arguments.model_description += "Cluster columns: %s.\n" % ", ".join(arguments.cluster_columns)
 
-  mid = connection.post_project_models(pid, "parameter-image-plus", arguments.model_name, arguments.marking, arguments.model_description)
+    mid = connection.post_project_models(pid, "parameter-image-plus", arguments.model_name, arguments.marking, arguments.model_description)
 
-  # Store clustering parameters.
-  connection.put_model_parameter(mid, "cluster-linkage", arguments.cluster_linkage)
-  connection.put_model_parameter(mid, "cluster-distance", arguments.cluster_distance)
+    # Store clustering parameters.
+    connection.put_model_parameter(mid, "cluster-linkage", arguments.cluster_linkage)
+    connection.put_model_parameter(mid, "cluster-measure", arguments.cluster_measure)
 
-  # Store an alphabetized collection of cluster names.
-  connection.put_model_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
+    # Store an alphabetized collection of cluster names.
+    connection.put_model_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
-  # Store each cluster.
-  for key in clusters.keys():
-    connection.put_model_file(mid, "cluster-%s" % key, json.dumps({
-      "linkage" : cluster_linkages[key].tolist(),
-      "exemplars" : cluster_exemplars[key],
-      "input-indices" : [row_index for row_index, column_index in clusters[key]],
-      }), "application/json")
+    # Store each cluster.
+    for key in clusters.keys():
+      connection.put_model_file(mid, "cluster-%s" % key, json.dumps({
+        "linkage" : cluster_linkages[key].tolist(),
+        "exemplars" : cluster_exemplars[key],
+        "input-indices" : [row_index for row_index, column_index in clusters[key]],
+        }), "application/json")
 
-  # Upload our observations as "data-table".
-  connection.put_model_arrayset(mid, "data-table")
+    # Upload our observations as "data-table".
+    connection.put_model_arrayset(mid, "data-table")
 
-  # Start our single "data-table" array.
-  dimensions = [dict(name="row", end=len(rows)-1)]
-  attributes = [dict(name=name, type="float64" if column.dtype == "float64" else "string") for name, column in columns]
-  connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
+    # Start our single "data-table" array.
+    dimensions = [dict(name="row", end=len(rows)-1)]
+    attributes = [dict(name=name, type="float64" if column.dtype == "float64" else "string") for name, column in columns]
+    connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
-  # Upload each column into the array.
-  for index, (name, column) in enumerate(columns):
-    connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], column))
+    # Upload each column into the array.
+    for index, (name, column) in enumerate(columns):
+      connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], column))
 
-  # Store the remaining parameters.
-  connection.put_model_parameter(mid, "input-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.input_columns and column.dtype == "float64"])
-  connection.put_model_parameter(mid, "output-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.output_columns and column.dtype == "float64"])
-  connection.put_model_parameter(mid, "image-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.image_columns and column.dtype != "float64"])
+    # Store the remaining parameters.
+    connection.put_model_parameter(mid, "input-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.input_columns and column.dtype == "float64"])
+    connection.put_model_parameter(mid, "output-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.output_columns and column.dtype == "float64"])
+    connection.put_model_parameter(mid, "image-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.image_columns and column.dtype != "float64"])
 
-  # Signal that we're done uploading data to the model.  This lets Slycat Web
-  # Server know that it can start computation.
-  connection.post_model_finish(mid)
-  # Wait until the model is ready.
-  connection.join_model(mid)
+    # Signal that we're done uploading data to the model.  This lets Slycat Web
+    # Server know that it can start computation.
+    connection.post_model_finish(mid)
+    # Wait until the model is ready.
+    connection.join_model(mid)
 
-  # Supply the user with a direct link to the new model.
-  slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
-
-
+    # Supply the user with a direct link to the new model.
+    slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
 
