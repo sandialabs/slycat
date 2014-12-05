@@ -637,6 +637,9 @@ $.widget("parameter_image.scatterplot",
     //console.log("parameter_image.scatterplot._update()", self.updates);
     self.update_timer = null;
 
+    var xoffset = 0;
+    var legend_width = 150;
+
     if(self.updates["update_width"])
     {
       self.element.attr("width", self.options.width);
@@ -646,17 +649,18 @@ $.widget("parameter_image.scatterplot",
       var total_height = self.options.height;
       var width = Math.min(total_width, total_height);
       var width_offset = (total_width - width) / 2;
+
       d3.select(self.canvas_datum)
         .style({
           "left" : (width_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
         })
-        .attr("width", (width - (2 * self.options.border)) + self.options.canvas_square_size)
+        .attr("width", (width - (2 * self.options.border)) - xoffset + self.options.canvas_square_size)
         ;
       d3.select(self.canvas_selected)
         .style({
           "left" : (width_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
         })
-        .attr("width", (width - (2 * self.options.border)) + self.options.canvas_selected_square_size)
+        .attr("width", (width - (2 * self.options.border)) - xoffset + self.options.canvas_selected_square_size)
         ;
     }
 
@@ -673,51 +677,45 @@ $.widget("parameter_image.scatterplot",
         .style({
           "top" : (height_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
         })
-        .attr("height", height - (2 * self.options.border) - 40 + self.options.canvas_square_size)
+        .attr("height", (height - (2 * self.options.border)) - 40 + self.options.canvas_square_size)
         ;
       d3.select(self.canvas_selected)
         .style({
           "top" : (height_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
         })
-        .attr("height", height - (2 * self.options.border) - 40 + self.options.canvas_selected_square_size)
+        .attr("height", (height - (2 * self.options.border)) - 40 + self.options.canvas_selected_square_size)
         ;
-    }
-
-    if(self.updates["update_indices"])
-    {
-      self.inverse_indices = {};
-      var count = self.options.indices.length;
-      for(var i = 0; i != count; ++i)
-        self.inverse_indices[self.options.indices[i]] = i;
     }
 
     if(self.updates["update_x"])
     {
-      var total_width = self.element.attr("width");
-      var total_height = self.element.attr("height");
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = self.options.width;
+      var total_height = self.options.height;
+      var width = Math.min(self.options.width, self.options.height);
       var width_offset = (total_width - width) / 2;
-      var height_offset = (total_height - height) / 2;
-      var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border];
-      var range_canvas = [0, width - (2 * self.options.border)];
+
+      var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
+      var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
       self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false);
       self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false);
       
+      var height = Math.min(self.options.width, self.options.height);
+      var height_offset = (total_height - height) / 2;
+      self.x_axis_offset = total_height - height_offset - self.options.border - 40;
       self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
       self.x_axis_layer
-        .attr("transform", "translate(0," + (total_height - height_offset - self.options.border - 40) + ")")
+        .attr("transform", "translate(0," + self.x_axis_offset + ")")
         .call(self.x_axis)
         ;
     }
 
     if(self.updates["update_y"])
     {
-      var total_width = self.element.attr("width");
-      var total_height = self.element.attr("height");
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = self.options.width;
+      var total_height = self.options.height;
+      var width = Math.min(self.options.width, self.options.height);
+      var height = Math.min(self.options.width, self.options.height);
       var width_offset = (total_width - width) / 2
       var height_offset = (total_height - height) / 2
       var range = [total_height - height_offset - self.options.border - 40, 0 + height_offset + self.options.border];
@@ -732,6 +730,14 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
         ;
+    }
+
+    if(self.updates["update_indices"])
+    {
+      self.inverse_indices = {};
+      var count = self.options.indices.length;
+      for(var i = 0; i != count; ++i)
+        self.inverse_indices[self.options.indices[i]] = i;
     }
 
     if(self.updates["update_x_label"])
@@ -1019,10 +1025,10 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["update_legend_position"])
     {
-      var total_width = Number(self.element.attr("width"));
-      var total_height = Number(self.element.attr("height"));
-      var width = Math.min(self.element.attr("width"), self.element.attr("height"));
-      var height = Math.min(self.element.attr("width"), self.element.attr("height"));
+      var total_width = Number(self.options.width);
+      var total_height = Number(self.options.height);
+      var width = Math.min(self.options.width, self.options.height);
+      var height = Math.min(self.options.width, self.options.height);
       var rectHeight = parseInt((height - self.options.border - 40)/2);
       var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
       var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
