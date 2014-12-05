@@ -77,10 +77,10 @@ def register_slycat_plugin(context):
     "login.js",
     "color-switcher.js",
     "parameter-controls.js",
-    "parameter-image-scatterplot.js",
     "parameter-image-table.js",
     #For development and debugging, loading some js dynamically inside model.
     #"parameter-image-dendrogram.js",
+    #"parameter-image-scatterplot.js",
     #"ui.js"
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
@@ -140,6 +140,7 @@ def register_slycat_plugin(context):
 
   devs = [
     "js/parameter-image-dendrogram.js",
+    "js/parameter-image-scatterplot.js",
     "js/ui.js",
   ]
   for dev in devs:
