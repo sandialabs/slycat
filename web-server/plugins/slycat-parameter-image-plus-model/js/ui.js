@@ -46,6 +46,14 @@ var session_cache = {};
 var image_uri = document.createElement("a");
 var grid_pane = "#parameter-image-plus-layout";
 var login_agent = new Login(grid_pane, server_root);
+var session_cache = {};
+var image_cache = {};
+var cache_references = [ session_cache, image_cache ];
+// session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
+// http://api.jqueryui.com/jquery.widget/
+// All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
+// Arrays are the only exception, they are referenced as-is. 
+// This exception is in place to support data-binding, where the data source has to be kept as a reference.
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
@@ -442,6 +450,7 @@ function setup_dendrogram()
     dendrogram_options.color_array = v;
     dendrogram_options.images = images;
     dendrogram_options.login_agent = login_agent;
+    dendrogram_options.cache_references = cache_references;
 
     if(bookmark["sort-variable"] != undefined) {
       dendrogram_options.dendrogram_sort_order = false;
@@ -693,6 +702,7 @@ function setup_scatterplot()
       gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
       hidden_simulations: hidden_simulations,
       "auto-scale" : auto_scale,
+      cache_references : cache_references,
       });
 
     $("#scatterplot").bind("selection-changed", function(event, selection)

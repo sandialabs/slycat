@@ -27,14 +27,19 @@ $.widget("parameter_image.dendrogram",
     login_agent : null,
     thumbnail_width : 50,
     thumbnail_height: 50,
+    session_cache : {},
+    image_cache : {},
+    cache_references : [ {}, {} ], 
+    // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
+    // http://api.jqueryui.com/jquery.widget/
+    // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
+    // Arrays are the only exception, they are referenced as-is. 
+    // This exception is in place to support data-binding, where the data source has to be kept as a reference.
   },
 
   _create: function()
   {
     var self = this;
-
-    this.session_cache = {};
-    this.image_cache = {};
 
     // Setup the login dialog ...
     this.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
@@ -50,6 +55,9 @@ $.widget("parameter_image.dendrogram",
         $("#remote-password").val("");
       }
     });
+
+    self.options.session_cache = self.options.cache_references[0];
+    self.options.image_cache = self.options.cache_references[1];
 
     this._set_cluster();
   },
@@ -596,12 +604,12 @@ $.widget("parameter_image.dendrogram",
     image.uri = self.options.images[image.exemplar];
 
     // If the image is already in the cache, display it.
-    if(image.uri in self.image_cache)
+    if(image.uri in self.options.image_cache)
     {
       //console.log("displaying image: " + image.uri);
 
       var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
+      var image_url = url_creator.createObjectURL(self.options.image_cache[image.uri]);
 
       // Create the image ...
       var svgImage = d3.select(image).append("image")
@@ -624,7 +632,7 @@ $.widget("parameter_image.dendrogram",
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in self.session_cache))
+    if(!(parser.hostname in self.options.session_cache))
     {
       self._open_session(images);
       return;
@@ -634,7 +642,7 @@ $.widget("parameter_image.dendrogram",
     //console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", server_root + "remotes/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -643,7 +651,7 @@ $.widget("parameter_image.dendrogram",
       // Either way, delete the cached session and create a new one.
       if(this.status == 404 || this.status == 500)
       {
-        delete self.session_cache[parser.hostname];
+        delete self.options.session_cache[parser.hostname];
         self._open_session(images);
         return;
       }
@@ -675,7 +683,7 @@ $.widget("parameter_image.dendrogram",
       // We received the image, so put it in the cache and start-over.
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      self.image_cache[image.uri] = blob;
+      self.options.image_cache[image.uri] = blob;
       // Adding lag for testing purposed. This should not exist in production.
       // setTimeout(function(){
       self._open_images(images);
@@ -715,7 +723,7 @@ $.widget("parameter_image.dendrogram",
             processData : false,
             success : function(result)
             {
-              self.session_cache[parser.hostname] = result.sid;
+              self.options.session_cache[parser.hostname] = result.sid;
               self.login.dialog("close");
               self._open_images(images);
             },
