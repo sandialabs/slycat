@@ -31,7 +31,7 @@ import urlparse
 
 def image_cache(path):
   if path not in image_cache.storage:
-    print "loading", path
+    slycat.web.client.log.info("Loading %s" % path)
     import PIL.Image
     image_cache.storage[path] = numpy.asarray(PIL.Image.open(path))
   return image_cache.storage[path]
@@ -42,10 +42,18 @@ def identity_distance(left_index, left_path, right_index, right_path):
   return 1.0
 
 def jaccard_rgb_distance(left_index, left_path, right_index, right_path):
-  return scipy.spatial.distance.jaccard(image_cache(left_path).ravel(), image_cache(right_path).ravel())
+  left_image = image_cache(left_path)
+  right_image = image_cache(right_path)
+  if left_image.shape != right_image.shape:
+    return numpy.finfo("float64").max
+  return scipy.spatial.distance.jaccard(left_image.ravel(), right_image.ravel())
 
 def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
-  return scipy.spatial.distance.euclidean(image_cache(left_path).ravel(), image_cache(right_path).ravel())
+  try:
+    return scipy.spatial.distance.euclidean(image_cache(left_path).ravel(), image_cache(right_path).ravel())
+  except Exception as e: # An exception could mean mismatched image dimensions, or nonexistent images
+    slycat.web.client.log.error(str(e))
+    return numpy.finfo("float64").max
 
 def csv_distance(left_index, left_path, right_index, right_path):
   return csv_distance.matrix[left_index, right_index]
