@@ -90,8 +90,8 @@ if __name__ == "__main__":
   if arguments.cluster_distance == "csv" and arguments.distance_matrix is None:
     raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-distance=csv")
 
-###########################################################################################
-# Parse the input CSV file.
+  ###########################################################################################
+  # Parse the input CSV file.
 
   rows = [[value.strip() for value in row.split(",")] for row in open(arguments.input, "r")]
   columns = []
@@ -101,22 +101,22 @@ if __name__ == "__main__":
     except:
       columns.append((column[0], numpy.array(column[1:])))
 
-###########################################################################################
-# Parse the input distance matrix.
+  ###########################################################################################
+  # Parse the input distance matrix.
 
   if arguments.distance_matrix is not None:
     rows = [row.split(",") for row in open(arguments.distance_matrix, "r")]
     csv_distance.matrix = numpy.array(rows[1:], dtype="float64")
 
-###########################################################################################
-# The input must contain a minimum of one numeric column, so we can display a scatterplot.
+  ###########################################################################################
+  # The input must contain a minimum of one numeric column, so we can display a scatterplot.
 
   numeric_columns = [name for name, column in columns if column.dtype == "float64"]
   if len(numeric_columns) < 1:
     raise Exception("You must supply at least one numeric column in the input data.")
 
-###########################################################################################
-# By default, automatically identify which columns are image columns.
+  ###########################################################################################
+  # By default, automatically identify which columns are image columns.
 
   if arguments.image_columns is None:
     arguments.image_columns = []
@@ -127,20 +127,24 @@ if __name__ == "__main__":
         if numpy.any(search(column)):
           arguments.image_columns.append(name)
 
-###########################################################################################
-# By default, assume all image columns will be clustered.
+  ###########################################################################################
+  # By default, assume all image columns will be clustered.
 
   if arguments.cluster_columns is None:
     arguments.cluster_columns = arguments.image_columns
 
-###########################################################################################
-# If we're using an external CSV distance matrix, there can only be one cluster column.
+  ###########################################################################################
+  # If we're using an external CSV distance matrix, there can only be one cluster column.
 
   if arguments.cluster_distance == "csv" and len(arguments.cluster_columns) != 1:
     raise Exception("Only one column can be clustered with --cluster-distance=csv ... currently selected columns: %s" % arguments.cluster_columns)
 
-###########################################################################################
-# Create a mapping from unique cluster names to column rows.
+  ###########################################################################################
+  # Setup a connection to the Slycat Web Server.
+  connection = slycat.web.client.connect(arguments)
+
+  ###########################################################################################
+  # Create a mapping from unique cluster names to column rows.
 
   clusters = collections.defaultdict(list)
   for column_index, (name, column) in enumerate(columns):
@@ -152,8 +156,8 @@ if __name__ == "__main__":
       if row:
         clusters[name].append((row_index, column_index))
 
-###########################################################################################
-# Compute a hierarchical clustering for each cluster column.
+  ###########################################################################################
+  # Compute a hierarchical clustering for each cluster column.
 
   cluster_linkages = {}
   cluster_exemplars = {}
@@ -229,26 +233,23 @@ if __name__ == "__main__":
       exemplars[cluster_id] = exemplar_id
     cluster_exemplars[name] = exemplars
 
-###########################################################################################
-# Ingest the raw data into Slycat.
+  ###########################################################################################
+  # Ingest the raw data into Slycat.
 
-# Setup a connection to the Slycat Web Server.
-  connection = slycat.web.client.connect(arguments)
-
-# Create a new project to contain our model.
+  # Create a new project to contain our model.
   pid = connection.find_or_create_project(arguments.project_name)
 
-# Create the new, empty model.
+  # Create the new, empty model.
   mid = connection.post_project_models(pid, "parameter-image-plus", arguments.model_name, arguments.marking, arguments.model_description)
 
-# Store clustering parameters.
+  # Store clustering parameters.
   connection.put_model_parameter(mid, "cluster-linkage", arguments.cluster_linkage)
   connection.put_model_parameter(mid, "cluster-distance", arguments.cluster_distance)
 
-# Store an alphabetized collection of cluster names.
+  # Store an alphabetized collection of cluster names.
   connection.put_model_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
 
-# Store each cluster.
+  # Store each cluster.
   for key in clusters.keys():
     connection.put_model_file(mid, "cluster-%s" % key, json.dumps({
       "linkage" : cluster_linkages[key].tolist(),
@@ -256,30 +257,30 @@ if __name__ == "__main__":
       "input-indices" : [row_index for row_index, column_index in clusters[key]],
       }), "application/json")
 
-# Upload our observations as "data-table".
+  # Upload our observations as "data-table".
   connection.put_model_arrayset(mid, "data-table")
 
-# Start our single "data-table" array.
+  # Start our single "data-table" array.
   dimensions = [dict(name="row", end=len(rows)-1)]
   attributes = [dict(name=name, type="float64" if column.dtype == "float64" else "string") for name, column in columns]
   connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
-# Upload each column into the array.
+  # Upload each column into the array.
   for index, (name, column) in enumerate(columns):
     connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], column))
 
-# Store the remaining parameters.
+  # Store the remaining parameters.
   connection.put_model_parameter(mid, "input-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.input_columns and column.dtype == "float64"])
   connection.put_model_parameter(mid, "output-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.output_columns and column.dtype == "float64"])
   connection.put_model_parameter(mid, "image-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.image_columns and column.dtype != "float64"])
 
-# Signal that we're done uploading data to the model.  This lets Slycat Web
-# Server know that it can start computation.
+  # Signal that we're done uploading data to the model.  This lets Slycat Web
+  # Server know that it can start computation.
   connection.post_model_finish(mid)
-# Wait until the model is ready.
+  # Wait until the model is ready.
   connection.join_model(mid)
 
-# Supply the user with a direct link to the new model.
+  # Supply the user with a direct link to the new model.
   slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
 
 
