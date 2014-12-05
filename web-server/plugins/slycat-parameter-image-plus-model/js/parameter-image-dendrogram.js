@@ -25,6 +25,8 @@ $.widget("parameter_image.dendrogram",
     hidden_simulations: [],
     images : [],
     login_agent : null,
+    thumbnail_width : 50,
+    thumbnail_height: 50,
   },
 
   _create: function()
@@ -431,9 +433,12 @@ $.widget("parameter_image.dendrogram",
         ;
 
       // Thumbnail
+      var vertical_lift = - self.options.thumbnail_height / 2;
+      var trans_endpoint = "translate(15, " + vertical_lift + ")";
+      var trans_notendpoint = "translate(55, " + vertical_lift + ")";
       var node_thumbnail = node_enter.append("svg:g")
         .attr("class", "thumbnail")
-        .attr("transform", function(d) { return d.leaves > 1 ? "translate(55, 0)" : "translate(15, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
+        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move thumbnail to the right according to whether it's an endpoint
         .style("opacity", 1e-6)
         .style("display", "none")
         ;
@@ -444,123 +449,6 @@ $.widget("parameter_image.dendrogram",
         imagesToOpen.push(this);
       });
       self._open_images(imagesToOpen);
-
-      // var parser = document.createElement("a");
-
-      // node_thumbnail.each(function(d,i){
-      //   // If we don't have a session for the image hostname, create one.
-      //   var parser = document.createElement("a");
-      //   var exemplar = d.exemplar;
-      //   if(exemplar != undefined)
-      //   {
-      //     var image = self.options.images[exemplar];
-      //     parser.href = image.substr(0, 5) == "file:" ? image.substr(5) : image;
-      //     if(!(parser.hostname in self.options.login_agent.session_cache)) {
-
-      //     }
-      //   }
-      //   // var image = ;
-      //   // parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-      //   // if(!(parser.hostname in login.session_cache)) {
-      //   //   self._open_session(relevant_images);
-      //   //   return;
-      //   // }
-      // });
-
-      // Sparkline
-      var node_sparkline = node_enter.append("svg:g")
-        .attr("class", "sparkline")
-        .attr("transform", function(d) { return d.leaves > 1 ? "translate(55, 0)" : "translate(15, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
-        .style("opacity", 1e-6)
-        .style("display", "none")
-        ;
-
-      var node_sparkline_path = node_sparkline.append("svg:path")
-        // Can't set attr here because we download waveforms asynchronously. Instead doing this below.
-        //.attr("d", sparkline)
-        .style("stroke", function(d, i){
-          if(self.options.colorscale !== null && self.options.color_array != null){
-            var index = d["data-table-index"];
-            if(index != null) {
-              var value = self.options.color_array[index];
-              if(value != null)
-                return self.options.colorscale(value);
-              else
-                return $("#color-switcher").colorswitcher("get_null_color");
-            }
-            else
-              return "black";
-          } else {
-            return "black";
-          }
-        })
-        .classed("nullValue", function(d, i){
-          if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
-            return false;
-          else
-            return true;
-        })
-        .on("click", function(d){
-          self._handle_highlight(d, d3.event, this);
-        })
-        ;
-      self._set_highlight();
-      
-      get_model_arrayset_metadata({
-        server_root : server_root,
-        mid : model_id,
-        aid : "preview-" + self.options.clusters[self.options.cluster],
-        success : function(parameters)
-        {
-          node_sparkline_path.each(function(d,i){
-            if(d.exemplar == undefined) {
-              $(this).attr("d", "");
-            } else {
-              get_model_arrayset({
-                server_root : server_root,
-                mid : model_id,
-                aid : "preview-" + self.options.clusters[self.options.cluster],
-                arrays : d["exemplar"] + ":" + (d["exemplar"]+1),
-                element : this,
-                success : function(result, metadata, parameters)
-                {
-                  var values = result[0]["value"];
-                  var data = [];
-                  for(var i = 0; i != values.length; ++i) {
-                    data.push(values[i]);
-                  }
-
-                  var width = 100;
-                  var height = 15;
-                  var min = d3.min(data);
-                  var max = d3.max(data);
-                  var x = d3.scale.linear().domain([0, data.length - 1]).range([0, width]);
-                  var y = d3.scale.linear().domain([max, min]).range([-height, height]).nice();
-
-                  var path = d3.svg.line()
-                    .x(function(d,i) { return x(i); })
-                    .y(function(d) { return y(d); })
-                    ;
-
-                  $(parameters.element).attr("d", path(data));
-                  //$(parameters.element).attr("d", "M 0 0 L 50 0 L 100 -5");
-                },
-              });
-            }
-          });
-        },
-      });
-      // Set the d attribute of each sparkline path. Currently doing this by downloading each waveform individually. In the future we might want to batch it up.
-
-
-      // If we ever get the ability to download arbitrary batches of waveforms using "GET Model Arrayset", this is a stub-out for doing so
-      // function getWaveforms(selection){
-      //   console.log(selection);
-      //   selection.each(function(d,i){
-      //     console.log("exemplar is " + d.exemplar);
-      //   });
-      // }
-      // node_enter.call(getWaveforms);
 
       // Transition new nodes to their final position.
       var node_update = node.transition()
@@ -581,11 +469,6 @@ $.widget("parameter_image.dendrogram",
       node_update.select(".subtree-glyph")
         .style("fill", "url(#subtree-gradient)")
         ;
-      
-      node_update.select(".sparkline")
-        .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
-        .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
-        ;
 
       node_update.select(".thumbnail")
         .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
@@ -602,10 +485,6 @@ $.widget("parameter_image.dendrogram",
         .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
         .style("opacity", 1e-6)
         .remove()
-        ;
-      
-      node_exit.select(".sparkline")
-        .each("start", function() { d3.select(this).style("display", "none"); })
         ;
 
       node_exit.select(".thumbnail")
@@ -699,7 +578,7 @@ $.widget("parameter_image.dendrogram",
   _open_images: function(images)
   {
     var blah;
-    console.log("opening images");
+    //console.log("opening images");
     var self = this;
     // If the list of images is empty, we're done.
     if(images.length == 0)
@@ -719,7 +598,7 @@ $.widget("parameter_image.dendrogram",
     // If the image is already in the cache, display it.
     if(image.uri in self.image_cache)
     {
-      console.log("displaying image: " + image.uri);
+      //console.log("displaying image: " + image.uri);
 
       var url_creator = window.URL || window.webkitURL;
       var image_url = url_creator.createObjectURL(self.image_cache[image.uri]);
@@ -752,7 +631,7 @@ $.widget("parameter_image.dendrogram",
     }
 
     // Retrieve the image.
-    console.log("Loading image " + image.uri + " from server");
+    //console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
     xhr.open("GET", server_root + "remotes/" + self.session_cache[parser.hostname] + "/file" + parser.pathname, true);
@@ -860,27 +739,6 @@ $.widget("parameter_image.dendrogram",
   _set_color: function()
   {
     var self = this;
-
-    this.container.selectAll("g.sparkline path")
-      .style("stroke", function(d, i){
-        var index = d["data-table-index"];
-        if(index != null) {
-          var value = self.options.color_array[index];
-          if(value != null)
-            return self.options.colorscale(value);
-          else
-            return $("#color-switcher").colorswitcher("get_null_color");
-        }
-        else
-          return "black";
-      })
-      .classed("nullValue", function(d, i){
-        if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
-          return false;
-        else
-          return true;
-      })
-      ;
   },
 
   _set_highlight: function()
@@ -992,7 +850,7 @@ $.widget("parameter_image.dendrogram",
 
   _set_hidden_simulations: function()
   {
-    console.log("setting hidden simulations in dendrogram");
+    //console.log("setting hidden simulations in dendrogram");
     var self = this;
 
     var selection = [];
