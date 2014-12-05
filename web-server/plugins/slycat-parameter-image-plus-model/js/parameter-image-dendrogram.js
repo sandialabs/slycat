@@ -25,6 +25,8 @@ $.widget("parameter_image.dendrogram",
     hidden_simulations: [],
     images : [],
     login_agent : null,
+    thumbnail_width : 50,
+    thumbnail_height: 50,
   },
 
   _create: function()
@@ -431,9 +433,12 @@ $.widget("parameter_image.dendrogram",
         ;
 
       // Thumbnail
+      var vertical_lift = -(self.options.thumbnail_height/2)
+      var trans_endpoint = "translate(15, " + vertical_lift + ")";
+      var trans_notendpoint = "translate(55, " + vertical_lift + ")";
       var node_thumbnail = node_enter.append("svg:g")
         .attr("class", "thumbnail")
-        .attr("transform", function(d) { return d.leaves > 1 ? "translate(55, 0)" : "translate(15, 0)"; }) // Move sparkline to the right according to whether it's an endpoint
+        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move sparkline to the right according to whether it's an endpoint
         .style("opacity", 1e-6)
         .style("display", "none")
         ;
