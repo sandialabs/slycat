@@ -104,9 +104,9 @@ if __name__ == "__main__":
 ###########################################################################################
 # Parse the input distance matrix.
 
-if arguments.distance_matrix is not None:
-  rows = [row.split(",") for row in open(arguments.distance_matrix, "r")]
-  csv_distance.matrix = numpy.array(rows[1:], dtype="float64")
+  if arguments.distance_matrix is not None:
+    rows = [row.split(",") for row in open(arguments.distance_matrix, "r")]
+    csv_distance.matrix = numpy.array(rows[1:], dtype="float64")
 
 ###########################################################################################
 # The input must contain a minimum of one numeric column, so we can display a scatterplot.
