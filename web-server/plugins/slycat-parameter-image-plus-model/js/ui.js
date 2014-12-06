@@ -505,12 +505,6 @@ function setup_dendrogram()
     {
       node_toggled(node);
     });
-
-    // Log changes to the waveform selection
-    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, selection)
-    {
-      // selected_simulations_changed(selection);
-    });
   }
 }
 
@@ -590,6 +584,7 @@ function setup_table()
       y_selection_changed(variable);
     });
 
+    // Changing the table row selection updates the scatterplot and controls ...
     // Log changes to the table row selection ...
     $("#table").bind("row-selection-changed", function(event, selection)
     {
@@ -598,7 +593,11 @@ function setup_table()
       var temp = [];
       for(var i = 0; i != selection.length; ++i)
         temp.push(selection[i]);
+
       selected_simulations_changed(temp);
+      $("#scatterplot").scatterplot("option", "selection",  temp);
+      $("#controls").controls("option", "selection",  temp);
+      $("#dendrogram-viewer").dendrogram("option", "highlight", temp);
     });
 
     // Changing the scatterplot selection updates the table row selection and controls ..
@@ -606,18 +605,7 @@ function setup_table()
     {
       $("#table").table("option", "row-selection", selection);
       $("#controls").controls("option", "selection", selection);
-    });
-
-    // Changing the table row selection updates the scatterplot and controls ...
-    $("#table").bind("row-selection-changed", function(event, selection)
-    {
-      // The table selection is an array buffer, so convert it to an array.
-      var temp = [];
-      for(var i = 0; i != selection.length; ++i)
-        temp.push(selection[i]);
-
-      $("#scatterplot").scatterplot("option", "selection",  temp);
-      $("#controls").controls("option", "selection",  temp);
+      $("#dendrogram-viewer").dendrogram("option", "highlight", selection);
     });
 
     // Changing the x variable updates the table ...

@@ -552,6 +552,12 @@ rights in this software.
 #dendrogram-viewer g.sparkline path.highlight.nullValue {
   stroke-dasharray: 2px, 5px;
 }
+#dendrogram-viewer g.thumbnail rect.outline {
+  stroke: unset;
+}
+#dendrogram-viewer g.thumbnail.highlight rect.outline {
+  stroke: black;
+}
 
 /* ui layout */
 .ui-layout-resizer

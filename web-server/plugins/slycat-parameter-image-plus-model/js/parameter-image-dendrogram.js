@@ -27,6 +27,7 @@ $.widget("parameter_image.dendrogram",
     login_agent : null,
     thumbnail_width : 50,
     thumbnail_height: 50,
+    thumbnail_border_size : 2,
     session_cache : {},
     image_cache : {},
     cache_references : [ {}, {} ], 
@@ -451,9 +452,21 @@ $.widget("parameter_image.dendrogram",
         .style("display", "none")
         ;
 
+      var node_thumbnail_border = node_thumbnail.append("svg:rect")
+        .attr("class", "outline")
+        .attr("x", -(self.options.thumbnail_border_size/2))
+        .attr("y", -(self.options.thumbnail_border_size/2))
+        .attr("width", self.options.thumbnail_width + self.options.thumbnail_border_size)
+        .attr("height", self.options.thumbnail_height + self.options.thumbnail_border_size)
+        //.style("stroke", "black")
+        .style("stroke-width", self.options.thumbnail_border_size+"px")
+        .style("fill", "white")
+        ;
+
+      self._set_highlight();
+
       var imagesToOpen = [];
       node_thumbnail.each(function(d,i){
-        var blah2;
         imagesToOpen.push(this);
       });
       self._open_images(imagesToOpen);
@@ -615,15 +628,12 @@ $.widget("parameter_image.dendrogram",
       var svgImage = d3.select(image).append("image")
         .attr("class", "image")
         .attr("xlink:href", image_url)
-        .attr("x", 0.5)
-        .attr("y", 0.5)
-        .attr("width", 50)
-        .attr("height", 50)
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", self.options.thumbnail_width)
+        .attr("height", self.options.thumbnail_height)
         //.attr("data-ratio", image.width / image.height)
         ;
-
-
-
 
       self._open_images(images.slice(1));
       return;
@@ -755,7 +765,7 @@ $.widget("parameter_image.dendrogram",
 
     checkChildren(self.root);
 
-    this.container.selectAll("g.sparkline path")
+    this.container.selectAll("g.thumbnail")
       .classed("highlight", function(d, i){
         if(d.highlight)
           return true;
