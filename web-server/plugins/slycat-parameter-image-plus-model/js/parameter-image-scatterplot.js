@@ -47,6 +47,8 @@ $.widget("parameter_image.scatterplot",
     canvas_square_border_size : 1,
     canvas_selected_square_size : 16,
     canvas_selected_square_border_size : 2,
+    pinned_width : 200,
+    pinned_height : 200,
     hover_time : 250,
     session_cache : {},
     image_cache : {},
@@ -950,9 +952,9 @@ $.widget("parameter_image.scatterplot",
         if(image.uri === undefined)
           image.uri = self.options.images[image.index];
         if(image.width === undefined)
-          image.width = 200;
+          image.width = self.options.pinned_width;
         if(image.height === undefined)
-          image.height = 200;
+          image.height = self.options.pinned_height;
       });
 
       // Transform the list of initial images so we can pass them to _open_images()
@@ -1145,9 +1147,9 @@ $.widget("parameter_image.scatterplot",
 
       // Define a default size for every image.
       if(image.width === undefined)
-        image.width = 200;
+        image.width = self.options.pinned_width;
       if(image.height === undefined)
-        image.height = 200;
+        image.height = self.options.pinned_height;
 
       // Define a default position for every image.
       if(image.x === undefined)
@@ -1292,9 +1294,9 @@ $.widget("parameter_image.scatterplot",
 
       // Define a default size for every image.
       if(image.width === undefined)
-        image.width = 200;
+        image.width = self.options.pinned_width;
       if(image.height === undefined)
-        image.height = 200;
+        image.height = self.options.pinned_height;
 
       // Define a default position for every image.
       if(image.x === undefined)
@@ -1501,8 +1503,8 @@ $.widget("parameter_image.scatterplot",
             ;
 
           // Adjust image position
-          var imageHeight = 200;
-          var imageWidth = 200;
+          var imageWidth = self.options.pinned_width;
+          var imageHeight = self.options.pinned_height;
 
           var x = self._getDefaultXPosition(image.index, imageWidth);
           var y = self._getDefaultYPosition(image.index, imageHeight);
@@ -1801,7 +1803,7 @@ $.widget("parameter_image.scatterplot",
         target_x : self.x_scale(self.options.x[image_index]),
         target_y : self.y_scale(self.options.y[image_index]),
         no_sync : true,
-        }]);
+      }]);
 
       // self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image_index, 0);}, 1000);
     }
@@ -1860,5 +1862,31 @@ $.widget("parameter_image.scatterplot",
     self.datum_layer.selectAll("circle.openHover")
       .classed("openHover", false)
       ;
+  },
+
+  pin: function(simulations)
+  {
+    var self = this;
+
+    // Set default image size
+    var imageWidth = self.options.pinned_width;
+    var imageHeight = self.options.pinned_height;
+
+    var images = [];
+    simulations.forEach(function(image_index, loop_index)
+    {
+      images.push({
+        index : self.options.indices[image_index],
+        uri : self.options.images[self.options.indices[image_index]].trim(),
+        image_class : "open-image",
+        x : self._getDefaultXPosition(image_index, imageWidth),
+        y : self._getDefaultYPosition(image_index, imageHeight),
+        width : imageWidth,
+        height : imageHeight,
+        target_x : self.x_scale(self.options.x[image_index]),
+        target_y : self.y_scale(self.options.y[image_index]),
+        });
+    });
+    self._open_images(images);
   },
 });

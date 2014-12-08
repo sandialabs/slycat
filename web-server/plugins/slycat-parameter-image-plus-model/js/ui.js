@@ -917,6 +917,20 @@ function setup_controls()
     });
 
     // Log changes to hidden selection ...
+    $("#controls").bind("pin-selection", function(event, selection)
+    {
+      // Removing any hidden simulations from those that will be pinned
+      var simulations_to_pin = [];
+      for(var i=0; i<selected_simulations.length; i++){
+        var index = $.inArray(selected_simulations[i], hidden_simulations);
+        if(index == -1) {
+          simulations_to_pin.push(selected_simulations[i]);
+        }
+      }
+      $("#scatterplot").scatterplot("pin", simulations_to_pin);
+    });
+
+    // Log changes to hidden selection ...
     $("#controls").bind("show-all", function(event, selection)
     {
       while(hidden_simulations.length > 0) {
