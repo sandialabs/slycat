@@ -29,40 +29,60 @@ import scipy.spatial.distance
 import slycat.web.client
 import urlparse
 
-def image_cache(path):
-  if path not in image_cache.storage:
-    slycat.web.client.log.info("Loading %s" % path)
-    import PIL.Image
-    try:
-      image_cache.storage[path] = numpy.asarray(PIL.Image.open(path))
-    except Exception as e:
-      slycat.web.client.log.error(str(e))
-      image_cache.storage[path] = None
-  return image_cache.storage[path]
-image_cache.storage = {}
+class ImageCache(object):
+  def __init__(self):
+    self._reset()
+
+  def _reset(self):
+    self._storage = {}
+
+  def reset(self):
+    slycat.web.client.log.info("Resetting image cache.")
+    self._reset()
+
+  def image(self, path, process=lambda x,y:x):
+    if path not in self._storage:
+      slycat.web.client.log.info("Loading %s." % path)
+      import PIL.Image
+      try:
+        self._storage[path] = process(numpy.asarray(PIL.Image.open(path)), path)
+      except Exception as e:
+        slycat.web.client.log.error(str(e))
+        self._storage[path] = None
+    return self._storage[path]
+
+image_cache = ImageCache()
 
 def identity_distance(left_index, left_path, right_index, right_path):
   """Do-nothing distance measure for two images that always returns 1."""
   return 1.0
 
-def jaccard_rgb_distance(left_index, left_path, right_index, right_path):
-  left_image = image_cache(left_path)
-  right_image = image_cache(right_path)
+def jaccard_distance(left_index, left_path, right_index, right_path):
+  def threshold_bw(image, path):
+    import skimage.color
+    slycat.web.client.log.info("Converting %s rgb to grayscale." % path)
+    image = skimage.color.rgb2gray(image)
+    slycat.web.client.log.info("Thresholding %s values < 0.9." % path)
+    image = image < 0.9
+    return image
+
+  left_image = image_cache.image(left_path, threshold_bw)
+  right_image = image_cache.image(right_path, threshold_bw)
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
     return 0.0
   # If one image is nonexistent and the other is not, make them as far apart as possible.
   if left_image is None or right_image is None:
-    return numpy.finfo("float64").max / 100000
+    return 1.0
   # If the image dimensions don't match, make them as far apart as possible.
   if left_image.shape != right_image.shape:
-    return numpy.finfo("float64").max / 100000
+    return 1.0
   # The images exist and have identical dimensions, so compute their distance.
   return scipy.spatial.distance.jaccard(left_image.ravel(), right_image.ravel())
 
 def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
-  left_image = image_cache(left_path)
-  right_image = image_cache(right_path)
+  left_image = image_cache.image(left_path)
+  right_image = image_cache.image(right_path)
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
     return 0.0
@@ -73,7 +93,7 @@ def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
   if left_image.shape != right_image.shape:
     return numpy.finfo("float64").max / 100000
   # The images exist and have identical dimensions, so compute their distance.
-  return scipy.spatial.distance.euclidean(image_cache(left_path).ravel(), image_cache(right_path).ravel())
+  return scipy.spatial.distance.euclidean(left_image.ravel(), right_image.ravel())
 
 def csv_distance(left_index, left_path, right_index, right_path):
   return csv_distance.matrix[left_index, right_index]
@@ -82,7 +102,7 @@ csv_distance.matrix = None
 if __name__ == "__main__":
   parser = slycat.web.client.option_parser()
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
-  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard-rgb", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
+  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
   parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
   parser.add_argument("--dry-run", default=False, action="store_true", help="Don't actually create a model on the server.")
@@ -101,7 +121,7 @@ if __name__ == "__main__":
 
   measures = {
     "identity" : identity_distance,
-    "jaccard-rgb" : jaccard_rgb_distance,
+    "jaccard" : jaccard_distance,
     "euclidean-rgb" : euclidean_rgb_distance,
     "csv" : csv_distance,
     }
@@ -160,8 +180,11 @@ if __name__ == "__main__":
     raise Exception("Only one column can be clustered with --cluster-distance=csv ... currently selected columns: %s" % arguments.cluster_columns)
 
   ###########################################################################################
-  # Setup a connection to the Slycat Web Server.
+  # Setup a connection to the Slycat Web Server, and test it before we do a lot of work.
+
   connection = slycat.web.client.connect(arguments)
+  version = connection.get_configuration_version()
+  slycat.web.client.log.info("Connected to server version %s%s." % (version["version"], " (" + version["commit"] + ")" if "commit" in version else ""))
 
   ###########################################################################################
   # Create a mapping from unique cluster names to column rows.
@@ -182,6 +205,7 @@ if __name__ == "__main__":
   cluster_linkages = {}
   cluster_exemplars = {}
   for index, (name, storage) in enumerate(sorted(clusters.items())):
+    image_cache.reset()
     progress_begin = float(index) / float(len(clusters))
     progress_end = float(index + 1) / float(len(clusters))
 
@@ -199,7 +223,7 @@ if __name__ == "__main__":
         distance = cluster_measure(i, path_i, j, path_j)
         distance_matrix[i, j] = distance
         distance_matrix[j, i] = distance
-        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s" % (arguments.cluster_measure, name, i, j, distance))
+        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s." % (arguments.cluster_measure, name, i, j, distance))
 
     # Use the distance matrix to cluster observations ...
     slycat.web.client.log.info("Clustering %s" % name)
