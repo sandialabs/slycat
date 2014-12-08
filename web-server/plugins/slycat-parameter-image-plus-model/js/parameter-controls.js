@@ -28,6 +28,7 @@ $.widget("parameter_image.controls",
     category_variables : [],
     selection : [],
     hidden_simulations : [],
+    indices : [],
   },
 
   _create: function()
@@ -150,7 +151,7 @@ $.widget("parameter_image.controls",
 
     this.csv_button = $("<button>Download Data Table</button>")
     	.click(function(){
-        if (self.options.selection.length == 0) {
+        if (self.options.selection.length == 0 && self.options.hidden_simulations.length == 0) {
     	    self._write_data_table();
     	  } else {
           openCSVSaveChoiceDialog();
@@ -208,24 +209,30 @@ $.widget("parameter_image.controls",
       },
     });
 
+    self.save_choice_buttons = {
+      'Save The Whole Table': function() {
+         self._write_data_table();
+        //$(this)._write_data_table();  //what's the diff with above?
+        $(this).dialog('close');
+      },
+      'Save Visible Rows': function() {
+         self._write_data_table( self._filterIndices() );
+        //$(this)._write_data_table();  //what's the diff with above?
+        $(this).dialog('close');
+      },
+      'Save Selected Rows': function() {
+        self._write_data_table( self.options.selection );
+        $(this).dialog('close');
+      },
+      'Cancel': function() {
+        $(this).dialog('close');
+      },
+    };
 
     $('#csv-save-choice-form').dialog({
       modal: true,
       autoOpen: false,
-      buttons: {
-        'Save The Whole Table': function() {
-	  self._write_data_table();
-          //$(this)._write_data_table();  //what's the diff with above?
-          $(this).dialog('close');
-        },
-        'Save Selected Rows': function() {
-	  self._write_data_table( self.options.selection );
-          $(this).dialog('close');
-        },
-        'Cancel': function() {
-          $(this).dialog('close');
-        },
-      },
+      buttons: self.save_choice_buttons,
     });
 
 
@@ -243,8 +250,32 @@ $.widget("parameter_image.controls",
       $("#clear-value-form").dialog("open");
     }
     function openCSVSaveChoiceDialog(){
-      var txt = "You have " + self.options.selection.length + " rows selected. What would you like to do?";
+      var txt = "";
+
+      if(self.options.selection.length > 0)
+      {
+        txt += "You have " + self.options.selection.length + " rows selected. ";
+      }
+      if(self.options.hidden_simulations.length > 0)
+      {
+        var visibleRows = self.options.metadata['row-count'] - self.options.hidden_simulations.length;
+        txt += "You have " + visibleRows + " rows visible. ";
+      }
+
+      txt += "What would you like to do?";
       $("#csv-save-choice-form #csv-save-choice-label").text(txt);
+
+      var buttons = $.extend({}, self.save_choice_buttons);
+      if(self.options.selection.length == 0)
+      {
+        delete buttons["Save Selected Rows"];
+      }
+      if(self.options.hidden_simulations.length == 0)
+      {
+        delete buttons["Save Visible Rows"];
+      }
+      $("#csv-save-choice-form").dialog("option", "buttons", buttons);
+
       $("#csv-save-choice-form").dialog("open");
     }
 
@@ -596,6 +627,49 @@ $.widget("parameter_image.controls",
     }
     this.show_all_button.prop("disabled", noneHidden);
     this.show_all_button.attr("title", titleText);
+  },
+
+  // Remove hidden_simulations from indices
+  _filterIndices: function()
+  {
+    var self = this;
+    var indices = self.options.indices;
+    var hidden_simulations = self.options.hidden_simulations;
+    var filtered_indices = self._cloneArrayBuffer(indices);
+    var length = indices.length;
+
+    // Remove hidden simulations and NaNs and empty strings
+    for(var i=length-1; i>=0; i--){
+      var hidden = $.inArray(indices[i], hidden_simulations) > -1;
+      if(hidden) {
+        filtered_indices.splice(i, 1);
+      }
+    }
+
+    return filtered_indices;
+  },
+
+  // Clones an ArrayBuffer or Array
+  _cloneArrayBuffer: function(source)
+  {
+    // Array.apply method of turning an ArrayBuffer into a normal array is very fast (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
+    // if(source.length > 1)
+    // {
+    //   return Array.apply( [], source );
+    // }
+    // else if(source.length == 1)
+    // {
+    //   return [source[0]];
+    // }
+    // return [];
+
+    // For loop method is much shower (around 300ms for 250K) but works in WebKit. Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
+    var clone = [];
+    for(var i = 0; i < source.length; i++)
+    {
+      clone.push(source[i]);
+    }
+    return clone;
   },
 
   _setOption: function(key, value)

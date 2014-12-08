@@ -304,6 +304,8 @@ function metadata_loaded()
       indices[i] = i;
   }
 
+  setup_controls();
+
   if(table_metadata && bookmark)
   {
     // Choose some columns for the X and Y axes.
@@ -741,6 +743,7 @@ function setup_controls()
   if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
+    && indices
     // && (cluster_index != null) && (clusters != null)
     )
   {
@@ -792,6 +795,7 @@ function setup_controls()
       "color-variable" : color_variable,
       "auto-scale" : auto_scale,
       hidden_simulations : hidden_simulations,
+      indices : indices,
     });
 
     // Changing the x variable updates the controls ...
