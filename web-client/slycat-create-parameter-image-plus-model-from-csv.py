@@ -180,8 +180,11 @@ if __name__ == "__main__":
     raise Exception("Only one column can be clustered with --cluster-distance=csv ... currently selected columns: %s" % arguments.cluster_columns)
 
   ###########################################################################################
-  # Setup a connection to the Slycat Web Server.
+  # Setup a connection to the Slycat Web Server, and test it before we do a lot of work.
+
   connection = slycat.web.client.connect(arguments)
+  version = connection.get_configuration_version()
+  slycat.web.client.log.info("Connected to server version %s%s." % (version["version"], " (" + version["commit"] + ")" if "commit" in version else ""))
 
   ###########################################################################################
   # Create a mapping from unique cluster names to column rows.
