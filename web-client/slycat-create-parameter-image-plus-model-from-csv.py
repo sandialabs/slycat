@@ -31,22 +31,25 @@ import urlparse
 
 class ImageCache(object):
   def __init__(self):
-    self._raw = {}
+    self._reset()
+
+  def _reset(self):
+    self._storage = {}
 
   def reset(self):
     slycat.web.client.log.info("Resetting image cache.")
-    self._raw = {}
+    self._reset()
 
-  def raw(self, path):
-    if path not in self._raw:
+  def image(self, path, process=lambda x,y:x):
+    if path not in self._storage:
       slycat.web.client.log.info("Loading %s." % path)
       import PIL.Image
       try:
-        self._raw[path] = numpy.asarray(PIL.Image.open(path))
+        self._storage[path] = process(numpy.asarray(PIL.Image.open(path)), path)
       except Exception as e:
         slycat.web.client.log.error(str(e))
-        self._raw[path] = None
-    return self._raw[path]
+        self._storage[path] = None
+    return self._storage[path]
 
 image_cache = ImageCache()
 
@@ -54,24 +57,32 @@ def identity_distance(left_index, left_path, right_index, right_path):
   """Do-nothing distance measure for two images that always returns 1."""
   return 1.0
 
-def jaccard_rgb_distance(left_index, left_path, right_index, right_path):
-  left_image = image_cache.raw(left_path)
-  right_image = image_cache.raw(right_path)
+def jaccard_distance(left_index, left_path, right_index, right_path):
+  def threshold_bw(image, path):
+    import skimage.color
+    slycat.web.client.log.info("Converting %s rgb to grayscale." % path)
+    image = skimage.color.rgb2gray(image)
+    slycat.web.client.log.info("Thresholding %s values < 0.9." % path)
+    image = image < 0.9
+    return image
+
+  left_image = image_cache.image(left_path, threshold_bw)
+  right_image = image_cache.image(right_path, threshold_bw)
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
     return 0.0
   # If one image is nonexistent and the other is not, make them as far apart as possible.
   if left_image is None or right_image is None:
-    return numpy.finfo("float64").max / 100000
+    return 1.0
   # If the image dimensions don't match, make them as far apart as possible.
   if left_image.shape != right_image.shape:
-    return numpy.finfo("float64").max / 100000
+    return 1.0
   # The images exist and have identical dimensions, so compute their distance.
   return scipy.spatial.distance.jaccard(left_image.ravel(), right_image.ravel())
 
 def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
-  left_image = image_cache.raw(left_path)
-  right_image = image_cache.raw(right_path)
+  left_image = image_cache.image(left_path)
+  right_image = image_cache.image(right_path)
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
     return 0.0
@@ -91,7 +102,7 @@ csv_distance.matrix = None
 if __name__ == "__main__":
   parser = slycat.web.client.option_parser()
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
-  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard-rgb", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
+  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
   parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
   parser.add_argument("--dry-run", default=False, action="store_true", help="Don't actually create a model on the server.")
@@ -110,7 +121,7 @@ if __name__ == "__main__":
 
   measures = {
     "identity" : identity_distance,
-    "jaccard-rgb" : jaccard_rgb_distance,
+    "jaccard" : jaccard_distance,
     "euclidean-rgb" : euclidean_rgb_distance,
     "csv" : csv_distance,
     }
