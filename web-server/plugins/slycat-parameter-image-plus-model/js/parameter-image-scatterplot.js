@@ -1861,4 +1861,9 @@ $.widget("parameter_image.scatterplot",
       .classed("openHover", false)
       ;
   },
+
+  pin: function(simulations)
+  {
+    console.log("pinning simulations: " + simulations)
+  },
 });

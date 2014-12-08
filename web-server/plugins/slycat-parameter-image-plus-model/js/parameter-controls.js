@@ -121,6 +121,10 @@ $.widget("parameter_image.controls",
         {
           self.element.trigger("show-selection", self.options.selection);
         }
+        else if(value == 'pin')
+        {
+          self.element.trigger("pin-selection", self.options.selection);
+        }
         this.selectedIndex = 0;
       })
       .appendTo(this.element)
@@ -514,6 +518,11 @@ $.widget("parameter_image.controls",
     $("<option />")
       .text("Show")
       .attr("value", "show")
+      .appendTo(scatterplotOptgroup)
+      ;
+    $("<option />")
+      .text("Pin")
+      .attr("value", "pin")
       .appendTo(scatterplotOptgroup)
       ;
 
