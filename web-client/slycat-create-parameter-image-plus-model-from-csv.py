@@ -29,25 +29,34 @@ import scipy.spatial.distance
 import slycat.web.client
 import urlparse
 
-def image_cache(path):
-  if path not in image_cache.storage:
-    slycat.web.client.log.info("Loading %s" % path)
-    import PIL.Image
-    try:
-      image_cache.storage[path] = numpy.asarray(PIL.Image.open(path))
-    except Exception as e:
-      slycat.web.client.log.error(str(e))
-      image_cache.storage[path] = None
-  return image_cache.storage[path]
-image_cache.storage = {}
+class ImageCache(object):
+  def __init__(self):
+    self._raw = {}
+
+  def reset(self):
+    slycat.web.client.log.info("Resetting image cache.")
+    self._raw = {}
+
+  def raw(self, path):
+    if path not in self._raw:
+      slycat.web.client.log.info("Loading %s." % path)
+      import PIL.Image
+      try:
+        self._raw[path] = numpy.asarray(PIL.Image.open(path))
+      except Exception as e:
+        slycat.web.client.log.error(str(e))
+        self._raw[path] = None
+    return self._raw[path]
+
+image_cache = ImageCache()
 
 def identity_distance(left_index, left_path, right_index, right_path):
   """Do-nothing distance measure for two images that always returns 1."""
   return 1.0
 
 def jaccard_rgb_distance(left_index, left_path, right_index, right_path):
-  left_image = image_cache(left_path)
-  right_image = image_cache(right_path)
+  left_image = image_cache.raw(left_path)
+  right_image = image_cache.raw(right_path)
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
     return 0.0
@@ -61,8 +70,8 @@ def jaccard_rgb_distance(left_index, left_path, right_index, right_path):
   return scipy.spatial.distance.jaccard(left_image.ravel(), right_image.ravel())
 
 def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
-  left_image = image_cache(left_path)
-  right_image = image_cache(right_path)
+  left_image = image_cache.raw(left_path)
+  right_image = image_cache.raw(right_path)
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
     return 0.0
@@ -73,7 +82,7 @@ def euclidean_rgb_distance(left_index, left_path, right_index, right_path):
   if left_image.shape != right_image.shape:
     return numpy.finfo("float64").max / 100000
   # The images exist and have identical dimensions, so compute their distance.
-  return scipy.spatial.distance.euclidean(image_cache(left_path).ravel(), image_cache(right_path).ravel())
+  return scipy.spatial.distance.euclidean(left_image.ravel(), right_image.ravel())
 
 def csv_distance(left_index, left_path, right_index, right_path):
   return csv_distance.matrix[left_index, right_index]
@@ -182,6 +191,7 @@ if __name__ == "__main__":
   cluster_linkages = {}
   cluster_exemplars = {}
   for index, (name, storage) in enumerate(sorted(clusters.items())):
+    image_cache.reset()
     progress_begin = float(index) / float(len(clusters))
     progress_end = float(index + 1) / float(len(clusters))
 
@@ -199,7 +209,7 @@ if __name__ == "__main__":
         distance = cluster_measure(i, path_i, j, path_j)
         distance_matrix[i, j] = distance
         distance_matrix[j, i] = distance
-        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s" % (arguments.cluster_measure, name, i, j, distance))
+        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s." % (arguments.cluster_measure, name, i, j, distance))
 
     # Use the distance matrix to cluster observations ...
     slycat.web.client.log.info("Clustering %s" % name)
