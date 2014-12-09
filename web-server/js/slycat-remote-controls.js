@@ -1,4 +1,4 @@
-define("slycat-remote-controls", ["slycat-server-root"], function(server_root)
+define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client"], function(server_root, client)
 {
   ko.components.register("slycat-remote-controls",
   {
@@ -11,6 +11,14 @@ define("slycat-remote-controls", ["slycat-server-root"], function(server_root)
 
       if(params.data)
         params.data(component);
+
+      client.get_configuration_remote_hosts(
+      {
+        success: function(hosts)
+        {
+          console.log(hosts);
+        }
+      });
     },
     template: { require: "text!" + server_root + "templates/slycat-remote-controls.html" }
   });
