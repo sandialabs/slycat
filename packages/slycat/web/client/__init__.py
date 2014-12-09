@@ -298,6 +298,19 @@ class Connection(object):
     """
     return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
 
+  def get_configuration_version(self):
+    """Retrieve version information from the server.
+
+    Returns
+    -------
+    version : server version information.
+
+    See Also
+    --------
+    :ref:`GET Configuration Version`
+    """
+    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
+
   def post_model_finish(self, mid):
     """Notify the server that a model is fully initialized.
 

@@ -47,7 +47,7 @@ def register_slycat_plugin(context):
 
   # Register JS
   javascripts = [
-    # This JS is loaded by header 
+    # This JS is loaded by header
     # "js/jquery-2.1.1.min.js",
     # "js/jquery-migrate-1.2.1.js",
     # "js/jquery.json-2.4.min.js",
@@ -60,7 +60,7 @@ def register_slycat_plugin(context):
     # "js/slycat-navbar.js",
     # "js/slycat-model.js",
     # End JS loaded by header
-    "jquery.layout-latest.min.js", 
+    "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
     "jquery.mousewheel.js",
@@ -74,16 +74,17 @@ def register_slycat_plugin(context):
     "slick.slycateditors.js",
     "bookmarker.js",
     "chunker.js",
+    "login.js",
     "color-switcher.js",
     "parameter-controls.js",
-    "parameter-image-scatterplot.js",
     "parameter-image-table.js",
     #For development and debugging, loading some js dynamically inside model.
     #"parameter-image-dendrogram.js",
-    #"ui.js",
+    #"parameter-image-scatterplot.js",
+    #"ui.js"
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), js) for js in javascripts
+    os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
     ])
 
   # Register CSS
@@ -99,10 +100,10 @@ def register_slycat_plugin(context):
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
     #For development and debugging, loading ui.css dynamically inside model.
-    #"ui.css",
+    "ui.css"
   ]
   context.register_model_bundle("parameter-image-plus", "text/css", [
-    os.path.join(os.path.dirname(__file__), css) for css in stylesheets
+    os.path.join(os.path.join(os.path.dirname(__file__), "css"), css) for css in stylesheets
     ])
 
   # Register images and other resources
@@ -122,10 +123,25 @@ def register_slycat_plugin(context):
     "pin.png",
     "sort-dendrogram-selected.png",
     "sort-dendrogram.png",
-    #For development and debugging, loading some js and css dynamically inside model.
-    "parameter-image-dendrogram.js",
-    "ui.js",
-    "ui.css",
   ]
   for image in images:
-    context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.dirname(__file__), image))
+    context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
+
+  # Register jquery ui images, which are expected in images folder
+  jqimages = [
+    "ui-bg_glass_75_e6e6e6_1x400.png",
+    "ui-icons_222222_256x240.png",
+    "ui-bg_highlight-soft_75_cccccc_1x100.png",
+    "ui-bg_flat_75_ffffff_40x100.png",
+    "ui-bg_flat_0_aaaaaa_40x100.png",
+  ]
+  for jqimage in jqimages:
+    context.register_model_resource("parameter-image-plus", "images/" + jqimage, os.path.join(os.path.join(os.path.dirname(__file__), "img"), jqimage))
+
+  devs = [
+    "js/parameter-image-dendrogram.js",
+    "js/parameter-image-scatterplot.js",
+    "js/ui.js",
+  ]
+  for dev in devs:
+    context.register_model_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))
