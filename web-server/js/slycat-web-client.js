@@ -45,6 +45,25 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_model_table_metadata = function(params)
+  {
+    var url = server_root + "models/" + params.mid + "/tables/" + params.name + "/arrays/" + (params.aid || "0") + "/metadata";
+    if(params.index)
+      url += "?index=" + params.index;
+
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: url,
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      }
+    });
+  }
+
   module.post_model_finish = function(params)
   {
     $.ajax(
