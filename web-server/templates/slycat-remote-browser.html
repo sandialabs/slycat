@@ -1,8 +1,13 @@
-<div>
-  <h3>Remote Browser</h3>
-  <div>
-    <p data-bind="text:full_path"></p>
+<div class="slycat-remote-browser">
+  <h4 data-bind="text:full_path"></h4>
+  <div class="slycat-remote-browser-files">
+    <table>
+      <tbody data-bind="foreach: files">
+        <tr data-bind="event:{click : $parent.select, dblclick : $parent.open},css:{directory:type()=='d', file:type()=='f'}">
+          <td data-bind="text:name"></td>
+          <td data-bind="text:size"></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <table>
-  </table>
 </div>

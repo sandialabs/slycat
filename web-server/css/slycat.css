@@ -82,6 +82,54 @@ slycat-navbar .alert pre
   margin-bottom: 24px;
 }
 
+.slycat-remote-browser
+{
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  height: 100%;
+}
+
+.slycat-remote-browser-files
+{
+  -webkit-flex: 1;
+  flex: 1;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+
+  overflow-y: auto;
+}
+
+.slycat-remote-browser table
+{
+  width: 100%;
+}
+
+.slycat-remote-browser tr.directory
+{
+  background: #ddf;
+}
+
+.slycat-remote-browser tr.directory:hover
+{
+  background: #cce;
+}
+
+.slycat-remote-browser tr.file
+{
+  background: #fff;
+}
+
+.slycat-remote-browser tr.file:hover
+{
+  background: #eee;
+}
+
 .slycat-content
 {
   background-color: #f2f2f2;

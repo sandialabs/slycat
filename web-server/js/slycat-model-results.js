@@ -4,8 +4,6 @@ define("slycat-model-results", ["slycat-server-root"], function(server_root)
   {
     viewModel: function(params)
     {
-      console.log("slycat-model-results", params);
-
       var component = this;
       component.server_root = server_root;
       component.mid = ko.observable(ko.utils.unwrapObservable(params.mid));

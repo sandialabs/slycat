@@ -12,6 +12,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client"], fu
       if(params.data)
         params.data(component);
 
+/*
       client.get_configuration_remote_hosts(
       {
         success: function(hosts)
@@ -19,6 +20,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client"], fu
           console.log(hosts);
         }
       });
+*/
     },
     template: { require: "text!" + server_root + "templates/slycat-remote-controls.html" }
   });
