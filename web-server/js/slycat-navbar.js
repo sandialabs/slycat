@@ -649,7 +649,7 @@
       </div> \
     </div> \
   </div> \
-  <div class="modal fade" id="slycat-model-wizard"> \
+  <div class="modal fade" id="slycat-model-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
         <div class="modal-body"> \
