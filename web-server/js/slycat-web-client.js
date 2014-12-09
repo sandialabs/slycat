@@ -16,6 +16,20 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.delete_remote = function(params)
+  {
+    $.ajax(
+    {
+      type : "DELETE",
+      url : server_root + "remotes/" + params.sid,
+      success : function()
+      {
+        if(params.success)
+          params.success();
+      }
+    });
+  }
+
   module.get_configuration_remote_hosts = function(params)
   {
     $.ajax(

@@ -1184,6 +1184,9 @@ def post_remotes():
   password = cherrypy.request.json["password"]
   return {"sid":slycat.web.server.ssh.create_session(hostname, username, password)}
 
+def delete_remote(sid):
+  slycat.web.server.ssh.delete_session(sid)
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remote_browse(sid, path):

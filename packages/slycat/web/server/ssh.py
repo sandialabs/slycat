@@ -166,6 +166,20 @@ def get_session(sid):
     session._accessed = datetime.datetime.utcnow()
     return session
 
+def delete_session(sid):
+  """Delete a cached ssh session.
+
+  Parameters
+  ----------
+  sid : string, required
+    Unique session identifier returned by :func:`slycat.web.server.ssh.create_session`.
+  """
+  with session_cache_lock:
+    if sid in session_cache:
+      session = session_cache[sid]
+      cherrypy.log.error("Deleting ssh session for %s@%s from %s" % (session.username, session.hostname, session.client))
+      del session_cache[sid]
+
 def _expire_session(sid):
   """Test an existing session to see if it is expired.
 

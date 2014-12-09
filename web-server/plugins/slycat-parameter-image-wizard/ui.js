@@ -12,6 +12,9 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
 
     component.cancel = function()
     {
+      if(component.sid())
+        client.delete_remote({ sid : component.sid() });
+
       if(component.mid())
         client.delete_model({ mid : component.mid() });
     }
