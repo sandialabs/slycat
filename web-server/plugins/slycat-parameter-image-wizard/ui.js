@@ -1,4 +1,4 @@
-define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/parameter-image/ui.html"], function(client, html)
+define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/parameter-image/ui.html", "slycat-remote-browser"], function(client, html)
 {
   function constructor(params)
   {
