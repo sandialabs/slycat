@@ -4,70 +4,76 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-$(document).ready(function()
+define("slycat-project", [], function()
 {
-  var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
-
-  var model = {};
-  model.server_root = server_root;
-  model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
-  model.models = ko.mapping.fromJS([]);
-  model.markings = ko.mapping.fromJS([]);
-  model.badge = function(marking)
+  var module = {}
+  module.start = function()
   {
-    for(var i = 0; i != model.markings().length; ++i)
+    var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
+
+    var model = {};
+    model.server_root = server_root;
+    model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
+    model.models = ko.mapping.fromJS([]);
+    model.markings = ko.mapping.fromJS([]);
+    model.badge = function(marking)
     {
-      if(model.markings()[i].type() == marking)
-        return model.markings()[i].badge();
+      for(var i = 0; i != model.markings().length; ++i)
+      {
+        if(model.markings()[i].type() == marking)
+          return model.markings()[i].badge();
+      }
     }
-  }
 
-  window.model = model;
+    window.model = model;
 
-  // Load information about the project.
-  $.ajax(
-  {
-    dataType : "json",
-    type : "GET",
-    url : location.href,
-    success : function(project)
+    // Load information about the project.
+    $.ajax(
     {
-      ko.mapping.fromJS(project, model.project);
-    },
-  });
+      dataType : "json",
+      type : "GET",
+      url : location.href,
+      success : function(project)
+      {
+        ko.mapping.fromJS(project, model.project);
+      },
+    });
 
-  // Load the project models.
-  $.ajax(
-  {
-    dataType : "json",
-    type : "GET",
-    url : location.href + "/models",
-    success : function(models)
+    // Load the project models.
+    $.ajax(
     {
-      ko.mapping.fromJS(models, model.models);
-    },
-  });
+      dataType : "json",
+      type : "GET",
+      url : location.href + "/models",
+      success : function(models)
+      {
+        ko.mapping.fromJS(models, model.models);
+      },
+    });
 
-  // Load available markings.
-  $.ajax(
-  {
-    dataType : "json",
-    type : "GET",
-    url : server_root + "configuration/markings",
-    success : function(markings)
+    // Load available markings.
+    $.ajax(
     {
-      ko.mapping.fromJS(markings, model.markings);
-    },
-  });
-  
-  // Size the page content to consume available space
-  function size_content()
-  {
-    $(".slycat-content").css("min-height", $(window).height() - $("slycat-navbar > div").height());
-  }
-  $(window).resize(size_content);
-  window.setTimeout(function() { $(window).resize(); }, 10);
+      dataType : "json",
+      type : "GET",
+      url : server_root + "configuration/markings",
+      success : function(markings)
+      {
+        ko.mapping.fromJS(markings, model.markings);
+      },
+    });
 
-  ko.applyBindings({}, document.querySelector("slycat-navbar"));
-  ko.applyBindings(model, document.getElementById("slycat-project"));
+    // Size the page content to consume available space
+    function size_content()
+    {
+      $(".slycat-content").css("min-height", $(window).height() - $("slycat-navbar > div").height());
+    }
+    $(window).resize(size_content);
+    window.setTimeout(function() { $(window).resize(); }, 10);
+
+    ko.applyBindings({}, document.querySelector("slycat-navbar"));
+    ko.applyBindings(model, document.getElementById("slycat-project"));
+  };
+
+  return module;
 });

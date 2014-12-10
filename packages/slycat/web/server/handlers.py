@@ -35,6 +35,56 @@ import threading
 import time
 import uuid
 
+def css_bundle():
+  with css_bundle._lock:
+    if css_bundle._bundle is None:
+      css_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/css",
+      [
+        "css/namespaced-bootstrap.css",
+        "css/slycat.css",
+      ])
+      slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
+      slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+      slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
+      slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
+      slycat.web.server.resource.manager.add_file("css/slycat-logo-navbar.png", "slycat-logo-navbar.png")
+      slycat.web.server.resource.manager.add_file("css/directory-small.png", "directory-small.png")
+      slycat.web.server.resource.manager.add_file("css/file-small.png", "file-small.png")
+  return css_bundle._bundle
+css_bundle._lock = threading.Lock()
+css_bundle._bundle = None
+
+def js_bundle():
+  with js_bundle._lock:
+    if js_bundle._bundle is None:
+      js_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
+      [
+        "js/jquery-2.1.1.min.js",
+        "js/jquery-migrate-1.2.1.js",
+        "js/jquery.json-2.4.min.js",
+        "js/jquery-ui-1.10.4.custom.min.js",
+        "js/bootstrap.js",
+        "js/knockout-3.2.0.js",
+        "js/knockout.mapping.js",
+        "js/knockout-projections.js",
+        "js/knockstrap.js",
+        "js/curl.js", # This needs to be loaded after knockstrap, which will try to load knockout and jQuery using require() if it's available.
+        "js/slycat-server-root.js",
+        "js/slycat-web-client.js",
+        "js/slycat-nag.js",
+        "js/slycat-model-controls.js",
+        "js/slycat-model-results.js",
+        "js/slycat-navbar.js",
+        "js/slycat-remote-browser.js",
+        "js/slycat-remote-controls.js",
+        "js/slycat-projects.js",
+        "js/slycat-project.js",
+        "js/slycat-model.js",
+      ])
+  return js_bundle._bundle
+js_bundle._lock = threading.Lock()
+js_bundle._bundle = None
+
 def require_parameter(name):
   if name not in cherrypy.request.json:
     raise cherrypy.HTTPError("400 Missing %s parameter." % name)
@@ -68,38 +118,10 @@ def get_projects(revision=None, _=None):
   cherrypy.response.headers["content-type"] = accept
 
   if accept == "text/html":
-    with get_projects.bundle_lock:
-      if get_projects.css_bundle is None:
-        get_projects.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
-        [
-          "css/namespaced-bootstrap.css",
-          "css/slycat.css",
-        ])
-      if get_projects.js_bundle is None:
-        get_projects.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
-        [
-          "js/jquery-2.1.1.min.js",
-          "js/jquery-migrate-1.2.1.js",
-          "js/jquery.json-2.4.min.js",
-          "js/jquery-ui-1.10.4.custom.min.js",
-          "js/bootstrap.js",
-          "js/knockout-3.2.0.js",
-          "js/knockout.mapping.js",
-          "js/knockout-projections.js",
-          "js/knockstrap.js",
-          "js/curl.js",
-          "js/slycat-server-root.js",
-          "js/slycat-browser.js",
-          "js/slycat-navbar.js",
-          "js/slycat-web-client.js",
-          "js/slycat-projects.js",
-        ])
-        slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
-
     context = {}
     context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-    context["slycat-css-bundle"] = get_projects.css_bundle
-    context["slycat-js-bundle"] = get_projects.js_bundle
+    context["slycat-css-bundle"] = css_bundle()
+    context["slycat-js-bundle"] = js_bundle()
     return slycat.web.server.template.render("slycat-projects.html", context)
 
   if accept == "application/json":
@@ -122,10 +144,6 @@ def get_projects(revision=None, _=None):
 
 get_projects.monitor = None
 get_projects.timeout = None
-
-get_projects.bundle_lock = threading.Lock()
-get_projects.css_bundle = None
-get_projects.js_bundle = None
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -158,38 +176,6 @@ def get_project(pid):
     return json.dumps(project)
 
   if accept == "text/html":
-    with get_project.bundle_lock:
-      if get_project.css_bundle is None:
-        get_project.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
-        [
-          "css/namespaced-bootstrap.css",
-          "css/slycat.css",
-        ])
-      if get_project.js_bundle is None:
-        get_project.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
-        [
-          "js/jquery-2.1.1.min.js",
-          "js/jquery-migrate-1.2.1.js",
-          "js/jquery.json-2.4.min.js",
-          "js/jquery-ui-1.10.4.custom.min.js",
-          "js/bootstrap.js",
-          "js/knockout-3.2.0.js",
-          "js/knockout.mapping.js",
-          "js/knockout-projections.js",
-          "js/knockstrap.js",
-          "js/curl.js",
-          "js/slycat-server-root.js",
-          "js/slycat-browser.js",
-          "js/slycat-navbar.js",
-          "js/slycat-model-controls.js",
-          "js/slycat-remote-controls.js",
-          "js/slycat-remote-browser.js",
-          "js/slycat-model-results.js",
-          "js/slycat-web-client.js",
-          "js/slycat-project.js",
-        ])
-        slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
-
     models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
     models = sorted(models, key=lambda x: x["created"], reverse=True)
 
@@ -198,15 +184,10 @@ def get_project(pid):
 
     context = {}
     context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-    context["slycat-css-bundle"] = get_project.css_bundle
-    context["slycat-js-bundle"] = get_project.js_bundle
+    context["slycat-css-bundle"] = css_bundle()
+    context["slycat-js-bundle"] = js_bundle()
     context["slycat-project"] = project
-
     return slycat.web.server.template.render("slycat-project.html", context)
-
-get_project.bundle_lock = threading.Lock()
-get_project.css_bundle = None
-get_project.js_bundle = None
 
 def get_remote_host_dict():
   remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
@@ -402,42 +383,6 @@ def get_model(mid, **kwargs):
     return json.dumps(model)
 
   elif accept == "text/html":
-    with get_model.bundle_lock:
-      if get_model.css_bundle is None:
-        get_model.css_bundle = slycat.web.server.resource.manager.add_bundle("text/css",
-        [
-          "css/namespaced-bootstrap.css",
-          "css/slycat.css",
-        ])
-      if get_model.js_bundle is None:
-        get_model.js_bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
-        [
-          "js/jquery-2.1.1.min.js",
-          "js/jquery-migrate-1.2.1.js",
-          "js/jquery.json-2.4.min.js",
-          "js/jquery-ui-1.10.4.custom.min.js",
-          "js/bootstrap.js",
-          "js/knockout-3.2.0.js",
-          "js/knockout.mapping.js",
-          "js/knockout-projections.js",
-          "js/knockstrap.js",
-          "js/curl.js",
-          "js/slycat-server-root.js",
-          "js/slycat-browser.js",
-          "js/slycat-navbar.js",
-          "js/slycat-model-controls.js",
-          "js/slycat-remote-controls.js",
-          "js/slycat-remote-browser.js",
-          "js/slycat-model-results.js",
-          "js/slycat-web-client.js",
-          "js/slycat-model.js",
-        ])
-        slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
-        slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
-        slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
-        slycat.web.server.resource.manager.add_file("css/slycat-logo-navbar.png", "slycat-logo-navbar.png")
-        slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
-
     mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
@@ -479,8 +424,8 @@ def get_model(mid, **kwargs):
     context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking["page-after"]
     context["slycat-model"] = model
     context["slycat-project"] = project
-    context["slycat-css-bundle"] = get_model.css_bundle
-    context["slycat-js-bundle"] = get_model.js_bundle
+    context["slycat-css-bundle"] = css_bundle()
+    context["slycat-js-bundle"] = js_bundle()
 
     context["slycat-model-type"] = mtype
     if mtype in slycat.web.server.plugin.manager.models.keys():
@@ -489,10 +434,6 @@ def get_model(mid, **kwargs):
         context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
         context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
     return slycat.web.server.template.render("slycat-model.html", context)
-
-get_model.bundle_lock = threading.Lock()
-get_model.css_bundle = None
-get_model.js_bundle = None
 
 def get_model_command(mid, command, **kwargs):
   database = slycat.web.server.database.couchdb.connect()

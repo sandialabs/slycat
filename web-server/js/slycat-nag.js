@@ -1,4 +1,4 @@
-(function()
+define("slycat-nag", [], function()
 {
   var nag = false;
 
@@ -21,5 +21,4 @@
   {
     alert("Your browser might not provide the features needed by Slycat. We suggest switching to a current version of Firefox, Chrome, or Safari. You can also try Internet Explorer version 9 or above, but support for it is experimental.");
   }
-}());
-
+});

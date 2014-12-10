@@ -1,4 +1,4 @@
-(function()
+define("slycat-navbar", [], function()
 {
   curl({ apiName : "require" });
 
@@ -665,6 +665,5 @@
 '
 
   });
-
-}());
+});
 

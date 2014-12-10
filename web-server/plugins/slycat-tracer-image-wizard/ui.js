@@ -10,8 +10,6 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     component.browser = ko.mapping.fromJS({path:"/", selection: []});
     component.attributes = ko.mapping.fromJS([]);
 
-    console.log(component);
-
     component.cancel = function()
     {
       if(component.remote.sid())
@@ -67,7 +65,6 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
             name: "data-table",
             success: function(metadata)
             {
-              console.log("metadata", metadata);
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
                 attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], categories:[]})
