@@ -9,6 +9,19 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client"], fu
       component.username = params.username;
       component.password = params.password;
 
+      if(!params.hostname())
+        params.hostname(localStorage.getItem("slycat-remote-controls-hostname"));
+      if(!params.username())
+        params.username(localStorage.getItem("slycat-remote-controls-username"));
+
+      params.hostname.subscribe(function(value)
+      {
+        localStorage.setItem("slycat-remote-controls-hostname", value);
+      });
+      params.username.subscribe(function(value)
+      {
+        localStorage.setItem("slycat-remote-controls-username", value);
+      });
 /*
       client.get_configuration_remote_hosts(
       {
