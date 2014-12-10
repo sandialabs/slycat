@@ -69,6 +69,8 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
           path : path,
           success : function(results)
           {
+            localStorage.setItem("slycat-remote-browser-path-" + component.hostname(), path);
+
             component.path(path);
             var files = []
             if(path != "/")
@@ -83,7 +85,11 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
       component.sid.subscribe(function(new_sid)
       {
         if(new_sid)
+        {
+          if(!component.path())
+            component.path(localStorage.getItem("slycat-remote-browser-path-" + component.hostname()) || "/");
           component.browse(component.path());
+        }
       });
     },
     template: { require: "text!" + server_root + "templates/slycat-remote-browser.html" }

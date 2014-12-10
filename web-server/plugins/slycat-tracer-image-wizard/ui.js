@@ -7,7 +7,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     component.project = ko.mapping.fromJS({_id: params.project_id});
     component.model = ko.mapping.fromJS({_id: null, name: "New Tracer Image Model", description: "", marking: null});
     component.remote = ko.mapping.fromJS({hostname: null, username: null, password: null, sid: null});
-    component.browser = ko.mapping.fromJS({path:"/", selection: []});
+    component.browser = ko.mapping.fromJS({path:null, selection: []});
     component.attributes = ko.mapping.fromJS([]);
 
     component.cancel = function()
