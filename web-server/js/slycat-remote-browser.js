@@ -74,7 +74,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
             if(path != "/")
               files.push({type:"", name:"..", size:""});
             for(var i = 0; i != results.names.length; ++i)
-              files.push({name:results.names[i], size:results.sizes[i], type:results.types[i]});
+              files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i]});
             ko.mapping.fromJS(files, component.files);
           }
         });

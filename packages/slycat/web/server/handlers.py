@@ -1200,6 +1200,7 @@ def post_remote_browse(sid, path):
       names = []
       sizes = []
       types = []
+      mtimes = []
 
       for attribute in sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename):
         filepath = os.path.join(path, attribute.filename)
@@ -1218,8 +1219,9 @@ def post_remote_browse(sid, path):
         names.append(attribute.filename)
         sizes.append(attribute.st_size)
         types.append(filetype)
+        mtimes.append(datetime.datetime.fromtimestamp(attribute.st_mtime).isoformat())
 
-      response = {"path" : path, "names" : names, "sizes" : sizes, "types" : types}
+      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
       return response
     except Exception as e:
       cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))

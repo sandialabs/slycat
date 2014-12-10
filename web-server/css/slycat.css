@@ -77,7 +77,7 @@ slycat-navbar .alert pre
   padding-right: 24px;
 }
 
-#slycat-model-wizard .nav-tabs
+#slycat-model-wizard .nav-tabs, #slycat-model-wizard .nav-pills
 {
   margin-bottom: 24px;
 }
@@ -110,22 +110,22 @@ slycat-navbar .alert pre
   width: 100%;
 }
 
-.slycat-remote-browser tr.directory
+.slycat-remote-browser td.type
 {
-  background: #ddf;
+  width: 20px;
 }
 
-.slycat-remote-browser tr.directory:hover
+.slycat-remote-browser .directory td.type
 {
-  background: #cce;
+  background: url('directory-small.png') no-repeat;
 }
 
-.slycat-remote-browser tr.file
+.slycat-remote-browser .file td.type
 {
-  background: #fff;
+  background: url('file-small.png') no-repeat;
 }
 
-.slycat-remote-browser tr.file:hover
+.slycat-remote-browser tr:hover
 {
   background: #eee;
 }
