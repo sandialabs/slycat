@@ -4,21 +4,21 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
   {
     var component = {};
     component.tab = ko.observable(0);
-    component.project = ko.mapping.fromJS({_id:params.project_id});
-    component.model = ko.observable(null);
-    component.mid = ko.observable(null);
-    component.remote = ko.observable(null);
-    component.sid = ko.observable(null);
-    component.browser = ko.observable(null);
+    component.project = ko.mapping.fromJS({_id: params.project_id});
+    component.model = ko.mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
+    component.remote = ko.mapping.fromJS({hostname: null, username: null, password: null, sid: null});
+    component.browser = ko.mapping.fromJS({path:"/", selection: []});
     component.attributes = ko.mapping.fromJS([]);
+
+    console.log(component);
 
     component.cancel = function()
     {
-      if(component.sid())
-        client.delete_remote({ sid: component.sid() });
+      if(component.remote.sid())
+        client.delete_remote({ sid: component.remote.sid() });
 
-      if(component.mid())
-        client.delete_model({ mid: component.mid() });
+      if(component.model._id())
+        client.delete_model({ mid: component.model._id() });
     }
     component.create_model = function()
     {
@@ -26,12 +26,12 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
       {
         pid: component.project._id(),
         type: "parameter-image",
-        name: component.model().name(),
-        description: component.model().description(),
-        marking: component.model().marking(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
         success: function(mid)
         {
-          component.mid(mid);
+          component.model._id(mid);
           component.tab(1);
         }
       });
@@ -40,12 +40,12 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     {
       client.post_remotes(
       {
-        hostname: component.remote().hostname(),
-        username: component.remote().username(),
-        password: component.remote().password(),
+        hostname: component.remote.hostname(),
+        username: component.remote.username(),
+        password: component.remote.password(),
         success: function(sid)
         {
-          component.sid(sid);
+          component.remote.sid(sid);
           component.tab(2);
         }
       });
@@ -54,16 +54,16 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     {
       client.put_model_table(
       {
-        mid: component.mid(),
-        sid: component.sid(),
-        path: component.browser().selection()[0],
+        mid: component.model._id(),
+        sid: component.remote.sid(),
+        path: component.browser.selection()[0],
         input: true,
         name: "data-table",
         success: function()
         {
           client.get_model_table_metadata(
           {
-            mid: component.mid(),
+            mid: component.model._id(),
             name: "data-table",
             success: function(metadata)
             {
@@ -105,7 +105,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
 
       client.put_model_parameter(
       {
-        mid: component.mid(),
+        mid: component.model._id(),
         name: "input-columns",
         value: input_columns,
         input: true,
@@ -113,7 +113,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
         {
           client.put_model_parameter(
           {
-            mid: component.mid(),
+            mid: component.model._id(),
             name: "output-columns",
             value: output_columns,
             input: true,
@@ -121,7 +121,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
             {
               client.put_model_parameter(
               {
-                mid: component.mid(),
+                mid: component.model._id(),
                 name: "rating-columns",
                 value: rating_columns,
                 input: true,
@@ -129,7 +129,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
                 {
                   client.put_model_parameter(
                   {
-                    mid: component.mid(),
+                    mid: component.model._id(),
                     name: "category-columns",
                     value: category_columns,
                     input: true,
@@ -137,7 +137,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
                     {
                       client.put_model_parameter(
                       {
-                        mid: component.mid(),
+                        mid: component.model._id(),
                         name: "image-columns",
                         value: image_columns,
                         input: true,
@@ -145,7 +145,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
                         {
                           client.post_model_finish(
                           {
-                            mid: component.mid(),
+                            mid: component.model._id(),
                             success: function()
                             {
                               component.tab(4);

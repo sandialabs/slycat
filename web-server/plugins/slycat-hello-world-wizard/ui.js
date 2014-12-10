@@ -4,10 +4,9 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
   {
     var component = {};
     component.tab = ko.observable(0);
-    component.project = ko.mapping.fromJS({_id:params.project_id});
-    component.model = ko.observable(null);
+    component.project = ko.mapping.fromJS({_id: params.project_id});
+    component.model = ko.mapping.fromJS({_id: null, name: "New Hello World Model", description: "", marking: null});
     component.recipient = ko.observable("World");
-    component.mid = ko.observable(null);
 
     component.create = function()
     {
@@ -20,16 +19,16 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
       {
         pid : component.project._id(),
         type : "hello-world",
-        name : component.model().name(),
-        description : component.model().description(),
-        marking : component.model().marking(),
+        name : component.model.name(),
+        description : component.model.description(),
+        marking : component.model.marking(),
         success : function(mid)
         {
-          component.mid(mid);
+          component.model._id(mid);
 
           client.put_model_parameter(
           {
-            mid : mid,
+            mid : component.model._id(),
             name : "name",
             value : component.recipient(),
             input : true,
@@ -37,7 +36,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
             {
               client.post_model_finish(
               {
-                mid : mid,
+                mid : component.model._id(),
                 success : function()
                 {
                   component.tab(2);

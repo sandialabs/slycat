@@ -11,18 +11,16 @@
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
       <form class="form-horizontal" role="form">
-        <slycat-model-controls params="data:model"></slycat-model-controls>
+        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
     <div data-bind="visible:tab() == 1">
       <form class="form-horizontal" role="form">
-        <slycat-remote-controls params="data:remote"></slycat-remote-controls>
+        <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password"></slycat-remote-controls>
       </form>
     </div>
-    <div data-bind="visible:tab() == 2">
-      <div data-bind="if:sid" style="height: 400px;">
-        <slycat-remote-browser params="type:'remote',sid:sid,hostname:remote().hostname,path:'/',data:browser,open_file_callback:load_table"></slycat-remote-browser>
-      </div>
+    <div data-bind="visible:tab() == 2" style="height: 400px">
+      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_table"></slycat-remote-browser>
     </div>
     <div data-bind="visible:tab() == 3">
       <table style="width:100%">
@@ -45,9 +43,7 @@
       </table>
     </div>
     <div data-bind="visible:tab() == 4">
-      <div data-bind="if:mid">
-        <slycat-model-results params="{mid: mid}"></slycat-model-results>
-      </div>
+      <slycat-model-results params="{mid: model._id}"></slycat-model-results>
     </div>
   </div>
 

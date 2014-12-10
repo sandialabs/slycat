@@ -5,9 +5,9 @@ define("slycat-model-controls", ["slycat-server-root"], function(server_root)
     viewModel: function(params)
     {
       var component = this;
-      component.name = ko.observable("New Model");
-      component.description = ko.observable("");
-      component.marking = ko.observable(null);
+      component.name = params.name
+      component.description = params.description
+      component.marking = params.marking
       component.markings = ko.mapping.fromJS([]);
 
       $.ajax(
@@ -20,9 +20,6 @@ define("slycat-model-controls", ["slycat-server-root"], function(server_root)
           component.marking(markings[0].type);
         }
       });
-
-      if(params.data)
-        params.data(component);
     },
     template: { require: "text!" + server_root + "templates/slycat-model-controls.html" }
   });

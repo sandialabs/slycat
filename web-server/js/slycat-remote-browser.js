@@ -5,13 +5,13 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
     viewModel: function(params)
     {
       var component = this;
-      component.type = ko.observable(ko.utils.unwrapObservable(params.type));
-      component.sid = ko.observable(ko.utils.unwrapObservable(params.sid));
-      component.hostname = ko.observable(ko.utils.unwrapObservable(params.hostname));
-      component.path = ko.observable(null);
-      component.files = ko.mapping.fromJS([]);
-      component.selection = ko.mapping.fromJS([]);
+      component.type = ko.utils.unwrapObservable(params.type);
+      component.sid = params.sid;
+      component.hostname = params.hostname;
+      component.path = params.path;
+      component.selection = params.selection;
       component.open_file_callback = params.open_file_callback;
+      component.files = ko.mapping.fromJS([]);
 
       function path_dirname(path)
       {
@@ -38,7 +38,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
       component.select = function(file, event)
       {
         var selection = [path_join(component.path(), file.name())];
-        ko.mapping.fromJS(selection, component.selection);
+        component.selection(selection);
       }
 
       component.open = function(file)
@@ -80,10 +80,11 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
         });
       }
 
-      if(params.data)
-        params.data(component);
-
-      component.browse(ko.utils.unwrapObservable(params.path) || "/");
+      component.sid.subscribe(function(new_sid)
+      {
+        if(new_sid)
+          component.browse(component.path());
+      });
     },
     template: { require: "text!" + server_root + "templates/slycat-remote-browser.html" }
   });

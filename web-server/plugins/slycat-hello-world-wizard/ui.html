@@ -9,7 +9,7 @@
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
       <form class="form-horizontal">
-        <slycat-model-controls params="data:model"></slycat-model-controls>
+        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
     <div data-bind="visible:tab() == 1">
@@ -23,9 +23,7 @@
       </form>
     </div>
     <div data-bind="visible:tab() == 2">
-      <div data-bind="if:mid">
-        <slycat-model-results params="{mid : mid}"></slycat-model-results>
-      </div>
+      <slycat-model-results params="{mid : model._id}"></slycat-model-results>
     </div>
   </div>
 

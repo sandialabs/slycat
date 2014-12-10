@@ -5,12 +5,9 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client"], fu
     viewModel: function(params)
     {
       var component = this;
-      component.hostname = ko.observable(null);
-      component.username = ko.observable(null);
-      component.password = ko.observable(null);
-
-      if(params.data)
-        params.data(component);
+      component.hostname = params.hostname;
+      component.username = params.username;
+      component.password = params.password;
 
 /*
       client.get_configuration_remote_hosts(
