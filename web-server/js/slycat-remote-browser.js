@@ -11,7 +11,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
       component.path = ko.observable(null);
       component.files = ko.mapping.fromJS([]);
       component.selection = ko.mapping.fromJS([]);
-      component.open_callback = params.open_callback;
+      component.open_file_callback = params.open_file_callback;
 
       function path_dirname(path)
       {
@@ -46,9 +46,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
         // If the file is our parent directory, move up the hierarchy.
         if(file.name() == "..")
         {
-          var path = component.path().replace(/\/\.?(\w|\-)*\/?$/, "");
-          if(path == "")
-            path = "/";
+          component.browse(path_dirname(component.path()));
         }
         // If the file is a directory, move down the hierarchy.
         else if(file.type() == "d")
@@ -58,8 +56,8 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client"], fun
         // If it's a file, signal observers.
         else if(file.type() == "f")
         {
-          if(component.open_callback)
-            component.open_callback();
+          if(component.open_file_callback)
+            component.open_file_callback();
         }
       }
 
