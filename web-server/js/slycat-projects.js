@@ -53,8 +53,7 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
     $(window).resize(size_content);
     window.setTimeout(function() { $(window).resize(); }, 10);
 
-    ko.applyBindings({}, document.querySelector("slycat-navbar"));
-    ko.applyBindings(model, document.getElementById("slycat-projects"));
+    ko.applyBindings(model);
   }
 
   return module;

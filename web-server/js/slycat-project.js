@@ -71,8 +71,7 @@ define("slycat-project", [], function()
     $(window).resize(size_content);
     window.setTimeout(function() { $(window).resize(); }, 10);
 
-    ko.applyBindings({}, document.querySelector("slycat-navbar"));
-    ko.applyBindings(model, document.getElementById("slycat-project"));
+    ko.applyBindings(model);
   };
 
   return module;
