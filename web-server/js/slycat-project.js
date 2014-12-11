@@ -4,13 +4,11 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-project", [], function()
+define("slycat-project", ["slycat-server-root", "slycat-web-client"], function(server_root, client)
 {
   var module = {}
   module.start = function()
   {
-    var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
-
     var model = {};
     model.server_root = server_root;
     model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
@@ -30,10 +28,10 @@ define("slycat-project", [], function()
     // Load information about the project.
     $.ajax(
     {
-      dataType : "json",
-      type : "GET",
-      url : location.href,
-      success : function(project)
+      dataType: "json",
+      type: "GET",
+      url: location.href,
+      success: function(project)
       {
         ko.mapping.fromJS(project, model.project);
       },
@@ -42,22 +40,19 @@ define("slycat-project", [], function()
     // Load the project models.
     $.ajax(
     {
-      dataType : "json",
-      type : "GET",
-      url : location.href + "/models",
-      success : function(models)
+      dataType: "json",
+      type: "GET",
+      url: location.href + "/models",
+      success: function(models)
       {
         ko.mapping.fromJS(models, model.models);
       },
     });
 
     // Load available markings.
-    $.ajax(
+    client.get_configuration_markings(
     {
-      dataType : "json",
-      type : "GET",
-      url : server_root + "configuration/markings",
-      success : function(markings)
+      success: function(markings)
       {
         ko.mapping.fromJS(markings, model.markings);
       },

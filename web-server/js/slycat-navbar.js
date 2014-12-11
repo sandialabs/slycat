@@ -4,17 +4,14 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", [], function()
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client"], function(server_root, client)
 {
-  console.log("slycat-navbar", "define");
-
   curl({ apiName : "require" });
 
   ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
     {
-      var server_root = document.querySelector("#slycat-server-root").getAttribute("href");
       var component = this;
 
       component.wizard = ko.observable(false);
@@ -375,10 +372,8 @@ define("slycat-navbar", [], function()
       });
 
       // Get the set of allowed server markings.
-      $.ajax(
+      client.get_configuration_markings(
       {
-        type : "GET",
-        url : server_root + "configuration/markings",
         success : function(markings)
         {
           ko.mapping.fromJS(markings, component.markings);

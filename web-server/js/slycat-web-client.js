@@ -36,6 +36,21 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_configuration_markings = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "configuration/markings",
+      success: function(markings)
+      {
+        if(params.success)
+          params.success(markings);
+      }
+    });
+  }
+
   module.get_configuration_remote_hosts = function(params)
   {
     $.ajax(
