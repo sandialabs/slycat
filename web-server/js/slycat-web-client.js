@@ -183,9 +183,16 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
   module.put_model_table = function(params)
   {
     var data = new FormData();
-    data.append("sid", params.sid);
-    data.append("path", params.path);
     data.append("input", params.input === undefined ? true: params.input ? true: false);
+    if(params.sid && params.path)
+    {
+      data.append("sid", params.sid);
+      data.append("path", params.path);
+    }
+    else if(params.file)
+    {
+      data.append("file", params.file);
+    }
 
     $.ajax(
     {
