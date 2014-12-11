@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-project", ["slycat-server-root", "slycat-web-client"], function(server_root, client)
+define("slycat-project", ["slycat-server-root", "slycat-web-client", "slycat-markings"], function(server_root, client, markings)
 {
   var module = {}
   module.start = function()
@@ -13,7 +13,7 @@ define("slycat-project", ["slycat-server-root", "slycat-web-client"], function(s
     model.server_root = server_root;
     model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
     model.models = ko.mapping.fromJS([]);
-    model.markings = ko.mapping.fromJS([]);
+    model.markings = markings;
     model.badge = function(marking)
     {
       for(var i = 0; i != model.markings().length; ++i)
@@ -46,15 +46,6 @@ define("slycat-project", ["slycat-server-root", "slycat-web-client"], function(s
       success: function(models)
       {
         ko.mapping.fromJS(models, model.models);
-      },
-    });
-
-    // Load available markings.
-    client.get_configuration_markings(
-    {
-      success: function(markings)
-      {
-        ko.mapping.fromJS(markings, model.markings);
       },
     });
 

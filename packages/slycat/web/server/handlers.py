@@ -71,6 +71,7 @@ def js_bundle():
         "js/curl.js", # This needs to be loaded after knockstrap, which will try to load knockout and jQuery using require() if it's available.
         "js/slycat-server-root.js",
         "js/slycat-web-client.js",
+        "js/slycat-markings.js",
         "js/slycat-nag.js",
         "js/slycat-model-controls.js",
         "js/slycat-model-results.js",
