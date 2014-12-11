@@ -28,9 +28,10 @@ $.widget("parameter_image.dendrogram",
     thumbnail_width : 50,
     thumbnail_height: 50,
     thumbnail_border_size : 2,
+    hover_timeout : 2000,
     session_cache : {},
     image_cache : {},
-    cache_references : [ {}, {} ], 
+    cache_references : [ {}, {} ],
     // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
     // http://api.jqueryui.com/jquery.widget/
     // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
@@ -59,6 +60,14 @@ $.widget("parameter_image.dendrogram",
 
     self.options.session_cache = self.options.cache_references[0];
     self.options.image_cache = self.options.cache_references[1];
+
+    self.preview = $("<div id='image-preview'>")
+      .appendTo( $("#scatterplot-pane") )
+      ;
+
+    self.preview_image = $("<img id='image-preview-image' />")
+      .appendTo(self.preview)
+      ;
 
     this._set_cluster();
   },
@@ -469,7 +478,7 @@ $.widget("parameter_image.dendrogram",
       node_thumbnail.each(function(d,i){
         imagesToOpen.push(this);
       });
-      self._open_images(imagesToOpen);
+      //self._open_images(imagesToOpen);
 
       // Transition new nodes to their final position.
       var node_update = node.transition()
@@ -478,6 +487,16 @@ $.widget("parameter_image.dendrogram",
           return "translate(" + (d._children ? (diagram_width - 40) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
         })
         .style("opacity", 1.0)
+        ;
+
+      node.classed("leaf", function(d) { return d._children || (!d.children && !d._children); });
+      node.filter(".leaf")
+        .on("mouseover", function(d) {
+          self._open_preview(d);
+        })
+        .on("mouseout", function(d) {
+          self._close_preview(d);
+        })
         ;
 
       node_update.select(".subtree")
@@ -596,62 +615,61 @@ $.widget("parameter_image.dendrogram",
     }
   },
 
-  _open_images: function(images)
+  _open_preview: function(image)
   {
-    var blah;
-    //console.log("opening images");
     var self = this;
-    // If the list of images is empty, we're done.
-    if(images.length == 0)
-      return;
 
-    var image = images[0];
-    image.exemplar = image.__data__.exemplar;
-
-    // Don't open images without exemplars
-    if(image.exemplar == undefined) {
-      self._open_images(images.slice(1));
+    // Do nothing if we don't have an exemplar to show
+    if(image.exemplar == undefined)
+    {
       return;
     }
 
-    image.uri = self.options.images[image.exemplar];
-
-    // If the image is already in the cache, display it.
-    if(image.uri in self.options.image_cache)
+    if(self.hover_timer)
     {
-      //console.log("displaying image: " + image.uri);
+      window.clearTimeout(self.hover_timer);
+      self.hover_timer = null;
+    }
 
+    var image_uri = self.options.images[image.exemplar];
+
+    // Open new preview only if we are not showing it already
+    if(self.target_image != image_uri)
+    {
+      self.target_image = image_uri;
+      self.preview_image.hide();
+      self.preview.show();
+      self._display_image(image_uri);
+    }
+
+  },
+
+  _display_image: function(image_uri)
+  {
+    var self = this;
+
+    if(image_uri in self.options.image_cache)
+    {
       var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(self.options.image_cache[image.uri]);
-
-      // Create the image ...
-      var svgImage = d3.select(image).append("image")
-        .attr("class", "image")
-        .attr("xlink:href", image_url)
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", self.options.thumbnail_width)
-        .attr("height", self.options.thumbnail_height)
-        //.attr("data-ratio", image.width / image.height)
-        ;
-
-      self._open_images(images.slice(1));
+      var image_url = url_creator.createObjectURL(self.options.image_cache[image_uri]);
+      self.preview_image.attr('src', image_url);
+      self.preview_image.show();
       return;
     }
 
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+    parser.href = image_uri.substr(0, 5) == "file:" ? image_uri.substr(5) : image_uri;
     if(!(parser.hostname in self.options.session_cache))
     {
-      self._open_session(images);
+      self._open_session_callback( parser, function(){ self._display_image(image_uri); } );
       return;
     }
 
     // Retrieve the image.
     //console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
-    xhr.image = image;
+    xhr.image_uri = image_uri;
     xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
@@ -662,7 +680,7 @@ $.widget("parameter_image.dendrogram",
       if(this.status == 404 || this.status == 500)
       {
         delete self.options.session_cache[parser.hostname];
-        self._open_session(images);
+        self._open_session_callback( parser, function(){ self._display_image(image_uri); } );
         return;
       }
       // If we get 400, it means that the session is good and we're
@@ -685,7 +703,7 @@ $.widget("parameter_image.dendrogram",
         }
         else
         {
-          window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
+          window.alert("Error loading image " + this.image_uri + ": " + this.statusText);
         }
         return;
       }
@@ -693,10 +711,10 @@ $.widget("parameter_image.dendrogram",
       // We received the image, so put it in the cache and start-over.
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      self.options.image_cache[image.uri] = blob;
+      self.options.image_cache[image_uri] = blob;
       // Adding lag for testing purposed. This should not exist in production.
       // setTimeout(function(){
-      self._open_images(images);
+      self._display_image(image_uri);
       return;
       // }, 5000);
     }
@@ -704,19 +722,28 @@ $.widget("parameter_image.dendrogram",
 
   },
 
-  _open_session: function(images)
+  _close_preview: function(image)
+  {
+    console.log("ready to close preview");
+    var self = this;
+
+    self.hover_timer = window.setTimeout( 
+      function(){ 
+        self.target_image = null;
+        self.preview.hide();
+        self.preview_image.hide();
+      }, 
+      self.options.hover_timeout 
+    );
+
+  },
+
+  _open_session_callback: function(parser, callback)
   {
     var self = this;
 
-    if(images.length == 0)
-      return;
-    var image = images[0];
-
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-
     $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error", self.login).text(image.last_error).css("display", image.last_error ? "block" : "none");
+    $("#remote-error", self.login).text(parser.last_error).css("display", parser.last_error ? "block" : "none");
     self.login.dialog(
     {
       buttons:
@@ -735,13 +762,13 @@ $.widget("parameter_image.dendrogram",
             {
               self.options.session_cache[parser.hostname] = result.sid;
               self.login.dialog("close");
-              self._open_images(images);
+              callback();
             },
             error : function(request, status, reason_phrase)
             {
-              image.last_error = "Error opening remote session: " + reason_phrase;
+              parser.last_error = "Error opening remote session: " + reason_phrase;
               self.login.dialog("close");
-              self._open_session(images);
+              self._open_session_callback(parser, callback);
             }
           });
         },
