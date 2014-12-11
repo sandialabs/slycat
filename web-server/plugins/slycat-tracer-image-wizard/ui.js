@@ -67,7 +67,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
             {
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], categories:[]})
+                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:false})
               ko.mapping.fromJS(attributes, component.attributes);
               component.tab(3);
             }
@@ -75,6 +75,52 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
         }
       });
     }
+
+    component.set_input = function(attribute)
+    {
+      attribute.output(false);
+      attribute.category(false);
+      attribute.rating(false);
+      attribute.image(false);
+      return true;
+    }
+
+    component.set_output = function(attribute)
+    {
+      attribute.input(false);
+      attribute.category(false);
+      attribute.rating(false);
+      attribute.image(false);
+      return true;
+    }
+
+    component.set_category = function(attribute)
+    {
+      attribute.input(false);
+      attribute.output(false);
+      attribute.rating(false);
+      attribute.image(false);
+      return true;
+    }
+
+    component.set_rating = function(attribute)
+    {
+      attribute.input(false);
+      attribute.output(false);
+      attribute.category(false);
+      attribute.image(false);
+      return true;
+    }
+
+    component.set_image = function(attribute)
+    {
+      attribute.input(false);
+      attribute.output(false);
+      attribute.category(false);
+      attribute.rating(false);
+      return true;
+    }
+
     component.finish = function()
     {
       var input_columns = [];
@@ -84,20 +130,16 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
       var image_columns = [];
       for(var i = 0; i != component.attributes().length; ++i)
       {
-        var categories = component.attributes()[i].categories();
-        for(var j = 0; j != categories.length; ++j)
-        {
-          if(categories[j] == "input")
-            input_columns.push(i);
-          else if(categories[j] == "output")
-            output_columns.push(i);
-          else if(categories[j] == "rating")
-            rating_columns.push(i);
-          else if(categories[j] == "category")
-            category_columns.push(i);
-          else if(categories[j] == "image")
-            image_columns.push(i);
-        }
+        if(component.attributes()[i].input())
+          input_columns.push(i);
+        if(component.attributes()[i].output())
+          output_columns.push(i);
+        if(component.attributes()[i].category())
+          category_columns.push(i);
+        if(component.attributes()[i].rating())
+          rating_columns.push(i);
+        if(component.attributes()[i].image())
+          image_columns.push(i);
       }
 
       client.put_model_parameter(

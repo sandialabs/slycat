@@ -26,18 +26,17 @@
       <table style="width:100%">
         <thead>
           <tr>
-            <tr><th></th><th>Variable</th><th>Input</th><th>Output</th><th>Rating</th><th>Category</th><th>Image</th></tr>
+            <tr><th>Variable</th><th>Input</th><th>Output</th><th>Rating</th><th>Category</th><th>Image</th></tr>
           </tr>
         </thead>
         <tbody data-bind="foreach:attributes">
           <tr>
-            <td data-bind="text:type"></td>
             <td data-bind="text:name"></td>
-            <td><input type="checkbox" value="input" data-bind="checked: categories"/></td>
-            <td><input type="checkbox" value="output" data-bind="checked: categories"/></td>
-            <td data-bind="if:type()!='string'"><input type="checkbox" value="rating" data-bind="checked: categories"/></td>
-            <td><input type="checkbox" value="category" data-bind="checked: categories"/></td>
-            <td data-bind="if:type()=='string'"><input type="checkbox" value="image" data-bind="checked: categories"/></td>
+            <td><input type="checkbox" data-bind="click: $parent.set_input, checked: input"/></td>
+            <td><input type="checkbox" data-bind="click: $parent.set_output, checked: output"/></td>
+            <td data-bind="if:type()!='string'"><input type="checkbox" data-bind="click: $parent.set_rating, checked: rating"/></td>
+            <td><input type="checkbox" data-bind="click: $parent.set_category, checked: category"/></td>
+            <td data-bind="if:type()=='string'"><input type="checkbox" data-bind="click: $parent.set_image, checked: image"/></td>
           </tr>
         </tbody>
       </table>
