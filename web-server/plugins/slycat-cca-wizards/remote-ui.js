@@ -1,14 +1,27 @@
-define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/parameter-image/ui.html", "slycat-remote-browser"], function(client, html)
+define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/remote-cca/ui.html"], function(client, html)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = ko.mapping.fromJS({_id: params.project_id});
-    component.model = ko.mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
+    component.model = ko.mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
     component.remote = ko.mapping.fromJS({hostname: null, username: null, password: null, sid: null});
     component.browser = ko.mapping.fromJS({path:null, selection: []});
     component.attributes = ko.mapping.fromJS([]);
+    component.scale_inputs = ko.observable(true);
+
+    component.set_input = function(attribute)
+    {
+      attribute.output(false);
+      return true;
+    }
+
+    component.set_output = function(attribute)
+    {
+      attribute.input(false);
+      return true;
+    }
 
     component.cancel = function()
     {
@@ -23,7 +36,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
       client.post_project_models(
       {
         pid: component.project._id(),
-        type: "parameter-image",
+        type: "cca",
         name: component.model.name(),
         description: component.model.description(),
         marking: component.model.marking(),
@@ -67,7 +80,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
             {
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], categories:[]})
+                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:metadata["column-types"][i] != "string", output:false})
               ko.mapping.fromJS(attributes, component.attributes);
               component.tab(3);
             }
@@ -79,25 +92,12 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     {
       var input_columns = [];
       var output_columns = [];
-      var rating_columns = [];
-      var category_columns = [];
-      var image_columns = [];
       for(var i = 0; i != component.attributes().length; ++i)
       {
-        var categories = component.attributes()[i].categories();
-        for(var j = 0; j != categories.length; ++j)
-        {
-          if(categories[j] == "input")
-            input_columns.push(i);
-          else if(categories[j] == "output")
-            output_columns.push(i);
-          else if(categories[j] == "rating")
-            rating_columns.push(i);
-          else if(categories[j] == "category")
-            category_columns.push(i);
-          else if(categories[j] == "image")
-            image_columns.push(i);
-        }
+        if(component.attributes()[i].input())
+          input_columns.push(i);
+        if(component.attributes()[i].output())
+          output_columns.push(i);
       }
 
       client.put_model_parameter(
@@ -119,37 +119,17 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
               client.put_model_parameter(
               {
                 mid: component.model._id(),
-                name: "rating-columns",
-                value: rating_columns,
+                name: "scale-inputs",
+                value: component.scale_inputs(),
                 input: true,
                 success: function()
                 {
-                  client.put_model_parameter(
+                  client.post_model_finish(
                   {
                     mid: component.model._id(),
-                    name: "category-columns",
-                    value: category_columns,
-                    input: true,
                     success: function()
                     {
-                      client.put_model_parameter(
-                      {
-                        mid: component.model._id(),
-                        name: "image-columns",
-                        value: image_columns,
-                        input: true,
-                        success: function()
-                        {
-                          client.post_model_finish(
-                          {
-                            mid: component.model._id(),
-                            success: function()
-                            {
-                              component.tab(4);
-                            }
-                          });
-                        }
-                      });
+                      component.tab(4);
                     }
                   });
                 }

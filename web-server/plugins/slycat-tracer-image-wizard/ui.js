@@ -160,7 +160,6 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
       });
     }
 
-    window.component = component;
     return component;
   }
 
