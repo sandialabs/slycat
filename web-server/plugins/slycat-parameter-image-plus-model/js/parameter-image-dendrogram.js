@@ -62,6 +62,12 @@ $.widget("parameter_image.dendrogram",
     self.options.image_cache = self.options.cache_references[1];
 
     self.preview = $("<div id='image-preview'>")
+      .on("mouseover", function(){
+        self._clear_hover_timer();
+      })
+      .on("mouseout", function(d) {
+        self._close_preview();
+      })
       .appendTo( $("#scatterplot-pane") )
       ;
 
@@ -495,7 +501,7 @@ $.widget("parameter_image.dendrogram",
           self._open_preview(d);
         })
         .on("mouseout", function(d) {
-          self._close_preview(d);
+          self._close_preview();
         })
         ;
 
@@ -615,6 +621,16 @@ $.widget("parameter_image.dendrogram",
     }
   },
 
+  _clear_hover_timer: function()
+  {
+    var self = this;
+    if(self.hover_timer)
+    {
+      window.clearTimeout(self.hover_timer);
+      self.hover_timer = null;
+    }
+  },
+
   _open_preview: function(image)
   {
     var self = this;
@@ -625,11 +641,7 @@ $.widget("parameter_image.dendrogram",
       return;
     }
 
-    if(self.hover_timer)
-    {
-      window.clearTimeout(self.hover_timer);
-      self.hover_timer = null;
-    }
+    self._clear_hover_timer();
 
     var image_uri = self.options.images[image.exemplar];
 
@@ -648,6 +660,7 @@ $.widget("parameter_image.dendrogram",
   {
     var self = this;
 
+    // If the image is in the cache, display it
     if(image_uri in self.options.image_cache)
     {
       var url_creator = window.URL || window.webkitURL;
@@ -722,9 +735,8 @@ $.widget("parameter_image.dendrogram",
 
   },
 
-  _close_preview: function(image)
+  _close_preview: function()
   {
-    console.log("ready to close preview");
     var self = this;
 
     self.hover_timer = window.setTimeout( 
