@@ -105,7 +105,39 @@ def register_slycat_plugin(context):
 
   def html(database, model):
     # At the moment, the CCA client UI is still hard-coded into the server.
-    return ""
+    import pystache
+    context = dict()
+    return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
   context.register_model("cca", finish, html)
+  context.register_model_bundle("cca", "text/css", [
+    os.path.join(os.path.dirname(__file__), "css/ui.css"),
+    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
+    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
+    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
+    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
+    ])
+  context.register_model_bundle("cca", "text/javascript", [
+    os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
+    os.path.join(os.path.dirname(__file__), "js/jquery.ba-bbq.min.js"),
+    os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
+    os.path.join(os.path.dirname(__file__), "js/bookmarker.js"),
+    os.path.join(os.path.dirname(__file__), "js/chunker.js"),
+    os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
+    os.path.join(os.path.dirname(__file__), "js/cca-barplot.js"),
+    os.path.join(os.path.dirname(__file__), "js/cca-scatterplot.js"),
+    os.path.join(os.path.dirname(__file__), "js/cca-table.js"),
+    os.path.join(os.path.dirname(__file__), "js/cca-legend.js"),
+    os.path.join(os.path.dirname(__file__), "js/jquery.mousewheel.js"),
+    os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
+    os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
+    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
+    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
+    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
+    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
+    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
+    os.path.join(os.path.dirname(__file__), "js/ui.js"),
+    ])
+
+

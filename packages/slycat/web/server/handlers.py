@@ -388,7 +388,7 @@ def get_model(mid, **kwargs):
     mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
-    if mtype in ["cca", "cca3", "timeseries", "parameter-image", "tracer-image"]:
+    if mtype in ["timeseries", "parameter-image", "tracer-image"]:
       context = get_context()
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
@@ -408,8 +408,8 @@ def get_model(mid, **kwargs):
         context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
         return slycat.web.server.template.render("model-timeseries.html", context)
 
-      if mtype in ["cca", "cca3"]:
-        return slycat.web.server.template.render("model-cca3.html", context)
+#      if mtype in ["cca", "cca3"]:
+#        return slycat.web.server.template.render("model-cca3.html", context)
 
       if mtype == "parameter-image":
         return slycat.web.server.template.render("model-parameter-image.html", context)
