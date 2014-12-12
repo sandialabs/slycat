@@ -461,7 +461,7 @@ def get_model_resource(mtype, resource):
 
   raise cherrypy.HTTPError("404")
 
-def get_model_wizard_resource(wtype, resource):
+def get_wizard_resource(wtype, resource):
   if wtype in slycat.web.server.plugin.manager.model_wizard_resources:
     for wizard_resource, wizard_path in slycat.web.server.plugin.manager.model_wizard_resources[wtype].items():
       if wizard_resource == resource:

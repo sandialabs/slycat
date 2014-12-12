@@ -168,7 +168,7 @@ class Manager(object):
     if type not in self._model_bundles:
       self._model_bundles[type] = {}
 
-    cherrypy.log.error("Bundling model '%s' resources" % type)
+    cherrypy.log.error("Bundled model '%s' resources" % type)
 
     key_hash = hashlib.md5()
     key_hash.update(content_type)
@@ -185,10 +185,9 @@ class Manager(object):
 
     key = key_hash.hexdigest()
     self._model_bundles[type][key] = (content_type, content)
-    cherrypy.log.error("  as %s" % key)
+    cherrypy.log.error("  as /resources/models/%s/%s" % (type, key))
 
     return key
-
 
   def register_model_resource(self, type, resource, path):
     """Register a custom resource associated with a model type.
@@ -213,7 +212,9 @@ class Manager(object):
     if not os.path.exists(path):
       raise Exception("Resource '%s' does not exist." % (resource))
     self._model_resources[type][resource] = path
-    cherrypy.log.error("Registered model '%s' resource '%s' -> '%s'." % (type, resource, path))
+    cherrypy.log.error("Registered model '%s' resource" % type)
+    cherrypy.log.error("  %s" % path)
+    cherrypy.log.error("  as /resources/models/%s/%s" % (type, resource))
 
   def register_model_wizard(self, type, label):
     """Register a wizard for creating new models.
@@ -253,7 +254,9 @@ class Manager(object):
     if not os.path.exists(path):
       raise Exception("Resource '%s' does not exist." % (resource))
     self._model_wizard_resources[type][resource] = path
-    cherrypy.log.error("Registered model wizard '%s' resource '%s' -> '%s'." % (type, resource, path))
+    cherrypy.log.error("Registered model wizard '%s' resource" % type)
+    cherrypy.log.error("  %s" % path)
+    cherrypy.log.error("  as /resources/wizards/%s/%s" % (type, resource))
 
   def register_tool(self, name, hook_point, callable):
     """Register a new cherrypy tool.
