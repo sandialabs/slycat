@@ -200,6 +200,7 @@ class Manager(object):
       Server endpoint to retrieve the resource.
     path : string, required
       Absolute filesystem path of the resource to be retrieved.
+      The resource may be a single file, or a directory.
     """
     if type not in self._models:
       raise Exception("Unknown model type: %s." % type)
@@ -211,10 +212,19 @@ class Manager(object):
       raise Exception("Resource '%s' must have an absolute path." % (resource))
     if not os.path.exists(path):
       raise Exception("Resource '%s' does not exist." % (resource))
-    self._model_resources[type][resource] = path
-    cherrypy.log.error("Registered model '%s' resource" % type)
-    cherrypy.log.error("  %s" % path)
-    cherrypy.log.error("  as /resources/models/%s/%s" % (type, resource))
+    if os.path.isdir(path):
+      cherrypy.log.error("Registered model '%s' resources" % type)
+      for file_path in sorted(os.listdir(path)):
+        resource_path = os.path.join(resource, file_path)
+        file_path = os.path.join(path, file_path)
+        self._model_resources[type][resource_path] = file_path
+        cherrypy.log.error("  %s" % file_path)
+      cherrypy.log.error("  under /resources/models/%s/%s" % (type, resource))
+    else:
+      self._model_resources[type][resource] = path
+      cherrypy.log.error("Registered model '%s' resource" % type)
+      cherrypy.log.error("  %s" % path)
+      cherrypy.log.error("  as /resources/models/%s/%s" % (type, resource))
 
   def register_model_wizard(self, type, label):
     """Register a wizard for creating new models.
