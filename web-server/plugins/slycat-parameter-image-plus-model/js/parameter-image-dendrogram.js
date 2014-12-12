@@ -466,8 +466,8 @@ $.widget("parameter_image.dendrogram",
       // Square
       var vertical_lift = - (self.options.square_size / 2) - self.options.square_border_size ;
       var selected_vertical_lift = - (self.options.selected_square_size / 2) - self.options.selected_square_border_size;
-      var trans_endpoint = "translate(15, " + vertical_lift + ")";
-      var trans_notendpoint = "translate(55, " + vertical_lift + ")";
+      var trans_endpoint = "translate(25, 0)";
+      var trans_notendpoint = "translate(65, 0)";
 
       var node_square = node_enter.append("svg:g")
         .attr("class", "square")
@@ -477,9 +477,6 @@ $.widget("parameter_image.dendrogram",
         ;
 
       var node_square_rect = node_square.append("svg:rect")
-        .attr("width", self.options.square_size)
-        .attr("height", self.options.square_size)
-        .style("stroke-width", self.options.square_border_size)
         .style("stroke", "black")
         .style("fill", function(d, i){
           if(self.options.colorscale !== null && self.options.color_array != null){
@@ -848,6 +845,11 @@ $.widget("parameter_image.dendrogram",
   {
     var self = this;
 
+    var offset = - (self.options.square_size / 2) - (self.options.square_border_size  / 2);
+    var selected_offset = - (self.options.selected_square_size / 2) - (self.options.selected_square_border_size / 2);
+    var trans = "translate(" + offset + ", " + offset + ")";
+    var trans_selected = "translate(" + selected_offset + ", " + selected_offset + ")";
+
     checkChildren(self.root);
 
     this.container.selectAll("g.square")
@@ -856,6 +858,21 @@ $.widget("parameter_image.dendrogram",
           return true;
         else
           return false;
+      })
+      ;
+
+    this.container.selectAll("g.square rect")
+      .attr("width", function(d){
+        return d.highlight ? self.options.selected_square_size : self.options.square_size;
+      })
+      .attr("height", function(d){
+        return d.highlight ? self.options.selected_square_size : self.options.square_size;
+      })
+      .style("stroke-width", function(d){
+        return d.highlight ? self.options.selected_square_border_size : self.options.square_border_size;
+      })
+      .attr("transform", function(d) { 
+        return d.highlight ? trans_selected : trans;  // Move up according to selected or not
       })
       ;
 
@@ -997,6 +1014,8 @@ $.widget("parameter_image.dendrogram",
     self.container.selectAll(".node")
       .classed("selected", function(d) { return d.selected; })
       ;
+
+
   },
 
   _color_links: function()
