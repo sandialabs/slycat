@@ -25,10 +25,17 @@ $.widget("parameter_image.dendrogram",
     hidden_simulations: [],
     images : [],
     login_agent : null,
+
     thumbnail_width : 50,
     thumbnail_height: 50,
     thumbnail_border_size : 2,
-    hover_timeout : 2000,
+
+    square_size : 8,
+    square_border_size : 1,
+    selected_square_size : 16,
+    selected_square_border_size : 2,
+
+    hover_timeout : 1000,
     session_cache : {},
     image_cache : {},
     cache_references : [ {}, {} ],
@@ -456,13 +463,58 @@ $.widget("parameter_image.dendrogram",
         })
         ;
 
+      // Square
+      var vertical_lift = - (self.options.square_size / 2) - self.options.square_border_size ;
+      var selected_vertical_lift = - (self.options.selected_square_size / 2) - self.options.selected_square_border_size;
+      var trans_endpoint = "translate(15, " + vertical_lift + ")";
+      var trans_notendpoint = "translate(55, " + vertical_lift + ")";
+
+      var node_square = node_enter.append("svg:g")
+        .attr("class", "square")
+        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move to the right according to whether it's an endpoint
+        .style("opacity", 1e-6)
+        .style("display", "none")
+        ;
+
+      var node_square_rect = node_square.append("svg:rect")
+        .attr("width", self.options.square_size)
+        .attr("height", self.options.square_size)
+        .style("stroke-width", self.options.square_border_size)
+        .style("stroke", "black")
+        .style("fill", function(d, i){
+          if(self.options.colorscale !== null && self.options.color_array != null){
+            var index = d["data-table-index"];
+            if(index != null) {
+              var value = self.options.color_array[index];
+              if(value != null)
+                return self.options.colorscale(value);
+              else
+                return $("#color-switcher").colorswitcher("get_null_color");
+            }
+            else
+              return "black";
+          } else {
+            return "black";
+          }
+        })
+        .classed("nullValue", function(d, i){
+          if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
+            return false;
+          else
+            return true;
+        })
+        .on("click", function(d){
+          self._handle_highlight(d, d3.event, this);
+        })
+        ;
+
       // Thumbnail
       var vertical_lift = - self.options.thumbnail_height / 2;
       var trans_endpoint = "translate(15, " + vertical_lift + ")";
       var trans_notendpoint = "translate(55, " + vertical_lift + ")";
       var node_thumbnail = node_enter.append("svg:g")
         .attr("class", "thumbnail")
-        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move thumbnail to the right according to whether it's an endpoint
+        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move to the right according to whether it's an endpoint
         .style("opacity", 1e-6)
         .style("display", "none")
         ;
@@ -480,17 +532,11 @@ $.widget("parameter_image.dendrogram",
 
       self._set_highlight();
 
-      var imagesToOpen = [];
-      node_thumbnail.each(function(d,i){
-        imagesToOpen.push(this);
-      });
-      //self._open_images(imagesToOpen);
-
       // Transition new nodes to their final position.
       var node_update = node.transition()
         .duration(duration)
         .attr("transform", function(d) { 
-          return "translate(" + (d._children ? (diagram_width - 40) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
+          return "translate(" + (d._children ? (diagram_width - 39) : d.y + 1) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
         })
         .style("opacity", 1.0)
         ;
@@ -516,7 +562,7 @@ $.widget("parameter_image.dendrogram",
         .style("fill", "url(#subtree-gradient)")
         ;
 
-      node_update.select(".thumbnail")
+      node_update.select(".square")
         .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
         .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
         ;
@@ -533,7 +579,7 @@ $.widget("parameter_image.dendrogram",
         .remove()
         ;
 
-      node_exit.select(".thumbnail")
+      node_exit.select(".square")
         .each("start", function() { d3.select(this).style("display", "none"); })
         ;
       
@@ -804,7 +850,7 @@ $.widget("parameter_image.dendrogram",
 
     checkChildren(self.root);
 
-    this.container.selectAll("g.thumbnail")
+    this.container.selectAll("g.square")
       .classed("highlight", function(d, i){
         if(d.highlight)
           return true;
