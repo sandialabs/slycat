@@ -25,16 +25,10 @@ $.widget("parameter_image.dendrogram",
     hidden_simulations: [],
     images : [],
     login_agent : null,
-
-    thumbnail_width : 50,
-    thumbnail_height: 50,
-    thumbnail_border_size : 2,
-
     square_size : 8,
     square_border_size : 1,
     selected_square_size : 16,
     selected_square_border_size : 2,
-
     hover_timeout : 1000,
     session_cache : {},
     image_cache : {},
@@ -505,28 +499,6 @@ $.widget("parameter_image.dendrogram",
         })
         ;
 
-      // Thumbnail
-      var vertical_lift = - self.options.thumbnail_height / 2;
-      var trans_endpoint = "translate(15, " + vertical_lift + ")";
-      var trans_notendpoint = "translate(55, " + vertical_lift + ")";
-      var node_thumbnail = node_enter.append("svg:g")
-        .attr("class", "thumbnail")
-        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move to the right according to whether it's an endpoint
-        .style("opacity", 1e-6)
-        .style("display", "none")
-        ;
-
-      var node_thumbnail_border = node_thumbnail.append("svg:rect")
-        .attr("class", "outline")
-        .attr("x", -(self.options.thumbnail_border_size/2))
-        .attr("y", -(self.options.thumbnail_border_size/2))
-        .attr("width", self.options.thumbnail_width + self.options.thumbnail_border_size)
-        .attr("height", self.options.thumbnail_height + self.options.thumbnail_border_size)
-        //.style("stroke", "black")
-        .style("stroke-width", self.options.thumbnail_border_size+"px")
-        .style("fill", "white")
-        ;
-
       self._set_highlight();
 
       // Transition new nodes to their final position.
@@ -932,7 +904,7 @@ $.widget("parameter_image.dendrogram",
       }
     }
     self._set_highlight();
-    self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+    self.element.trigger("selection-changed", [self.options.highlight]);
 
     function getDataTableIndexesFromChildren(target){
       var data_table_indexes = [];

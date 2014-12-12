@@ -507,6 +507,15 @@ function setup_dendrogram()
     {
       node_toggled(node);
     });
+
+    // Changing the scatterplot selection updates the table row selection and controls ..
+    $("#dendrogram-viewer").bind("selection-changed", function(event, selection)
+    {
+      $("#table").table("option", "row-selection", selection);
+      $("#controls").controls("option", "selection", selection);
+      $("#scatterplot").scatterplot("option", "selection", selection);
+      selected_simulations_changed(selection);
+    });
   }
 }
 
