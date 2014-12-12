@@ -596,5 +596,14 @@ rights in this software.
   width: 100%;
   height: 100%;
   background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#scatterplot-pane #image-preview.hidden {
   display: none;
+}
+#scatterplot-pane #image-preview-image {
+  max-height: 100%;
+  max-width: 100%;
 }
