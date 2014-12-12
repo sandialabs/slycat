@@ -102,7 +102,7 @@ csv_distance.matrix = None
 if __name__ == "__main__":
   parser = slycat.web.client.option_parser()
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
-  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
+  parser.add_argument("--cluster-measure", default="jaccard", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
   parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
   parser.add_argument("--dry-run", default=False, action="store_true", help="Don't actually create a model on the server.")
