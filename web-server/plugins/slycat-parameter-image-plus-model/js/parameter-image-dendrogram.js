@@ -61,7 +61,7 @@ $.widget("parameter_image.dendrogram",
     self.options.session_cache = self.options.cache_references[0];
     self.options.image_cache = self.options.cache_references[1];
 
-    self.preview = $("<div id='image-preview' class='hidden'>")
+    self.preview = $("<div id='image-preview'>")
       .on("mouseover", function(){
         self._clear_hover_timer();
       })
@@ -650,7 +650,7 @@ $.widget("parameter_image.dendrogram",
     {
       self.target_image = image_uri;
       self.preview_image.hide();
-      self.preview.removeClass('hidden');
+      self.preview.show();
       self._display_image(image_uri);
     }
 
@@ -742,7 +742,7 @@ $.widget("parameter_image.dendrogram",
     self.hover_timer = window.setTimeout( 
       function(){ 
         self.target_image = null;
-        self.preview.addClass('hidden');
+        self.preview.hide();
         self.preview_image.hide();
       }, 
       self.options.hover_timeout 
