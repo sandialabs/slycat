@@ -43,13 +43,13 @@ def css_bundle():
         "css/namespaced-bootstrap.css",
         "css/slycat.css",
       ])
-      slycat.web.server.resource.manager.add_directory("css/smoothness/images", "images")
+      slycat.web.server.resource.manager.add_directory("images", "css/smoothness/images")
       slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
-      slycat.web.server.resource.manager.add_file("css/1359513595_onebit_33.png", "1359513595_onebit_33.png")
-      slycat.web.server.resource.manager.add_file("css/1359513602_onebit_34.png", "1359513602_onebit_34.png")
-      slycat.web.server.resource.manager.add_file("css/slycat-logo-navbar.png", "slycat-logo-navbar.png")
-      slycat.web.server.resource.manager.add_file("css/directory-small.png", "directory-small.png")
-      slycat.web.server.resource.manager.add_file("css/file-small.png", "file-small.png")
+      slycat.web.server.resource.manager.add_file("1359513595_onebit_33.png", "css/1359513595_onebit_33.png")
+      slycat.web.server.resource.manager.add_file("1359513602_onebit_34.png", "css/1359513602_onebit_34.png")
+      slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
+      slycat.web.server.resource.manager.add_file("directory-small.png", "css/directory-small.png")
+      slycat.web.server.resource.manager.add_file("file-small.png", "css/file-small.png")
   return css_bundle._bundle
 css_bundle._lock = threading.Lock()
 css_bundle._bundle = None

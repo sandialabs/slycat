@@ -17,7 +17,7 @@ class Manager(object):
 
   def add_bundle(self, content_type, paths):
     with self._bundle_lock:
-      cherrypy.log.error("Bundled resources")
+      cherrypy.log.error("Bundled global resources")
 
       key_hash = hashlib.md5()
       key_hash.update(content_type)
@@ -38,9 +38,9 @@ class Manager(object):
 
       return key
 
-  def add_directory(self, directory_path, resource_path):
+  def add_directory(self, resource_path, directory_path):
     with self._file_lock:
-      cherrypy.log.error("Registered resources")
+      cherrypy.log.error("Registered global resources")
       if not os.path.isabs(directory_path):
         directory_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], directory_path)
       for file_path in os.listdir(directory_path):
@@ -50,7 +50,7 @@ class Manager(object):
         self._files[resource_file_path] = file_path
       cherrypy.log.error("  under /resources/global/%s" % resource_path)
 
-  def add_file(self, file_path, resource_path):
+  def add_file(self, resource_path, file_path):
     with self._file_lock:
       if not os.path.isabs(file_path):
         file_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], file_path)
