@@ -811,6 +811,27 @@ $.widget("parameter_image.dendrogram",
   _set_color: function()
   {
     var self = this;
+
+    this.container.selectAll("g.square rect")
+      .style("fill", function(d, i){
+        var index = d["data-table-index"];
+        if(index != null) {
+          var value = self.options.color_array[index];
+          if(value != null)
+            return self.options.colorscale(value);
+          else
+            return $("#color-switcher").colorswitcher("get_null_color");
+        }
+        else
+          return "black";
+      })
+      .classed("nullValue", function(d, i){
+        if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
+          return false;
+        else
+          return true;
+      })
+      ;
   },
 
   _set_highlight: function()

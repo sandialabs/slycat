@@ -1120,7 +1120,7 @@ function update_widgets_after_color_variable_change()
   $("#table").table("option", "colorscale", colorscale);
   $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
   $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
-  $("#dendrogram-viewer").dendrogram("color-options", {color_array : v, colorscale : colorscale});
+  $("#dendrogram-viewer").dendrogram("option", "color-options", {color_array : v, colorscale : colorscale});
 }
 
 function update_widgets_when_hidden_simulations_change(skip_dendrogram_update)
