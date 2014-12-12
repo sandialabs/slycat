@@ -107,8 +107,7 @@ measures = {
   "csv" : csv_distance,
   }
 
-def compute_distance(left, right, storage, measure):
-  cluster_measure = measures[arguments.cluster_measure]
+def compute_distance(left, right, storage, cluster_name, measure_name, measure):
   distance = numpy.empty(len(left))
   for index in range(len(left)):
     i = left[index]
@@ -119,8 +118,8 @@ def compute_distance(left, right, storage, measure):
     row_j, column_j = storage[j]
     uri_j = columns[column_j][1][row_j]
     path_j = urlparse.urlparse(uri_j).path
-    distance[index] = cluster_measure(i, path_i, j, path_j)
-    slycat.web.client.log.info("Computed %s distance for %s, %s -> %s: %s." % (arguments.cluster_measure, name, i, j, distance[index]))
+    distance[index] = measure(i, path_i, j, path_j)
+    slycat.web.client.log.info("Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index]))
   return distance
 
 if __name__ == "__main__":
@@ -228,7 +227,7 @@ if __name__ == "__main__":
     # Compute a distance matrix comparing every image to every other ...
     observation_count = len(storage)
     left, right = numpy.triu_indices(observation_count, k=1)
-    distance = compute_distance(left, right, storage, arguments.cluster_measure)
+    distance = compute_distance(left, right, storage, name, arguments.cluster_measure, measures[arguments.cluster_measure])
 
     # Use the distance matrix to cluster observations ...
     slycat.web.client.log.info("Clustering %s" % name)
