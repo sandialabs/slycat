@@ -69,6 +69,9 @@ $.widget("parameter_image.dendrogram",
       .on("mouseout", function(d) {
         self._close_preview();
       })
+      .on("click", function(d) {
+        self._close_preview(true);
+      })
       .appendTo( $("#scatterplot-pane") )
       ;
 
@@ -368,6 +371,7 @@ $.widget("parameter_image.dendrogram",
         .style("opacity", 1e-6)
         .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
         .on("click", function(d) {
+          self._close_preview(true);
           toggle(d); 
           // Change expandThisFar to however deep below the target node you want to expand
           var expandThisFar = 9999;
@@ -410,6 +414,7 @@ $.widget("parameter_image.dendrogram",
         .text("+")
         .style("fill", "black")
         .on("click", function(d) {
+          self._close_preview(true);
           toggle(d);
           // Change expandThisFar to however deep below the target node you want to expand
           var expandThisFar = 2;
@@ -423,6 +428,7 @@ $.widget("parameter_image.dendrogram",
       var node_glyph = node_enter.append("svg:g")
         .attr("class", "glyph")
         .on("click", function(d) {
+          self._close_preview(true);
           if(d3.event.ctrlKey || d3.event.metaKey) {
             if(d.selected) {
               unselect_node(self, d);
@@ -451,6 +457,7 @@ $.widget("parameter_image.dendrogram",
         .style("fill", "black")
         .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
         .on("click", function(d) {
+          self._close_preview(true);
           toggle(d);
           update_subtree(d);
           d3.event.stopPropagation();
@@ -495,6 +502,7 @@ $.widget("parameter_image.dendrogram",
             return true;
         })
         .on("click", function(d){
+          self._close_preview(true);
           self._handle_highlight(d, d3.event, this);
         })
         ;
@@ -750,18 +758,29 @@ $.widget("parameter_image.dendrogram",
 
   },
 
-  _close_preview: function()
+  _close_preview: function(immediate)
   {
     var self = this;
 
-    self.hover_timer = window.setTimeout( 
-      function(){ 
-        self.target_image = null;
-        self.preview.hide();
-        self.preview_image.hide();
-      }, 
-      self.options.hover_timeout 
-    );
+    if(immediate)
+    {
+      close_preview();
+    }
+    else
+    {
+      self.hover_timer = window.setTimeout( 
+        function(){ 
+          close_preview();
+        }, 
+        self.options.hover_timeout 
+      );
+    }
+
+    function close_preview(){
+      self.target_image = null;
+      self.preview.hide();
+      self.preview_image.hide();
+    }
 
   },
 
