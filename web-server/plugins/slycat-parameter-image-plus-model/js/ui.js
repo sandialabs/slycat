@@ -445,6 +445,10 @@ function setup_dendrogram()
 
     $("#dendrogram-pane .load-status").css("display", "none");
 
+    $("#dendrogram-leaf-backdrop").css({
+      "background-color" : $("#color-switcher").colorswitcher("get_background").toString(),
+    });
+
     var dendrogram_options = build_dendrogram_node_options(cluster_index);
     dendrogram_options.clusters = clusters;
     dendrogram_options.cluster_data = clusters_data[cluster_index];
@@ -1011,8 +1015,11 @@ function selected_colormap_changed(colormap)
 {
   update_current_colorscale();
 
-  // Changing the color map updates the dendrogram with a new color scale ...
+  // Changing the color map updates the dendrogram with a new color scale and new backdrop ...
   $("#dendrogram-viewer").dendrogram("option", "colorscale", colorscale);
+  $("#dendrogram-leaf-backdrop").css({
+    "background-color" : $("#color-switcher").colorswitcher("get_background").toString(),
+  });
 
   // Changing the color map updates the table with a new color scale ...
   $("#table").table("option", "colorscale", colorscale);

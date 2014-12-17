@@ -105,7 +105,7 @@ $.widget("parameter_image.dendrogram",
     }
 
     var padding = 20;
-    var diagram_width = this.element.parent().width() - padding - padding - 110;
+    var diagram_width = this.element.parent().width() - padding - padding - 30;
     var diagram_height = this.element.parent().height() - padding - padding;
 
     var layout = d3.layout.cluster()
