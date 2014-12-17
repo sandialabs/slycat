@@ -14,39 +14,31 @@ distance matrix is written to a CSV file.
 """
 
 import argparse
+import IPython.parallel
 import numpy
-import PIL.Image
 import re
-import scipy.spatial.distance
-import skimage.color
-import urlparse
 
 class ImageCache(object):
   def __init__(self):
     self._storage = {}
 
-  def image(self, path, process=lambda x:x):
-    if path not in self._storage:
+  def image(self, url, process=lambda x:x):
+    if url not in self._storage:
       try:
-        self._storage[path] = process(numpy.asarray(PIL.Image.open(path)))
-      except Exception as e:
-        self._storage[path] = None
-    return self._storage[path]
-
-image_cache = ImageCache()
-column = None
+        path = urlparse.urlparse(url).path
+        self._storage[url] = process(numpy.asarray(PIL.Image.open(path)))
+      except:
+        self._storage[url] = None
+    return self._storage[url]
 
 def jaccard_distance(left_index, right_index):
-  left_path = urlparse.urlparse(column[left_index]).path
-  right_path = urlparse.urlparse(column[right_index]).path
-
-  def threshold_bw(image):
+  def convert_bw(image):
     image = skimage.color.rgb2gray(image)
     image = image < 0.9
     return image
 
-  left_image = image_cache.image(left_path, threshold_bw)
-  right_image = image_cache.image(right_path, threshold_bw)
+  left_image = image_cache.image(column[left_index], convert_bw)
+  right_image = image_cache.image(column[right_index], convert_bw)
 
   # If both images are nonexistent, return a zero distance so they'll cluster together.
   if left_image is None and right_image is None:
@@ -97,16 +89,31 @@ if __name__ == "__main__":
     raise Exception("You must specify a column containing images to be analyzed using --distance-column.  Available choices: %s" % (", ".join(image_columns)))
 
   ###########################################################################################
+  # Connect to our parallel workers, import required modules, and setup some globals
+  # for use by the parallel code.
+
+  workers = IPython.parallel.Client()[:]
+  workers.use_dill()
+  with workers.sync_imports():
+    import PIL
+    import PIL.Image
+    import numpy
+    import scipy
+    import scipy.spatial
+    import scipy.spatial.distance
+    import skimage
+    import skimage.color
+    import urlparse
+  workers.push({
+    "column": columns[arguments.distance_column],
+    "image_cache": ImageCache(),
+    })
+
+  ###########################################################################################
   # Compute the distance between each pair of images.
 
-  column = columns[arguments.distance_column]
-
   left, right = numpy.triu_indices(len(column), k=1)
-
-  distances = numpy.empty(len(left))
-  for index in range(len(left)):
-    distances[index] = jaccard_distance(left[index], right[index])
-    print "Computed distance %s -> %s: %s." % (left[index], right[index], distances[index])
+  distances = workers.map_sync(jaccard_distance, left, right)
 
   ###########################################################################################
   # Convert the distances into a symmetric matrix and dump it to CSV.
@@ -119,5 +126,4 @@ if __name__ == "__main__":
     for row in distance_matrix:
       file.write(",".join(row.astype("string")))
       file.write("\n")
-
 
