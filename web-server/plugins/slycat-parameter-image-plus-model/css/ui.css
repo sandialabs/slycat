@@ -442,6 +442,9 @@ rights in this software.
 #scatterplot g.legend:hover {
   cursor: move;
 }
+#scatterplot .image-frame rect.outline {
+  shape-rendering: crispEdges;
+}
 .legend-axis path,
 .legend-axis line
 {
