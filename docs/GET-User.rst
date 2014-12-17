@@ -37,9 +37,8 @@ Sample Response
 ::
 
     {
+      "uid": "frfreder",
       "email": "fred@example.com",
-      "name": "fred",
-      "roles": [],
-      "server-administrator": false
+      "name": "Fred R. Frederickson",
     }
 

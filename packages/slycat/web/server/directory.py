@@ -34,7 +34,6 @@ class identity(prototype):
     return {
       "name" : username,
       "email" : "%s@%s" % (username, self._domain),
-      "roles" : []
       }
 
   def username(self, uid, filter_key="esnAccountUnixUserId"):
@@ -65,7 +64,6 @@ class ldap(prototype):
         self.cache[username] = {
           "name" : entry["cn"][0],
           "email" : "%s@%s" % (username, entry["esnAdministrativeDomainName"][0]),
-          "roles" : entry["memberOf"]
           }
       except Exception as e:
         cherrypy.log.error(traceback.format_exc())
