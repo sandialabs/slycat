@@ -92,7 +92,11 @@ if __name__ == "__main__":
   # Connect to our parallel workers, import required modules, and setup some globals
   # for use by the parallel code.
 
-  workers = IPython.parallel.Client()[:]
+  try:
+    workers = IPython.parallel.Client()[:]
+  except:
+    raise Exception("A running IPython paralle cluster is required.")
+
   workers.use_dill()
   with workers.sync_imports():
     import PIL
