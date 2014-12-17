@@ -3,6 +3,7 @@
 # rights in this software.
 
 import cherrypy
+import traceback
 
 class prototype:
   """Prototype for a directory object that returns metadata associated with a user id."""
@@ -67,7 +68,7 @@ class ldap(prototype):
           "roles" : entry["memberOf"]
           }
       except Exception as e:
-        cherrypy.log.error("%s" % e)
+        cherrypy.log.error(traceback.format_exc())
 
     if username in self.cache:
       return self.cache[username]
