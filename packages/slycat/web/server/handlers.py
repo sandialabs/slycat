@@ -51,7 +51,6 @@ def get_context():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["security"] = cherrypy.request.security
-  context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
   return context
 
@@ -366,7 +365,6 @@ def get_model(mid, **kwargs):
       context = get_context()
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
-      context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
       context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
       context["full-project"] = project
       context.update(model)
