@@ -14,7 +14,6 @@ import pwd
 import re
 import sys
 
-import slycat.web.server.directory
 import slycat.web.server.handlers
 import slycat.web.server.plugin
 
@@ -212,6 +211,15 @@ def start(root_path, config_file):
   for allowed_marking in configuration["slycat"]["allowed-markings"]:
     if allowed_marking not in manager.markings.keys():
       raise Exception("No marking plugin for type: %s" % allowed_marking)
+
+  # Setup the requested directory plugin.
+  directory_type = configuration["slycat"]["directory"]["plugin"]
+  if directory_type not in manager.directories.keys():
+    raise Exception("No directory plugin for type: %s" % directory_type)
+  directory_args = configuration["slycat"]["directory"].get("args", [])
+  directory_kwargs = configuration["slycat"]["directory"].get("kwargs", {})
+  manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
+  configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

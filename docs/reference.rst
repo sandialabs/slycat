@@ -17,7 +17,6 @@ API Reference
    slycat.web.server.authentication.rst
    slycat.web.server.database.couchdb.rst
    slycat.web.server.database.hdf5.rst
-   slycat.web.server.directory.rst
    slycat.web.server.engine.rst
    slycat.web.server.handlers.rst
    slycat.web.server.model.rst

@@ -1076,7 +1076,7 @@ def get_bookmark(bid):
 def get_user(uid):
   if uid == "-":
     uid = cherrypy.request.security["user"]
-  user = cherrypy.request.app.config["slycat"]["directory"].user(uid)
+  user = cherrypy.request.app.config["slycat"]["directory"](uid)
   if user is None:
     raise cherrypy.HTTPError(404)
   # Add the uid to the record, since the caller may not know it.
