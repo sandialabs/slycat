@@ -691,7 +691,7 @@ $.widget("parameter_image.dendrogram",
     //console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image_uri = image_uri;
-    xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", server_root + "agents/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -785,7 +785,7 @@ $.widget("parameter_image.dendrogram",
           {
             async : true,
             type : "POST",
-            url : server_root + "remotes",
+            url : server_root + "agents",
             contentType : "application/json",
             data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
             processData : false,
