@@ -4,10 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-$(document).ready(function()
+define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 {
-  console.log("cca-model");
-
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +34,6 @@ $(document).ready(function()
   var table_ready = false;
   var legend_ready = false;
 
-/*
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +41,7 @@ $(document).ready(function()
   $.ajax(
   {
     type : "GET",
-    url : "{{server-root}}models/{{_id}}",
+    url : server_root + "models/{{_id}}",
     success : function(result)
     {
       model = result;
@@ -59,6 +56,7 @@ $(document).ready(function()
     }
   });
 
+/*
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
   //////////////////////////////////////////////////////////////////////////////////////////
