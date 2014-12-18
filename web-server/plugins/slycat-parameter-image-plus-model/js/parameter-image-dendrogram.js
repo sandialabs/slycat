@@ -24,7 +24,6 @@ $.widget("parameter_image.dendrogram",
     highlight: [],
     hidden_simulations: [],
     images : [],
-    login_agent : null,
     square_size : 8,
     square_border_size : 1,
     selected_square_size : 16,
@@ -38,26 +37,12 @@ $.widget("parameter_image.dendrogram",
     // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
     // Arrays are the only exception, they are referenced as-is. 
     // This exception is in place to support data-binding, where the data source has to be kept as a reference.
+    login_dialog : null,
   },
 
   _create: function()
   {
     var self = this;
-
-    // Setup the login dialog ...
-    this.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
-    this.login.appendTo(this.element);
-    this.login.dialog(
-    {
-      autoOpen: false,
-      width: 700,
-      height: 300,
-      modal: true,
-      close: function()
-      {
-        $("#remote-password").val("");
-      }
-    });
 
     self.options.session_cache = self.options.cache_references[0];
     self.options.image_cache = self.options.cache_references[1];
@@ -788,9 +773,9 @@ $.widget("parameter_image.dendrogram",
   {
     var self = this;
 
-    $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error", self.login).text(parser.last_error).css("display", parser.last_error ? "block" : "none");
-    self.login.dialog(
+    $("#remote-hostname", self.options.login_dialog).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+    $("#remote-error", self.options.login_dialog).text(parser.last_error).css("display", parser.last_error ? "block" : "none");
+    self.options.login_dialog.dialog(
     {
       buttons:
       {
@@ -802,18 +787,18 @@ $.widget("parameter_image.dendrogram",
             type : "POST",
             url : server_root + "remotes",
             contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.login).val(), "password":$("#remote-password", self.login).val()}),
+            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
             processData : false,
             success : function(result)
             {
               self.options.session_cache[parser.hostname] = result.sid;
-              self.login.dialog("close");
+              self.options.login_dialog.dialog("close");
               callback();
             },
             error : function(request, status, reason_phrase)
             {
               parser.last_error = "Error opening remote session: " + reason_phrase;
-              self.login.dialog("close");
+              self.options.login_dialog.dialog("close");
               self._open_session_callback(parser, callback);
             }
           });
@@ -824,7 +809,7 @@ $.widget("parameter_image.dendrogram",
         }
       },
     });
-    self.login.dialog("open");
+    self.options.login_dialog.dialog("open");
   },
 
   _set_color: function()

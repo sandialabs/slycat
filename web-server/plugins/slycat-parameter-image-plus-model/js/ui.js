@@ -45,7 +45,6 @@ var cluster_ready = false;
 var session_cache = {};
 var image_uri = document.createElement("a");
 var grid_pane = "#parameter-image-plus-layout";
-var login_agent = new Login(grid_pane, server_root);
 var session_cache = {};
 var image_cache = {};
 var cache_references = [ session_cache, image_cache ];
@@ -54,6 +53,8 @@ var cache_references = [ session_cache, image_cache ];
 // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
 // Arrays are the only exception, they are referenced as-is. 
 // This exception is in place to support data-binding, where the data source has to be kept as a reference.
+
+var login_dialog = $("#remote-login-dialog");
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
@@ -190,6 +191,25 @@ function artifact_missing()
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+login_dialog.dialog({
+  autoOpen: false,
+  width: 700,
+  height: 300,
+  modal: true,
+  close: function()
+  {
+    $("#remote-password").val("");
+  },
+});
+
+// Enter key in password field triggers click on Login button
+$("#remote-password", login_dialog).keypress(function(event){ 
+  if(event.keyCode == 13) 
+  { 
+    $('.ui-dialog-buttonset', login_dialog.parent()).find('button:contains(Login)').trigger('click');
+  }
+});
 
 $("#parameter-image-plus-layout").layout(
 {
@@ -455,8 +475,8 @@ function setup_dendrogram()
     dendrogram_options.colorscale = colorscale;
     dendrogram_options.color_array = v;
     dendrogram_options.images = images;
-    dendrogram_options.login_agent = login_agent;
     dendrogram_options.cache_references = cache_references;
+    dendrogram_options.login_dialog = login_dialog;
 
     if(bookmark["sort-variable"] != undefined) {
       dendrogram_options.dendrogram_sort_order = false;
@@ -1363,27 +1383,6 @@ function update_scatterplot_y(variable)
     },
     error : artifact_missing
   });
-}
-
-function display_image(uri)
-{
-  image_uri.href = uri.substr(0, 5) == "file:" ? uri.substr(5) : uri;
-  if(image_uri.hostname in session_cache)
-    load_image();
-  else
-    $("#remote-login").dialog("open");
-}
-
-function load_image()
-{
-  var sid = session_cache[image_uri.hostname];
-  image = document.createElement("img");
-  image.src = server_root + "remotes/" + sid + "/file" + image_uri.pathname;
-  image.width = 100;
-  image.style.position="absolute";
-  image.style.left=10;
-  image.style.top=10;
-  $("#scatterplot-pane").prepend(image);
 }
 
 function load_table_statistics(columns, callback)
