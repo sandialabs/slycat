@@ -113,11 +113,11 @@ def register_slycat_plugin(context):
   # Register our new model type
   context.register_model("cca", finish, html)
   context.register_model_bundle("cca", "text/css", [
-    os.path.join(os.path.dirname(__file__), "css/ui.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
+    os.path.join(os.path.dirname(__file__), "css/ui.css"),
     ])
   context.register_model_bundle("cca", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "js/jquery.ba-bbq.min.js"),

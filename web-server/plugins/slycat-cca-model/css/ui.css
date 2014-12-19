@@ -4,7 +4,11 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-/* Page header */
+//////////////////////////////////////////////////////////////////////////////
+// New styles introduced with the plugin architecture
+
+//////////////////////////////////////////////////////////////////////////////
+// Old styles that should be revisited / cleaned-up
 
 #edit-model-button,
 #rerun-cca-button

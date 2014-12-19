@@ -565,11 +565,12 @@ define("slycat-cca-model", ["slycat-server-root", "domReady!"], function(server_
 */
 
   // Layout resizable panels ...
-  $("#cca").layout(
+  $("#cca-model").layout(
   {
+    applyDefaultStyles: true,
     west:
     {
-      size: $("#cca").width() / 2,
+      size: $("#cca-model").width() / 2,
       resizeWhileDragging: false,
       onresize: function() { $("#barplot-table").barplot("resize_canvas"); },
     },
