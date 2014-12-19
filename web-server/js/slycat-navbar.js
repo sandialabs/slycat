@@ -138,6 +138,13 @@
         });
       }
 
+      component.slycat_navbar_after_render = function(elements) {
+          // "elements" is an array of DOM nodes just rendered by the template
+          // Emits event to alert others that navbar has finished rendering
+          var slycat_navbar_after_render_event = new Event('slycat-navbar-after-render');
+          document.dispatchEvent(slycat_navbar_after_render_event);
+      }
+
       // If there's a current model, load it.
       if(params.model_id)
       {
@@ -236,8 +243,9 @@
 
       get_models();
     },
+    // Adding afterRender workaround to template since it does not exist for components yet: https://github.com/knockout/knockout/issues/1533
     template: ' \
-<div class="bootstrap-styles"> \
+<div class="bootstrap-styles" data-bind="template: { afterRender: slycat_navbar_after_render }"> \
   <nav class="navbar navbar-default"> \
     <div class="container"> \
       <div class="navbar-header"> \

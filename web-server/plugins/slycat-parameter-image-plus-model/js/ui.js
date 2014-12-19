@@ -45,14 +45,14 @@ var cluster_ready = false;
 var session_cache = {};
 var image_uri = document.createElement("a");
 var grid_pane = "#parameter-image-plus-layout";
-var session_cache = {};
-var image_cache = {};
-var cache_references = [ session_cache, image_cache ];
 // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
 // http://api.jqueryui.com/jquery.widget/
 // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
 // Arrays are the only exception, they are referenced as-is. 
 // This exception is in place to support data-binding, where the data source has to be kept as a reference.
+var session_cache = {};
+var image_cache = {};
+var cache_references = [ session_cache, image_cache ];
 
 var login_dialog = $("#remote-login-dialog");
 
