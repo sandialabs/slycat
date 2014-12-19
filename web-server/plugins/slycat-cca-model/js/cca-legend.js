@@ -4,10 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-cca-legend", [], function()
+define("slycat-cca-legend", ["d3"], function(d3)
 {
-  console.log("slycat-cca-legend");
-
   $.widget("cca.legend",
   {
     options:

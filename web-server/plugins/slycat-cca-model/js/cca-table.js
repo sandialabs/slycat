@@ -7,10 +7,8 @@ rights in this software.
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
 
-define("slycat-cca-table", [], function()
+define("slycat-cca-table", ["d3"], function(d3)
 {
-  console.log("slycat-cca-table");
-
   $.widget("cca.table",
   {
     options:

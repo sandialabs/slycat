@@ -107,6 +107,7 @@ def register_slycat_plugin(context):
     # At the moment, the CCA client UI is still hard-coded into the server.
     import pystache
     context = dict()
+    context["_id"] = model["_id"]
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
@@ -119,8 +120,10 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
     ])
   context.register_model_bundle("cca", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.ba-bbq.min.js"),
+    os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
+    os.path.join(os.path.dirname(__file__), "js/jquery.mousewheel.js"),
+    os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
     os.path.join(os.path.dirname(__file__), "js/bookmarker.js"),
     os.path.join(os.path.dirname(__file__), "js/chunker.js"),
@@ -129,8 +132,6 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/cca-scatterplot.js"),
     os.path.join(os.path.dirname(__file__), "js/cca-table.js"),
     os.path.join(os.path.dirname(__file__), "js/cca-legend.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.mousewheel.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),

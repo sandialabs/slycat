@@ -4,18 +4,18 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-cca-model", ["slycat-server-root"], function(server_root)
+define("slycat-cca-model", ["slycat-server-root", "domReady!"], function(server_root)
 {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  var model = null;
+  var model = {_id: location.pathname.substr(8)};
   var input_columns = null;
   var output_columns = null;
   var scale_inputs = null;
 
-  var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+  var bookmarker = null;
   var bookmark = null;
 
   var x_loadings = null;
@@ -41,10 +41,11 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
   $.ajax(
   {
     type : "GET",
-    url : server_root + "models/{{_id}}",
+    url : server_root + "models/" + model._id,
     success : function(result)
     {
       model = result;
+      bookmarker = new bookmark_manager(server_root, model.project, model._id);
       input_columns = model["artifact:input-columns"];
       output_columns = model["artifact:output-columns"];
       scale_inputs = model["artifact:scale-inputs"];
@@ -56,7 +57,6 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     }
   });
 
-/*
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       $.ajax(
       {
         type : "PUT",
-        url : "{{server-root}}models/{{_id}}",
+        url : server_root + "models/" + model._id,
         contentType : "application/json",
         data : $.toJSON({
           "state" : "closed"
@@ -105,8 +105,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load the x_loadings artifact.
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "input-structure-correlation",
         array : 0,
         attribute : 0,
@@ -120,8 +120,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load the y_loadings artifact.
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "output-structure-correlation",
         array : 0,
         attribute : 0,
@@ -135,8 +135,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load the r^2 statistics artifact.
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "cca-statistics",
         array : 0,
         attribute : 0,
@@ -150,8 +150,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load the Wilks statistics artifact.
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "cca-statistics",
         array : 0,
         attribute : 1,
@@ -165,8 +165,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load the canonical-indices artifact.
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "canonical-indices",
         array : 0,
         attribute : 0,
@@ -184,8 +184,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load the canonical-variables artifacts.
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "canonical-variables",
         array : 0,
         attribute : 0,
@@ -198,8 +198,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       });
 
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "canonical-variables",
         array : 0,
         attribute : 1,
@@ -213,7 +213,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       // Load data table metadata.
       $.ajax({
-        url : "{{server-root}}models/{{_id}}/tables/data-table/arrays/0/metadata?index=Index",
+        url : server_root + "models/" + model._id + "/tables/data-table/arrays/0/metadata?index=Index",
         contentType : "application/json",
         success: function(metadata)
         {
@@ -271,75 +271,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
   // Setup page layout and forms.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  // Setup the edit model form ...
-  $("#edit-model-form").dialog(
-  {
-    autoOpen: false,
-    width: 700,
-    height: 300,
-    modal: true,
-    buttons:
-    {
-      "Save Changes": function()
-      {
-        var model =
-        {
-          "name" : $("#edit-model-name").val(),
-          "description" : $("#edit-model-description").val()
-        };
-
-        $.ajax(
-        {
-          type : "PUT",
-          url : "{{server-root}}models/{{_id}}",
-          contentType : "application/json",
-          data : $.toJSON(model),
-          processData : false,
-          success : function()
-          {
-            window.location.reload();
-          },
-          error : function(request, status, reason_phrase)
-          {
-            window.alert("Error updating model: " + reason_phrase);
-          }
-        });
-      },
-      Cancel: function()
-      {
-        $(this).dialog("close");
-      }
-    },
-    close: function()
-    {
-    }
-  });
-
-  $("#delete-model-link").click(function(){
-    if(!window.confirm("Delete model {{name}}?  This cannot be undone."))
-      return false;
-
-    $.ajax(
-    {
-      type : "DELETE",
-      url : "{{server-root}}models/{{_id}}",
-      success : function(details)
-      {
-        window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
-      },
-      error : function(request, status, reason_phrase)
-      {
-        window.alert("Error deleting model: " + reason_phrase);
-      }
-    });
-  });
-
-  $("#edit-model-button").button().click(function()
-  {
-    $("#edit-model-form").dialog("open");
-    $("#edit-model-name").focus();
-  });
-
+/*
   // Setup the Rerun Model form ...
   rerun_cca_model = null;
   $("#rerun-cca-form").dialog(
@@ -364,7 +296,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
         $.ajax(
         {
           type : "DELETE",
-          url : "{{server-root}}models/" + rerun_cca_model,
+          url : server_root + "models/" + rerun_cca_model,
           success : function(details)
           {
             console.log("successfuly deleted unfinished model");
@@ -393,7 +325,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
         $.ajax(
         {
           type : "POST",
-          url : "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}/models",
+          url : server_root + "projects/" + model.project + "/models",
           contentType : "application/json",
           data: $.toJSON(
           {
@@ -409,10 +341,10 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
             $.ajax(
             {
               type : "PUT",
-              url : "{{server-root}}models/" + rerun_cca_model + "/inputs",
+              url : server_root + "models/" + rerun_cca_model + "/inputs",
               data : $.toJSON(
               {
-                "sid" : "{{_id}}",
+                "sid" : model._id,
               }),
               processData: false,
               contentType: "application/json",
@@ -421,7 +353,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
                 $.ajax(
                 {
                   type : "GET",
-                  url : "{{server-root}}models/" + rerun_cca_model + "/tables/data-table/arrays/0/metadata",
+                  url : server_root + "models/" + rerun_cca_model + "/tables/data-table/arrays/0/metadata",
                   success : function(table)
                   {
                     function deselect_companion(companion)
@@ -497,7 +429,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
           {
             async : false,
             type : "PUT",
-            url : "{{server-root}}models/" + rerun_cca_model + "/parameters/" + name,
+            url : server_root + "models/" + rerun_cca_model + "/parameters/" + name,
             contentType : "application/json",
             data: $.toJSON(
             {
@@ -535,7 +467,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
         $.ajax(
         {
           type : "POST",
-          url : "{{server-root}}models/" + rerun_cca_model + "/finish",
+          url : server_root + "models/" + rerun_cca_model + "/finish",
           success: function(result)
           {
             var mid = rerun_cca_model;
@@ -584,7 +516,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       }, 1000);
     }
     else {
-      window.location = "{{server-root}}models/" + results._id;
+      window.location = server_root + "models/" + results._id;
     }
   }
 
@@ -595,7 +527,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       dataType : "json",
       type : "GET",
       cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-      url : "{{server-root}}models/" + mid,
+      url : server_root + "models/" + mid,
       success : function(results)
       {
         callback(results);
@@ -630,33 +562,14 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
   {
     $("#rerun-cca-form").dialog("open");
   });
+*/
 
   // Layout resizable panels ...
-  $("body").layout(
-  {
-    north:
-    {
-    },
-    center:
-    {
-    },
-    south:
-    {
-      size: $("body").height() / 2,
-      resizeWhileDragging: false,
-      onresize: function()
-      {
-        $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
-      }
-    },
-  });
-
-  $("#cca-pane").layout(
+  $("#cca").layout(
   {
     west:
     {
-      size: $("#cca-pane").width() / 2,
+      size: $("#cca").width() / 2,
       resizeWhileDragging: false,
       onresize: function() { $("#barplot-table").barplot("resize_canvas"); },
     },
@@ -670,6 +583,16 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       size: 130,
       resizeWhileDragging: false,
       onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+    },
+    south:
+    {
+      size: $("body").height() / 2,
+      resizeWhileDragging: false,
+      onresize: function()
+      {
+        $("#table").css("height", $("#table-pane").height());
+        $("#table").table("resize_canvas");
+      }
     },
   });
 
@@ -708,8 +631,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       else
       {
         get_model_array_attribute({
-          server_root : "{{server-root}}",
-          mid : "{{_id}}",
+          server_root : server_root,
+          mid : model._id,
           aid : "data-table",
           array : 0,
           attribute : index,
@@ -904,8 +827,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
 
       var table_options =
       {
-        "server-root" : "{{server-root}}",
-        mid : "{{_id}}",
+        "server-root" : server_root,
+        mid : model._id,
         aid : "data-table",
         metadata : table_metadata,
         inputs : input_columns,
@@ -1011,7 +934,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
+      url : server_root + "events/models/" + model._id + "/select/colormap/" + colormap
     });
     bookmarker.updateState({"colormap" : colormap});
   }
@@ -1021,7 +944,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/component/" + component
+      url : server_root + "events/models/" + model._id + "/select/component/" + component
     });
     bookmarker.updateState({"cca-component" : component});
   }
@@ -1031,7 +954,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/sort/component/" + component + "/" + order
+      url : server_root + "events/models/" + model._id + "/sort/component/" + component + "/" + order
     });
     bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
   }
@@ -1041,7 +964,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+      url : server_root + "events/models/" + model._id + "/select/variable/" + variable
     });
     bookmarker.updateState({"variable-selection" : variable});
   }
@@ -1051,7 +974,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
+      url : server_root + "events/models/" + model._id + "/select/sort-order/" + variable + "/" + order
     });
     bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
   }
@@ -1062,7 +985,7 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+      url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selection.length
     });
     bookmarker.updateState( {"simulation-selection" : selection} );
   }
@@ -1079,8 +1002,8 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
     else
     {
       get_model_array_attribute({
-        server_root : "{{server-root}}",
-        mid : "{{_id}}",
+        server_root : server_root,
+        mid : model._id,
         aid : "data-table",
         array : 0,
         attribute : attribute,
@@ -1093,6 +1016,5 @@ define("slycat-cca-model", ["slycat-server-root"], function(server_root)
       });
     }
   }
-*/
 
 });

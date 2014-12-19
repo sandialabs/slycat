@@ -6,8 +6,6 @@ rights in this software.
 
 define("slycat-cca-scatterplot", ["d3"], function(d3)
 {
-  console.log("slycat-cca-scatterplot");
-
   $.widget("cca.scatterplot",
   {
     options:
