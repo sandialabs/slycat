@@ -140,5 +140,5 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
     os.path.join(os.path.dirname(__file__), "js/ui.js"),
     ])
-
+  context.register_model_resource("cca", "images", os.path.join(os.path.dirname(__file__), "images"))
 

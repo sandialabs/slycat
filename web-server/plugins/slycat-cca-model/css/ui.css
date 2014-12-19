@@ -266,7 +266,7 @@ rights in this software.
 #barplot-table .barplotHeaderColumn:hover .icon-sort-off,
 .icon-sort-off:hover 
 {
-  background: transparent url(sort-desc-light.png) no-repeat center center;
+  background: transparent url(images/sort-desc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover 
 {
