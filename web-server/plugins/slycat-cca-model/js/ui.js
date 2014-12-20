@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-cca-model", ["slycat-server-root", "domReady!"], function(server_root)
+define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "domReady!"], function(server_root, bookmark_manager)
 {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -45,7 +45,7 @@ define("slycat-cca-model", ["slycat-server-root", "domReady!"], function(server_
     success : function(result)
     {
       model = result;
-      bookmarker = new bookmark_manager(server_root, model.project, model._id);
+      bookmarker = bookmark_manager.create(model.project, model._id);
       input_columns = model["artifact:input-columns"];
       output_columns = model["artifact:output-columns"];
       scale_inputs = model["artifact:scale-inputs"];
@@ -227,7 +227,7 @@ define("slycat-cca-model", ["slycat-server-root", "domReady!"], function(server_
       });
 
       // Retrieve bookmarked state information ...
-      bookmarker.get_state(function(state)
+      bookmarker.getState(function(state)
       {
         bookmark = state;
         setup_colorswitcher();

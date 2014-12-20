@@ -125,7 +125,6 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/jquery.mousewheel.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/bookmarker.js"),
     os.path.join(os.path.dirname(__file__), "js/chunker.js"),
     os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
     os.path.join(os.path.dirname(__file__), "js/cca-barplot.js"),
