@@ -123,26 +123,26 @@ define("slycat-color-switcher", ["d3"], function(d3)
         },
       };
 
-      this.container = $("<div>")
+      this.container = $("<div class='bootstrap-styles'>")
         .appendTo(this.element)
-        .append('<span class="label">Colors: </span>')
+        .append('<span>Colors: </span>')
         ;
       $.each(this.color_maps, function(key, value)
       {
-        var button = $("<span>")
+        var button = $("<span class='btn btn-xs btn-default'>")
           .addClass("color")
-          .toggleClass("selected", key == self.options.colormap)
+          .toggleClass("active", key == self.options.colormap)
           .appendTo(self.container)
           .attr("data-colormap", key)
           .html(value.label)
           .click(function()
           {
-            if($(this).hasClass("selected"))
+            if($(this).hasClass("active"))
               return;
 
             self.options.colormap = this.getAttribute("data-colormap");
-            self.container.find(".color").removeClass("selected");
-            $(this).addClass("selected");
+            self.container.find(".color").removeClass("active");
+            $(this).addClass("active");
 
             self.element.trigger("colormap-changed", [self.options.colormap]);
           })
@@ -157,8 +157,8 @@ define("slycat-color-switcher", ["d3"], function(d3)
 
       if(key == "colormap")
       {
-        this.container.find(".color").removeClass("selected");
-        this.container.find("[data-colormap='" + this.options.colormap + "']").addClass("selected");
+        this.container.find(".color").removeClass("active");
+        this.container.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
       }
     },
 
