@@ -48,8 +48,9 @@ class option_parser(argparse.ArgumentParser):
     self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
-    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
+    self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
     self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
+    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
     self.add_argument("--password", default=None)
     self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
     self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
@@ -59,6 +60,20 @@ class option_parser(argparse.ArgumentParser):
       sys.argv += shlex.split(os.environ["SLYCAT"])
 
     arguments = argparse.ArgumentParser.parse_args(self)
+
+    if arguments.list_markings:
+      connection = connect(arguments)
+      markings = connection.get_configuration_markings()
+      type_width = numpy.max([len(marking["type"]) for marking in markings])
+      label_width = numpy.max([len(marking["label"]) for marking in markings])
+      print
+      print "{:>{}} {:<{}}".format("Marking", type_width, "Description", label_width)
+      print "{:>{}} {:<{}}".format("-" * type_width, type_width, "-" * label_width, label_width)
+      for marking in markings:
+        print "{:>{}} {:<{}}".format(marking["type"], type_width, marking["label"], label_width)
+      print
+      self.exit()
+
     if arguments.log_level == "debug":
       log.setLevel(logging.DEBUG)
     elif arguments.log_level == "info":
@@ -297,6 +312,19 @@ class Connection(object):
     :ref:`GET User`
     """
     return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
+
+  def get_configuration_markings(self):
+    """Retrieve marking information from the server.
+
+    Returns
+    -------
+    markings : server marking information.
+
+    See Also
+    --------
+    :ref:`GET Configuration Markings`
+    """
+    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
 
   def get_configuration_version(self):
     """Retrieve version information from the server.
