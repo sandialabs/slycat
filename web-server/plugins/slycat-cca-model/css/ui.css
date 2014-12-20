@@ -10,19 +10,6 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////
 // Old styles that should be revisited / cleaned-up
 
-#edit-model-button,
-#rerun-cca-button
-{
-  float: right;
-}
-
-#create-cca-model-button
-{
-  float: right;
-  clear: right;
-  width: 15em;
-}
-
 #table
 {
 	position: absolute;
