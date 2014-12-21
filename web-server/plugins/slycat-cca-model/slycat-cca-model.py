@@ -122,7 +122,6 @@ def register_slycat_plugin(context):
   context.register_model_bundle("cca", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "js/jquery.ba-bbq.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.mousewheel.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
     os.path.join(os.path.dirname(__file__), "js/chunker.js"),
