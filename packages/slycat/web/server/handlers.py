@@ -1061,6 +1061,15 @@ def get_model_file(mid, aid):
   cherrypy.response.headers["content-type"] = model["_attachments"][fid]["content_type"]
   return database.get_attachment(mid, fid)
 
+@cherrypy.tools.json_out(on = True)
+def get_model_parameter(mid, name):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  return slycat.web.server.get_model_parameter(database, model, name)
+
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
 

@@ -244,6 +244,30 @@ class Connection(object):
   def get_model_file(self, mid, name):
     return self.request("GET", "/models/%s/files/%s" % (mid, name))
 
+  def get_model_parameter(self, mid, name):
+    """Retrieve a model parameter artifact.
+
+    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+    as part of its database record, so they should be limited in size (larger data should be stored using
+    arraysets or files).
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+    name : string, required
+      Unique (within the model) artifact name.
+
+    Returns
+    -------
+    parameter : JSON-compatible object
+
+    See Also
+    --------
+    :ref:`PUT Model Parameter`
+    """
+    return self.request("GET", "/models/%s/parameters/%s" % (mid, name), headers={"accept":"application/json"})
+
   def get_model_table_chunk(self, mid, name, array, rows, columns):
     """Returns a chunk (set of rows and columns) from a table (array) artifact."""
     return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
@@ -493,31 +517,6 @@ class Connection(object):
 
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
-
-  def get_model_parameter(self, mid, name):
-    """Retrieve a model parameter artifact.
-
-    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
-    as part of its database record, so they should be limited in size (larger data should be stored using
-    arraysets or files).
-
-    Parameters
-    ----------
-    mid : string, required
-      Unique model identifier.
-    name : string, required
-      Unique (within the model) artifact name.
-
-    Returns
-    -------
-    parameter : JSON-compatible object
-
-    See Also
-    --------
-    :ref:`PUT Model Parameter`
-    """
-    model = self.get_model(mid)
-    return model["artifact:" + name]
 
   def find_project(self, name):
     """Return a project identified by name.
