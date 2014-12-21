@@ -27,6 +27,7 @@ rights in this software.
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  shape-rendering: crispEdges;
 }
 
 .x-axis path,
@@ -446,6 +447,7 @@ rights in this software.
 {
   fill: none;
   stroke: black;
+  shape-rendering: crispEdges;
 }
 .dialogErrorMessage {
   color: red;
@@ -527,6 +529,7 @@ rights in this software.
 {
   fill: none;
   stroke: #C9C9C9;
+  shape-rendering: crispEdges;
 }
 #dendrogram-sparkline-backdrop {
   height: 100%;
@@ -558,6 +561,9 @@ rights in this software.
 #dendrogram-viewer g.thumbnail.highlight rect.outline {
   stroke: black;
 }
+#dendrogram-viewer g.square {
+  shape-rendering: crispEdges;
+}
 
 /* ui layout */
 .ui-layout-resizer
@@ -586,4 +592,20 @@ rights in this software.
   padding: 0;
   border: 0;
   margin: 0;
+}
+
+/* Image Preview */
+#scatterplot-pane #image-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  display: none;
+  text-align: center;
+}
+#scatterplot-pane #image-preview-image {
+  max-height: 100%;
+  max-width: 100%;
 }

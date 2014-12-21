@@ -25,12 +25,14 @@ $.widget("parameter_image.dendrogram",
     hidden_simulations: [],
     images : [],
     login_agent : null,
-    thumbnail_width : 50,
-    thumbnail_height: 50,
-    thumbnail_border_size : 2,
+    square_size : 8,
+    square_border_size : 1,
+    selected_square_size : 16,
+    selected_square_border_size : 2,
+    hover_timeout : 1000,
     session_cache : {},
     image_cache : {},
-    cache_references : [ {}, {} ], 
+    cache_references : [ {}, {} ],
     // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
     // http://api.jqueryui.com/jquery.widget/
     // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
@@ -59,6 +61,23 @@ $.widget("parameter_image.dendrogram",
 
     self.options.session_cache = self.options.cache_references[0];
     self.options.image_cache = self.options.cache_references[1];
+
+    self.preview = $("<div id='image-preview'>")
+      .on("mouseover", function(){
+        self._clear_hover_timer();
+      })
+      .on("mouseout", function(d) {
+        self._close_preview();
+      })
+      .on("click", function(d) {
+        self._close_preview(true);
+      })
+      .appendTo( $("#scatterplot-pane") )
+      ;
+
+    self.preview_image = $("<img id='image-preview-image' />")
+      .appendTo(self.preview)
+      ;
 
     this._set_cluster();
   },
@@ -352,6 +371,7 @@ $.widget("parameter_image.dendrogram",
         .style("opacity", 1e-6)
         .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
         .on("click", function(d) {
+          self._close_preview(true);
           toggle(d); 
           // Change expandThisFar to however deep below the target node you want to expand
           var expandThisFar = 9999;
@@ -394,6 +414,7 @@ $.widget("parameter_image.dendrogram",
         .text("+")
         .style("fill", "black")
         .on("click", function(d) {
+          self._close_preview(true);
           toggle(d);
           // Change expandThisFar to however deep below the target node you want to expand
           var expandThisFar = 2;
@@ -407,6 +428,7 @@ $.widget("parameter_image.dendrogram",
       var node_glyph = node_enter.append("svg:g")
         .attr("class", "glyph")
         .on("click", function(d) {
+          self._close_preview(true);
           if(d3.event.ctrlKey || d3.event.metaKey) {
             if(d.selected) {
               unselect_node(self, d);
@@ -435,49 +457,75 @@ $.widget("parameter_image.dendrogram",
         .style("fill", "black")
         .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
         .on("click", function(d) {
+          self._close_preview(true);
           toggle(d);
           update_subtree(d);
           d3.event.stopPropagation();
         })
         ;
 
-      // Thumbnail
-      var vertical_lift = - self.options.thumbnail_height / 2;
-      var trans_endpoint = "translate(15, " + vertical_lift + ")";
-      var trans_notendpoint = "translate(55, " + vertical_lift + ")";
-      var node_thumbnail = node_enter.append("svg:g")
-        .attr("class", "thumbnail")
-        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move thumbnail to the right according to whether it's an endpoint
+      // Square
+      var vertical_lift = - (self.options.square_size / 2) - self.options.square_border_size ;
+      var selected_vertical_lift = - (self.options.selected_square_size / 2) - self.options.selected_square_border_size;
+      var trans_endpoint = "translate(25, 0)";
+      var trans_notendpoint = "translate(65, 0)";
+
+      var node_square = node_enter.append("svg:g")
+        .attr("class", "square")
+        .attr("transform", function(d) { return d.leaves > 1 ? trans_notendpoint : trans_endpoint; }) // Move to the right according to whether it's an endpoint
         .style("opacity", 1e-6)
         .style("display", "none")
         ;
 
-      var node_thumbnail_border = node_thumbnail.append("svg:rect")
-        .attr("class", "outline")
-        .attr("x", -(self.options.thumbnail_border_size/2))
-        .attr("y", -(self.options.thumbnail_border_size/2))
-        .attr("width", self.options.thumbnail_width + self.options.thumbnail_border_size)
-        .attr("height", self.options.thumbnail_height + self.options.thumbnail_border_size)
-        //.style("stroke", "black")
-        .style("stroke-width", self.options.thumbnail_border_size+"px")
-        .style("fill", "white")
+      var node_square_rect = node_square.append("svg:rect")
+        .style("stroke", "black")
+        .style("fill", function(d, i){
+          if(self.options.colorscale !== null && self.options.color_array != null){
+            var index = d["data-table-index"];
+            if(index != null) {
+              var value = self.options.color_array[index];
+              if(value != null)
+                return self.options.colorscale(value);
+              else
+                return $("#color-switcher").colorswitcher("get_null_color");
+            }
+            else
+              return "black";
+          } else {
+            return "black";
+          }
+        })
+        .classed("nullValue", function(d, i){
+          if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
+            return false;
+          else
+            return true;
+        })
+        .on("click", function(d){
+          self._close_preview(true);
+          self._handle_highlight(d, d3.event, this);
+        })
         ;
 
       self._set_highlight();
-
-      var imagesToOpen = [];
-      node_thumbnail.each(function(d,i){
-        imagesToOpen.push(this);
-      });
-      self._open_images(imagesToOpen);
 
       // Transition new nodes to their final position.
       var node_update = node.transition()
         .duration(duration)
         .attr("transform", function(d) { 
-          return "translate(" + (d._children ? (diagram_width - 40) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
+          return "translate(" + (d._children ? (diagram_width - 39) : d.y + 1) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
         })
         .style("opacity", 1.0)
+        ;
+
+      node.classed("leaf", function(d) { return d._children || (!d.children && !d._children); });
+      node.filter(".leaf")
+        .on("mouseover", function(d) {
+          self._open_preview(d);
+        })
+        .on("mouseout", function(d) {
+          self._close_preview();
+        })
         ;
 
       node_update.select(".subtree")
@@ -491,7 +539,7 @@ $.widget("parameter_image.dendrogram",
         .style("fill", "url(#subtree-gradient)")
         ;
 
-      node_update.select(".thumbnail")
+      node_update.select(".square")
         .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
         .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
         ;
@@ -508,7 +556,7 @@ $.widget("parameter_image.dendrogram",
         .remove()
         ;
 
-      node_exit.select(".thumbnail")
+      node_exit.select(".square")
         .each("start", function() { d3.select(this).style("display", "none"); })
         ;
       
@@ -596,62 +644,68 @@ $.widget("parameter_image.dendrogram",
     }
   },
 
-  _open_images: function(images)
+  _clear_hover_timer: function()
   {
-    var blah;
-    //console.log("opening images");
     var self = this;
-    // If the list of images is empty, we're done.
-    if(images.length == 0)
-      return;
+    if(self.hover_timer)
+    {
+      window.clearTimeout(self.hover_timer);
+      self.hover_timer = null;
+    }
+  },
 
-    var image = images[0];
-    image.exemplar = image.__data__.exemplar;
+  _open_preview: function(image)
+  {
+    var self = this;
 
-    // Don't open images without exemplars
-    if(image.exemplar == undefined) {
-      self._open_images(images.slice(1));
+    // Do nothing if we don't have an exemplar to show
+    if(image.exemplar == undefined)
+    {
       return;
     }
 
-    image.uri = self.options.images[image.exemplar];
+    self._clear_hover_timer();
 
-    // If the image is already in the cache, display it.
-    if(image.uri in self.options.image_cache)
+    var image_uri = self.options.images[image.exemplar];
+
+    // Open new preview only if we are not showing it already
+    if(self.target_image != image_uri)
     {
-      //console.log("displaying image: " + image.uri);
+      self.target_image = image_uri;
+      self.preview_image.hide();
+      self.preview.show();
+      self._display_image(image_uri);
+    }
 
+  },
+
+  _display_image: function(image_uri)
+  {
+    var self = this;
+
+    // If the image is in the cache, display it
+    if(image_uri in self.options.image_cache)
+    {
       var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(self.options.image_cache[image.uri]);
-
-      // Create the image ...
-      var svgImage = d3.select(image).append("image")
-        .attr("class", "image")
-        .attr("xlink:href", image_url)
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", self.options.thumbnail_width)
-        .attr("height", self.options.thumbnail_height)
-        //.attr("data-ratio", image.width / image.height)
-        ;
-
-      self._open_images(images.slice(1));
+      var image_url = url_creator.createObjectURL(self.options.image_cache[image_uri]);
+      self.preview_image.attr('src', image_url);
+      self.preview_image.show();
       return;
     }
 
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+    parser.href = image_uri.substr(0, 5) == "file:" ? image_uri.substr(5) : image_uri;
     if(!(parser.hostname in self.options.session_cache))
     {
-      self._open_session(images);
+      self._open_session_callback( parser, function(){ self._display_image(image_uri); } );
       return;
     }
 
     // Retrieve the image.
     //console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
-    xhr.image = image;
+    xhr.image_uri = image_uri;
     xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
@@ -662,7 +716,7 @@ $.widget("parameter_image.dendrogram",
       if(this.status == 404 || this.status == 500)
       {
         delete self.options.session_cache[parser.hostname];
-        self._open_session(images);
+        self._open_session_callback( parser, function(){ self._display_image(image_uri); } );
         return;
       }
       // If we get 400, it means that the session is good and we're
@@ -685,7 +739,7 @@ $.widget("parameter_image.dendrogram",
         }
         else
         {
-          window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
+          window.alert("Error loading image " + this.image_uri + ": " + this.statusText);
         }
         return;
       }
@@ -693,10 +747,10 @@ $.widget("parameter_image.dendrogram",
       // We received the image, so put it in the cache and start-over.
       var array_buffer_view = new Uint8Array(this.response);
       var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      self.options.image_cache[image.uri] = blob;
+      self.options.image_cache[image_uri] = blob;
       // Adding lag for testing purposed. This should not exist in production.
       // setTimeout(function(){
-      self._open_images(images);
+      self._display_image(image_uri);
       return;
       // }, 5000);
     }
@@ -704,19 +758,38 @@ $.widget("parameter_image.dendrogram",
 
   },
 
-  _open_session: function(images)
+  _close_preview: function(immediate)
   {
     var self = this;
 
-    if(images.length == 0)
-      return;
-    var image = images[0];
+    if(immediate)
+    {
+      close_preview();
+    }
+    else
+    {
+      self.hover_timer = window.setTimeout( 
+        function(){ 
+          close_preview();
+        }, 
+        self.options.hover_timeout 
+      );
+    }
 
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
+    function close_preview(){
+      self.target_image = null;
+      self.preview.hide();
+      self.preview_image.hide();
+    }
+
+  },
+
+  _open_session_callback: function(parser, callback)
+  {
+    var self = this;
 
     $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error", self.login).text(image.last_error).css("display", image.last_error ? "block" : "none");
+    $("#remote-error", self.login).text(parser.last_error).css("display", parser.last_error ? "block" : "none");
     self.login.dialog(
     {
       buttons:
@@ -735,13 +808,13 @@ $.widget("parameter_image.dendrogram",
             {
               self.options.session_cache[parser.hostname] = result.sid;
               self.login.dialog("close");
-              self._open_images(images);
+              callback();
             },
             error : function(request, status, reason_phrase)
             {
-              image.last_error = "Error opening remote session: " + reason_phrase;
+              parser.last_error = "Error opening remote session: " + reason_phrase;
               self.login.dialog("close");
-              self._open_session(images);
+              self._open_session_callback(parser, callback);
             }
           });
         },
@@ -757,20 +830,61 @@ $.widget("parameter_image.dendrogram",
   _set_color: function()
   {
     var self = this;
+
+    this.container.selectAll("g.square rect")
+      .style("fill", function(d, i){
+        var index = d["data-table-index"];
+        if(index != null) {
+          var value = self.options.color_array[index];
+          if(value != null)
+            return self.options.colorscale(value);
+          else
+            return $("#color-switcher").colorswitcher("get_null_color");
+        }
+        else
+          return "black";
+      })
+      .classed("nullValue", function(d, i){
+        if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
+          return false;
+        else
+          return true;
+      })
+      ;
   },
 
   _set_highlight: function()
   {
     var self = this;
 
+    var offset = - (self.options.square_size / 2) - (self.options.square_border_size  / 2);
+    var selected_offset = - (self.options.selected_square_size / 2) - (self.options.selected_square_border_size / 2);
+    var trans = "translate(" + offset + ", " + offset + ")";
+    var trans_selected = "translate(" + selected_offset + ", " + selected_offset + ")";
+
     checkChildren(self.root);
 
-    this.container.selectAll("g.thumbnail")
+    this.container.selectAll("g.square")
       .classed("highlight", function(d, i){
         if(d.highlight)
           return true;
         else
           return false;
+      })
+      ;
+
+    this.container.selectAll("g.square rect")
+      .attr("width", function(d){
+        return d.highlight ? self.options.selected_square_size : self.options.square_size;
+      })
+      .attr("height", function(d){
+        return d.highlight ? self.options.selected_square_size : self.options.square_size;
+      })
+      .style("stroke-width", function(d){
+        return d.highlight ? self.options.selected_square_border_size : self.options.square_border_size;
+      })
+      .attr("transform", function(d) { 
+        return d.highlight ? trans_selected : trans;  // Move up according to selected or not
       })
       ;
 
@@ -830,7 +944,7 @@ $.widget("parameter_image.dendrogram",
       }
     }
     self._set_highlight();
-    self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+    self.element.trigger("selection-changed", [self.options.highlight]);
 
     function getDataTableIndexesFromChildren(target){
       var data_table_indexes = [];
@@ -912,6 +1026,8 @@ $.widget("parameter_image.dendrogram",
     self.container.selectAll(".node")
       .classed("selected", function(d) { return d.selected; })
       ;
+
+
   },
 
   _color_links: function()

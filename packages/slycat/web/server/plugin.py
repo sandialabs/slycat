@@ -14,6 +14,7 @@ class Manager(object):
     self._modules = []
 
     self._markings = {}
+    self._directories = {}
     self._models = {}
     self._model_commands = {}
     self._model_bundles = {}
@@ -63,6 +64,11 @@ class Manager(object):
   def markings(self):
     """Return a dict mapping marking types to marking data."""
     return self._markings
+
+  @property
+  def directories(self):
+    """Return a dict mapping directory types to constructors."""
+    return self._directories
 
   @property
   def models(self):
@@ -122,6 +128,27 @@ class Manager(object):
 
     self._markings[type] = {"label":label, "badge":badge, "page-before":page_before, "page-after": page_after}
     cherrypy.log.error("Registered marking '%s'." % type)
+
+  def register_directory(self, type, init, user):
+    """Register a new directory type.
+
+    Parameters
+    ----------
+    type : string, required
+      A unique identifier for the new directory type.
+    init : function, required
+      Function that will be called to initialize the directory.  This function will be
+      called with parameters specified by an adminstrator in the server config.ini.
+    user : function, required
+      Function that will be called to retrieve information about a user.  The function
+      will be called with the requested username, and should return a dictionary containing
+      user metadata.
+    """
+    if type in self._directories:
+      raise Exception("Directory type '%s' has already been registered." % type)
+
+    self._directories[type] = {"init":init, "user":user}
+    cherrypy.log.error("Registered directory '%s'." % type)
 
   def register_model(self, type, finish, html):
     """Register a new model type.

@@ -99,10 +99,33 @@ def csv_distance(left_index, left_path, right_index, right_path):
   return csv_distance.matrix[left_index, right_index]
 csv_distance.matrix = None
 
+# Map measure names to functions
+measures = {
+  "identity" : identity_distance,
+  "jaccard" : jaccard_distance,
+  "euclidean-rgb" : euclidean_rgb_distance,
+  "csv" : csv_distance,
+  }
+
+def compute_distance(left, right, storage, cluster_name, measure_name, measure):
+  distance = numpy.empty(len(left))
+  for index in range(len(left)):
+    i = left[index]
+    j = right[index]
+    row_i, column_i = storage[i]
+    uri_i = columns[column_i][1][row_i]
+    path_i = urlparse.urlparse(uri_i).path
+    row_j, column_j = storage[j]
+    uri_j = columns[column_j][1][row_j]
+    path_j = urlparse.urlparse(uri_j).path
+    distance[index] = measure(i, path_i, j, path_j)
+    slycat.web.client.log.info("Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index]))
+  return distance
+
 if __name__ == "__main__":
   parser = slycat.web.client.option_parser()
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
-  parser.add_argument("--cluster-measure", default="euclidean-rgb", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
+  parser.add_argument("--cluster-measure", default="jaccard", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
   parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
   parser.add_argument("--dry-run", default=False, action="store_true", help="Don't actually create a model on the server.")
@@ -119,15 +142,7 @@ if __name__ == "__main__":
   if arguments.cluster_measure == "csv" and arguments.distance_matrix is None:
     raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-distance=csv")
 
-  measures = {
-    "identity" : identity_distance,
-    "jaccard" : jaccard_distance,
-    "euclidean-rgb" : euclidean_rgb_distance,
-    "csv" : csv_distance,
-    }
-  if arguments.cluster_measure in measures:
-    cluster_measure = measures[arguments.cluster_measure]
-  else:
+  if arguments.cluster_measure not in measures:
     raise Exception("Unsupported distance measure: %s" % arguments.cluster_measure)
 
   ###########################################################################################
@@ -211,27 +226,18 @@ if __name__ == "__main__":
 
     # Compute a distance matrix comparing every image to every other ...
     observation_count = len(storage)
-    distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
-    for i in range(0, observation_count):
-      row_i, column_i = storage[i]
-      uri_i = columns[column_i][1][row_i]
-      path_i = urlparse.urlparse(uri_i).path
-      for j in range(i + 1, observation_count):
-        row_j, column_j = storage[j]
-        uri_j = columns[column_j][1][row_j]
-        path_j = urlparse.urlparse(uri_j).path
-        distance = cluster_measure(i, path_i, j, path_j)
-        distance_matrix[i, j] = distance
-        distance_matrix[j, i] = distance
-        slycat.web.client.log.info("Computing %s distance for %s, %s -> %s: %s." % (arguments.cluster_measure, name, i, j, distance))
+    left, right = numpy.triu_indices(observation_count, k=1)
+    distance = compute_distance(left, right, storage, name, arguments.cluster_measure, measures[arguments.cluster_measure])
 
     # Use the distance matrix to cluster observations ...
     slycat.web.client.log.info("Clustering %s" % name)
-    distance = scipy.spatial.distance.squareform(distance_matrix)
+    #distance = scipy.spatial.distance.squareform(distance_matrix)
     linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_linkage))
     cluster_linkages[name] = linkage
 
     # Identify exemplar waveforms for each cluster ...
+    distance_matrix = scipy.spatial.distance.squareform(distance)
+
     summed_distances = numpy.zeros(shape=(observation_count))
     exemplars = dict()
     cluster_membership = []

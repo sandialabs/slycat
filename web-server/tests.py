@@ -427,24 +427,15 @@ def test_copy_model_inputs():
   connection.delete_model(source)
   connection.delete_project(pid)
 
-def test_users():
-  nose.tools.assert_equal(server_admin.get_user("slycat")["server-administrator"], True)
-  nose.tools.assert_equal(server_admin.get_user("foo")["server-administrator"], False)
-  nose.tools.assert_equal(server_admin.get_user("bar")["server-administrator"], False)
-  nose.tools.assert_equal(server_admin.get_user("baz")["server-administrator"], False)
-  nose.tools.assert_equal(server_admin.get_user("blah")["server-administrator"], False)
-  with nose.tools.assert_raises_regexp(Exception, "^401"):
-    server_outsider.get_user("foo")
-
 def test_api():
-  # Any logged-in user can lookup another user, but only server administrators get all the details.
+  # Any logged-in user can lookup another user.
   with nose.tools.assert_raises_regexp(Exception, "^401"):
     server_outsider.get_user("slycat")
-  nose.tools.assert_equal(project_outsider.get_user("slycat").get("server-administrator"), None)
-  nose.tools.assert_equal(project_reader.get_user("slycat").get("server-administrator"), None)
-  nose.tools.assert_equal(project_writer.get_user("slycat").get("server-administrator"), None)
-  nose.tools.assert_equal(project_admin.get_user("slycat").get("server-administrator"), None)
-  nose.tools.assert_equal(server_admin.get_user("slycat").get("server-administrator"), True)
+  nose.tools.assert_equal(project_outsider.get_user("slycat"), {"uid":"slycat","name":"slycat","email":"slycat@example.com"})
+  nose.tools.assert_equal(project_reader.get_user("slycat"), {"uid":"slycat","name":"slycat","email":"slycat@example.com"})
+  nose.tools.assert_equal(project_writer.get_user("slycat"), {"uid":"slycat","name":"slycat","email":"slycat@example.com"})
+  nose.tools.assert_equal(project_admin.get_user("slycat"), {"uid":"slycat","name":"slycat","email":"slycat@example.com"})
+  nose.tools.assert_equal(server_admin.get_user("slycat"), {"uid":"slycat","name":"slycat","email":"slycat@example.com"})
 
   # Any logged-in user can post an event for logging.
   with nose.tools.assert_raises_regexp(Exception, "^401"):

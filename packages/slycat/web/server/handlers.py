@@ -104,7 +104,6 @@ def get_context():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["security"] = cherrypy.request.security
-  context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
   context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
   return context
 
@@ -393,7 +392,6 @@ def get_model(mid, **kwargs):
       context = get_context()
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
-      context["is-server-administrator"] = slycat.web.server.authentication.is_server_administrator()
       context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
       context["full-project"] = project
       context.update(model)
@@ -1095,6 +1093,15 @@ def get_model_file(mid, aid):
   cherrypy.response.headers["content-type"] = model["_attachments"][fid]["content_type"]
   return database.get_attachment(mid, fid)
 
+@cherrypy.tools.json_out(on = True)
+def get_model_parameter(mid, name):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  return slycat.web.server.get_model_parameter(database, model, name)
+
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
 
@@ -1110,12 +1117,9 @@ def get_bookmark(bid):
 def get_user(uid):
   if uid == "-":
     uid = cherrypy.request.security["user"]
-  user = cherrypy.request.app.config["slycat"]["directory"].user(uid)
+  user = cherrypy.request.app.config["slycat"]["directory"](uid)
   if user is None:
     raise cherrypy.HTTPError(404)
-  # Only server administrators can get user details.
-  if slycat.web.server.authentication.is_server_administrator():
-    user["server-administrator"] = uid in cherrypy.request.app.config["slycat"]["server-admins"]
   # Add the uid to the record, since the caller may not know it.
   user["uid"] = uid
   return user

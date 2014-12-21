@@ -507,6 +507,15 @@ function setup_dendrogram()
     {
       node_toggled(node);
     });
+
+    // Changing the scatterplot selection updates the table row selection and controls ..
+    $("#dendrogram-viewer").bind("selection-changed", function(event, selection)
+    {
+      $("#table").table("option", "row-selection", selection);
+      $("#controls").controls("option", "selection", selection);
+      $("#scatterplot").scatterplot("option", "selection", selection);
+      selected_simulations_changed(selection);
+    });
   }
 }
 
@@ -1002,6 +1011,9 @@ function selected_colormap_changed(colormap)
 {
   update_current_colorscale();
 
+  // Changing the color map updates the dendrogram with a new color scale ...
+  $("#dendrogram-viewer").dendrogram("option", "colorscale", colorscale);
+
   // Changing the color map updates the table with a new color scale ...
   $("#table").table("option", "colorscale", colorscale);
 
@@ -1111,7 +1123,7 @@ function update_widgets_after_color_variable_change()
   $("#table").table("option", "colorscale", colorscale);
   $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
   $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
-  $("#dendrogram-viewer").dendrogram("color-options", {color_array : v, colorscale : colorscale});
+  $("#dendrogram-viewer").dendrogram("option", "color-options", {color_array : v, colorscale : colorscale});
 }
 
 function update_widgets_when_hidden_simulations_change(skip_dendrogram_update)
@@ -1275,6 +1287,7 @@ function auto_scale_option_changed(auto_scale_value)
   if(hidden_simulations.length > 0)
   {
     update_current_colorscale();
+    $("#dendrogram-viewer").dendrogram("option", "colorscale", colorscale);
     $("#table").table("option", "colorscale", colorscale);
     // TODO this will result in 2 updates to canvas, one to redraw points accourding to scale and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
     $("#scatterplot").scatterplot("option", {colorscale : colorscale, 'auto-scale' : auto_scale});

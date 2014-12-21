@@ -2,7 +2,7 @@ FROM sandialabs/slycat
 MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages for development.
-RUN yum install -y make python-coverage python-nose python-sphinx python-sphinx_rtd_theme vim wget
+RUN yum install -y htop make python-coverage python-nose python-sphinx python-sphinx_rtd_theme vim wget
 
 # Install Python modules for development.
 RUN pip install behave sphinxcontrib-napoleon
