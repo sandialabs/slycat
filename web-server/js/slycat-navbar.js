@@ -648,7 +648,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <div class="modal-content"> \
         <div class="modal-body"> \
           <div data-bind="if: wizard"> \
-            <div data-bind="component:{name:wizard,params:{project_id:project._id}}"> \
+            <div data-bind="component:{name:wizard,params:{project_id:project._id,model_id:model._id,project:project,model:model}}"> \
             </div> \
           </div> \
         </div> \
