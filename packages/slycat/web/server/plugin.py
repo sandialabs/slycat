@@ -253,7 +253,7 @@ class Manager(object):
       cherrypy.log.error("  %s" % path)
       cherrypy.log.error("  as /resources/models/%s/%s" % (type, resource))
 
-  def register_wizard(self, type, label, require={}):
+  def register_wizard(self, type, label, require):
     """Register a wizard for creating new entities.
 
     Parameters
@@ -267,8 +267,8 @@ class Manager(object):
       include:
 
       * "project": True - a project is required to run the wizard.
-      * "model":[list of model types] - a model matching one of the given
-      types is required to run the wizard.
+      * "model":[list of model types] - a model matching one of the given types is required to run the wizard.
+
     """
     if type in self._wizards:
       raise Exception("Wizard '%s' has already been registered." % (type))
