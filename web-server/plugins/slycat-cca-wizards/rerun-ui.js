@@ -144,7 +144,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
                     mid: component.model._id(),
                     success: function()
                     {
-                      component.tab(3);
+                      component.tab(2);
                     }
                   });
                 }
