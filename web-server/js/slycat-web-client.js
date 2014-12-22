@@ -66,6 +66,21 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_model_parameter = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "models/" + params.mid + "/parameters/" + params.name,
+      success: function(value)
+      {
+        if(params.success)
+          params.success(value);
+      }
+    });
+  }
+
   module.get_model_table_metadata = function(params)
   {
     var url = server_root + "models/" + params.mid + "/tables/" + params.name + "/arrays/" + (params.aid || "0") + "/metadata";
@@ -156,6 +171,25 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(results);
+      }
+    });
+  }
+
+  module.put_model_inputs = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: $.toJSON(
+      {
+        sid: params.sid,
+      }),
+      type: "PUT",
+      url: server_root + "models/" + params.mid + "/inputs",
+      success: function()
+      {
+        if(params.success)
+          params.success();
       }
     });
   }
