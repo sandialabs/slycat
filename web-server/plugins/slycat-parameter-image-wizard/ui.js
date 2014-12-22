@@ -4,7 +4,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
   {
     var component = {};
     component.tab = ko.observable(0);
-    component.project = ko.mapping.fromJS({_id: params.project_id});
+    component.project = params.project;
     component.model = ko.mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
     component.remote = ko.mapping.fromJS({hostname: null, username: null, password: null, sid: null});
     component.browser = ko.mapping.fromJS({path:null, selection: []});

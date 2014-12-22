@@ -71,13 +71,13 @@ slycat-navbar .alert pre
   margin: 12px 0 0 0;
 }
 
-#slycat-model-wizard .modal-body
+#slycat-wizard .modal-body
 {
   padding-left: 24px;
   padding-right: 24px;
 }
 
-#slycat-model-wizard .nav-tabs, #slycat-model-wizard .nav-pills
+#slycat-wizard .nav-tabs, #slycat-wizard .nav-pills
 {
   margin-bottom: 24px;
 }

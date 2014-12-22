@@ -118,7 +118,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-agent-video-status", "/agents/:sid/videos/:vsid/status", slycat.web.server.handlers.get_agent_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-configuration-model-wizards", "/configuration/model-wizards", slycat.web.server.handlers.get_configuration_model_wizards, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-remote-hosts", "/configuration/remote-hosts", slycat.web.server.handlers.get_configuration_remote_hosts, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-support-email", "/configuration/support-email", slycat.web.server.handlers.get_configuration_support_email, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-version", "/configuration/version", slycat.web.server.handlers.get_configuration_version, conditions={"method" : ["GET"]})

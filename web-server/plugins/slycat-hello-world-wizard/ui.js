@@ -4,7 +4,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
   {
     var component = {};
     component.tab = ko.observable(0);
-    component.project = ko.mapping.fromJS({_id: params.project_id});
+    component.project = params.project;
     component.model = ko.mapping.fromJS({_id: null, name: "New Hello World Model", description: "", marking: null});
     component.recipient = ko.observable("World");
 

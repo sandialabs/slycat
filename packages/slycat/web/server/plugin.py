@@ -19,8 +19,8 @@ class Manager(object):
     self._model_commands = {}
     self._model_bundles = {}
     self._model_resources = {}
-    self._model_wizards = {}
-    self._model_wizard_resources = {}
+    self._wizards = {}
+    self._wizard_resources = {}
     self._tools = {}
 
   def _load_directory(self, plugin_directory):
@@ -91,14 +91,14 @@ class Manager(object):
     return self._model_resources
 
   @property
-  def model_wizards(self):
-    """Return a dict of dicts mapping custom model-creation wizards to models."""
-    return self._model_wizards
+  def wizards(self):
+    """Return a dict mapping wizard types to wizards."""
+    return self._wizards
 
   @property
-  def model_wizard_resources(self):
-    """Return a dict of dicts mapping custom model-creation wizards to filesystem paths."""
-    return self._model_wizard_resources
+  def wizard_resources(self):
+    """Return a dict of dicts mapping wizard resources to filesystem paths."""
+    return self._wizard_resources
 
   def register_marking(self, type, label, badge, page_before=None, page_after=None):
     """Register a new marking type.
@@ -253,45 +253,52 @@ class Manager(object):
       cherrypy.log.error("  %s" % path)
       cherrypy.log.error("  as /resources/models/%s/%s" % (type, resource))
 
-  def register_model_wizard(self, type, label):
-    """Register a wizard for creating new models.
+  def register_wizard(self, type, label, require={}):
+    """Register a wizard for creating new entities.
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       A unique identifier for the wizard.
-    label : string, required
+    label: string, required
       Human-readable name for the wizard, displayed in the UI.
-    """
-    if type in self._model_wizards:
-      raise Exception("Wizard '%s' has already been registered with model '%s'." % (wizard, type))
-    self._model_wizards[type] = {"label":label}
-    cherrypy.log.error("Registered model wizard '%s'." % (type))
+    require: dict, required
+      Requirements in order to use the wizard.  Supported requirements
+      include:
 
-  def register_model_wizard_resource(self, type, resource, path):
-    """Register a custom resource associated with a model wizard.
+      * "project": True - a project is required to run the wizard.
+      * "model":[list of model types] - a model matching one of the given
+      types is required to run the wizard.
+    """
+    if type in self._wizards:
+      raise Exception("Wizard '%s' has already been registered." % (type))
+    self._wizards[type] = {"label": label, "require": {}}
+    cherrypy.log.error("Registered wizard '%s'." % (type))
+
+  def register_wizard_resource(self, type, resource, path):
+    """Register a custom resource associated with a wizard.
 
     Parameters
     ----------
     type : string, required
-      Unique identifier of an already-registered model wizard.
+      Unique identifier of an already-registered wizard.
     resource : string, required
       Server endpoint to retrieve the resource.
     path : string, required
       Absolute filesystem path of the resource to be retrieved.
     """
-    if type not in self._model_wizards:
-      raise Exception("Unknown model wizard type: %s." % type)
-    if type not in self._model_wizard_resources:
-      self._model_wizard_resources[type] = {}
-    if resource in self._model_wizard_resources[type]:
-      raise Exception("Resource '%s' has already been registered with model wizard '%s'." % (resource, type))
+    if type not in self._wizards:
+      raise Exception("Unknown wizard type: %s." % type)
+    if type not in self._wizard_resources:
+      self._wizard_resources[type] = {}
+    if resource in self._wizard_resources[type]:
+      raise Exception("Resource '%s' has already been registered with wizard '%s'." % (resource, type))
     if not os.path.isabs(path):
       raise Exception("Resource '%s' must have an absolute path." % (resource))
     if not os.path.exists(path):
       raise Exception("Resource '%s' does not exist." % (resource))
-    self._model_wizard_resources[type][resource] = path
-    cherrypy.log.error("Registered model wizard '%s' resource" % type)
+    self._wizard_resources[type][resource] = path
+    cherrypy.log.error("Registered wizard '%s' resource" % type)
     cherrypy.log.error("  %s" % path)
     cherrypy.log.error("  as /resources/wizards/%s/%s" % (type, resource))
 

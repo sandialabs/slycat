@@ -27,11 +27,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           return "Administrators can view all data in a project, add, modify, and delete models, modify or delete the project, and add or remove project members.";
       });
       component.new_user = ko.observable("");
-      component.model_wizards = ko.mapping.fromJS([]);
-      component.model_wizard_count = ko.pureComputed(function()
-      {
-        return component.model_wizards().length;
-      });
+      component.wizards = ko.mapping.fromJS([]);
       component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
       component.model_popover = ko.pureComputed(function()
       {
@@ -208,11 +204,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         }
       }
 
-      component.create_model = function(item)
+      component.run_wizard = function(item)
       {
         component.wizard(false);
         component.wizard(item.type());
-        $("#slycat-model-wizard").modal("show");
+        $("#slycat-wizard").modal("show");
       }
 
       component.save_model = function()
@@ -330,14 +326,14 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         });
       }
 
-      // Get the set of available model wizards.
+      // Get the set of available wizards.
       $.ajax(
       {
         type : "GET",
-        url : server_root + "configuration/model-wizards",
+        url : server_root + "configuration/wizards",
         success : function(wizards)
         {
-          ko.mapping.fromJS(wizards, component.model_wizards);
+          ko.mapping.fromJS(wizards, component.wizards);
           for(var i = 0; i != wizards.length; ++i)
           {
             ko.components.register(wizards[i].type,
@@ -431,10 +427,10 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
           <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
           <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
-          <li class="dropdown" data-bind="visible: project._id() && model_wizard_count"> \
-            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create Model <span class="caret"></span></button> \
-            <ul class="dropdown-menu" data-bind="foreach: model_wizards"> \
-              <li><a data-bind="text: label, click:$parent.create_model"></a></li> \
+          <li class="dropdown" data-bind="visible: wizards().length"> \
+            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
+            <ul class="dropdown-menu" data-bind="foreach: wizards"> \
+              <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
             </ul> \
           </li> \
           <li class="dropdown" data-bind="visible:open_models().length"> \
@@ -643,12 +639,12 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       </div> \
     </div> \
   </div> \
-  <div class="modal fade" id="slycat-model-wizard" data-backdrop="static"> \
+  <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
         <div class="modal-body"> \
           <div data-bind="if: wizard"> \
-            <div data-bind="component:{name:wizard,params:{project_id:project._id,model_id:model._id,project:project,model:model}}"> \
+            <div data-bind="component:{name:wizard,params:{project:project,model:model}}"> \
             </div> \
           </div> \
         </div> \
