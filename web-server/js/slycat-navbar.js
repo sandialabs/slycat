@@ -40,11 +40,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
       component.post_model_wizards = component.wizards.filter(function(wizard)
       {
-        return ("project" in wizard.require) && component.project._id() && ("model" in wizard.require) && component.model._id();
+        return ("project" in wizard.require) && component.project._id() && ("model" in wizard.require) && component.model._id() && wizard.require.model.indexOf(component.model["model-type"]()) != -1;
       });
       component.wizard = ko.observable(false);
 
-      component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
+      component.model = ko.mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
       component.model_popover = ko.pureComputed(function()
       {
         return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
