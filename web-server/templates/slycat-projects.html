@@ -19,7 +19,7 @@ rights in this software.
     <slycat-navbar></slycat-navbar>
 
     <div id="slycat-projects" class="bootstrap-styles slycat-content">
-      <div class="container" ng-show="projects.list.length">
+      <div class="container" data-bind="visible:projects().length">
         <div class="panel panel-default">
           <div class="list-group" data-bind="foreach: projects">
             <a class="list-group-item" data-bind="attr:{href:$parent.server_root + 'projects/' + $data._id()}">
