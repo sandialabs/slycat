@@ -272,7 +272,7 @@ class Manager(object):
     """
     if type in self._wizards:
       raise Exception("Wizard '%s' has already been registered." % (type))
-    self._wizards[type] = {"label": label, "require": {}}
+    self._wizards[type] = {"label": label, "require": require}
     cherrypy.log.error("Registered wizard '%s'." % (type))
 
   def register_wizard_resource(self, type, resource, path):

@@ -14,7 +14,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
     {
       var component = this;
 
-      component.wizard = ko.observable(false);
+      window.component = component;
+
       component.alerts = ko.mapping.fromJS([]);
       component.permission = ko.observable("reader");
       component.permission_description = ko.pureComputed(function()
@@ -27,7 +28,22 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           return "Administrators can view all data in a project, add, modify, and delete models, modify or delete the project, and add or remove project members.";
       });
       component.new_user = ko.observable("");
+
       component.wizards = ko.mapping.fromJS([]);
+      component.project_wizards = component.wizards.filter(function(wizard)
+      {
+        return !("project" in wizard.require) && !("model" in wizard.require);
+      });
+      component.model_wizards = component.wizards.filter(function(wizard)
+      {
+        return ("project" in wizard.require) && component.project._id() && !("model" in wizard.require);
+      });
+      component.post_model_wizards = component.wizards.filter(function(wizard)
+      {
+        return ("project" in wizard.require) && component.project._id() && ("model" in wizard.require) && component.model._id();
+      });
+      component.wizard = ko.observable(false);
+
       component.model = ko.mapping.fromJS({_id:params.model_id, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
       component.model_popover = ko.pureComputed(function()
       {
@@ -333,6 +349,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         url : server_root + "configuration/wizards",
         success : function(wizards)
         {
+          wizards.sort(function(left, right)
+          {
+            return left.label < right.label ? -1 : left.label > right.label ? 1 : 0;
+          });
+
           ko.mapping.fromJS(wizards, component.wizards);
           for(var i = 0; i != wizards.length; ++i)
           {
@@ -427,10 +448,20 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           <li data-bind="visible: !project._id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
           <li data-bind="visible: project._id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
           <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
-          <li class="dropdown" data-bind="visible: wizards().length"> \
+          <li class="dropdown" data-bind="visible: project_wizards().length || model_wizards().length || post_model_wizards().length"> \
             <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
-            <ul class="dropdown-menu" data-bind="foreach: wizards"> \
-              <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+            <ul class="dropdown-menu"> \
+              <!-- ko foreach: post_model_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: post_model_wizards().length && model_wizards().length"></li> \
+              <!-- ko foreach: model_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: model_wizards().length && project_wizards().length"></li> \
+              <!-- ko foreach: project_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
             </ul> \
           </li> \
           <li class="dropdown" data-bind="visible:open_models().length"> \
