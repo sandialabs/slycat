@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SSE Test</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      var source = new EventSource("/time");
+      source.addEventListener('open', function(e)
+      {
+        console.log("open", e);
+      }, false);
+
+      source.addEventListener('message', function(e)
+      {
+        console.log("message", e);
+      }, false);
+
+      source.addEventListener('error', function(e)
+      {
+        console.log("error", e);
+        if(e.readyState == EventSource.CLOSED)
+        {
+          console.log("closed");
+        }
+      }, false);
+    </script>
+  </body>
+</html>
