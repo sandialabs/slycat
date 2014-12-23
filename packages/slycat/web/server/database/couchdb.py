@@ -3,7 +3,7 @@
 # rights in this software.
 
 """Slycat uses `CouchDB <http://couchdb.apache.org>`_ as its primary storage
-for projects, models, bookmarks, metadata, and small model artficats.  For
+for projects, models, bookmarks, metadata, and small model artifacts.  For
 large model artifacts such as :mod:`darrays<slycat.darray>`, the CouchDB
 database stores links to HDF5 files stored on disk.
 """
