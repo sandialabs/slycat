@@ -11,7 +11,7 @@ class Root():
     cherrypy.response.headers["content-type"] = "text/event-stream"
     def content():
       while True:
-        yield "\ndata: %s\n" % time.time()
+        yield "data: %s\n\n" % time.time()
         time.sleep(2)
     return content()
   time._cp_config = {"response.stream": True}

@@ -4,26 +4,30 @@
     <title>SSE Test</title>
   </head>
   <body>
+    <p id="message">
+    </p>
     <script type="text/javascript">
       var source = new EventSource("/time");
-      source.addEventListener('open', function(e)
+      source.onopen = function(e)
       {
+        document.getElementById("message").innerHTML = "open";
         console.log("open", e);
-      }, false);
-
-      source.addEventListener('message', function(e)
+      }
+      source.onmessage = function(e)
       {
+        document.getElementById("message").innerHTML = e.data;
         console.log("message", e);
-      }, false);
-
-      source.addEventListener('error', function(e)
+      }
+      source.onerror = function(e)
       {
+        document.getElementById("message").innerHTML = "error";
         console.log("error", e);
-        if(e.readyState == EventSource.CLOSED)
+        if(source.readyState == EventSource.CLOSED)
         {
+          document.getElementById("message").innerHTML = "closed";
           console.log("closed");
         }
-      }, false);
+      }
     </script>
   </body>
 </html>
