@@ -11,7 +11,7 @@ define("slycat-projects-main", ["slycat-server-root", "slycat-projects"], functi
   {
     var model = {}
     model.server_root = server_root;
-    model.projects = projects.list();
+    model.projects = projects.watch();
 
     // Size the page content to consume available space
     function size_content()

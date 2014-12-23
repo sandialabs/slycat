@@ -44,7 +44,7 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
   }
 
   var module = {};
-  module.list = function()
+  module.watch = function()
   {
     if(!started)
       get_projects();
