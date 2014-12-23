@@ -81,8 +81,9 @@ def js_bundle():
         "js/slycat-remote-browser.js",
         "js/slycat-remote-controls.js",
         "js/slycat-projects.js",
-        "js/slycat-project.js",
-        "js/slycat-model.js",
+        "js/slycat-projects-main.js",
+        "js/slycat-project-main.js",
+        "js/slycat-model-main.js",
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()
