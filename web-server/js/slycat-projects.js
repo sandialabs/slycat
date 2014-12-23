@@ -6,54 +6,49 @@ rights in this software.
 
 define("slycat-projects", ["slycat-server-root"], function(server_root)
 {
-  var module = {};
-  module.start = function()
+  // Long-polling loop to keep track of the current list of projects.
+  var projects = ko.mapping.fromJS([]);
+  var current_revision = null;
+  var started = false;
+  function get_projects()
   {
-    var model = {}
-    model.server_root = server_root;
-    model.projects = ko.mapping.fromJS([]);
-
-    // Get information about available projects.
-    var current_revision = null;
-    function get_projects()
+    $.ajax(
     {
-      $.ajax(
+      cache: false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
+      dataType: "text", // So we can handle the case where there's no change (empty result body)
+      headers: {"accept":"application/json"},
+      type: "GET",
+      url: server_root + "projects" + (current_revision != null ? "?revision=" + current_revision: ""),
+      success: function(text)
       {
-        dataType : "json",
-        type : "GET",
-        cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-        url : server_root + "projects" + (current_revision != null ? "?revision=" + current_revision : ""),
-        success : function(results)
+        var results = text ? $.parseJSON(text): null;
+        if(results)
         {
           current_revision = results.revision;
           results.projects.sort(function(left, right)
           {
-            return left.created == right.created ? 0 : (left.created < right.created ? 1 : -11);
+            return left.created == right.created ? 0: (left.created < right.created ? 1: -1);
           });
-          ko.mapping.fromJS(results.projects, model.projects);
-
-          // Restart the request immediately.
-          window.setTimeout(get_projects, 10);
-        },
-        error : function(request, status, reason_phrase)
-        {
-          // Rate-limit requests when there's an error.
-          window.setTimeout(get_projects, 5000);
+          ko.mapping.fromJS(results.projects, projects);
         }
-      });
-    }
 
-    get_projects();
+        // Restart the request immediately.
+        window.setTimeout(get_projects, 10);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        // Rate-limit requests when there's an error.
+        window.setTimeout(get_projects, 5000);
+      }
+    });
+  }
 
-    // Size the page content to consume available space
-    function size_content()
-    {
-      $(".slycat-content").css("min-height", $(window).height() - $("slycat-navbar > div").height());
-    }
-    $(window).resize(size_content);
-    window.setTimeout(function() { $(window).resize(); }, 10);
-
-    ko.applyBindings(model);
+  var module = {};
+  module.watch = function()
+  {
+    if(!started)
+      get_projects();
+    return projects;
   }
 
   return module;
