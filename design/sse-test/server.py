@@ -24,7 +24,7 @@ def update_birds():
         birds.remove(birdmap[id])
         del birdmap[id]
         operation = json.dumps({"remove":{"id":id}})
-        print operation
+        cherrypy.log.error("%s" % operation)
         for observer in observers:
           observer.put(operation)
     else:
@@ -34,12 +34,14 @@ def update_birds():
         birdmap[id] = {"id":id, "rev":0}
         birds.append(birdmap[id])
       operation = json.dumps({"update":birdmap[id]})
-      print operation
+      cherrypy.log.error("%s" % operation)
       for observer in observers:
         observer.put(operation)
     time.sleep(1)
+  cherrypy.log.error("Stopping update_birds thread.")
 
-threading.Thread(target=update_birds).start()
+thread = threading.Thread(target=update_birds)
+thread.start()
 
 class Root():
   @cherrypy.expose
@@ -53,6 +55,7 @@ class Root():
       while cherrypy.engine.state == cherrypy.engine.states.STARTED:
         yield "data: %s\n\n" % datetime.datetime.utcnow()
         time.sleep(1)
+      cherrypy.log.error("Stopping time handler.")
     return content()
   time._cp_config = {"response.stream": True}
 
@@ -71,8 +74,12 @@ class Root():
 
       # Send incremental updates as they happen.
       while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-        operation = queue.get()
-        yield "data: %s\n\n" % operation
+        try:
+          operation = queue.get(timeout=2.0)
+          yield "data: %s\n\n" % operation
+        except:
+          yield ":\n\n"
+      cherrypy.log.error("Stopping birds handler.")
     return content()
   birds._cp_config = {"response.stream": True}
 
