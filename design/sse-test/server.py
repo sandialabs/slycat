@@ -24,7 +24,7 @@ def update_birds():
         birds.remove(birdmap[id])
         del birdmap[id]
         operation = json.dumps({"remove":{"id":id}})
-        cherrypy.log.error("%s" % operation)
+        #cherrypy.log.error("%s" % operation)
         for observer in observers:
           observer.put(operation)
     else:
@@ -34,7 +34,7 @@ def update_birds():
         birdmap[id] = {"id":id, "rev":0}
         birds.append(birdmap[id])
       operation = json.dumps({"update":birdmap[id]})
-      cherrypy.log.error("%s" % operation)
+      #cherrypy.log.error("%s" % operation)
       for observer in observers:
         observer.put(operation)
     time.sleep(1)
