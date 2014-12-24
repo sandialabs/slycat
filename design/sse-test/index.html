@@ -2,32 +2,78 @@
 <html>
   <head>
     <title>SSE Test</title>
+    <script type="text/javascript" src="/js/knockout-3.2.0.js"></script>
+    <script type="text/javascript" src="/js/knockout.mapping.js"></script>
+    <script type="text/javascript" src="/js/knockout-projections.js"></script>
   </head>
   <body>
-    <p id="message">
-    </p>
+    <h2>Time</h2>
+    <div data-bind="text:time">
+    </div>
+
+    <h2>Birds</h2>
+    <div data-bind="foreach:birds">
+      <p>
+        id: <span data-bind="text:id"></span>
+        rev: <span data-bind="text:rev"></span>
+      </p>
+    </div>
+
     <script type="text/javascript">
-      var source = new EventSource("/time");
-      source.onopen = function(e)
+      var component = {}
+      component.time = ko.observable(null);
+
+      component.birds = ko.observableArray();
+      component.birdmap = {}
+
+      var time = new EventSource("/time");
+      time.onmessage = function(e)
       {
-        document.getElementById("message").innerHTML = "open";
-        console.log("open", e);
+        component.time(e.data);
       }
-      source.onmessage = function(e)
+      time.onerror = function(e)
       {
-        document.getElementById("message").innerHTML = e.data;
-        console.log("message", e);
+        component.time("error")
       }
-      source.onerror = function(e)
+
+      var birds = new EventSource("/birds");
+      birds.onmessage = function(e)
       {
-        document.getElementById("message").innerHTML = "error";
-        console.log("error", e);
-        if(source.readyState == EventSource.CLOSED)
+        var change = JSON.parse(e.data);
+        if("update" in change)
         {
-          document.getElementById("message").innerHTML = "closed";
-          console.log("closed");
+          if(change.update.id in component.birdmap)
+          {
+            console.log("updating", change.update);
+            ko.mapping.fromJS(change.update, component.birdmap[change.update.id]);
+          }
+          else
+          {
+            console.log("adding", change.update);
+            var bird = ko.mapping.fromJS(change.update);
+            component.birdmap[change.update.id] = bird;
+            component.birds.push(bird);
+          }
+        }
+        else if("remove" in change)
+        {
+          console.log("removing", change.remove);
+          if(change.remove.id in component.birdmap)
+          {
+            delete component.birdmap[change.remove.id];
+            for(var i = 0; i != component.birds().length; ++i)
+            {
+              if(component.birds()[i].id() == change.remove.id)
+              {
+                component.birds.splice(i, 1);
+                break;
+              }
+            }
+          }
         }
       }
+
+      ko.applyBindings(component);
     </script>
   </body>
 </html>
