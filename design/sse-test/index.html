@@ -40,7 +40,13 @@
       birds.onmessage = function(e)
       {
         var change = JSON.parse(e.data);
-        if("update" in change)
+        if("clear" in change)
+        {
+          console.log("clearing", change.clear);
+          component.birds.removeAll();
+          component.birdmap = {};
+        }
+        else if("update" in change)
         {
           if(change.update.id in component.birdmap)
           {

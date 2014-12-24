@@ -3,7 +3,43 @@ import datetime
 import json
 import numpy
 import os
+import threading
+import Queue
 import time
+
+birds = []
+birdmap = {}
+observers = []
+
+def update_birds():
+  global birds, birdmap
+  for id in range(10):
+    birdmap[id] = {"id":id, "rev":0}
+    birds.append(birdmap[id])
+  while cherrypy.engine.state not in [cherrypy.engine.states.STOPPING, cherrypy.engine.states.EXITING]:
+    id = numpy.random.choice(10)
+    operation = numpy.random.choice(["remove"] + ["update"] * 10)
+    if operation == "remove":
+      if id in birdmap:
+        birds.remove(birdmap[id])
+        del birdmap[id]
+        operation = json.dumps({"remove":{"id":id}})
+        print operation
+        for observer in observers:
+          observer.put(operation)
+    else:
+      if id in birdmap:
+        birdmap[id]["rev"] += 1
+      else:
+        birdmap[id] = {"id":id, "rev":0}
+        birds.append(birdmap[id])
+      operation = json.dumps({"update":birdmap[id]})
+      print operation
+      for observer in observers:
+        observer.put(operation)
+    time.sleep(1)
+
+threading.Thread(target=update_birds).start()
 
 class Root():
   @cherrypy.expose
@@ -24,21 +60,19 @@ class Root():
   def birds(self):
     cherrypy.response.headers["content-type"] = "text/event-stream"
     def content():
-      birds = {}
+      # Register to receive updates to the list.
+      queue = Queue.Queue()
+      observers.append(queue)
+
+      # Send the initial state of the list.
+      yield "data: %s\n\n" % json.dumps({"clear":True})
+      for bird in birds:
+        yield "data: %s\n\n" % json.dumps({"update":bird})
+
+      # Send incremental updates as they happen.
       while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-        id = numpy.random.choice(10)
-        operation = numpy.random.choice(["remove"] + ["update"] * 10)
-        if operation == "remove":
-          if id in birds:
-            del birds[id]
-            yield "data: %s\n\n" % json.dumps({"remove":{"id":id}})
-        else:
-          if id in birds:
-            birds[id]["rev"] += 1
-          else:
-            birds[id] = {"rev":0}
-          yield "data: %s\n\n" % json.dumps({"update":{"id":id, "rev":birds[id]["rev"]}})
-        time.sleep(0.1)
+        operation = queue.get()
+        yield "data: %s\n\n" % operation
     return content()
   birds._cp_config = {"response.stream": True}
 
