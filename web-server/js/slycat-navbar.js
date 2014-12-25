@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings"], function(server_root, client, markings)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-models"], function(server_root, client, markings, models)
 {
   curl({ apiName : "require" });
 
@@ -71,6 +71,32 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.mapping.fromJS({version:"", commit:""});
+
+      component.models = models.watch();
+      component.open_models = component.models.filter(function(model)
+      {
+        return model.state() && model.state() != "closed";
+      });
+      component.finished_models = component.open_models.filter(function(model)
+      {
+        return model.state() == "finished";
+      });
+      component.running_models = component.open_models.filter(function(model)
+      {
+        return model.state() != "finished";
+      }).map(function(model)
+      {
+        model.progress_percent = ko.pureComputed(function()
+        {
+          return model.progress() * 100;
+        });
+        model.progress_type = ko.pureComputed(function()
+        {
+          return model.state() === "running" ? "success" : null;
+        });
+        return model;
+      });
+/*
       var open_models_mapping =
       {
         key: function(model)
@@ -92,14 +118,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         },
       }
       component.open_models = ko.mapping.fromJS([], open_models_mapping);
-      component.finished_models = component.open_models.filter(function(model)
-      {
-        return model.state() == "finished";
-      });
-      component.running_models = component.open_models.filter(function(model)
-      {
-        return model.state() != "finished";
-      });
+*/
+
       component.markings = markings;
 
       component.close_model = function(model)
@@ -388,6 +408,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         }
       });
 
+/*
       // Get information about open models.
       var current_revision = null;
       function get_models()
@@ -422,8 +443,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           }
         });
       }
-
       get_models();
+*/
+
     },
     template: ' \
 <div class="bootstrap-styles"> \

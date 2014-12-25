@@ -6,7 +6,7 @@ rights in this software.
 
 define("slycat-projects", ["slycat-server-root"], function(server_root)
 {
-  // Long-polling loop to keep track of the current list of projects.
+  // Server-side-events loop to keep track of the current user's list of projects.
   var projects = ko.observableArray();
   var project_ids = {}
   var source = null;

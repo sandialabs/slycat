@@ -76,11 +76,12 @@ def js_bundle():
         "js/slycat-nag.js",
         "js/slycat-model-controls.js",
         "js/slycat-model-results.js",
+        "js/slycat-projects.js",
+        "js/slycat-models.js",
         "js/slycat-navbar.js",
         "js/slycat-local-browser.js",
         "js/slycat-remote-browser.js",
         "js/slycat-remote-controls.js",
-        "js/slycat-projects.js",
         "js/slycat-projects-main.js",
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
@@ -163,7 +164,8 @@ def get_projects_feed():
           if "deleted" in change:
             yield "data: %s\n\n" % json.dumps(change)
           else:
-            if slycat.web.server.authentication.test_project_reader(change["doc"]):
+            project = change["doc"]
+            if slycat.web.server.authentication.test_project_reader(project):
               yield "data: %s\n\n" % json.dumps(change)
             else:
               # Treat this case as deletion, since the caller might have had their access removed.
@@ -413,11 +415,13 @@ def get_models_feed():
           if "deleted" in change:
             yield "data: %s\n\n" % json.dumps(change)
           else:
-            #if slycat.web.server.authentication.test_project_reader(change["doc"]):
+            model = change["doc"]
+            project = database.get("project", model["project"])
+            if slycat.web.server.authentication.test_project_reader(project):
               yield "data: %s\n\n" % json.dumps(change)
-            #else:
+            else:
               # Treat this case as deletion, since the caller might have had their access removed.
-            #  yield "data: %s\n\n" % json.dumps({"deleted":True, "id":change["id"]});
+              yield "data: %s\n\n" % json.dumps({"deleted":True, "id":change["id"]});
       yield ":\n\n" # Keep the connection alive
     cherrypy.log.error("Stopping get-models-feed handler.")
   return content()
