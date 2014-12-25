@@ -7,47 +7,56 @@ rights in this software.
 define("slycat-projects", ["slycat-server-root"], function(server_root)
 {
   // Long-polling loop to keep track of the current list of projects.
-  var projects = ko.mapping.fromJS([]);
-  var current_revision = null;
-  var started = false;
-  function get_projects()
-  {
-    $.ajax(
-    {
-      cache: false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-      dataType: "text", // So we can handle the case where there's no change (empty result body)
-      headers: {"accept":"application/json"},
-      type: "GET",
-      url: server_root + "projects" + (current_revision != null ? "?revision=" + current_revision: ""),
-      success: function(text)
-      {
-        var results = text ? $.parseJSON(text): null;
-        if(results)
-        {
-          current_revision = results.revision;
-          results.projects.sort(function(left, right)
-          {
-            return left.created == right.created ? 0: (left.created < right.created ? 1: -1);
-          });
-          ko.mapping.fromJS(results.projects, projects);
-        }
+  var projects = ko.observableArray();
+  var project_ids = {}
+  var source = null;
 
-        // Restart the request immediately.
-        window.setTimeout(get_projects, 10);
-      },
-      error: function(request, status, reason_phrase)
+  function start()
+  {
+    source = new EventSource(server_root + "projects-feed");
+    source.onmessage = function(event)
+    {
+      message = JSON.parse(event.data);
+      if(message.deleted)
       {
-        // Rate-limit requests when there's an error.
-        window.setTimeout(get_projects, 5000);
+        if(message.id in project_ids)
+        {
+          delete project_ids[message.id];
+          for(var i = 0; i != projects().length; ++i)
+          {
+            if(projects()[i]._id() == message.id)
+            {
+              projects.splice(i, 1);
+              break;
+            }
+          }
+        }
       }
-    });
+      else
+      {
+        var project = message.doc;
+        if(project._id in project_ids)
+        {
+          ko.mapping.fromJS(project, project_ids[project._id]);
+        }
+        else
+        {
+          project_ids[project._id] = ko.mapping.fromJS(project);
+          projects.push(project_ids[project._id]);
+        }
+      }
+    }
+    source.onerror = function(event)
+    {
+      console.log("error", event);
+    }
   }
 
   var module = {};
   module.watch = function()
   {
-    if(!started)
-      get_projects();
+    if(!source)
+      start();
     return projects;
   }
 

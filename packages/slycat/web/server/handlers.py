@@ -148,6 +148,29 @@ def get_projects(revision=None, _=None):
 get_projects.monitor = None
 get_projects.timeout = None
 
+def get_projects_feed():
+  accept = cherrypy.lib.cptools.accept(["text/event-stream"])
+  cherrypy.response.headers["content-type"] = accept
+
+  def content():
+    database = slycat.web.server.database.couchdb.connect()
+    last_seq = 0
+    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
+      for change in database.changes(filter="slycat/projects", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
+        if "last_seq" in change:
+          last_seq = change["last_seq"]
+        else:
+          if "deleted" in change:
+            yield "data: %s\n\n" % json.dumps(change)
+          elif slycat.web.server.authentication.test_project_reader(change["doc"]):
+            yield "data: %s\n\n" % json.dumps(change)
+          else:
+            yield ":\n\n" # Keep the connection alive
+      yield ":\n\n" # Keep the connection alive
+    cherrypy.log.error("Stopping get-projects-feed handler.")
+  return content()
+get_projects_feed._cp_config = {"response.stream": True}
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_projects():
