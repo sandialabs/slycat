@@ -161,7 +161,6 @@ def get_projects_feed():
           last_seq = change["last_seq"]
         else:
           if "deleted" in change:
-            print change
             yield "data: %s\n\n" % json.dumps(change)
           else:
             if slycat.web.server.authentication.test_project_reader(change["doc"]):
@@ -398,6 +397,31 @@ def get_models(revision=None, _=None):
       return json.dumps({"revision" : get_models.monitor.revision, "models" : models})
 get_models.monitor = None
 get_models.timeout = None
+
+def get_models_feed():
+  accept = cherrypy.lib.cptools.accept(["text/event-stream"])
+  cherrypy.response.headers["content-type"] = accept
+
+  def content():
+    database = slycat.web.server.database.couchdb.connect()
+    last_seq = 0
+    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
+      for change in database.changes(filter="slycat/models", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
+        if "last_seq" in change:
+          last_seq = change["last_seq"]
+        else:
+          if "deleted" in change:
+            yield "data: %s\n\n" % json.dumps(change)
+          else:
+            #if slycat.web.server.authentication.test_project_reader(change["doc"]):
+              yield "data: %s\n\n" % json.dumps(change)
+            #else:
+              # Treat this case as deletion, since the caller might have had their access removed.
+            #  yield "data: %s\n\n" % json.dumps({"deleted":True, "id":change["id"]});
+      yield ":\n\n" # Keep the connection alive
+    cherrypy.log.error("Stopping get-models-feed handler.")
+  return content()
+get_models_feed._cp_config = {"response.stream": True}
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
