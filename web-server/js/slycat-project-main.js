@@ -4,50 +4,27 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings"], function(server_root, client, markings)
+define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-models"], function(server_root, client, markings, models)
 {
   var module = {}
   module.start = function()
   {
-    var model = {};
-    model.server_root = server_root;
-    model.project = ko.mapping.fromJS({name:"", description:"",created:"",creator:"",acl:{administrators:[],writers:[],readers:[]}});
-    model.models = ko.mapping.fromJS([]);
-    model.markings = markings;
-    model.badge = function(marking)
+    var page = {};
+    page.server_root = server_root;
+    page.project = ko.mapping.fromJS({_id: location.pathname.split("/").reverse()[0], name: "", description: "",created: "",creator: "",acl:{administrators:[],writers:[],readers:[]}});
+    page.models = models.watch().filter(function(model)
     {
-      for(var i = 0; i != model.markings().length; ++i)
+      return model.project() == page.project._id();
+    });
+    page.markings = markings;
+    page.badge = function(marking)
+    {
+      for(var i = 0; i != page.markings().length; ++i)
       {
-        if(model.markings()[i].type() == marking)
-          return model.markings()[i].badge();
+        if(page.markings()[i].type() == marking)
+          return page.markings()[i].badge();
       }
     }
-
-    window.model = model;
-
-    // Load information about the project.
-    $.ajax(
-    {
-      dataType: "json",
-      type: "GET",
-      url: location.href,
-      success: function(project)
-      {
-        ko.mapping.fromJS(project, model.project);
-      },
-    });
-
-    // Load the project models.
-    $.ajax(
-    {
-      dataType: "json",
-      type: "GET",
-      url: location.href + "/models",
-      success: function(models)
-      {
-        ko.mapping.fromJS(models, model.models);
-      },
-    });
 
     // Size the page content to consume available space
     function size_content()
@@ -57,7 +34,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
     $(window).resize(size_content);
     window.setTimeout(function() { $(window).resize(); }, 10);
 
-    ko.applyBindings(model);
+    ko.applyBindings(page);
   };
 
   return module;
