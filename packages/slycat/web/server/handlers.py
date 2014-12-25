@@ -161,11 +161,14 @@ def get_projects_feed():
           last_seq = change["last_seq"]
         else:
           if "deleted" in change:
-            yield "data: %s\n\n" % json.dumps(change)
-          elif slycat.web.server.authentication.test_project_reader(change["doc"]):
+            print change
             yield "data: %s\n\n" % json.dumps(change)
           else:
-            yield ":\n\n" # Keep the connection alive
+            if slycat.web.server.authentication.test_project_reader(change["doc"]):
+              yield "data: %s\n\n" % json.dumps(change)
+            else:
+              # Treat this case as deletion, since the caller might have had their access removed.
+              yield "data: %s\n\n" % json.dumps({"deleted":True, "id":change["id"]});
       yield ":\n\n" # Keep the connection alive
     cherrypy.log.error("Stopping get-projects-feed handler.")
   return content()
