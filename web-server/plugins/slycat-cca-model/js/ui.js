@@ -10,7 +10,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "do
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  var model = {_id: location.pathname.substr(8)};
+  var model = {_id: location.pathname.split("/").reverse()[0]};
   var input_columns = null;
   var output_columns = null;
   var scale_inputs = null;
