@@ -72,6 +72,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = ko.mapping.fromJS({version:"", commit:""});
 
+      // Watch running models
       component.models = models.watch();
       component.open_models = component.models.filter(function(model)
       {
@@ -86,39 +87,19 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         return model.state() != "finished";
       }).map(function(model)
       {
-        model.progress_percent = ko.pureComputed(function()
-        {
-          return model.progress() * 100;
-        });
-        model.progress_type = ko.pureComputed(function()
-        {
-          return model.state() === "running" ? "success" : null;
-        });
-        return model;
+        return  {
+          _id: model._id,
+          name: model.name,
+          progress_percent: ko.pureComputed(function()
+          {
+            return model.progress() * 100;
+          }),
+          progress_type: ko.pureComputed(function()
+          {
+            return model.state() === "running" ? "success" : null;
+          }),
+        }
       });
-/*
-      var open_models_mapping =
-      {
-        key: function(model)
-        {
-          return ko.utils.unwrapObservable(model._id);
-        },
-        create: function(options)
-        {
-          var result = ko.mapping.fromJS(options.data);
-          result.progress_percent = ko.pureComputed(function()
-          {
-            return result.progress() * 100;
-          });
-          result.progress_type = ko.pureComputed(function()
-          {
-            return result.state() === "running" ? "success" : null;
-          });
-          return result;
-        },
-      }
-      component.open_models = ko.mapping.fromJS([], open_models_mapping);
-*/
 
       component.markings = markings;
 
@@ -407,45 +388,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           ko.mapping.fromJS(version, component.version);
         }
       });
-
-/*
-      // Get information about open models.
-      var current_revision = null;
-      function get_models()
-      {
-        $.ajax(
-        {
-          dataType : "text",
-          type : "GET",
-          cache : false, // Don't cache this request; otherwise, the browser will display the JSON if the user leaves this page then returns.
-          url : server_root + "models" + (current_revision != null ? "?revision=" + current_revision : ""),
-          success : function(text)
-          {
-            // https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
-            var results = text ? $.parseJSON(text) : null;
-            if(results)
-            {
-              current_revision = results.revision;
-              results.models.sort(function(left, right)
-              {
-                return left.created == right.created ? 0 : (left.created < right.created ? -1 : 1);
-              });
-              ko.mapping.fromJS(results.models, component.open_models);
-            }
-
-            // Restart the request immediately.
-            window.setTimeout(get_models, 10);
-          },
-          error : function(request, status, reason_phrase)
-          {
-            // Rate-limit requests when there's an error.
-            window.setTimeout(get_models, 5000);
-          }
-        });
-      }
-      get_models();
-*/
-
     },
     template: ' \
 <div class="bootstrap-styles"> \
