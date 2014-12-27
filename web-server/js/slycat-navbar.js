@@ -14,8 +14,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
     {
       var component = this;
 
-      window.component = component;
-
       component.alerts = ko.mapping.fromJS([]);
       component.permission = ko.observable("reader");
       component.permission_description = ko.pureComputed(function()

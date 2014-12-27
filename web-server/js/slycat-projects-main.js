@@ -9,9 +9,9 @@ define("slycat-projects-main", ["slycat-server-root", "slycat-projects"], functi
   var module = {};
   module.start = function()
   {
-    var model = {}
-    model.server_root = server_root;
-    model.projects = projects.watch();
+    var page = {}
+    page.server_root = server_root;
+    page.projects = projects.watch();
 
     // Size the page content to consume available space
     function size_content()
@@ -21,7 +21,7 @@ define("slycat-projects-main", ["slycat-server-root", "slycat-projects"], functi
     $(window).resize(size_content);
     window.setTimeout(function() { $(window).resize(); }, 10);
 
-    ko.applyBindings(model);
+    ko.applyBindings(page);
   }
 
   return module;

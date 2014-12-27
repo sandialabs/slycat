@@ -9,6 +9,8 @@ define("slycat-model-main", [], function()
   var module = {}
   module.start = function()
   {
+    page = {};
+
     // Size the page content to consume available space
     function size_content()
     {
@@ -18,7 +20,7 @@ define("slycat-model-main", [], function()
     window.setTimeout(function() { $(window).resize(); }, 10);
 
     // Enable knockout
-    ko.applyBindings({});
+    ko.applyBindings(page);
   };
 
   return module;
