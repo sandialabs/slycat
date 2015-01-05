@@ -146,18 +146,34 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.add_project_member = function()
       {
-        if(component.permission() == "reader")
+        client.get_user(
         {
-          component.new_project.acl.readers.push({user:ko.observable(component.new_user())})
-        }
-        if(component.permission() == "writer")
-        {
-          component.new_project.acl.writers.push({user:ko.observable(component.new_user())})
-        }
-        if(component.permission() == "administrator")
-        {
-          component.new_project.acl.administrators.push({user:ko.observable(component.new_user())})
-        }
+          uid: component.new_user(),
+          success: function(user)
+          {
+            if(component.permission() == "reader")
+            {
+              if(window.confirm("Add " + user.name + " to the project?  They will have read access to all project data."))
+              {
+                component.new_project.acl.readers.push({user:ko.observable(user.uid)})
+              }
+            }
+            if(component.permission() == "writer")
+            {
+              if(window.confirm("Add " + user.name + " to the project?  They will have read and write access to all project data."))
+              {
+                component.new_project.acl.writers.push({user:ko.observable(user.uid)})
+              }
+            }
+            if(component.permission() == "administrator")
+            {
+              if(window.confirm("Add " + user.name + " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members."))
+              {
+                component.new_project.acl.administrators.push({user:ko.observable(user.uid)})
+              }
+            }
+          }
+        });
       }
 
       component.remove_project_member = function(context)
