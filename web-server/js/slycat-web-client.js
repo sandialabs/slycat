@@ -66,6 +66,21 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_configuration_version = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "configuration/version",
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      }
+    });
+  }
+
   module.get_model_parameter = function(params)
   {
     $.ajax(
