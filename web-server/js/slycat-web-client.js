@@ -18,7 +18,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success();
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -32,7 +37,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success();
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -43,11 +53,16 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       dataType: "json",
       type: "GET",
       url: server_root + "configuration/markings",
-      success: function(markings)
+      success: function(result)
       {
         if(params.success)
-          params.success(markings);
-      }
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -62,7 +77,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(result);
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -77,7 +97,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(result);
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -88,11 +113,16 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       dataType: "json",
       type: "GET",
       url: server_root + "models/" + params.mid + "/parameters/" + params.name,
-      success: function(value)
+      success: function(result)
       {
         if(params.success)
-          params.success(value);
-      }
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -111,7 +141,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(result);
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -144,7 +179,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success();
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -166,7 +206,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(result.id);
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -187,7 +232,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(result.sid);
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -201,11 +251,16 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       }),
       type: "POST",
       url: server_root + "remotes/" + params.sid + "/browse" + params.path,
-      success: function(results)
+      success: function(result)
       {
         if(params.success)
-          params.success(results);
-      }
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -224,7 +279,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success();
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -244,7 +304,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success();
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
@@ -273,7 +338,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success();
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
