@@ -365,11 +365,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
 
       // Get information about the currently-logged-in user.
-      $.ajax(
+      client.get_user(
       {
-        type : "GET",
-        url : server_root + "users/-",
-        success : function(user)
+        success: function(user)
         {
           component.user.uid(user.uid);
           component.user.name(user.name);
@@ -450,7 +448,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li class="navbar-text"><span data-bind="text:user.name"></span> (<span data-bind="text:user.uid"></span>)</li> \
+          <li class="navbar-text"><span data-bind="text:user.name,popover:{trigger:\'hover\',content:\'Username: \' + user.uid()}"></span></li> \
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
             <ul class="dropdown-menu"> \

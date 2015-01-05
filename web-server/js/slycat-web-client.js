@@ -100,6 +100,20 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_user = function(params)
+  {
+    $.ajax(
+    {
+      type : "GET",
+      url : server_root + "users/" + (params.uid || "-"),
+      success : function(user)
+      {
+        if(params.success)
+          params.success(user);
+      }
+    });
+  }
+
   module.post_model_finish = function(params)
   {
     $.ajax(
