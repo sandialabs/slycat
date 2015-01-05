@@ -172,6 +172,17 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
                 component.new_project.acl.administrators.push({user:ko.observable(user.uid)})
               }
             }
+          },
+          error: function(request, status, reason_phrase)
+          {
+            if(request.status == 404)
+            {
+              window.alert("User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.");
+            }
+            else
+            {
+              window.alert("Error retrieving user information: " + reason_phrase);
+            }
           }
         });
       }

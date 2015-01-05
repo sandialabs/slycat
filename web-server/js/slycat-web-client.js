@@ -125,7 +125,12 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       {
         if(params.success)
           params.success(user);
-      }
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
     });
   }
 
