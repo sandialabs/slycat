@@ -68,7 +68,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
       component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
-      component.version = ko.mapping.fromJS({version:"", commit:""});
+      component.version = ko.mapping.fromJS({version:"unknown", commit:"unknown"});
 
       // Watch running models
       component.models = models.watch();
@@ -296,9 +296,17 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         }
       }
 
-      component.open_documentation = function()
+      component.about = function()
       {
-        window.open("http://slycat.readthedocs.org");
+        client.get_configuration_version(
+        {
+          success : function(version)
+          {
+            ko.mapping.fromJS(version, component.version);
+          }
+        });
+
+        $("#slycat-about").modal("show");
       }
 
       component.support_request = function()
@@ -312,6 +320,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
             window.location.href = "mailto:" + email.address + "?subject=" + email.subject;
           }
         });
+      }
+
+      component.open_documentation = function()
+      {
+        window.open("http://slycat.readthedocs.org");
       }
 
       // If there's a current project, load it.
@@ -390,16 +403,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         }
       });
 
-      // Get information about the current server version.
-      $.ajax(
-      {
-        type : "GET",
-        url : server_root + "configuration/version",
-        success : function(version)
-        {
-          ko.mapping.fromJS(version, component.version);
-        }
-      });
     },
     template: ' \
 <div class="bootstrap-styles"> \
@@ -468,7 +471,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           <li class="dropdown"> \
             <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
-              <li><a data-toggle="modal" data-target="#slycat-about">About Slycat</a></li> \
+              <li><a data-bind="click:about">About Slycat</a></li> \
               <li><a data-bind="click:support_request">Support Request</a></li> \
               <li><a data-bind="click:open_documentation">Documentation</a></li> \
             </ul> \
@@ -483,23 +486,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
     </div> \
   <!-- /ko --> \
-  <div class="modal fade" id="slycat-about"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-body"> \
-          <div class="jumbotron"> \
-            <img data-bind="attr:{src:server_root + \'css/slycat-brand.png\'}"/> \
-            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
-          </div> \
-          <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p> \
-          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p> \
-        </div> \
-        <div class="modal-footer"> \
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
   <div class="modal fade" id="slycat-create-project"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
@@ -654,6 +640,23 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
             <div data-bind="component:{name:wizard,params:{project:project,model:model}}"> \
             </div> \
           </div> \
+        </div> \
+      </div> \
+    </div> \
+  </div> \
+  <div class="modal fade" id="slycat-about"> \
+    <div class="modal-dialog"> \
+      <div class="modal-content"> \
+        <div class="modal-body"> \
+          <div class="jumbotron"> \
+            <img data-bind="attr:{src:server_root + \'css/slycat-brand.png\'}"/> \
+            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
+          </div> \
+          <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p> \
+          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p> \
+        </div> \
+        <div class="modal-footer"> \
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
         </div> \
       </div> \
     </div> \
