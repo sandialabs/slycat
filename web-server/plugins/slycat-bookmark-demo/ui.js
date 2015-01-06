@@ -25,7 +25,7 @@ define("slycat-bookmark-demo", ["slycat-web-client", "slycat-bookmark-manager", 
           $("#text").val(state.text);
 
         // Update the bookmarked state whenever the user makes changes.
-        $("#text").on("change", function()
+        $("#save").on("click", function()
         {
           bookmarker.updateState({
             text: $("#text").val()
