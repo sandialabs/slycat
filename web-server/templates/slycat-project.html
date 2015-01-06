@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    <title>{{slycat-project.name}} - Slycat Project</title>
+  </head>
+
+  <body>
+    <slycat-navbar params="project_id:'{{slycat-project._id}}', project_name:'{{slycat-project.name}}'"></slycat-navbar>
+    <div class="bootstrap-styles">
+      <div id="slycat-project" class="slycat-content">
+        <div class="container">
+          <div class="panel panel-default" data-bind="visible: models().length">
+            <div class="list-group" data-bind="foreach: models">
+              <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
+                <span class="label label-default" data-bind="text:$data['model-type']() + ' model'"></span>
+                <strong data-bind="text:name"></strong>
+                <div class="pull-right" style="display: inline-block" data-bind="html:$parent.badge($data.marking())"></div>
+                <span class="label label-danger" data-bind="visible:result() == 'failed',popover:{placement:'right', trigger:'hover', content:message}">Failed</span>
+                <p>
+                  <small>
+                    <span data-bind="text:description"></span>
+                    <em>
+                      Created <span data-bind="text:created"></span>
+                      by <span data-bind="text:creator"></span>
+                    </em>
+                  </small>
+                </p>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      require(["slycat-project-main"], function(module)
+      {
+        module.start();
+      });
+    </script>
+  </body>
+</html>

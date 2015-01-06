@@ -3,7 +3,7 @@ MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages.
 RUN yum install -y --nogpgcheck http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-RUN yum install -y couchdb dejavu-serif-fonts ffmpeg git h5py numpy pyOpenSSL pystache python-couchdb python-devel python-ldap python-paramiko python-pillow python-pip python-requests python-routes python-zmq scipy
+RUN yum install -y couchdb dejavu-serif-fonts ffmpeg git h5py numpy pyOpenSSL pystache python-couchdb python-devel python-dill python-ldap python-paramiko python-pillow python-pip python-requests python-routes python-zmq scipy
 
 # Install Python modules.
 RUN pip install cherrypy==3.2.6 ipython
@@ -17,7 +17,7 @@ RUN echo 'slycat:slycat' | chpasswd
 USER slycat
 RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.bash_profile
 RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/web-server/root-ca.pem" >> /home/slycat/.bash_profile
-RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git
+RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout 7daa132b4788ed81d09e56cedeab4890738c2a43
 
 USER root
 

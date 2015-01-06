@@ -48,8 +48,9 @@ class option_parser(argparse.ArgumentParser):
     self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
-    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
+    self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
     self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
+    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
     self.add_argument("--password", default=None)
     self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
     self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
@@ -59,6 +60,20 @@ class option_parser(argparse.ArgumentParser):
       sys.argv += shlex.split(os.environ["SLYCAT"])
 
     arguments = argparse.ArgumentParser.parse_args(self)
+
+    if arguments.list_markings:
+      connection = connect(arguments)
+      markings = connection.get_configuration_markings()
+      type_width = numpy.max([len(marking["type"]) for marking in markings])
+      label_width = numpy.max([len(marking["label"]) for marking in markings])
+      print
+      print "{:>{}} {:<{}}".format("Marking", type_width, "Description", label_width)
+      print "{:>{}} {:<{}}".format("-" * type_width, type_width, "-" * label_width, label_width)
+      for marking in markings:
+        print "{:>{}} {:<{}}".format(marking["type"], type_width, marking["label"], label_width)
+      print
+      self.exit()
+
     if arguments.log_level == "debug":
       log.setLevel(logging.DEBUG)
     elif arguments.log_level == "info":
@@ -229,6 +244,30 @@ class Connection(object):
   def get_model_file(self, mid, name):
     return self.request("GET", "/models/%s/files/%s" % (mid, name))
 
+  def get_model_parameter(self, mid, name):
+    """Retrieve a model parameter artifact.
+
+    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+    as part of its database record, so they should be limited in size (larger data should be stored using
+    arraysets or files).
+
+    Parameters
+    ----------
+    mid : string, required
+      Unique model identifier.
+    name : string, required
+      Unique (within the model) artifact name.
+
+    Returns
+    -------
+    parameter : JSON-compatible object
+
+    See Also
+    --------
+    :ref:`PUT Model Parameter`
+    """
+    return self.request("GET", "/models/%s/parameters/%s" % (mid, name), headers={"accept":"application/json"})
+
   def get_model_table_chunk(self, mid, name, array, rows, columns):
     """Returns a chunk (set of rows and columns) from a table (array) artifact."""
     return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
@@ -297,6 +336,32 @@ class Connection(object):
     :ref:`GET User`
     """
     return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
+
+  def get_configuration_markings(self):
+    """Retrieve marking information from the server.
+
+    Returns
+    -------
+    markings : server marking information.
+
+    See Also
+    --------
+    :ref:`GET Configuration Markings`
+    """
+    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
+
+  def get_configuration_version(self):
+    """Retrieve version information from the server.
+
+    Returns
+    -------
+    version : server version information.
+
+    See Also
+    --------
+    :ref:`GET Configuration Version`
+    """
+    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
 
   def post_model_finish(self, mid):
     """Notify the server that a model is fully initialized.
@@ -452,31 +517,6 @@ class Connection(object):
 
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
-
-  def get_model_parameter(self, mid, name):
-    """Retrieve a model parameter artifact.
-
-    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
-    as part of its database record, so they should be limited in size (larger data should be stored using
-    arraysets or files).
-
-    Parameters
-    ----------
-    mid : string, required
-      Unique model identifier.
-    name : string, required
-      Unique (within the model) artifact name.
-
-    Returns
-    -------
-    parameter : JSON-compatible object
-
-    See Also
-    --------
-    :ref:`PUT Model Parameter`
-    """
-    model = self.get_model(mid)
-    return model["artifact:" + name]
 
   def find_project(self, name):
     """Return a project identified by name.
