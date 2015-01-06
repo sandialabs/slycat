@@ -125,6 +125,26 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_model = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type : "GET",
+      url : server_root + "models/" + params.mid,
+      success : function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  }
+
   module.get_model_parameter = function(params)
   {
     $.ajax(
