@@ -4,11 +4,11 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-bookmark-demo", ["slycat-web-client", "slycat-bookmark-manager", "domReady!"], function(client, bookmark_manager)
+define("slycat-bookmark-demo-model", ["slycat-web-client", "slycat-bookmark-manager", "domReady!"], function(client, bookmark_manager)
 {
   var bookmarker = null;
 
-  // Load the model.
+  // Load the model - we need the owning project id to create a bookmark manager.
   client.get_model(
   {
     mid: location.pathname.split("/").reverse()[0],
@@ -17,7 +17,8 @@ define("slycat-bookmark-demo", ["slycat-web-client", "slycat-bookmark-manager", 
       // Create the bookmark manager.
       bookmarker = bookmark_manager.create(model.project, model._id);
 
-      // Get the current bookmarked state.
+      // Get the current bookmarked state (which could be empty if we've never
+      // viewed this model before).
       bookmarker.getState(function(state)
       {
         // If we have previous state, display it.
