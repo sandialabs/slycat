@@ -27,6 +27,25 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.delete_project = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "projects/" + params.pid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.delete_remote = function(params)
   {
     $.ajax(
@@ -346,6 +365,36 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
       },
     });
   }
+
+  module.put_project = function(params)
+  {
+    var project = {};
+    if("name" in params)
+      project.name = params.name;
+    if("description" in params)
+      project.description = params.description;
+    if("acl" in params)
+      project.acl = params.acl;
+
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: $.toJSON(project),
+      processData: false,
+      type: "PUT",
+      url: server_root + "projects/" + params.pid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  };
 
   return module;
 });

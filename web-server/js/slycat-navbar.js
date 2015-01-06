@@ -238,21 +238,13 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.save_project = function()
       {
-        var project =
+        client.put_project(
         {
-          "name" : component.new_project.name(),
-          "description" : component.new_project.description(),
-          "acl" : ko.mapping.toJS(component.new_project.acl),
-        };
-
-        $.ajax(
-        {
-          type : "PUT",
-          url : server_root + "projects/" + component.project_id(),
-          contentType : "application/json",
-          data : $.toJSON(project),
-          processData : false,
-          error : function(request, status, reason_phrase)
+          pid: component.project_id(),
+          name: component.new_project.name(),
+          description: component.new_project.description(),
+          acl: ko.mapping.toJS(component.new_project.acl),
+          error: function(request, status, reason_phrase)
           {
             window.alert("Error updating project: " + reason_phrase);
           }
@@ -261,12 +253,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.delete_project = function()
       {
-        if(window.confirm("Delete " + component.project.name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
+        if(window.confirm("Delete " + component.current_project().name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
         {
-          $.ajax(
+          client.delete_project(
           {
-            type : "DELETE",
-            url : server_root + "projects/" + component.project_id(),
+            pid: component.project_id(),
             success : function()
             {
               window.location.href = server_root + "projects";
@@ -324,10 +315,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       {
         if(window.confirm("Delete " + component.model.name() + "? All data will be deleted immediately, and this cannot be undone."))
         {
-          $.ajax(
+          client.delete_model(
           {
-            type : "DELETE",
-            url : server_root + "models/" + params.model_id,
+            mid: params.model_id,
             success : function()
             {
               window.location.href = server_root + "projects/" + component.project_id();
