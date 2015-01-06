@@ -72,7 +72,6 @@ def register_slycat_plugin(context):
     "slick.headerbuttons.js",
     "slick.autotooltips.js",
     "slick.slycateditors.js",
-    "bookmarker.js",
     "chunker.js",
     "login.js",
     "color-switcher.js",

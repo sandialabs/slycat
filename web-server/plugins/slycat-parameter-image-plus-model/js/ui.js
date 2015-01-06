@@ -1,17 +1,17 @@
-$(document).ready(function()
+define("slycat-parameter-image-plus-model", ["slycat-server-root", "slycat-bookmark-manager", "d3", "domReady!"], function(server_root, bookmark_manager, d3)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-var model = null;
+var model_id = location.pathname.split("/").reverse()[0];
 var input_columns = null;
 var output_columns = null;
 var image_columns = null;
 var rating_columns = null;
 var category_columns = null;
 
-var bookmarker = new bookmark_manager(server_root, project_id, model_id);
+var bookmarker = null;
 var bookmark = null;
 
 var clusters = null; // This is just the list of cluster names
@@ -66,6 +66,7 @@ $.ajax(
   success : function(result)
   {
     model = result;
+    bookmarker = bookmark_manager.create(model.project, model.id);
     input_columns = model["artifact:input-columns"];
     output_columns = model["artifact:output-columns"];
     image_columns = model["artifact:image-columns"];
@@ -144,7 +145,7 @@ function model_loaded()
     });
 
     // Retrieve bookmarked state information ...
-    bookmarker.get_state(function(state)
+    bookmarker.getState(function(state)
     {
       bookmark = state;
       cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
