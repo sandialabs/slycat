@@ -1,6 +1,7 @@
 def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
   import datetime
+  import os
   import slycat.web.server
 
   def finish(database, model):
