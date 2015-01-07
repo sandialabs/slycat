@@ -53,25 +53,23 @@ def register_slycat_plugin(context):
     "slick.autotooltips.js",
     "slick.slycateditors.js",
     "popcorn-complete.js",
-    "modernizr.custom.01940.js"
-    # For development and debugging, loading some js dynamically inside model.
-    # "tracer-image-scatterplots.js",
-    # "tracer-image-table.js",
-    # "layout.js",
-    # "model.js",
-    # "scatterplot.js",
-    # "plot-control.js",
-    # "table.js",
-    # "controls.js",
-    # "movie.js",
-    # "grid.js",
-    # "login.js",
-    # "init.js",
-    # "load.js",
-    # "selector-brush.js"
+    "modernizr.custom.01940.js",
+    "tracer-image-scatterplots.js",
+    "tracer-image-table.js",
+    "layout.js",
+    "model.js",
+    "scatterplot.js",
+    "plot-control.js",
+    "table.js",
+    "movie.js",
+    "grid.js",
+    "login.js",
+    "init.js",
+    "load.js",
+    "selector-brush.js"
   ]
   context.register_model_bundle("tracer-image", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), js) for js in javascripts
+    os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
     ])
 
 
@@ -83,17 +81,14 @@ def register_slycat_plugin(context):
     # "css/namespaced-bootstrap.css",
     # "css/slycat.css",
     # End CSS loaded by header
-    "jquery-ui-1.10.4.custom.min.css",
-    # TODO seems don't need this b/c in header? "jquery-ui-1.10.4.custom.min.css",
     "slick.grid.css",
     "slick-default-theme.css",
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
-    # For development and debugging, loading ui.css dynamically inside model.
-    # "model-tracer-image.css",
+    "model-tracer-image.css",
   ]
   context.register_model_bundle("tracer-image", "text/css", [
-    os.path.join(os.path.dirname(__file__), css) for css in stylesheets
+    os.path.join(os.path.join(os.path.dirname(__file__), "css"), css) for css in stylesheets
     ])
 
   # Register images and other resources
@@ -101,4 +96,4 @@ def register_slycat_plugin(context):
    # TODO track down images
   ]
   for image in images:
-    context.register_model_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), image))
+    context.register_model_resource("tracer-image", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
