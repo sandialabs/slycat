@@ -6,7 +6,7 @@ rights in this software.
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
-
+define("slycat-parameter-image-table", ["d3"], function(d3) {
 $.widget("parameter_image.table",
 {
   options:
@@ -609,4 +609,5 @@ $.widget("parameter_image.table",
   {
     return $(a).not(b).length == 0 && $(b).not(a).length == 0;
   },
+});
 });

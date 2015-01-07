@@ -6,7 +6,8 @@ rights in this software.
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM dendrogram control, for use with the parameter-image model.
-
+define("slycat-parameter-image-dendrogram", ["d3"], function(d3)
+{
 $.widget("parameter_image.dendrogram",
 {
   options:
@@ -1105,5 +1106,5 @@ $.widget("parameter_image.dendrogram",
       // We don't need to do anything when images are updated, because they are always followed by cluster_data, which triggers a refresh
     }
   },
-
+});
 });

@@ -3,42 +3,53 @@ import datetime
 import traceback
 
 configuration = {
-  "cache" : {},
-  "server" : None,
-  "timeout" : None,
-  "user_dn" : None,
+  "cache"    : {},
+  "server"   : None,
+  "base"     : None,
+  "who"      : None,
+  "cred"     : None,
+  "attrlist" : None,
+  "ldapEmail": None,
+  "timeout"  : None
 }
 
-def init(server, user_dn, timeout=datetime.timedelta(seconds=5)):
+def init(server, base, who="", cred="", attrlist=["uid", "cn", "mail"], ldapEmail="mail", timeout=datetime.timedelta(seconds=5)):
   global configuration
   configuration["server"] = server
+  configuration["base"] = base
+  configuration["who"] = who
+  configuration["cred"] = cred
+  configuration["attrlist"] = attrlist
+  configuration["ldapEmail"] = ldapEmail
   configuration["timeout"] = timeout
-  configuration["user_dn"] = user_dn
 
 def user(uid):
   global configuration
   if uid not in configuration["cache"]:
     try:
-      # Lookup the requested user in LDAP.
+      # Lookup the given uid in ldap
       import ldap
+      trace_level = 0  # 0=quiet,  1=verbose,  2=veryVerbose
       ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
       ldap.set_option(ldap.OPT_NETWORK_TIMEOUT, configuration["timeout"].total_seconds())
-      connection = ldap.initialize(configuration["server"])
+      connection = ldap.initialize(configuration["server"], trace_level)
+      connection.simple_bind_s(configuration["who"], configuration["cred"])     # empty string ok
 
-      # This would require the username and password *of the person making the request*
-      #bind_dn = configuration["user_dn"] % username
-      #connection.simple_bind_s(bind_dn, password)
+      # perform the query
+      result = connection.search_s(configuration["base"], ldap.SCOPE_ONELEVEL, "uid=%s" % uid, configuration["attrlist"])
 
-      search_dn = configuration["user_dn"] % uid # username of the person we're looking up.
-      result = connection.search_s(search_dn, ldap.SCOPE_SUBTREE)
+      if result == []: raise AssertionError, "User ID, %s, was not found ." % uid
 
       # Cache the information we need for speedy lookup.
       result = result[0][1]
       configuration["cache"][uid] = {
         "name" : result["cn"][0],
-        "email" : "%s@%s" % (uid, result["esnAdministrativeDomainName"][0]),
+        "email" : result[configuration["ldapEmail"]][0],
         }
     except ldap.NO_SUCH_OBJECT:
+      raise cherrypy.HTTPError(404)
+    except AssertionError as e:
+      cherrypy.log.error( e.message )
       raise cherrypy.HTTPError(404)
     except:
       cherrypy.log.error(traceback.format_exc())

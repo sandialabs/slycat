@@ -7,58 +7,59 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-
-$.widget("parameter_image.scatterplot",
+define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
 {
-  options:
+  $.widget("parameter_image.scatterplot",
   {
-    width : 300,
-    height : 300,
-    pick_distance : 3,
-    drag_threshold : 3,
-    indices : [],
-    x_label : "X Label",
-    y_label : "Y Label",
-    v_label : "V Label",
-    x : [],
-    y : [],
-    v : [],
-    x_string : false,
-    y_string : false,
-    v_string : false,
-    images : [],
-    selection : [],
-    colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
-    border : 25,
-    server_root : "",
-    open_images : [],
-    gradient : null,
-    hidden_simulations : [],
-    filtered_indices : [],
-    filtered_selection : [],
-    filtered_x : [],
-    filtered_y : [],
-    filtered_v : [],
-    scale_x : [],
-    scale_y : [],
-    scale_v: [],
-    "auto-scale" : true,
-    canvas_square_size : 8,
-    canvas_square_border_size : 1,
-    canvas_selected_square_size : 16,
-    canvas_selected_square_border_size : 2,
-    pinned_width : 200,
-    pinned_height : 200,
-    hover_time : 250,
-    session_cache : {},
-    image_cache : {},
-    cache_references : [ {}, {} ],
-    // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
-    // http://api.jqueryui.com/jquery.widget/
-    // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
-    // Arrays are the only exception, they are referenced as-is. 
-    // This exception is in place to support data-binding, where the data source has to be kept as a reference.
-  },
+    options:
+    {
+      width : 300,
+      height : 300,
+      pick_distance : 3,
+      drag_threshold : 3,
+      indices : [],
+      x_label : "X Label",
+      y_label : "Y Label",
+      v_label : "V Label",
+      x : [],
+      y : [],
+      v : [],
+      x_string : false,
+      y_string : false,
+      v_string : false,
+      images : [],
+      selection : [],
+      colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+      border : 25,
+      server_root : "",
+      open_images : [],
+      gradient : null,
+      hidden_simulations : [],
+      filtered_indices : [],
+      filtered_selection : [],
+      filtered_x : [],
+      filtered_y : [],
+      filtered_v : [],
+      scale_x : [],
+      scale_y : [],
+      scale_v: [],
+      "auto-scale" : true,
+      canvas_square_size : 8,
+      canvas_square_border_size : 1,
+      canvas_selected_square_size : 16,
+      canvas_selected_square_border_size : 2,
+      pinned_width : 200,
+      pinned_height : 200,
+      hover_time : 250,
+      session_cache : {},
+      image_cache : {},
+      cache_references : [ {}, {} ],
+      // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
+      // http://api.jqueryui.com/jquery.widget/
+      // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget.
+      // Arrays are the only exception, they are referenced as-is.
+      // This exception is in place to support data-binding, where the data source has to be kept as a reference.
+    },
 
   _create: function()
   {
@@ -1889,4 +1890,5 @@ $.widget("parameter_image.scatterplot",
     });
     self._open_images(images);
   },
+  });
 });

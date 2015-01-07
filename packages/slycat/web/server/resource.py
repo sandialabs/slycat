@@ -17,7 +17,7 @@ class Manager(object):
 
   def add_bundle(self, content_type, paths):
     with self._bundle_lock:
-      cherrypy.log.error("Bundling")
+      cherrypy.log.error("Bundled global resources")
 
       key_hash = hashlib.md5()
       key_hash.update(content_type)
@@ -34,26 +34,30 @@ class Manager(object):
 
       key = key_hash.hexdigest()
       self._bundles[key] = (content_type, content)
-      cherrypy.log.error("  as %s" % key)
+      cherrypy.log.error("  as /resources/global/%s" % key)
 
       return key
 
-  def add_directory(self, directory_path, resource_path):
+  def add_directory(self, resource_path, directory_path):
     with self._file_lock:
+      cherrypy.log.error("Registered global resources")
       if not os.path.isabs(directory_path):
         directory_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], directory_path)
       for file_path in os.listdir(directory_path):
         resource_file_path = os.path.join(resource_path, file_path)
         file_path = os.path.join(directory_path, file_path)
-        cherrypy.log.error("Registering resource %s -> %s" % (resource_file_path, file_path))
+        cherrypy.log.error("  %s" % file_path)
         self._files[resource_file_path] = file_path
+      cherrypy.log.error("  under /resources/global/%s" % resource_path)
 
-  def add_file(self, file_path, resource_path):
+  def add_file(self, resource_path, file_path):
     with self._file_lock:
       if not os.path.isabs(file_path):
         file_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], file_path)
-        cherrypy.log.error("Registering resource %s -> %s" % (resource_path, file_path))
-        self._files[resource_path] = file_path
+      self._files[resource_path] = file_path
+      cherrypy.log.error("Registered resource")
+      cherrypy.log.error("  %s" % file_path)
+      cherrypy.log.error("  as /resources/global/%s" % resource_path)
 
   @property
   def bundles(self):

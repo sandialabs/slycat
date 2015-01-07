@@ -65,3 +65,9 @@ Sample Response
     Content-Type: text/html;charset=utf-8
     Server: CherryPy/3.2.2
 
+See Also
+--------
+
+-  :ref:`GET Model Parameter`
+
+
