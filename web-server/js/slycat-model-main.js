@@ -17,7 +17,9 @@ define("slycat-model-main", [], function()
       $(".slycat-content").css("min-height", $(window).height() - $("slycat-navbar > div").height());
     }
     $(window).resize(size_content);
-    window.setTimeout(function() { $(window).resize(); }, 10);
+    $(document).on('slycat-navbar-after-render', function(){
+      size_content();
+    });
 
     // Enable knockout
     ko.applyBindings(page);

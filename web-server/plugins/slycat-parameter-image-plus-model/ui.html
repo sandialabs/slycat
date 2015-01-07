@@ -61,6 +61,7 @@
   </div>
 
   <div id="dendrogram-pane" class="ui-layout-west">
+    <div id="dendrogram-leaf-backdrop"></div>
     <div class="load-status"></div>
     <svg id="dendrogram-viewer" width="100%" height="100%">
       <defs>
@@ -75,6 +76,19 @@
   <div id="table-pane" class="ui-layout-south">
     <div class="load-status"></div>
     <div id="table"></div>
+  </div>
+
+  <div title='Remote Login' id="remote-login-dialog" style="display: none;">
+    <p id='remote-error'></p>
+    <p id='remote-hostname'></p>
+    <form>
+      <fieldset>
+        <label for='remote-username'>Username</label>
+        <input id='remote-username' type='text'/>
+        <label for='remote-password'>Password</label>
+        <input id='remote-password' type='password'/>
+      </fieldset>
+    </form>
   </div>
 
 </div>
