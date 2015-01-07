@@ -444,7 +444,7 @@ def get_model(mid, **kwargs):
     mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
-    if mtype in ["timeseries", "parameter-image", "tracer-image"]:
+    if mtype in ["timeseries", "parameter-image"]:
       context = get_context()
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
@@ -468,9 +468,6 @@ def get_model(mid, **kwargs):
 
       if mtype == "parameter-image":
         return slycat.web.server.template.render("model-parameter-image.html", context)
-
-      if mtype == "tracer-image":
-        return slycat.web.server.template.render("model-tracer-image.html", context)
 
     # New code for rendering plugin models:
     marking = slycat.web.server.plugin.manager.markings[model["marking"]]
