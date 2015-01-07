@@ -53,11 +53,29 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
   }
 
   var module = {};
+
   module.watch = function()
   {
     if(!source)
       start();
     return projects;
+  }
+
+  module.seed = function(project)
+  {
+    if(project._id in project_ids)
+      return;
+
+    project_ids[project._id] = ko.mapping.fromJS(
+    {
+      _id: project._id,
+      name: project.name || "",
+      description: project.description || "",
+      created: project.created || "",
+      creator: project.creator || "",
+      acl: project.acl || {"administrators":[],"writers":[],"readers":[]},
+    });
+    projects.push(project_ids[project._id]);
   }
 
   return module;

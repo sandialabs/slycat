@@ -63,6 +63,7 @@ def js_bundle():
         "js/jquery-migrate-1.2.1.js",
         "js/jquery.json-2.4.min.js",
         "js/jquery-ui-1.10.4.custom.min.js",
+        "js/jquery.ba-bbq.min.js",
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",
