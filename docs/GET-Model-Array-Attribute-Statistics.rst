@@ -63,6 +63,6 @@ Sample Response
 See Also
 --------
 
--  :ref:`GET Model Array Metadata`
+-  :ref:`GET Model Arrayset Metadata`
 -  :ref:`GET Model Array Attribute Chunk`
 

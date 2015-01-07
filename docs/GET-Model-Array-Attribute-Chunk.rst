@@ -102,5 +102,5 @@ Sample Binary Response
 See Also
 --------
 
--  :ref:`GET Model Array Metadata`
+-  :ref:`GET Model Arrayset Metadata`
 
