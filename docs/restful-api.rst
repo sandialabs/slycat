@@ -19,7 +19,6 @@ any programming language or library that supports HTTP requests.
    GET-Home.rst
    GET-Model-Array-Attribute-Chunk.rst
    GET-Model-Array-Attribute-Statistics.rst
-   GET-Model-Array-Metadata.rst
    GET-Model-Arrayset-Metadata.rst
    GET-Model-Arrayset.rst
    GET-Model-Command.rst

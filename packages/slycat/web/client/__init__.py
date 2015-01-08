@@ -239,6 +239,7 @@ class Connection(object):
 
   def get_model_array_metadata(self, mid, name, array):
     """Returns the metadata for an array artifacat."""
+    log.warning("get_model_array_metadata is deprecated, use get_model_arrayset_metadata instead.")
     return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
 
   def get_model_file(self, mid, name):

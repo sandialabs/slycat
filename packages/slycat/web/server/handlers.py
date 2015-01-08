@@ -697,6 +697,8 @@ def delete_model(mid):
 
 @cherrypy.tools.json_out(on = True)
 def get_model_array_metadata(mid, aid, array):
+  cherrypy.log.error("GET Model Array Metadata is deprecated.")
+
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
