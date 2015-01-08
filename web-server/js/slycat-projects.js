@@ -48,7 +48,6 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
     }
     source.onerror = function(event)
     {
-      console.log("error", event);
     }
   }
 
