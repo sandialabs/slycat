@@ -199,7 +199,9 @@ rights in this software.
   stroke-dasharray: 2px, 5px;
 }
 .legend-axis path,
-.legend-axis line
+.legend-axis line,
+.x-axis path, 
+.y-axis path
 {
   fill: none;
   stroke: black;

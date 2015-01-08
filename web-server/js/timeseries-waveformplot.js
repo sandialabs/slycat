@@ -30,9 +30,12 @@ $.widget("timeseries.waveformplot",
     this.container = d3.select("#waveform-viewer");
     this.width = $("#waveform-pane").width();
     this.height = $("#waveform-pane").height();
-    this.padding = 20;
-    this.diagram_width = this.width - this.padding - this.padding;
-    this.diagram_height = this.height - this.padding - this.padding;
+    this.padding_top = 20;
+    this.padding_right = 20;
+    this.padding_bottom = 40;
+    this.padding_left = 60;
+    this.diagram_width = this.width - this.padding_right - this.padding_left;
+    this.diagram_height = this.height - this.padding_top - this.padding_bottom;
 
     this.waveformPieContainer = $("#waveform-progress");
     this.waveformPie = $("#waveform-progress .waveformPie")
@@ -56,7 +59,7 @@ $.widget("timeseries.waveformplot",
     this.container.selectAll("g").remove();
 
     this.visualization = this.container.append("svg:g")
-      .attr("transform", "translate(" + this.padding + "," + this.padding + ")")
+      .attr("transform", "translate(" + this.padding_left + "," + this.padding_top + ")")
       ;
 
     this.rect = this.visualization.append("svg:rect")
@@ -75,6 +78,9 @@ $.widget("timeseries.waveformplot",
       }) 
 //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
       ;
+
+    this.x_axis_layer = this.container.append("g").attr("class", "x-axis");
+    this.y_axis_layer = this.container.append("g").attr("class", "y-axis");
 
     // Set all waveforms to visible if this options has not been set
     var visible = this.options.selection;
@@ -113,6 +119,18 @@ $.widget("timeseries.waveformplot",
       .domain([y_max, y_min])
       .range([0, this.diagram_height])
       ;
+
+    this.x_axis = d3.svg.axis().scale(this.x).orient("bottom");
+    this.x_axis_layer
+        .attr("transform", "translate(" + (this.padding_left - 1) + "," + (this.padding_top + this.diagram_height + 1) + ")")
+        .call(this.x_axis)
+        ;
+
+    this.y_axis = d3.svg.axis().scale(this.y).orient("left");
+    this.y_axis_layer
+        .attr("transform", "translate(" + (this.padding_left - 1) + "," + (this.padding_top + 1) + ")")
+        .call(this.y_axis)
+        ;
 
     var waveform_subset = [];
     if(visible !== undefined) {
@@ -424,8 +442,8 @@ $.widget("timeseries.waveformplot",
       
     this.width = $("#waveform-pane").width();
     this.height = $("#waveform-pane").height();
-    this.diagram_width = this.width - this.padding - this.padding;
-    this.diagram_height = this.height - this.padding - this.padding;
+    this.diagram_width = this.width - this.padding_left - this.padding_right;
+    this.diagram_height = this.height - this.padding_top - this.padding_bottom;
     this.rect.attr({width: this.diagram_width, height: this.diagram_height});
     this._set_visible();
     this._select();
