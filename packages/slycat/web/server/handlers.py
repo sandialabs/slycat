@@ -720,6 +720,8 @@ def get_model_array_metadata(mid, aid, array):
 
 @cherrypy.tools.json_out(on = True)
 def get_model_array_attribute_statistics(mid, aid, array, attribute):
+  cherrypy.log.error("GET Model Array Attribute Statistics is deprecated.")
+
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
