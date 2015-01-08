@@ -444,7 +444,7 @@ def get_model(mid, **kwargs):
     mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
-    if mtype in ["timeseries", "parameter-image", "tracer-image"]:
+    if mtype in ["parameter-image", "tracer-image"]:
       context = get_context()
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
@@ -457,11 +457,11 @@ def get_model(mid, **kwargs):
       context["new-model-name"] = "Model-%s" % (model_count + 1)
       context["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
-      if mtype == "timeseries":
-        context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
-        context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
-        context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
-        return slycat.web.server.template.render("model-timeseries.html", context)
+      # if mtype == "timeseries":
+      #   context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
+      #   context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
+      #   context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
+      #   return slycat.web.server.template.render("model-timeseries.html", context)
 
 #      if mtype in ["cca", "cca3"]:
 #        return slycat.web.server.template.render("model-cca3.html", context)
