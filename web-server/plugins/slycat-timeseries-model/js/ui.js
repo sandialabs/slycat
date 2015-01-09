@@ -10,12 +10,12 @@ define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manage
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-var model = null;
+var model = {_id: location.pathname.split("/").reverse()[0]};
 var cluster_bin_count = null;
 var cluster_bin_type = null;
 var cluster_type = null;
 
-var bookmarker = new bookmark_manager("{{server-root}}", "{{#full-project}}{{_id}}{{/full-project}}", "{{_id}}");
+var bookmarker = null;
 var bookmark = null;
 
 var clusters = null; // This is just the list of cluster names
@@ -43,10 +43,11 @@ var legend_ready = false;
 $.ajax(
 {
   type : "GET",
-  url : "{{server-root}}models/{{_id}}",
+  url : server_root + "models/" + model._id,
   success : function(result)
   {
     model = result;
+    bookmarker = bookmark_manager.create(model.project, model._id);
     cluster_bin_count = model["artifact:cluster-bin-count"];
     cluster_bin_type = model["artifact:cluster-bin-type"];
     cluster_type = model["artifact:cluster-type"];
@@ -96,7 +97,7 @@ function setup_page()
     $.ajax(
     {
       type : "PUT",
-      url : "{{server-root}}models/{{_id}}",
+      url : server_root + "models/" + model._id,
       contentType : "application/json",
       data : $.toJSON({
         "state" : "closed"
@@ -106,7 +107,7 @@ function setup_page()
 
     // Load list of clusters.
     $.ajax({
-      url : "{{server-root}}models/{{_id}}/files/clusters",
+      url : server_root + "models/" + model._id + "/files/clusters",
       contentType : "application/json",
       success: function(result)
       {
@@ -123,7 +124,7 @@ function setup_page()
 
     // Load data table metadata.
     $.ajax({
-      url : "{{server-root}}models/{{_id}}/tables/inputs/arrays/0/metadata?index=Index",
+      url : server_root + "models/" + model._id + "/tables/inputs/arrays/0/metadata?index=Index",
       contentType : "application/json",
       success: function(metadata)
       {
@@ -199,7 +200,7 @@ $("#edit-model-form").dialog(
       $.ajax(
       {
         type : "PUT",
-        url : "{{server-root}}models/{{_id}}",
+        url : server_root + "models/" + model._id,
         contentType : "application/json",
         data : $.toJSON(modified_model),
         processData : false,
@@ -230,10 +231,10 @@ $("#delete-model-link").click(function(){
   $.ajax(
   {
     type : "DELETE",
-    url : "{{server-root}}models/{{_id}}",
+    url : server_root + "models/" + model._id,
     success : function(details)
     {
-      window.location.href = "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}";
+      window.location.href = server_root + "projects/{{#full-project}}" + model._id + "{{/full-project}}";
     },
     error : function(request, status, reason_phrase)
     {
@@ -271,7 +272,7 @@ $("#rerun-timeseries-form").dialog(
       $.ajax(
       {
         type : "DELETE",
-        url : "{{server-root}}workers/" + rerun_timeseries_worker,
+        url : server_root + "workers/" + rerun_timeseries_worker,
         error : function(request, status, reason_phrase)
         {
           window.alert("Error closing local worker: " + reason_phrase);
@@ -300,7 +301,7 @@ $("#rerun-timeseries-form").dialog(
       $.ajax(
       {
         type : "POST",
-        url : "{{server-root}}projects/{{#full-project}}{{_id}}{{/full-project}}/models",
+        url : server_root + "projects/{{#full-project}}" + model._id + "{{/full-project}}/models",
         contentType : "application/json",
         data: $.toJSON(
         {
@@ -316,11 +317,11 @@ $("#rerun-timeseries-form").dialog(
           $.ajax(
           {
             type : "POST",
-            url : "{{server-root}}workers/" + rerun_timeseries_worker + "/model/copy-model-inputs",
+            url : server_root + "workers/" + rerun_timeseries_worker + "/model/copy-model-inputs",
             contentType : "application/json",
             data: $.toJSON(
             {
-              "mid" : "{{_id}}"
+              "mid" : model._id
             }),
             processData: false,
             success: function(result)
@@ -347,7 +348,7 @@ $("#rerun-timeseries-form").dialog(
         {
           async : false,
           type : "PUT",
-          url : "{{server-root}}models/" + rerun_timeseries_model + "/parameters/" + name,
+          url : server_root + "models/" + rerun_timeseries_model + "/parameters/" + name,
           contentType : "application/json",
           data: $.toJSON(
           {
@@ -369,7 +370,7 @@ $("#rerun-timeseries-form").dialog(
       $.ajax(
       {
         type : "PUT",
-        url : "{{server-root}}models/" + rerun_timeseries_model,
+        url : server_root + "models/" + rerun_timeseries_model,
         contentType : "application/json",
         data: $.toJSON(
         {
@@ -513,7 +514,7 @@ function retrieve_sorted_column(parameters)
   var lastRow  = table_metadata["column-max"][lastColumn]+1;
 
   $.ajax({
-    url : "{{server-root}}models/{{_id}}/tables/inputs/arrays/0/chunk?rows=" + firstRow + "-" + lastRow + "&columns=" + parameters.column + "&index=Index&sort=" + lastColumn + ":ascending",
+    url : server_root + "models/" + model._id + "/tables/inputs/arrays/0/chunk?rows=" + firstRow + "-" + lastRow + "&columns=" + parameters.column + "&index=Index&sort=" + lastColumn + ":ascending",
     async: true,
     callback: parameters.callback,
     success: function(resp){
@@ -534,7 +535,7 @@ function setup_cluster()
 
     $.ajax(
     {
-      url : "{{server-root}}models/{{_id}}/files/cluster-" + clusters[cluster],
+      url : server_root + "models/" + model._id + "/files/cluster-" + clusters[cluster],
       contentType : "application/json",
       success : function(cluster_data)
       {
@@ -555,8 +556,8 @@ function setup_waveforms()
 
     // Load the waveforms.
     get_model_arrayset({
-      server_root : "{{server-root}}",
-      mid : "{{_id}}",
+      server_root : server_root + "",
+      mid : model._id,
       aid : "preview-" + clusters[cluster],
       success : function(result, metadata)
       {
@@ -692,8 +693,8 @@ function setup_widgets()
 
     var waveformplot_options =
     {
-      "server-root" : "{{server-root}}",
-      mid : "{{_id}}",
+      "server-root" : server_root,
+      mid : model._id,
       waveforms: waveforms_data[initial_cluster],
       color_scale: color_scale,
       color_array: color_array,
@@ -760,8 +761,8 @@ function setup_widgets()
 
     var table_options =
     {
-      "server-root" : "{{server-root}}",
-      mid : "{{_id}}",
+      "server-root" : server_root,
+      mid : model._id,
       aid : "inputs",
       metadata : table_metadata,
     };
@@ -881,8 +882,8 @@ function setup_widgets()
       });
 
     var dendrogram_options = build_dendrogram_node_options(initial_cluster);
-    dendrogram_options["server-root"]="{{server-root}}";
-    dendrogram_options.mid="{{_id}}";
+    dendrogram_options["server-root"]=server_root;
+    dendrogram_options.mid=model._id;
     dendrogram_options.clusters=clusters;
     dendrogram_options.cluster_data=clusters_data[initial_cluster];
     dendrogram_options.color_scale=color_scale;
@@ -959,7 +960,7 @@ function selected_colormap_changed(colormap)
   $.ajax(
   {
     type : "POST",
-    url : "{{server-root}}events/models/{{_id}}/select/colormap/" + colormap
+    url : server_root + "events/models/" + model._id + "/select/colormap/" + colormap
   });
   bookmarker.updateState({"colormap" : colormap});
 }
@@ -969,7 +970,7 @@ function selected_cluster_changed(cluster)
   $.ajax(
   {
     type : "POST",
-    url : "{{server-root}}events/models/{{_id}}/select/cluster/" + cluster
+    url : server_root + "events/models/" + model._id + "/select/cluster/" + cluster
   });
   bookmarker.updateState({"cluster-index" : cluster});
 }
@@ -980,7 +981,7 @@ function selected_node_changed(parameters)
     $.ajax(
     {
       type : "POST",
-      url : "{{server-root}}events/models/{{_id}}/select/node/" + parameters.node["node-index"],
+      url : server_root + "events/models/" + model._id + "/select/node/" + parameters.node["node-index"],
     });
   if(parameters.skip_bookmarking != true) {
     var state = {};
@@ -996,7 +997,7 @@ function selected_simulations_changed(selection)
   $.ajax(
   {
     type : "POST",
-    url : "{{server-root}}events/models/{{_id}}/select/simulation/count/" + selection.length
+    url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selection.length
   });
   var selected_simulations = {};
   selected_simulations[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] = selection;
@@ -1008,7 +1009,7 @@ function selected_variable_changed(variable)
   $.ajax(
   {
     type : "POST",
-    url : "{{server-root}}events/models/{{_id}}/select/variable/" + variable
+    url : server_root + "events/models/" + model._id + "/select/variable/" + variable
   });
   var selected_variable = {};
   selected_variable[ $("#cluster-viewer").cluster("option", "cluster") + "-column-index"] = variable[0];
@@ -1020,7 +1021,7 @@ function variable_sort_changed(variable, order)
   $.ajax(
   {
     type : "POST",
-    url : "{{server-root}}events/models/{{_id}}/select/sort-order/" + variable + "/" + order
+    url : server_root + "events/models/" + model._id + "/select/sort-order/" + variable + "/" + order
   });
   bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
 }
@@ -1036,7 +1037,7 @@ function node_toggled(node){
   $.ajax(
   {
     type : "POST",
-    url : "{{server-root}}events/models/{{_id}}/toggle/node/" + node["node-index"],
+    url : server_root + "events/models/" + model._id + "/toggle/node/" + node["node-index"],
   });
 }
 
@@ -1047,7 +1048,7 @@ function update_dendrogram(cluster)
   if(clusters_data[cluster] === undefined) {
      $.ajax(
     {
-      url : "{{server-root}}models/{{_id}}/files/cluster-" + clusters[cluster],
+      url : server_root + "models/" + model._id + "/files/cluster-" + clusters[cluster],
       contentType : "application/json",
       success : function(cluster_data)
       {
@@ -1071,8 +1072,8 @@ function update_waveformplot(cluster)
   if(waveforms_data[cluster] === undefined) {
     // Load the waveforms.
     get_model_arrayset({
-      server_root : "{{server-root}}",
-      mid : "{{_id}}",
+      server_root : server_root,
+      mid : model._id,
       aid : "preview-" + clusters[cluster],
       success : function(result, metadata)
       {

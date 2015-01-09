@@ -49,6 +49,14 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
     #For development and debugging, loading some js dynamically inside model.
-    os.path.join(os.path.dirname(__file__), "js/ui.js"),
+    #os.path.join(os.path.dirname(__file__), "js/ui.js"),
     ])
   context.register_model_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
+
+  devs = [
+    # "js/parameter-image-dendrogram.js",
+    # "js/parameter-image-scatterplot.js",
+    "js/ui.js",
+  ]
+  for dev in devs:
+    context.register_model_resource("timeseries", dev, os.path.join(os.path.dirname(__file__), dev))

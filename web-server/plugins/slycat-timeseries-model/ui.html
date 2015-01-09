@@ -4,6 +4,30 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 -->
 
+<script type="text/javascript">
+  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
+  // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
+  [
+    // "js/parameter-image-dendrogram.js",
+    // "js/parameter-image-scatterplot.js",
+    "js/ui.js",
+  ].forEach(function(src) {
+    var script = document.createElement('script');
+    script.src = server_root + "resources/models/timeseries/" + src;
+    script.async = false;
+    document.head.appendChild(script);
+  });
+  [
+    //"ui.css",
+  ].forEach(function(src) {
+    var link = document.createElement('link');
+    link.href = server_root + "resources/models/timeseries/" + src;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    document.head.appendChild(link);
+  });
+</script>
+
 <div id="timeseries-model">
   <div id="content-pane" class="ui-layout-center">
 	  <div id="cluster-pane" class="ui-layout-north">
