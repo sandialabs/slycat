@@ -94,7 +94,19 @@ def register_slycat_plugin(context):
 
   # Register images and other resources
   images = [
-   # TODO track down images
+    "x-gray.png",
+    "x-light.png",
+    "y-gray.png",
+    "y-light.png",
+    "sort-asc-light.png",
+    "sort-asc-gray.png",
+    "sort-desc-light.png",
+    "sort-desc-gray.png",
+    "image-gray.png",
+    "image-light.png",
+    "stripe1.png",
+    "stripe2.png",
+    "pin.png",
   ]
   for image in images:
     context.register_model_resource("tracer-image", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
