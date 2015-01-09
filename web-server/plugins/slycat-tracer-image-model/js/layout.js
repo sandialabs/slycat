@@ -1,11 +1,8 @@
-define("Layout", function() {
+define("Layout", ["slycat-server-root"], function(server_root) {
 
-  function Layout(server_root, server_model) {
+  function Layout(model) {
     console.debug("Setup layout");
-    this.server_root = server_root;
-    this.server_model = server_model;
-    this.bookmarker = new bookmark_manager(server_root, server_model.project, server_model._id);
-    this.bookmark = null;
+    this.model = model;
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +10,7 @@ define("Layout", function() {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   // Setup the edit model form ...
-  Layout.prototype.setup = function() {
+  Layout.prototype.setup = function(grid) {
     console.debug("setting up the layout");
 
     $("#download-data-button").button().click(function() {
@@ -50,7 +47,7 @@ define("Layout", function() {
     });
 
     // Layout resizable panels ...
-    $("body").layout(
+    $(".parameter-image").layout(
       {
         north:
         {
@@ -90,7 +87,7 @@ define("Layout", function() {
   Layout.prototype.setup_colorswitcher = function() {
     console.debug("inside setup_colorswitcher()");
     var self = this;
-    var colormap = layout.bookmark["colormap"] !== undefined ? layout.bookmark["colormap"] : "night";
+    var colormap = self.model.bookmark["colormap"] !== undefined ? self.model.bookmark["colormap"] : "night";
 
     $("#color-switcher").colorswitcher({colormap:colormap});
     $("#color-switcher").bind("colormap-changed", function(event, colormap) {
@@ -109,9 +106,9 @@ define("Layout", function() {
 
     $.ajax({
       type : "POST",
-      url : self.server_root + "events/models/" + self.server_model._id +"/select/colormap/" + colormap
+      url : server_root + "events/models/" + self.model.id +"/select/colormap/" + colormap
     });
-    self.bookmarker.updateState({"colormap" : colormap});
+    self.model.bookmarker.updateState({"colormap" : colormap});
   };
 
   return Layout;
