@@ -800,9 +800,6 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
 
 @cherrypy.tools.json_out(on = True)
 def get_model_arrayset_metadata(mid, aid, **arguments):
-  arrays = arguments.get("arrays", "::")
-  arrays = slice(*[int(value) if value != "" else None for value in arrays.split(":")])
-
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -815,18 +812,47 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
-      arrayset = slycat.hdf5.ArraySet(file)
-      results = []
-      for key in sorted(arrayset.keys())[arrays]:
-        array = arrayset[key]
-        results.append({
-          "index" : int(key),
-          "dimensions" : array.dimensions,
-          "attributes" : array.attributes,
-          })
-      return results
+  # New behavior
+  if "arrays" in arguments or "statistics" in arguments:
+    cherrypy.log.error("arguments: %s" % arguments)
+    with slycat.web.server.database.hdf5.lock:
+      with slycat.web.server.database.hdf5.open(artifact) as file:
+        hdf5_arrayset = slycat.hdf5.ArraySet(file)
+        results = {}
+        if "arrays" in arguments:
+          results["arrays"] = []
+          for array in arguments["arrays"].split(","):
+            hdf5_array = hdf5_arrayset[array]
+            results["arrays"].append({
+              "index" : int(array),
+              "dimensions" : hdf5_array.dimensions,
+              "attributes" : hdf5_array.attributes,
+              })
+        if "statistics" in arguments:
+          results["statistics"] = []
+          for spec in arguments["statistics"].split(","):
+            cherrypy.log.error("spec: %s" % spec)
+            array, attribute = spec.split("/")
+            statistics = hdf5_arrayset[array].get_statistics(attribute)
+            statistics["array"] = int(array)
+            statistics["attribute"] = int(attribute)
+            results["statistics"].append(statistics)
+        return results
+
+  # Legacy behavior
+  else:
+    with slycat.web.server.database.hdf5.lock:
+      with slycat.web.server.database.hdf5.open(artifact) as file:
+        hdf5_arrayset = slycat.hdf5.ArraySet(file)
+        results = []
+        for array in sorted(hdf5_arrayset.keys()):
+          hdf5_array = hdf5_arrayset[array]
+          results.append({
+            "index" : int(array),
+            "dimensions" : hdf5_array.dimensions,
+            "attributes" : hdf5_array.attributes,
+            })
+        return results
 
 def get_model_arrayset(mid, aid, **arguments):
   accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
