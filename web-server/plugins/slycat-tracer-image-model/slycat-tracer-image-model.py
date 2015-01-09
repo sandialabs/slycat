@@ -109,4 +109,4 @@ def register_slycat_plugin(context):
     "pin.png",
   ]
   for image in images:
-    context.register_model_resource("tracer-image", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
+    context.register_model_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), "img", image))
