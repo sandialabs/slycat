@@ -894,6 +894,59 @@ def get_model_arrayset(mid, aid, **arguments):
   return content()
 get_model_arrayset._cp_config = {"response.stream" : True}
 
+def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
+  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
+
+  # Sanity check inputs ...
+  parsed_hyperchunks = []
+
+  try:
+    for hyperchunk in hyperchunks.split(";"):
+      array, attribute, hyperslices = hyperchunk.split("/")
+      array = int(array)
+      if array < 0:
+        raise Exception()
+      attribute = int(attribute)
+      if attribute < 0:
+        raise Exception()
+      hyperslices = [slycat.hyperslice.parse(hyperslice) for hyperslice in hyperslices.split("|")]
+      parsed_hyperchunks.append((array, attribute, hyperslices))
+  except Exception as e:
+    cherrypy.log.error("Parsing exception: %s" % e)
+    raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
+
+  if byteorder is not None:
+    if byteorder not in ["big", "little"]:
+      raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  def content():
+    if byteorder is None:
+      yield json.dumps([hyperslice.tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
+    else:
+      for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks):
+        if sys.byteorder != byteorder:
+          yield hyperslice.byteswap().tostring(order="C")
+        else:
+          yield hyperslice.tostring(order="C")
+  return content()
+get_model_arrayset_data._cp_config = {"response.stream" : True}
+
 def validate_table_rows(rows):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
