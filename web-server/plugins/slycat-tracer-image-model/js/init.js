@@ -1,39 +1,13 @@
-function show_status_messages() {
-  console.debug("Inside show_status_messages()");
-  $("#status-messages").dialog({
-    autoOpen: true,
-    width: 500,
-    height: 300,
-    modal: false,
-    buttons:
-    {
-      OK: function()
-      {
-        $("#status-messages").dialog("close");
-      }
-    }
-  });
-}
-
-function artifact_missing() {
-  console.debug("Inside artifact_missing()");
-  $(".load-status").css("display", "none");
-
-  $("#status-messages").empty().html(
-    "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-      "<div class='error-description'>This probably means that there was a problem building the model. " +
-      "Here's the last thing that was going on with it:</div>" +
-      "<pre>" + model["message"] + "</pre>");
-
-  show_status_messages();
-}
-
-var grid_pane = "#grid-pane";
-var layout = new Layout(); //load first to instantiate bookmarker
-var model = new Model();
-model.load();
-var table = new Table();
-layout.setup();
-var grid = new Grid(grid_pane, [2,2], ScatterPlot);
-grid.setup();
-var login = new Login(grid_pane, model.server_root);
+define("slycat-tracer-image-model", ["slycat-model-main", "Model", "Layout", "Table", "Grid", "ScatterPlot", "Login", "domReady!"], function(slycat_main, Model, Layout, Table, Grid, ScatterPlot, Login) {
+  slycat_main.start(); //for some reason this isn't running before the model-specific JS executes like it does for the other models
+  $(window).resize(); //triggers slycat_main module to set the height of div.slycat-content, which as a parent node is required for jQuery UI layout
+  var model = new Model();
+  var layout = new Layout(model);
+  var grid_pane = "#grid-pane";
+  var login = new Login(grid_pane);
+  var grid = new Grid(grid_pane, [2,2], ScatterPlot, model, login);
+  layout.setup(grid);
+  var table = new Table(model, grid);
+  model.load(layout, table, grid);
+  grid.setup();
+});
