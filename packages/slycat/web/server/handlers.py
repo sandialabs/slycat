@@ -821,7 +821,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         results = {}
         if "arrays" in arguments:
           results["arrays"] = []
-          for array in arguments["arrays"].split(","):
+          for array in arguments["arrays"].split(";"):
             hdf5_array = hdf5_arrayset[array]
             results["arrays"].append({
               "index" : int(array),
@@ -830,7 +830,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
               })
         if "statistics" in arguments:
           results["statistics"] = []
-          for spec in arguments["statistics"].split(","):
+          for spec in arguments["statistics"].split(";"):
             cherrypy.log.error("spec: %s" % spec)
             array, attribute = spec.split("/")
             statistics = hdf5_arrayset[array].get_statistics(attribute)
