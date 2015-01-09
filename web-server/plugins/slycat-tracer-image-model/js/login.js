@@ -1,5 +1,4 @@
-define("Login", ["slycat-server-root"], function(server_root) {
-
+define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root) {
   function Login(grid_ref) {
     var self = this;
     this.session_cache = {};
@@ -78,7 +77,7 @@ define("Login", ["slycat-server-root"], function(server_root) {
           data : args.data({hostname: parser.hostname, username: $("#remote-username").val(), password: $("#remote-password").val()}),
           processData : false,
           success : function(result){
-            login.session_cache[args.success] = result.sid;
+            self.session_cache[args.success] = result.sid;
             self.image_login.dialog("close");
             callback.call(this_arg, images);
           },
