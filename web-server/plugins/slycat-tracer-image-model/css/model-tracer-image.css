@@ -351,7 +351,28 @@ rights in this software.
   padding-bottom: 35px;
 }
 #color-switcher {
-  margin: -16px 0 0 0;
+  margin: 0;
+}
+
+#color-switcher .label {
+  font-weight: bold;
+}
+#color-switcher .color {
+  background-color: #DBD9EB;
+  padding: 4px;
+}
+#color-switcher .color:hover {
+  cursor: pointer;
+}
+#color-switcher .selected:hover {
+  cursor: default;
+}
+#color-switcher .selected {
+  background-color: #7767B0 !important;
+  color: white;
+}
+#color-switcher, #controls {
+  font-size: small;
 }
 #controls {
   /*float: left;
