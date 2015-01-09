@@ -12,15 +12,6 @@ define("slycat-projects-main", ["slycat-server-root", "slycat-projects"], functi
     var page = {}
     page.server_root = server_root;
     page.projects = projects.watch();
-
-    // Size the page content to consume available space
-    function size_content()
-    {
-      $(".slycat-content").css("min-height", $(window).height() - $("slycat-navbar > div").height());
-    }
-    $(window).resize(size_content);
-    window.setTimeout(function() { $(window).resize(); }, 10);
-
     ko.applyBindings(page);
   }
 

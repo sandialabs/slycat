@@ -11,6 +11,14 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
   var project_ids = {}
   var source = null;
 
+  function sort_projects()
+  {
+    projects.sort(function(left, right)
+    {
+      return left.created() == right.created() ? 0 : (left.created() < right.created() ? 1 : -1);
+    });
+  }
+
   function start()
   {
     source = new EventSource(server_root + "projects-feed");
@@ -43,12 +51,12 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
         {
           project_ids[project._id] = ko.mapping.fromJS(project);
           projects.push(project_ids[project._id]);
+          sort_projects();
         }
       }
     }
     source.onerror = function(event)
     {
-      console.log("error", event);
     }
   }
 
@@ -76,6 +84,7 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
       acl: project.acl || {"administrators":[],"writers":[],"readers":[]},
     });
     projects.push(project_ids[project._id]);
+    sort_projects();
   }
 
   return module;

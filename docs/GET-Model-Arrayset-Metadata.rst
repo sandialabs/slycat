@@ -67,6 +67,7 @@ Sample Response
     Server: CherryPy/3.2.2
 
     [{
+      "index": 0,
       "attributes": [
         {"type": "float64", "name": "correlation"}
       ],

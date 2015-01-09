@@ -442,6 +442,9 @@ rights in this software.
 #scatterplot g.legend:hover {
   cursor: move;
 }
+#scatterplot .image-frame rect.outline {
+  shape-rendering: crispEdges;
+}
 .legend-axis path,
 .legend-axis line
 {
@@ -531,9 +534,9 @@ rights in this software.
   stroke: #C9C9C9;
   shape-rendering: crispEdges;
 }
-#dendrogram-sparkline-backdrop {
+#dendrogram-leaf-backdrop {
   height: 100%;
-  width: 130px;
+  width: 49px;
   position: absolute;
   right: 0;
   z-index: -1;

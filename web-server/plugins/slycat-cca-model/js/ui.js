@@ -274,7 +274,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "do
   // Layout resizable panels ...
   $("#cca-model").layout(
   {
-    applyDefaultStyles: true,
+    applyDefaultStyles: false,
     west:
     {
       size: $("#cca-model").width() / 2,

@@ -20,6 +20,7 @@ rights in this software.
     <script type="text/javascript" src="{{server-root}}js/timeseries-dendrogram.js"></script>
     <script type="text/javascript" src="{{server-root}}js/timeseries-waveformplot.js"></script>
     <script type="text/javascript" src="{{server-root}}js/timeseries-table.js"></script>
+    <script type="text/javascript" src="{{server-root}}js/timeseries-legend.js"></script>
 
     <!-- SlickGrid sources -->
     <script type="text/javascript" src="{{server-root}}js/slickGrid/jquery.event.drag-2.2.js"></script>
@@ -129,6 +130,10 @@ rights in this software.
             <input class="waveformPie" value="1" />
           </div>
         </div>
+        <div id="legend-pane" class="ui-layout-east">
+          <div class="load-status"></div>
+          <div id="legend"></div>
+        </div>
       </div>
     </div>
     <div id="table-pane" class="ui-layout-south" style="overflow: auto">
@@ -169,6 +174,7 @@ rights in this software.
         var dendrogram_ready = false;
         var waveformplot_ready = false;
         var table_ready = false;
+        var legend_ready = false;
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Get the model
@@ -601,7 +607,13 @@ rights in this software.
             { 
               $("#waveform-viewer").waveformplot("resize_canvas");
             },
-          }
+          },
+          east:
+          {
+            size: 130,
+            resizeWhileDragging: false,
+            onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+          },
         });
 
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -710,8 +722,66 @@ rights in this software.
             {
               selected_colormap_changed(colormap);
             });
+          }
+
+          // Setup the legend ...
+          if(!legend_ready && bookmark && table_metadata && (initial_cluster !==  null))
+          {
+            legend_ready = true;
+
+            $("#legend-pane .load-status").css("display", "none");
+
+            var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+            $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+
+            var v_index = table_metadata["column-count"] - 1;
+            if(bookmark[initial_cluster + "-column-index"] !== undefined)
+            {
+              v_index = bookmark[initial_cluster + "-column-index"];
+            }
+
+            $("#legend").legend({
+              width: $("#legend-pane").width(),
+              height: $("#legend-pane").height(),
+              gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+              label: table_metadata["column-names"][v_index],
+              min: table_metadata["column-min"][v_index],
+              max: table_metadata["column-max"][v_index],
+            });
+
+            // Changing the color map updates the legend ...
+            $("#color-switcher").bind("colormap-changed", function(event, colormap)
+            {
+              $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+              $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
+            });
+
+            // Changing the table variable selection updates the legend ...
+            $("#table").bind("variable-selection-changed", function(event, selection)
+            {
+              $("#legend").legend("option", {
+                min: table_metadata["column-min"][selection.variable[0]],
+                max: table_metadata["column-max"][selection.variable[0]],
+                label: table_metadata["column-names"][selection.variable[0]],
+              });
+            });
+
+            // Changing the cluster updates the legend ...
+            $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
+            {
+              if(bookmark[cluster + "-column-index"] !== undefined)
+              {
+                $("#legend").legend("option", {
+                  min: table_metadata["column-min"][bookmark[cluster + "-column-index"]],
+                  max: table_metadata["column-max"][bookmark[cluster + "-column-index"]],
+                  label: table_metadata["column-names"][bookmark[cluster + "-column-index"]],
+                });
+              }
+            });
 
           }
+
           // Setup the cluster ...
           if(!cluster_ready && bookmark && clusters)
           {

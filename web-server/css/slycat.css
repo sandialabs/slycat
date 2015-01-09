@@ -137,11 +137,11 @@ slycat-navbar .alert pre
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
+  min-height: calc(100vh - 50px);
 }
 
-#slycat-projects .container, #slycat-project .container
+#slycat-projects, #slycat-project
 {
   padding-top: 12px;
 }
-
 

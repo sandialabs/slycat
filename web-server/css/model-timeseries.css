@@ -198,3 +198,12 @@ rights in this software.
 #dendrogram-viewer g.sparkline path.highlight.nullValue {
   stroke-dasharray: 2px, 5px;
 }
+.legend-axis path,
+.legend-axis line,
+.x-axis path, 
+.y-axis path
+{
+  fill: none;
+  stroke: black;
+  shape-rendering: crispedges;
+}
