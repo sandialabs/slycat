@@ -4,9 +4,33 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-#legend-pane
+.ui-layout-resizer
 {
-  padding: 0 !important;
+  background-color: #ddc;
+}
+
+.ui-layout-toggler
+{
+  background-color: #ccb;
+}
+
+.ui-layout-resizer-open.ui-layout-resizer-hover, .ui-layout-resizer-dragging, .ui-layout-toggler-hover
+{
+  background-color: #fc6;
+}
+
+.ui-layout-pane, .ui-layout-container
+{
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+#color-switcher
+{
+  position: absolute;
+  top: 10px;
+  left: 10px;
 }
 
 #table
@@ -272,3 +296,6 @@ rights in this software.
   fill: none;
   stroke: black;
 }
+
+
+
