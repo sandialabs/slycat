@@ -66,6 +66,7 @@ def register_slycat_plugin(context):
 
   context.register_model("linear-regression-demo", finish_model, model_html)
   context.register_model_bundle("linear-regression-demo", "text/javascript", [
+    os.path.join(os.path.dirname(__file__), "d3.min.js"),
     os.path.join(os.path.dirname(__file__), "ui.js"),
     ])
 

@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-linear-regression-demo-model", ["slycat-web-client", "domReady!"], function(client)
+define("slycat-linear-regression-demo-model", ["slycat-web-client", "d3", "domReady!"], function(client, d3)
 {
   // Setup storage for the data we're going to plot.
   var page =
@@ -15,11 +15,11 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "domReady!"]
     x_column: ko.observable(null),
     y_column: ko.observable(null),
     regression: ko.mapping.fromJS({slope:null, intercept:null, r:null, p:null, error:null}),
-    statistics: ko.mapping.fromJS([{min:null, max:null}, {min:null, max:null}]),
     x: ko.observableArray(),
     y: ko.observableArray(),
   };
 
+  // Load data as the necessary information becomes available.
   page.load_x_column = ko.computed(function()
   {
     if(page.mid() !== null)
@@ -102,69 +102,50 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "domReady!"]
     };
   });
 
-  page.load_statistics = ko.computed(function()
+  // Render the plot once all the necessary data is loaded.
+  page.render = ko.computed(function()
   {
-    if(page.x_column() !== null && page.y_column() !== null)
-    {
-      client.get_model_arrayset_metadata(
-      {
-        mid: page.mid(),
-        aid: "data-table",
-        statistics: [[0, page.x_column()], [0, page.y_column()]],
-        success: function(metadata)
-        {
-          ko.mapping.fromJS(metadata.statistics, page.statistics);
-        }
-      });
-    }
-  });
-
-  page.points = ko.pureComputed(function()
-  {
-    var width = page.width();
-    var height = page.height();
-    var min_x = page.statistics()[0].min();
-    var max_x = page.statistics()[0].max();
-    var min_y = page.statistics()[1].min();
-    var max_y = page.statistics()[1].max();
     var x = page.x();
     var y = page.y();
-
-    var points = [];
-    if(min_x !== null && max_x !== null && min_y !== null && max_y !== null && x.length && y.length)
-    {
-      for(var i = 0; i != x.length; ++i)
-      {
-        points.push(
-        {
-          x: (x[i] - min_x) / (max_x - min_x) * width,
-          y: height - ((y[i] - min_y) / (max_y - min_y) * height),
-        });
-      }
-    }
-    return points;
-  });
-
-  page.regression_line = ko.pureComputed(function()
-  {
-    var width = page.width();
-    var height = page.height();
-    var min_x = page.statistics()[0].min();
-    var max_x = page.statistics()[0].max();
-    var min_y = page.statistics()[1].min();
-    var max_y = page.statistics()[1].max();
     var slope = page.regression.slope();
     var intercept = page.regression.intercept();
 
-    var regression_line = {x1:null, y1:null, x2:null, y2:null};
-    if(min_x !== null && max_x !== null && min_y !== null && max_y !== null && slope !== null && intercept !== null)
+    if(x.length && y.length && slope !== null && intercept !== null)
     {
-      regression_line.x1 = 0;
-      regression_line.x2 = width;
-      regression_line.y1 = height - (((min_x * slope + intercept) - min_y) / (max_y - min_y) * height);
-      regression_line.y2 = height - (((max_x * slope + intercept) - min_y) / (max_y - min_y) * height);
+      var padding = 10;
+      var min_x = d3.min(x);
+      var max_x = d3.max(x);
+      var min_y = d3.min(y);
+      var max_y = d3.max(y);
+      var x_scale = d3.scale.linear().domain([min_x, max_x]).range([padding, page.width() - padding]);
+      var y_scale = d3.scale.linear().domain([min_y, max_y]).range([page.height() - padding, padding]);
+      var data = d3.zip(x, y);
+
+      var svg = d3.select("svg");
+
+      // Render points
+      svg.selectAll(".point")
+        .data(data)
+      .enter().append("circle")
+        .attr("class", "point")
+        .attr("r", 3)
+        .attr("cx", function(datum) { return x_scale(datum[0]); })
+        .attr("cy", function(datum) { return y_scale(datum[1]); })
+        .style({"stroke":"black", "stroke-opacity":0.5, "fill":"steelblue"})
+        ;
+
+      // Render the regression line
+      svg.selectAll(".regression")
+        .data([null])
+      .enter().append("line")
+        .attr("class", "regression")
+        .attr("x1", x_scale(min_x))
+        .attr("x2", x_scale(max_x))
+        .attr("y1", y_scale(min_x * slope + intercept))
+        .attr("y2", y_scale(max_x * slope + intercept))
+        .style({"stroke":"red"})
+        ;
     }
-    return regression_line;
   });
 
   // Miscellaneous helpers for use with HTML bindings.

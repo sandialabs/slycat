@@ -8,10 +8,6 @@ rights in this software.
   <div style="font-size: 18px; width: 600px">
     <p>This model demonstrates retrieving data for display in a plot:</p>
     <svg data-bind="attr: {width: width, height: height}" style="background: white">
-      <!-- ko foreach: points -->
-      <circle r="3" data-bind="attr: {cx: x, cy: y}" style="stroke: black; stroke-opacity: 0.4; fill: steelblue;"/>
-      <!-- /ko -->
-      <line data-bind="attr: {x1: regression_line().x1, x2: regression_line().x2, y1: regression_line().y1, y2: regression_line().y2}" style="stroke: red;"/>
     </svg>
     <p><strong>r&#178; value</strong>: <span data-bind="text: format(regression.r() * regression.r())"></span></p>
     <p><strong><i>p</i>-value</strong>: <span data-bind="text: format(regression.p())"></span></p>
