@@ -6,8 +6,6 @@ rights in this software.
 
 define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects", "slycat-models"], function(server_root, client, markings, projects, models)
 {
-  curl({ apiName : "require" });
-
   ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
