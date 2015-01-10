@@ -5,22 +5,32 @@ GET Model Arrayset Metadata
 Description
 -----------
 
-Used to retrieve metadata from every array in a model arrayset artifact
-- useful for providing interactive, incremental access to
-arbitrarily-large multidimensional arrays.
+Used to retrieve metadata and statistics for an arrayset artifact - a
+collection of dense, multidimensional darray objects.  A darray is a dense,
+multi-dimensional, multi-attribute array, suitable for storage of arbitrarily-large
+data.
 
-An array artifact is modelled using one-to-many dimensions and
-one-to-many attributes. Dimensions define the structure of "cells" in an
-array, while attributes are strongly-typed values that are defined for
-every cell within the array. Thus, a linear algebra matrix would be
-represented as a 2D array with dimensions for row and column, with a
-single floating-point attribute to store the matrix values. A collection
-of points in the plane might be stored as a 1D array with two
-attributes, one each for X and Y coordinates.
-
-The metadata for an array includes the name, type, and half-open range
+The metadata for a single darray includes the name, type, and half-open range
 of coordinate values for each dimension in the array, plus the name and
 type of each attribute.
+
+Statistics can be retrieved for individual darray attributes, and include
+minimum and maximum values for that attribute.  Although statistics are cached,
+retrieving them may be an extremely expensive operation, since they involve
+full scans through their respective attributes.  Because of this, callers are
+encouraged to retrieve statistics only when needed.
+
+GET Model Arrayset Metadata can be called in two ways: without any query string,
+it will return an array containing metadata for every array in the arrayset,
+without any statistics.  With the `arrays` argument, the caller can request
+metadata for an explicit list of semicolon-delimited array indices.  With the
+`statistics` argument, the caller can request statistics for an explicit list
+of semicolon-delimited array-attribute pairs separated by forward slashes.  The
+two arguments can be combined to retrieve arbitrary combinations of array
+metadata and attribute statistics in a single request.
+
+.. note::
+    Semicolons must be encoded in browser query strings!
 
 Requests
 --------
@@ -43,7 +53,7 @@ application/json
 Examples
 --------
 
-Sample Request
+Simple Request
 ^^^^^^^^^^^^^^
 
 ::
@@ -55,7 +65,7 @@ Sample Request
     Accept: application/json
     User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.6.2.el6.x86_64
 
-Sample Response
+Simple Response
 ^^^^^^^^^^^^^^^
 
 ::
@@ -66,19 +76,92 @@ Sample Response
     Content-Type: application/json
     Server: CherryPy/3.2.2
 
-    [{
-      "index": 0,
-      "attributes": [
-        {"type": "float64", "name": "correlation"}
+    [
+      {
+        "index": 0,
+        "attributes":
+        [
+          {"type": "float64", "name": "correlation"}
+        ],
+        "dimensions":
+        [
+          {"end": 3, "begin": 0, "type": "int64", "name": "component"},
+          {"end": 3, "begin": 0, "type": "int64", "name": "input"}
+        ]
+      }
+    ]
+
+Complex Request
+^^^^^^^^^^^^^^^
+
+::
+
+    GET /models/e97077e27af141d6a06f17c9eed6c17a/arraysets/foo/metadata?arrays=0%3b1&statistics=0/0%3b0/1 HTTP/1.1
+    Host: localhost:8092
+    Authorization: Basic c2x5Y2F0OnNseWNhdA==
+    Accept-Encoding: gzip, deflate, compress
+    Accept: application/json
+    User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.6.2.el6.x86_64
+
+Complex Response
+^^^^^^^^^^^^^^^^
+
+::
+
+    HTTP/1.1 200 OK
+    Date: Tue, 11 Jun 2013 19:00:50 GMT
+    Content-Length: 195
+    Content-Type: application/json
+    Server: CherryPy/3.2.2
+
+    {
+      "arrays":
+      [
+        {
+          "index": 0,
+          "attributes":
+          [
+            {"type": "float64", "name": "weight"}
+            {"type": "string", "name": "animal"}
+          ],
+          "dimensions":
+          [
+            {"end": 10, "begin": 0, "type": "int64", "name": "i"},
+          ]
+        },
+        {
+          "index": 1,
+          "attributes":
+          [
+            {"type": "float64", "name": "c"}
+            {"type": "float64", "name": "d"}
+          ],
+          "dimensions":
+          [
+            {"end": 10, "begin": 0, "type": "int64", "name": "i"},
+          ]
+        }
       ],
-      "dimensions": [
-        {"end": 3, "begin": 0, "type": "int64", "name": "component"},
-        {"end": 3, "begin": 0, "type": "int64", "name": "input"}
+      "statistics":
+      [
+        {
+          "array": 0,
+          "attribute": 0,
+          "min": 0.1,
+          "max": 1237.3,
+        },
+        {
+          "array": 0,
+          "attribute": 1,
+          "min": "aardvark",
+          "max": "zebra",
+        }
       ]
-    }]
+    }
+
 
 See Also
 --------
 
--  :ref:`GET Model Arrayset`
+-  :ref:`GET Model Arrayset Data`
 
