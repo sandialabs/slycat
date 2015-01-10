@@ -8,8 +8,8 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     component.model = ko.mapping.fromJS({_id: null, name: "New Linear Regression Demo Model", description: "This model demonstrates plotting with d3.js", marking: null});
     component.browser = ko.mapping.fromJS({selection: []});
     component.attributes = ko.mapping.fromJS([]);
-    component.input_column = ko.observable(null);
-    component.output_column = ko.observable(null);
+    component.x_column = ko.observable(null);
+    component.y_column = ko.observable(null);
 
     component.cancel = function()
     {
@@ -58,10 +58,10 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
 
                 attributes.push({name: name, type: type})
 
-                if(type != "string" && component.input_column() === null)
-                  component.input_column(i);
-                else if(type != "string" && component.output_column() === null)
-                  component.output_column(i);
+                if(type != "string" && component.x_column() === null)
+                  component.x_column(i);
+                else if(type != "string" && component.y_column() === null)
+                  component.y_column(i);
               }
               ko.mapping.fromJS(attributes, component.attributes);
               component.tab(2);
@@ -75,16 +75,16 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
       client.put_model_parameter(
       {
         mid: component.model._id(),
-        name: "input-column",
-        value: component.input_column(),
+        name: "x-column",
+        value: component.x_column(),
         input: true,
         success: function()
         {
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "output-column",
-            value: component.output_column(),
+            name: "y-column",
+            value: component.y_column(),
             input: true,
             success: function()
             {

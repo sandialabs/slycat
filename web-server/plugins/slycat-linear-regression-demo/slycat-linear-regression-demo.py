@@ -15,8 +15,8 @@ def register_slycat_plugin(context):
 
       # Get required inputs ...
       data_table = slycat.web.server.model.load_hdf5_artifact(model, "data-table")
-      input_column = slycat.web.server.get_model_parameter(database, model, "input-column")
-      output_column = slycat.web.server.get_model_parameter(database, model, "output-column")
+      input_column = slycat.web.server.get_model_parameter(database, model, "x-column")
+      output_column = slycat.web.server.get_model_parameter(database, model, "y-column")
 
       if input_column is None:
         raise Exception("Linear regression model requires an input column.")
@@ -39,15 +39,12 @@ def register_slycat_plugin(context):
       # Compute the linear regression.
       slycat.web.server.update_model(database, model, message="Computing linear regression.")
       slope, intercept, r, p, error = scipy.stats.linregress(xy)
+      regression = dict(slope=slope, intercept=intercept, r=r, p=p, error=error)
       slycat.web.server.update_model(database, model, progress=0.75)
 
       # Store the results.
       slycat.web.server.update_model(database, model, message="Storing results.")
-      slycat.web.server.put_model_parameter(database, model, "slope", slope)
-      slycat.web.server.put_model_parameter(database, model, "intercept", intercept)
-      slycat.web.server.put_model_parameter(database, model, "r", r)
-      slycat.web.server.put_model_parameter(database, model, "p", p)
-      slycat.web.server.put_model_parameter(database, model, "error", error)
+      slycat.web.server.put_model_parameter(database, model, "regression", regression)
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
     except:
