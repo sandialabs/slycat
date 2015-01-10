@@ -70,7 +70,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "d3", "domRe
 
   page.load_x = ko.computed(function()
   {
-    if(page.x_column() !== null)
+    if(page.mid() !== null && page.x_column() !== null)
     {
       client.get_model_arrayset_data(
       {
@@ -87,7 +87,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "d3", "domRe
 
   page.load_y = ko.computed(function()
   {
-    if(page.y_column() !== null)
+    if(page.mid() !== null && page.y_column() !== null)
     {
       client.get_model_arrayset_data(
       {
