@@ -9,7 +9,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "domReady!"]
   // Setup storage for the data we're going to plot.
   var page =
   {
-    mid: ko.observable(location.pathname.split("/").reverse()[0]),
+    mid: ko.observable(null),
     width: ko.observable(600),
     height: ko.observable(600),
     x_column: ko.observable(null),
@@ -20,10 +20,53 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "domReady!"]
     y: ko.observableArray(),
   };
 
-  page.format = function(number, places)
+  page.load_x_column = ko.computed(function()
   {
-    return Number(number).toPrecision(places || 3);
-  }
+    if(page.mid() !== null)
+    {
+      client.get_model_parameter(
+      {
+        mid: page.mid(),
+        name: "x-column",
+        success: function(value)
+        {
+          page.x_column(value);
+        }
+      });
+    }
+  });
+
+  page.load_y_column = ko.computed(function()
+  {
+    if(page.mid() !== null)
+    {
+      client.get_model_parameter(
+      {
+        mid: page.mid(),
+        name: "y-column",
+        success: function(value)
+        {
+          page.y_column(value);
+        }
+      });
+    }
+  });
+
+  page.load_regression = ko.computed(function()
+  {
+    if(page.mid() !== null)
+    {
+      client.get_model_parameter(
+      {
+        mid: page.mid(),
+        name: "regression",
+        success: function(value)
+        {
+          ko.mapping.fromJS(value, page.regression);
+        }
+      });
+    }
+  });
 
   page.load_x = ko.computed(function()
   {
@@ -124,38 +167,15 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "domReady!"]
     return regression_line;
   });
 
+  // Miscellaneous helpers for use with HTML bindings.
+  page.format = function(number, places)
+  {
+    return Number(number).toPrecision(places || 3);
+  }
+
   ko.applyBindings(page, document.getElementById("slycat-linear-regression-demo"));
 
-  // Load the model data.
-  client.get_model_parameter(
-  {
-    mid: page.mid(),
-    name: "x-column",
-    success: function(value)
-    {
-      page.x_column(value);
-    }
-  });
-
-  client.get_model_parameter(
-  {
-    mid: page.mid(),
-    name: "y-column",
-    success: function(value)
-    {
-      page.y_column(value);
-    }
-  });
-
-  client.get_model_parameter(
-  {
-    mid: page.mid(),
-    name: "regression",
-    success: function(value)
-    {
-      ko.mapping.fromJS(value, page.regression);
-    }
-  });
-
+  // Start loading data from the model.
+  page.mid(location.pathname.split("/").reverse()[0]);
 });
 
