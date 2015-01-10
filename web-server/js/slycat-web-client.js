@@ -181,6 +181,40 @@ define("slycat-web-client", ["slycat-server-root"], function(server_root)
     });
   }
 
+  module.get_model_arrayset_data = function(params)
+  {
+    var query = {};
+    query.hyperchunks = [];
+    $.each(params.hyperchunks, function(index, hyperchunk)
+    {
+      var spec = hyperchunk[0] + "/" + hyperchunk[1] + "/";
+      if(hyperchunk.length == 2)
+        spec += "...";
+      query.hyperchunks.push(spec);
+    });
+    query.hyperchunks = query.hyperchunks.join(";");
+    query = $.param(query);
+    if(query)
+      query = "?" + query;
+
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/data" + query,
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.get_model_parameter = function(params)
   {
     $.ajax(
