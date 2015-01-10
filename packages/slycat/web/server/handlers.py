@@ -937,7 +937,7 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
 
   def content():
     if byteorder is None:
-      yield json.dumps([hyperslice.tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
+      yield json.dumps([[None if numpy.isnan(e) else e for e in hyperslice.tolist()] for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
     else:
       for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks):
         if sys.byteorder != byteorder:
