@@ -379,7 +379,7 @@ See the Apache Version 2.0 License for specific language governing permissions a
             attachToKo(ko);
             module.exports = ko;
         } else if (typeof define === 'function' && define.amd) {
-            define(['knockout'], attachToKo);
+            define("knockout-projections", ['knockout'], attachToKo);
         } else if ('ko' in global) {
             // Non-module case - attach to the global instance
             attachToKo(global.ko);
