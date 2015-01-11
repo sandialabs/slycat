@@ -1,13 +1,13 @@
-define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/linear-regression-demo/ui.html"], function(client, html)
+define(["slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/linear-regression-demo/ui.html"], function(client, ko, mapping, html)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.project;
-    component.model = ko.mapping.fromJS({_id: null, name: "New Linear Regression Demo Model", description: "This model demonstrates plotting with d3.js", marking: null});
-    component.browser = ko.mapping.fromJS({selection: []});
-    component.attributes = ko.mapping.fromJS([]);
+    component.model = mapping.fromJS({_id: null, name: "New Linear Regression Demo Model", description: "This model demonstrates plotting with d3.js", marking: null});
+    component.browser = mapping.fromJS({selection: []});
+    component.attributes = mapping.fromJS([]);
     component.x_column = ko.observable(null);
     component.y_column = ko.observable(null);
 
@@ -63,7 +63,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
                 else if(type != "string" && component.y_column() === null)
                   component.y_column(i);
               }
-              ko.mapping.fromJS(attributes, component.attributes);
+              mapping.fromJS(attributes, component.attributes);
               component.tab(2);
             }
           });

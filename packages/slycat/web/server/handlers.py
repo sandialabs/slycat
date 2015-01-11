@@ -59,6 +59,8 @@ def js_bundle():
     if js_bundle._bundle is None:
       js_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
       [
+        "js/curl.js",
+        "js/slycat-curl-config.js", # Load this immediately following curl to configure it.
         "js/jquery-2.1.1.min.js",
         "js/jquery-migrate-1.2.1.js",
         "js/jquery.json-2.4.min.js",
@@ -69,8 +71,6 @@ def js_bundle():
         "js/knockout.mapping.js",
         "js/knockout-projections.js",
         "js/knockstrap.js",
-        "js/curl.js", # This needs to be loaded after knockstrap, which will try to load knockout and jQuery using require() if it's available.
-        "js/slycat-curl-config.js", # Load this right after curl to configure it.
         "js/slycat-server-root.js",
         "js/slycat-bookmark-manager.js",
         "js/slycat-web-client.js",

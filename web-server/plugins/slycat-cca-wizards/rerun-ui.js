@@ -1,4 +1,4 @@
-define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/rerun-cca/ui.html"], function(client, html)
+define(["slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/rerun-cca/ui.html"], function(client, ko, mapping, html)
 {
   function constructor(params)
   {
@@ -6,14 +6,14 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
     component.tab = ko.observable(0);
     component.project = params.project;
     component.original = params.model;
-    component.model = ko.mapping.fromJS(
+    component.model = mapping.fromJS(
     {
       _id: null,
       name: params.model.name() + " Rerun",
       description: "Reran " + (params.model.description() ? params.model.description() : params.model.name()),
       marking: params.model.marking()
     });
-    component.attributes = ko.mapping.fromJS([]);
+    component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(false);
 
     client.get_model_table_metadata(
@@ -25,7 +25,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
         var attributes = [];
         for(var i = 0; i != metadata["column-names"].length; ++i)
           attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false, output:false})
-        ko.mapping.fromJS(attributes, component.attributes);
+        mapping.fromJS(attributes, component.attributes);
 
         client.get_model_parameter(
         {

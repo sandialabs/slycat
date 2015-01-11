@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client"], function(server_root, client)
+define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "knockout"], function(server_root, client, ko)
 {
   ko.components.register("slycat-remote-controls",
   {

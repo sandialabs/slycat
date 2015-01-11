@@ -1,11 +1,11 @@
-define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/bookmark-demo/ui.html"], function(client, html)
+define(["slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/bookmark-demo/ui.html"], function(client, ko, mapping, html)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.project;
-    component.model = ko.mapping.fromJS({_id: null, name: "New Bookmark Demo Model", description: "This model demonstrates how Slycat bookmarks work.", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New Bookmark Demo Model", description: "This model demonstrates how Slycat bookmarks work.", marking: null});
 
     component.cancel = function()
     {

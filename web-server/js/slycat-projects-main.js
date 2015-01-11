@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-projects-main", ["slycat-server-root", "slycat-projects"], function(server_root, projects)
+define("slycat-projects-main", ["slycat-server-root", "slycat-projects", "knockout"], function(server_root, projects, ko)
 {
   var module = {};
   module.start = function()

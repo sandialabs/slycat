@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects", "slycat-models"], function(server_root, client, markings, projects, models)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects", "slycat-models", "knockout", "knockout-mapping"], function(server_root, client, markings, projects, models, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
@@ -14,7 +14,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.project_id = ko.observable(params.project_id);
 
-      component.alerts = ko.mapping.fromJS([]);
+      component.alerts = mapping.fromJS([]);
       component.permission = ko.observable("reader");
       component.permission_description = ko.pureComputed(function()
       {
@@ -27,7 +27,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
       component.new_user = ko.observable("");
 
-      component.wizards = ko.mapping.fromJS([]);
+      component.wizards = mapping.fromJS([]);
       component.project_wizards = component.wizards.filter(function(wizard)
       {
         return !("project" in wizard.require) && !("model" in wizard.require);
@@ -42,7 +42,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
       component.wizard = ko.observable(false);
 
-      component.model = ko.mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
+      component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
       component.model_popover = ko.pureComputed(function()
       {
         return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
@@ -52,7 +52,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.new_model_name = ko.observable(params.model_name);
       component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
-      component.version = ko.mapping.fromJS({version:"unknown", commit:"unknown"});
+      component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
 
       // Get available server markings.
       component.markings = markings;
@@ -101,7 +101,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
 
       // Setup storage for creating new projects / editing existing projects.
-      component.new_project = ko.mapping.fromJS({_id:component.project_id(),name:params.project_name,acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
+      component.new_project = mapping.fromJS({_id:component.project_id(),name:params.project_name,acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
 
       // Watch running models
       component.models = models.watch();
@@ -172,7 +172,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.edit_project = function()
       {
-        ko.mapping.fromJS(ko.mapping.toJS(component.projects()[0]), component.new_project)
+        mapping.fromJS(mapping.toJS(component.projects()[0]), component.new_project)
       }
 
       component.add_project_member = function()
@@ -241,7 +241,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           pid: component.project_id(),
           name: component.new_project.name(),
           description: component.new_project.description(),
-          acl: ko.mapping.toJS(component.new_project.acl),
+          acl: mapping.toJS(component.new_project.acl),
           error: function(request, status, reason_phrase)
           {
             window.alert("Error updating project: " + reason_phrase);
@@ -330,7 +330,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         {
           success : function(version)
           {
-            ko.mapping.fromJS(version, component.version);
+            mapping.fromJS(version, component.version);
           }
         });
 
@@ -364,7 +364,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           url : server_root + "models/" + params.model_id,
           success : function(model)
           {
-            ko.mapping.fromJS(model, component.model);
+            mapping.fromJS(model, component.model);
             component.new_model_description(model.description);
 
             if(model.state == "waiting")
@@ -394,7 +394,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
             return left.label < right.label ? -1 : left.label > right.label ? 1 : 0;
           });
 
-          ko.mapping.fromJS(wizards, component.wizards);
+          mapping.fromJS(wizards, component.wizards);
           for(var i = 0; i != wizards.length; ++i)
           {
             ko.components.register(wizards[i].type,

@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-projects", ["slycat-server-root"], function(server_root)
+define("slycat-projects", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
 {
   // Server-side-events loop to keep track of the current user's list of projects.
   var projects = ko.observableArray();
@@ -45,11 +45,11 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
         var project = message.doc;
         if(project._id in project_ids)
         {
-          ko.mapping.fromJS(project, project_ids[project._id]);
+          mapping.fromJS(project, project_ids[project._id]);
         }
         else
         {
-          project_ids[project._id] = ko.mapping.fromJS(project);
+          project_ids[project._id] = mapping.fromJS(project);
           projects.push(project_ids[project._id]);
           sort_projects();
         }
@@ -74,7 +74,7 @@ define("slycat-projects", ["slycat-server-root"], function(server_root)
     if(project._id in project_ids)
       return;
 
-    project_ids[project._id] = ko.mapping.fromJS(
+    project_ids[project._id] = mapping.fromJS(
     {
       _id: project._id,
       name: project.name || "",
