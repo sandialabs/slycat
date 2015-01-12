@@ -22,7 +22,7 @@
     </div>
     <p>Grid Shape: <span data-bind="text: row_count"></span> rows x <span data-bind="text: column_count"></span> columns</p>
     <p>Grid Dimensions: <span data-bind="text: width"></span> x <span data-bind="text: height"></span></p>
-    <p>Offset: <span data-bind="text: left"></span> x <span data-bind="text: top"></span></p>
+    <p>Offset: <span data-bind="text: position()[0]"></span> x <span data-bind="text: position()[1]"></span></p>
     <p>Visible Rows: <span data-bind="text: row_begin"></span> : <span data-bind="text: row_end"></span></p>
     <p>Visible Columns: <span data-bind="text: column_begin"></span> : <span data-bind="text: column_end"></span></p>
     <script>
@@ -36,8 +36,7 @@
           cell_height: ko.observable(15),
           viewport_width: ko.observable(500),
           viewport_height: ko.observable(500),
-          top: ko.observable(0),
-          left: ko.observable(0),
+          position: ko.observable([0, 0]).extend({rateLimit: 500}),
         };
         grid.height = ko.pureComputed(function()
         {
@@ -49,19 +48,19 @@
         });
         grid.column_begin = ko.pureComputed(function()
         {
-          return Math.floor(grid.left() / grid.cell_width());
+          return Math.floor(grid.position()[0] / grid.cell_width());
         });
         grid.column_end = ko.pureComputed(function()
         {
-          return Math.min(grid.column_count(), Math.ceil((grid.left() + grid.viewport_width()) / grid.cell_width()));
+          return Math.min(grid.column_count(), Math.ceil((grid.position()[0] + grid.viewport_width()) / grid.cell_width()));
         });
         grid.row_begin = ko.pureComputed(function()
         {
-          return Math.floor(grid.top() / grid.cell_height());
+          return Math.floor(grid.position()[1] / grid.cell_height());
         });
         grid.row_end = ko.pureComputed(function()
         {
-          return Math.min(grid.row_count(), Math.ceil((grid.top() + grid.viewport_height()) / grid.cell_height()));
+          return Math.min(grid.row_count(), Math.ceil((grid.position()[1] + grid.viewport_height()) / grid.cell_height()));
         });
         grid.cells = ko.pureComputed(function()
         {
@@ -71,6 +70,8 @@
           var column_end = grid.column_end();
           var cell_width = grid.cell_width();
           var cell_height = grid.cell_height();
+
+          console.log("cells", row_begin, row_end, column_begin, column_end);
 
           var cells = [];
           for(var row = row_begin; row != row_end; ++row)
@@ -91,8 +92,7 @@
         });
         grid.on_scroll = function(grid, event)
         {
-          grid.left($(".grid-viewport").scrollLeft());
-          grid.top($(".grid-viewport").scrollTop());
+          grid.position([$(".grid-viewport").scrollLeft(), $(".grid-viewport").scrollTop()]);
         }
 
         ko.applyBindings(grid);
