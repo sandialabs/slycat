@@ -8,7 +8,7 @@
     <style>
       .cell
       {
-        border: 1px solid black;
+        font-size: 10px;
       }
     </style>
   </head>
@@ -23,20 +23,21 @@
     <p>Grid Shape: <span data-bind="text: row_count"></span> rows x <span data-bind="text: column_count"></span> columns</p>
     <p>Grid Dimensions: <span data-bind="text: width"></span> x <span data-bind="text: height"></span></p>
     <p>Offset: <span data-bind="text: position()[0]"></span> x <span data-bind="text: position()[1]"></span></p>
-    <p>Visible Rows: <span data-bind="text: row_begin"></span> : <span data-bind="text: row_end"></span></p>
-    <p>Visible Columns: <span data-bind="text: column_begin"></span> : <span data-bind="text: column_end"></span></p>
+    <p>Visible Rows: <span data-bind="text: visible_cells().row_begin"></span> : <span data-bind="text:visible_cells().row_end"></span></p>
+    <p>Visible Columns: <span data-bind="text: visible_cells().column_begin"></span> : <span data-bind="text:visible_cells().column_end"></span></p>
+    <p>Total Cells: <span data-bind="text: cells().length"></span></p>
     <script>
       require(["knockout"], function(ko)
       {
         var grid =
         {
-          row_count: ko.observable(100),
-          column_count: ko.observable(100),
-          cell_width: ko.observable(50),
-          cell_height: ko.observable(15),
+          row_count: ko.observable(1600000),
+          column_count: ko.observable(400000),
+          cell_width: ko.observable(75),
+          cell_height: ko.observable(20),
           viewport_width: ko.observable(500),
           viewport_height: ko.observable(500),
-          position: ko.observable([0, 0]).extend({rateLimit: 500}),
+          position: ko.observable([0, 0]).extend({rateLimit: {timeout: 100, method: "notifyWhenChangesStop"}}),
         };
         grid.height = ko.pureComputed(function()
         {
@@ -46,37 +47,35 @@
         {
           return grid.column_count() * grid.cell_width();
         });
-        grid.column_begin = ko.pureComputed(function()
+        grid.visible_cells = ko.pureComputed(function()
         {
-          return Math.floor(grid.position()[0] / grid.cell_width());
-        });
-        grid.column_end = ko.pureComputed(function()
-        {
-          return Math.min(grid.column_count(), Math.ceil((grid.position()[0] + grid.viewport_width()) / grid.cell_width()));
-        });
-        grid.row_begin = ko.pureComputed(function()
-        {
-          return Math.floor(grid.position()[1] / grid.cell_height());
-        });
-        grid.row_end = ko.pureComputed(function()
-        {
-          return Math.min(grid.row_count(), Math.ceil((grid.position()[1] + grid.viewport_height()) / grid.cell_height()));
+          var position = grid.position();
+          var cell_width = grid.cell_width();
+          var cell_height = grid.cell_height();
+          var viewport_width = grid.viewport_width();
+          var viewport_height = grid.viewport_height();
+          var row_count = grid.row_count();
+          var column_count = grid.column_count();
+
+          return {
+            column_begin: Math.floor(position[0] / cell_width),
+            column_end: Math.min(column_count, Math.ceil((position[0] + viewport_width) / cell_width)),
+            row_begin: Math.floor(position[1] / cell_height),
+            row_end: Math.min(row_count, Math.ceil((position[1] + viewport_height) / cell_height)),
+          }
         });
         grid.cells = ko.pureComputed(function()
         {
-          var row_begin = grid.row_begin();
-          var row_end = grid.row_end();
-          var column_begin = grid.column_begin();
-          var column_end = grid.column_end();
+          var visible_cells = grid.visible_cells();
           var cell_width = grid.cell_width();
           var cell_height = grid.cell_height();
 
-          console.log("cells", row_begin, row_end, column_begin, column_end);
+          console.log("cells", visible_cells);
 
           var cells = [];
-          for(var row = row_begin; row != row_end; ++row)
+          for(var row = visible_cells.row_begin; row != visible_cells.row_end; ++row)
           {
-            for(var column = column_begin; column != column_end; ++column)
+            for(var column = visible_cells.column_begin; column != visible_cells.column_end; ++column)
             {
               cells.push(
               {
@@ -84,7 +83,7 @@
                 height: cell_height,
                 left: column * cell_width,
                 width: cell_width,
-                content: row + ", " + column,
+                content: row + "," + column,
               });
             }
           }
