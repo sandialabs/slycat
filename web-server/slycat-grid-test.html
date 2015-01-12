@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+  </head>
+  <body>
+    <div class="grid-viewport" data-bind="style: {width: viewport_width() + 'px', height: viewport_height() + 'px'}, event: {scroll: on_scroll}" style="overflow: auto;">
+      <div class="grid" data-bind="style: {width: width() + 'px', height: height() + 'px'}">
+      </div>
+    </div>
+    <p>Viewport: <span data-bind="text: width"></span> x <span data-bind="text: height"></span></p>
+    <p>Offset: <span data-bind="text: left"></span> x <span data-bind="text: top"></span></p>
+    <p>Visible Rows: <span data-bind="text: row_begin"></span> : <span data-bind="text: row_end"></span></p>
+    <p>Visible Columns: <span data-bind="text: column_begin"></span> : <span data-bind="text: column_end"></span></p>
+    <script>
+      require(["knockout"], function(ko)
+      {
+        var grid =
+        {
+          rows: ko.observable(100),
+          columns: ko.observable(100),
+          cell_width: ko.observable(50),
+          cell_height: ko.observable(15),
+          viewport_width: ko.observable(500),
+          viewport_height: ko.observable(500),
+          top: ko.observable(0),
+          left: ko.observable(0),
+        };
+        grid.height = ko.pureComputed(function()
+        {
+          return grid.rows() * grid.cell_height();
+        });
+        grid.width = ko.pureComputed(function()
+        {
+          return grid.columns() * grid.cell_width();
+        });
+        grid.column_begin = ko.pureComputed(function()
+        {
+          return Math.floor(grid.left() / grid.cell_width());
+        });
+        grid.column_end = ko.pureComputed(function()
+        {
+          return Math.ceil((grid.left() + grid.viewport_width()) / grid.cell_width());
+        });
+        grid.row_begin = ko.pureComputed(function()
+        {
+          return Math.floor(grid.top() / grid.cell_height());
+        });
+        grid.row_end = ko.pureComputed(function()
+        {
+          return Math.ceil((grid.top() + grid.viewport_height()) / grid.cell_height());
+        });
+        grid.on_scroll = function(grid, event)
+        {
+          grid.left($(".grid-viewport").scrollLeft());
+          grid.top($(".grid-viewport").scrollTop());
+        }
+
+        ko.applyBindings(grid);
+      });
+    </script>
+  </body>
+</html>
