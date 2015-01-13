@@ -39,15 +39,19 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
 
     self.image_login.modal({backdrop: false, show: false});
 
+    self.image_login.on('shown.bs.modal', function(){
+      $($("#remote-username").text() ? "#remote-password" : "#remote-username").focus();
+    });
+
     self.image_login.on('hidden.bs.modal', function(){
       $("#remote-password").val("");
       console.debug("hidden");
       $("#login-button").off("click");
-    })
+    });
   
-    $("#remote-password").keypress(function(event){
+    self.image_login.keypress(function(event){
       if (event.keyCode == 13) {
-        $('.ui-dialog-buttonset').find('button:contains(Login)').trigger('click');
+        $("#login-button").trigger('click');
       }
     });
   };
@@ -68,16 +72,13 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
 
   Login.prototype.logged_into_host_for_file = function(file) {
     console.debug("testing for login for host: " + this.hostname_for_file(file));
-    console.debug("testing 2");
     console.debug(this.session_cache);
     if(this.hostname_for_file(file) in this.session_cache) {
-      console.debug("a already logged in");
       return true;
     } else {
       console.debug('not logged in');
       return false;
     }
-    console.debug("testing 3");
   };
 
   Login.prototype.show_prompt = function(images, callback, this_arg) {

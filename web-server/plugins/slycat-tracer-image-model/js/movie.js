@@ -4,8 +4,8 @@
  rights in this software.
  */
 
-define("Movie", ["d3"], function(d3){
-  function Movie(login, model) {
+define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
+  function Movie(model) {
     this.open = false;
     this.stopped = true;
     this.frame = null;
@@ -25,7 +25,7 @@ define("Movie", ["d3"], function(d3){
     var formats = {webm:"webm", h264:"mp4"};
     this.movie = [];
     this.model = model;
-    this.login = login;
+    this.login = model.login;
     this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
                           .map(function(encoding){return formats[encoding];})[0];
     this.fps = 25;
@@ -65,9 +65,9 @@ define("Movie", ["d3"], function(d3){
       .on('click', function() {
         d3.event.stopPropagation();
         if(!self.agent_id){
-          self.agent_id = this.login.get_agent(plot.images.filter(function(x){return x;})[0]);
+          self.agent_id = self.login.get_agent(plot.images.filter(function(x){return x;})[0]);
         }
-        self.agent_id ? self.build_server_movie.call(self, plot) : this.login.show_prompt(plot.images.filter(function(uri){return uri;}).map(function(uri){return {uri: uri};}), function(){self.build_server_movie(plot)}, self);
+        self.agent_id ? self.build_server_movie.call(self, plot) : self.login.show_prompt(plot.images.filter(function(uri){return uri;}).map(function(uri){return {uri: uri};}), function(){self.build_server_movie(plot)}, self);
         plot.movie = self;
       })
       .on('mousedown', function() {
@@ -159,7 +159,7 @@ define("Movie", ["d3"], function(d3){
       this.model.get_image_column(plot.images_index, function(images) {
         $.ajax({
           type: "POST",
-          url: "{{server-root}}agents/" + self.agent_id + "/videos",
+          url: server_root + "agents/" + self.agent_id + "/videos",
           contentType: "application/json",
           data: JSON.stringify({
             "content-type": "video/" + self.video_type,
@@ -224,7 +224,7 @@ define("Movie", ["d3"], function(d3){
     controls.forEach(function(control, index){
       built_controls[control.id] = container
         .append("image")
-          .attr({"xlink:href": "{{server-root}}" + control.image,
+          .attr({"xlink:href": server_root + control.image,
             width: 28,
             height: 28,
             y: 30*index,
@@ -252,8 +252,8 @@ define("Movie", ["d3"], function(d3){
           opacity : 0
         });
 
-    this.video.on("playing", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/pause.png")})
-    this.video.on("pause", function(){built_controls["play-pause"].attr("href", "{{server-root}}css/play.png")})
+    this.video.on("playing", function(){built_controls["play-pause"].attr("href", server_root + "css/pause.png")})
+    this.video.on("pause", function(){built_controls["play-pause"].attr("href", server_root + "css/play.png")})
   }
 
   Movie.prototype.show_movie = function(plot, image_index) {
@@ -264,7 +264,7 @@ define("Movie", ["d3"], function(d3){
       setTimeout(function(){$.ajax({
           type: "GET",
           accepts: "application/json",
-          url: "{{server-root}}agents/" + self.agent_id + "/videos/" + self.movie[image_index].sid + "/status",
+          url: server_root + "agents/" + self.agent_id + "/videos/" + self.movie[image_index].sid + "/status",
           success: function(result){
             if(result.message == "Creating video." || result.message == "Not ready."){
               wait_until_build();
@@ -325,7 +325,7 @@ define("Movie", ["d3"], function(d3){
     this.video
       .append("xhtml:source")
         .attr({
-          src: "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid,
+          src: server_root + "agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid,
           type: "video/" + this.video_type
         });
 
@@ -343,7 +343,7 @@ define("Movie", ["d3"], function(d3){
   Movie.prototype.get_status = function(image_index) {
     $.ajax({
       type: "GET",
-      url : "{{server-root}}agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid + "/status",
+      url : server_root + "agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid + "/status",
       success : function(){console.debug(arguments)},
       error : function(){console.debug(arguments)},
     });
