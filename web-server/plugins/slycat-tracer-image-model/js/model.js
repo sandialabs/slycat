@@ -14,7 +14,6 @@ define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Mov
     this.loaded_images = [];
     this.loaded_data = [];
     this.login = login;
-    this.movie = new Movie(this);
   }
 
   function show_status_messages() {
@@ -52,6 +51,7 @@ define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Mov
   Model.prototype.load = function(layout, table, grid) {
     console.debug("LOAD THE MODEL 1 -- ajax");
     var self = this;
+    this.movie = new Movie(this, table);
 
     $.ajax({
       type : "GET",

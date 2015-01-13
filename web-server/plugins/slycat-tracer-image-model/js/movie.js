@@ -5,7 +5,7 @@
  */
 
 define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
-  function Movie(model) {
+  function Movie(model, table) {
     this.open = false;
     this.stopped = true;
     this.frame = null;
@@ -25,6 +25,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
     var formats = {webm:"webm", h264:"mp4"};
     this.movie = [];
     this.model = model;
+    this.table = table;
     this.login = model.login;
     this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
                           .map(function(encoding){return formats[encoding];})[0];
@@ -370,7 +371,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
       var update_index = (function(idx, indices){
         return function(paused){
           if(paused){
-            table.select_rows([indices[idx][1]]);
+            self.table.select_rows([indices[idx][1]]);
             return;
           }
           $(".scatterplot").scatterplot("option", "selection", [indices[idx][1]]);
