@@ -50,6 +50,7 @@ numpy.random.seed(arguments.seed)
 inputs = numpy.hstack([numpy.sort(numpy.random.random((arguments.timeseries_count, arguments.timeseries_waves)) * 8 + 1) for output_variable in range(arguments.timeseries_variables)])
 input_dimensions = [dict(name="row", end=inputs.shape[0])]
 input_attributes = [dict(name="%s%s" % (arguments.input_variable_prefix, attribute), type="float64") for attribute in range(inputs.shape[1])]
+input_attributes += [dict(name="%sS" % (arguments.input_variable_prefix), type="string")]
 
 jobs = [(
   index,
@@ -105,4 +106,5 @@ with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
   array = arrayset.start_array(0, input_dimensions, input_attributes)
   for attribute, data in enumerate(inputs.T):
     array.set_data(attribute, slice(0, inputs.shape[0]), data)
+  array.set_data(attribute + 1, numpy.index_exp[...], inputs.T[0].astype("string"))
 
