@@ -11,12 +11,12 @@
         font-size: 10px;
       }
     </style>
+    <title>Slycat Grid Test</title>
   </head>
   <body>
     <div class="grid-viewport" data-bind="style: {width: viewport_width() + 'px', height: viewport_height() + 'px'}, event: {scroll: on_scroll}" style="overflow: auto;">
       <div class="grid" data-bind="style: {width: width() + 'px', height: height() + 'px'}, foreach: cells()", style="position: relative">
-        <div class="cell" data-bind="style: {top: top + 'px', height: height + 'px', left: left + 'px', width: width + 'px'}" style="position: absolute;">
-          <span data-bind="text:content"></span>
+        <div class="cell" data-bind="html: content, style: {top: top + 'px', height: height + 'px', left: left + 'px', width: width + 'px'}" style="position: absolute;">
         </div>
       </div>
     </div>
@@ -83,7 +83,7 @@
                 height: cell_height,
                 left: column * cell_width,
                 width: cell_width,
-                content: row + "," + column,
+                content: grid.create_cell(row, column),
               });
             }
           }
@@ -92,6 +92,10 @@
         grid.on_scroll = function(grid, event)
         {
           grid.position([$(".grid-viewport").scrollLeft(), $(".grid-viewport").scrollTop()]);
+        }
+        grid.create_cell = function(row, column)
+        {
+          return "<span>" + row + "," + column + "</span>";
         }
 
         ko.applyBindings(grid);
