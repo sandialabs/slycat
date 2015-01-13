@@ -14,22 +14,55 @@ class DArray(slycat.darray.Prototype):
 
   @property
   def ndim(self):
+    """Return the number of dimensions in the darray.
+
+    Returns
+    -------
+    ndim: integer
+      The number of dimensions in the darray.
+    """
     return len(self._metadata["dimension-names"])
 
   @property
   def shape(self):
+    """Return the darray shape (its size along each dimension).
+
+    Returns
+    -------
+    shape: tuple of integers
+      The size of the darray along each dimension.
+    """
     return tuple([end - begin for begin, end in zip(self._metadata["dimension-begin"], self._metadata["dimension-end"])])
 
   @property
   def size(self):
+    """Return the darray size (total number of elements stored in the darray).
+
+    Returns
+    -------
+    size: integer
+      The total number of elements stored in the darray.
+    """
     return numpy.prod(self.shape)
 
   @property
   def dimensions(self):
+    """Return metadata describing the darray dimensions.
+
+    Returns
+    -------
+    dimensions: list of dicts
+    """
     return [dict(name=name, type=type, begin=begin, end=end) for name, type, begin, end in zip(self._metadata["dimension-names"], self._metadata["dimension-types"], self._metadata["dimension-begin"], self._metadata["dimension-end"])]
 
   @property
   def attributes(self):
+    """Return metadata describing the darray attributes.
+
+    Returns
+    -------
+    attributes: list of dicts
+    """
     return [dict(name=name, type=type) for name, type in zip(self._metadata["attribute-names"], self._metadata["attribute-types"])]
 
   def get_statistics(self, attribute=0):
@@ -63,6 +96,29 @@ class DArray(slycat.darray.Prototype):
     return dict(min=attribute.attrs.get("min", None), max=attribute.attrs.get("max", None))
 
   def get_data(self, attribute=0):
+    """Return a reference to the data storage for a darray attribute.
+
+    Parameters
+    ----------
+    attribute: integer, optional
+      The integer index of the attribute data to retrieve.
+
+    Returns
+    -------
+    data: reference to a numpy-array-like object.
+      An object implementing a subset of the :class:`numpy.ndarray` interface
+      that contains the attribute data.  Note that the returned object only
+      `references` the underlying data - data is not retrieved from disk until
+      you access it using the `[]` operator.
+
+      .. note::
+        Due to the way hdf5 stores information, the dtype of the resulting array
+        may not match what was originally stored.  You should always cast the
+        data to the stored attribute type, e.g.:
+
+            data = array.get_data(3)[...].astype(array.attributes[3]["type"])
+
+    """
     return self._storage["attribute/%s" % attribute]
 
   def set_data(self, attribute, hyperslice, data):
@@ -125,11 +181,11 @@ class ArraySet(object):
 
     Parameters
     ----------
-    array_index : integer
+    array_index : integer, required.
       Zero-based index of the array to create.
-    dimensions : list of dicts
+    dimensions : list of dicts, required.
       Description of the new array dimensions.
-    attributes : list of dicts
+    attributes : list of dicts, required.
       Description of the new array attributes.
 
     Returns
@@ -165,9 +221,9 @@ class ArraySet(object):
 
     Parameters
     ----------
-    array_index : integer
+    array_index : integer, required.
       The index of the array to be created / overwritten.
-    array : :class:`slycat.darray.Prototype`
+    array : :class:`slycat.darray.Prototype`, required.
       Existing darray to be stored.
 
     Returns
@@ -192,7 +248,17 @@ class ArraySet(object):
     return DArray(self._storage["array/%s" % array_index])
 
 def start_arrayset(file):
-  """Create a new array set."""
+  """Create a new array set using an open hdf5 file.
+
+  Parameters
+  ----------
+  file : :class:`h5py.File`, required.
+    An hdf5 file open for writing.
+
+  Returns
+  -------
+  arrayset : :class:`slycat.hdf5.ArraySet`
+  """
   if not isinstance(file, h5py.File):
     raise ValueError("An open h5py.File is required.")
   file.create_group("array")
