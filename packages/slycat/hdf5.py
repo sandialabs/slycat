@@ -108,18 +108,19 @@ class DArray(slycat.darray.Prototype):
     data: reference to a numpy-array-like object.
       An object implementing a subset of the :class:`numpy.ndarray` interface
       that contains the attribute data.  Note that the returned object only
-      `references` the underlying data - data is not retrieved from disk until
-      you access it using the `[]` operator.
-
-      .. note::
-        Due to the way hdf5 stores information, the dtype of the resulting array
-        may not match what was originally stored.  You should always cast the
-        data to the stored attribute type, e.g.:
-
-            data = array.get_data(3)[...].astype(array.attributes[3]["type"])
-
+      `references` the underlying data - data is not retrieved from the file
+      until you access it using the `[]` operator.
     """
-    return self._storage["attribute/%s" % attribute]
+    class StorageWrapper(object):
+      """Ensures that the dtype of data retrieved from the file matches what was put in."""
+      def __init__(self, storage, dtype):
+        self._storage = storage
+        self._dtype = dtype
+      def __getitem__(self, *args, **kwargs):
+        result = self._storage.__getitem__(*args, **kwargs)
+        return result.astype(self._dtype)
+
+    return StorageWrapper(self._storage["attribute/%s" % attribute], self._metadata["attribute-types"][attribute])
 
   def set_data(self, attribute, hyperslice, data):
     """Overwrite the contents of a darray attribute.
