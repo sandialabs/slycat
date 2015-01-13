@@ -1,7 +1,6 @@
-define("Model", ["slycat-server-root", "d3"], function(server_root, d3) {
-
+define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Movie, d3) {
+  //TODO: Refactor. This should be a singleton.
   function Model() {
-    console.debug("Setup model");
     this.id = null;
     this.bookmarker = null;
     this.bookmark = null;
@@ -14,7 +13,6 @@ define("Model", ["slycat-server-root", "d3"], function(server_root, d3) {
     this.category_columns = null;
     this.loaded_images = [];
     this.loaded_data = [];
-    this.movie = new Movie();
   }
 
   function show_status_messages() {
@@ -52,6 +50,7 @@ define("Model", ["slycat-server-root", "d3"], function(server_root, d3) {
   Model.prototype.load = function(layout, table, grid) {
     console.debug("LOAD THE MODEL 1 -- ajax");
     var self = this;
+    this.movie = new Movie(grid.login, this);
 
     $.ajax({
       type : "GET",

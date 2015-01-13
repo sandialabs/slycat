@@ -5,21 +5,46 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
     this.grid_ref = grid_ref;
     this.image_uri = document.createElement("a");
 
+
     // Setup the login dialog ...
-    self.image_login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
+    self.image_login =
+      $("<div>").addClass("modal fade").attr({"role": "modal", "aria-hidden": "true"}).append(
+        $("<div>").addClass("modal-dialog").width(800).append(
+          $("<div>").addClass("modal-content").append(
+            $("<div>").addClass("popover-title").append(
+              $("<button>").addClass("close").attr({"data-dismiss": "modal"}).text("x"),
+              $("<h4>").addClass("modal-title").text("Remote Login")
+            ),
+            $("<div>").addClass("modal-body").append(
+              $("<span>").attr("id", "remote-error"),
+              $("<span>").attr("id", "remote-hostname"),
+              $("<form>").append(
+                $("<fieldset>").append(
+                  $("<label>").attr("for", "remote-username").text("Username"),
+                  $("<input/>").attr({id: "remote-username", type: "text"}),
+                  $("<label>").attr("for", "remote-password").text(" Password"),
+                  $("<input/>").attr({id: "remote-password", type: "password"})
+                )
+              )
+            ),
+            $("<div>").addClass("modal-footer").append(
+              $("<button>").addClass("btn btn-default").text("Cancel").attr({id: "cancel-login-button", type: "button", "data-dismiss": "modal"}),
+              $("<button>").addClass("btn btn-primary").attr({id: "login-button", type: "button"}).text("Login")
+            )
+          )
+        )
+      )
 
-    self.image_login.appendTo(grid_ref);
+    $("<div>").addClass("bootstrap-styles").append(self.image_login).appendTo(grid_ref);
 
-    self.image_login.dialog({
-      autoOpen: false,
-      width: 700,
-      height: 300,
-      modal: true,
-      close: function() {
-        $("#remote-password").val("");
-      }
-    });
+    self.image_login.modal({backdrop: false, show: false});
 
+    self.image_login.on('hidden.bs.modal', function(){
+      $("#remote-password").val("");
+      console.debug("hidden");
+      $("#login-button").off("click");
+    })
+  
     $("#remote-password").keypress(function(event){
       if (event.keyCode == 13) {
         $('.ui-dialog-buttonset').find('button:contains(Login)').trigger('click');
@@ -78,36 +103,30 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
           processData : false,
           success : function(result){
             self.session_cache[args.success] = result.sid;
-            self.image_login.dialog("close");
+            self.image_login.modal("hide");
             callback.call(this_arg, images);
           },
           error : args.error
         }
       );
     }
-
-    self.image_login.dialog({
-      buttons: {
-        "Login": function() {
-          create_session({
-            url : "agents",
-            contentType : "application/json",
-            data : JSON.stringify,
-            success : parser.hostname,
-            error : function(request, status, reason_phrase) {
-              console.error("Error opening agent session: " + reason_phrase)
-              self.image_login.dialog("close");
-              self.show_prompt(images, callback, this_arg);
-            }
+    
+    $("#login-button").on('click', function() {
+        create_session({
+          url : "agents",
+          contentType : "application/json",
+          data : JSON.stringify,
+          success : parser.hostname,
+          error : function(request, status, reason_phrase) {
+            console.error("Error opening agent session: " + reason_phrase)
+            self.image_login.modal("hide");
+            self.show_prompt(images, callback, this_arg);
           }
-                        )
-        },
-        Cancel: function() {
-          $(this).dialog("close");
-        }
-      },
-    });
-    self.image_login.dialog("open");
+        })
+      });
+
+    self.image_login.modal("show");
+    console.debug("show modal")
   };
 
   Login.prototype.get_agent = function(image) {
