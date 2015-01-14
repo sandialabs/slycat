@@ -9,14 +9,16 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
   // Setup storage for the data we're going to plot.
   var page =
   {
-    mid: ko.observable(null),
-    width: ko.observable(600),
-    height: ko.observable(600),
-    x_column: ko.observable(null),
-    y_column: ko.observable(null),
-    regression: mapping.fromJS({slope:null, intercept:null, r:null, p:null, error:null}),
-    x: ko.observableArray(),
-    y: ko.observableArray(),
+    mid: ko.observable(null), // Model id.
+    width: ko.observable(600), // Width of the svg canvas / d3 plot.
+    height: ko.observable(600), // Height of the svg canvas / d3 plot.
+    x_column: ko.observable(null), // Index of the table column containing X values.
+    y_column: ko.observable(null), // Index of the table column containing Y values.
+    regression: mapping.fromJS({slope:null, intercept:null, r:null, p:null, error:null}), // Regression line information.
+    x: ko.observableArray(), // Array of X values.
+    y: ko.observableArray(), // Array of Y values.
+    render_completed: ko.observable(0), // Changes whenever the plot is rendered.
+    selection: ko.observableArray(), // Array of selected point indices.
   };
 
   // Load data as the necessary information becomes available.
@@ -123,17 +125,6 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
 
       var svg = d3.select("svg");
 
-      // Render points
-      svg.selectAll(".point")
-        .data(data)
-      .enter().append("circle")
-        .attr("class", "point")
-        .attr("r", 3)
-        .attr("cx", function(datum) { return x_scale(datum[0]); })
-        .attr("cy", function(datum) { return y_scale(datum[1]); })
-        .style({"stroke":"black", "stroke-opacity":0.5, "fill":"steelblue"})
-        ;
-
       // Render the regression line
       svg.selectAll(".regression")
         .data([null])
@@ -145,7 +136,43 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
         .attr("y2", y_scale(max_x * slope + intercept))
         .style({"stroke":"red"})
         ;
+
+      // Render points
+      svg.selectAll(".point")
+        .data(data)
+      .enter().append("circle")
+        .attr("class", "point")
+        .attr("r", 3)
+        .attr("cx", function(datum) { return x_scale(datum[0]); })
+        .attr("cy", function(datum) { return y_scale(datum[1]); })
+        .on("click", function(d, i)
+        {
+          page.selection([i]);
+        })
+        .style({"stroke":"black", "stroke-opacity":0.5, "fill":"steelblue"})
+        ;
+
+      // Notify observers that rendering is complete.
+      page.render_completed(page.render_completed() + 1);
     }
+  });
+
+  // Called whenever the selection changes.
+  page.selection_changed = ko.computed(function()
+  {
+    var render_completed = page.render_completed();
+    var selection = page.selection();
+
+    d3.selectAll(".point")
+      .attr("r", function(d, i)
+      {
+        return selection.indexOf(i) != -1 ? 7 : 3;
+      })
+      .style("fill", function(d, i)
+      {
+        return selection.indexOf(i) != -1 ? "yellow" : "steelblue";
+      })
+      ;
   });
 
   // Miscellaneous helpers for use with HTML bindings.
