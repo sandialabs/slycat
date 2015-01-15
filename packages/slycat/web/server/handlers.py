@@ -442,9 +442,6 @@ def get_model(mid, **kwargs):
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
       context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
-      context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-      context["security"] = cherrypy.request.security
-      context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
       context["full-project"] = project
       context.update(model)
       context["is-project-administrator"] = slycat.web.server.authentication.is_project_administrator(project)
@@ -1460,7 +1457,7 @@ def post_events(event):
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_markings():
-  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items()]
+  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_wizards():
