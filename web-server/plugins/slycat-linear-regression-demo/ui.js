@@ -123,7 +123,11 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
       var y_scale = d3.scale.linear().domain([min_y, max_y]).range([page.height() - padding, padding]);
       var data = d3.zip(x, y);
 
-      var svg = d3.select("svg");
+      var svg = d3.select("svg")
+        .on("click", function()
+        {
+          page.selection([]);
+        });
 
       // Render the regression line
       svg.selectAll(".regression")
@@ -148,6 +152,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
         .on("click", function(d, i)
         {
           page.selection([i]);
+          d3.event.stopPropagation();
         })
         .style({"stroke":"black", "stroke-opacity":0.5, "fill":"steelblue"})
         ;
