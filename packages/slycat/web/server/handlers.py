@@ -103,14 +103,6 @@ def require_boolean_parameter(name):
     raise cherrypy.HTTPError("400 Parameter %s must be true or false." % name)
   return value
 
-def get_context():
-  """Helper function that populates a default context object for use expanding HTML templates."""
-  context = {}
-  context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  context["security"] = cherrypy.request.security
-  context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
-  return context
-
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["server-root"] + "projects")
 
@@ -446,7 +438,10 @@ def get_model(mid, **kwargs):
 
     # Compatibility code for rendering pre-plugin models:
     if mtype in ["timeseries", "parameter-image"]:
-      context = get_context()
+      context = {}
+      context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+      context["security"] = cherrypy.request.security
+      context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
       context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
@@ -463,9 +458,6 @@ def get_model(mid, **kwargs):
         context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
         context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
         return slycat.web.server.template.render("model-timeseries.html", context)
-
-#      if mtype in ["cca", "cca3"]:
-#        return slycat.web.server.template.render("model-cca3.html", context)
 
       if mtype == "parameter-image":
         return slycat.web.server.template.render("model-parameter-image.html", context)
