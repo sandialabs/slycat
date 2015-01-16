@@ -15,6 +15,8 @@ rights in this software.
 #cluster-pane
 {
   overflow: auto;
+  color: #665;
+  font-size: small;
 }
 
 #cluster-viewer
@@ -22,13 +24,16 @@ rights in this software.
   margin: 5px;
   border-collapse: collapse;
 }
-
+#cluster-viewer td,
+#cluster-viewer th
+{
+  padding: 3px;
+}
 #cluster-viewer td.output
 {
   background: #dbd9eb;
   cursor: pointer;
 }
-
 #cluster-viewer td.output.selected
 {
   background: #7767b0;
