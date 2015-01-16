@@ -20,3 +20,4 @@ slycat.egg-info
 ._*
 .apdisk
 web-client/images*
+web-server/config.ini
