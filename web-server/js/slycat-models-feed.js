@@ -11,6 +11,14 @@ define("slycat-models-feed", ["slycat-server-root", "knockout", "knockout-mappin
   var model_ids = {}
   var source = null;
 
+  function sort_models()
+  {
+    models.sort(function(left, right)
+    {
+      return left.created() == right.created() ? 0 : (left.created() < right.created() ? 1 : -1);
+    });
+  }
+
   function start()
   {
     source = new EventSource(server_root + "models-feed");
@@ -43,6 +51,7 @@ define("slycat-models-feed", ["slycat-server-root", "knockout", "knockout-mappin
         {
           model_ids[model._id] = mapping.fromJS(model);
           models.push(model_ids[model._id]);
+          sort_models();
         }
       }
     }
@@ -57,6 +66,21 @@ define("slycat-models-feed", ["slycat-server-root", "knockout", "knockout-mappin
     if(!source)
       start();
     return models;
+  }
+
+  module.seed = function(model)
+  {
+    if(model._id in model_ids)
+      return;
+
+    model_ids[model._id] = mapping.fromJS(
+    {
+      _id: model._id,
+      name: model.name || "",
+      description: model.description || "",
+    });
+    models.push(model_ids[model._id]);
+    sort_models();
   }
 
   return module;
