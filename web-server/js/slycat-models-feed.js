@@ -68,20 +68,5 @@ define("slycat-models-feed", ["slycat-server-root", "knockout", "knockout-mappin
     return models;
   }
 
-  module.seed = function(model)
-  {
-    if(model._id in model_ids)
-      return;
-
-    model_ids[model._id] = mapping.fromJS(
-    {
-      _id: model._id,
-      name: model.name || "",
-      description: model.description || "",
-    });
-    models.push(model_ids[model._id]);
-    sort_models();
-  }
-
   return module;
 });
