@@ -69,23 +69,5 @@ define("slycat-projects-feed", ["slycat-server-root", "knockout", "knockout-mapp
     return projects;
   }
 
-  module.seed = function(project)
-  {
-    if(project._id in project_ids)
-      return;
-
-    project_ids[project._id] = mapping.fromJS(
-    {
-      _id: project._id,
-      name: project.name || "",
-      description: project.description || "",
-      created: project.created || "",
-      creator: project.creator || "",
-      acl: project.acl || {"administrators":[],"writers":[],"readers":[]},
-    });
-    projects.push(project_ids[project._id]);
-    sort_projects();
-  }
-
   return module;
 });
