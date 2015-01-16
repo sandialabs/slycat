@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-models", ["slycat-server-root"], function(server_root)
+define("slycat-models", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
 {
   // Server-side-events loop to keep track of the current user's list of models.
   var models = ko.observableArray();
@@ -37,11 +37,11 @@ define("slycat-models", ["slycat-server-root"], function(server_root)
         var model = message.doc;
         if(model._id in model_ids)
         {
-          ko.mapping.fromJS(model, model_ids[model._id]);
+          mapping.fromJS(model, model_ids[model._id]);
         }
         else
         {
-          model_ids[model._id] = ko.mapping.fromJS(model);
+          model_ids[model._id] = mapping.fromJS(model);
           models.push(model_ids[model._id]);
         }
       }

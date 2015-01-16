@@ -1,14 +1,14 @@
-define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/remote-cca/ui.html"], function(client, html)
+define(["slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/remote-cca/ui.html"], function(client, ko, mapping, html)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.project;
-    component.model = ko.mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
-    component.remote = ko.mapping.fromJS({hostname: null, username: null, password: null, sid: null});
-    component.browser = ko.mapping.fromJS({path:null, selection: []});
-    component.attributes = ko.mapping.fromJS([]);
+    component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, sid: null});
+    component.browser = mapping.fromJS({path:null, selection: []});
+    component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
 
     component.set_input = function(attribute)
@@ -81,7 +81,7 @@ define(["slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
                 attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:metadata["column-types"][i] != "string", output:false})
-              ko.mapping.fromJS(attributes, component.attributes);
+              mapping.fromJS(attributes, component.attributes);
               component.tab(3);
             }
           });

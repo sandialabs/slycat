@@ -20,14 +20,14 @@
       <table style="width:100%">
         <thead>
           <tr>
-            <tr><th>Variable</th><th>Input</th><th>Output</th></tr>
+            <tr><th>Variable</th><th>X</th><th>Y</th></tr>
           </tr>
         </thead>
         <tbody data-bind="foreach:attributes">
           <tr>
             <td data-bind="text:name"></td>
-            <td data-bind="if:type() != 'string'"><input type="radio" name="inputs" data-bind="checkedValue: $index, checked: $parent.input_column"/></td>
-            <td data-bind="if:type() != 'string'"><input type="radio" name="outputs" data-bind="checkedValue: $index, checked: $parent.output_column"/></td>
+            <td data-bind="if:type() != 'string'"><input type="radio" name="x" data-bind="checkedValue: $index, checked: $parent.x_column"/></td>
+            <td data-bind="if:type() != 'string'"><input type="radio" name="y" data-bind="checkedValue: $index, checked: $parent.y_column"/></td>
           </tr>
         </tbody>
       </table>

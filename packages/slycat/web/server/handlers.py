@@ -59,6 +59,8 @@ def js_bundle():
     if js_bundle._bundle is None:
       js_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
       [
+        "js/curl.js",
+        "js/slycat-curl-config.js", # Load this immediately following curl to configure it.
         "js/jquery-2.1.1.min.js",
         "js/jquery-migrate-1.2.1.js",
         "js/jquery.json-2.4.min.js",
@@ -69,7 +71,6 @@ def js_bundle():
         "js/knockout.mapping.js",
         "js/knockout-projections.js",
         "js/knockstrap.js",
-        "js/curl.js", # This needs to be loaded after knockstrap, which will try to load knockout and jQuery using require() if it's available.
         "js/slycat-server-root.js",
         "js/slycat-bookmark-manager.js",
         "js/slycat-web-client.js",
@@ -444,7 +445,7 @@ def get_model(mid, **kwargs):
     mtype = model.get("model-type", None)
 
     # Compatibility code for rendering pre-plugin models:
-    if mtype in ["parameter-image", "tracer-image"]:
+    if mtype in ["parameter-image", ]:
       context = get_context()
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
@@ -468,9 +469,6 @@ def get_model(mid, **kwargs):
 
       if mtype == "parameter-image":
         return slycat.web.server.template.render("model-parameter-image.html", context)
-
-      if mtype == "tracer-image":
-        return slycat.web.server.template.render("model-tracer-image.html", context)
 
     # New code for rendering plugin models:
     marking = slycat.web.server.plugin.manager.markings[model["marking"]]
@@ -821,7 +819,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         results = {}
         if "arrays" in arguments:
           results["arrays"] = []
-          for array in arguments["arrays"].split(","):
+          for array in arguments["arrays"].split(";"):
             hdf5_array = hdf5_arrayset[array]
             results["arrays"].append({
               "index" : int(array),
@@ -830,7 +828,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
               })
         if "statistics" in arguments:
           results["statistics"] = []
-          for spec in arguments["statistics"].split(","):
+          for spec in arguments["statistics"].split(";"):
             cherrypy.log.error("spec: %s" % spec)
             array, attribute = spec.split("/")
             statistics = hdf5_arrayset[array].get_statistics(attribute)
@@ -893,6 +891,59 @@ def get_model_arrayset(mid, aid, **arguments):
 
   return content()
 get_model_arrayset._cp_config = {"response.stream" : True}
+
+def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
+  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
+
+  # Sanity check inputs ...
+  parsed_hyperchunks = []
+
+  try:
+    for hyperchunk in hyperchunks.split(";"):
+      array, attribute, hyperslices = hyperchunk.split("/")
+      array = int(array)
+      if array < 0:
+        raise Exception()
+      attribute = int(attribute)
+      if attribute < 0:
+        raise Exception()
+      hyperslices = [slycat.hyperslice.parse(hyperslice) for hyperslice in hyperslices.split("|")]
+      parsed_hyperchunks.append((array, attribute, hyperslices))
+  except Exception as e:
+    cherrypy.log.error("Parsing exception: %s" % e)
+    raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
+
+  if byteorder is not None:
+    if byteorder not in ["big", "little"]:
+      raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  def content():
+    if byteorder is None:
+      yield json.dumps([[None if numpy.isnan(e) else e for e in hyperslice.tolist()] for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
+    else:
+      for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks):
+        if sys.byteorder != byteorder:
+          yield hyperslice.byteswap().tostring(order="C")
+        else:
+          yield hyperslice.tostring(order="C")
+  return content()
+get_model_arrayset_data._cp_config = {"response.stream" : True}
 
 def validate_table_rows(rows):
   try:

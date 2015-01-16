@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-bookmark-manager", ["slycat-server-root"], function(server_root)
+define("slycat-bookmark-manager", ["slycat-server-root", "jquery"], function(server_root, $)
 {
   var module = {};
   module.create = function(pid, mid)
