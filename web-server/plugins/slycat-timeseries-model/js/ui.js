@@ -7,6 +7,89 @@ rights in this software.
 define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "domReady!"], function(server_root, bookmark_manager)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
+// Setup page layout and forms.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Setup the resizing layout ...      
+var bodyLayout = $("#timeseries-model").layout({
+  applyDefaultStyles: false,
+  north:
+  {
+    initClosed : true,
+    resizeWhileDragging : false,
+    // onresize: function()
+    // {
+    //   console.log('resized bodyLayout north');
+    // },
+  },
+  center:
+  {
+    resizeWhileDragging : false,
+    // onresize: function()
+    // {
+    //   console.log('resized bodyLayout center');
+    // },
+  },
+  south:
+  {
+    size: $(window).height() / 3,
+    //size: $("body").height() / 3,
+    resizeWhileDragging : false,
+    onresize: function()
+    {
+      $("#table").table("resize_canvas");
+      //console.log('resized bodyLayout south');
+    },
+  },
+});
+
+var contentPaneLayout = $("#content-pane").layout({
+  north :
+  {
+    size: 45,
+    resizeWhileDragging : false,
+    // onresize: function()
+    // {
+    //   console.log('resized contentPaneLayout north');
+    // },
+  },
+  center :
+  {
+    resizeWhileDragging : false,
+    // onresize: function()
+    // {
+    //   console.log('resized contentPaneLayout center');
+    // },
+  },
+});
+
+var modelPaneLayout = $("#model-pane").layout({
+  west :
+  {
+    size : $("#model-pane").width() / 2,
+    resizeWhileDragging : false,
+    onresize: function() 
+    { 
+      $("#dendrogram-viewer").dendrogram("resize_canvas");
+    },
+  },
+  center :
+  {
+    resizeWhileDragging: false,
+    onresize: function() 
+    { 
+      $("#waveform-viewer").waveformplot("resize_canvas");
+    },
+  },
+  east:
+  {
+    size: 130,
+    resizeWhileDragging: false,
+    onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+  },
+});
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -177,89 +260,6 @@ function artifact_missing()
 
   show_status_messages();
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Setup page layout and forms.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-// Setup the resizing layout ...      
-var bodyLayout = $("#timeseries-model").layout({
-  applyDefaultStyles: false,
-  north:
-  {
-    initClosed : true,
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized bodyLayout north');
-    // },
-  },
-  center:
-  {
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized bodyLayout center');
-    // },
-  },
-  south:
-  {
-    size: $(window).height() / 3,
-    //size: $("body").height() / 3,
-    resizeWhileDragging : false,
-    onresize: function()
-    {
-      $("#table").table("resize_canvas");
-      //console.log('resized bodyLayout south');
-    },
-  },
-});
-
-var contentPaneLayout = $("#content-pane").layout({
-  north :
-  {
-    size: 45,
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized contentPaneLayout north');
-    // },
-  },
-  center :
-  {
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized contentPaneLayout center');
-    // },
-  },
-});
-
-var modelPaneLayout = $("#model-pane").layout({
-  west :
-  {
-    size : $("#model-pane").width() / 2,
-    resizeWhileDragging : false,
-    onresize: function() 
-    { 
-      $("#dendrogram-viewer").dendrogram("resize_canvas");
-    },
-  },
-  center :
-  {
-    resizeWhileDragging: false,
-    onresize: function() 
-    { 
-      $("#waveform-viewer").waveformplot("resize_canvas");
-    },
-  },
-  east:
-  {
-    size: 130,
-    resizeWhileDragging: false,
-    onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
-  },
-});
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup the rest of the UI as data is received.
