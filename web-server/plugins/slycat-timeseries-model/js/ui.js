@@ -184,6 +184,7 @@ function artifact_missing()
 
 // Setup the resizing layout ...      
 var bodyLayout = $("#timeseries-model").layout({
+  applyDefaultStyles: false,
   north:
   {
     initClosed : true,
@@ -204,6 +205,7 @@ var bodyLayout = $("#timeseries-model").layout({
   south:
   {
     size: $(window).height() / 3,
+    //size: $("body").height() / 3,
     resizeWhileDragging : false,
     onresize: function()
     {
