@@ -297,6 +297,31 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     });
   }
 
+  module.post_projects = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: $.toJSON(
+      {
+        "name": params.name,
+        "description": params.description || "",
+      }),
+      type: "POST",
+      url: server_root + "projects",
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result.id);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.post_project_models = function(params)
   {
     $.ajax(
