@@ -46,7 +46,7 @@ var bodyLayout = $("#timeseries-model").layout({
 var contentPaneLayout = $("#content-pane").layout({
   north :
   {
-    size: 45,
+    size: 38,
     resizeWhileDragging : false,
     // onresize: function()
     // {
