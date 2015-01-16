@@ -12,7 +12,40 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
     {
       var component = this;
 
+      // Keep track of project data, if any.
       component.project_id = ko.observable(params.project_id);
+
+      component.project = projects_feed.watch().filter(function(project)
+      {
+        return project._id() == component.project_id();
+      }).map(function(project)
+      {
+        return {
+          _id: project._id,
+          name: project.name,
+          description: project.description,
+          creator: project.creator,
+          created: project.created,
+          acl: project.acl,
+          popover: ko.pureComputed(function()
+          {
+            var members = [];
+            for(var i = 0; i != project.acl.administrators().length; ++i)
+              members.push(project.acl.administrators()[i].user());
+            for(var i = 0; i != project.acl.writers().length; ++i)
+              members.push(project.acl.writers()[i].user());
+            for(var i = 0; i != project.acl.readers().length; ++i)
+              members.push(project.acl.readers()[i].user());
+            var result = "<p>" + project.description() + "</p>";
+            result += "<p><small>Members: " + members.join(",") + "</small></p>";
+            result += "<p><small><em>Created " + project.created() + " by " + project.creator() + "</em></small></p>";
+            return result;
+          }),
+        };
+      });
+
+      // Setup storage for creating new projects / editing existing projects.
+      component.new_project = mapping.fromJS({_id:"",name:"",acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
 
       component.alerts = mapping.fromJS([]);
       component.permission = ko.observable("reader");
@@ -56,52 +89,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       // Get available server markings.
       component.markings = markings;
-
-      // Watch the current project (if any).
-      if(component.project_id())
-      {
-        projects_feed.seed(
-        {
-          _id: component.project_id(),
-          name: params.project_name,
-        });
-      }
-      component.projects = projects_feed.watch().filter(function(project)
-      {
-        return project._id() == component.project_id();
-      }).map(function(project)
-      {
-        return {
-          _id: project._id,
-          name: project.name,
-          description: project.description,
-          creator: project.creator,
-          created: project.created,
-          acl: project.acl,
-          popover: ko.pureComputed(function()
-          {
-            var members = [];
-            for(var i = 0; i != project.acl.administrators().length; ++i)
-              members.push(project.acl.administrators()[i].user());
-            for(var i = 0; i != project.acl.writers().length; ++i)
-              members.push(project.acl.writers()[i].user());
-            for(var i = 0; i != project.acl.readers().length; ++i)
-              members.push(project.acl.readers()[i].user());
-            var result = "<p>" + project.description() + "</p>";
-            result += "<p><small>Members: " + members.join(",") + "</small></p>";
-            result += "<p><small><em>Created " + project.created() + " by " + project.creator() + "</em></small></p>";
-            return result;
-          }),
-        };
-      });
-
-      component.current_project = ko.pureComputed(function()
-      {
-        return component.projects().length ? component.projects()[0] : null;
-      });
-
-      // Setup storage for creating new projects / editing existing projects.
-      component.new_project = mapping.fromJS({_id:component.project_id(),name:params.project_name,acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
 
       // Watch running models
       component.models = models_feed.watch();
@@ -172,7 +159,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.edit_project = function()
       {
-        mapping.fromJS(mapping.toJS(component.projects()[0]), component.new_project)
+        mapping.fromJS(mapping.toJS(component.project()[0]), component.new_project)
       }
 
       component.add_project_member = function()
@@ -251,7 +238,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       component.delete_project = function()
       {
-        if(window.confirm("Delete " + component.current_project().name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
+        if(window.confirm("Delete " + component.project()[0].name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
         {
           client.delete_project(
           {
@@ -432,7 +419,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
           <li data-bind="visible: true"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
-          <!-- ko foreach: projects --> \
+          <!-- ko foreach: project --> \
           <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
           <!-- /ko --> \
           <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
@@ -651,7 +638,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <div class="modal-content"> \
         <div class="modal-body"> \
           <div data-bind="if: wizard"> \
-            <div data-bind="component:{name:wizard,params:{project:current_project(),model:model}}"> \
+            <div data-bind="component:{name:wizard,params:{project:project()[0],model:model}}"> \
             </div> \
           </div> \
         </div> \
