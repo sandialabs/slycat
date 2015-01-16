@@ -472,7 +472,7 @@ def get_model(mid, **kwargs):
 
     # Compatibility code for rendering pre-plugin models:
     if mtype in ["parameter-image", ]:
-      context = get_context()
+      context = {}
       context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
       context["security"] = cherrypy.request.security
       context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
