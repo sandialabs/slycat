@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects", "slycat-models", "knockout", "knockout-mapping"], function(server_root, client, markings, projects, models, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects-feed", "slycat-models-feed", "knockout", "knockout-mapping"], function(server_root, client, markings, projects_feed, models_feed, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
@@ -60,13 +60,13 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       // Watch the current project (if any).
       if(component.project_id())
       {
-        projects.seed(
+        projects_feed.seed(
         {
           _id: component.project_id(),
           name: params.project_name,
         });
       }
-      component.projects = projects.watch().filter(function(project)
+      component.projects = projects_feed.watch().filter(function(project)
       {
         return project._id() == component.project_id();
       }).map(function(project)
@@ -104,7 +104,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.new_project = mapping.fromJS({_id:component.project_id(),name:params.project_name,acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
 
       // Watch running models
-      component.models = models.watch();
+      component.models = models_feed.watch();
       component.open_models = component.models.filter(function(model)
       {
         return model.state() && model.state() != "closed";
