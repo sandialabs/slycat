@@ -107,7 +107,7 @@ rights in this software.
 	height: 100%;
 }
 .selected .highlightWrapper.null {
-	background-image: url(../stripe1.png) !important;
+	background-image: url(images/stripe1.png) !important;
 }
 .highlight .highlightWrapper.null {
 	position: static;

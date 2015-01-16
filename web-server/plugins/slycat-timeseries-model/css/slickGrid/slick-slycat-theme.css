@@ -99,7 +99,7 @@ rights in this software.
 }
 /* Stripe backgrounds generated using http://www.stripegenerator.com */
 .highlightWrapper.null {
-	background: #DDDDDD url(../stripe2.png) !important;
+	background: #DDDDDD url(images/stripe2.png) !important;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -107,7 +107,7 @@ rights in this software.
 	height: 100%;
 }
 .selected .highlightWrapper.null {
-	background-image: url(../stripe1.png) !important;
+	background-image: url(images/stripe1.png) !important;
 }
 .highlight .highlightWrapper.null {
 	position: static;
