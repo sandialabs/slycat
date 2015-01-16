@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+    <script src="js/knockout.mapping.js"></script>
+    <script src="js/knockout-projections.js"></script>
+    <title>Slycat Feed Test</title>
+  </head>
+  <body>
+    <h4>Projects</h4>
+    <ul data-bind="foreach:projects">
+      <li><span data-bind="text:id"></span> <span data-bind="text:name"></span></li>
+    </ul>
+    <h4>Match</h4>
+    <ul data-bind="foreach:match">
+      <li><span data-bind="text:id"></span> <span data-bind="text:name"></span></li>
+    </ul>
+    <h4>Project</h4>
+    <ul data-bind="foreach:project()">
+      <li><span data-bind="text:id"></span> <span data-bind="text:name"></span> <span data-bind="text:$parent.popover($data)"></span></li>
+    </ul>
+    <script>
+      require(["knockout", "knockout-mapping"], function(ko, mapping)
+      {
+        var page = {};
+        page.project_id = ko.observable("d");
+        page.projects = mapping.fromJS([{id:"a", name:"foo"}, {id:"b", name:"bar"}, {id:"c", name:"baz"}]);
+        page.match = page.projects.filter(function(project)
+        {
+          return project.id() == page.project_id();
+        });
+        page.project = ko.pureComputed(function()
+        {
+          console.log("page.project");
+          return page.match().length ? page.match() : [{id:"d", name:"unknown"}];
+        });
+        page.popover = function(project)
+        {
+          return ko.utils.unwrapObservable(project.id) + "|" + ko.utils.unwrapObservable(project.name);
+        }
+
+        ko.applyBindings(page);
+
+        window.setTimeout(function()
+        {
+          page.projects.push(mapping.fromJS({id:"d", name:"blah"}));
+        }, 2000);
+
+        window.setTimeout(function()
+        {
+          page.project_id("b");
+        }, 4000);
+
+        window.setTimeout(function()
+        {
+          page.projects()[1].name("boo!");
+        }, 6000);
+      });
+    </script>
+  </body>
+</html>
