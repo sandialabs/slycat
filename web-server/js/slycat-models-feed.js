@@ -4,10 +4,10 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-models", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
+define("slycat-models-feed", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
 {
   // Server-side-events loop to keep track of the current user's list of models.
-  var models = ko.observableArray();
+  var models = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
   var model_ids = {}
   var source = null;
 

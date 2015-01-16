@@ -78,8 +78,8 @@ def js_bundle():
         "js/slycat-nag.js",
         "js/slycat-model-controls.js",
         "js/slycat-model-results.js",
-        "js/slycat-projects.js",
-        "js/slycat-models.js",
+        "js/slycat-projects-feed.js",
+        "js/slycat-models-feed.js",
         "js/slycat-navbar.js",
         "js/slycat-local-browser.js",
         "js/slycat-remote-browser.js",
@@ -102,14 +102,6 @@ def require_boolean_parameter(name):
   if value != True and value != False:
     raise cherrypy.HTTPError("400 Parameter %s must be true or false." % name)
   return value
-
-def get_context():
-  """Helper function that populates a default context object for use expanding HTML templates."""
-  context = {}
-  context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  context["security"] = cherrypy.request.security
-  context["marking-types"] = [{"type" : key, "label" : value["label"]} for key, value in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
-  return context
 
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["server-root"] + "projects")
@@ -157,25 +149,41 @@ def get_projects_feed():
 
   def content():
     database = slycat.web.server.database.couchdb.connect()
-    last_seq = 0
+    id_cache = set() # Keep track of the set of project ids visible to the caller.
+
+    # Respond quickly with the current set of projects.
+    last_seq, changes = get_projects_feed.cache.current()
+    for change in changes:
+      if slycat.web.server.authentication.test_project_reader(change["doc"]):
+        id_cache.add(change["id"])
+        yield "data: %s\n\n" % json.dumps(change)
+
+    # Keep clients up-to-date as changes happen.
     while cherrypy.engine.state == cherrypy.engine.states.STARTED:
       for change in database.changes(filter="slycat/projects", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
         if "last_seq" in change:
           last_seq = change["last_seq"]
+        elif "deleted" in change:
+          if change["id"] in id_cache: # Caller visible project has been deleted.
+            id_cache.remove(change["id"])
+            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True))
         else:
-          if "deleted" in change:
-            yield "data: %s\n\n" % json.dumps(change)
+          project = change["doc"]
+          if slycat.web.server.authentication.test_project_reader(project): # Caller visible project has been created/updated.
+            id_cache.add(change["id"])
+            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], doc=project))
           else:
-            project = change["doc"]
-            if slycat.web.server.authentication.test_project_reader(project):
-              yield "data: %s\n\n" % json.dumps(change)
-            else:
-              # Treat this case as deletion, since the caller might have had their access removed.
-              yield "data: %s\n\n" % json.dumps({"deleted":True, "id":change["id"]});
+            if change["id"] in id_cache: # Caller lost access to the project, make it look like a deletion.
+              id_cache.remove(change["id"])
+              yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True));
       yield ":\n\n" # Keep the connection alive
     cherrypy.log.error("Stopping get-projects-feed handler.")
   return content()
 get_projects_feed._cp_config = {"response.stream": True}
+get_projects_feed.cache = None
+
+def start_projects_feed():
+  get_projects_feed.cache = slycat.web.server.database.couchdb.Cache("projects-feed", "slycat/projects")
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -408,26 +416,44 @@ def get_models_feed():
 
   def content():
     database = slycat.web.server.database.couchdb.connect()
-    last_seq = 0
+    id_cache = set()
+
+    # Respond quickly with the current set of models.
+    last_seq, changes = get_models_feed.cache.current()
+    for change in changes:
+      model = change["doc"]
+      project = database.get("project", model["project"])
+      if slycat.web.server.authentication.test_project_reader(project):
+        id_cache.add(change["id"])
+        yield "data: %s\n\n" % json.dumps(change)
+
+    # Keep clients up-to-date as changes happen.
     while cherrypy.engine.state == cherrypy.engine.states.STARTED:
       for change in database.changes(filter="slycat/models", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
         if "last_seq" in change:
           last_seq = change["last_seq"]
+        elif "deleted" in change:
+          if change["id"] in id_cache:
+            id_cache.remove(change["id"])
+            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True))
         else:
-          if "deleted" in change:
-            yield "data: %s\n\n" % json.dumps(change)
+          model = change["doc"]
+          project = database.get("project", model["project"])
+          if slycat.web.server.authentication.test_project_reader(project):
+            id_cache.add(change["id"])
+            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], doc=model))
           else:
-            model = change["doc"]
-            project = database.get("project", model["project"])
-            if slycat.web.server.authentication.test_project_reader(project):
-              yield "data: %s\n\n" % json.dumps(change)
-            else:
-              # Treat this case as deletion, since the caller might have had their access removed.
-              yield "data: %s\n\n" % json.dumps({"deleted":True, "id":change["id"]});
+            if change["id"] in id_cache:
+              id_cache.remove(change["id"])
+              yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True));
       yield ":\n\n" # Keep the connection alive
     cherrypy.log.error("Stopping get-models-feed handler.")
   return content()
 get_models_feed._cp_config = {"response.stream": True}
+get_models_feed.cache = None
+
+def start_models_feed():
+  get_models_feed.cache = slycat.web.server.database.couchdb.Cache("models-feed", "slycat/models")
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -463,9 +489,6 @@ def get_model(mid, **kwargs):
       #   context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
       #   context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
       #   return slycat.web.server.template.render("model-timeseries.html", context)
-
-#      if mtype in ["cca", "cca3"]:
-#        return slycat.web.server.template.render("model-cca3.html", context)
 
       if mtype == "parameter-image":
         return slycat.web.server.template.render("model-parameter-image.html", context)
@@ -1468,7 +1491,7 @@ def post_events(event):
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_markings():
-  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items()]
+  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_wizards():

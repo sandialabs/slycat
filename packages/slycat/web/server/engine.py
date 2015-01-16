@@ -227,6 +227,10 @@ def start(root_path, config_file):
   manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
   configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
 
+  # Cache data for live feeds.
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed)
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_models_feed)
+
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)
 
