@@ -63,6 +63,80 @@ var cache_references = [ session_cache, image_cache ];
 var login_dialog = $("#remote-login-dialog");
 
 //////////////////////////////////////////////////////////////////////////////////////////
+// Setup page layout.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+login_dialog.dialog({
+  autoOpen: false,
+  width: 700,
+  height: 300,
+  modal: true,
+  close: function()
+  {
+    $("#remote-password").val("");
+  },
+});
+
+// Enter key in password field triggers click on Login button
+$("#remote-password", login_dialog).keypress(function(event){ 
+  if(event.keyCode == 13) 
+  { 
+    $('.ui-dialog-buttonset', login_dialog.parent()).find('button:contains(Login)').trigger('click');
+  }
+});
+
+$("#parameter-image-plus-layout").layout(
+{
+  north:
+  {
+    size: 28,
+  },
+  center:
+  {
+    // resizeWhileDragging: false,
+    // onresize: function() { 
+    //   $("#scatterplot").scatterplot("option", {
+    //     width: $("#scatterplot-pane").width(), 
+    //     height: $("#scatterplot-pane").height()
+    //   }); 
+    // },
+  },
+  west:
+  {
+    size: $("#parameter-image-plus-layout").width() / 2,
+    resizeWhileDragging : false,
+    onresize: function() 
+    { 
+      $("#dendrogram-viewer").dendrogram("resize_canvas");
+    }
+  },
+  south:
+  {
+    size: $("#parameter-image-plus-layout").height() / 4,
+    resizeWhileDragging: false,
+    onresize: function()
+    {
+      $("#table").css("height", $("#table-pane").height());
+      $("#table").table("resize_canvas");
+    }
+  },
+});
+
+$("#model-pane").layout(
+{
+  center:
+  {
+    resizeWhileDragging: false,
+    onresize: function() { 
+      $("#scatterplot").scatterplot("option", {
+        width: $("#scatterplot-pane").width(), 
+        height: $("#scatterplot-pane").height()
+      }); 
+    },
+  }
+});
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -194,80 +268,6 @@ function artifact_missing()
 
   show_status_messages();
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Setup page layout.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-login_dialog.dialog({
-  autoOpen: false,
-  width: 700,
-  height: 300,
-  modal: true,
-  close: function()
-  {
-    $("#remote-password").val("");
-  },
-});
-
-// Enter key in password field triggers click on Login button
-$("#remote-password", login_dialog).keypress(function(event){ 
-  if(event.keyCode == 13) 
-  { 
-    $('.ui-dialog-buttonset', login_dialog.parent()).find('button:contains(Login)').trigger('click');
-  }
-});
-
-$("#parameter-image-plus-layout").layout(
-{
-  north:
-  {
-    size: 28,
-  },
-  center:
-  {
-    // resizeWhileDragging: false,
-    // onresize: function() { 
-    //   $("#scatterplot").scatterplot("option", {
-    //     width: $("#scatterplot-pane").width(), 
-    //     height: $("#scatterplot-pane").height()
-    //   }); 
-    // },
-  },
-  west:
-  {
-    size: $("#parameter-image-plus-layout").width() / 2,
-    resizeWhileDragging : false,
-    onresize: function() 
-    { 
-      $("#dendrogram-viewer").dendrogram("resize_canvas");
-    }
-  },
-  south:
-  {
-    size: $("#parameter-image-plus-layout").height() / 4,
-    resizeWhileDragging: false,
-    onresize: function()
-    {
-      $("#table").css("height", $("#table-pane").height());
-      $("#table").table("resize_canvas");
-    }
-  },
-});
-
-$("#model-pane").layout(
-{
-  center:
-  {
-    resizeWhileDragging: false,
-    onresize: function() { 
-      $("#scatterplot").scatterplot("option", {
-        width: $("#scatterplot-pane").width(), 
-        height: $("#scatterplot-pane").height()
-      }); 
-    },
-  }
-});
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup the rest of the UI as data is received.
