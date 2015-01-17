@@ -47,19 +47,6 @@ def register_slycat_plugin(context):
 
   # Register JS
   javascripts = [
-    # This JS is loaded by header
-    # "js/jquery-2.1.1.min.js",
-    # "js/jquery-migrate-1.2.1.js",
-    # "js/jquery.json-2.4.min.js",
-    # "js/jquery-ui-1.10.4.custom.min.js",
-    # "js/jquery.knob.js",
-    # "js/jquery.qtip.min.js",
-    # "js/knockout-3.2.0.js",
-    # "js/knockout.mapping.js",
-    # "js/slycat-browser.js",
-    # "js/slycat-navbar.js",
-    # "js/slycat-model.js",
-    # End JS loaded by header
     "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
@@ -77,10 +64,10 @@ def register_slycat_plugin(context):
     "color-switcher.js",
     "parameter-controls.js",
     "parameter-image-table.js",
-    #For development and debugging, loading some js dynamically inside model.
-    #"parameter-image-dendrogram.js",
-    #"parameter-image-scatterplot.js",
-    #"ui.js"
+    "parameter-image-dendrogram.js",
+    "parameter-image-scatterplot.js",
+    "ui.js",
+    #For development and debugging, comment out js here and load it dynamically inside model.
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
@@ -88,17 +75,11 @@ def register_slycat_plugin(context):
 
   # Register CSS
   stylesheets = [
-    # This CSS is loaded by header
-    # "css/smoothness/jquery-ui-1.10.4.custom.min.css",
-    # "css/jquery.qtip.min.css",
-    # "css/slycat.css",
-    # End CSS loaded by header
     "jquery-ui-1.10.4.custom.min.css",
     "slick.grid.css",
     "slick-default-theme.css",
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
-    #For development and debugging, loading ui.css dynamically inside model.
     "ui.css"
   ]
   context.register_model_bundle("parameter-image-plus", "text/css", [
