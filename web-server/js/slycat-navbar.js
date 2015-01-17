@@ -131,32 +131,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         });
       }
 
-      component.create_project = function()
-      {
-        var project =
-        {
-          "name" : component.new_project.name(),
-          "description" : component.new_project.description(),
-        };
-
-        $.ajax(
-        {
-          contentType : "application/json",
-          data: $.toJSON(project),
-          processData: false,
-          type : "POST",
-          url : server_root + "projects",
-          success: function(result)
-          {
-            window.location.href = server_root + "projects/" + result.id;
-          },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error creating project: " + reason_phrase);
-          }
-        });
-      }
-
       component.edit_project = function()
       {
         mapping.fromJS(mapping.toJS(component.project()[0]), component.new_project)
@@ -425,11 +399,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left"> \
-          <li data-bind="visible: !project_id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
-          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
-          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="dropdown" data-bind="visible: project_wizards().length || model_wizards().length || post_model_wizards().length"> \
-            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
+            <button type="button" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
               <!-- ko foreach: post_model_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
@@ -444,6 +415,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
               <!-- /ko --> \
             </ul> \
           </li> \
+          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="dropdown" data-bind="visible:open_models().length"> \
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
@@ -487,35 +460,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
     </div> \
   <!-- /ko --> \
-  <div class="modal fade" id="slycat-create-project"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-header"> \
-          <h3 class="modal-title">Create Project</h3> \
-        </div> \
-        <div class="modal-body"> \
-          <form class="form-horizontal"> \
-            <div class="form-group"> \
-              <label for="slycat-create-project-name" class="col-sm-2 control-label">Name</label> \
-              <div class="col-sm-10"> \
-                <input id="slycat-create-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_project.name"></input> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label for="slycat-create-project-description" class="col-sm-2 control-label">Description</label> \
-              <div class="col-sm-10"> \
-                <textarea id="slycat-create-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_project.description"></textarea> \
-              </div> \
-            </div> \
-          </form> \
-        </div> \
-        <div class="modal-footer"> \
-          <button class="btn btn-primary" data-bind="click:create_project" data-dismiss="modal">Create Project</button> \
-          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
   <div class="modal fade" id="slycat-edit-project"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
