@@ -71,6 +71,6 @@ def register_slycat_plugin(context):
     ])
 
   # Register a wizard for creating instances of the bookmark-demo model.
-  context.register_wizard("linear-regression-demo", "Linear Regression Demo Model", require={"project":True})
+  context.register_wizard("linear-regression-demo", "Linear Regression Demo Model", require={"context":"create", "project":True})
   context.register_wizard_resource("linear-regression-demo", "ui.js", os.path.join(os.path.dirname(__file__), "wizard-ui.js"))
   context.register_wizard_resource("linear-regression-demo", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
