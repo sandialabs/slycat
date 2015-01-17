@@ -27,23 +27,28 @@ import os
 import shutil
 import slycat.hdf5
 parser = argparse.ArgumentParser()
+parser.add_argument("--data-directory", default="sample-timeseries", help="Destination directory that will contain the generated .hdf5 files.")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
 parser.add_argument("--input-variable-prefix", default="X", help="Input variable prefix.  Default: %(default)s")
-parser.add_argument("--seed", type=int, default=12345, help="Random seed.  Default: %(default)s")
 parser.add_argument("--nan-count", type=int, default=10, help="Number of input NaNs.  Default: %(default)s")
+parser.add_argument("--seed", type=int, default=12345, help="Random seed.  Default: %(default)s")
 parser.add_argument("--timeseries-count", type=int, default=10, help="Number of timeseries.  Default: %(default)s")
 parser.add_argument("--timeseries-samples", type=int, default=15000, help="Number of samples in each timeseries.  Default: %(default)s")
 parser.add_argument("--timeseries-variable-prefix", default="Y", help="Timeseries variable prefix.  Default: %(default)s")
 parser.add_argument("--timeseries-variables", type=int, default=2, help="Number of variables in each timeseries.  Default: %(default)s")
 parser.add_argument("--timeseries-waves", type=int, default=4, help="Number of random sine waves to sum for each timeseries.  Default: %(default)s")
-parser.add_argument("output_directory", help="Destination directory that will contain the generated .hdf5 files.")
 arguments = parser.parse_args()
 
+try:
+  client = IPython.parallel.Client()
+except:
+  raise Exception("A running IPython parallel cluster is required to run this script.")
+
 if arguments.force:
-  shutil.rmtree(arguments.output_directory, ignore_errors=True)
-if os.path.exists(arguments.output_directory):
-  raise Exception("Destination directory %s already exists.  Use --force to overwrite." % arguments.output_directory)
-os.makedirs(arguments.output_directory)
+  shutil.rmtree(arguments.data_directory, ignore_errors=True)
+if os.path.exists(arguments.data_directory):
+  raise Exception("Destination directory %s already exists.  Use --force to overwrite." % arguments.data_directory)
+os.makedirs(arguments.data_directory)
 
 # Generate a set of random coefficients that we'll use later to synthesize timeseries.
 numpy.random.seed(arguments.seed)
@@ -54,7 +59,7 @@ input_attributes += [dict(name="%sS" % (arguments.input_variable_prefix), type="
 
 jobs = [(
   index,
-  os.path.join(arguments.output_directory, "timeseries-%s.hdf5" % index),
+  os.path.join(arguments.data_directory, "timeseries-%s.hdf5" % index),
   arguments.timeseries_variable_prefix,
   arguments.timeseries_samples,
   numpy.split(coefficients, arguments.timeseries_variables),
@@ -87,11 +92,6 @@ def generate_timeseries(job):
 
   return timeseries_index
 
-try:
-  client = IPython.parallel.Client()
-except:
-  raise Exception("A running IPython parallel cluster is required to run this script.")
-
 workers = client.load_balanced_view()
 workers.map_sync(generate_timeseries, jobs)
 
@@ -101,7 +101,7 @@ j = numpy.random.choice(inputs.shape[1], arguments.nan_count)
 inputs[i, j] = numpy.nan
 
 # Store the random coefficients as our "inputs".
-with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5")) as file:
+with h5py.File(os.path.join(arguments.data_directory, "inputs.hdf5")) as file:
   arrayset = slycat.hdf5.start_arrayset(file)
   array = arrayset.start_array(0, input_dimensions, input_attributes)
   for attribute, data in enumerate(inputs.T):
