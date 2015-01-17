@@ -415,8 +415,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
               <!-- /ko --> \
             </ul> \
           </li> \
-          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
-          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
+          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="dropdown" data-bind="visible:open_models().length"> \
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
