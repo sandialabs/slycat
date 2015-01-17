@@ -77,15 +77,14 @@ slycat-navbar .alert pre
   margin: 12px 0 0 0;
 }
 
-#slycat-wizard .modal-body
-{
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
 #slycat-wizard .nav-tabs, #slycat-wizard .nav-pills
 {
   margin-bottom: 24px;
+}
+
+#slycat-wizard .pager
+{
+  margin-bottom: 0;
 }
 
 .slycat-remote-browser

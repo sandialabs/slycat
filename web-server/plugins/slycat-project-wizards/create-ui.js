@@ -1,4 +1,4 @@
-define(["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/project/ui.html"], function(server_root, client, ko, mapping, html)
+define(["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/slycat-create-project/ui.html"], function(server_root, client, ko, mapping, html)
 {
   function constructor(params)
   {

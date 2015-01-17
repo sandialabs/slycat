@@ -580,10 +580,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
   <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
-        <div class="modal-body"> \
-          <div data-bind="if: wizard"> \
-            <div data-bind="component:{name:wizard,params:{project:project()[0],model:model}}"> \
-            </div> \
+        <div data-bind="if: wizard"> \
+          <div data-bind="component:{name:wizard,params:{project:project()[0],model:model}}"> \
           </div> \
         </div> \
       </div> \
