@@ -60,16 +60,38 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       });
       component.new_user = ko.observable("");
 
+      // Setup / categorize wizards.
       component.wizards = mapping.fromJS([]);
-      component.project_wizards = component.wizards.filter(function(wizard)
+
+      var create_wizards = component.wizards.filter(function(wizard)
+      {
+        return wizard.require.context() === "create";
+      });
+      var delete_wizards = component.wizards.filter(function(wizard)
+      {
+        return wizard.require.context() === "delete";
+      });
+      component.global_create_wizards = create_wizards.filter(function(wizard)
       {
         return !("project" in wizard.require) && !("model" in wizard.require);
       });
-      component.model_wizards = component.wizards.filter(function(wizard)
+      component.project_create_wizards = create_wizards.filter(function(wizard)
       {
         return ("project" in wizard.require) && component.project_id() && !("model" in wizard.require);
       });
-      component.post_model_wizards = component.wizards.filter(function(wizard)
+      component.model_create_wizards = create_wizards.filter(function(wizard)
+      {
+        return ("project" in wizard.require) && component.project_id() && ("model" in wizard.require) && component.model._id() && wizard.require.model.indexOf(component.model["model-type"]()) != -1;
+      });
+      component.global_delete_wizards = delete_wizards.filter(function(wizard)
+      {
+        return !("project" in wizard.require) && !("model" in wizard.require);
+      });
+      component.project_delete_wizards = delete_wizards.filter(function(wizard)
+      {
+        return ("project" in wizard.require) && component.project_id() && !("model" in wizard.require);
+      });
+      component.model_delete_wizards = delete_wizards.filter(function(wizard)
       {
         return ("project" in wizard.require) && component.project_id() && ("model" in wizard.require) && component.model._id() && wizard.require.model.indexOf(component.model["model-type"]()) != -1;
       });
@@ -208,21 +230,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
             window.alert("Error updating project: " + reason_phrase);
           }
         });
-      }
-
-      component.delete_project = function()
-      {
-        if(window.confirm("Delete " + component.project()[0].name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
-        {
-          client.delete_project(
-          {
-            pid: component.project_id(),
-            success : function()
-            {
-              window.location.href = server_root + "projects";
-            }
-          });
-        }
       }
 
       component.run_wizard = function(item)
@@ -399,24 +406,40 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left"> \
-          <li class="dropdown" data-bind="visible: project_wizards().length || model_wizards().length || post_model_wizards().length"> \
+          <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length"> \
             <button type="button" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
-              <!-- ko foreach: post_model_wizards --> \
+              <!-- ko foreach: model_create_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
-              <li class="divider" data-bind="visible: post_model_wizards().length && model_wizards().length"></li> \
-              <!-- ko foreach: model_wizards --> \
+              <li class="divider" data-bind="visible: model_create_wizards().length && project_create_wizards().length"></li> \
+              <!-- ko foreach: project_create_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
-              <li class="divider" data-bind="visible: model_wizards().length && project_wizards().length"></li> \
-              <!-- ko foreach: project_wizards --> \
+              <li class="divider" data-bind="visible: project_create_wizards().length && global_create_wizards().length"></li> \
+              <!-- ko foreach: global_create_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
             </ul> \
           </li> \
           <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
           <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
+          <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length"> \
+            <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button> \
+            <ul class="dropdown-menu"> \
+              <!-- ko foreach: model_delete_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"></li> \
+              <!-- ko foreach: project_delete_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"></li> \
+              <!-- ko foreach: global_delete_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+            </ul> \
+          </li> \
           <li class="dropdown" data-bind="visible:open_models().length"> \
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
@@ -499,7 +522,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-danger pull-left" data-bind="click:delete_project">Delete Project</button> \
           <button class="btn btn-success pull-left" data-toggle="modal" data-target="#slycat-add-project-member">Add Project Member</button> \
           <button class="btn btn-primary" data-bind="click:save_project" data-dismiss="modal">Save Project</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
