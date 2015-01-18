@@ -266,18 +266,24 @@ class Manager(object):
       Requirements in order to use the wizard.  Supported requirements
       include:
 
-      * "context": "create" - the wizard will be used to create new objects.
-      * "context": "edit" - the wizard will be used to edit existing objects.
-      * "context": "delete" - the wizard will be used to delete existing objects.
-      * "project": True - a project is required to run the wizard.
-      * "model":[list of model types] - a model matching one of the given types is required to run the wizard.
+      * "action": "create" - the wizard will be used to create new objects.
+      * "action": "edit" - the wizard will be used to edit existing objects.
+      * "action": "delete" - the wizard will be used to delete existing objects.
+      * "context": "global"
+      * "context": "project"
+      * "context": "model"
+      * "model-type":[list of model types] - a model matching one of the given types is required to run the wizard.
 
     """
     if type in self._wizards:
       raise Exception("Wizard '%s' has already been registered." % (type))
+    if "action" not in require:
+      raise Exception("Wizard '%s' must specify an action." % (type))
+    if require["action"] not in ["create", "edit", "delete"]:
+      raise Exception("Wizard '%s' unknown action: %s." % (type, require["action"]))
     if "context" not in require:
       raise Exception("Wizard '%s' must specify a context." % (type))
-    if require["context"] not in ["create", "edit", "delete"]:
+    if require["context"] not in ["global", "project", "model"]:
       raise Exception("Wizard '%s' unknown context: %s." % (type, require["context"]))
     self._wizards[type] = {"label": label, "require": require}
     cherrypy.log.error("Registered wizard '%s'." % (type))

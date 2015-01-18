@@ -1,5 +1,5 @@
 def register_slycat_plugin(context):
   import os
-  context.register_wizard("parameter-image", "Remote Parameter Image Model", require={"context":"create", "project":True})
+  context.register_wizard("parameter-image", "New Remote Parameter Image Model", require={"action":"create", "context":"project"})
   context.register_wizard_resource("parameter-image", "ui.js", os.path.join(os.path.dirname(__file__), "ui.js"))
   context.register_wizard_resource("parameter-image", "ui.html", os.path.join(os.path.dirname(__file__), "ui.html"))

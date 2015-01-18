@@ -65,36 +65,36 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
 
       var create_wizards = component.wizards.filter(function(wizard)
       {
-        return wizard.require.context() === "create";
+        return wizard.require.action() === "create";
+      });
+      var edit_wizards = component.wizards.filter(function(wizard)
+      {
+        return wizard.require.action() === "edit";
       });
       var delete_wizards = component.wizards.filter(function(wizard)
       {
-        return wizard.require.context() === "delete";
+        return wizard.require.action() === "delete";
       });
-      component.global_create_wizards = create_wizards.filter(function(wizard)
+      var global_wizard_filter = function(wizard)
       {
-        return !("project" in wizard.require) && !("model" in wizard.require);
-      });
-      component.project_create_wizards = create_wizards.filter(function(wizard)
+        return wizard.require.context() === "global";
+      }
+      var project_wizard_filter = function(wizard)
       {
-        return ("project" in wizard.require) && component.project_id() && !("model" in wizard.require);
-      });
-      component.model_create_wizards = create_wizards.filter(function(wizard)
+        return wizard.require.context() === "project" && component.project_id();
+      }
+      var model_wizard_filter = function(wizard)
       {
-        return ("project" in wizard.require) && component.project_id() && ("model" in wizard.require) && component.model._id() && wizard.require.model.indexOf(component.model["model-type"]()) != -1;
-      });
-      component.global_delete_wizards = delete_wizards.filter(function(wizard)
-      {
-        return !("project" in wizard.require) && !("model" in wizard.require);
-      });
-      component.project_delete_wizards = delete_wizards.filter(function(wizard)
-      {
-        return ("project" in wizard.require) && component.project_id() && !("model" in wizard.require);
-      });
-      component.model_delete_wizards = delete_wizards.filter(function(wizard)
-      {
-        return ("project" in wizard.require) && component.project_id() && ("model" in wizard.require) && component.model._id() && wizard.require.model.indexOf(component.model["model-type"]()) != -1;
-      });
+        if("model-type" in wizard.require && wizard.require["model-type"].indexOf(component.model["model-type"]()) == -1)
+          return false;
+        return wizard.require.context() === "model" && component.model._id();
+      }
+      component.global_create_wizards = create_wizards.filter(global_wizard_filter);
+      component.project_create_wizards = create_wizards.filter(project_wizard_filter);
+      component.model_create_wizards = create_wizards.filter(model_wizard_filter);
+      component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
+      component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
+      component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
       component.wizard = ko.observable(false);
 
       component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
@@ -277,21 +277,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         });
       }
 
-      component.delete_model = function()
-      {
-        if(window.confirm("Delete " + component.model.name() + "? All data will be deleted immediately, and this cannot be undone."))
-        {
-          client.delete_model(
-          {
-            mid: params.model_id,
-            success : function()
-            {
-              window.location.href = server_root + "projects/" + component.project_id();
-            }
-          });
-        }
-      }
-
       component.about = function()
       {
         client.get_configuration_version(
@@ -363,6 +348,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           });
 
           mapping.fromJS(wizards, component.wizards);
+          console.log("wizards", component.wizards());
           for(var i = 0; i != wizards.length; ++i)
           {
             ko.components.register(wizards[i].type,
@@ -592,7 +578,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
           <button class="btn btn-primary" data-bind="click:save_model" data-dismiss="modal">Save Changes</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
