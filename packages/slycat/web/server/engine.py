@@ -229,9 +229,12 @@ def start(root_path, config_file):
   manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
   configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
 
+  # Wait for requests to cleanup deleted arrays.
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_cleanup_arrays_worker, priority=80)
+
   # Cache data for live feeds.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed)
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_models_feed)
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed, priority=80)
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_models_feed, priority=80)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

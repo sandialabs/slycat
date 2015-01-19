@@ -279,9 +279,11 @@ def cleanup_array_worker():
 def cleanup_arrays():
   cleanup_arrays.queue.put("cleanup")
 cleanup_arrays.queue = Queue.Queue()
-cleanup_arrays.thread = threading.Thread(name="Cleanup arrays", target=cleanup_array_worker)
+cleanup_arrays.thread = threading.Thread(name="cleanup-arrays", target=cleanup_array_worker)
 cleanup_arrays.thread.daemon = True
-cleanup_arrays.thread.start()
+
+def start_cleanup_arrays_worker():
+  cleanup_arrays.thread.start()
 
 def delete_project(pid):
   couchdb = slycat.web.server.database.couchdb.connect()
