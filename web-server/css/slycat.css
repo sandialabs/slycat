@@ -87,6 +87,68 @@ slycat-navbar .alert pre
   min-height: 350px;
 }
 
+#slycat-wizard .steps
+{
+    display: inline-block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#slycat-wizard .steps li
+{
+    background: #f8f8f8;
+    border-color: #ddd;
+    border-style: solid;
+    border-width: 1px 0;
+    float: left;
+    height: 40px;
+    padding: 0 30px;
+    line-height: 40px;
+}
+
+#slycat-wizard .steps li:first-child
+{
+    border-width: 1px 0 1px 1px;
+}
+
+#slycat-wizard .steps li.active
+{
+    background: yellow;
+}
+
+#slycat-wizard .steps li.active:after
+{
+    background: yellow;
+}
+
+#slycat-wizard .steps li:after
+{
+    background: #f8f8f8;
+    border-color: #bbb;
+    border-style: solid;
+    border-width: 1px 1px 0 0;
+    content: "";
+    display: inline-block;
+    height: 40px;
+    position: absolute;
+    -webkit-transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
+    transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
+    vertical-align: top;
+    width: 40px;
+}
+
+#slycat-wizard .steps li:last-child
+{
+    border-width: 1px 1px 1px 0;
+}
+
+#slycat-wizard .steps li:last-child:after
+{
+    background: transparent;
+    border-color: transparent;
+}
+
 .slycat-remote-browser
 {
   display: -webkit-flex;
