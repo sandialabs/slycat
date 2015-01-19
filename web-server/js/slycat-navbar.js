@@ -348,7 +348,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           });
 
           mapping.fromJS(wizards, component.wizards);
-          console.log("wizards", component.wizards());
           for(var i = 0; i != wizards.length; ++i)
           {
             ko.components.register(wizards[i].type,
