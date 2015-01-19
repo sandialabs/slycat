@@ -82,9 +82,9 @@ slycat-navbar .alert pre
   margin-bottom: 24px;
 }
 
-#slycat-wizard .pager
+#slycat-wizard .modal-body
 {
-  margin-bottom: 0;
+  min-height: 350px;
 }
 
 .slycat-remote-browser

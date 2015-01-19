@@ -1,3 +1,6 @@
+<div class="modal-header">
+  <h3 class="modal-title">New Project</h3>
+</div>
 <div class="modal-body">
   <ul class="nav nav-pills">
     <li data-bind="css:{active:tab() == 0}"><a>Create Project</a></li>
@@ -21,11 +24,8 @@
       </form>
     </div>
   </div>
-
-  <nav>
-    <ul class="pager">
-      <li class="previous" data-bind="visible:tab() != 1"><a data-dismiss="modal">Cancel</a></li>
-      <li class="next" data-bind="visible:tab() == 0"><a data-bind="click:finish">Finish</a></li>
-    </ul>
-  </nav>
+</div>
+<div class="modal-footer">
+  <li class="btn btn-default pull-left" data-bind="visible:tab() != 1" data-dismiss="modal">Cancel</li>
+  <li class="btn btn-default" data-bind="visible:tab() == 0,click:finish">Finish</li>
 </div>
