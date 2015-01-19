@@ -54,12 +54,14 @@ def start(root_path, config_file):
   # Load the configuration file.
   configuration = {}
   config_file = abspath(config_file)
-  if os.path.exists(config_file):
-    cherrypy.engine.autoreload.files.add(config_file)
-    parser = ConfigParser.SafeConfigParser()
-    parser.read(config_file)
-    configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
-    configuration["slycat"]["root-path"] = root_path
+  if not os.path.exists(config_file):
+    raise Exception("Configuration file %s does not exist." % config_file)
+
+  cherrypy.engine.autoreload.files.add(config_file)
+  parser = ConfigParser.SafeConfigParser()
+  parser.read(config_file)
+  configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
+  configuration["slycat"]["root-path"] = root_path
 
   # Configuration items we don't recognize are not allowed.
   for key in configuration["slycat"].keys():
@@ -226,6 +228,13 @@ def start(root_path, config_file):
   directory_kwargs = configuration["slycat"]["directory"].get("kwargs", {})
   manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
   configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
+
+  # Wait for requests to cleanup deleted arrays.
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_cleanup_arrays_worker, priority=80)
+
+  # Cache data for live feeds.
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed, priority=80)
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_models_feed, priority=80)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

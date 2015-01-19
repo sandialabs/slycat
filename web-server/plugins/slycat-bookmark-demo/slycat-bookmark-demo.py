@@ -16,6 +16,6 @@ def register_slycat_plugin(context):
     ])
 
   # Register a wizard for creating instances of the bookmark-demo model.
-  context.register_wizard("bookmark-demo", "Bookmark Demo Model", require={"project":True})
+  context.register_wizard("bookmark-demo", "New Bookmark Demo Model", require={"action":"create", "context":"project"})
   context.register_wizard_resource("bookmark-demo", "ui.js", os.path.join(os.path.dirname(__file__), "wizard-ui.js"))
   context.register_wizard_resource("bookmark-demo", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))

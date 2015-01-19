@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects", "slycat-models", "knockout", "knockout-mapping"], function(server_root, client, markings, projects, models, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects-feed", "slycat-models-feed", "knockout", "knockout-mapping"], function(server_root, client, markings, projects_feed, models_feed, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
@@ -12,61 +12,10 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
     {
       var component = this;
 
+      // Keep track of project data, if any.
       component.project_id = ko.observable(params.project_id);
 
-      component.alerts = mapping.fromJS([]);
-      component.permission = ko.observable("reader");
-      component.permission_description = ko.pureComputed(function()
-      {
-        if(component.permission() == "reader")
-          return "Readers can view all data in a project.";
-        if(component.permission() == "writer")
-          return "Writers can view all data in a project, and add, modify, or delete models.";
-        if(component.permission() == "administrator")
-          return "Administrators can view all data in a project, add, modify, and delete models, modify or delete the project, and add or remove project members.";
-      });
-      component.new_user = ko.observable("");
-
-      component.wizards = mapping.fromJS([]);
-      component.project_wizards = component.wizards.filter(function(wizard)
-      {
-        return !("project" in wizard.require) && !("model" in wizard.require);
-      });
-      component.model_wizards = component.wizards.filter(function(wizard)
-      {
-        return ("project" in wizard.require) && component.project_id() && !("model" in wizard.require);
-      });
-      component.post_model_wizards = component.wizards.filter(function(wizard)
-      {
-        return ("project" in wizard.require) && component.project_id() && ("model" in wizard.require) && component.model._id() && wizard.require.model.indexOf(component.model["model-type"]()) != -1;
-      });
-      component.wizard = ko.observable(false);
-
-      component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
-      component.model_popover = ko.pureComputed(function()
-      {
-        return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
-      });
-      component.new_model_description = ko.observable("");
-      component.new_model_marking = ko.observable(params.model_marking);
-      component.new_model_name = ko.observable(params.model_name);
-      component.server_root = server_root;
-      component.user = {uid : ko.observable(""), name : ko.observable("")};
-      component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
-
-      // Get available server markings.
-      component.markings = markings;
-
-      // Watch the current project (if any).
-      if(component.project_id())
-      {
-        projects.seed(
-        {
-          _id: component.project_id(),
-          name: params.project_name,
-        });
-      }
-      component.projects = projects.watch().filter(function(project)
+      component.project = projects_feed.watch().filter(function(project)
       {
         return project._id() == component.project_id();
       }).map(function(project)
@@ -95,16 +44,76 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         };
       });
 
-      component.current_project = ko.pureComputed(function()
-      {
-        return component.projects().length ? component.projects()[0] : null;
-      });
-
       // Setup storage for creating new projects / editing existing projects.
-      component.new_project = mapping.fromJS({_id:component.project_id(),name:params.project_name,acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
+      component.new_project = mapping.fromJS({_id:"",name:"",acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
+
+      component.alerts = mapping.fromJS([]);
+      component.permission = ko.observable("reader");
+      component.permission_description = ko.pureComputed(function()
+      {
+        if(component.permission() == "reader")
+          return "Readers can view all data in a project.";
+        if(component.permission() == "writer")
+          return "Writers can view all data in a project, and add, modify, or delete models.";
+        if(component.permission() == "administrator")
+          return "Administrators can view all data in a project, add, modify, and delete models, modify or delete the project, and add or remove project members.";
+      });
+      component.new_user = ko.observable("");
+
+      // Setup / categorize wizards.
+      component.wizards = mapping.fromJS([]);
+
+      var create_wizards = component.wizards.filter(function(wizard)
+      {
+        return wizard.require.action() === "create";
+      });
+      var edit_wizards = component.wizards.filter(function(wizard)
+      {
+        return wizard.require.action() === "edit";
+      });
+      var delete_wizards = component.wizards.filter(function(wizard)
+      {
+        return wizard.require.action() === "delete";
+      });
+      var global_wizard_filter = function(wizard)
+      {
+        return wizard.require.context() === "global";
+      }
+      var project_wizard_filter = function(wizard)
+      {
+        return wizard.require.context() === "project" && component.project_id();
+      }
+      var model_wizard_filter = function(wizard)
+      {
+        if("model-type" in wizard.require && wizard.require["model-type"].indexOf(component.model["model-type"]()) == -1)
+          return false;
+        return wizard.require.context() === "model" && component.model._id();
+      }
+      component.global_create_wizards = create_wizards.filter(global_wizard_filter);
+      component.project_create_wizards = create_wizards.filter(project_wizard_filter);
+      component.model_create_wizards = create_wizards.filter(model_wizard_filter);
+      component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
+      component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
+      component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
+      component.wizard = ko.observable(false);
+
+      component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
+      component.model_popover = ko.pureComputed(function()
+      {
+        return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
+      });
+      component.new_model_description = ko.observable("");
+      component.new_model_marking = ko.observable(params.model_marking);
+      component.new_model_name = ko.observable(params.model_name);
+      component.server_root = server_root;
+      component.user = {uid : ko.observable(""), name : ko.observable("")};
+      component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
+
+      // Get available server markings.
+      component.markings = markings;
 
       // Watch running models
-      component.models = models.watch();
+      component.models = models_feed.watch();
       component.open_models = component.models.filter(function(model)
       {
         return model.state() && model.state() != "closed";
@@ -144,35 +153,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         });
       }
 
-      component.create_project = function()
-      {
-        var project =
-        {
-          "name" : component.new_project.name(),
-          "description" : component.new_project.description(),
-        };
-
-        $.ajax(
-        {
-          contentType : "application/json",
-          data: $.toJSON(project),
-          processData: false,
-          type : "POST",
-          url : server_root + "projects",
-          success: function(result)
-          {
-            window.location.href = server_root + "projects/" + result.id;
-          },
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error creating project: " + reason_phrase);
-          }
-        });
-      }
-
       component.edit_project = function()
       {
-        mapping.fromJS(mapping.toJS(component.projects()[0]), component.new_project)
+        mapping.fromJS(mapping.toJS(component.project()[0]), component.new_project)
       }
 
       component.add_project_member = function()
@@ -249,21 +232,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         });
       }
 
-      component.delete_project = function()
-      {
-        if(window.confirm("Delete " + component.current_project().name() + "? Every project model and all data will be deleted immediately, and this cannot be undone."))
-        {
-          client.delete_project(
-          {
-            pid: component.project_id(),
-            success : function()
-            {
-              window.location.href = server_root + "projects";
-            }
-          });
-        }
-      }
-
       component.run_wizard = function(item)
       {
         component.wizard(false);
@@ -307,21 +275,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
             window.alert("Error updating model: " + reason_phrase);
           }
         });
-      }
-
-      component.delete_model = function()
-      {
-        if(window.confirm("Delete " + component.model.name() + "? All data will be deleted immediately, and this cannot be undone."))
-        {
-          client.delete_model(
-          {
-            mid: params.model_id,
-            success : function()
-            {
-              window.location.href = server_root + "projects/" + component.project_id();
-            }
-          });
-        }
       }
 
       component.about = function()
@@ -432,27 +385,42 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
         <ol class="breadcrumb navbar-left"> \
           <li data-bind="visible: true"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
-          <!-- ko foreach: projects --> \
+          <!-- ko foreach: project --> \
           <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
           <!-- /ko --> \
           <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left"> \
-          <li data-bind="visible: !project_id() && !model._id()"><button type="button" class="btn btn-xs btn-success navbar-btn" data-toggle="modal" data-target="#slycat-create-project">Create Project</button></li> \
-          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
-          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-info navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
-          <li class="dropdown" data-bind="visible: project_wizards().length || model_wizards().length || post_model_wizards().length"> \
-            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
+          <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length"> \
+            <button type="button" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
-              <!-- ko foreach: post_model_wizards --> \
+              <!-- ko foreach: model_create_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
-              <li class="divider" data-bind="visible: post_model_wizards().length && model_wizards().length"></li> \
-              <!-- ko foreach: model_wizards --> \
+              <li class="divider" data-bind="visible: model_create_wizards().length && project_create_wizards().length"></li> \
+              <!-- ko foreach: project_create_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
-              <li class="divider" data-bind="visible: model_wizards().length && project_wizards().length"></li> \
-              <!-- ko foreach: project_wizards --> \
+              <li class="divider" data-bind="visible: project_create_wizards().length && global_create_wizards().length"></li> \
+              <!-- ko foreach: global_create_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+            </ul> \
+          </li> \
+          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
+          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
+          <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length"> \
+            <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button> \
+            <ul class="dropdown-menu"> \
+              <!-- ko foreach: model_delete_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"></li> \
+              <!-- ko foreach: project_delete_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"></li> \
+              <!-- ko foreach: global_delete_wizards --> \
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
             </ul> \
@@ -500,35 +468,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
     </div> \
   <!-- /ko --> \
-  <div class="modal fade" id="slycat-create-project"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-header"> \
-          <h3 class="modal-title">Create Project</h3> \
-        </div> \
-        <div class="modal-body"> \
-          <form class="form-horizontal"> \
-            <div class="form-group"> \
-              <label for="slycat-create-project-name" class="col-sm-2 control-label">Name</label> \
-              <div class="col-sm-10"> \
-                <input id="slycat-create-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_project.name"></input> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label for="slycat-create-project-description" class="col-sm-2 control-label">Description</label> \
-              <div class="col-sm-10"> \
-                <textarea id="slycat-create-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_project.description"></textarea> \
-              </div> \
-            </div> \
-          </form> \
-        </div> \
-        <div class="modal-footer"> \
-          <button class="btn btn-primary" data-bind="click:create_project" data-dismiss="modal">Create Project</button> \
-          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
   <div class="modal fade" id="slycat-edit-project"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
@@ -568,7 +507,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-danger pull-left" data-bind="click:delete_project">Delete Project</button> \
           <button class="btn btn-success pull-left" data-toggle="modal" data-target="#slycat-add-project-member">Add Project Member</button> \
           <button class="btn btn-primary" data-bind="click:save_project" data-dismiss="modal">Save Project</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
@@ -639,7 +577,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           </form> \
         </div> \
         <div class="modal-footer"> \
-          <button class="btn btn-danger pull-left" data-bind="click:delete_model">Delete Model</button> \
           <button class="btn btn-primary" data-bind="click:save_model" data-dismiss="modal">Save Changes</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
@@ -649,10 +586,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
   <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \
-        <div class="modal-body"> \
-          <div data-bind="if: wizard"> \
-            <div data-bind="component:{name:wizard,params:{project:current_project(),model:model}}"> \
-            </div> \
+        <div data-bind="if: wizard"> \
+          <div data-bind="component:{name:wizard,params:{project:project()[0],model:model}}"> \
           </div> \
         </div> \
       </div> \

@@ -1,5 +1,7 @@
-<div>
-
+<div class="modal-header">
+  <h3 class="modal-title">New Remote CCA Model</h3>
+</div>
+<div class="modal-body">
   <ul class="nav nav-pills">
     <li data-bind="css:{active:tab() == 0}"><a>Create Model</a></li>
     <li data-bind="css:{active:tab() == 1}"><a>Choose Host</a></li>
@@ -53,15 +55,12 @@
       <slycat-model-results params="{mid: model._id}"></slycat-model-results>
     </div>
   </div>
-
-  <nav>
-    <ul class="pager">
-      <li class="previous" data-bind="visible:tab() != 4"><a data-bind="click:cancel" data-dismiss="modal">Cancel</a></li>
-      <li class="next" data-bind="visible:tab() == 0"><a data-bind="click:create_model">Next</a></li>
-      <li class="next" data-bind="visible:tab() == 1"><a data-bind="click:connect">Next</a></li>
-      <li class="next" data-bind="visible:tab() == 2"><a data-bind="click:load_table">Next</a></li>
-      <li class="next" data-bind="visible:tab() == 3"><a data-bind="click:finish">Finish</a></li>
-      <li class="next" data-bind="visible:tab() == 4"><a data-dismiss="modal">Close</a></li>
-    </ul>
-  </nav>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default pull-left" data-bind="visible:tab() != 4,click:cancel" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Next</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 1,click:connect">Next</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 2,click:load_table">Next</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 3,click:finish">Finish</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 4" data-dismiss="modal">Close</button>
 </div>

@@ -1,3 +1,9 @@
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
 <script type="text/javascript">
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
   var project_id = "{{full-project._id}}";
@@ -5,9 +11,9 @@
   var model_name = "{{name}}";
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   [
-    "js/parameter-image-dendrogram.js",
-    "js/parameter-image-scatterplot.js",
-    "js/ui.js",
+    // "js/parameter-image-dendrogram.js",
+    // "js/parameter-image-scatterplot.js",
+    // "js/ui.js",
   ].forEach(function(src) {
     var script = document.createElement('script');
     script.src = server_root + "resources/models/parameter-image-plus/" + src;
