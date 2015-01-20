@@ -103,14 +103,3 @@ def register_slycat_plugin(context):
   ]
   for image in images:
     context.register_model_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
-
-  # Register jquery ui images, which are expected in images folder
-  jqimages = [
-    "ui-bg_glass_75_e6e6e6_1x400.png",
-    "ui-icons_222222_256x240.png",
-    "ui-bg_highlight-soft_75_cccccc_1x100.png",
-    "ui-bg_flat_75_ffffff_40x100.png",
-    "ui-bg_flat_0_aaaaaa_40x100.png",
-  ]
-  for jqimage in jqimages:
-    context.register_model_resource("parameter-image", "images/" + jqimage, os.path.join(os.path.dirname(__file__), "img", jqimage))
