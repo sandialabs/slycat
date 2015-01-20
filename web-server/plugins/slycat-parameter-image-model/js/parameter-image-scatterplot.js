@@ -7,7 +7,7 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
+define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-parameter-image-model-login", "d3"], function(server_root, Login, d3)
 {
   $.widget("parameter_image.scatterplot",
   {
@@ -31,7 +31,6 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       selection : [],
       colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
       border : 25,
-      server_root : "",
       open_images : [],
       gradient : null,
       hidden_simulations : [],
@@ -51,14 +50,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       pinned_width : 200,
       pinned_height : 200,
       hover_time : 250,
-      session_cache : {},
       image_cache : {},
-      cache_references : [ {}, {} ],
-      // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
-      // http://api.jqueryui.com/jquery.widget/
-      // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget.
-      // Arrays are the only exception, they are referenced as-is.
-      // This exception is in place to support data-binding, where the data source has to be kept as a reference.
     },
 
   _create: function()
@@ -91,21 +83,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     self.start_drag = null;
     self.current_drag = null;
     self.end_drag = null;
-
-    // Setup the login dialog ...
-    self.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
-    self.login.appendTo(self.element);
-    self.login.dialog(
-    {
-      autoOpen: false,
-      width: 700,
-      height: 300,
-      modal: true,
-      close: function()
-      {
-        $("#remote-password").val("");
-      }
-    });
+    self.login = new Login();
 
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0)).append("svg");
@@ -126,8 +104,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.image_layer = self.svg.append("g").attr("class", "image-layer");
 
-    self.options.session_cache = self.options.cache_references[0];
-    self.options.image_cache = self.options.cache_references[1];
+    self.options.image_cache = {};
 
     self.updates = {};
     self.update_timer = null;
@@ -702,7 +679,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
 
       self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false);
       self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false);
-      
+
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
       self.x_axis_offset = total_height - height_offset - self.options.border - 40;
@@ -785,9 +762,9 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
           v = self.options.v,
           filtered_indices = self.options.filtered_indices,
           canvas = self.canvas_datum_layer,
-          i = -1, 
-          n = filtered_indices.length, 
-          cx, 
+          i = -1,
+          n = filtered_indices.length,
+          cx,
           cy,
           color,
           square_size = self.options.canvas_square_size,
@@ -801,7 +778,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       if(window.performance)
         time = window.performance;
       var start = time.now();
-      
+
       canvas.clearRect(0, 0, self.canvas_datum.width, self.canvas_datum.height);
       canvas.strokeStyle = "black";
       canvas.lineWidth = border_width;
@@ -812,7 +789,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
         else
-          color = self.options.colorscale(value); 
+          color = self.options.colorscale(value);
         canvas.fillStyle = color;
         cx = Math.round( self.x_scale_canvas( x[index] ) );
         cy = Math.round( self.y_scale_canvas( y[index] ) );
@@ -829,7 +806,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       // Draw points on svg ...
       // var start = performance.now();
       // var circle = self.datum_layer.selectAll(".datum")
-      //   .data(filtered_indices, function(d, i){ 
+      //   .data(filtered_indices, function(d, i){
       //     return d;
       //   })
       //   ;
@@ -843,22 +820,22 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       //   .attr("stroke", "black")
       //   .attr("linewidth", 1)
       //   .attr("data-index", function(d, i) { return d; })
-      //   .on("mouseover", function(d, i) { 
+      //   .on("mouseover", function(d, i) {
       //     self._schedule_hover(d);
       //   })
-      //   .on("mouseout", function(d, i) { 
-      //     self._cancel_hover(); 
+      //   .on("mouseout", function(d, i) {
+      //     self._cancel_hover();
       //   })
       //   ;
       // circle
       //   .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
       //   .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
-      //   .attr("fill", function(d, i) { 
+      //   .attr("fill", function(d, i) {
       //     var value = v[d];
       //     if(isNaN(value))
       //       return $("#color-switcher").colorswitcher("get_null_color");
       //     else
-      //       return self.options.color(value); 
+      //       return self.options.color(value);
       //   })
       //   ;
       // var end = performance.now();
@@ -874,7 +851,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
           canvas = self.canvas_selected_layer,
           i = -1,
           n = filtered_selection.length,
-          cx, 
+          cx,
           cy,
           color,
           square_size = self.options.canvas_selected_square_size,
@@ -882,7 +859,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
           half_border_width = border_width / 2,
           fillWidth = fillHeight = square_size - (2 * border_width),
           strokeWidth = strokeHeight = square_size - border_width;
-      
+
       canvas.clearRect(0, 0, self.canvas_selected.width, self.canvas_selected.height);
       canvas.strokeStyle = "black";
       canvas.lineWidth = border_width;
@@ -893,7 +870,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
         else
-          color = self.options.colorscale(value); 
+          color = self.options.colorscale(value);
         canvas.fillStyle = color;
         cx = Math.round( self.x_scale_canvas( x[index] ) );
         cy = Math.round( self.y_scale_canvas( y[index] ) );
@@ -1120,7 +1097,6 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     // If the list of images is empty, we're done.
     if(images.length == 0)
       return;
-
     var image = images[0];
 
     // Don't open images for hidden simulations
@@ -1142,7 +1118,6 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     {
       return;
     }
-
     // Create scaffolding and status indicator if we already don't have one
     if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
 
@@ -1468,7 +1443,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
         .attr("y", 2)
         .attr("width", 16)
         .attr("height", 16)
-        .attr("xlink:href", server_root + "resources/models/parameter-image-plus/" + "pin.png")
+        .attr("xlink:href", server_root + "resources/models/parameter-image/" + "pin.png")
         .on("mousedown", function(){
           //console.log("pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
@@ -1545,7 +1520,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     // If we don't have a session for the image hostname, create one.
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in self.options.session_cache))
+    if(!(parser.hostname in self.login.session_cache))
     {
       self._open_session(images);
       return;
@@ -1555,7 +1530,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", server_root + "agents/" + self.login.session_cache[parser.hostname] + "/image" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1564,7 +1539,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       // Either way, delete the cached session and create a new one.
       if(this.status == 404 || this.status == 500)
       {
-        delete self.options.session_cache[parser.hostname];
+        delete self.login.session_cache[parser.hostname];
         self._open_session(images);
         return;
       }
@@ -1619,52 +1594,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
 
   _open_session: function(images)
   {
-    var self = this;
-
-    if(images.length == 0)
-      return;
-    var image = images[0];
-
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-
-    $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error", self.login).text(image.last_error).css("display", image.last_error ? "block" : "none");
-    self.login.dialog(
-    {
-      buttons:
-      {
-        "Login": function()
-        {
-          $.ajax(
-          {
-            async : true,
-            type : "POST",
-            url : self.options.server_root + "remotes",
-            contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.login).val(), "password":$("#remote-password", self.login).val()}),
-            processData : false,
-            success : function(result)
-            {
-              self.options.session_cache[parser.hostname] = result.sid;
-              self.login.dialog("close");
-              self._open_images(images);
-            },
-            error : function(request, status, reason_phrase)
-            {
-              image.last_error = "Error opening remote session: " + reason_phrase;
-              self.login.dialog("close");
-              self._open_session(images);
-            }
-          });
-        },
-        Cancel: function()
-        {
-          $(this).dialog("close");
-        }
-      },
-    });
-    self.login.dialog("open");
+    this.login.show_prompt(images, this._open_images, this);
   },
 
   _schedule_hover_canvas: function(e)
