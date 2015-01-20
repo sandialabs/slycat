@@ -568,17 +568,17 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
                       }).sort(function(a,b){
                         return a.i - b.i;
                       })
-                            );
-                if (e.ctrlKey) {
-                  var not_selected = (self.options.selection.indexOf(image_index) == -1);
-                  if (not_selected) {
-                    self.options.selection.push(image_index);
-                  }
-                }
-                else {
-                  self.options.selection = [image_index];
-                }
+                      );
                 if(change_selection) {
+                  if (e.ctrlKey || e.metaKey) {
+                    var not_selected = (self.options.selection.indexOf(image_index) == -1);
+                    if (not_selected) {
+                      self.options.selection.push(image_index);
+                    }
+                  }
+                  else {
+                    self.options.selection = [image_index];
+                  }
                   self._schedule_update({render_selection:true});
                   self.element.trigger("selection-changed", [self.options.selection]);
                 }
