@@ -41,7 +41,7 @@ define("SelectorBrush", ["d3"], function(d3) {
           "x_hi": x_hi,
           "y_hi": y_hi
         };
-        self.plot_container.scatterplot("brush_select", selection, !(event.ctrlKey || event.metaKey), drag_finished);
+        self.plot_container.scatterplot("brush_select", selection, !(d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.metaKey), drag_finished);
       }
     });
   };
