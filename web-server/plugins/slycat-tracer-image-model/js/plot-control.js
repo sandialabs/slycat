@@ -31,7 +31,7 @@ define("PlotControl", ["slycat-server-root", "d3"], function(server_root, d3) {
 
     //build label
     var select_id = self.control_type + '-selector'; // DOM id for the <select>
-    body.append('label').attr('for', select_id).text(self.label_text);
+    var label = body.append('label').attr('for', select_id).text(self.label_text);
 
     //build select and register event handler
     var select = body.append('select')
@@ -64,7 +64,8 @@ define("PlotControl", ["slycat-server-root", "d3"], function(server_root, d3) {
     }
 
     //Fix the foreign object width after we've drawn the control:
-    self.foreign_object.attr("width", select[0][0].clientWidth + 2);
+    //Element.clientWidth is different in FF and Chrome, so use offsetWidth instead
+    self.foreign_object.attr("width", Math.max(select[0][0].offsetWidth, label[0][0].offsetWidth) + 2);
   };
 
 
