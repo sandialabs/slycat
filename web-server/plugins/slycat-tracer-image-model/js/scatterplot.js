@@ -249,7 +249,7 @@ define("ScatterPlot", ["slycat-server-root", "d3", "SelectorBrush"], function(se
     var sid = this.login.sid_for_file(file);
     image = document.createElement("img");
     image.src = server_root + "remotes/" + sid + "/file" + image_uri.pathname;
-    debugger; //TODO why is image_uri not referencing this/self?
+    //TODO why is image_uri not referencing this/self?
     image.width = 100;
     image.style.position="absolute";
     image.style.left=10;
