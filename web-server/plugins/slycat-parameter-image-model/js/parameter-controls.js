@@ -3,12 +3,11 @@ Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
-
+define("slycat-parameter-image-controls", ["slycat-server-root"], function(server_root) {
 $.widget("parameter_image.controls",
 {
   options:
   {
-    "server-root" : "",
     mid : null,
     model_name : null,
     aid : null,
@@ -137,7 +136,7 @@ $.widget("parameter_image.controls",
       })
       .appendTo(this.element)
       ;
-    
+
     this.auto_scale = $("<input id='auto-scale-option' name='auto-scale-option' value='auto-scale' type='checkbox' checked='true'>")
       .change(function(){
         self.element.trigger("auto-scale", this.checked);
@@ -175,8 +174,8 @@ $.widget("parameter_image.controls",
           }
           if(valueValid) {
             self.element.trigger("set-value", {
-              selection : self.options.selection, 
-              variable : variableIndex, 
+              selection : self.options.selection,
+              variable : variableIndex,
               value : numeric ? value : '"' + value + '"',
             });
             $(this).dialog('close');
@@ -186,7 +185,7 @@ $.widget("parameter_image.controls",
               message = "Please enter a numeric value.";
             $('.dialogErrorMessage', this).text(message);
           }
-          
+
         },
         'Cancel': function() {
           $(this).dialog('close');
@@ -311,7 +310,7 @@ $.widget("parameter_image.controls",
     $.ajax(
     {
       type : "GET",
-      url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?" + rowRequest + "&columns=0-" + numCols + "&index=Index",
+      url : server_root + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?" + rowRequest + "&columns=0-" + numCols + "&index=Index",
       //url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
       success : function(result)
       {
@@ -371,7 +370,7 @@ $.widget("parameter_image.controls",
 
   _convert_to_csv: function(array)
   {
-    // Note that array.data is column-major:  array.data[0][*] is the first column 
+    // Note that array.data is column-major:  array.data[0][*] is the first column
     var numRows = array.rows.length;
     var numCols = array.columns.length;
     var rowMajorOutput = "";
@@ -395,7 +394,7 @@ $.widget("parameter_image.controls",
   },
 
   // _set_clusters: function()
-  // { 
+  // {
   //   var self = this;
   //   this.cluster_select.empty();
   //   for(var i = 0; i < this.options.clusters.length; i++) {
@@ -411,7 +410,7 @@ $.widget("parameter_image.controls",
   // },
 
   _set_x_variables: function()
-  { 
+  {
     var self = this;
     this.x_select.empty();
     for(var i = 0; i < this.options.x_variables.length; i++) {
@@ -427,7 +426,7 @@ $.widget("parameter_image.controls",
   },
 
   _set_y_variables: function()
-  { 
+  {
     var self = this;
     this.y_select.empty();
     for(var i = 0; i < this.options.y_variables.length; i++) {
@@ -443,7 +442,7 @@ $.widget("parameter_image.controls",
   },
 
   _set_image_variables: function()
-  { 
+  {
     var self = this;
     if(this.options.image_variables != null && this.options.image_variables.length > 0)
     {
@@ -459,11 +458,11 @@ $.widget("parameter_image.controls",
           ;
       }
     }
-    
+
   },
 
   _set_color_variables: function()
-  { 
+  {
     var self = this;
     this.color_select.empty();
     for(var i = 0; i < this.options.color_variables.length; i++) {
@@ -479,13 +478,13 @@ $.widget("parameter_image.controls",
   },
 
   _set_auto_scale: function()
-  { 
+  {
     var self = this;
     this.auto_scale.prop("checked", self.options["auto-scale"]);
   },
 
   _set_selection_control: function()
-  { 
+  {
     var self = this;
     this.selection_select.empty();
     // Start with empty option
@@ -535,7 +534,7 @@ $.widget("parameter_image.controls",
         .appendTo(optgroup)
         ;
     }
-      
+
     // Finish with global actions
     var scatterplotOptgroup = $("<optgroup />")
       .attr("label", "Scatterplot Points")
@@ -571,7 +570,7 @@ $.widget("parameter_image.controls",
     //   .attr("value", "close")
     //   .appendTo(imagesOptgroup)
     //   ;
-    
+
 
     // Set state
     self._set_selection();
@@ -724,5 +723,5 @@ $.widget("parameter_image.controls",
       self._set_show_all();
     }
   },
-
+});
 });
