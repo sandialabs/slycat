@@ -1,4 +1,4 @@
-define(["slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/local-cca/ui.html"], function(client, ko, mapping, html)
+define(["slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/local-cca/ui.html"], function(client, dialog, ko, mapping, html)
 {
   function constructor(params)
   {
@@ -40,7 +40,8 @@ define(["slycat-web-client", "knockout", "knockout-mapping", "text!" + $("#slyca
         {
           component.model._id(mid);
           component.tab(1);
-        }
+        },
+        error: dialog.ajax_error("Error creating model."),
       });
     }
     component.upload_table = function()
