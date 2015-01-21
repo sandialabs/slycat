@@ -419,7 +419,7 @@ rights in this software.
 .image-layer .resize-handle,
 .image-layer .pin-button
 {
-  visibility: hidden;
+  visibility: visible;
 }
 .image-layer g.open-image:hover .close-button,
 .image-layer g.open-image.resizing .close-button,
