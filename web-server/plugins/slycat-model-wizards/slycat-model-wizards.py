@@ -4,3 +4,7 @@ def register_slycat_plugin(context):
   context.register_wizard_resource("slycat-delete-model", "ui.js", os.path.join(os.path.dirname(__file__), "delete-ui.js"))
   context.register_wizard_resource("slycat-delete-model", "ui.html", os.path.join(os.path.dirname(__file__), "delete-ui.html"))
 
+  context.register_wizard("slycat-edit-model", "Edit Model", require={"action":"edit", "context":"model"})
+  context.register_wizard_resource("slycat-edit-model", "ui.js", os.path.join(os.path.dirname(__file__), "edit-ui.js"))
+  context.register_wizard_resource("slycat-edit-model", "ui.html", os.path.join(os.path.dirname(__file__), "edit-ui.html"))
+

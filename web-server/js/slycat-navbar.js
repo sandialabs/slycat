@@ -92,6 +92,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.global_create_wizards = create_wizards.filter(global_wizard_filter);
       component.project_create_wizards = create_wizards.filter(project_wizard_filter);
       component.model_create_wizards = create_wizards.filter(model_wizard_filter);
+      component.global_edit_wizards = edit_wizards.filter(global_wizard_filter);
+      component.project_edit_wizards = edit_wizards.filter(project_wizard_filter);
+      component.model_edit_wizards = edit_wizards.filter(model_wizard_filter);
       component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
       component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
@@ -239,44 +242,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         $("#slycat-wizard").modal("show");
       }
 
-      component.save_model = function()
-      {
-        var model =
-        {
-          "name" : component.new_model_name(),
-          "description" : component.new_model_description(),
-          "marking" : component.new_model_marking(),
-        };
-
-        $.ajax(
-        {
-          type : "PUT",
-          url : server_root + "models/" + params.model_id,
-          contentType : "application/json",
-          data : $.toJSON(model),
-          processData : false,
-          success : function()
-          {
-            if(component.new_model_marking() !== component.model.marking())
-            {
-              // Since marking changes have the potential to alter the page
-              // structure in arbitrary ways, just reload.
-              document.location.reload(true);
-            }
-            else
-            {
-              component.model.name(component.new_model_name());
-              component.model.description(component.new_model_description());
-              component.model.marking(component.new_model_marking());
-            }
-          },
-          error : function(request, status, reason_phrase)
-          {
-            window.alert("Error updating model: " + reason_phrase);
-          }
-        });
-      }
-
       component.about = function()
       {
         client.get_configuration_version(
@@ -407,8 +372,23 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
               <!-- /ko --> \
             </ul> \
           </li> \
+          <li class="dropdown" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length"> \
+            <button type="button" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button> \
+            <ul class="dropdown-menu"> \
+              <!-- ko foreach: model_edit_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"></li> \
+              <!-- ko foreach: project_edit_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+              <li class="divider" data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"></li> \
+              <!-- ko foreach: global_edit_wizards --> \
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+              <!-- /ko --> \
+            </ul> \
+          </li> \
           <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
-          <li data-bind="visible: model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-toggle="modal" data-target="#slycat-edit-model">Edit Model</button></li> \
           <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length"> \
             <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
@@ -543,41 +523,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
         </div> \
         <div class="modal-footer"> \
           <button class="btn btn-success" data-dismiss="modal" data-bind="click:add_project_member">Add Member</button> \
-          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
-  <div class="modal fade" id="slycat-edit-model"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-header"> \
-          <h3 class="modal-title">Edit Model</h3> \
-        </div> \
-        <div class="modal-body"> \
-          <form class="form-horizontal"> \
-            <div class="form-group"> \
-              <label for="slycat-model-name" class="col-sm-2 control-label">Name</label> \
-              <div class="col-sm-10"> \
-                <input id="slycat-model-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_model_name"></input> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label for="slycat-model-description" class="col-sm-2 control-label">Description</label> \
-              <div class="col-sm-10"> \
-                <textarea id="slycat-model-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_model_description"></textarea> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label for="slycat-model-marking" class="col-sm-2 control-label">Marking</label> \
-              <div class="col-sm-10"> \
-                <select id="slycat-model-marking" class="form-control" data-bind="options:markings,optionsValue:\'type\',optionsText:\'label\',value:new_model_marking,valueAllowUnset:true"></select> \
-              </div> \
-            </div> \
-          </form> \
-        </div> \
-        <div class="modal-footer"> \
-          <button class="btn btn-primary" data-bind="click:save_model" data-dismiss="modal">Save Changes</button> \
           <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
         </div> \
       </div> \

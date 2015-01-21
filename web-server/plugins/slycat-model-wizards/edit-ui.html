@@ -1,0 +1,14 @@
+<div class="modal-header">
+  <h3 class="modal-title">Edit Model</h3>
+</div>
+<div class="modal-body">
+  <div>
+    <form class="form-horizontal">
+      <slycat-model-controls params="name:modified.name,description:modified.description,marking:modified.marking"></slycat-model-controls>
+    </form>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-default" data-bind="click:save_model" data-dismiss="modal">Save Changes</button>
+</div>
