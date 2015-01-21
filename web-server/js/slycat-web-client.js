@@ -511,5 +511,35 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     });
   };
 
+  module.put_model = function(params)
+  {
+    var model = {};
+    if("name" in params)
+      model.name = params.name;
+    if("description" in params)
+      model.description = params.description;
+    if("marking" in params)
+      model.marking = params.marking;
+
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: $.toJSON(model),
+      processData: false,
+      type: "PUT",
+      url: server_root + "models/" + params.mid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  };
+
   return module;
 });
