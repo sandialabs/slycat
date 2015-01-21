@@ -33,7 +33,7 @@ $.widget("parameter_image.dendrogram",
     session_cache : {},
     image_cache : {},
     cache_references : [ {}, {} ],
-    // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
+    // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they are passed inside an array to keep them in sync.
     // http://api.jqueryui.com/jquery.widget/
     // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
     // Arrays are the only exception, they are referenced as-is. 
