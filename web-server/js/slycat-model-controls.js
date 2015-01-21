@@ -14,7 +14,17 @@ define("slycat-model-controls", ["slycat-server-root", "slycat-web-client", "sly
       component.name = params.name;
       component.description = params.description;
       component.marking = params.marking;
-      component.markings = markings;
+      component.markings = markings.allowed;
+
+      // This is a tad awkward, but a default marking may-or-may-not be available yet.
+      if(component.marking() === null)
+      {
+        component.marking(markings.preselected());
+        markings.preselected.subscribe(function()
+        {
+          component.marking(markings.preselected());
+        });
+      }
     },
     template: { require: "text!" + server_root + "templates/slycat-model-controls.html" }
   });

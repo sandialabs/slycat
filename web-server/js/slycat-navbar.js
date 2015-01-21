@@ -110,7 +110,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
 
       // Get available server markings.
-      component.markings = markings;
+      component.markings = markings.allowed;
 
       // Watch running models
       component.models = models_feed.watch();

@@ -16,7 +16,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
     {
       return model.project() == page.project._id();
     });
-    page.markings = markings;
+    page.markings = markings.allowed;
     page.badge = function(marking)
     {
       for(var i = 0; i != page.markings().length; ++i)
