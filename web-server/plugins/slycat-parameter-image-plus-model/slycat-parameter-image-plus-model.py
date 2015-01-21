@@ -64,9 +64,9 @@ def register_slycat_plugin(context):
     "color-switcher.js",
     "parameter-controls.js",
     "parameter-image-table.js",
-    # "parameter-image-dendrogram.js",
-    # "parameter-image-scatterplot.js",
-    # "ui.js",
+    "parameter-image-dendrogram.js",
+    "parameter-image-scatterplot.js",
+    "ui.js",
     #For development and debugging, comment out js here and load it dynamically inside model.
   ]
   context.register_model_bundle("parameter-image-plus", "text/javascript", [
@@ -119,9 +119,9 @@ def register_slycat_plugin(context):
     context.register_model_resource("parameter-image-plus", "images/" + jqimage, os.path.join(os.path.join(os.path.dirname(__file__), "img"), jqimage))
 
   devs = [
-    "js/parameter-image-dendrogram.js",
-    "js/parameter-image-scatterplot.js",
-    "js/ui.js",
+    # "js/parameter-image-dendrogram.js",
+    # "js/parameter-image-scatterplot.js",
+    # "js/ui.js",
   ]
   for dev in devs:
     context.register_model_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))

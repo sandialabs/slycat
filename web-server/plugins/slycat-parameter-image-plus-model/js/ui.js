@@ -74,6 +74,14 @@ login_dialog.dialog({
   {
     $("#remote-password", this).val("");
   },
+  open: function()
+  {
+    // Neither of these work on the first instantiation of the dialog.
+    // $("#remote-username", this).focus();
+    // setTimeout(function(){
+    //   $("#remote-username").focus();
+    // },1);
+  },
 });
 
 // Enter key in password field triggers click on Login button

@@ -11,9 +11,9 @@ rights in this software.
   var model_name = "{{name}}";
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   [
-    "js/parameter-image-dendrogram.js",
-    "js/parameter-image-scatterplot.js",
-    "js/ui.js",
+    // "js/parameter-image-dendrogram.js",
+    // "js/parameter-image-scatterplot.js",
+    // "js/ui.js",
   ].forEach(function(src) {
     var script = document.createElement('script');
     script.src = server_root + "resources/models/parameter-image-plus/" + src;
