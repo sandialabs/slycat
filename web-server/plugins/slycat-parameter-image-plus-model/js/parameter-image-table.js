@@ -11,7 +11,6 @@ $.widget("parameter_image.table",
 {
   options:
   {
-    "server-root" : "",
     mid : null,
     aid : null,
     metadata : null,
@@ -144,7 +143,6 @@ $.widget("parameter_image.table",
       self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter));
 
     self.data = new self._data_provider({
-      server_root : self.options["server-root"],
       mid : self.options.mid,
       aid : self.options.aid,
       metadata : self.options.metadata,
@@ -467,7 +465,6 @@ $.widget("parameter_image.table",
   {
     var self = this;
 
-    self.server_root = parameters.server_root
     self.mid = parameters.mid;
     self.aid = parameters.aid;
     self.metadata = parameters.metadata;
@@ -506,7 +503,7 @@ $.widget("parameter_image.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          url : server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
           async : false,
           success : function(data)
           {
@@ -588,7 +585,7 @@ $.widget("parameter_image.table",
       }
 
       var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+      request.open("GET", server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
       request.responseType = "arraybuffer";
       request.callback = callback;
       request.onload = function(e)

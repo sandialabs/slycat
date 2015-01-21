@@ -31,7 +31,6 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       selection : [],
       colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
       border : 25,
-      server_root : "",
       open_images : [],
       gradient : null,
       hidden_simulations : [],
@@ -59,6 +58,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget.
       // Arrays are the only exception, they are referenced as-is.
       // This exception is in place to support data-binding, where the data source has to be kept as a reference.
+      login_dialog : null,
     },
 
   _create: function()
@@ -91,21 +91,6 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     self.start_drag = null;
     self.current_drag = null;
     self.end_drag = null;
-
-    // Setup the login dialog ...
-    self.login = $("<div title='Remote Login'><p id='remote-error'><p id='remote-hostname'><form><fieldset><label for='remote-username'>Username</label><input id='remote-username' type='text'/><label for='remote-password'>Password</label><input id='remote-password' type='password'/></fieldset></form></p></div>");
-    self.login.appendTo(self.element);
-    self.login.dialog(
-    {
-      autoOpen: false,
-      width: 700,
-      height: 300,
-      modal: true,
-      close: function()
-      {
-        $("#remote-password").val("");
-      }
-    });
 
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0)).append("svg");
@@ -1555,7 +1540,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", self.options.server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1628,9 +1613,9 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     var parser = document.createElement("a");
     parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
 
-    $("#remote-hostname", self.login).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error", self.login).text(image.last_error).css("display", image.last_error ? "block" : "none");
-    self.login.dialog(
+    $("#remote-hostname", self.options.login_dialog).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
+    $("#remote-error", self.options.login_dialog).text(image.last_error).css("display", image.last_error ? "block" : "none");
+    self.options.login_dialog.dialog(
     {
       buttons:
       {
@@ -1640,20 +1625,20 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
           {
             async : true,
             type : "POST",
-            url : self.options.server_root + "remotes",
+            url : server_root + "remotes",
             contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.login).val(), "password":$("#remote-password", self.login).val()}),
+            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
             processData : false,
             success : function(result)
             {
               self.options.session_cache[parser.hostname] = result.sid;
-              self.login.dialog("close");
+              self.options.login_dialog.dialog("close");
               self._open_images(images);
             },
             error : function(request, status, reason_phrase)
             {
               image.last_error = "Error opening remote session: " + reason_phrase;
-              self.login.dialog("close");
+              self.options.login_dialog.dialog("close");
               self._open_session(images);
             }
           });
@@ -1664,7 +1649,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
         }
       },
     });
-    self.login.dialog("open");
+    self.options.login_dialog.dialog("open");
   },
 
   _schedule_hover_canvas: function(e)
