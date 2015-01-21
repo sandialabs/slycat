@@ -48,10 +48,9 @@ var controls_ready = false;
 var dendrogram_ready = false;
 var cluster_ready = false;
 
-var session_cache = {};
 var image_uri = document.createElement("a");
 var grid_pane = "#parameter-image-plus-layout";
-// session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they passed inside an array to keep them in sync.
+// session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they are passed inside an array to keep them in sync.
 // http://api.jqueryui.com/jquery.widget/
 // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
 // Arrays are the only exception, they are referenced as-is. 
@@ -73,7 +72,7 @@ login_dialog.dialog({
   modal: true,
   close: function()
   {
-    $("#remote-password").val("");
+    $("#remote-password", this).val("");
   },
 });
 
@@ -727,12 +726,12 @@ function setup_scatterplot()
       height: $("#scatterplot-pane").height(),
       colorscale: colorscale,
       selection: selected_simulations,
-      server_root: server_root,
       open_images: open_images,
       gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
       hidden_simulations: hidden_simulations,
       "auto-scale" : auto_scale,
       cache_references : cache_references,
+      login_dialog : login_dialog,
       });
 
     $("#scatterplot").bind("selection-changed", function(event, selection)
