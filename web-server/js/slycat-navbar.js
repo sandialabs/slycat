@@ -127,13 +127,10 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
 
       component.close_model = function(model)
       {
-        $.ajax(
+        client.put_model(
         {
-          contentType : "application/json",
-          data : $.toJSON({ "state" : "closed" }),
-          processData : false,
-          type : "PUT",
-          url : server_root + "models/" + model._id(),
+          mid: model._id(),
+          state: "closed",
         });
       }
 
@@ -183,7 +180,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
           success : function(model)
           {
             mapping.fromJS(model, component.model);
-            component.new_model_description(model.description);
 
             if(model.state == "waiting")
               component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})

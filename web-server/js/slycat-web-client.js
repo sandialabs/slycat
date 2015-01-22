@@ -540,6 +540,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
       model.description = params.description;
     if("marking" in params)
       model.marking = params.marking;
+    if("state" in params)
+      model.state = params.state;
 
     $.ajax(
     {
