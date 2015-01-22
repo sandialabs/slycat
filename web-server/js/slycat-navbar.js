@@ -13,9 +13,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       var component = this;
       component.server_root = server_root;
 
-      // Display alerts for special circumstances.
-      component.alerts = mapping.fromJS([]);
-
       // Keep track of the current project, if any.
       component.project_id = ko.observable(params.project_id);
 
@@ -66,32 +63,42 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         model = model[0];
         return "<p>" + model.description() + "</p><p><small><em>Created " + model.created() + " by " + model.creator() + "</em></small></p>";
       });
-/*
-      if(params.model_id)
+
+      component.model_alerts = ko.pureComputed(function()
       {
-        $.ajax(
+        var alerts = [];
+
+        var models = component.model();
+        for(var i = 0; i != models.length; ++i)
         {
-          type : "GET",
-          url : server_root + "models/" + params.model_id,
-          success : function(model)
-          {
-            mapping.fromJS(model, component.model);
+          var model = models[i];
 
-            if(model.state == "waiting")
-              component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
+          if(model.state() == "waiting")
+            alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
 
-            if(model.state == "running")
-              component.alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
+          if(model.state() == "running")
+            alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
 
-            if(model.result == "failed")
-              component.alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message})
+          if(model.result() == "failed")
+            alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message()})
+        }
 
-            if(model.state == "finished")
-              component.close_model(component.model);
-          },
-        });
-      }
-*/
+        return alerts;
+      });
+
+      component.model.subscribe(function()
+      {
+        var models = component.model();
+        for(var i = 0; i != models.length; ++i)
+        {
+          var model = models[i];
+
+          console.log("update_model_state");
+
+          if(model.state() == "finished")
+            component.close_model(model);
+        }
+      });
 
       // Keep track of running models
       component.open_models = component.models.filter(function(model)
@@ -350,7 +357,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       </div> \
     </div> \
   </nav> \
-  <!-- ko foreach: alerts --> \
+  <!-- ko foreach: model_alerts --> \
     <div class="alert slycat-navbar-alert" data-bind="css:{\'alert-danger\':$data.type === \'danger\',\'alert-info\':$data.type === \'info\',\'alert-success\':$data.type === \'success\'}"> \
       <p data-bind="text:message"></p> \
       <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
