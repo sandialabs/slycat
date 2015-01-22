@@ -55,19 +55,19 @@ def register_slycat_plugin(context):
     "slick.slycateditors.js",
     "popcorn-complete.js",
     "modernizr.custom.01940.js",
+    "plot-control.js",
     "tracer-image-scatterplots.js",
     "tracer-image-table.js",
     "layout.js",
-    "model.js",
-    "scatterplot.js",
-    "plot-control.js",
-    "table.js",
     "movie.js",
+    "model.js",
+    "selector-brush.js",
+    "scatterplot.js",
+    "table.js",
     "grid.js",
     "login.js",
     "init.js",
     "load.js",
-    "selector-brush.js"
   ]
   context.register_model_bundle("tracer-image", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
