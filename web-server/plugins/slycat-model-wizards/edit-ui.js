@@ -1,4 +1,4 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/slycat-edit-model/ui.html"], function(server_root, client, dialog, mapping, html)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-mapping"], function(server_root, client, dialog, mapping)
 {
   function constructor(params)
   {
@@ -30,5 +30,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
     return component;
   }
 
-  return { viewModel: constructor, template: html };
+  return {
+    viewModel: constructor,
+    template: { require: "text!" + server_root + "resources/wizards/slycat-edit-model/ui.html" },
+    };
 });

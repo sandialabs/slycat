@@ -1,4 +1,4 @@
-define(["slycat-server-root", "slycat-web-client", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/slycat-delete-project/ui.html"], function(server_root, client, html)
+define(["slycat-server-root", "slycat-web-client"], function(server_root, client)
 {
   function constructor(params)
   {
@@ -19,5 +19,8 @@ define(["slycat-server-root", "slycat-web-client", "text!" + $("#slycat-server-r
     return component;
   }
 
-  return { viewModel: constructor, template: html };
+  return {
+    viewModel: constructor,
+    template: { require: "text!" + server_root + "resources/wizards/slycat-delete-project/ui.html" },
+    };
 });
