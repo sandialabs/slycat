@@ -48,17 +48,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       component.new_project = mapping.fromJS({_id:"",name:"",acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
 
       component.alerts = mapping.fromJS([]);
-      component.permission = ko.observable("reader");
-      component.permission_description = ko.pureComputed(function()
-      {
-        if(component.permission() == "reader")
-          return "Readers can view all data in a project.";
-        if(component.permission() == "writer")
-          return "Writers can view all data in a project, and add, modify, or delete models.";
-        if(component.permission() == "administrator")
-          return "Administrators can view all data in a project, add, modify, and delete models, modify or delete the project, and add or remove project members.";
-      });
-      component.new_user = ko.observable("");
 
       // Setup / categorize wizards.
       component.wizards = mapping.fromJS([]);
@@ -153,85 +142,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           processData : false,
           type : "PUT",
           url : server_root + "models/" + model._id(),
-        });
-      }
-
-      component.edit_project = function()
-      {
-        mapping.fromJS(mapping.toJS(component.project()[0]), component.new_project)
-      }
-
-      component.add_project_member = function()
-      {
-        client.get_user(
-        {
-          uid: component.new_user(),
-          success: function(user)
-          {
-            if(component.permission() == "reader")
-            {
-              if(window.confirm("Add " + user.name + " to the project?  They will have read access to all project data."))
-              {
-                component.new_project.acl.readers.push({user:ko.observable(user.uid)})
-              }
-            }
-            if(component.permission() == "writer")
-            {
-              if(window.confirm("Add " + user.name + " to the project?  They will have read and write access to all project data."))
-              {
-                component.new_project.acl.writers.push({user:ko.observable(user.uid)})
-              }
-            }
-            if(component.permission() == "administrator")
-            {
-              if(window.confirm("Add " + user.name + " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members."))
-              {
-                component.new_project.acl.administrators.push({user:ko.observable(user.uid)})
-              }
-            }
-          },
-          error: function(request, status, reason_phrase)
-          {
-            if(request.status == 404)
-            {
-              window.alert("User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.");
-            }
-            else
-            {
-              window.alert("Error retrieving user information: " + reason_phrase);
-            }
-          }
-        });
-      }
-
-      component.remove_project_member = function(context)
-      {
-        component.new_project.acl.readers.remove(function(item)
-        {
-          return item.user()==context.user();
-        });
-        component.new_project.acl.writers.remove(function(item)
-        {
-          return item.user()==context.user();
-        });
-        component.new_project.acl.administrators.remove(function(item)
-        {
-          return item.user()==context.user();
-        });
-      }
-
-      component.save_project = function()
-      {
-        client.put_project(
-        {
-          pid: component.project_id(),
-          name: component.new_project.name(),
-          description: component.new_project.description(),
-          acl: mapping.toJS(component.new_project.acl),
-          error: function(request, status, reason_phrase)
-          {
-            window.alert("Error updating project: " + reason_phrase);
-          }
         });
       }
 
@@ -388,7 +298,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
               <!-- /ko --> \
             </ul> \
           </li> \
-          <li data-bind="visible: project_id() && !model._id()"><button type="button" class="btn btn-xs btn-warning navbar-btn" data-bind="click:edit_project" data-toggle="modal" data-target="#slycat-edit-project">Edit Project</button></li> \
           <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length"> \
             <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
@@ -448,86 +357,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
     </div> \
   <!-- /ko --> \
-  <div class="modal fade" id="slycat-edit-project"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-header"> \
-          <h3 class="modal-title">Edit Project</h3> \
-        </div> \
-        <div class="modal-body"> \
-          <form class="form-horizontal"> \
-            <div class="form-group"> \
-              <label for="slycat-project-name" class="col-sm-2 control-label">Name</label> \
-              <div class="col-sm-10"> \
-                <input id="slycat-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:new_project.name"></input> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label for="slycat-project-description" class="col-sm-2 control-label">Description</label> \
-              <div class="col-sm-10"> \
-                <textarea id="slycat-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:new_project.description"></textarea> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label class="col-sm-2 control-label">Members</label> \
-              <div class="col-sm-10"> \
-                <p class="form-control-static"> \
-                <!-- ko foreach: new_project.acl.administrators --> \
-                  <span class="label label-danger"><span data-bind="text:user"></span><span class="glyphicon glyphicon-remove" data-bind="click:$parent.remove_project_member"></span></span> \
-                <!-- /ko --> \
-                <!-- ko foreach: new_project.acl.writers --> \
-                  <span class="label label-warning"><span data-bind="text:user"></span><span class="glyphicon glyphicon-remove" data-bind="click:$parent.remove_project_member"></span></span> \
-                <!-- /ko --> \
-                <!-- ko foreach: new_project.acl.readers --> \
-                  <span class="label label-primary"><span data-bind="text:user"></span><span class="glyphicon glyphicon-remove" data-bind="click:$parent.remove_project_member"></span></span> \
-                <!-- /ko --> \
-                </p> \
-              </div> \
-            </div> \
-          </form> \
-        </div> \
-        <div class="modal-footer"> \
-          <button class="btn btn-success pull-left" data-toggle="modal" data-target="#slycat-add-project-member">Add Project Member</button> \
-          <button class="btn btn-primary" data-bind="click:save_project" data-dismiss="modal">Save Project</button> \
-          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
-  <div class="modal fade" id="slycat-add-project-member"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-header"> \
-          <h3 class="modal-title">Add Project Member</h3> \
-        </div> \
-        <div class="modal-body"> \
-          <form class="form-horizontal"> \
-            <div class="form-group"> \
-              <label class="col-sm-2 control-label">Permissions</label> \
-              <div class="col-sm-10"> \
-                <div class="btn-group" data-toggle="buttons" data-bind="radio:permission" style="width:100%"> \
-                  <label class="btn btn-primary"><input type="radio" value="reader"/>Reader</label> \
-                  <label class="btn btn-primary"><input type="radio" value="writer"/>Writer</label> \
-                  <label class="btn btn-primary"><input type="radio" value="administrator"/>Administrator</label> \
-                </div> \
-                <p class="help-block" data-bind="text:permission_description"></p> \
-              </div> \
-            </div> \
-            <div class="form-group"> \
-              <label class="col-sm-2 control-label">Username</label> \
-              <div class="col-sm-10"> \
-                <input type="text" class="form-control input-sm" title="Username" placeholder="Username" data-bind="value:new_user"></input> \
-              </div> \
-            </div> \
-          </form> \
-        </div> \
-        <div class="modal-footer"> \
-          <button class="btn btn-success" data-dismiss="modal" data-bind="click:add_project_member">Add Member</button> \
-          <button class="btn btn-warning" data-dismiss="modal">Cancel</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
   <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
       <div class="modal-content"> \

@@ -15,9 +15,49 @@
         <textarea id="slycat-edit-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:modified.description"></textarea>
       </div>
     </div>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Members</label>
+      <div class="col-sm-10">
+        <div class="row">
+          <div class="col-sm-4">
+            <select class="form-control" data-bind="value:permission">
+              <option value="reader">Reader</option>
+              <option value="writer">Writer</option>
+              <option value="administrator">Administrator</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <input type="text" class="form-control" data-bind="value:new_user" placeholder="Username">
+          </div>
+          <div class="col-sm-2">
+            <button class="btn btn-default" type="button" data-bind="click:add_project_member">Add</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <p class="help-block" data-bind="text:permission_description" style="text-align: center; padding-top: 10px; padding-bottom:20px;"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+          <!-- ko foreach: modified.acl.administrators -->
+            <button style="margin: 5px;" class="btn btn-xs btn-danger" data-bind="click:$parent.remove_project_member"><span class="glyphicon glyphicon-remove"></span> <span data-bind="text:user"></span></button>
+          <!-- /ko -->
+          <!-- ko foreach: modified.acl.writers -->
+            <button style="margin: 5px;" class="btn btn-xs btn-warning" data-bind="click:$parent.remove_project_member"><span class="glyphicon glyphicon-remove"></span> <span data-bind="text:user"></span></button>
+          <!-- /ko -->
+          <!-- ko foreach: modified.acl.readers -->
+            <button style="margin: 5px;" class="btn btn-xs btn-primary" data-bind="click:$parent.remove_project_member"><span class="glyphicon glyphicon-remove"></span> <span data-bind="text:user"></span></button>
+          <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </div>
   </form>
 </div>
 <div class="modal-footer">
   <button class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
   <button class="btn btn-default" data-bind="click:save_project" data-dismiss="modal">Save Changes</button>
 </div>
+
