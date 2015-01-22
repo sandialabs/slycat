@@ -38,6 +38,52 @@ var controls_ready = false;
 var image_uri = document.createElement("a");
 
 //////////////////////////////////////////////////////////////////////////////////////////
+// Setup page layout.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+$("#parameter-image-plus-layout").layout(
+{
+  north:
+  {
+    size: 28,
+  },
+  center:
+  {
+    // resizeWhileDragging: false,
+    // onresize: function() {
+    //   $("#scatterplot").scatterplot("option", {
+    //     width: $("#scatterplot-pane").width(),
+    //     height: $("#scatterplot-pane").height()
+    //   });
+    // },
+  },
+  south:
+  {
+    size: $("#parameter-image-plus-layout").height() / 4,
+    resizeWhileDragging: false,
+    onresize: function()
+    {
+      $("#table").css("height", $("#table-pane").height());
+      $("#table").table("resize_canvas");
+    }
+  },
+});
+
+$("#model-pane").layout(
+{
+  center:
+  {
+    resizeWhileDragging: false,
+    onresize: function() {
+      $("#scatterplot").scatterplot("option", {
+        width: $("#scatterplot-pane").width(),
+        height: $("#scatterplot-pane").height()
+      });
+    },
+  }
+});
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -152,52 +198,6 @@ function artifact_missing()
 
   show_status_messages();
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Setup page layout.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-$("#parameter-image-plus-layout").layout(
-{
-  north:
-  {
-    size: 28,
-  },
-  center:
-  {
-    // resizeWhileDragging: false,
-    // onresize: function() {
-    //   $("#scatterplot").scatterplot("option", {
-    //     width: $("#scatterplot-pane").width(),
-    //     height: $("#scatterplot-pane").height()
-    //   });
-    // },
-  },
-  south:
-  {
-    size: $("#parameter-image-plus-layout").height() / 4,
-    resizeWhileDragging: false,
-    onresize: function()
-    {
-      $("#table").css("height", $("#table-pane").height());
-      $("#table").table("resize_canvas");
-    }
-  },
-});
-
-$("#model-pane").layout(
-{
-  center:
-  {
-    resizeWhileDragging: false,
-    onresize: function() {
-      $("#scatterplot").scatterplot("option", {
-        width: $("#scatterplot-pane").width(),
-        height: $("#scatterplot-pane").height()
-      });
-    },
-  }
-});
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup the rest of the UI as data is received.
