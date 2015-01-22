@@ -4,13 +4,17 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects-feed", "slycat-models-feed", "knockout", "knockout-mapping"], function(server_root, client, markings, projects_feed, models_feed, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-projects-feed", "slycat-models-feed", "knockout", "knockout-mapping"], function(server_root, client, projects_feed, models_feed, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
     {
       var component = this;
+      component.server_root = server_root;
+
+      // Display alerts for special circumstances.
+      component.alerts = mapping.fromJS([]);
 
       // Keep track of project data, if any.
       component.project_id = ko.observable(params.project_id);
@@ -43,11 +47,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
           }),
         };
       });
-
-      // Setup storage for creating new projects / editing existing projects.
-      component.new_project = mapping.fromJS({_id:"",name:"",acl:{"administrators":[],"writers":[],"readers":[]},created:"", creator:"", description:""});
-
-      component.alerts = mapping.fromJS([]);
 
       // Setup / categorize wizards.
       component.wizards = mapping.fromJS([]);
@@ -94,15 +93,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
       {
         return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
       });
-      component.new_model_description = ko.observable("");
-      component.new_model_marking = ko.observable(params.model_marking);
-      component.new_model_name = ko.observable(params.model_name);
-      component.server_root = server_root;
       component.user = {uid : ko.observable(""), name : ko.observable("")};
       component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
-
-      // Get available server markings.
-      component.markings = markings.allowed;
 
       // Watch running models
       component.models = models_feed.watch();
@@ -205,7 +197,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-mark
               component.alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message})
 
             if(model.state == "finished")
-            component.close_model(component.model);
+              component.close_model(component.model);
           },
         });
       }
