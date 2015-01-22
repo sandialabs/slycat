@@ -1266,7 +1266,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     {
       console.log("Displaying image " + image.uri + " from cache");
       var url_creator = window.URL || window.webkitURL;
-      var image_url = url_creator.createObjectURL(self.options.image_cache[image.uri]);
+      var blob = self.options.image_cache[image.uri];
+      var image_url = url_creator.createObjectURL(blob);
 
       // Define a default size for every image.
       if(image.width === undefined)
@@ -1286,16 +1287,38 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
       var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
 
-      // Create the image ...
-      var svgImage = frame.append("image")
-        .attr("class", "image")
-        .attr("xlink:href", image_url)
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", image.width)
-        .attr("height", image.height)
-        .attr("data-ratio", image.width / image.height)
-        ;
+      if(blob.type.indexOf('image/') == 0)
+      {
+        // Create the image ...
+        var svgImage = frame.append("image")
+          .attr("class", "image resize")
+          .attr("xlink:href", image_url)
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", image.width)
+          .attr("height", image.height)
+          .attr("data-ratio", image.width / image.height)
+          ;
+      }
+      else if(blob.type.indexOf('video/') == 0)
+      {
+        // Create the video ...
+        var foreignObject = frame.append("foreignObject")
+          .attr("width", image.width)
+          .attr("height", image.height-50)
+          .attr("transform", "translate(0,25)")
+          .attr("data-ratio", image.width / (image.height-50))
+          .attr("class", "resize")
+          ;
+        var video = foreignObject
+          .append("xhtml:body")
+          .append("video")
+          .attr("src", image_url)
+          .attr("controls", true)
+          .attr("width", "100%")
+          .attr("height", "100%")
+          ;
+      }
 
       // Create a resize handle
       var resize_handle = frame.append("g")
@@ -1308,7 +1331,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
                 var frame = d3.select(this.parentNode);
-                var theImage = frame.select("image.image");
+                var theImage = frame.select(".resize");
                 var width = Number(theImage.attr("width"));
                 var height = Number(theImage.attr("height"));
                 var theRectangle = frame.select("rect.outline");
@@ -1469,7 +1492,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
             ;
 
           var frame = d3.select(d3.event.target.parentNode.parentNode);
-          var theImage = frame.select("image.image");
+          var theImage = frame.select(".resize");
           var theRectangle = frame.select("rect.outline");
           var theHandle = frame.select("g.resize-handle");
           var theLine = frame.select("line.leader");
@@ -1570,7 +1593,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
       // We received the image, so put it in the cache and start-over.
       var array_buffer_view = new Uint8Array(this.response);
-      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
+      var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
       self.options.image_cache[image.uri] = blob;
       // Adding lag for testing purposed. This should not exist in production.
       // setTimeout(function(){
