@@ -197,10 +197,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       }
 
       // Get the set of available wizards.
-      $.ajax(
+      client.get_configuration_wizards(
       {
-        type : "GET",
-        url : server_root + "configuration/wizards",
         success : function(wizards)
         {
           wizards.sort(function(left, right)
