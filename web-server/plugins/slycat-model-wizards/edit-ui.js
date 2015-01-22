@@ -17,11 +17,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
         marking: component.modified.marking(),
         success: function()
         {
-          // Force a window refresh, because the navbar (currently) doesn't
-          // respond to changes in model state.
           // Since marking changes have the potential to alter the page
           // structure in arbitrary ways, it's easier to just reload.
-          //if(component.modified.marking() !== component.model.marking())
+          if(component.modified.marking() !== component.model.marking())
           {
             window.location.href = server_root + "models/" + component.model._id();
           }

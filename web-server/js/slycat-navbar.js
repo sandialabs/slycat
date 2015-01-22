@@ -49,14 +49,24 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       });
 
       // Keep track of the current model, if any.
+      component.models = models_feed.watch();
+
       component.model_id = ko.observable(params.model_id);
 
-      component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
-      component.model_popover = ko.pureComputed(function()
+      component.model = component.models.filter(function(model)
       {
-        return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
+        return model._id() == component.model_id();
       });
 
+      component.model_popover = ko.pureComputed(function()
+      {
+        var model = component.model();
+        if(!model.length)
+          return "";
+        model = model[0];
+        return "<p>" + model.description() + "</p><p><small><em>Created " + model.created() + " by " + model.creator() + "</em></small></p>";
+      });
+/*
       if(params.model_id)
       {
         $.ajax(
@@ -81,10 +91,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
           },
         });
       }
+*/
 
       // Keep track of running models
-      component.models = models_feed.watch();
-
       component.open_models = component.models.filter(function(model)
       {
         return model.state() && model.state() != "closed";
@@ -157,7 +166,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       }
       var model_wizard_filter = function(wizard)
       {
-        if("model-type" in wizard.require && wizard.require["model-type"].indexOf(component.model["model-type"]()) == -1)
+        if("model-type" in wizard.require && component.model().length && wizard.require["model-type"].indexOf(component.model()[0]["model-type"]()) == -1)
           return false;
         return wizard.require.context() === "model" && component.model_id();
       }
@@ -249,9 +258,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         <ol class="breadcrumb navbar-left"> \
           <li data-bind="visible: true"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
           <!-- ko foreach: project --> \
-          <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
+            <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
           <!-- /ko --> \
-          <li data-bind="visible: model_id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
+          <!-- ko foreach: model --> \
+            <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:$parent.model_popover()}"></a></li> \
+          <!-- /ko --> \
         </ol> \
         <ul class="nav navbar-nav navbar-left"> \
           <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length"> \
@@ -349,7 +360,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
     <div class="modal-dialog"> \
       <div class="modal-content"> \
         <div data-bind="if: wizard"> \
-          <div data-bind="component:{name:wizard,params:{project:project()[0],model:model}}"> \
+          <div data-bind="component:{name:wizard,params:{project:project()[0],model:model()[0]}}"> \
           </div> \
         </div> \
       </div> \
