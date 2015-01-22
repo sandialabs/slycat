@@ -16,7 +16,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       // Display alerts for special circumstances.
       component.alerts = mapping.fromJS([]);
 
-      // Keep track of project data, if any.
+      // Keep track of the current project, if any.
       component.project_id = ko.observable(params.project_id);
 
       component.project = projects_feed.watch().filter(function(project)
@@ -48,8 +48,28 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         };
       });
 
-      // Setup / categorize wizards.
+      // Get the set of available wizards.
       component.wizards = mapping.fromJS([]);
+
+      client.get_configuration_wizards(
+      {
+        success : function(wizards)
+        {
+          wizards.sort(function(left, right)
+          {
+            return left.label < right.label ? -1 : left.label > right.label ? 1 : 0;
+          });
+
+          mapping.fromJS(wizards, component.wizards);
+          for(var i = 0; i != wizards.length; ++i)
+          {
+            ko.components.register(wizards[i].type,
+            {
+              require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
+            });
+          }
+        }
+      });
 
       var create_wizards = component.wizards.filter(function(wizard)
       {
@@ -93,7 +113,18 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       {
         return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
       });
-      component.user = {uid : ko.observable(""), name : ko.observable("")};
+
+      // Get information about the current user.
+      component.user = mapping.fromJS({uid:"", name:""});
+      client.get_user(
+      {
+        success: function(user)
+        {
+          mapping.fromJS(user, component.user);
+        }
+      });
+
+      // Keep track of information about the current server version.
       component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
 
       // Watch running models
@@ -195,37 +226,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
           },
         });
       }
-
-      // Get the set of available wizards.
-      client.get_configuration_wizards(
-      {
-        success : function(wizards)
-        {
-          wizards.sort(function(left, right)
-          {
-            return left.label < right.label ? -1 : left.label > right.label ? 1 : 0;
-          });
-
-          mapping.fromJS(wizards, component.wizards);
-          for(var i = 0; i != wizards.length; ++i)
-          {
-            ko.components.register(wizards[i].type,
-            {
-              require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
-            });
-          }
-        }
-      });
-
-      // Get information about the currently-logged-in user.
-      client.get_user(
-      {
-        success: function(user)
-        {
-          component.user.uid(user.uid);
-          component.user.name(user.name);
-        }
-      });
 
     },
     template: ' \
