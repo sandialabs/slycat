@@ -26,19 +26,6 @@ def register_slycat_plugin(context):
 
     # Register JS
   javascripts = [
-    # This JS is loaded by header
-    # "js/jquery-2.1.1.min.js",
-    # "js/jquery-migrate-1.2.1.js",
-    # "js/jquery.json-2.4.min.js",
-    # "js/jquery-ui-1.10.4.custom.min.js",
-    # "js/jquery.knob.js",
-    # "js/jquery.qtip.min.js",
-    # "js/knockout-3.2.0.js",
-    # "js/knockout.mapping.js",
-    # "js/slycat-browser.js",
-    # "js/slycat-navbar.js",
-    # "js/slycat-model.js",
-    # End JS loaded by header
     "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
@@ -54,14 +41,11 @@ def register_slycat_plugin(context):
     "chunker.js",
     "login.js",
     "color-switcher.js",
-    "parameter-controls.js",
-    "parameter-image-table.js",
-    "parameter-image-scatterplot.js",
-    "ui.js",
-    #For development and debugging, loading some js dynamically inside model.
-    #"parameter-image-dendrogram.js",
-    #"parameter-image-scatterplot.js",
-    #"ui.js"
+    # "parameter-controls.js",
+    # "parameter-image-table.js",
+    # "parameter-image-scatterplot.js",
+    # "ui.js",
+    #For development and debugging, comment out js here and load it dynamically inside model.
   ]
   context.register_model_bundle("parameter-image", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
@@ -69,17 +53,12 @@ def register_slycat_plugin(context):
 
   # Register CSS
   stylesheets = [
-    # This CSS is loaded by header
-    # "css/smoothness/jquery-ui-1.10.4.custom.min.css",
-    # "css/jquery.qtip.min.css",
-    # "css/slycat.css",
-    # End CSS loaded by header
     "slick.grid.css",
     "slick-default-theme.css",
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
-    #For development and debugging, loading ui.css dynamically inside model.
-    "ui.css"
+    "ui.css",
+    #For development and debugging, comment out css here and load it dynamically inside model.
   ]
   context.register_model_bundle("parameter-image", "text/css", [
     os.path.join(os.path.dirname(__file__), "css", css) for css in stylesheets
@@ -103,3 +82,12 @@ def register_slycat_plugin(context):
   ]
   for image in images:
     context.register_model_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
+
+  devs = [
+    "js/parameter-controls.js",
+    "js/parameter-image-table.js",
+    "js/parameter-image-scatterplot.js",
+    "js/ui.js",
+  ]
+  for dev in devs:
+    context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))

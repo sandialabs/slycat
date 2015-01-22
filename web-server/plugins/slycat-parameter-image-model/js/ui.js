@@ -38,6 +38,52 @@ var controls_ready = false;
 var image_uri = document.createElement("a");
 
 //////////////////////////////////////////////////////////////////////////////////////////
+// Setup page layout.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+$("#parameter-image-plus-layout").layout(
+{
+  north:
+  {
+    size: 28,
+  },
+  center:
+  {
+    // resizeWhileDragging: false,
+    // onresize: function() {
+    //   $("#scatterplot").scatterplot("option", {
+    //     width: $("#scatterplot-pane").width(),
+    //     height: $("#scatterplot-pane").height()
+    //   });
+    // },
+  },
+  south:
+  {
+    size: $("#parameter-image-plus-layout").height() / 4,
+    resizeWhileDragging: false,
+    onresize: function()
+    {
+      $("#table").css("height", $("#table-pane").height());
+      $("#table").table("resize_canvas");
+    }
+  },
+});
+
+$("#model-pane").layout(
+{
+  center:
+  {
+    resizeWhileDragging: false,
+    onresize: function() {
+      $("#scatterplot").scatterplot("option", {
+        width: $("#scatterplot-pane").width(),
+        height: $("#scatterplot-pane").height()
+      });
+    },
+  }
+});
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -152,52 +198,6 @@ function artifact_missing()
 
   show_status_messages();
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Setup page layout.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-$("#parameter-image-plus-layout").layout(
-{
-  north:
-  {
-    size: 28,
-  },
-  center:
-  {
-    // resizeWhileDragging: false,
-    // onresize: function() {
-    //   $("#scatterplot").scatterplot("option", {
-    //     width: $("#scatterplot-pane").width(),
-    //     height: $("#scatterplot-pane").height()
-    //   });
-    // },
-  },
-  south:
-  {
-    size: $("#parameter-image-plus-layout").height() / 4,
-    resizeWhileDragging: false,
-    onresize: function()
-    {
-      $("#table").css("height", $("#table-pane").height());
-      $("#table").table("resize_canvas");
-    }
-  },
-});
-
-$("#model-pane").layout(
-{
-  center:
-  {
-    resizeWhileDragging: false,
-    onresize: function() {
-      $("#scatterplot").scatterplot("option", {
-        width: $("#scatterplot-pane").width(),
-        height: $("#scatterplot-pane").height()
-      });
-    },
-  }
-});
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup the rest of the UI as data is received.
@@ -740,6 +740,27 @@ function setup_controls()
           hidden_simulations.push(selected_simulations[i]);
         }
       }
+      update_widgets_when_hidden_simulations_change();
+    });
+
+    // Log changes to hidden selection ...
+    $("#controls").bind("hide-unselected", function(event, selection)
+    {
+      // Remove any selected_simulations from hidden_simulations
+      for(var i=0; i<selected_simulations.length; i++){
+        var index = $.inArray(selected_simulations[i], hidden_simulations);
+        if(index != -1) {
+          hidden_simulations.splice(index, 1);
+        }
+      }
+
+      // Add all non-selected_simulations to hidden_simulations
+      for(var i=0; i<indices.length; i++){
+        if($.inArray(indices[i], selected_simulations) == -1) {
+          hidden_simulations.push(indices[i]);
+        }
+      }
+
       update_widgets_when_hidden_simulations_change();
     });
 
