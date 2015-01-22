@@ -117,6 +117,10 @@ $.widget("parameter_image.controls",
         {
           self.element.trigger("hide-selection", self.options.selection);
         }
+        else if(value == 'hide_unselected')
+        {
+          self.element.trigger("hide-unselected", self.options.selection);
+        }
         else if(value == 'show')
         {
           self.element.trigger("show-selection", self.options.selection);
@@ -543,6 +547,11 @@ $.widget("parameter_image.controls",
     $("<option />")
       .text("Hide")
       .attr("value", "hide")
+      .appendTo(scatterplotOptgroup)
+      ;
+    $("<option />")
+      .text("Hide Unselectred")
+      .attr("value", "hide_unselected")
       .appendTo(scatterplotOptgroup)
       ;
     $("<option />")

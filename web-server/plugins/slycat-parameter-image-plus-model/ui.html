@@ -5,11 +5,12 @@ rights in this software.
 -->
 
 <script type="text/javascript">
-  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
   var project_id = "{{full-project._id}}";
   var model_id = "{{_id}}";
   var model_name = "{{name}}";
+  
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
+  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
   [
     // "js/parameter-image-dendrogram.js",
     // "js/parameter-image-scatterplot.js",

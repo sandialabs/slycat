@@ -744,6 +744,27 @@ function setup_controls()
     });
 
     // Log changes to hidden selection ...
+    $("#controls").bind("hide-unselected", function(event, selection)
+    {
+      // Remove any selected_simulations from hidden_simulations
+      for(var i=0; i<selected_simulations.length; i++){
+        var index = $.inArray(selected_simulations[i], hidden_simulations);
+        if(index != -1) {
+          hidden_simulations.splice(index, 1);
+        }
+      }
+
+      // Add all non-selected_simulations to hidden_simulations
+      for(var i=0; i<indices.length; i++){
+        if($.inArray(indices[i], selected_simulations) == -1) {
+          hidden_simulations.push(indices[i]);
+        }
+      }
+
+      update_widgets_when_hidden_simulations_change();
+    });
+
+    // Log changes to hidden selection ...
     $("#controls").bind("show-selection", function(event, selection)
     {
       for(var i=0; i<selected_simulations.length; i++){
