@@ -5,8 +5,8 @@ define(["slycat-server-root", "slycat-web-client", "text!" + $("#slycat-server-r
     console.log(params);
 
     var component = {};
-    component.project = params.project;
-    component.model = params.model;
+    component.project = params.projects()[0];
+    component.model = params.models()[0];
 
     component.delete_model = function()
     {

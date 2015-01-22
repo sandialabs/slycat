@@ -3,8 +3,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
   function constructor(params)
   {
     var component = {};
-    component.project = params.project;
-    component.modified = mapping.fromJS(mapping.toJS(params.project));
+    component.project = params.projects()[0];
+    component.modified = mapping.fromJS(mapping.toJS(component.project));
     component.permission = ko.observable("reader");
     component.permission_description = ko.pureComputed(function()
     {

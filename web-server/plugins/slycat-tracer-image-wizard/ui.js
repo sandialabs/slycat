@@ -4,7 +4,7 @@ define(["slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "t
   {
     var component = {};
     component.tab = ko.observable(0);
-    component.project = params.project;
+    component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New Tracer Image Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, sid: null});
     component.browser = mapping.fromJS({path:null, selection: []});

@@ -4,14 +4,14 @@ define(["slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "t
   {
     var component = {};
     component.tab = ko.observable(0);
-    component.project = params.project;
-    component.original = params.model;
+    component.project = params.projects()[0];
+    component.original = params.models()[0];
     component.model = mapping.fromJS(
     {
       _id: null,
-      name: params.model.name() + " Rerun",
-      description: "Reran " + (params.model.description() ? params.model.description() : params.model.name()),
-      marking: params.model.marking()
+      name: "Rerun " + component.original.name(),
+      description: "Rerunning " + component.original.name() + ". Original description: " + component.original.description(),
+      marking: component.original.marking()
     });
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(false);

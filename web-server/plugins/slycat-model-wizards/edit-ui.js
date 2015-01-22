@@ -3,9 +3,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
   function constructor(params)
   {
     var component = {};
-    component.project = params.project;
-    component.model = params.model;
-    component.modified = mapping.fromJS(mapping.toJS(params.model));
+    component.project = params.projects()[0];
+    component.model = params.models()[0];
+    component.modified = mapping.fromJS(mapping.toJS(component.model));
 
     component.save_model = function()
     {

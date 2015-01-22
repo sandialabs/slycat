@@ -360,7 +360,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
     <div class="modal-dialog"> \
       <div class="modal-content"> \
         <div data-bind="if: wizard"> \
-          <div data-bind="component:{name:wizard,params:{project:project()[0],model:model()[0]}}"> \
+          <div data-bind="component:{name:wizard,params:{projects:project,models:model}}"> \
           </div> \
         </div> \
       </div> \

@@ -2,10 +2,8 @@ define(["slycat-server-root", "slycat-web-client", "text!" + $("#slycat-server-r
 {
   function constructor(params)
   {
-    console.log(params);
-
     var component = {};
-    component.project = params.project;
+    component.project = params.projects()[0];
 
     component.delete_project = function()
     {
