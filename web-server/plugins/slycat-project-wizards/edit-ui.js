@@ -1,10 +1,10 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/slycat-edit-project/ui.html"], function(server_root, client, dialog, ko, mapping, html)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping"], function(server_root, client, dialog, ko, mapping)
 {
   function constructor(params)
   {
     var component = {};
-    component.project = params.project;
-    component.modified = mapping.fromJS(mapping.toJS(params.project));
+    component.project = params.projects()[0];
+    component.modified = mapping.fromJS(mapping.toJS(component.project));
     component.permission = ko.observable("reader");
     component.permission_description = ko.pureComputed(function()
     {
@@ -101,5 +101,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     return component;
   }
 
-  return { viewModel: constructor, template: html };
+  return {
+    viewModel: constructor,
+    template: { require: "text!" + server_root + "resources/wizards/slycat-edit-project/ui.html" },
+    };
 });

@@ -1,11 +1,11 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-mapping", "text!" + $("#slycat-server-root").attr("href") + "resources/wizards/slycat-edit-model/ui.html"], function(server_root, client, dialog, mapping, html)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-mapping"], function(server_root, client, dialog, mapping)
 {
   function constructor(params)
   {
     var component = {};
-    component.project = params.project;
-    component.model = params.model;
-    component.modified = mapping.fromJS(mapping.toJS(params.model));
+    component.project = params.projects()[0];
+    component.model = params.models()[0];
+    component.modified = mapping.fromJS(mapping.toJS(component.model));
 
     component.save_model = function()
     {
@@ -17,11 +17,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
         marking: component.modified.marking(),
         success: function()
         {
-          // Force a window refresh, because the navbar (currently) doesn't
-          // respond to changes in model state.
           // Since marking changes have the potential to alter the page
           // structure in arbitrary ways, it's easier to just reload.
-          //if(component.modified.marking() !== component.model.marking())
+          if(component.modified.marking() !== component.model.marking())
           {
             window.location.href = server_root + "models/" + component.model._id();
           }
@@ -32,5 +30,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
     return component;
   }
 
-  return { viewModel: constructor, template: html };
+  return {
+    viewModel: constructor,
+    template: { require: "text!" + server_root + "resources/wizards/slycat-edit-model/ui.html" },
+    };
 });
