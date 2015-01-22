@@ -435,7 +435,9 @@ rights in this software.
 #scatterplot g.open-image.resizing .close-button,
 #scatterplot g.open-image:hover .pin-button,
 #scatterplot g.image-frame:hover .resize-handle,
-#scatterplot g.open-image.resizing .resize-handle
+#scatterplot g.open-image.resizing .resize-handle,
+#scatterplot g.hover-image .pin-button,
+#scatterplot g.hover-image .resize-handle
 {
   visibility: visible;
 }
