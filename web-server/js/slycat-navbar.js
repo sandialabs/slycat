@@ -48,6 +48,70 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         };
       });
 
+      // Keep track of the current model, if any.
+      component.model_id = ko.observable(params.model_id);
+
+      component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
+      component.model_popover = ko.pureComputed(function()
+      {
+        return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
+      });
+
+      if(params.model_id)
+      {
+        $.ajax(
+        {
+          type : "GET",
+          url : server_root + "models/" + params.model_id,
+          success : function(model)
+          {
+            mapping.fromJS(model, component.model);
+
+            if(model.state == "waiting")
+              component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
+
+            if(model.state == "running")
+              component.alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
+
+            if(model.result == "failed")
+              component.alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message})
+
+            if(model.state == "finished")
+              component.close_model(component.model);
+          },
+        });
+      }
+
+      // Keep track of running models
+      component.models = models_feed.watch();
+
+      component.open_models = component.models.filter(function(model)
+      {
+        return model.state() && model.state() != "closed";
+      });
+      component.finished_models = component.open_models.filter(function(model)
+      {
+        return model.state() == "finished";
+      });
+      component.running_models = component.open_models.filter(function(model)
+      {
+        return model.state() != "finished";
+      }).map(function(model)
+      {
+        return  {
+          _id: model._id,
+          name: model.name,
+          progress_percent: ko.pureComputed(function()
+          {
+            return model.progress() * 100;
+          }),
+          progress_type: ko.pureComputed(function()
+          {
+            return model.state() === "running" ? "success" : null;
+          }),
+        }
+      });
+
       // Get the set of available wizards.
       component.wizards = mapping.fromJS([]);
 
@@ -95,7 +159,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       {
         if("model-type" in wizard.require && wizard.require["model-type"].indexOf(component.model["model-type"]()) == -1)
           return false;
-        return wizard.require.context() === "model" && component.model._id();
+        return wizard.require.context() === "model" && component.model_id();
       }
       component.global_create_wizards = create_wizards.filter(global_wizard_filter);
       component.project_create_wizards = create_wizards.filter(project_wizard_filter);
@@ -107,12 +171,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
       component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
       component.wizard = ko.observable(false);
-
-      component.model = mapping.fromJS({_id:params.model_id, "model-type":params.model_type, name:params.model_name, created:"", creator:"",description:"", marking:params.model_marking});
-      component.model_popover = ko.pureComputed(function()
-      {
-        return "<p>" + component.model.description() + "</p><p><small><em>Created " + component.model.created() + " by " + component.model.creator() + "</em></small></p>";
-      });
 
       // Get information about the current user.
       component.user = mapping.fromJS({uid:"", name:""});
@@ -126,35 +184,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
 
       // Keep track of information about the current server version.
       component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
-
-      // Watch running models
-      component.models = models_feed.watch();
-      component.open_models = component.models.filter(function(model)
-      {
-        return model.state() && model.state() != "closed";
-      });
-      component.finished_models = component.open_models.filter(function(model)
-      {
-        return model.state() == "finished";
-      });
-      component.running_models = component.open_models.filter(function(model)
-      {
-        return model.state() != "finished";
-      }).map(function(model)
-      {
-        return  {
-          _id: model._id,
-          name: model.name,
-          progress_percent: ko.pureComputed(function()
-          {
-            return model.progress() * 100;
-          }),
-          progress_type: ko.pureComputed(function()
-          {
-            return model.state() === "running" ? "success" : null;
-          }),
-        }
-      });
 
       component.close_model = function(model)
       {
@@ -201,31 +230,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         window.open("http://slycat.readthedocs.org");
       }
 
-      // If there's a current model, load it.
-      if(params.model_id)
-      {
-        $.ajax(
-        {
-          type : "GET",
-          url : server_root + "models/" + params.model_id,
-          success : function(model)
-          {
-            mapping.fromJS(model, component.model);
-
-            if(model.state == "waiting")
-              component.alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
-
-            if(model.state == "running")
-              component.alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
-
-            if(model.result == "failed")
-              component.alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message})
-
-            if(model.state == "finished")
-              component.close_model(component.model);
-          },
-        });
-      }
 
     },
     template: ' \
@@ -247,7 +251,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
           <!-- ko foreach: project --> \
           <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
           <!-- /ko --> \
-          <li data-bind="visible: model._id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
+          <li data-bind="visible: model_id"><a id="slycat-model-description" data-bind="text:model.name,popover:{trigger:\'hover\',html:true,content:model_popover()}"></a></li> \
         </ol> \
         <ul class="nav navbar-nav navbar-left"> \
           <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length"> \
