@@ -50,7 +50,7 @@ def register_slycat_plugin(context):
     "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
-    "jquery.mousewheel.js",
+    #"jquery.mousewheel.js",
     "jquery.scrollintoview.min.js",
     "jquery.event.drag-2.2.js",
     "slick.core.js",

@@ -44,7 +44,7 @@ def register_slycat_plugin(context):
     "bookmarker.js",
     "chunker.js",
     "color-switcher.js",
-    "jquery.mousewheel.js",
+    #"jquery.mousewheel.js", # This interferes with dynamically-loaded AMD modules, for some reason.
     "jquery.scrollintoview.min.js",
     "jquery.event.drag-2.2.js",
     "slick.core.js",
