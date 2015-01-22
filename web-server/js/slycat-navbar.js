@@ -159,11 +159,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
 
       component.support_request = function()
       {
-        $.ajax(
+        client.get_configuration_support_email(
         {
-          type : "GET",
-          url : server_root + "configuration/support-email",
-          success : function(email)
+          success: function(email)
           {
             window.location.href = "mailto:" + email.address + "?subject=" + email.subject;
           }

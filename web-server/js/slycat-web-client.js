@@ -85,6 +85,26 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     });
   }
 
+  module.get_configuration_support_email = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "configuration/support-email",
+      success: function(email)
+      {
+        if(params.success)
+          params.success(email);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.get_configuration_remote_hosts = function(params)
   {
     $.ajax(
