@@ -1077,14 +1077,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     $(".open-image").each(function(index, frame)
     {
       var frame = $(frame);
-      var image = frame.find("image.image");
+      var image = frame.find(".resize");
+      var imageHeight = image.prop("tagName") == 'image' ? Number(image.attr("height")) : Number(image.attr("height")) + 50;
       open_images.push({
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
         relx : Number(frame.attr("data-transx")) / width,
         rely : Number(frame.attr("data-transy")) / height,
         width : Number(image.attr("width")),
-        height : Number(image.attr("height")),
+        height : imageHeight,
         });
     });
     self.element.trigger("open-images-changed", [open_images]);
@@ -1271,10 +1272,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
       // Define a default size for every image.
       if(image.width === undefined)
+      {
         image.width = self.options.pinned_width;
+      }
       if(image.height === undefined)
+      {
         image.height = self.options.pinned_height;
-
+      }
       // Define a default position for every image.
       if(image.x === undefined)
       {
@@ -1307,7 +1311,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           .attr("width", image.width)
           .attr("height", image.height-50)
           .attr("transform", "translate(0,25)")
-          .attr("data-ratio", image.width / (image.height-50))
+          .attr("data-ratio", image.width / image.height)
           .attr("class", "resize video")
           ;
         var video = foreignObject
