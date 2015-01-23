@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", "knockout-mapping", "d3", "domReady!"], function(client, ko, mapping, d3)
+define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", "knockout-mapping", "d3", "URI", "domReady!"], function(client, ko, mapping, d3, URI)
 {
   // Setup storage for the data we're going to plot.
   var page =
@@ -189,6 +189,6 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
   ko.applyBindings(page, document.getElementById("slycat-linear-regression-demo"));
 
   // Start loading data from the model.
-  page.mid(location.pathname.split("/").reverse()[0]);
+  page.mid(URI(window.location).segment(-1));
 });
 

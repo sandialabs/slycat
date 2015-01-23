@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "domReady!"], function(server_root, bookmark_manager)
+define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "URI", "domReady!"], function(server_root, bookmark_manager, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout and forms.
@@ -93,7 +93,7 @@ var modelPaneLayout = $("#model-pane").layout({
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-var model = {_id: location.pathname.split("/").reverse()[0]};
+var model = { _id: URI(window.location).segment(-1) };
 var cluster_bin_count = null;
 var cluster_bin_type = null;
 var cluster_type = null;

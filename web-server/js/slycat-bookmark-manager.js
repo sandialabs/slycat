@@ -12,7 +12,7 @@ define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], funct
     var manager = {};
 
     var bid = null;
-    var current_location = URI(window.location.toString());
+    var current_location = URI(window.location);
     if(current_location.query(true).bid == 'clear')
     {
       // Remove the current model ID from localStorage to clear it
@@ -34,7 +34,7 @@ define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], funct
     // Updates the browser's URL with the bid (private)
     function updateURL(bid)
     {
-      var new_location = URI(window.location.toString()).removeQuery("bid").addQuery("bid", bid);
+      var new_location = URI(window.location).removeQuery("bid").addQuery("bid", bid);
       window.history.replaceState( null, null, new_location.toString() );
       // Consider using window.history.pushState instead to enable back button navigation within the model
     }

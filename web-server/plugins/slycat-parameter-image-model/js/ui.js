@@ -1,10 +1,10 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "slycat-bookmark-manager", "d3", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, bookmark_manager, d3)
+define("slycat-parameter-image-model", ["slycat-server-root", "slycat-bookmark-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, bookmark_manager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-var model_id = location.pathname.split("/").reverse()[0];
+var model_id = URI(window.location).segment(-1);
 var input_columns = null;
 var output_columns = null;
 var image_columns = null;

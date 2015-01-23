@@ -4,13 +4,13 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "domReady!"], function(server_root, bookmark_manager)
+define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "URI", "domReady!"], function(server_root, bookmark_manager, URI)
 {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  var model = {_id: location.pathname.split("/").reverse()[0]};
+  var model = {_id: URI(window.location).segment(-1)};
   var input_columns = null;
   var output_columns = null;
   var scale_inputs = null;

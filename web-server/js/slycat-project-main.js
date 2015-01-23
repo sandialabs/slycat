@@ -4,14 +4,14 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-models-feed", "knockout", "knockout-mapping"], function(server_root, client, markings, models_feed, ko, mapping)
+define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-models-feed", "knockout", "knockout-mapping", "URI"], function(server_root, client, markings, models_feed, ko, mapping, URI)
 {
   var module = {}
   module.start = function()
   {
     var page = {};
     page.server_root = server_root;
-    page.project = mapping.fromJS({_id: location.pathname.split("/").reverse()[0], name: "", description: "",created: "",creator: "",acl:{administrators:[],writers:[],readers:[]}});
+    page.project = mapping.fromJS({_id: URI(window.location).segment(-1), name: "", description: "",created: "",creator: "",acl:{administrators:[],writers:[],readers:[]}});
     page.models = models_feed.watch().filter(function(model)
     {
       return model.project() == page.project._id();
