@@ -505,3 +505,8 @@ rights in this software.
   max-height: 100%;
   max-width: 100%;
 }
+
+/* Video */
+foreignObject.video body {
+  height: 100%;
+}

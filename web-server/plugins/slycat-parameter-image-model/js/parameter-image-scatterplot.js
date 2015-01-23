@@ -1308,7 +1308,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           .attr("height", image.height-50)
           .attr("transform", "translate(0,25)")
           .attr("data-ratio", image.width / (image.height-50))
-          .attr("class", "resize")
+          .attr("class", "resize video")
           ;
         var video = foreignObject
           .append("xhtml:body")
@@ -1354,7 +1354,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                   newWidth = newHeight * ratio;
                 }
                 theImage.attr("width", newWidth);
-                theImage.attr("height", newHeight);
+                if(blob.type.indexOf('video/') == 0)
+                {
+                  theImage.attr("height", newHeight - 50);
+                }
+                else
+                {
+                  theImage.attr("height", newHeight);
+                }
                 theRectangle.attr("width", newWidth+1);
                 theRectangle.attr("height", newHeight+1);
                 theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
@@ -1516,7 +1523,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
           // Adjust image size
           theImage.attr("width", imageWidth);
-          theImage.attr("height", imageHeight);
+          if(blob.type.indexOf('video/') == 0)
+          {
+            theImage.attr("height", imageHeight - 50);
+          }
+          else
+          {
+            theImage.attr("height", imageHeight);
+          }
           theRectangle.attr("width", imageWidth+1);
           theRectangle.attr("height", imageHeight+1);
           theHandle.attr('transform', "translate(" + (imageWidth-9) + ", " + (imageHeight-9) + ")");
