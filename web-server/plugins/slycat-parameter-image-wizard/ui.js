@@ -6,7 +6,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, sid: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, error: null, sid: null});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.attributes = mapping.fromJS([]);
 
@@ -46,6 +46,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         {
           component.remote.sid(sid);
           component.tab(2);
+        },
+        error: function(request, status, reason_phrase)
+        {
+          component.remote.error(reason_phrase);
         }
       });
     }

@@ -14,6 +14,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
       component.hostname = params.hostname;
       component.username = params.username;
       component.password = params.password;
+      component.error = params.error;
 
       if(!params.hostname())
         params.hostname(localStorage.getItem("slycat-remote-controls-hostname"));
