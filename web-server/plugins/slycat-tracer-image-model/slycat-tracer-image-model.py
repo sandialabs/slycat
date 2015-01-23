@@ -35,6 +35,7 @@ def register_slycat_plugin(context):
     # "js/slycat-navbar.js",
     # "js/slycat-model.js",
     # End JS loaded by header
+    "jquery-ui-1.10.4.custom.min.js",
     "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",

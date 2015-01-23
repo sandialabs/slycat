@@ -64,7 +64,6 @@ def js_bundle():
         "js/slycat-curl-config.js", # Load this immediately following curl to configure it.
         "js/jquery-2.1.1.min.js",
         "js/jquery-migrate-1.2.1.js",
-        "js/jquery-ui-1.10.4.custom.min.js",
         "js/jquery.ba-bbq.min.js",
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
