@@ -119,18 +119,6 @@ define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Mov
       // Display progress as the load happens ...
       $(".load-status").text("Loading data.");
 
-      // Mark this model as closed, so it doesn't show-up in the header anymore.
-      console.debug("mark this model as closed -- ajax");
-      $.ajax({
-        type : "PUT",
-        url : server_root + "models/" + self.id,
-        contentType : "application/json",
-        data : $.toJSON({
-          "state" : "closed"
-        }),
-        processData : false
-      });
-
       console.debug("Inside model laoded - load table metadata 1 -- ajax");
       // Load data table metadata.
       $.ajax({

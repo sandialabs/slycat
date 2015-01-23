@@ -26,10 +26,11 @@ def register_slycat_plugin(context):
 
     # Register JS
   javascripts = [
+    "jquery-ui-1.10.4.custom.min.js",
     "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
-    "jquery.mousewheel.js",
+    #"jquery.mousewheel.js",
     "jquery.scrollintoview.min.js",
     "jquery.event.drag-2.2.js",
     "slick.core.js",

@@ -91,18 +91,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "do
       // Display progress as the load happens ...
       $(".load-status").text("Loading data.");
 
-      // Mark this model as closed, so it doesn't show-up in the header anymore.
-      $.ajax(
-      {
-        type : "PUT",
-        url : server_root + "models/" + model._id,
-        contentType : "application/json",
-        data : $.toJSON({
-          "state" : "closed"
-        }),
-        processData : false
-      });
-
       // Load the x_loadings artifact.
       get_model_array_attribute({
         server_root : server_root,

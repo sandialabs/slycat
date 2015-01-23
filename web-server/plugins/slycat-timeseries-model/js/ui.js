@@ -176,18 +176,6 @@ function setup_page()
     // Display progress as the load happens ...
     $(".load-status").text("Loading data.");
 
-    // Mark this model as closed, so it doesn't show-up in the header anymore.
-    $.ajax(
-    {
-      type : "PUT",
-      url : server_root + "models/" + model._id,
-      contentType : "application/json",
-      data : $.toJSON({
-        "state" : "closed"
-      }),
-      processData : false
-    });
-
     // Load list of clusters.
     $.ajax({
       url : server_root + "models/" + model._id + "/files/clusters",

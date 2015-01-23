@@ -93,8 +93,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         {
           var model = models[i];
 
-          console.log("update_model_state");
-
           if(model.state() == "finished")
             component.close_model(model);
         }

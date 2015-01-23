@@ -33,6 +33,7 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "css/ui.css"),
     ])
   context.register_model_bundle("timeseries", "text/javascript", [
+    os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.knob.js"),
     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),

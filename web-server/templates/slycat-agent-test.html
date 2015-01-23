@@ -10,7 +10,6 @@ rights in this software.
   <head>
     <title>Slycat Agent Test</title>
     <script type="text/javascript" src="{{server-root}}js/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="{{server-root}}js/jquery.json-2.4.min.js"></script>
   </head>
   <body>
     <script type="text/javascript">
@@ -31,7 +30,7 @@ rights in this software.
         $.ajax(
         {
           contentType : "application/json",
-          data: $.toJSON({
+          data: JSON.stringify({
             "hostname" : hostname,
             "username" : username,
             "password": password,
@@ -71,7 +70,7 @@ rights in this software.
         $.ajax(
         {
           contentType : "application/json",
-          data: $.toJSON({
+          data: JSON.stringify({
             "hostname" : hostname,
             "username" : username,
             "password": password,
@@ -134,7 +133,7 @@ rights in this software.
         $.ajax(
         {
           contentType : "application/json",
-          data: $.toJSON({
+          data: JSON.stringify({
             "content-type":content_type,
             "images":images,
           }),

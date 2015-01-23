@@ -46,7 +46,7 @@ function bookmark_manager(server_root, pid, mid)
       type : "POST",
       url : server_root + "projects/" + pid + "/bookmarks",
       contentType : "application/json",
-      data: $.toJSON(state),
+      data: JSON.stringify(state),
       processData: false,
       success: function(result)
       {

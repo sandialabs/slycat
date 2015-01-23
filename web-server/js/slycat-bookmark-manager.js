@@ -51,7 +51,7 @@ define("slycat-bookmark-manager", ["slycat-server-root", "jquery"], function(ser
         type : "POST",
         url : server_root + "projects/" + pid + "/bookmarks",
         contentType : "application/json",
-        data: $.toJSON(state),
+        data: JSON.stringify(state),
         processData: false,
         success: function(result)
         {
