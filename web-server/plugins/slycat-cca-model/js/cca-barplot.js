@@ -261,21 +261,6 @@ define("slycat-cca-barplot", [], function()
         $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
       });
 
-/*
-      $(".barplotColumn.input").mousewheel(function(event) {
-        $(".barplotCanvas.input").scrollTop( $(".barplotCanvas.input").scrollTop() + -(event.deltaY * event.deltaFactor) );
-      });
-      $(".barplotColumn.output").mousewheel(function(event) {
-        $(".barplotCanvas.output").scrollTop( $(".barplotCanvas.output").scrollTop() + -(event.deltaY * event.deltaFactor) );
-      });
-      $(".barplotHeader").mousewheel(function(event) {
-        $(".barplotCanvas.output").scrollLeft( $(".barplotCanvas.output").scrollLeft() + (event.deltaX * event.deltaFactor) );
-      });
-      $(".barplotCanvas.input").mousewheel(function(event) {
-        $(".barplotCanvas.output").scrollLeft( $(".barplotCanvas.output").scrollLeft() + (event.deltaX * event.deltaFactor) );
-      });
-*/
-
       // Resizing functionality
       var barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
       barplotGroupInputs.resizable({
