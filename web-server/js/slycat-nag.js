@@ -12,6 +12,10 @@ define("slycat-nag", [], function()
   if(!window.EventSource)
     nag = true;
 
+  // We need localStorage for many of our standarized controls and bookmarks.
+  if(!window.localStorage)
+    nag = true;
+
   if(nag)
   {
     alert("Your browser is missing features required by Slycat. We suggest switching to a current version of Firefox, Chrome, or Safari.");
