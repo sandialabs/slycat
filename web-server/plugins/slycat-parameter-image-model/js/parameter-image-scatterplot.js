@@ -1317,6 +1317,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           .attr("controls", true)
           .attr("width", "100%")
           .attr("height", "100%")
+          .on("mousedown", function(){
+            //console.log("video mousedown");
+            d3.event.stopPropagation(); // silence other listeners
+          })
+          .on("mouseup", function(){
+            //console.log("video mouseup");
+            d3.event.stopPropagation(); // silence other listeners
+          })
           ;
       }
 
