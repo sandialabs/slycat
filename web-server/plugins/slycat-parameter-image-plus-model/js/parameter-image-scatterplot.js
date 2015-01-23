@@ -1627,7 +1627,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
             type : "POST",
             url : server_root + "agents",
             contentType : "application/json",
-            data : $.toJSON({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
+            data : JSON.stringify({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
             processData : false,
             success : function(result)
             {

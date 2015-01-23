@@ -28,10 +28,7 @@ def register_slycat_plugin(context):
     # This JS is loaded by header (global bundle defined in get_model in handlers.py)
     # "js/jquery-2.1.1.min.js",
     # "js/jquery-migrate-1.2.1.js",
-    # "js/jquery.json-2.4.min.js",
     # "js/jquery-ui-1.10.4.custom.min.js",
-    # "js/jquery.knob.js",
-    # "js/jquery.qtip.min.js",
     # "js/knockout-3.2.0.js",
     # "js/knockout.mapping.js",
     # "js/slycat-browser.js",

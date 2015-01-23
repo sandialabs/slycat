@@ -342,7 +342,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(
+      data: JSON.stringify(
       {
         "name": params.name,
         "description": params.description || "",
@@ -367,7 +367,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(
+      data: JSON.stringify(
       {
         "model-type": params.type,
         "name": params.name,
@@ -394,7 +394,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(
+      data: JSON.stringify(
       {
         hostname: params.hostname,
         username: params.username,
@@ -420,7 +420,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(
+      data: JSON.stringify(
       {
       }),
       type: "POST",
@@ -443,7 +443,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(
+      data: JSON.stringify(
       {
         sid: params.sid,
       }),
@@ -467,7 +467,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(
+      data: JSON.stringify(
       {
         value: params.value,
         input: params.input === undefined ? true: params.input ? true: false,
@@ -534,7 +534,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(project),
+      data: JSON.stringify(project),
       processData: false,
       type: "PUT",
       url: server_root + "projects/" + params.pid,
@@ -566,7 +566,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     $.ajax(
     {
       contentType: "application/json",
-      data: $.toJSON(model),
+      data: JSON.stringify(model),
       processData: false,
       type: "PUT",
       url: server_root + "models/" + params.mid,
