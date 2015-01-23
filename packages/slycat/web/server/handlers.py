@@ -62,9 +62,8 @@ def js_bundle():
         "js/curl.js",
         #"js/curl-debug.js", # Uncomment this to debug problems loading modules with curl
         "js/slycat-curl-config.js", # Load this immediately following curl to configure it.
+        "js/uri.min.js",
         "js/jquery-2.1.1.min.js",
-        "js/jquery-migrate-1.2.1.js",
-        "js/jquery.ba-bbq.min.js",
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",

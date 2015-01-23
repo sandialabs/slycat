@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-bookmark-manager", ["slycat-server-root", "jquery"], function(server_root, $)
+define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], function(server_root, URI, $)
 {
   var module = {};
   module.create = function(pid, mid)
@@ -12,15 +12,16 @@ define("slycat-bookmark-manager", ["slycat-server-root", "jquery"], function(ser
     var manager = {};
 
     var bid = null;
-    if($.deparam.querystring().bid == 'clear')
+    var current_location = URI(window.location.toString());
+    if(current_location.query(true).bid == 'clear')
     {
       // Remove the current model ID from localStorage to clear it
       localStorage.removeItem(mid);
       // Do nothing more to allow bookmark state to clear
     }
-    else if($.deparam.querystring().bid != null)
+    else if(current_location.query(true).bid)
     {
-      bid = $.deparam.querystring().bid;
+      bid = current_location.query(true).bid;
     }
     else if(localStorage.getItem(mid) != null)
     {
@@ -33,8 +34,8 @@ define("slycat-bookmark-manager", ["slycat-server-root", "jquery"], function(ser
     // Updates the browser's URL with the bid (private)
     function updateURL(bid)
     {
-      var url = $.param.querystring( window.location.toString(), {"bid" : bid} );
-      window.history.replaceState( null, null, url );
+      var new_location = URI(window.location.toString()).removeQuery("bid").addQuery("bid", bid);
+      window.history.replaceState( null, null, new_location.toString() );
       // Consider using window.history.pushState instead to enable back button navigation within the model
     }
 
