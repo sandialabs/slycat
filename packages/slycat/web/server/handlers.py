@@ -1473,7 +1473,11 @@ def get_configuration_markings():
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_remote_hosts():
-  return [dict(host.items() + [("hostname", key)]) for key, host in cherrypy.request.app.config["slycat"]["remote-hosts"].items()]
+  remote_hosts = []
+  for hostname, remote in cherrypy.request.app.config["slycat"]["remote-hosts"].items():
+    agent = True if remote.get("agent", False) else False
+    remote_hosts.append({"hostname": hostname, "agent": agent})
+  return remote_hosts
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_support_email():
@@ -1506,3 +1510,9 @@ def get_global_resource(resource):
   if resource in slycat.web.server.resource.manager.files:
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
+
+def get_agent_test():
+  context = {}
+  context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+  return slycat.web.server.template.render("slycat-agent-test.html", context)
+

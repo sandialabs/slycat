@@ -116,6 +116,7 @@ def start(root_path, config_file):
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
   dispatcher.connect("get-agent-file", "/agents/:sid/file{path:.*}", slycat.web.server.handlers.get_agent_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-image", "/agents/:sid/image{path:.*}", slycat.web.server.handlers.get_agent_image, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-agent-test", "/test/agent", slycat.web.server.handlers.get_agent_test, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-video", "/agents/:sid/videos/:vsid", slycat.web.server.handlers.get_agent_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-video-status", "/agents/:sid/videos/:vsid/status", slycat.web.server.handlers.get_agent_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
@@ -228,6 +229,9 @@ def start(root_path, config_file):
   directory_kwargs = configuration["slycat"]["directory"].get("kwargs", {})
   manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
   configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
+
+  # Expand remote host aliases.
+  configuration["slycat"]["remote-hosts"] = {alias: remote for hostname, remote in configuration["slycat"]["remote-hosts"].items() for alias in [hostname] + remote.get("aliases", [])}
 
   # Wait for requests to cleanup deleted arrays.
   cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_cleanup_arrays_worker, priority=80)

@@ -13,7 +13,7 @@ rights in this software.
   </head>
   <body>
     <script type="text/javascript">
-      var hostname = "localhost";
+      var hostname = "127.0.0.1";
       var username = "slycat";
       var password = "slycat";
       var image_prefix = "/home/slycat/src/slycat/web-client/sample-parameter-images/";
@@ -126,7 +126,6 @@ rights in this software.
         var images = [];
         for(var i = index; i < 100; ++i)
           images.push(image_prefix + i + image_suffix);
-        console.log("images", images);
 
         content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
 
@@ -164,7 +163,7 @@ rights in this software.
             }
             else
             {
-              document.querySelector("body").innerHTML += "<video controls src='{{server-root}}agents/" + agent + "/videos/" + vsid + "'>" + "</video>";
+              document.querySelector("body").innerHTML += "<video style='width: 400px' controls src='{{server-root}}agents/" + agent + "/videos/" + vsid + "'>" + "</video>";
             }
           },
         });
