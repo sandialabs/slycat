@@ -86,16 +86,13 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
         return alerts;
       });
 
-      component.model.subscribe(function()
+      // If the current model is finished, close it.
+      component.model.filter(function(model)
       {
-        var models = component.model();
-        for(var i = 0; i != models.length; ++i)
-        {
-          var model = models[i];
-
-          if(model.state() == "finished")
-            component.close_model(model);
-        }
+        return model.state() == "finished";
+      }).map(function(model)
+      {
+        component.close_model(model);
       });
 
       // Keep track of running models
