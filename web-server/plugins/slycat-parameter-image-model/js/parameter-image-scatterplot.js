@@ -7,7 +7,7 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-parameter-image-model-login", "d3"], function(server_root, Login, d3)
+define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-parameter-image-model-login", "d3", "URI"], function(server_root, Login, d3, URI)
 {
   $.widget("parameter_image.scatterplot",
   {
@@ -51,6 +51,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       pinned_height : 200,
       hover_time : 250,
       image_cache : {},
+      video_file_extensions : [
+        '3gp','3g2','h261','h263','h264','jpgv','jpm','jpgm','mj2','mjp2','mp4','mp4v','mpg4','mpeg','mpg','mpe','m1v','m2v','ogv','qt','mov','uvh','uvvh','uvm','uvvm','uvp','uvvp',
+        'uvs','uvvs','uvv','uvvv','dvb','fvt','mxu','m4u','pyv','uvu','uvvu','viv','webm','f4v','fli','flv','m4v','mkv','mk3d','mks','mng','asf','asx','vob','wm','wmv','wmx','wvx','avi',
+        'movie','smv','ice',
+      ],
     },
 
   _create: function()
@@ -1567,9 +1572,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     }
 
     // If we don't have a session for the image hostname, create one.
-    var parser = document.createElement("a");
-    parser.href = image.uri.substr(0, 5) == "file:" ? image.uri.substr(5) : image.uri;
-    if(!(parser.hostname in self.login.session_cache))
+    var uri = URI(image.uri);
+    if(!(uri.hostname() in self.login.session_cache))
     {
       self._open_session(images);
       return;
@@ -1578,8 +1582,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     // Retrieve the image.
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
+    var api = "/image";
+    if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
+    {
+      api = "/file";
+    }
     xhr.image = image;
-    xhr.open("GET", server_root + "agents/" + self.login.session_cache[parser.hostname] + "/image" + parser.pathname, true);
+    xhr.open("GET", server_root + "agents/" + self.login.session_cache[uri.hostname()] + api + uri.pathname(), true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1588,7 +1597,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       // Either way, delete the cached session and create a new one.
       if(this.status == 404 || this.status == 500)
       {
-        delete self.login.session_cache[parser.hostname];
+        delete self.login.session_cache[uri.hostname()];
         self._open_session(images);
         return;
       }
