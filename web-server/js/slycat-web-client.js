@@ -125,26 +125,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     });
   }
 
-  module.get_configuration_wizards = function(params)
-  {
-    $.ajax(
-    {
-      dataType: "json",
-      type: "GET",
-      url: server_root + "configuration/wizards",
-      success: function(wizards)
-      {
-        if(params.success)
-          params.success(wizards);
-      },
-      error: function(request, status, reason_phrase)
-      {
-        if(params.error)
-          params.error(request, status, reason_phrase);
-      },
-    });
-  }
-
   module.get_configuration_version = function(params)
   {
     $.ajax(
@@ -156,6 +136,26 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
       {
         if(params.success)
           params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
+  module.get_configuration_wizards = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "configuration/wizards",
+      success: function(wizards)
+      {
+        if(params.success)
+          params.success(wizards);
       },
       error: function(request, status, reason_phrase)
       {

@@ -1472,8 +1472,8 @@ def get_configuration_markings():
   return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
 
 @cherrypy.tools.json_out(on = True)
-def get_configuration_wizards():
-  return [dict([("type", type)] + wizard.items()) for type, wizard in slycat.web.server.plugin.manager.wizards.items()]
+def get_configuration_remote_hosts():
+  return [dict(host.items() + [("hostname", key)]) for key, host in cherrypy.request.app.config["slycat"]["remote-hosts"].items()]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_support_email():
@@ -1494,8 +1494,8 @@ get_configuration_version.initialized = False
 get_configuration_version.commit = None
 
 @cherrypy.tools.json_out(on = True)
-def get_configuration_remote_hosts():
-  return cherrypy.request.app.config["slycat"]["remote-hosts"]
+def get_configuration_wizards():
+  return [dict([("type", type)] + wizard.items()) for type, wizard in slycat.web.server.plugin.manager.wizards.items()]
 
 @cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
 def get_global_resource(resource):
