@@ -230,6 +230,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
       var spec = hyperchunk[0] + "/" + hyperchunk[1] + "/";
       if(hyperchunk.length == 2)
         spec += "...";
+      else
+        spec += hyperchunk[2];
       query.hyperchunks.push(spec);
     });
     query.hyperchunks = query.hyperchunks.join(";");
