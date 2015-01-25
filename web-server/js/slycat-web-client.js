@@ -340,6 +340,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     });
   }
 
+  module.post_event = function(params)
+  {
+    $.ajax(
+    {
+      type: "POST",
+      url: server_root + "events/" + params.path,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.post_model_finish = function(params)
   {
     $.ajax(
