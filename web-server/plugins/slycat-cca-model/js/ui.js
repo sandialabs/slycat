@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "URI", "domReady!"], function(server_root, bookmark_manager, URI)
+define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-bookmark-manager", "URI", "domReady!"], function(server_root, client, dialog, bookmark_manager, URI)
 {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -38,10 +38,9 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "UR
   // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  $.ajax(
+  client.get_model(
   {
-    type : "GET",
-    url : server_root + "models/" + model._id,
+    mid: model._id,
     success : function(result)
     {
       model = result;
@@ -51,10 +50,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "UR
       scale_inputs = model["artifact:scale-inputs"];
       setup_page();
     },
-    error: function(request, status, reason_phrase)
-    {
-      window.alert("Error retrieving model: " + reason_phrase);
-    }
+    error: dialog.ajax_error("Error retrieving model."),
   });
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -200,9 +196,12 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "UR
       });
 
       // Load data table metadata.
-      $.ajax({
-        url : server_root + "models/" + model._id + "/tables/data-table/arrays/0/metadata?index=Index",
-        contentType : "application/json",
+      client.get_model_table_metadata(
+      {
+        mid: model._id,
+        name: "data-table",
+        aid: 0,
+        index: "Index",
         success: function(metadata)
         {
           table_metadata = metadata;
@@ -627,50 +626,45 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "UR
 
   function selected_colormap_changed(colormap)
   {
-    $.ajax(
+    client.post_event(
     {
-      type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/colormap/" + colormap
+      path: "models/" + model._id + "/select/colormap/" + colormap,
     });
     bookmarker.updateState({"colormap" : colormap});
   }
 
   function selected_component_changed(component)
   {
-    $.ajax(
+    client.post_event(
     {
-      type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/component/" + component
+      path: "models/" + model._id + "/select/component/" + component
     });
     bookmarker.updateState({"cca-component" : component});
   }
 
   function component_sort_changed(component, order)
   {
-    $.ajax(
+    client.post_event(
     {
-      type : "POST",
-      url : server_root + "events/models/" + model._id + "/sort/component/" + component + "/" + order
+      path: "models/" + model._id + "/sort/component/" + component + "/" + order
     });
     bookmarker.updateState({"sort-cca-component" : component, "sort-direction-cca-component" : order});
   }
 
   function selected_variable_changed(variable)
   {
-    $.ajax(
+    client.post_event(
     {
-      type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/variable/" + variable
+      path: "models/" + model._id + "/select/variable/" + variable
     });
     bookmarker.updateState({"variable-selection" : variable});
   }
 
   function variable_sort_changed(variable, order)
   {
-    $.ajax(
+    client.post_event(
     {
-      type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/sort-order/" + variable + "/" + order
+      path: "models/" + model._id + "/select/sort-order/" + variable + "/" + order
     });
     bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
   }
@@ -678,10 +672,9 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-bookmark-manager", "UR
   function selected_simulations_changed(selection)
   {
     // Logging every selected item is too slow, so just log the count instead.
-    $.ajax(
+    client.post_event(
     {
-      type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selection.length
+      path: "models/" + model._id + "/select/simulation/count/" + selection.length
     });
     bookmarker.updateState( {"simulation-selection" : selection} );
   }
