@@ -6,3 +6,7 @@
   flex: 1;
 }
 
+#matrix-demo-model td
+{
+  padding: 5px 10px;
+}

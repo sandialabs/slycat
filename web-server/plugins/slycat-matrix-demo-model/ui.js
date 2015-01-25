@@ -1,93 +1,58 @@
-(function()
+define("slycat-matrix-demo-model", ["slycat-web-client", "knockout", "knockout-mapping", "URI", "domReady!"], function(client, ko, mapping, URI)
 {
-  $(document).ready(function()
+  // Setup the default window layout.
+  $("#matrix-demo-model").layout(
   {
-    // Setup the default window layout.
-    $("#matrix-demo-model").layout(
+    applyDefaultStyles: true,
+    west:
     {
-      applyDefaultStyles: true,
-      west:
+      size: $(window).width() / 3,
+    },
+    east:
+    {
+      size: $(window).width() / 3,
+    },
+  });
+
+  // Setup storage for the page's data.
+  var page = {};
+  page.model_id = ko.observable(URI(window.location).segment(-1));
+  page.product = ko.observable(null);
+  page.matrix_a = mapping.fromJS([]);
+  page.matrix_b = mapping.fromJS([]);
+  page.matrix_product = mapping.fromJS([]);
+  ko.applyBindings(page, document.getElementById("matrix-demo-model"));
+
+  // Initially load the two input matrices.
+  function get_matrix(aid, storage)
+  {
+    client.get_model_arrayset_data(
+    {
+      mid: page.model_id(),
+      aid: aid,
+      hyperchunks: [[0, 0, "..."]], // Load array 0, attribute 0, all data
+      success : function(data)
       {
-        size: $(window).width() / 3,
-      },
-      east:
-      {
-        size: $(window).width() / 3,
+        mapping.fromJS(data[0], storage);
       },
     });
+  }
 
-    // When resizing the window, adjust the height of the layout.
-    $(window).resize(function()
-    {
-      $("#matrix-demo-model").height($(window).height() - 300);
-    });
+  get_matrix("A", page.matrix_a);
+  get_matrix("B", page.matrix_b);
 
-    // Load and display the two matrix artifacts stored in the model.
-    function get_matrix(aid, callback)
+  // Load the computed result whenever the product type changes.
+  page.product.subscribe(function(command)
+  {
+    client.get_model_command(
     {
-      $.ajax(
+      mid: page.model_id(),
+      command: command,
+      success : function(result)
       {
-        type : "GET",
-        url : location.href + "/arraysets/" + aid + "/arrays/0/metadata",
-        success : function(metadata)
-        {
-          $.ajax(
-          {
-            type : "GET",
-            url : location.href + "/arraysets/" + aid + "/arrays/0/attributes/0/chunk?ranges=0," + metadata.dimensions[0].end + ",0," + metadata.dimensions[1].end,
-            success : function(data)
-            {
-              callback(metadata, data);
-            },
-          });
-        },
-      });
-    }
-
-    function display_matrix(metadata, data)
-    {
-      this.empty();
-      for(var i = 0; i != metadata.dimensions[0].end; ++i)
-      {
-        var row = $("<tr>").appendTo(this);
-        for(var j = 0; j != metadata.dimensions[1].end; ++j)
-        {
-          var cell = $("<td>").appendTo(row);
-          cell.text(data[i][j].toFixed(1));
-        }
+        mapping.fromJS(result.data, page.matrix_product);
       }
-    }
-
-    get_matrix("A", display_matrix.bind($("#matrix-a")));
-    get_matrix("B", display_matrix.bind($("#matrix-b")));
-
-    // Wait for users to click buttons.
-    function compute_product(type, callback)
-    {
-      $.ajax(
-      {
-        type : "GET",
-        url : location.href + "/commands/" + type,
-        success : function(result)
-        {
-          callback(result.metadata, result.data);
-        }
-      });
-    }
-
-    $("#product").click(function()
-    {
-      compute_product("product", display_matrix.bind($("#matrix-product")));
-    });
-
-    $("#hadamard-product").click(function()
-    {
-      compute_product("hadamard-product", display_matrix.bind($("#matrix-product")));
-    });
-
-    $("#kronecker-product").click(function()
-    {
-      compute_product("kronecker-product", display_matrix.bind($("#matrix-product")));
     });
   });
-})();
+});
+
