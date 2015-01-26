@@ -18,7 +18,7 @@ define("slycat-nag", ["slycat-dialog"], function(dialog)
 
   if(nag)
   {
-    dialog.alert(
+    dialog.dialog(
     {
       title: "Compatibility Alert",
       message: "Your browser is missing features required by Slycat. We suggest switching to a current version of Firefox, Chrome, or Safari.",

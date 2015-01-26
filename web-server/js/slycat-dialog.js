@@ -2,7 +2,7 @@ define("slycat-dialog", ["slycat-server-root", "knockout", "jquery"], function(s
 {
   var module = {};
 
-  module.alert = function(params)
+  module.dialog = function(params)
   {
     require(["text!" + server_root + "templates/slycat-alert.html"], function(template)
     {
@@ -13,15 +13,13 @@ define("slycat-dialog", ["slycat-server-root", "knockout", "jquery"], function(s
       }
       component.title = ko.observable(params.title || "Alert");
       component.message = ko.observable(params.message || "");
-      component.buttons = [{label:"Close", action:component.close}];
+      component.buttons = [{className: "btn-default", label:"OK", action:component.close}];
       component.container = $($.parseHTML(template)).appendTo($("body"));
       component.container.children().on("hidden.bs.modal", function()
       {
         component.container.remove();
         if(params.callback)
-        {
           params.callback();
-        }
       });
       ko.applyBindings(component, component.container.get(0));
       component.container.children().modal("show");
@@ -32,7 +30,7 @@ define("slycat-dialog", ["slycat-server-root", "knockout", "jquery"], function(s
   {
     return function(request, status, reason_phrase)
     {
-      module.alert(
+      module.dialog(
       {
         message: message + " " + reason_phrase
       });
