@@ -934,15 +934,16 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   if artifact_type not in ["hdf5"]:
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  class json_nan_encoder(json.JSONEncoder):
-    def default(self, o):
-      if numpy.isnan(o):
-        return None
-      return json.JSONEncoder.default(self, o)
+  def mask_nans(array):
+    """Convert an array containing nans into a masked array."""
+    try:
+      return numpy.ma.masked_where(numpy.isnan(array), array)
+    except:
+      return array
 
   def content():
     if byteorder is None:
-      yield json_nan_encoder().encode([hyperslice.tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
+      yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
     else:
       for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks):
         if sys.byteorder != byteorder:
