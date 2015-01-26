@@ -482,13 +482,19 @@ def get_model(mid, **kwargs):
     context["slycat-project"] = project
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
-
     context["slycat-model-type"] = mtype
+
     if mtype in slycat.web.server.plugin.manager.models.keys():
       context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[mtype]["html"](database, model)
       if mtype in slycat.web.server.plugin.manager.model_bundles:
         context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
         context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
+    else:
+      context["slycat-plugin-html"] = """
+      <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
+        <p>No plugin available for this model.</p>
+      </div>"""
+
     return slycat.web.server.template.render("slycat-model.html", context)
 
 def get_model_command(mid, command, **kwargs):
