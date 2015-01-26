@@ -128,7 +128,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-global-resource", "/resources/global/{resource:.*}", slycat.web.server.handlers.get_global_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-home", "/", slycat.web.server.handlers.get_home, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-model-array-attribute-statistics", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/statistics", slycat.web.server.handlers.get_model_array_attribute_statistics, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.get_model_arrayset_data, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/arraysets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset", "/models/:mid/arraysets/:aid", slycat.web.server.handlers.get_model_arrayset, conditions={"method" : ["GET"]})

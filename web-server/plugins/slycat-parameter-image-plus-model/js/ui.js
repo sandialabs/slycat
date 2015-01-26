@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-parameter-image-plus-model", ["slycat-server-root", "slycat-bookmark-manager", "slycat-dialog", "d3", "URI", "domReady!"], function(server_root, bookmark_manager, dialog, d3, URI)
+define("slycat-parameter-image-plus-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "d3", "URI", "domReady!"], function(server_root, client, bookmark_manager, dialog, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -1362,24 +1362,22 @@ function update_scatterplot_y(variable)
 
 function load_table_statistics(columns, callback)
 {
-  var requests = Array();
-  for(var i=0; i<columns.length; i++)
+  var attributes = [];
+  for(var i = 0; i != columns.length; ++i)
+    attributes.push([0, columns[i]]);
+
+  client.get_model_arrayset_metadata(
   {
-    requests.push(
-      $.ajax({
-        url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
-        contentType : "application/json",
-      })
-    );
-  }
-  var defer = $.when.apply($, requests);
-  defer.done(function(){
-    // This is executed only after every ajax request has been completed
-    $.each(arguments, function(index, responseData){
-      // "responseData" contains an array of response information for each specific request
-      table_statistics[parseInt(columns[index])] = responseData.length == undefined ? responseData : responseData[0];
-    });
-    callback();
+    mid: model_id,
+    aid: "data-table",
+    statistics: attributes,
+    success: function(metadata)
+    {
+      var statistics = metadata.statistics;
+      for(var i = 0; i != statistics.length; ++i)
+        table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
+      callback();
+    }
   });
 }
 

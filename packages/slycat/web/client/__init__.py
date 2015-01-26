@@ -233,11 +233,6 @@ class Connection(object):
       content = self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
       return numpy.fromstring(content, dtype=type).reshape(shape)
 
-  def get_model_array_attribute_statistics(self, mid, name, array, attribute):
-    """Returns statistics describing an array artifact attribute."""
-    log.warning("get_model_array_attribute_statistics is deprecated, use get_model_arrayset_metadata instead.")
-    return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/statistics" % (mid, name, array, attribute), headers={"accept":"application/json"})
-
   def get_model_file(self, mid, name):
     return self.request("GET", "/models/%s/files/%s" % (mid, name))
 

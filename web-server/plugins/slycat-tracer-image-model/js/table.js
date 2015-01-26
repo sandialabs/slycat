@@ -1,4 +1,4 @@
-define("Table", ["slycat-server-root"], function(server_root) {
+define("Table", ["slycat-server-root", "slycat-web-client"], function(server_root, client) {
 
   function Table(model, grid) {
     console.debug("Setup table");
@@ -161,23 +161,22 @@ define("Table", ["slycat-server-root"], function(server_root) {
     var self = this;
     console.debug(this);
     console.debug("inside load table statistics");
-    var requests = Array();
-    for(var i=0; i<columns.length; i++) {
-      requests.push(
-        $.ajax({
-          url : server_root + "models/" + self.model.id + "/arraysets/data-table/arrays/0/attributes/" + columns[i] + "/statistics",
-          contentType : "application/json",
-        })
-      );
-    }
-    var defer = $.when.apply($, requests);
-    defer.done(function(){
-      // This is executed only after every ajax request has been completed
-      $.each(arguments, function(index, responseData){
-        // "responseData" contains an array of response information for each specific request
-        self.statistics[parseInt(columns[index])] = responseData.length == undefined ? responseData : responseData[0];
-      });
-      callback.call(callback_obj || self);
+
+    var attributes = [];
+    for(var i = 0; i != columns.length; ++i)
+      attributes.push([0, columns[i]]);
+    client.get_model_arrayset_metadata(
+    {
+      mid: self.model.id,
+      aid: "data-table",
+      statistics: attributes,
+      success: function(metadata)
+      {
+        var statistics = metadata.statistics;
+        for(var i = 0; i != statistics.length; ++i)
+          self.statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
+        callback.call(callback_obj || self);
+      }
     });
   };
 
