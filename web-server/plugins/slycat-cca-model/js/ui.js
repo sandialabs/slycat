@@ -59,199 +59,163 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
 
   function setup_page()
   {
+    // If the model isn't ready or failed, we're done.
     if(model["state"] == "waiting" || model["state"] == "running")
-    {
-      $("#status-messages").empty().html(
-        "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-        "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
-      show_status_messages();
-    }
-    else if(model["state"] == "closed" && model["result"] === null)
-    {
-      $("#status-messages").empty().html(
-        "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
-        "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
-        "<pre>" + model["message"] + "</pre>");
-      show_status_messages();
-    }
-    else if(model["result"] == "failed")
-    {
-      $("#status-messages").empty().html(
-        "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-        "<div class='error-description'>Here's what was happening when it ended:</div>" +
-        "<pre>" + model["message"] + "</pre>");
-      show_status_messages();
-    }
-    else
-    {
-      // Display progress as the load happens ...
-      $(".load-status").text("Loading data.");
+      return;
+    if(model["state"] == "closed" && model["result"] === null)
+      return;
+    if(model["result"] == "failed")
+      return;
 
-      // Load the x_loadings artifact.
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "input-structure-correlation",
-        array : 0,
-        attribute : 0,
-        success : function(result)
-        {
-          x_loadings = result;
-          setup_widgets();
-        },
-        error : artifact_missing
-      });
+    // Display progress as the load happens ...
+    $(".load-status").text("Loading data.");
 
-      // Load the y_loadings artifact.
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "output-structure-correlation",
-        array : 0,
-        attribute : 0,
-        success : function(result)
-        {
-          y_loadings = result;
-          setup_widgets();
-        },
-        error : artifact_missing
-      });
-
-      // Load the r^2 statistics artifact.
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "cca-statistics",
-        array : 0,
-        attribute : 0,
-        success : function(result)
-        {
-          r2 = result;
-          setup_widgets();
-        },
-        error : artifact_missing
-      });
-
-      // Load the Wilks statistics artifact.
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "cca-statistics",
-        array : 0,
-        attribute : 1,
-        success : function(result)
-        {
-          wilks = result;
-          setup_widgets();
-        },
-        error : artifact_missing
-      });
-
-      // Load the canonical-indices artifact.
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "canonical-indices",
-        array : 0,
-        attribute : 0,
-        success : function(result)
-        {
-          indices = result;
-          setup_widgets();
-        },
-        error : function()
-        {
-          generate_indices = true;
-          setup_indices();
-        }
-      });
-
-      // Load the canonical-variables artifacts.
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "canonical-variables",
-        array : 0,
-        attribute : 0,
-        success : function(result)
-        {
-          x = result;
-          setup_widgets();
-        },
-        error : artifact_missing
-      });
-
-      get_model_array_attribute({
-        server_root : server_root,
-        mid : model._id,
-        aid : "canonical-variables",
-        array : 0,
-        attribute : 1,
-        success : function(result)
-        {
-          y = result;
-          setup_widgets();
-        },
-        error : artifact_missing
-      });
-
-      // Load data table metadata.
-      client.get_model_table_metadata(
+    // Load the x_loadings artifact.
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "input-structure-correlation-foo",
+      array : 0,
+      attribute : 0,
+      success : function(result)
       {
-        mid: model._id,
-        name: "data-table",
-        aid: 0,
-        index: "Index",
-        success: function(metadata)
-        {
-          table_metadata = metadata;
+        x_loadings = result;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
 
-          setup_indices();
-          setup_v();
-          setup_widgets();
-        },
-        error: artifact_missing
-      });
-
-      // Retrieve bookmarked state information ...
-      bookmarker.getState(function(state)
+    // Load the y_loadings artifact.
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "output-structure-correlation",
+      array : 0,
+      attribute : 0,
+      success : function(result)
       {
-        bookmark = state;
-        setup_colorswitcher();
+        y_loadings = result;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
+
+    // Load the r^2 statistics artifact.
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "cca-statistics",
+      array : 0,
+      attribute : 0,
+      success : function(result)
+      {
+        r2 = result;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
+
+    // Load the Wilks statistics artifact.
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "cca-statistics",
+      array : 0,
+      attribute : 1,
+      success : function(result)
+      {
+        wilks = result;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
+
+    // Load the canonical-indices artifact.
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "canonical-indices",
+      array : 0,
+      attribute : 0,
+      success : function(result)
+      {
+        indices = result;
+        setup_widgets();
+      },
+      error : function()
+      {
+        generate_indices = true;
+        setup_indices();
+      }
+    });
+
+    // Load the canonical-variables artifacts.
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "canonical-variables",
+      array : 0,
+      attribute : 0,
+      success : function(result)
+      {
+        x = result;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
+
+    get_model_array_attribute({
+      server_root : server_root,
+      mid : model._id,
+      aid : "canonical-variables",
+      array : 0,
+      attribute : 1,
+      success : function(result)
+      {
+        y = result;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
+
+    // Load data table metadata.
+    client.get_model_table_metadata(
+    {
+      mid: model._id,
+      name: "data-table",
+      aid: 0,
+      index: "Index",
+      success: function(metadata)
+      {
+        table_metadata = metadata;
+
+        setup_indices();
         setup_v();
         setup_widgets();
-      });
-    }
-  }
+      },
+      error: artifact_missing
+    });
 
-  function show_status_messages()
-  {
-    $("#status-messages").dialog(
+    // Retrieve bookmarked state information ...
+    bookmarker.getState(function(state)
     {
-      autoOpen: true,
-      width: 500,
-      height: 300,
-      modal: false,
-      buttons:
-      {
-        OK: function()
-        {
-          $("#status-messages").dialog("close");
-        }
-      }
+      bookmark = state;
+      setup_colorswitcher();
+      setup_v();
+      setup_widgets();
     });
   }
 
   function artifact_missing()
   {
+    console.log("artifact_missing");
     $(".load-status").css("display", "none");
 
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-      "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
-      "<pre>" + model["message"] + "</pre>");
-
-    show_status_messages();
+    dialog.dialog(
+    {
+      title: "Load Error",
+      message: "Oops, there was a problem retrieving data from the model. This likely means that there was a problem during computation.",
+    });
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////
