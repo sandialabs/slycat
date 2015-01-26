@@ -16,11 +16,11 @@ function is_little_endian()
 function get_model_array_attribute_metadata(parameters, dfd)
 {
   return $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/metadata",
+    url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata?arrays=" + parameters.array,
     contentType : "application/json",
-    success: function(metadata)
+    success: function(result)
     {
-      parameters.metadata = metadata;
+      parameters.metadata = result.arrays[0];
       if(parameters.metadataSuccess !== undefined) {
         parameters.metadataSuccess(parameters);
       } else {

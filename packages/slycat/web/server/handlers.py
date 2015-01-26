@@ -701,29 +701,6 @@ def delete_model(mid):
   cherrypy.response.status = "204 Model deleted."
 
 @cherrypy.tools.json_out(on = True)
-def get_model_array_metadata(mid, aid, array):
-  cherrypy.log.error("GET Model Array Metadata is deprecated.")
-
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_reader(project)
-
-  artifact = model.get("artifact:%s" % aid, None)
-  if artifact is None:
-    raise cherrypy.HTTPError(404)
-  artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["hdf5"]:
-    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
-
-  with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact, "r+") as file: # We open the file with writing enabled because retrieving statistics may need to update the cache.
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      hdf5_array = hdf5_arrayset[array]
-      metadata = dict(dimensions=hdf5_array.dimensions, attributes=hdf5_array.attributes, statistics=[hdf5_array.get_statistics(attribute) for attribute in range(len(hdf5_array.attributes))])
-  return metadata
-
-@cherrypy.tools.json_out(on = True)
 def get_model_array_attribute_statistics(mid, aid, array, attribute):
   cherrypy.log.error("GET Model Array Attribute Statistics is deprecated.")
 
