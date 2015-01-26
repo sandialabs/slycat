@@ -1,0 +1,17 @@
+<div class="bootstrap-styles">
+  <div class="modal fade" data-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" data-bind="text:title"></h3>
+        </div>
+        <div class="modal-body">
+          <p data-bind="text:message"></p>
+        </div>
+        <div class="modal-footer" data-bind="foreach:buttons">
+          <button type="button" class="btn btn-default" data-bind="click:action, text:label"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

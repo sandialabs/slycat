@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-nag", [], function()
+define("slycat-nag", ["slycat-dialog"], function(dialog)
 {
   var nag = false;
 
@@ -18,6 +18,10 @@ define("slycat-nag", [], function()
 
   if(nag)
   {
-    alert("Your browser is missing features required by Slycat. We suggest switching to a current version of Firefox, Chrome, or Safari.");
+    dialog.alert(
+    {
+      title: "Compatibility Alert",
+      message: "Your browser is missing features required by Slycat. We suggest switching to a current version of Firefox, Chrome, or Safari.",
+    });
   }
 });
