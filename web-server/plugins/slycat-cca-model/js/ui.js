@@ -74,7 +74,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
-      aid : "input-structure-correlation-foo",
+      aid : "input-structure-correlation",
       array : 0,
       attribute : 0,
       success : function(result)
