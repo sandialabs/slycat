@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "slycat-bookmark-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, bookmark_manager, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "slycat-bookmark-manager", "slycat-dialog", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, bookmark_manager, dialog, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -114,75 +114,38 @@ $.ajax(
 
 function model_loaded()
 {
+  // If the model isn't ready or failed, we're done.
   if(model["state"] == "waiting" || model["state"] == "running")
-  {
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-      "<div class='error-description'>We're probabably building it for you right now." +
-      "Watch the status bar for progress information and more details.</div>");
-    show_status_messages();
-  }
-  else if(model["state"] == "closed" && model["result"] === null)
-  {
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
-      "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
-      "<pre>" + model["message"] + "</pre>");
-    show_status_messages();
-  }
-  else if(model["result"] == "failed")
-  {
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-      "<div class='error-description'>Here's what was happening when it ended:</div>" +
-      "<pre>" + model["message"] + "</pre>");
-    show_status_messages();
-  }
-  else
-  {
-    // Display progress as the load happens ...
-    $(".load-status").text("Loading data.");
+    return;
+  if(model["state"] == "closed" && model["result"] === null)
+    return;
+  if(model["result"] == "failed")
+    return;
 
-    // Load data table metadata.
-    $.ajax({
-      url : server_root + "models/" + model_id + "/tables/data-table/arrays/0/metadata?index=Index",
-      contentType : "application/json",
-      success: function(metadata)
-      {
-        table_metadata = metadata;
-        table_statistics = new Array(metadata["column-count"]);
-        table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-        load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
-      },
-      error: artifact_missing
-    });
+  // Display progress as the load happens ...
+  $(".load-status").text("Loading data.");
 
-    // Retrieve bookmarked state information ...
-    bookmarker.getState(function(state)
+  // Load data table metadata.
+  $.ajax({
+    url : server_root + "models/" + model_id + "/tables/data-table/arrays/0/metadata?index=Index",
+    contentType : "application/json",
+    success: function(metadata)
     {
-      bookmark = state;
-      setup_controls();
-      setup_colorswitcher();
-      metadata_loaded();
-    });
-  }
-}
+      table_metadata = metadata;
+      table_statistics = new Array(metadata["column-count"]);
+      table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
+      load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
+    },
+    error: artifact_missing
+  });
 
-function show_status_messages()
-{
-  $("#status-messages").dialog(
+  // Retrieve bookmarked state information ...
+  bookmarker.getState(function(state)
   {
-    autoOpen: true,
-    width: 500,
-    height: 300,
-    modal: false,
-    buttons:
-    {
-      OK: function()
-      {
-        $("#status-messages").dialog("close");
-      }
-    }
+    bookmark = state;
+    setup_controls();
+    setup_colorswitcher();
+    metadata_loaded();
   });
 }
 
@@ -190,13 +153,11 @@ function artifact_missing()
 {
   $(".load-status").css("display", "none");
 
-  $("#status-messages").empty().html(
-    "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-    "<div class='error-description'>This probably means that there was a problem building the model. " +
-    "Here's the last thing that was going on with it:</div>" +
-    "<pre>" + model["message"] + "</pre>");
-
-  show_status_messages();
+  dialog.dialog(
+  {
+    title: "Load Error",
+    message: "Oops, there was a problem retrieving data from the model. This likely means that there was a problem during computation.",
+  });
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

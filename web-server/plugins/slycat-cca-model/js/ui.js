@@ -208,7 +208,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
 
   function artifact_missing()
   {
-    console.log("artifact_missing");
     $(".load-status").css("display", "none");
 
     dialog.dialog(

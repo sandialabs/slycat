@@ -4,13 +4,13 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "URI", "domReady!"], function(server_root, bookmark_manager, URI)
+define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "slycat-dialog", "URI", "domReady!"], function(server_root, bookmark_manager, dialog, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout and forms.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-// Setup the resizing layout ...      
+// Setup the resizing layout ...
 var bodyLayout = $("#timeseries-model").layout({
   applyDefaultStyles: false,
   north:
@@ -148,92 +148,55 @@ $.ajax(
 
 function setup_page()
 {
+  // If the model isn't ready or failed, we're done.
   if(model["state"] == "waiting" || model["state"] == "running")
-  {
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-      "<div class='error-description'>We're probabably building it for you right now. Watch the status bar for progress information and more details.</div>");
-    show_status_messages();
-  }
-  else if(model["state"] == "closed" && model["result"] === null)
-  {
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
-      "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
-      "<pre>" + model["message"] + "</pre>");
-    show_status_messages();
-  }
-  else if(model["result"] == "failed")
-  {
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-      "<div class='error-description'>Here's what was happening when it ended:</div>" +
-      "<pre>" + model["message"] + "</pre>");
-    show_status_messages();
-  }
-  else
-  {
-    // Display progress as the load happens ...
-    $(".load-status").text("Loading data.");
+    return;
+  if(model["state"] == "closed" && model["result"] === null)
+    return;
+  if(model["result"] == "failed")
+    return;
 
-    // Load list of clusters.
-    $.ajax({
-      url : server_root + "models/" + model._id + "/files/clusters",
-      contentType : "application/json",
-      success: function(result)
-      {
-        clusters = result;
-        clusters_data = new Array(clusters.length);
-        waveforms_data = new Array(clusters.length);
-        waveforms_metadata = new Array(clusters.length);
-        setup_cluster();
-        setup_widgets();
-        setup_waveforms();
-      },
-      error: artifact_missing
-    });
+  // Display progress as the load happens ...
+  $(".load-status").text("Loading data.");
 
-    // Load data table metadata.
-    $.ajax({
-      url : server_root + "models/" + model._id + "/tables/inputs/arrays/0/metadata?index=Index",
-      contentType : "application/json",
-      success: function(metadata)
-      {
-        table_metadata = metadata;
-        setup_widgets();
-        setup_colordata();
-      },
-      error: artifact_missing
-    });
-
-    // Retrieve bookmarked state information ...
-    bookmarker.getState(function(state)
+  // Load list of clusters.
+  $.ajax({
+    url : server_root + "models/" + model._id + "/files/clusters",
+    contentType : "application/json",
+    success: function(result)
     {
-      bookmark = state;
+      clusters = result;
+      clusters_data = new Array(clusters.length);
+      waveforms_data = new Array(clusters.length);
+      waveforms_metadata = new Array(clusters.length);
       setup_cluster();
       setup_widgets();
       setup_waveforms();
-      setup_colordata();
-    });
+    },
+    error: artifact_missing
+  });
 
-  }
-}
-
-function show_status_messages()
-{
-  $("#status-messages").dialog(
-  {
-    autoOpen: true,
-    width: 500,
-    height: 300,
-    modal: false,
-    buttons:
+  // Load data table metadata.
+  $.ajax({
+    url : server_root + "models/" + model._id + "/tables/inputs/arrays/0/metadata?index=Index",
+    contentType : "application/json",
+    success: function(metadata)
     {
-      OK: function()
-      {
-        $("#status-messages").dialog("close");
-      }
-    }
+      table_metadata = metadata;
+      setup_widgets();
+      setup_colordata();
+    },
+    error: artifact_missing
+  });
+
+  // Retrieve bookmarked state information ...
+  bookmarker.getState(function(state)
+  {
+    bookmark = state;
+    setup_cluster();
+    setup_widgets();
+    setup_waveforms();
+    setup_colordata();
   });
 }
 
@@ -241,12 +204,11 @@ function artifact_missing()
 {
   $(".load-status").css("display", "none");
 
-  $("#status-messages").empty().html(
-    "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-    "<div class='error-description'>This probably means that there was a problem building the model.  Here's the last thing that was going on with it:</div>" +
-    "<pre>" + model["message"] + "</pre>");
-
-  show_status_messages();
+  dialog.dialog(
+  {
+    title: "Load Error",
+    message: "Oops, there was a problem retrieving data from the model. This likely means that there was a problem during computation.",
+  });
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

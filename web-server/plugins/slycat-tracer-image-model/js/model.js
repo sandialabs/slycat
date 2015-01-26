@@ -1,4 +1,4 @@
-define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Movie, d3) {
+define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "d3"], function(server_root, dialog, Movie, d3) {
   //TODO: Refactor. This should be a singleton.
   function Model(login) {
     this.id = null;
@@ -16,34 +16,15 @@ define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Mov
     this.login = login;
   }
 
-  function show_status_messages() {
-    console.debug("Inside show_status_messages()");
-    $("#status-messages").dialog({
-      autoOpen: true,
-      width: 500,
-      height: 300,
-      modal: false,
-      buttons:
-      {
-        OK: function()
-        {
-          $("#status-messages").dialog("close");
-        }
-      }
-    });
-  }
-
   function artifact_missing() {
     console.debug("Inside artifact_missing()");
     $(".load-status").css("display", "none");
 
-    $("#status-messages").empty().html(
-      "<div class='error-heading'>Oops, there was a problem retrieving data from the model.</div>" +
-        "<div class='error-description'>This probably means that there was a problem building the model. " +
-        "Here's the last thing that was going on with it:</div>" +
-        "<pre>" + model["message"] + "</pre>");
-
-    show_status_messages();
+    dialog.dialog(
+    {
+      title: "Load Error",
+      message: "Oops, there was a problem retrieving data from the model. This likely means that there was a problem during computation.",
+    });
   }
 
   // passing layout & table here instead of untangling the current mess of global vars and mutual dependencies is absolutely technical debt,
@@ -94,56 +75,41 @@ define("Model", ["slycat-server-root", "Movie", "d3"], function(server_root, Mov
     var self = this;
 
     console.debug("Inside model_loaded()");
-    if(self.state == "waiting" || self.state == "running") {
-      $("#status-messages").empty().html(
-        "<div class='error-heading'>Oops, this model isn't ready yet.</div>" +
-          "<div class='error-description'>We're probabably building it for you right now." +
-          "Watch the status bar for progress information and more details.</div>");
-      show_status_messages();
-    }
-    else if(self.state == "closed" && self.result === null) {
-      $("#status-messages").empty().html(
-        "<div class='error-heading'>Oops, it looks like this model was never completed.</div>" +
-          "<div class='error-description'>Here's the last thing that was happening before it was closed:</div>" +
-          "<pre>" + model["message"] + "</pre>");
-      show_status_messages();
-    }
-    else if(self.result == "failed") {
-      $("#status-messages").empty().html(
-        "<div class='error-heading'>Oops, it looks like this model failed to build.</div>" +
-          "<div class='error-description'>Here's what was happening when it ended:</div>" +
-          "<pre>" + model["message"] + "</pre>");
-      show_status_messages();
-    }
-    else {
-      // Display progress as the load happens ...
-      $(".load-status").text("Loading data.");
+    // If the model isn't ready or failed, we're done.
+    if(self["state"] == "waiting" || self["state"] == "running")
+      return;
+    if(self["state"] == "closed" && self["result"] === null)
+      return;
+    if(self["result"] == "failed")
+      return;
 
-      console.debug("Inside model laoded - load table metadata 1 -- ajax");
-      // Load data table metadata.
-      $.ajax({
-        url : server_root + "models/" + self.id + "/tables/data-table/arrays/0/metadata?index=Index",
-        contentType : "application/json",
-        success: function(metadata) {
-          self.metadata = metadata;
-          table.statistics = new Array(metadata["column-count"]);
-          table.statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-          console.debug("about to call metadata_loaded ....");
-          console.debug("context is : ");
-          console.debug(self);
-          table.load_statistics(d3.range(self.metadata["column-count"]-1), self.metadata_loaded(grid, table), self);
-        },
-        error: artifact_missing
-      });
+    // Display progress as the load happens ...
+    $(".load-status").text("Loading data.");
 
-      // TODO integrate into callbacks
-      // Retrieve bookmarked state information ...
-      self.bookmarker.get_state(function(state) {
-        self.bookmark = state;
-        layout.setup_colorswitcher();
-        //self.metadata_loaded();
-      });
-    }
+    console.debug("Inside model laoded - load table metadata 1 -- ajax");
+    // Load data table metadata.
+    $.ajax({
+      url : server_root + "models/" + self.id + "/tables/data-table/arrays/0/metadata?index=Index",
+      contentType : "application/json",
+      success: function(metadata) {
+        self.metadata = metadata;
+        table.statistics = new Array(metadata["column-count"]);
+        table.statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
+        console.debug("about to call metadata_loaded ....");
+        console.debug("context is : ");
+        console.debug(self);
+        table.load_statistics(d3.range(self.metadata["column-count"]-1), self.metadata_loaded(grid, table), self);
+      },
+      error: artifact_missing
+    });
+
+    // TODO integrate into callbacks
+    // Retrieve bookmarked state information ...
+    self.bookmarker.get_state(function(state) {
+      self.bookmark = state;
+      layout.setup_colorswitcher();
+      //self.metadata_loaded();
+    });
   };
 
   Model.prototype.metadata_loaded = function(grid, table) {
