@@ -45,12 +45,13 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
 
     self.image_login.on('hidden.bs.modal', function(){
       $("#remote-password").val("");
-      console.debug("hidden");
+      self.image_login.find(".alert").remove();
       $("#login-button").off("click");
+      button.prop("disabled", false);
     });
   
     self.image_login.keypress(function(event){
-      if (event.keyCode == 13) {
+      if (event.keyCode == 13 && !$("#login-button").prop("disabled")) {
         $("#login-button").trigger('click');
       }
     });
@@ -113,6 +114,8 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
     }
     
     $("#login-button").on('click', function() {
+        var button = $(this);
+        button.prop("disabled", true);
         create_session({
           url : "agents",
           contentType : "application/json",
@@ -120,8 +123,9 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
           success : parser.hostname,
           error : function(request, status, reason_phrase) {
             console.error("Error opening agent session: " + reason_phrase)
-            self.image_login.modal("hide");
-            self.show_prompt(images, callback, this_arg);
+            self.image_login.find(".alert").remove();
+            self.image_login.find(".modal-body").prepend($("<div>").addClass("alert alert-danger").text(reason_phrase));
+            button.prop("disabled", false);
           }
         })
       });
