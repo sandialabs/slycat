@@ -1,89 +1,40 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link id="slycat-server-root" href="/">
     <script src="js/curl.js"></script>
     <script src="js/slycat-curl-config.js"></script>
     <script src="js/jquery-2.1.1.min.js"></script>
     <script src="js/knockout-3.2.0.js"></script>
     <script src="js/knockout.mapping.js"></script>
+    <script src="js/slycat-server-root.js"></script>
+    <script src="js/slycat-scrollbar.js"></script>
     <style>
-      .scrollbar-container
+      .slycat-scrollbar-container
       {
         border: 1px solid black;
+        border-radius: 15px;
       }
-      .scrollbar-bar
+      .slycat-scrollbar-bar
       {
         background: black;
+        border-radius: 15px;
       }
     </style>
     <title>Slycat Scrollbar Test</title>
   </head>
   <body>
-    <div class="scrollbar-container" data-bind="style: {width: width() + 'px', height: height() + 'px'}" style="position: relative">
-      <div class="scrollbar-bar" data-bind="event: {mousedown: bar.mousedown}, style: bar.style" style="position: absolute">
-      </div>
-    </div>
-    <p>Bar value: <span data-bind="text: domain.value"></span></p>
+    <slycat-scrollbar params="height:height"></slycat-scrollbar>
+    <p>Bar value: <span data-bind="text: 'foo'"></span></p>
     <script>
       require(["knockout", "knockout-mapping"], function(ko, mapping)
       {
-        var scrollbar = mapping.fromJS(
+        var page = mapping.fromJS(
         {
-          axis: "horizontal",
-          width: 500,
-          height: 30,
-          bar: { width: 30, height: 30, last_drag: null },
-          domain: { min: 0, value: 0.5, max: 1 },
-          range: { min: 0 },
+          height: 10,
         });
-        scrollbar.range.max = ko.pureComputed(function()
-        {
-          if(scrollbar.axis() == "vertical")
-            return scrollbar.height() - scrollbar.bar.height();
-          else
-            return scrollbar.width() - scrollbar.bar.width();
-        });
-        scrollbar.range.value = ko.pureComputed(function()
-        {
-          return (scrollbar.domain.value() - scrollbar.domain.min()) / (scrollbar.domain.max() - scrollbar.domain.min()) * (scrollbar.range.max() - scrollbar.range.min() + scrollbar.range.min());
-        });
-        scrollbar.bar.style = ko.pureComputed(function()
-        {
-          var result = {};
-          result.width = scrollbar.bar.width() + "px";
-          result.height = scrollbar.bar.height() + "px";
-          if(scrollbar.axis() == "vertical")
-            result.top = scrollbar.range.value() + "px";
-          else
-            result.left = scrollbar.range.value() + "px";
-          return result;
-        });
-        scrollbar.bar.mousedown = function(model, event)
-        {
-          scrollbar.bar.last_drag([event.screenX, event.screenY]);
-          window.addEventListener("mousemove", scrollbar.bar.mousemove, true);
-          window.addEventListener("mouseup", scrollbar.bar.mouseup, true);
-        }
-        scrollbar.bar.mousemove = function(event)
-        {
-          var new_range;
-          if(scrollbar.axis() == "vertical")
-            new_range = scrollbar.range.value() + event.screenY - scrollbar.bar.last_drag()[1];
-          else
-            new_range = scrollbar.range.value() + event.screenX - scrollbar.bar.last_drag()[0];
-          var new_value = (new_range - scrollbar.range.min()) / (scrollbar.range.max() - scrollbar.range.min()) * (scrollbar.domain.max() - scrollbar.domain.min()) + scrollbar.domain.min();
 
-          scrollbar.domain.value(Math.max(scrollbar.domain.min(), Math.min(scrollbar.domain.max(), new_value)));
-          scrollbar.bar.last_drag([event.screenX, event.screenY]);
-        }
-        scrollbar.bar.mouseup = function(event)
-        {
-          scrollbar.bar.last_drag(null);
-          window.removeEventListener("mousemove", scrollbar.bar.mousemove, true);
-          window.removeEventListener("mouseup", scrollbar.bar.mouseup, true);
-        }
-
-        ko.applyBindings(scrollbar);
+        ko.applyBindings(page);
       });
     </script>
   </body>
