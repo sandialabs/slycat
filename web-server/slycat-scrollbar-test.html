@@ -12,26 +12,35 @@
     <style>
       .slycat-scrollbar-container
       {
-        border: 1px solid black;
-        border-radius: 15px;
+        border: 1px solid lightgray;
+        border-radius: 5px;
       }
       .slycat-scrollbar-bar
       {
-        background: black;
-        border-radius: 15px;
+        background: lightgray;
+        border-radius: 5px;
+      }
+      .slycat-scrollbar-bar:hover, .slycat-scrollbar-bar.dragging
+      {
+        background: gray;
       }
     </style>
     <title>Slycat Scrollbar Test</title>
   </head>
   <body>
-    <slycat-scrollbar params="height:height"></slycat-scrollbar>
-    <p>Bar value: <span data-bind="text: 'foo'"></span></p>
+    <slycat-scrollbar params="domain_min:domain_min, domain_value:domain_value, domain_max:domain_max, dragging:dragging"></slycat-scrollbar>
+    <p>Bar value: <span data-bind="text: domain_value"></span></p>
+    <p>Dragging: <span data-bind="text: dragging"></span></p>
+    <slycat-scrollbar params="axis:'horizontal',domain_min:domain_min, domain_value:domain_value, domain_max:domain_max"></slycat-scrollbar>
     <script>
       require(["knockout", "knockout-mapping"], function(ko, mapping)
       {
         var page = mapping.fromJS(
         {
-          height: 10,
+          domain_min: 0,
+          domain_value: 0.5,
+          domain_max: 1,
+          dragging: false,
         });
 
         ko.applyBindings(page);
