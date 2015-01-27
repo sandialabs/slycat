@@ -231,8 +231,31 @@ function get_model_arrayset(parameters)
   {
     var metadata = parameters.metadata;
 
+    var arrays = [];
+    if("arrays" in parameters)
+    {
+      for(var i = parseInt(parameters.arrays.split(":")[0]); i != parseInt(parameters.arrays.split(":")[1]); ++i)
+        arrays.push(i);
+    }
+    else
+    {
+      for(var i = 0; i != metadata.length; ++i)
+        arrays.push(i);
+    }
+
+    var hyperchunks = [];
+    for(var i = 0; i != arrays.length; ++i)
+    {
+      var array = arrays[i];
+      for(var attribute = 0; attribute != metadata[array].attributes.length; ++attribute)
+      {
+        hyperchunks.push(array + "/" + attribute + "/...");
+      }
+    }
+
+    var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian() ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "?byteorder=" + (is_little_endian() ? "little" : "big") + "&arrays=" + (parameters.arrays !== undefined ? parameters.arrays : ""));
+    request.open("GET", uri);
     request.responseType = "arraybuffer";
     request.success = parameters.success;
     request.metadata = metadata;

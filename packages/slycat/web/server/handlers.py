@@ -808,51 +808,12 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         for array in sorted(hdf5_arrayset.keys()):
           hdf5_array = hdf5_arrayset[array]
           results.append({
+            "array": int(array),
             "index" : int(array),
             "dimensions" : hdf5_array.dimensions,
             "attributes" : hdf5_array.attributes,
             })
         return results
-
-def get_model_arrayset(mid, aid, **arguments):
-  accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
-  cherrypy.response.headers["content-type"] = accept
-
-  byteorder = arguments.get("byteorder", None)
-  if byteorder is None:
-    raise cherrypy.HTTPError("400 byteorder parameter must be specified.")
-
-  if byteorder not in ["little", "big"]:
-    raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
-
-  arrays = arguments.get("arrays", "::")
-  arrays = slice(*[int(value) if value != "" else None for value in arrays.split(":")])
-
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_reader(project)
-
-  artifact = model.get("artifact:%s" % aid, None)
-  if artifact is None:
-    raise cherrypy.HTTPError(404)
-  artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["hdf5"]:
-    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
-
-  def content():
-    with slycat.web.server.database.hdf5.lock:
-      with slycat.web.server.database.hdf5.open(artifact) as file:
-        for array_key in sorted([int(key) for key in file["array"].keys()])[arrays]:
-          for attribute_key in file["array/%s/attribute" % array_key].keys():
-            data = file["array/%s/attribute/%s" % (array_key, attribute_key)][...]
-            if sys.byteorder != byteorder:
-              yield data.byteswap().tostring(order="C")
-            else:
-              yield data.tostring(order="C")
-
-  return content()
-get_model_arrayset._cp_config = {"response.stream" : True}
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
