@@ -20,10 +20,10 @@
   </head>
   <body>
     <div class="scrollbar-container" data-bind="style: {width: width() + 'px', height: height() + 'px'}" style="position: relative">
-      <div class="scrollbar-bar" data-bind="event: {mousedown: bar.mousedown, mouseup: bar.mouseup}, style: {width: bar.width() + 'px', height: bar.height() + 'px', top: bar.top() + 'px'}" style="position: absolute">
+      <div class="scrollbar-bar" data-bind="event: {mousedown: bar.mousedown, mousemove: bar.mousemove, mouseup: bar.mouseup}, style: {width: bar.width() + 'px', height: bar.height() + 'px', top: range.value() + 'px'}" style="position: absolute">
       </div>
     </div>
-    <p>Bar top: <span data-bind="text: bar.top"></span></p>
+    <p>Bar value: <span data-bind="text: domain.value"></span></p>
     <script>
       require(["knockout", "knockout-mapping"], function(ko, mapping)
       {
@@ -31,23 +31,36 @@
         {
           width: 30,
           height: 500,
-          bar: { width: 30, height: 30 },
-          min: 0,
-          max: 100,
-          value: 20,
+          bar: { width: 30, height: 30, last_drag: null },
+          domain: { min: 0, value: 50, max: 100 },
+          range: { min: 0 },
         });
-        scrollbar.bar.top = ko.pureComputed(function()
+        scrollbar.range.max = ko.pureComputed(function()
         {
-          return (scrollbar.value() - scrollbar.min()) / (scrollbar.max() - scrollbar.min()) * (scrollbar.height() - scrollbar.bar.height());
+          return scrollbar.height() - scrollbar.bar.height();
         });
-        scrollbar.bar.mousedown = function(model, event)
+        scrollbar.range.value = ko.pureComputed(function()
         {
-          console.log("mousedown", event);
-          event.target.setCapture();
+          return (scrollbar.domain.value() - scrollbar.domain.min()) / (scrollbar.domain.max() - scrollbar.domain.min()) * (scrollbar.range.max() - scrollbar.range.min() + scrollbar.range.min());
+        });
+        scrollbar.bar.mousedown = function(model, e)
+        {
+          scrollbar.bar.last_drag([e.screenX, e.screenY]);
         }
-        scrollbar.bar.mouseup = function(model, event)
+        scrollbar.bar.mousemove = function(model, e)
         {
-          console.log("mouseup", event);
+          if(!scrollbar.bar.last_drag())
+            return;
+
+          var new_range = scrollbar.range.value() + e.screenY - scrollbar.bar.last_drag()[1];
+          var new_value = (new_range - scrollbar.range.min()) / (scrollbar.range.max() - scrollbar.range.min()) * (scrollbar.domain.max() - scrollbar.domain.min()) + scrollbar.domain.min();
+
+          scrollbar.domain.value(Math.max(scrollbar.domain.min(), Math.min(scrollbar.domain.max(), new_value)));
+          scrollbar.bar.last_drag([e.screenX, e.screenY]);
+        }
+        scrollbar.bar.mouseup = function(model, e)
+        {
+          scrollbar.bar.last_drag(null);
         }
 
         ko.applyBindings(scrollbar);
