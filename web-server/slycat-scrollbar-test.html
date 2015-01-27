@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+    <script src="js/knockout.mapping.js"></script>
+    <style>
+      .scrollbar-container
+      {
+        border: 1px solid black;
+      }
+      .scrollbar-bar
+      {
+        background: black;
+      }
+    </style>
+    <title>Slycat Scrollbar Test</title>
+  </head>
+  <body>
+    <div class="scrollbar-container" data-bind="style: {width: width() + 'px', height: height() + 'px'}" style="position: relative">
+      <div class="scrollbar-bar" data-bind="event: {mousedown: bar.mousedown, mouseup: bar.mouseup}, style: {width: bar.width() + 'px', height: bar.height() + 'px', top: bar.top() + 'px'}" style="position: absolute">
+      </div>
+    </div>
+    <p>Bar top: <span data-bind="text: bar.top"></span></p>
+    <script>
+      require(["knockout", "knockout-mapping"], function(ko, mapping)
+      {
+        var scrollbar = mapping.fromJS(
+        {
+          width: 30,
+          height: 500,
+          bar: { width: 30, height: 30 },
+          min: 0,
+          max: 100,
+          value: 20,
+        });
+        scrollbar.bar.top = ko.pureComputed(function()
+        {
+          return (scrollbar.value() - scrollbar.min()) / (scrollbar.max() - scrollbar.min()) * (scrollbar.height() - scrollbar.bar.height());
+        });
+        scrollbar.bar.mousedown = function(model, event)
+        {
+          console.log("mousedown", event);
+          event.target.setCapture();
+        }
+        scrollbar.bar.mouseup = function(model, event)
+        {
+          console.log("mouseup", event);
+        }
+
+        ko.applyBindings(scrollbar);
+      });
+    </script>
+  </body>
+</html>
