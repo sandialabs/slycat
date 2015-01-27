@@ -1233,8 +1233,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
                 frame
                   .attr("data-transx", x)
                   .attr("data-transy", y)
-                  .attr('transform', "translate(" + x + ", " + y + ")")
-                ;
+                  .attr('transform', "translate(" + x + ", " + y + ")");
 
                 // Adjust image size
                 theImage.attr("width", imageWidth);
@@ -1248,13 +1247,11 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
                 theLine
                   .attr("x1", (imageWidth / 2))
                   .attr("y1", (imageHeight / 2))
-                  .attr("x2", image.target_x - Number(frame.attr("data-transx")) + offsets[0])
-                  .attr("y2", image.target_y - Number(frame.attr("data-transy")) + offsets[1])
-                ;
+                  .attr("x2", Number(theLine.attr("data-targetx")) - x)
+                  .attr("y2", Number(theLine.attr("data-targety")) - y);
 
                 self._sync_open_images();
-              })
-        ;
+              });
 
         if(!image.no_sync)
           self._sync_open_images();
