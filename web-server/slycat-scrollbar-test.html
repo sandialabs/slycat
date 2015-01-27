@@ -10,8 +10,21 @@
     <script src="js/slycat-server-root.js"></script>
     <script src="js/slycat-scrollbar.js"></script>
     <style>
+      .container
+      {
+        background: gray;
+        display: flex;
+      }
+
+      .viewport
+      {
+        background: white;
+        flex: 1;
+      }
+
       .slycat-scrollbar-container
       {
+        background: white;
         border: 1px solid lightgray;
         border-radius: 5px;
       }
@@ -19,6 +32,9 @@
       {
         background: lightgray;
         border-radius: 5px;
+        transition: background .25s ease-in-out;
+        -moz-transition: background .25s ease-in-out;
+        -webkit-transition: background .25s ease-in-out;
       }
       .slycat-scrollbar-bar:hover, .slycat-scrollbar-bar.dragging
       {
@@ -28,19 +44,22 @@
     <title>Slycat Scrollbar Test</title>
   </head>
   <body>
-    <slycat-scrollbar params="domain_min:domain_min, domain_value:domain_value, domain_max:domain_max, dragging:dragging"></slycat-scrollbar>
-    <p>Bar value: <span data-bind="text: domain_value"></span></p>
-    <p>Dragging: <span data-bind="text: dragging"></span></p>
-    <slycat-scrollbar params="axis:'horizontal',domain_min:domain_min, domain_value:domain_value, domain_max:domain_max"></slycat-scrollbar>
+    <div class="container" style="width: 600px; height: 600px;">
+      <div class="viewport">
+      </div>
+      <slycat-scrollbar params="axis:'vertical',domain_value:y"></slycat-scrollbar>
+    </div>
+    <slycat-scrollbar params="axis:'horizontal',domain_value:x"></slycat-scrollbar>
+
+    <p>x: <span data-bind="text: x"></span></p>
+    <p>y: <span data-bind="text: y"></span></p>
     <script>
       require(["knockout", "knockout-mapping"], function(ko, mapping)
       {
         var page = mapping.fromJS(
         {
-          domain_min: 0,
-          domain_value: 0.5,
-          domain_max: 1,
-          dragging: false,
+          x: 0.5,
+          y: 0.5,
         });
 
         ko.applyBindings(page);

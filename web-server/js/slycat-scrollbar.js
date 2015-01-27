@@ -32,8 +32,6 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         min: ko.observable(0),
       };
 
-      console.log("scrollbar", scrollbar);
-
       scrollbar.range.max = ko.pureComputed(function()
       {
         return scrollbar.length() - scrollbar.bar.length();
