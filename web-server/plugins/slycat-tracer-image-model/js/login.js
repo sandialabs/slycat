@@ -47,7 +47,7 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
       $("#remote-password").val("");
       self.image_login.find(".alert").remove();
       $("#login-button").off("click");
-      button.prop("disabled", false);
+      $("#login-button").prop("disabled", false);
     });
   
     self.image_login.keypress(function(event){
