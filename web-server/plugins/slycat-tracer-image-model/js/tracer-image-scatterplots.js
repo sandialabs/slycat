@@ -522,7 +522,6 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
         var get_closest_image_index = function(lower_node, upper_node){
           var next_index,
               next_args = [lower_node, upper_node];
-          console.debug(next_args);
           //In a tie, go up.
           if(lower_node['l'] < upper_node['l']){
             next_index = upper_node['i'];
@@ -535,7 +534,6 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
           }
 
           if(next_index >= 0 && next_index < self.options.images.length && self.options.images[next_index]) {
-            console.debug("Found " + self.options.images[next_index])
             return next_index;
           }
 
@@ -557,7 +555,6 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
               var distance = endpoints.map(function(point) {
                 return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]);
               });
-              console.debug(distance);
               ////For reference, this is the more accurate way to do it:
               //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
               //Push this to the window's event thread, to avoid blocking user responses:
@@ -657,8 +654,9 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
       // Used to open an initial list of images at startup only
       if(self.updates["open_images"])
       {
+        var images_for_plot = self.options.open_images.filter(function(image){return image.image_layer_id == self.image_layer.attr("id");});
         // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
-        self.options.open_images.filter(function(image){return image.image_layer_id == self.image_layer.attr("id");})
+        images_for_plot
           .forEach(function(image) {
             if(image.uri === undefined)
               image.uri = self.options.images[image.index];
@@ -679,6 +677,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
                                            image.y = height * image.rely;
                                            image.target_x = self.x_scale(self.options.x[image.index]);
                                            image.target_y = self.y_scale(self.options.y[image.index]);
+                                           image.data_id = index;
                                          });
 
         self._open_images(self.options.open_images);
@@ -805,8 +804,11 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
     {
       var self = this;
 
-      var relevant_images = images.map(function(image){ image.image_layer_id = image.image_layer_id || "image_0_0"; return image})
-            .filter(function(image){ return image.image_layer_id == self.image_layer.attr("id");});
+      var relevant_images = images.map(function(image, index){
+          image.image_layer_id = image.image_layer_id || "image_0_0";
+          image.data_id = image.data_id || self.options.open_images.length + index + 1;
+          return image})
+        .filter(function(image){ return image.image_layer_id == self.image_layer.attr("id");});
 
       // If the list of images is empty, we're done.
       if(relevant_images.length == 0)
@@ -835,7 +837,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
       }
 
       // Create scaffolding and status indicator if we already don't have one
-      if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
+      if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "'][data-id='" + image.data_id + "']").empty() ){
 
         // Define a default size for every image. Should have come in set by hover height/width though.
         image.width = image.width || 200;
@@ -866,13 +868,14 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
           .classed("openHover", true);
 
         var frame = self.image_layer.append("g")
-              .attr("data-uri", image.uri)
-              .attr("data-transx", image.x)
-              .attr("data-transy", image.y)
-              .attr('transform', "translate(" + image.x + ", " + image.y + ")")
-              .attr("class", image.image_class + " image-frame")
-              .attr("data-index", image.index)
-              .attr("data-uri", image.uri)
+              .attr({"data-uri": image.uri,
+              "data-transx": image.x,
+              "data-transy": image.y,
+              "transform": "translate(" + image.x + ", " + image.y + ")",
+              "class": image.image_class + " image-frame",
+              "data-index": image.index,
+              "data-uri": image.uri,
+              "data-id": image.data_id})
               .call(
                 d3.behavior.drag()
                   .on('drag', function(){
@@ -1018,7 +1021,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
           image.y = (target_y / height) * (height - image.height);
         }
 
-        var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
+        var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "'][data-id='" + image.data_id + "']");
 
         // Create the image ...
         var svgImage = frame.append("image")
