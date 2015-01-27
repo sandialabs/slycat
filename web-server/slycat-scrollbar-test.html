@@ -20,7 +20,7 @@
   </head>
   <body>
     <div class="scrollbar-container" data-bind="style: {width: width() + 'px', height: height() + 'px'}" style="position: relative">
-      <div class="scrollbar-bar" data-bind="event: {mousedown: bar.mousedown, mousemove: bar.mousemove, mouseup: bar.mouseup}, style: {width: bar.width() + 'px', height: bar.height() + 'px', top: range.value() + 'px'}" style="position: absolute">
+      <div class="scrollbar-bar" data-bind="event: {mousedown: bar.mousedown}, style: bar.style" style="position: absolute">
       </div>
     </div>
     <p>Bar value: <span data-bind="text: domain.value"></span></p>
@@ -29,38 +29,58 @@
       {
         var scrollbar = mapping.fromJS(
         {
-          width: 30,
-          height: 500,
+          axis: "horizontal",
+          width: 500,
+          height: 30,
           bar: { width: 30, height: 30, last_drag: null },
-          domain: { min: 0, value: 50, max: 100 },
+          domain: { min: 0, value: 0.5, max: 1 },
           range: { min: 0 },
         });
         scrollbar.range.max = ko.pureComputed(function()
         {
-          return scrollbar.height() - scrollbar.bar.height();
+          if(scrollbar.axis() == "vertical")
+            return scrollbar.height() - scrollbar.bar.height();
+          else
+            return scrollbar.width() - scrollbar.bar.width();
         });
         scrollbar.range.value = ko.pureComputed(function()
         {
           return (scrollbar.domain.value() - scrollbar.domain.min()) / (scrollbar.domain.max() - scrollbar.domain.min()) * (scrollbar.range.max() - scrollbar.range.min() + scrollbar.range.min());
         });
-        scrollbar.bar.mousedown = function(model, e)
+        scrollbar.bar.style = ko.pureComputed(function()
         {
-          scrollbar.bar.last_drag([e.screenX, e.screenY]);
+          var result = {};
+          result.width = scrollbar.bar.width() + "px";
+          result.height = scrollbar.bar.height() + "px";
+          if(scrollbar.axis() == "vertical")
+            result.top = scrollbar.range.value() + "px";
+          else
+            result.left = scrollbar.range.value() + "px";
+          return result;
+        });
+        scrollbar.bar.mousedown = function(model, event)
+        {
+          scrollbar.bar.last_drag([event.screenX, event.screenY]);
+          window.addEventListener("mousemove", scrollbar.bar.mousemove, true);
+          window.addEventListener("mouseup", scrollbar.bar.mouseup, true);
         }
-        scrollbar.bar.mousemove = function(model, e)
+        scrollbar.bar.mousemove = function(event)
         {
-          if(!scrollbar.bar.last_drag())
-            return;
-
-          var new_range = scrollbar.range.value() + e.screenY - scrollbar.bar.last_drag()[1];
+          var new_range;
+          if(scrollbar.axis() == "vertical")
+            new_range = scrollbar.range.value() + event.screenY - scrollbar.bar.last_drag()[1];
+          else
+            new_range = scrollbar.range.value() + event.screenX - scrollbar.bar.last_drag()[0];
           var new_value = (new_range - scrollbar.range.min()) / (scrollbar.range.max() - scrollbar.range.min()) * (scrollbar.domain.max() - scrollbar.domain.min()) + scrollbar.domain.min();
 
           scrollbar.domain.value(Math.max(scrollbar.domain.min(), Math.min(scrollbar.domain.max(), new_value)));
-          scrollbar.bar.last_drag([e.screenX, e.screenY]);
+          scrollbar.bar.last_drag([event.screenX, event.screenY]);
         }
-        scrollbar.bar.mouseup = function(model, e)
+        scrollbar.bar.mouseup = function(event)
         {
           scrollbar.bar.last_drag(null);
+          window.removeEventListener("mousemove", scrollbar.bar.mousemove, true);
+          window.removeEventListener("mouseup", scrollbar.bar.mouseup, true);
         }
 
         ko.applyBindings(scrollbar);
