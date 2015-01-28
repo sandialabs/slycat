@@ -17,7 +17,7 @@ define("slycat-matrix-demo-model", ["slycat-web-client", "knockout", "knockout-m
   // Setup storage for the page's data.
   var page = {};
   page.model_id = ko.observable(URI(window.location).segment(-1));
-  page.product = ko.observable(null);
+  page.product_type = ko.observable(null);
   page.matrix_a = mapping.fromJS([]);
   page.matrix_b = mapping.fromJS([]);
   page.matrix_product = mapping.fromJS([]);
@@ -42,12 +42,13 @@ define("slycat-matrix-demo-model", ["slycat-web-client", "knockout", "knockout-m
   get_matrix("B", page.matrix_b);
 
   // Load the computed result whenever the product type changes.
-  page.product.subscribe(function(command)
+  page.product_type.subscribe(function(product_type)
   {
     client.get_model_command(
     {
       mid: page.model_id(),
-      command: command,
+      command: "product",
+      parameters: { "product-type" : product_type },
       success : function(result)
       {
         mapping.fromJS(result.data, page.matrix_product);
