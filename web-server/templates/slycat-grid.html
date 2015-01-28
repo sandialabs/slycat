@@ -1,0 +1,6 @@
+<div class="slycat-grid-viewport" data-bind="style: {width: viewport_width() + 'px', height: viewport_height() + 'px'}, event: {scroll: on_scroll}" style="overflow: auto;">
+  <div class="grid" data-bind="style: {width: width() + 'px', height: height() + 'px'}, foreach: cells()", style="position: relative">
+    <div class="cell" data-bind="html: content, style: {top: top + 'px', height: height + 'px', left: left + 'px', width: width + 'px'}" style="position: absolute;">
+    </div>
+  </div>
+</div>
