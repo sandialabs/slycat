@@ -19,32 +19,6 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
-def get_model_array_attribute_chunk(database, model, aid, array, attribute, hyperslice):
-  cherrypy.log.error("get_model_array_attribute_chunk is deprecated, use get_model_arrayset_data instead.")
-  artifact = model["artifact:%s" % aid]
-  artifact_type = model["artifact-types"][aid]
-  assert artifact_type  == "hdf5"
-
-  with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact) as file:
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      hdf5_array = hdf5_arrayset[array]
-      data = hdf5_array.get_data(attribute)[hyperslice]
-      return data
-
-def get_model_array_metadata(database, model, aid, array):
-  cherrypy.log.error("get_model_array_metadata is deprecated, use get_model_arrayset_metadata instead.")
-  artifact = model["artifact:%s" % aid]
-  artifact_type = model["artifact-types"][aid]
-  assert artifact_type == "hdf5"
-
-  with slycat.web.server.database.hdf5.lock:
-    with slycat.web.server.database.hdf5.open(artifact, "r+") as file: # We open the file with writing enabled because retrieving statistics may need to update the cache.
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      hdf5_array = hdf5_arrayset[array]
-      metadata = dict(dimensions=hdf5_array.dimensions, attributes=hdf5_array.attributes, statistics=[hdf5_array.get_statistics(attribute) for attribute in range(len(hdf5_array.attributes))])
-  return metadata
-
 def get_model_arrayset_data(database, model, name, hyperchunks):
   if isinstance(hyperchunks, tuple):
     hyperchunks = [hyperchunks]
