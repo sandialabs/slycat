@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-require(["slycat-server-root", "knockout"], function(server_root, ko)
+require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
 {
   ko.components.register("slycat-grid",
   {
@@ -50,8 +50,6 @@ require(["slycat-server-root", "knockout"], function(server_root, ko)
         var cell_width = grid.cell_width();
         var cell_height = grid.cell_height();
 
-        console.log("cells", visible_cells);
-
         var cells = [];
         for(var row = visible_cells.row_begin; row != visible_cells.row_end; ++row)
         {
@@ -71,7 +69,7 @@ require(["slycat-server-root", "knockout"], function(server_root, ko)
       });
       grid.on_scroll = function(grid, event)
       {
-        grid.position([$(".grid-viewport").scrollLeft(), $(".grid-viewport").scrollTop()]);
+        grid.position([$(event.target).scrollLeft(), $(event.target).scrollTop()]);
       }
       grid.create_cell = function(row, column)
       {
