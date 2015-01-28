@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_root, $)
+define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
 {
   var module = {};
 
@@ -263,7 +263,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery"], function(server_ro
     {
       dataType: "json",
       type: "GET",
-      url: server_root + "models/" + params.mid + "/commands/" + params.command,
+      url: URI(server_root + "models/" + params.mid + "/commands/" + params.command).search(params.parameters || {}).toString(),
       success: function(result)
       {
         if(params.success)

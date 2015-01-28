@@ -32,24 +32,23 @@ def register_slycat_plugin(context):
     })
 
   def product(database, model, command, **kwargs):
-    A = slycat.web.server.get_model_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
-    B = slycat.web.server.get_model_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
-    return matrix_result(numpy.dot(A, B))
+    if "product-type" not in kwargs:
+      raise cherrypy.HTTPError("400 Missing product-type parameter.")
+    product_type = kwargs["product-type"]
+    if product_type not in ["dot-product", "hadamard-product", "kronecker-product"]:
+      raise cherrypy.HTTPError("400 Unknown product-type: %s." % product_type)
 
-  def hadamard_product(database, model, command, **kwargs):
-    A = slycat.web.server.get_model_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
-    B = slycat.web.server.get_model_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
-    return matrix_result(A * B)
-
-  def kronecker_product(database, model, command, **kwargs):
-    A = slycat.web.server.get_model_array_attribute_chunk(database, model, "A", 0, 0, numpy.index_exp[...])
-    B = slycat.web.server.get_model_array_attribute_chunk(database, model, "B", 0, 0, numpy.index_exp[...])
-    return matrix_result(numpy.kron(A, B))
+    A = next(slycat.web.server.get_model_arrayset_data(database, model, "A", (0, 0, numpy.index_exp[...])))
+    B = next(slycat.web.server.get_model_arrayset_data(database, model, "B", (0, 0, numpy.index_exp[...])))
+    if product_type == "dot-product":
+      return matrix_result(numpy.dot(A, B))
+    if product_type == "hadamard-product":
+      return matrix_result(A * B)
+    if product_type == "kronecker-product":
+      return matrix_result(numpy.kron(A, B))
 
   context.register_model("matrix-demo", finish, html)
   context.register_model_command("matrix-demo", "product", product)
-  context.register_model_command("matrix-demo", "hadamard-product", hadamard_product)
-  context.register_model_command("matrix-demo", "kronecker-product", kronecker_product)
 
   context.register_model_bundle("matrix-demo", "text/css", [
     os.path.join(os.path.dirname(__file__), "ui.css"),
