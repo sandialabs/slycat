@@ -12,26 +12,31 @@
     <style>
       .container
       {
-        background: gray;
-        display: flex;
+        border-collapse: collapse;
+        padding: 0;
+      }
+
+      .container td
+      {
+        padding: 0;
       }
 
       .viewport
       {
-        background: white;
-        flex: 1;
+        background: #fff8f0;
+        width: 100%;
+        height: 100%;
       }
 
       .slycat-scrollbar-container
       {
-        background: white;
         border: 1px solid lightgray;
-        border-radius: 5px;
+        border-radius: 6px;
       }
       .slycat-scrollbar-bar
       {
         background: lightgray;
-        border-radius: 5px;
+        border-radius: 6px;
         transition: background .25s ease-in-out;
         -moz-transition: background .25s ease-in-out;
         -webkit-transition: background .25s ease-in-out;
@@ -44,12 +49,23 @@
     <title>Slycat Scrollbar Test</title>
   </head>
   <body>
-    <div class="container" style="width: 600px; height: 600px;">
-      <div class="viewport">
-      </div>
-      <slycat-scrollbar params="axis:'vertical',domain_value:y"></slycat-scrollbar>
-    </div>
-    <slycat-scrollbar params="axis:'horizontal',domain_value:x"></slycat-scrollbar>
+    <table class="container" data-bind="style:{width:container_width()+'px', height:container_height()+'px'}">
+      <tr>
+        <td>
+          <div class="viewport"></div>
+        </td>
+        <td>
+          <slycat-scrollbar params="axis:'vertical', length:viewport_height, width:scrollbar_width, domain_value:y"></slycat-scrollbar>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <slycat-scrollbar params="axis:'horizontal', length:viewport_width, width:scrollbar_width, domain_value:x"></slycat-scrollbar>
+        </td>
+        <td>
+        </td>
+      </tr>
+    </table>
 
     <p>x: <span data-bind="text: x"></span></p>
     <p>y: <span data-bind="text: y"></span></p>
@@ -60,6 +76,17 @@
         {
           x: 0.5,
           y: 0.5,
+          scrollbar_width: 12,
+          container_width: 600,
+          container_height: 600,
+        });
+        page.viewport_width = ko.pureComputed(function()
+        {
+          return page.container_width() - page.scrollbar_width();
+        });
+        page.viewport_height = ko.pureComputed(function()
+        {
+          return page.container_height() - page.scrollbar_width();
         });
 
         ko.applyBindings(page);

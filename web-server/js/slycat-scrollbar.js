@@ -16,8 +16,8 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       scrollbar.width = params.width || ko.observable(10);
       scrollbar.bar =
       {
-        length: params.bar_length || ko.observable(50),
-        width: params.bar_width || ko.observable(10),
+        length: params.bar_length || ko.observable(scrollbar.length() * 0.1),
+        width: params.bar_width || scrollbar.width,
         dragging: params.dragging || ko.observable(false),
         last_drag: null,
       };
