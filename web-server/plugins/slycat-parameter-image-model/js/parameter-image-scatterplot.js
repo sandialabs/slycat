@@ -96,8 +96,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
-    self.datum_layer = self.svg.append("g").attr("class", "datum-layer");
-    self.selected_layer = self.svg.append("g").attr("class", "selected-layer");
     self.canvas_datum = d3.select(self.element.get(0)).append("canvas")
       .style({'position':'absolute'}).node()
       ;
@@ -807,44 +805,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       // canvas.strokeRect(0 + 0.5, 0 + 0.5, width, height);
       var end = time.now();
       console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
-
-      // Draw points on svg ...
-      // var start = performance.now();
-      // var circle = self.datum_layer.selectAll(".datum")
-      //   .data(filtered_indices, function(d, i){
-      //     return d;
-      //   })
-      //   ;
-      // circle.exit()
-      //   .remove()
-      //   ;
-      // circle.enter()
-      //   .append("circle")
-      //   .attr("class", "datum")
-      //   .attr("r", 4)
-      //   .attr("stroke", "black")
-      //   .attr("linewidth", 1)
-      //   .attr("data-index", function(d, i) { return d; })
-      //   .on("mouseover", function(d, i) {
-      //     self._schedule_hover(d);
-      //   })
-      //   .on("mouseout", function(d, i) {
-      //     self._cancel_hover();
-      //   })
-      //   ;
-      // circle
-      //   .attr("cx", function(d, i) { return self.x_scale( x[d] ); })
-      //   .attr("cy", function(d, i) { return self.y_scale( y[d] ); })
-      //   .attr("fill", function(d, i) {
-      //     var value = v[d];
-      //     if(isNaN(value))
-      //       return $("#color-switcher").colorswitcher("get_null_color");
-      //     else
-      //       return self.options.color(value);
-      //   })
-      //   ;
-      // var end = performance.now();
-      // console.log("Time to render " + filtered_indices.length + " svg points: " + (end-start) + " milliseconds.");
     }
 
     if(self.updates["render_selection"])
@@ -882,48 +842,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
-
-      // var x_scale = self.x_scale;
-      // var y_scale = self.y_scale;
-
-      // self.selected_layer.selectAll(".selection").remove();
-
-      // var circle = self.selected_layer.selectAll(".selection")
-      //   .data(filtered_selection, function(d, i){
-      //     return d;
-      //   })
-      //   ;
-      // circle.enter()
-      //   .append("circle")
-      //   .attr("class", "selection")
-      //   .attr("r", 8)
-      //   .attr("stroke", "black")
-      //   .attr("linewidth", 1)
-      //   .attr("data-index", function(d, i) {
-      //     return d;
-      //   })
-      //   .on("mouseover", function(d, i) {
-      //     self._schedule_hover(d);
-      //   })
-      //   .on("mouseout", function(d, i) {
-      //     self._cancel_hover();
-      //   })
-      //   ;
-      // circle
-      //   .attr("cx", function(d, i) {
-      //     return x_scale( x[d] );
-      //   })
-      //   .attr("cy", function(d, i) {
-      //     return y_scale( y[d] );
-      //   })
-      //   .attr("fill", function(d, i) {
-      //     var value = v[d];
-      //     if(isNaN(value))
-      //       return $("#color-switcher").colorswitcher("get_null_color");
-      //     else
-      //       return self.options.color(value);
-      //   })
-      //   ;
     }
 
     // Used to open an initial list of images at startup only
@@ -1143,11 +1061,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
-      // Tag associated point with class
-      self.datum_layer.selectAll("circle[data-index='" + image.index + "']")
-        .classed("openHover", true)
-        ;
-
       var frame = self.image_layer.append("g")
         .attr("data-uri", image.uri)
         .attr("data-transx", image.x)
@@ -1196,10 +1109,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                   }
                   frame.classed("hover-image", false).classed("open-image", true);
                   image.image_class = "open-image";
-                  // Remove openHover class tag from any points that might have it
-                  self.datum_layer.selectAll("circle.openHover")
-                    .classed("openHover", false)
-                    ;
                 }
               }
             })
@@ -1320,8 +1229,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           .attr("class", "resize video")
           ;
         var video = foreignObject
-          .append("xhtml:body")
-          .append("video")
+          .append("xhtml:div")
+          .append("xhtml:video")
           .attr("src", image_url)
           .attr("controls", true)
           .attr("width", "100%")
@@ -1405,11 +1314,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                 }
                 frame.classed("hover-image", false).classed("open-image", true);
                 image.image_class = "open-image";
-
-                // Remove openHover class tag from any points that might have it
-                self.datum_layer.selectAll("circle.openHover")
-                  .classed("openHover", false)
-                  ;
               }
             })
             .on("dragend", function() {
@@ -1509,11 +1413,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
             window.clearTimeout(self.close_hover_timer);
             self.close_hover_timer = null;
           }
-
-          // Remove openHover class tag from any points that might have it
-          self.datum_layer.selectAll("circle.openHover")
-            .classed("openHover", false)
-            ;
 
           var frame = d3.select(d3.event.target.parentNode.parentNode);
           var theImage = frame.select(".resize");
@@ -1717,6 +1616,32 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     return false;
   },
 
+  _open_hover: function(image_index)
+  {
+    var self = this;
+
+    self._close_hover();
+    self.opening_image = image_index;
+
+    var width = self.svg.attr("width");
+    var height = self.svg.attr("height");
+    var hover_width = Math.min(width, height) * 0.85;
+    var hover_height = Math.min(width, height) * 0.85;
+
+    self._open_images([{
+      index : self.options.indices[image_index],
+      uri : self.options.images[self.options.indices[image_index]].trim(),
+      image_class : "hover-image",
+      x : Math.min(self.x_scale(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
+      y : Math.min(self.y_scale(self.options.y[image_index]) + 10, height - hover_height - self.options.border - 10),
+      width : hover_width,
+      height : hover_height,
+      target_x : self.x_scale(self.options.x[image_index]),
+      target_y : self.y_scale(self.options.y[image_index]),
+      no_sync : true,
+    }]);
+  },
+
   _cancel_hover_canvas: function()
   {
     var self = this;
@@ -1725,76 +1650,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     {
       window.clearTimeout(self.hover_timer_canvas);
       self.hover_timer_canvas = null;
-    }
-  },
-
-  _schedule_hover: function(image_index)
-  {
-    var self = this;
-
-    // Disable hovering whenever anything else is going on ...
-    if(self.state != "")
-      return;
-
-    // Disable hovering when there are no image columns
-    if(self.options.images == null || self.options.images.length == 0)
-      return;
-
-    // Disable hovering when there is no uri
-    if(self.options.images[self.options.indices[image_index]].trim() == "")
-      return;
-
-    // // Disable hovering on points that already have open imges ...
-    // var uri = self.options.images[self.options.indices[image_index]];
-    // if($(".open-image[data-uri='" + uri + "']").size() != 0)
-    //   return;
-
-    // Cancel any pending hover ...
-    self._cancel_hover();
-
-    // Start the timer for the new hover ...
-    self.hover_timer = window.setTimeout(function() { self._open_hover(image_index); }, self.options.hover_time);
-  },
-
-  _cancel_hover: function()
-  {
-    var self = this;
-    if(self.hover_timer)
-    {
-      window.clearTimeout(self.hover_timer);
-      self.hover_timer = null;
-    }
-  },
-
-  _open_hover: function(image_index)
-  {
-    var self = this;
-
-    // Verify that we don't already have an open hover for the associated point
-    if( self.datum_layer.select("circle.openHover[data-index='" + image_index + "']").empty() )
-    {
-      self._close_hover();
-      self.opening_image = image_index;
-
-      var width = self.svg.attr("width");
-      var height = self.svg.attr("height");
-      var hover_width = Math.min(width, height) * 0.85;
-      var hover_height = Math.min(width, height) * 0.85;
-
-      self._open_images([{
-        index : self.options.indices[image_index],
-        uri : self.options.images[self.options.indices[image_index]].trim(),
-        image_class : "hover-image",
-        x : Math.min(self.x_scale(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
-        y : Math.min(self.y_scale(self.options.y[image_index]) + 10, height - hover_height - self.options.border - 10),
-        width : hover_width,
-        height : hover_height,
-        target_x : self.x_scale(self.options.x[image_index]),
-        target_y : self.y_scale(self.options.y[image_index]),
-        no_sync : true,
-      }]);
-
-      // self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image_index, 0);}, 1000);
     }
   },
 
@@ -1823,10 +1678,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
   {
     var self = this;
     var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
-    var circleEmpty = self.datum_layer.selectAll("circle[data-index='" + image_index + "']:hover").empty();
-    var selectedCircleEmpty = self.selected_layer.selectAll("circle[data-index='" + image_index + "']:hover").empty();
 
-    return !(hoverEmpty && circleEmpty && selectedCircleEmpty);
+    return !(hoverEmpty);
   },
 
   _close_hover: function()
@@ -1842,15 +1695,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     }
 
     // Cancel any pending hover ...
-    self._cancel_hover();
+    self._cancel_hover_canvas();
 
     // Close any current hover images ...
     self.image_layer.selectAll(".hover-image").remove();
-
-    // Remove openHover class tag from any points that might have it
-    self.datum_layer.selectAll("circle.openHover")
-      .classed("openHover", false)
-      ;
   },
 
   pin: function(simulations)
