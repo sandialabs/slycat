@@ -44,6 +44,7 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
     });
 
     self.image_login.on('hidden.bs.modal', function(){
+      self.shown = false;
       $("#remote-password").val("");
       self.image_login.find(".alert").remove();
       $("#login-button").off("click");
@@ -84,6 +85,11 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
 
   Login.prototype.show_prompt = function(images, callback, this_arg) {
     var self = this;
+
+    //Do nothing if called multiple times in a row:
+    if(self.shown)
+      return;
+    self.shown = true;
 
     if(images.length == 0)
       return;
