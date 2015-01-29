@@ -84,7 +84,9 @@ slycat-navbar .alert pre
 
 #slycat-wizard .modal-body
 {
-  min-height: 350px;
+  min-height: 200px;
+  max-height: 600px;
+  overflow: auto;
 }
 
 #slycat-wizard .steps
