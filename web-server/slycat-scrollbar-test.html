@@ -45,12 +45,12 @@
           <div class="viewport"></div>
         </td>
         <td>
-          <slycat-scrollbar params="axis:'vertical', length:viewport_height, domain_value:y"></slycat-scrollbar>
+          <slycat-scrollbar params="axis:'vertical', length:container_height, domain_value:y"></slycat-scrollbar>
         </td>
       </tr>
       <tr>
         <td>
-          <slycat-scrollbar params="axis:'horizontal', length:viewport_width, domain_value:x"></slycat-scrollbar>
+          <slycat-scrollbar params="axis:'horizontal', length:container_width, domain_value:x"></slycat-scrollbar>
         </td>
         <td>
         </td>
@@ -66,19 +66,9 @@
         {
           x: 0.5,
           y: 0.5,
-          scrollbar_width: 12,
           container_width: 600,
           container_height: 600,
         });
-        page.viewport_width = ko.pureComputed(function()
-        {
-          return page.container_width() - page.scrollbar_width();
-        });
-        page.viewport_height = ko.pureComputed(function()
-        {
-          return page.container_height() - page.scrollbar_width();
-        });
-
         ko.applyBindings(page);
       });
     </script>
