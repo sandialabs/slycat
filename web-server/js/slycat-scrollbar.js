@@ -12,6 +12,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
     {
       var scrollbar = this;
       scrollbar.axis = ko.unwrap(params.axis) || "vertical";
+      scrollbar.reverse = ko.unwrap(params.reverse) || false;
       scrollbar.length = params.length || ko.observable(500);
       scrollbar.thumb =
       {
@@ -55,9 +56,12 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       });
       scrollbar.thumb.style = ko.pureComputed(function()
       {
+        var axis = scrollbar.axis;
+        var reverse = scrollbar.reverse;
+
         var result = {};
-        result[scrollbar.axis == "vertical" ? "height" : "width"] = scrollbar.thumb.length() + "px";
-        result[scrollbar.axis == "vertical" ? "top" : "left"] = scrollbar.range.value() + "px";
+        result[axis == "vertical" ? "height" : "width"] = scrollbar.thumb.length() + "px";
+        result[axis == "vertical" ? (reverse ? "bottom" : "top") : (reverse ? "right" : "left")] = scrollbar.range.value() + "px";
         return result;
       });
       scrollbar.thumb.mousedown = function(model, event)
@@ -74,14 +78,12 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         var range_min = scrollbar.range.min();
         var range_value = scrollbar.range.value();
         var range_max = scrollbar.range.max();
+        var reverse = scrollbar.reverse;
 
-        var new_range;
-        if(scrollbar.axis == "vertical")
-          new_range = range_value + event.screenY - scrollbar.thumb.last_drag[1];
-        else
-          new_range = range_value + event.screenX - scrollbar.thumb.last_drag[0];
-
-        var new_value = (new_range - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
+        var drange = (scrollbar.axis == "vertical") ? event.screenY - scrollbar.thumb.last_drag[1] : event.screenX - scrollbar.thumb.last_drag[0];
+        if(reverse)
+          drange = -drange;
+        var new_value = ((range_value + drange) - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
 
         scrollbar.domain.value(Math.max(domain_min, Math.min(domain_max, new_value)));
         scrollbar.thumb.last_drag = [event.screenX, event.screenY];

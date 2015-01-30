@@ -16,46 +16,14 @@
       {
         background: white;
       }
-
-      .container
-      {
-        border-collapse: collapse;
-        border-spacing: 0;
-        padding: 0;
-      }
-
-      .container td
-      {
-        padding: 0;
-      }
-
-      .viewport
-      {
-        background: #fff8f0;
-        width: 100%;
-        height: 100%;
-      }
     </style>
     <title>Slycat Scrollbar Test</title>
   </head>
   <body>
-    <table class="container" data-bind="style:{width:container_width()+'px', height:container_height()+'px'}">
-      <tr>
-        <td>
-          <div class="viewport"></div>
-        </td>
-        <td>
-          <slycat-scrollbar params="axis:'vertical', length:container_height, domain_value:y"></slycat-scrollbar>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <slycat-scrollbar params="axis:'horizontal', length:container_width, domain_value:x"></slycat-scrollbar>
-        </td>
-        <td>
-        </td>
-      </tr>
-    </table>
+    <slycat-scrollbar params="axis:'vertical', length:container_height, domain_value:y"></slycat-scrollbar>
+    <slycat-scrollbar params="axis:'vertical', reverse: true, length:container_height, domain_value:y"></slycat-scrollbar>
+    <slycat-scrollbar params="axis:'horizontal', length:container_width, domain_value:x"></slycat-scrollbar>
+    <slycat-scrollbar params="axis:'horizontal', reverse: true, length:container_width, domain_value:x"></slycat-scrollbar>
 
     <p>x: <span data-bind="text: x"></span></p>
     <p>y: <span data-bind="text: y"></span></p>
