@@ -157,7 +157,11 @@ rights in this software.
           success: function(result)
           {
             document.querySelector("body").innerHTML += "<p>" + result["message"] + "</p>";
-            if(result["message"] != "Video ready.")
+            if(result["succeeded"] == false)
+            {
+              document.querySelector("body").innerHTML += "<p>Video creation failed</p>";
+            }
+            else if(result["ready"] != true)
             {
               setTimeout(query_video, 1000);
             }

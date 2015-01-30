@@ -224,8 +224,10 @@ def video_status(command, arguments):
   if session.failed is not None:
     raise Exception("Video creation failed: %s" % session.failed)
   if session.result is None:
-    raise Exception("Not ready.")
-  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "message": "Video ready."}))
+    sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "ready": False, "message": "Not ready."}))
+    sys.stdout.flush()
+    return
+  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "ready": True, "message": "Video ready."}))
   sys.stdout.flush()
 
 def get_video(command, arguments):
