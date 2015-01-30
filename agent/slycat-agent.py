@@ -30,6 +30,8 @@ class VideoSession(threading.Thread):
     self._ffmpeg = ffmpeg
     self._content_type = content_type
     self._images = images
+    self._stdout = None
+    self._stderr = None
     self._result = None
     self._failed = None
   def run(self):
@@ -43,13 +45,19 @@ class VideoSession(threading.Thread):
       ffmpeg = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       for image in self._images:
         ffmpeg.stdin.write("file %s\n" % image)
-      stdout, stderr = ffmpeg.communicate()
+      self._stdout, self._stderr = ffmpeg.communicate()
       self._result = path
     except Exception as e:
       self._failed = e
   @property
   def content_type(self):
     return self._content_type
+  @property
+  def stdout(self):
+    return self._stdout
+  @property
+  def stderr(self):
+    return self._stderr
   @property
   def result(self):
     return self._result
@@ -243,7 +251,7 @@ def get_video(command, arguments):
   if session.result is None:
     raise Exception("Not ready.")
   content = open(session.result, "rb").read()
-  sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}), content))
+  sys.stdout.write("%s\n%s" % (json.dumps({"stdout": session.stdout, "stderr": session.stderr, "succeeded": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}), content))
   sys.stdout.flush()
 
 def main():

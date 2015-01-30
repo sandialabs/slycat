@@ -1390,6 +1390,9 @@ def get_agent_video(sid, vsid):
     session.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
+
+    sys.stderr.write("\n%s\n" % metadata["stderr"])
+
     return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
 
 def post_events(event):
