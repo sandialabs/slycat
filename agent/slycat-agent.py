@@ -27,16 +27,18 @@ session_cache = {}
 class VideoSession(threading.Thread):
   def __init__(self, ffmpeg, content_type, images):
     threading.Thread.__init__(self)
-    self._ffmpeg = ffmpeg
-    self._content_type = content_type
+    self.content_type = content_type
     self._images = images
-    self._stdout = None
-    self._stderr = None
-    self._result = None
-    self._failed = None
+    self._ffmpeg = ffmpeg
+    self.exception = None
+    self.stdout = None
+    self.stderr = None
+    self.returncode = None
+    self.output = None
+    self.finished = False
   def run(self):
     try:
-      fd, path = tempfile.mkstemp(suffix=mimetypes.guess_extension(self._content_type, strict=False))
+      fd, path = tempfile.mkstemp(suffix=mimetypes.guess_extension(self.content_type, strict=False))
       os.close(fd)
       command = [self._ffmpeg, "-y"]
       command += ["-f", "concat"]
@@ -45,25 +47,12 @@ class VideoSession(threading.Thread):
       ffmpeg = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       for image in self._images:
         ffmpeg.stdin.write("file %s\n" % image)
-      self._stdout, self._stderr = ffmpeg.communicate()
-      self._result = path
+      self.stdout, self.stderr = ffmpeg.communicate()
+      self.returncode = ffmpeg.returncode
+      self.output = path
     except Exception as e:
-      self._failed = e
-  @property
-  def content_type(self):
-    return self._content_type
-  @property
-  def stdout(self):
-    return self._stdout
-  @property
-  def stderr(self):
-    return self._stderr
-  @property
-  def result(self):
-    return self._result
-  @property
-  def failed(self):
-    return self._failed
+      self.exception = e
+    self.finished = True
 
 # Handle the 'browse' command.
 def browse(command):
@@ -87,7 +76,7 @@ def browse(command):
     names = [name]
 
   listing = {
-    "succeeded": True,
+    "ok": True,
     "path": path,
     "names": [],
     "sizes": [],
@@ -138,7 +127,7 @@ def get_file(command):
     raise Exception(e.strerror + ".")
 
   content_type, encoding = mimetypes.guess_type(path, strict=False)
-  sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "File retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
+  sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "File retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
   sys.stdout.flush()
 
 # Handle the 'get-image' command.
@@ -168,7 +157,7 @@ def get_image(command):
       raise Exception(e.strerror + ".")
 
     content_type, encoding = mimetypes.guess_type(path, strict=False)
-    sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "Image retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
+    sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "Image retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
     sys.stdout.flush()
     return
 
@@ -200,7 +189,7 @@ def get_image(command):
     image.save(content, "PNG")
 
   # Send the results back to the caller.
-  sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "Image retrieved.", "path": path, "content-type": requested_content_type, "size": len(content.getvalue())}), content.getvalue()))
+  sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "Image retrieved.", "path": path, "content-type": requested_content_type, "size": len(content.getvalue())}), content.getvalue()))
   sys.stdout.flush()
 
 # Handle the 'create-video' command.
@@ -210,7 +199,7 @@ def create_video(command, arguments):
   if "content-type" not in command:
     raise Exception("Missing content-type.")
   if command["content-type"] not in ["video/mp4", "video/webm"]:
-    raise Exception("Unsupported video type.")
+    raise Exception("Unsupported content-type: %s." % command["content-type"])
   if "images" not in command:
     raise Exception("Missing images.")
 
@@ -218,7 +207,7 @@ def create_video(command, arguments):
   session_cache[sid] = VideoSession(arguments.ffmpeg, command["content-type"], command["images"])
   session_cache[sid].start()
 
-  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "message": "Creating video.", "sid": sid}))
+  sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Creating video.", "sid": sid}))
   sys.stdout.flush()
 
 def video_status(command, arguments):
@@ -229,13 +218,17 @@ def video_status(command, arguments):
   session = session_cache[command["sid"]]
   if not isinstance(session, VideoSession):
     raise Exception("Not a video session.")
-  if session.failed is not None:
-    raise Exception("Video creation failed: %s" % session.failed)
-  if session.result is None:
-    sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "ready": False, "message": "Not ready."}))
+  if session.exception is not None:
+    raise Exception("Video creation failed: %s" % session.exception)
+  if not session.finished:
+    sys.stdout.write("%s\n" % json.dumps({"ok": True, "ready": False, "message": "Not ready."}))
     sys.stdout.flush()
     return
-  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "ready": True, "message": "Video ready."}))
+  if session.returncode != 0:
+    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "Video creation failed.", "returncode": session.returncode, "stderr": session.stderr}))
+    sys.stdout.flush()
+    return
+  sys.stdout.write("%s\n" % json.dumps({"ok": True, "ready": True, "message": "Video ready."}))
   sys.stdout.flush()
 
 def get_video(command, arguments):
@@ -246,12 +239,14 @@ def get_video(command, arguments):
   session = session_cache[command["sid"]]
   if not isinstance(session, VideoSession):
     raise Exception("Not a video session.")
-  if session.failed is not None:
-    raise Exception("Video creation failed: %s" % session.failed)
-  if session.result is None:
+  if session.exception is not None:
+    raise Exception("Video creation failed: %s" % session.exception)
+  if not session.finished:
     raise Exception("Not ready.")
-  content = open(session.result, "rb").read()
-  sys.stdout.write("%s\n%s" % (json.dumps({"stdout": session.stdout, "stderr": session.stderr, "succeeded": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}), content))
+  if session.returncode != 0:
+    raise Exception("Video creation failed.")
+  content = open(session.output, "rb").read()
+  sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}), content))
   sys.stdout.flush()
 
 def main():
@@ -271,7 +266,7 @@ def main():
       if not os.path.exists(arguments.ffmpeg):
         raise Exception("--ffmpeg must specify an existing file.")
   except Exception as e:
-    sys.stdout.write("%s\n" % json.dumps({"succeeded": False, "message":e.message}))
+    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message":e.message}))
     sys.stdout.flush()
 
   # Setup some nonstandard MIME types.
@@ -279,7 +274,7 @@ def main():
   mimetypes.add_type("video/webm", ".webm", strict=False)
 
   # Let the caller know we're ready to handle commands.
-  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "message": "Ready."}))
+  sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Ready."}))
   sys.stdout.flush()
 
   while True:
@@ -315,7 +310,7 @@ def main():
       else:
         raise Exception("Unknown command.")
     except Exception as e:
-      sys.stdout.write("%s\n" % json.dumps({"succeeded": False, "message":e.message}))
+      sys.stdout.write("%s\n" % json.dumps({"ok": False, "message":e.message}))
       sys.stdout.flush()
 
 if __name__ == "__main__":

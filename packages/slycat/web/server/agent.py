@@ -149,7 +149,7 @@ def create_session(hostname, username, password):
       raise cherrypy.HTTPError("500 Agent startup failed: %s" % str(e))
     cherrypy.log.error("Agent for %s@%s reported %s" % (username, hostname, startup))
     # Handle clean startup failures.
-    if not startup["succeeded"]:
+    if not startup["ok"]:
       raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
     with session_cache_lock:
       session_cache[sid] = Session(username, hostname, cherrypy.request.remote.ip, ssh, stdin, stdout, stderr)

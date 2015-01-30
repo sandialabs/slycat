@@ -1383,16 +1383,19 @@ def get_agent_video_status(sid, vsid):
   with slycat.web.server.agent.get_session(sid) as session:
     session.stdin.write("%s\n" % json.dumps({"action":"video-status", "sid":vsid}))
     session.stdin.flush()
-    return json.loads(session.stdout.readline())
+    metadata = json.loads(session.stdout.readline())
+
+    if "returncode" in metadata and metadata["returncode"] != 0:
+      sys.stderr.write("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
+
+    return metadata
 
 def get_agent_video(sid, vsid):
   with slycat.web.server.agent.get_session(sid) as session:
     session.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
     session.stdin.flush()
     metadata = json.loads(session.stdout.readline())
-
-    sys.stderr.write("\n%s\n" % metadata["stderr"])
-
+    sys.stderr.write("\n%s\n" % metadata)
     return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
 
 def post_events(event):
