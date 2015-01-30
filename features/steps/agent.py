@@ -12,6 +12,13 @@ import time
 
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 data_dir = os.path.join(root_dir, "features/data/agent")
+slycat_agent = os.path.join(root_dir, "agent", "slycat-agent.py")
+ffmpeg = "/usr/bin/ffmpeg"
+
+@given(u'a running Slycat agent')
+def step_impl(context):
+  context.agent = subprocess.Popen([sys.executable, slycat_agent, "--ffmpeg=%s" % ffmpeg], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": True, "message": "Ready."})
 
 @when("an unparsable command is received")
 def step_impl(context):
@@ -25,7 +32,7 @@ def step_impl(context):
 
 @then("the agent should return an invalid command error")
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message": "Not a JSON object."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Not a JSON object."})
 
 @when(u'an unknown command is received')
 def step_impl(context):
@@ -34,7 +41,7 @@ def step_impl(context):
 
 @then(u'the agent should return an unknown command error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message": "Unknown command."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Unknown command."})
 
 @when(u'a command without an action is received')
 def step_impl(context):
@@ -43,7 +50,7 @@ def step_impl(context):
 
 @then(u'the agent should return a missing action error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message": "Missing action."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Missing action."})
 
 @when(u'a browse command without a path is received')
 def step_impl(context):
@@ -52,7 +59,7 @@ def step_impl(context):
 
 @then(u'the agent should return a missing path error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Missing path."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Missing path."})
 
 @when(u'browsing a relative path')
 def step_impl(context):
@@ -61,7 +68,7 @@ def step_impl(context):
 
 @then(u'the agent should return a relative path error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Path must be absolute."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Path must be absolute."})
 
 @when(u'browsing a nonexistent path')
 def step_impl(context):
@@ -70,7 +77,7 @@ def step_impl(context):
 
 @then(u'the agent should return a path not found error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Path not found."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Path not found."})
 
 @when(u'browsing a directory')
 def step_impl(context):
@@ -168,7 +175,7 @@ def step_impl(context):
 
 @then(u'the agent should return a directory unreadable error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Directory unreadable."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Directory unreadable."})
 
 @given(u'a nonexistent file')
 def step_impl(context):
@@ -185,7 +192,7 @@ def step_impl(context):
 
 @then(u'the agent should return an access denied error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Access denied."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Access denied."})
 
 @then(u'the agent should return the csv file')
 def step_impl(context):
@@ -228,7 +235,7 @@ def step_impl(context):
 
 @then(u'the agent should return an unsupported content type error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"message":"Unsupported image type."})
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"succeeded": False, "message": "Unsupported image type."})
 
 @when(u'retrieving an image with maximum width')
 def step_impl(context):
@@ -319,7 +326,7 @@ def step_impl(context, type):
       time.sleep(0.1)
       continue
 
-    nose.tools.assert_equal(metadata, {"message":"Video ready."})
+    nose.tools.assert_equal(metadata, {"succeeded": True, "message":"Video ready."})
     break
 
   context.agent.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":context.sid}))

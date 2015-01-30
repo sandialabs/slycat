@@ -1,4 +1,4 @@
-#!/bin/env python 
+#!/bin/env python
 
 # Copyright 2013, Sandia Corporation. Under the terms of Contract
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
@@ -79,10 +79,11 @@ def browse(command):
     names = [name]
 
   listing = {
-    "path":path,
-    "names":[],
-    "sizes":[],
-    "types":[],
+    "succeeded": True,
+    "path": path,
+    "names": [],
+    "sizes": [],
+    "types": [],
     }
 
   for name in names:
@@ -129,7 +130,7 @@ def get_file(command):
     raise Exception(e.strerror + ".")
 
   content_type, encoding = mimetypes.guess_type(path, strict=False)
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"File retrieved.", "path":path, "content-type":content_type, "size":len(content)}), content))
+  sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "File retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
   sys.stdout.flush()
 
 # Handle the 'get-image' command.
@@ -159,7 +160,7 @@ def get_image(command):
       raise Exception(e.strerror + ".")
 
     content_type, encoding = mimetypes.guess_type(path, strict=False)
-    sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":path, "content-type":content_type, "size":len(content)}), content))
+    sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "Image retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
     sys.stdout.flush()
     return
 
@@ -191,7 +192,7 @@ def get_image(command):
     image.save(content, "PNG")
 
   # Send the results back to the caller.
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Image retrieved.", "path":path, "content-type":requested_content_type, "size":len(content.getvalue())}), content.getvalue()))
+  sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "Image retrieved.", "path": path, "content-type": requested_content_type, "size": len(content.getvalue())}), content.getvalue()))
   sys.stdout.flush()
 
 # Handle the 'create-video' command.
@@ -209,7 +210,7 @@ def create_video(command, arguments):
   session_cache[sid] = VideoSession(arguments.ffmpeg, command["content-type"], command["images"])
   session_cache[sid].start()
 
-  sys.stdout.write("%s\n" % json.dumps({"message":"Creating video.", "sid":sid}))
+  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "message": "Creating video.", "sid": sid}))
   sys.stdout.flush()
 
 def video_status(command, arguments):
@@ -224,7 +225,7 @@ def video_status(command, arguments):
     raise Exception("Video creation failed: %s" % session.failed)
   if session.result is None:
     raise Exception("Not ready.")
-  sys.stdout.write("%s\n" % json.dumps({"message":"Video ready."}))
+  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "message": "Video ready."}))
   sys.stdout.flush()
 
 def get_video(command, arguments):
@@ -240,7 +241,7 @@ def get_video(command, arguments):
   if session.result is None:
     raise Exception("Not ready.")
   content = open(session.result, "rb").read()
-  sys.stdout.write("%s\n%s" % (json.dumps({"message":"Video retrieved.", "content-type":session.content_type, "size":len(content)}), content))
+  sys.stdout.write("%s\n%s" % (json.dumps({"succeeded": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}), content))
   sys.stdout.flush()
 
 def main():
@@ -249,20 +250,22 @@ def main():
   parser.add_argument("--ffmpeg", default=None, help="Absolute path to an ffmpeg executable.")
   arguments = parser.parse_args()
 
-  if arguments.ffmpeg is not None:
-    if not os.path.isabs(arguments.ffmpeg):
-      sys.stdout.write("%s\n" % json.dumps({"message":"--ffmpeg must specify an absolute path."}))
-      return
-    if not os.path.exists(arguments.ffmpeg):
-      sys.stdout.write("%s\n" % json.dumps({"message":"--ffmpeg must specify an existing file."}))
-      return
+  try:
+    if arguments.ffmpeg is not None:
+      if not os.path.isabs(arguments.ffmpeg):
+        raise Exception("--ffmpeg must specify an absolute path.")
+      if not os.path.exists(arguments.ffmpeg):
+        raise Exception("--ffmpeg must specify an existing file.")
+  except Exception as e:
+    sys.stdout.write("%s\n" % json.dumps({"succeeded": False, "message":e.message}))
+    sys.stdout.flush()
 
   # Setup some nonstandard MIME types.
   mimetypes.add_type("text/csv", ".csv", strict=False)
   mimetypes.add_type("video/webm", ".webm", strict=False)
 
   # Let the caller know we're ready to handle commands.
-  sys.stdout.write("%s\n" % json.dumps({"message":"Ready."}))
+  sys.stdout.write("%s\n" % json.dumps({"succeeded": True, "message": "Ready."}))
   sys.stdout.flush()
 
   while True:
@@ -298,7 +301,7 @@ def main():
       else:
         raise Exception("Unknown command.")
     except Exception as e:
-      sys.stdout.write("%s\n" % json.dumps({"message":e.message}))
+      sys.stdout.write("%s\n" % json.dumps({"succeeded": False, "message":e.message}))
       sys.stdout.flush()
 
 if __name__ == "__main__":
