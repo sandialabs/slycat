@@ -13,11 +13,9 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       var scrollbar = this;
       scrollbar.axis = ko.unwrap(params.axis) || "vertical";
       scrollbar.length = params.length || ko.observable(500);
-      scrollbar.width = params.width || ko.observable(10);
-      scrollbar.bar =
+      scrollbar.thumb =
       {
-        length: params.bar_length || ko.observable(scrollbar.length() * 0.1),
-        width: params.bar_width || scrollbar.width,
+        length: params.thumb_length || ko.observable(scrollbar.length() * 0.1),
         dragging: params.dragging || ko.observable(false),
         last_drag: null,
       };
@@ -31,54 +29,55 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       {
         min: ko.observable(0),
       };
-
       scrollbar.range.max = ko.pureComputed(function()
       {
-        return scrollbar.length() - scrollbar.bar.length();
+        return scrollbar.length() - scrollbar.thumb.length();
       });
       scrollbar.range.value = ko.pureComputed(function()
       {
         return (scrollbar.domain.value() - scrollbar.domain.min()) / (scrollbar.domain.max() - scrollbar.domain.min()) * (scrollbar.range.max() - scrollbar.range.min() + scrollbar.range.min());
       });
+      scrollbar.css = ko.pureComputed(function()
+      {
+        return scrollbar.axis + (scrollbar.thumb.dragging() ? " dragging" : "");
+      });
       scrollbar.style = ko.pureComputed(function()
       {
         var result = {};
         result[scrollbar.axis == "vertical" ? "height" : "width"] = scrollbar.length() + "px";
-        result[scrollbar.axis == "vertical" ? "width" : "height"] = scrollbar.width() + "px";
         return result;
       });
-      scrollbar.bar.style = ko.pureComputed(function()
+      scrollbar.thumb.style = ko.pureComputed(function()
       {
         var result = {};
-        result[scrollbar.axis == "vertical" ? "height" : "width"] = scrollbar.bar.length() + "px";
-        result[scrollbar.axis == "vertical" ? "width" : "height"] = scrollbar.bar.width() + "px";
+        result[scrollbar.axis == "vertical" ? "height" : "width"] = scrollbar.thumb.length() + "px";
         result[scrollbar.axis == "vertical" ? "top" : "left"] = scrollbar.range.value() + "px";
         return result;
       });
-      scrollbar.bar.mousedown = function(model, event)
+      scrollbar.thumb.mousedown = function(model, event)
       {
-        scrollbar.bar.dragging(true);
-        scrollbar.bar.last_drag = [event.screenX, event.screenY];
-        window.addEventListener("mousemove", scrollbar.bar.mousemove, true);
-        window.addEventListener("mouseup", scrollbar.bar.mouseup, true);
+        scrollbar.thumb.dragging(true);
+        scrollbar.thumb.last_drag = [event.screenX, event.screenY];
+        window.addEventListener("mousemove", scrollbar.thumb.mousemove, true);
+        window.addEventListener("mouseup", scrollbar.thumb.mouseup, true);
       }
-      scrollbar.bar.mousemove = function(event)
+      scrollbar.thumb.mousemove = function(event)
       {
         var new_range;
         if(scrollbar.axis == "vertical")
-          new_range = scrollbar.range.value() + event.screenY - scrollbar.bar.last_drag[1];
+          new_range = scrollbar.range.value() + event.screenY - scrollbar.thumb.last_drag[1];
         else
-          new_range = scrollbar.range.value() + event.screenX - scrollbar.bar.last_drag[0];
+          new_range = scrollbar.range.value() + event.screenX - scrollbar.thumb.last_drag[0];
         var new_value = (new_range - scrollbar.range.min()) / (scrollbar.range.max() - scrollbar.range.min()) * (scrollbar.domain.max() - scrollbar.domain.min()) + scrollbar.domain.min();
 
         scrollbar.domain.value(Math.max(scrollbar.domain.min(), Math.min(scrollbar.domain.max(), new_value)));
-        scrollbar.bar.last_drag = [event.screenX, event.screenY];
+        scrollbar.thumb.last_drag = [event.screenX, event.screenY];
       }
-      scrollbar.bar.mouseup = function(event)
+      scrollbar.thumb.mouseup = function(event)
       {
-        scrollbar.bar.dragging(false);
-        window.removeEventListener("mousemove", scrollbar.bar.mousemove, true);
-        window.removeEventListener("mouseup", scrollbar.bar.mouseup, true);
+        scrollbar.thumb.dragging(false);
+        window.removeEventListener("mousemove", scrollbar.thumb.mousemove, true);
+        window.removeEventListener("mouseup", scrollbar.thumb.mouseup, true);
       }
     },
     template: { require: "text!" + server_root + "templates/slycat-scrollbar.html" }

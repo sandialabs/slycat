@@ -2,6 +2,8 @@
 <html>
   <head>
     <link id="slycat-server-root" href="/">
+    <link rel="stylesheet" href="css/namespaced-bootstrap.css">
+    <link rel="stylesheet" href="css/slycat.css">
     <script src="js/curl.js"></script>
     <script src="js/slycat-curl-config.js"></script>
     <script src="js/jquery-2.1.1.min.js"></script>
@@ -10,6 +12,11 @@
     <script src="js/slycat-server-root.js"></script>
     <script src="js/slycat-scrollbar.js"></script>
     <style>
+      body
+      {
+        background: white;
+      }
+
       .container
       {
         border-collapse: collapse;
@@ -28,24 +35,6 @@
         width: 100%;
         height: 100%;
       }
-
-      .slycat-scrollbar-container
-      {
-        border: 1px solid lightgray;
-        border-radius: 6px;
-      }
-      .slycat-scrollbar-bar
-      {
-        background: lightgray;
-        border-radius: 6px;
-        transition: background .25s ease-in-out;
-        -moz-transition: background .25s ease-in-out;
-        -webkit-transition: background .25s ease-in-out;
-      }
-      .slycat-scrollbar-bar:hover, .slycat-scrollbar-bar.dragging
-      {
-        background: gray;
-      }
     </style>
     <title>Slycat Scrollbar Test</title>
   </head>
@@ -56,12 +45,12 @@
           <div class="viewport"></div>
         </td>
         <td>
-          <slycat-scrollbar params="axis:'vertical', length:viewport_height, width:scrollbar_width, domain_value:y"></slycat-scrollbar>
+          <slycat-scrollbar params="axis:'vertical', length:viewport_height, domain_value:y"></slycat-scrollbar>
         </td>
       </tr>
       <tr>
         <td>
-          <slycat-scrollbar params="axis:'horizontal', length:viewport_width, width:scrollbar_width, domain_value:x"></slycat-scrollbar>
+          <slycat-scrollbar params="axis:'horizontal', length:viewport_width, domain_value:x"></slycat-scrollbar>
         </td>
         <td>
         </td>

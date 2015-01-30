@@ -199,6 +199,36 @@ slycat-navbar .alert pre
   background: #eee;
 }
 
+.slycat-scrollbar
+{
+  border: 1px solid lightgray;
+  border-radius: 6px;
+}
+
+.slycat-scrollbar.vertical, .slycat-scrollbar.vertical .thumb
+{
+  width: 12px;
+}
+
+.slycat-scrollbar.horizontal, .slycat-scrollbar.horizontal .thumb
+{
+  height: 12px;
+}
+
+.slycat-scrollbar .thumb
+{
+  background: lightgray;
+  border-radius: 6px;
+  transition: background .25s ease-in-out;
+  -moz-transition: background .25s ease-in-out;
+  -webkit-transition: background .25s ease-in-out;
+}
+
+.slycat-scrollbar .thumb:hover, .slycat-scrollbar.dragging .thumb, .slycat-scrollbar:hover .thumb
+{
+  background: gray;
+}
+
 .slycat-content
 {
   background-color: #f2f2f2;
