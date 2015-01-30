@@ -247,8 +247,12 @@ def get_video(command, arguments):
 def main():
   # Parse and sanity-check command-line arguments.
   parser = argparse.ArgumentParser()
+  parser.add_argument("--fail", default=False, action="store_true", help="Fail immediately on startup.  Obviously, this is for testing.")
   parser.add_argument("--ffmpeg", default=None, help="Absolute path to an ffmpeg executable.")
   arguments = parser.parse_args()
+
+  if arguments.fail:
+    exit(-1)
 
   try:
     if arguments.ffmpeg is not None:

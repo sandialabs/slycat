@@ -142,11 +142,20 @@ def create_session(hostname, username, password):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
     stdin, stdout, stderr = ssh.exec_command(cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]["command"])
-    startup = json.loads(stdout.readline())
+    # Handle catastrophic startup failures.
+    try:
+      startup = json.loads(stdout.readline())
+    except Exception as e:
+      raise cherrypy.HTTPError("500 Agent startup failed: %s" % str(e))
     cherrypy.log.error("Agent for %s@%s reported %s" % (username, hostname, startup))
+    # Handle clean startup failures.
+    if not startup["succeeded"]:
+      raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
     with session_cache_lock:
       session_cache[sid] = Session(username, hostname, cherrypy.request.remote.ip, ssh, stdin, stdout, stderr)
     return sid
+  except cherrypy.HTTPError:
+    raise
   except paramiko.AuthenticationException as e:
     cherrypy.log.error("%s %s" % (type(e), str(e)))
     raise cherrypy.HTTPError("403 Remote authentication failed.")
