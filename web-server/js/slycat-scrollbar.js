@@ -35,7 +35,13 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       });
       scrollbar.range.value = ko.pureComputed(function()
       {
-        return (scrollbar.domain.value() - scrollbar.domain.min()) / (scrollbar.domain.max() - scrollbar.domain.min()) * (scrollbar.range.max() - scrollbar.range.min() + scrollbar.range.min());
+        var domain_min = scrollbar.domain.min();
+        var domain_value = scrollbar.domain.value();
+        var domain_max = scrollbar.domain.max();
+        var range_min = scrollbar.range.min();
+        var range_max = scrollbar.range.max();
+
+        return (domain_value - domain_min) / (domain_max - domain_min) * (range_max - range_min) + range_min;
       });
       scrollbar.css = ko.pureComputed(function()
       {
@@ -63,14 +69,21 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       }
       scrollbar.thumb.mousemove = function(event)
       {
+        var domain_min = scrollbar.domain.min();
+        var domain_max = scrollbar.domain.max();
+        var range_min = scrollbar.range.min();
+        var range_value = scrollbar.range.value();
+        var range_max = scrollbar.range.max();
+
         var new_range;
         if(scrollbar.axis == "vertical")
-          new_range = scrollbar.range.value() + event.screenY - scrollbar.thumb.last_drag[1];
+          new_range = range_value + event.screenY - scrollbar.thumb.last_drag[1];
         else
-          new_range = scrollbar.range.value() + event.screenX - scrollbar.thumb.last_drag[0];
-        var new_value = (new_range - scrollbar.range.min()) / (scrollbar.range.max() - scrollbar.range.min()) * (scrollbar.domain.max() - scrollbar.domain.min()) + scrollbar.domain.min();
+          new_range = range_value + event.screenX - scrollbar.thumb.last_drag[0];
 
-        scrollbar.domain.value(Math.max(scrollbar.domain.min(), Math.min(scrollbar.domain.max(), new_value)));
+        var new_value = (new_range - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
+
+        scrollbar.domain.value(Math.max(domain_min, Math.min(domain_max, new_value)));
         scrollbar.thumb.last_drag = [event.screenX, event.screenY];
       }
       scrollbar.thumb.mouseup = function(event)
