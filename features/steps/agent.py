@@ -10,9 +10,8 @@ import subprocess
 import tempfile
 import time
 
-this_dir = os.path.dirname(__file__)
-parent_dir = os.path.dirname(os.path.dirname(__file__))
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+data_dir = os.path.join(root_dir, "features/data/agent")
 
 @when("an unparsable command is received")
 def step_impl(context):
@@ -66,7 +65,7 @@ def step_impl(context):
 
 @when(u'browsing a nonexistent path')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.join(this_dir, "foo.bar")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":os.path.join(data_dir, "nonexistent-dir")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return a path not found error')
@@ -75,38 +74,40 @@ def step_impl(context):
 
 @when(u'browsing a directory')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":parent_dir}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":data_dir}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information')
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
   nose.tools.assert_in("path", listing)
-  nose.tools.assert_equal(listing["names"], ["environment.py", "slycat-agent.feature", "steps"])
+  nose.tools.assert_equal(listing["names"], ["slycat-logo-navbar.jpg", "slycat-logo-navbar.png", "slycat-logo.png", "subdir"])
   nose.tools.assert_in("sizes", listing)
-  nose.tools.assert_equal(listing["types"], ["f", "f", "d"])
+  nose.tools.assert_equal(listing["types"], ["f", "f", "f", "d"])
 
 @when(u'browsing a directory with a file reject rule')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "path":os.path.join(root_dir, "packages/slycat")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]png$", "path":data_dir}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected files')
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
-  nose.tools.assert_not_in("hdf5.py", listing["names"])
-  nose.tools.assert_not_in("hyperslice.py", listing["names"])
+  nose.tools.assert_in("slycat-logo-navbar.jpg", listing["names"])
+  nose.tools.assert_not_in("slycat-logo-navbar.png", listing["names"])
+  nose.tools.assert_not_in("slycat-logo.png", listing["names"])
 
 @when(u'browsing a directory with file reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]py$", "file-allow":"hdf5[.]py$", "path":os.path.join(root_dir, "packages/slycat")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "file-reject":"[.]png$", "file-allow":"slycat-logo[.]png$", "path":data_dir}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected files, with the allowed files')
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
-  nose.tools.assert_in("hdf5.py", listing["names"])
-  nose.tools.assert_not_in("hyperslice.py", listing["names"])
+  nose.tools.assert_in("slycat-logo-navbar.jpg", listing["names"])
+  nose.tools.assert_not_in("slycat-logo-navbar.png", listing["names"])
+  nose.tools.assert_in("slycat-logo.png", listing["names"])
 
 @when(u'browsing a directory with a directory reject rule')
 def step_impl(context):
@@ -171,7 +172,7 @@ def step_impl(context):
 
 @given(u'a nonexistent file')
 def step_impl(context):
-  context.path = os.path.join(this_dir, "foo.txt")
+  context.path = os.path.join(data_dir, "nonexistent.txt")
 
 @given(u'the file has no permissions')
 def step_impl(context):
@@ -204,11 +205,11 @@ def step_impl(context):
 def step_impl(context):
   with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as file:
     context.path = file.name
-    file.write(open(os.path.join(root_dir, "artwork/slycat-logo.jpg"), "rb").read())
+    file.write(open(os.path.join(data_dir, "slycat-logo-navbar.jpg"), "rb").read())
 
 @given(u'a nonexistent image')
 def step_impl(context):
-  context.path = os.path.join(this_dir, "nonexistent.jpg")
+  context.path = os.path.join(data_dir, "nonexistent.jpg")
 
 @when(u'retrieving an image without a path')
 def step_impl(context):
@@ -251,7 +252,7 @@ def step_impl(context):
   nose.tools.assert_equal(metadata["content-type"], "image/jpeg")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
-  nose.tools.assert_equal(image.size, (290, 634))
+  nose.tools.assert_equal(image.size, (1324, 292))
 
 @then(u'the agent should return a jpeg image with maximum width')
 def step_impl(context):
@@ -260,7 +261,7 @@ def step_impl(context):
   nose.tools.assert_equal(metadata["content-type"], "image/jpeg")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
-  nose.tools.assert_equal(image.size, (200, 437))
+  nose.tools.assert_equal(image.size, (200, 44))
 
 @then(u'the agent should return a jpeg image with maximum size')
 def step_impl(context):
@@ -269,7 +270,7 @@ def step_impl(context):
   nose.tools.assert_equal(metadata["content-type"], "image/jpeg")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
-  nose.tools.assert_equal(image.size, (228, 500))
+  nose.tools.assert_equal(image.size, (500, 110))
 
 @then(u'the agent should return the converted png image')
 def step_impl(context):
@@ -278,7 +279,7 @@ def step_impl(context):
   nose.tools.assert_equal(metadata["content-type"], "image/png")
   content = StringIO.StringIO(context.agent.stdout.read(metadata["size"]))
   image = PIL.Image.open(content)
-  nose.tools.assert_equal(image.size, (290, 634))
+  nose.tools.assert_equal(image.size, (1324, 292))
 
 ####################################################################################################
 # Video creation
