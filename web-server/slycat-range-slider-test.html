@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link id="slycat-server-root" href="/">
+    <link rel="stylesheet" href="css/namespaced-bootstrap.css">
+    <link rel="stylesheet" href="css/slycat.css">
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+    <script src="js/knockout.mapping.js"></script>
+    <script src="js/slycat-server-root.js"></script>
+    <script src="js/slycat-range-slider.js"></script>
+    <style>
+      body
+      {
+        background: white;
+      }
+
+      .slycat-range-slider.vertical
+      {
+        display: inline-block;
+      }
+    </style>
+    <title>Slycat Range Slider Test</title>
+  </head>
+  <body>
+    <slycat-range-slider params="axis:'vertical', length:length, domain_value:y"></slycat-range-slider>
+    <slycat-range-slider params="axis:'vertical', reverse: true, length:length, domain_value:y"></slycat-range-slider>
+    <slycat-range-slider params="axis:'horizontal', length:length, domain_value:x"></slycat-range-slider>
+    <slycat-range-slider params="axis:'horizontal', reverse: true, length:length, domain_value:x"></slycat-range-slider>
+
+    <p>x: <span data-bind="text: x"></span></p>
+    <p>y: <span data-bind="text: y"></span></p>
+    <script>
+      require(["knockout", "knockout-mapping"], function(ko, mapping)
+      {
+        var page = mapping.fromJS(
+        {
+          x: 0.5,
+          y: 0.5,
+          length: 600,
+        });
+        ko.applyBindings(page);
+      });
+    </script>
+  </body>
+</html>

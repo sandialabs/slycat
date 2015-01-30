@@ -229,6 +229,36 @@ slycat-navbar .alert pre
   background: gray;
 }
 
+.slycat-range-slider
+{
+  border: 1px solid lightgray;
+  border-radius: 6px;
+}
+
+.slycat-range-slider.vertical, .slycat-range-slider.vertical .thumb
+{
+  width: 12px;
+}
+
+.slycat-range-slider.horizontal, .slycat-range-slider.horizontal .thumb
+{
+  height: 12px;
+}
+
+.slycat-range-slider .thumb
+{
+  background: lightgray;
+  border-radius: 6px;
+  transition: background .25s ease-in-out;
+  -moz-transition: background .25s ease-in-out;
+  -webkit-transition: background .25s ease-in-out;
+}
+
+.slycat-range-slider .thumb:hover, .slycat-range-slider.dragging .thumb, .slycat-range-slider:hover .thumb
+{
+  background: gray;
+}
+
 .slycat-content
 {
   background-color: #f2f2f2;
