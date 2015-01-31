@@ -26,7 +26,7 @@ application/json
 See Also
 --------
 
--  :ref:`GET Model`
--  :ref:`POST Model Finish`
--  :ref:`DELETE Model`
+- :ref:`GET Model`
+- :ref:`POST Model Finish`
+- :http:delete:`/models/(mid)`
 

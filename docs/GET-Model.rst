@@ -76,7 +76,7 @@ Sample Response
 See Also
 --------
 
--  :ref:`POST Project Models`
--  :ref:`PUT Model`
--  :ref:`DELETE Model`
+- :ref:`POST Project Models`
+- :ref:`PUT Model`
+- :http:delete:`/models/(mid)`
 

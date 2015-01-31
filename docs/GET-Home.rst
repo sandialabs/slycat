@@ -1,29 +1,14 @@
-.. _GET Home:
-
 GET Home
 ========
-Description
------------
 
-Returns a redirect to /projects.
+.. http:get:: /
 
-Requests
---------
+  Returns a redirect to /projects.
 
-Syntax
-^^^^^^
-
-::
-
-    GET /
-
-Responses
----------
-
-Returns an HTTP redirect to /projects.
+  :status 303: Redirect to :http:get:`/projects`.
 
 See Also
 --------
 
--  :ref:`GET Projects`
+- :http:get:`/projects`
 

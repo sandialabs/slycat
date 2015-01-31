@@ -141,7 +141,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`DELETE Model`
+    :http:delete:`/models/(mid)`
     """
     self.request("DELETE", "/models/%s" % (mid))
 
@@ -155,7 +155,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`DELETE Project`
+    :http:delete:`/projects/(pid)`
     """
     self.request("DELETE", "/projects/%s" % (pid))
 
@@ -307,7 +307,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`GET Projects`
+    :http:get:`/projects`
     """
     return self.request("GET", "/projects", headers={"accept":"application/json"})
 

@@ -65,6 +65,5 @@ Sample Response
 See Also
 --------
 
--  :ref:`PUT Project`
--  :ref:`DELETE Project`
-
+- :http:put:`/projects/(pid)`
+- :http:delete:`/projects/(pid)`

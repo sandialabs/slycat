@@ -1,35 +1,18 @@
-.. _DELETE Project:
-
 DELETE Project
 ==============
-Description
------------
 
-Deletes a project and all its models.
+.. http:delete:: /projects/(pid)
 
-Requests
---------
+  Deletes a project and all its models.
 
-Syntax
-^^^^^^
+  :param pid: Unique project identifier.
+  :type mid: string
 
-::
+  :status 204 Project deleted.: The project, its models, and artifacts have been deleted.
 
-    DELETE /projects/(pid)
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     DELETE /projects/dbaf026f919620acbf2e961ad732433d HTTP/1.1
     Host: localhost:8093
@@ -39,10 +22,9 @@ Sample Request
     Accept: */*
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 204 Project deleted.
     Date: Mon, 25 Nov 2013 20:35:59 GMT
@@ -52,6 +34,6 @@ Sample Response
 See Also
 --------
 
--  :ref:`GET Project`
--  :ref:`PUT Project`
+- :ref:`GET Project`
+- :http:put:`/projects/(pid)`
 

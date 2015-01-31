@@ -68,7 +68,7 @@ Sample Response
 See Also
 --------
 
--  :ref:`GET Model`
--  :ref:`PUT Model`
--  :ref:`DELETE Model`
+- :ref:`GET Model`
+- :ref:`PUT Model`
+- :http:delete:`/models/(mid)`
 

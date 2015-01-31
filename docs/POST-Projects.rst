@@ -73,5 +73,5 @@ Sample Result
 See Also
 --------
 
--  :ref:`GET Projects`
+- :http:get:`/projects`
 

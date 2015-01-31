@@ -1,6 +1,3 @@
-.. _PUT Project:
-.. default-domain:: http
-
 PUT Project
 ===========
 
@@ -12,9 +9,9 @@ PUT Project
   :param pid: Unique project identifier.
   :type pid: string
 
-  :<json string name: Optional new project name.
-  :<json string description: Optional new project description.
-  :<json object acl: Optional new project access control list.
+  :<json string name: optional, New project name.
+  :<json string description: optional, New project description.
+  :<json object acl: optional, New project access control list.
 
   **Sample Request**
 
@@ -50,6 +47,5 @@ PUT Project
 See Also
 --------
 
--  :ref:`GET Project`
--  :ref:`DELETE Project`
-
+- :ref:`GET Project`
+- :http:delete:`/projects/(pid)`
