@@ -1,38 +1,24 @@
 .. _PUT Project:
+.. default-domain:: http
 
 PUT Project
 ===========
-Description
------------
 
-Modifies a project. Callers may use PUT to specify a new name,
-description, or access control list (ACL) for the project.
+.. http:put:: /projects/(pid)
 
-Requests
---------
+  Modifies a project. Callers may use PUT to specify a new name,
+  description, or access control list (ACL) for the project.
 
-Syntax
-^^^^^^
+  :param pid: Unique project identifier.
+  :type pid: string
 
-::
+  :<json string name: Optional new project name.
+  :<json string description: Optional new project description.
+  :<json object acl: Optional new project access control list.
 
-    PUT /projects/(pid)
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     PUT /projects/dbaf026f919620acbf2e961ad73243c5 HTTP/1.1
     Host: localhost:8093
@@ -49,10 +35,9 @@ Sample Request
       "description": "My modified project."
     }
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:35:59 GMT

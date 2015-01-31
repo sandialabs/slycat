@@ -52,10 +52,11 @@ for module_name in ["couchdb", "couchdb.client", "h5py", "numpy", "paramiko", "p
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.mathjax",
-    "sphinxcontrib.napoleon",
+  "sphinx.ext.autodoc",
+  "sphinx.ext.viewcode",
+  "sphinx.ext.mathjax",
+  "sphinxcontrib.napoleon",
+  "sphinxcontrib.httpdomain",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -1,3 +1,4 @@
 cherrypy == 3.2.6
 sphinx_rtd_theme
 sphinxcontrib-napoleon
+sphinxcontrib-httpdomain
