@@ -151,6 +151,23 @@ slycat-navbar .alert pre
     border-color: transparent;
 }
 
+.slycat-content
+{
+  background-color: #f2f2f2;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  min-height: calc(100vh - 50px);
+}
+
+#slycat-projects, #slycat-project
+{
+  padding-top: 12px;
+}
+
+/* slycat-remote-browser component */
+
 .slycat-remote-browser
 {
   display: -webkit-flex;
@@ -199,6 +216,8 @@ slycat-navbar .alert pre
   background: #eee;
 }
 
+/* slycat-scrollbar component */
+
 .slycat-scrollbar
 {
   border: 1px solid lightgray;
@@ -229,38 +248,73 @@ slycat-navbar .alert pre
   background: gray;
 }
 
+/* slycat-range-slider component */
+
 .slycat-range-slider
 {
-  border: 1px solid lightgray;
+}
+
+.slycat-range-slider .domain
+{
+  background: #ddd;
+  border: 1px solid #ccc;
   border-radius: 6px;
 }
 
-.slycat-range-slider.vertical, .slycat-range-slider.vertical .range, .slycat-range-slider.vertical .thumb
+.slycat-range-slider.vertical .domain
 {
-  width: 12px;
+  left: 3px;
+  right: 3px;
+  top: 0;
+  bottom: 0;
 }
 
-.slycat-range-slider.horizontal, .slycat-range-slider.horizontal .range, .slycat-range-slider.horizontal .thumb
+.slycat-range-slider.horizontal .domain
 {
-  height: 12px;
+  left: 0;
+  right: 0;
+  top: 3px;
+  bottom: 3px;
 }
 
 .slycat-range-slider .range
 {
-  background: #e8e8ff;
+  background: #aabbff;
 }
 
 .slycat-range-slider:hover .range
 {
-  background: #ddddff;
+  background: #7788ff;
   transition: background .25s ease-in-out;
   -moz-transition: background .25s ease-in-out;
   -webkit-transition: background .25s ease-in-out;
 }
 
+.slycat-range-slider.vertical .range
+{
+  left: 3px;
+  right: 3px;
+}
+
+.slycat-range-slider.horizontal .range
+{
+  top: 3px;
+  bottom: 3px;
+}
+
+.slycat-range-slider.vertical, .slycat-range-slider.vertical .thumb
+{
+  width: 12px;
+}
+
+.slycat-range-slider.horizontal, .slycat-range-slider.horizontal .thumb
+{
+  height: 12px;
+}
+
 .slycat-range-slider .thumb
 {
-  background: lightgray;
+  background: #bbb;
   border-radius: 6px;
   transition: background .25s ease-in-out;
   -moz-transition: background .25s ease-in-out;
@@ -269,21 +323,6 @@ slycat-navbar .alert pre
 
 .slycat-range-slider .thumb:hover, .slycat-range-slider.dragging .thumb, .slycat-range-slider:hover .thumb
 {
-  background: gray;
-}
-
-.slycat-content
-{
-  background-color: #f2f2f2;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: column;
-  flex-direction: column;
-  min-height: calc(100vh - 50px);
-}
-
-#slycat-projects, #slycat-project
-{
-  padding-top: 12px;
+  background: #888;
 }
 

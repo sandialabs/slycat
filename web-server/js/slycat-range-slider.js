@@ -16,13 +16,13 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       scrollbar.length = params.length || ko.observable(500);
       scrollbar.low_thumb =
       {
-        length: params.thumb_length || ko.observable(scrollbar.length() * 0.1),
+        length: params.thumb_length || ko.observable(12),
         dragging: params.dragging || ko.observable(false),
         last_drag: null,
       };
       scrollbar.high_thumb =
       {
-        length: params.thumb_length || ko.observable(scrollbar.length() * 0.1),
+        length: params.thumb_length || ko.observable(12),
         dragging: params.dragging || ko.observable(false),
         last_drag: null,
       };
