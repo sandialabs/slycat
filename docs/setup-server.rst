@@ -1,10 +1,10 @@
-.. _Setup Slycat Web Server:
+.. _setup-slycat-web-server:
 
 Setup Slycat Web Server
 =======================
 
 Note: If you're new to Slycat and are here give it a try, please see
-:ref:`Install Slycat` instead. The following is a guide for
+:ref:`install-slycat` instead. The following is a guide for
 users who are ready to setup their own Slycat Web Server for production.
 
 Use the Docker Image
@@ -12,7 +12,7 @@ Use the Docker Image
 
 Many administrators should be able to use the Slycat Docker image in production directly, 
 and we strongly urge you to try this approach first - after
-following the instructions to :ref:`Install Slycat`, you can simply ssh into the running Docker container::
+following the instructions at :ref:`install-slycat`, you can simply ssh into the running Docker container::
 
   $ ssh slycat@<docker ip address> -p2222
 

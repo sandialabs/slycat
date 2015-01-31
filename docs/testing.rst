@@ -1,4 +1,4 @@
-.. _Testing:
+.. _testing:
 
 Testing
 =======

@@ -1,13 +1,13 @@
-.. _Setup Slycat Clients:
+.. _setup-slycat-clients:
 
 Setup Slycat Clients
 ====================
 
 Note: If you're new to Slycat and are here give it a try, please see
-:ref:`Install Slycat` instead. The following outlines how to setup a host
+:ref:`install-slycat` instead. The following outlines how to setup a host
 to use the client scripts included with Slycat to upload data to an
 existing Slycat web server. If you don't already have a web server, you
-probably want to start with :ref:`Setup Slycat Web Server`.
+probably want to start with :ref:`setup-slycat-web-server`.
 
 Slycat includes a Python package to simplify writing custom clients.
 Custom clients are often required to handle data ingestion, performing

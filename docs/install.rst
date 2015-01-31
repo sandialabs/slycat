@@ -1,13 +1,13 @@
-.. _Install Slycat:
+.. _install-slycat:
 
 Install Slycat
 =================
 
-As a convenience, we provide a `Docker <http://www.docker.com>`_ image that
-has Slycat and all its dependencies preinstalled. Using the Slycat image,
-you can quickly begin exploring Slycat, try some tutorials, and run small
-analyses on your own data. Eventually you might want to :ref:`Setup Slycat Web
-Server` on your own hardware to perform large-scale analyses.
+As a convenience, we provide a `Docker <http://www.docker.com>`_ image that has
+Slycat and all its dependencies preinstalled. Using the Slycat image, you can
+quickly begin exploring Slycat, try some tutorials, and run small analyses on
+your own data. Eventually you might want to :ref:`setup-slycat-web-server` on
+your own hardware to perform large-scale analyses.
 
 Install Docker
 --------------
@@ -116,5 +116,5 @@ Note that the `https://` is *required*.
 Next Steps
 ----------
 
--  That's it! Now that you're up-and-running, it's time to :ref:`Create a CCA Model`.
+-  That's it! Now that you're up-and-running, it's time to :ref:`create-cca-model`.
 

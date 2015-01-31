@@ -1,4 +1,4 @@
-.. _Managing Docker:
+.. _managing-docker:
 
 Managing Docker
 ===============

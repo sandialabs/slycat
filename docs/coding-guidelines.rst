@@ -1,4 +1,4 @@
-.. _Coding Guidelines:
+.. _coding-guidelines:
 
 Coding Guidelines
 =================

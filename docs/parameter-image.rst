@@ -1,4 +1,4 @@
-.. _Parameter Image Model:
+.. _parameter-image-model:
 
 Parameter Image Model
 =====================

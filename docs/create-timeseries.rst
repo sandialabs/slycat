@@ -1,11 +1,11 @@
-.. _Create a Timeseries Model:
+.. _create-timeseries-model:
 
 Create a Timeseries Model
 =========================
 
 The Slycat *Timeseries Model* provides time series analysis based on
 clustering and comparative visualization of waveforms. However, unlike
-:ref:`Creating a CCA Model <Create a CCA Model>`, you can't upload
+:ref:`Creating a CCA Model <create-cca-model>`, you can't upload
 data for a Timeseries model using your web browser. Instead, you'll use
 one Python script to synthesize some time series data in a format
 suitable for use with Slycat, and a second script to compute the model
@@ -100,4 +100,4 @@ Interact with a Timeseries Model
 Next Steps
 ----------
 
-Next, let's move on to :ref:`Create a Parameter Image Model`.
+Next, let's move on to :ref:`create-parameter-image-model`.

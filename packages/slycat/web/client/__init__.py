@@ -368,7 +368,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`POST Models Finish`
+    :ref:`POST Model Finish`
     """
     self.request("POST", "/models/%s/finish" % (mid))
 

@@ -1,4 +1,4 @@
-.. _Create a CCA Model:
+.. _create-cca-model:
 
 Create a CCA Model
 ==================
@@ -91,4 +91,4 @@ Interact with a CCA Model
 Next Steps
 ----------
 
-Now that you've created your first CCA model it's time to :ref:`Create a Timeseries Model`.
+Now that you've created your first CCA model it's time to :ref:`create-timeseries-model`.

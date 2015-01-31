@@ -1,4 +1,4 @@
-.. _Docker Development:
+.. _docker-development:
 
 Docker Development
 ==================
@@ -10,7 +10,7 @@ guidelines to get you started:
 Prerequisites
 -------------
 
-* We assume that you've already :ref:`Installed Slycat <Install Slycat>` and
+* We assume that you've already :ref:`Installed Slycat <install-slycat>` and
   are familiar with how to manage the Slycat docker image.
 * We provide a special developer's image that modifies the Slycat Docker image
   that you've been working with for easier development, so download and run it now::

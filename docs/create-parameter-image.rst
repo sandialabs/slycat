@@ -1,4 +1,4 @@
-.. _Create a Parameter Image Model:
+.. _create-parameter-image-model:
 
 Create a Parameter Image Model
 ==============================
@@ -105,4 +105,4 @@ Interact with a Parameter Image Model
 Next Steps
 ----------
 
-That's it for the tutorial ... now on to :ref:`Managing Docker`.
+That's it for the tutorial ... now on to :ref:`managing-docker`.

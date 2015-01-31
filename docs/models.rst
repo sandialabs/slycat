@@ -1,4 +1,4 @@
-.. _Models:
+.. _models:
 
 Models
 ======
