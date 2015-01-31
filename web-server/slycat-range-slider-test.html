@@ -25,20 +25,20 @@
     <title>Slycat Range Slider Test</title>
   </head>
   <body>
-    <slycat-range-slider params="axis:'vertical', length:length, domain_value:y"></slycat-range-slider>
-    <slycat-range-slider params="axis:'vertical', reverse: true, length:length, domain_value:y"></slycat-range-slider>
-    <slycat-range-slider params="axis:'horizontal', length:length, domain_value:x"></slycat-range-slider>
-    <slycat-range-slider params="axis:'horizontal', reverse: true, length:length, domain_value:x"></slycat-range-slider>
 
-    <p>x: <span data-bind="text: x"></span></p>
-    <p>y: <span data-bind="text: y"></span></p>
+    <slycat-range-slider params="axis:'vertical', length:length, low_value:x_low, high_value:x_high"></slycat-range-slider>
+    <slycat-range-slider params="axis:'vertical', reverse: true, length:length, low_value:x_low, high_value:x_high"></slycat-range-slider>
+    <slycat-range-slider params="axis:'horizontal', length:length, low_value:x_low, high_value:x_high"></slycat-range-slider>
+    <slycat-range-slider params="axis:'horizontal', reverse: true, length:length, low_value:x_low, high_value:x_high"></slycat-range-slider>
+
+    <p>x: <span data-bind="text: x_low"></span> - <span data-bind="text: x_high"></span></p>
     <script>
       require(["knockout", "knockout-mapping"], function(ko, mapping)
       {
         var page = mapping.fromJS(
         {
-          x: 0.5,
-          y: 0.5,
+          x_low: 0.3,
+          x_high: 0.7,
           length: 600,
         });
         ko.applyBindings(page);

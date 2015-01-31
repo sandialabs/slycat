@@ -235,14 +235,27 @@ slycat-navbar .alert pre
   border-radius: 6px;
 }
 
-.slycat-range-slider.vertical, .slycat-range-slider.vertical .thumb
+.slycat-range-slider.vertical, .slycat-range-slider.vertical .range, .slycat-range-slider.vertical .thumb
 {
   width: 12px;
 }
 
-.slycat-range-slider.horizontal, .slycat-range-slider.horizontal .thumb
+.slycat-range-slider.horizontal, .slycat-range-slider.horizontal .range, .slycat-range-slider.horizontal .thumb
 {
   height: 12px;
+}
+
+.slycat-range-slider .range
+{
+  background: #e8e8ff;
+}
+
+.slycat-range-slider:hover .range
+{
+  background: #ddddff;
+  transition: background .25s ease-in-out;
+  -moz-transition: background .25s ease-in-out;
+  -webkit-transition: background .25s ease-in-out;
 }
 
 .slycat-range-slider .thumb
