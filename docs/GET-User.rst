@@ -1,40 +1,27 @@
-.. _GET User:
-
 GET User
 ========
-Description
------------
 
-Used to retrieve directory information for a given user.
+.. http:get:: /users/(uid)
 
-Requests
---------
+  Retrieve directory information for a given user.
 
-Syntax
-^^^^^^
+  :param uid: User id to retrieve.
+    As a special case, callers may pass `-` as the uid to request information
+    about the currently-logged-in user.
+  :type uid: string
 
-::
+  :resheader Content-Type: application/json
 
-    GET /users/(uid)
+  :>json string uid: User id of the requested user.
+  :>json string email: Email address of the requested user.
+  :>json string name: Full name of the requested user.
 
-As a special case, callers may pass `-` as the uid to request information about
-the currently-logged-in user.
+  :status 200: User metadata retrieved.
+  :status 404: Unknown user.
 
-Responses
----------
+  **Sample Response**
 
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Response
-^^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     {
       "uid": "frfreder",
