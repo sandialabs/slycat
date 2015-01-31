@@ -8,5 +8,6 @@ set of custom AMD modules containing useful components, along with wrappers
 around the :ref:`restful-api`.
 
 .. toctree::
-   :maxdepth: 2
+  :maxdepth: 2
 
+  slycat-range-slider.rst
