@@ -1,31 +1,25 @@
-.. _PUT Model File:
-
 PUT Model File
 ==============
-Description
------------
 
-Upload a file artifact (opaque blob with content type), from the client
-to the model. Specify a parameter "file" with the file contents in the
-body of the request, along with an additional boolean parameter "input".
+.. http:put:: /models/(mid)/files/(name)
 
-Requests
---------
+  Upload a file artifact (opaque blob with content type), from the client
+  to the model.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param name: Unique file name.
+  :type name: string
 
-    PUT /models/(mid)/files/(name)
+  :requestheader Content-Type: form/multipart
 
-Accepts
-^^^^^^^
+  :form file: The file contents.
 
-form/multipart
+  :form input: Set to true if the file is a model input.
 
 See Also
 --------
 
--  :ref:`PUT Model Table`
+-  :http:put:`/models/(mid)/tables/(name)`
 

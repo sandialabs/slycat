@@ -1,91 +1,72 @@
-.. _POST Remote Browse:
-
 POST Remote Browse
 ==================
-Description
------------
 
-Uses an existing session to retrieve remote filesystem information.  The
-session must have been created successfully using :ref:`POST Remotes`.  The caller
-*must* supply the session id, and the path on the remote filesystem to retrieve.
-The caller *may* supply additional parameters to filter directories and files in
-the results, based on regular expressions.
+.. http:post:: /remotes/(sid)/browse(path)
 
-If the session doesn't exist or has timed-out, the server returns `404`.  If some
-other error prevents the data from being returned, the server returns `400`.
+  Uses an existing session to retrieve remote filesystem information.  The
+  session must have been created successfully using :http:post:`/remotes`.  The caller
+  *must* supply the session id, and the path on the remote filesystem to retrieve.
+  The caller *may* supply additional parameters to filter directories and files in
+  the results, based on regular expressions.
 
-Requests
---------
+  If the session doesn't exist or has timed-out, the server returns `404`.  If some
+  other error prevents the data from being returned, the server returns `400`.
 
-Syntax
-^^^^^^
+  :param sid: Unique remote session identifier.
+  :type sid: string
 
-::
+  :param path: Remote filesystem path (must be absolute).
 
-    POST /remotes/(session)/browse(directory)
+  :requestheader Content-Type: application/json
 
-Accepts
-^^^^^^^
+  :<json string directory-reject: optional regular expression for filtering directories.
+  :<json string directory-allow: optional regular expression for retaining directories.
+  :<json string file-reject: optional regular expression for filtering files.
+  :<json string file-allow: optional regular expression for allowing files.
 
-application/json
+  The regular expression parameters are matched against full file / directory
+  paths.  If a file / directory matches a reject expression, it will not be
+  included in the results, unless it also matches an allow expression.  So, to
+  remove JPEG files from the results::
 
-Parameters
-^^^^^^^^^^
+    file-reject: "[.]jpg$|[.]jpeg$"
 
-* directory-reject - optional regular expression for filtering directories.
-* directory-allow - optional regular expression for retaining directories.
-* file-reject - optional regular expression for filtering files.
-* file-allow - optional regular expression for allowing files.
+  but to only return CSV files::
 
-The regular expression parameters are matched against full file / directory
-paths.  If a file / directory matches a reject expression, it will not be
-included in the results, unless it also matches an allow expression.  So, to
-remove JPEG files from the results::
+    file-reject: ".*"
+    file-allow: "[.]csv$"
 
-  file-reject = [.]jpg$|[.]jpeg$  # Reject files that end in .jpg or .jpeg
+  :responseheader Content-Type: application/json
 
-but to only return CSV files::
+  :>json string path: The remote path that was requested.
+  :>json array names: Array containing the names of files and directories under the requested path.
+  :>json array sizes: The size in bytes of files and directories under the requested path.
+  :>json array types: Array containing the type of remote object, files ("f") or directories ("d").
 
-  file-reject = .*       # Reject all files
-  file-allow = [.]csv$   # ... except for files that end in .csv
+  **Sample Request**
 
-Responses
----------
+  .. sourcecode:: http
 
-Returns
-^^^^^^^
+    POST /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
 
-application/json
+    {
+      file-reject:"[.]jpg$"
+    }
 
-Examples
---------
+  **Sample Response**
 
-Sample Request
-^^^^^^^^^^^^^^
+  .. sourcecode:: http
 
-::
-
-  POST /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
-
-  {
-    file-reject:"[.]jpg$"
-  }
-
-Sample Response
-^^^^^^^^^^^^^^^
-
-::
-
-  {
-    "path" : "/home/fred",
-    "names" : ["a.txt", "b.png", "c.csv", "subdir"],
-    "sizes" : [1264, 456730, 78005, 4096],
-    "types' : ["f", "f", "f", "d"]
-  }
+    {
+      "path" : "/home/fred",
+      "names" : ["a.txt", "b.png", "c.csv", "subdir"],
+      "sizes" : [1264, 456730, 78005, 4096],
+      "types' : ["f", "f", "f", "d"]
+    }
 
 See Also
 --------
 
-* :ref:`POST Remotes`
-* :ref:`GET Remote File`
+* :http:post:`/remotes`
+* :http:get:`/remotes/(sid)/file(path)`
 

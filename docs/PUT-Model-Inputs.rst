@@ -1,33 +1,15 @@
-.. _PUT Model Inputs:
-
 PUT Model Inputs
 ================
-Description
------------
 
-Copies the input artifacts from one model to another. The caller
-supplies the id of the source model in the body of the message, e.g:
+.. http:put:: /models/(mid)/inputs
 
-::
+  Copies the input artifacts from one model to another.
+  Both models must be part of the same project.
 
-    { sid : "d72d91a0e187462ba0280adabce5e588" }
+  :param mid: Unique model identifier.
+  :type mid: string
 
-Requests
---------
+  :requestheader Content-Type: application/json
 
-Syntax
-^^^^^^
+  :<json string sid: Unique identifier of the source model.
 
-::
-
-    PUT /models/(mid)/inputs
-
-Accepts
-^^^^^^^
-
-application/json
-
-Preconditions
-^^^^^^^^^^^^^
-
-Both models must be part of the same project.

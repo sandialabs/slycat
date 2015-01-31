@@ -1,41 +1,24 @@
-.. _GET Model Resource:
-
 GET Model Resource
 ==================
 
-Description
------------
+.. http:get:: /resources/models/(mtype)/(resource)
 
-Returns a custom model resource (stylesheet, font, javascript, etc).
+  Returns a custom model resource (stylesheet, font, javascript, etc).
 
-Model plugins may register custom resources for use by the model's user
-interface.  This API is used when the client requests those resources.
+  Model plugins may register custom resources for use by the model's user
+  interface.  This API is used when the client needs to retrieve those resources.
 
-Requests
---------
+  :param mtype: Unique model type code.
+  :type mtype: string
 
-Syntax
-^^^^^^
+  :param resource: Custom resource name.
+  :type resource: string
 
-::
+  :responseheader Content-Type: \*/\*
 
-    GET /resources/models/(mtype)/(resource)
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-\*/\*
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /resources/models/calculator/ui.css HTTP/1.1
     Host: localhost:8093
@@ -44,10 +27,9 @@ Sample Request
     accept: application/json
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:36:01 GMT
@@ -60,6 +42,6 @@ Sample Response
 See Also
 --------
 
--  :ref:`GET Model`
--  :ref:`GET Model Command`
+-  :http:get:`/models/(mid)`
+-  :http:get:`/models/(mid)/commands/(command)`
 

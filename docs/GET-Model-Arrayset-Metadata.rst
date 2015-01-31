@@ -1,62 +1,49 @@
-.. _GET Model Arrayset Metadata:
-
 GET Model Arrayset Metadata
 ===========================
-Description
------------
 
-Used to retrieve metadata and statistics for an arrayset artifact - a
-collection of dense, multidimensional darray objects.  A darray is a dense,
-multi-dimensional, multi-attribute array, suitable for storage of arbitrarily-large
-data.
+.. http:get:: /models/(mid)/arraysets/(name)/metadata
 
-The metadata for a single darray includes the name, type, and half-open range
-of coordinate values for each dimension in the array, plus the name and
-type of each attribute.
+  Used to retrieve metadata and statistics for an arrayset artifact - a
+  collection of dense, multidimensional darray objects.  A darray is a dense,
+  multi-dimensional, multi-attribute array, suitable for storage of arbitrarily-large
+  data.
 
-Statistics can be retrieved for individual darray attributes, and include
-minimum and maximum values for that attribute.  Although statistics are cached,
-retrieving them may be an extremely expensive operation, since they involve
-full scans through their respective attributes.  Because of this, callers are
-encouraged to retrieve statistics only when needed.
+  The metadata for a single darray includes the name, type, and half-open range
+  of coordinate values for each dimension in the array, plus the name and
+  type of each attribute.
 
-GET Model Arrayset Metadata can be called in two ways: without any query string,
-it will return an array containing metadata for every array in the arrayset,
-without any statistics.  With the `arrays` argument, the caller can request
-metadata for an explicit list of semicolon-delimited array indices.  With the
-`statistics` argument, the caller can request statistics for an explicit list
-of semicolon-delimited array-attribute pairs separated by forward slashes.  The
-two arguments can be combined to retrieve arbitrary combinations of array
-metadata and attribute statistics in a single request.
+  Statistics can be retrieved for individual darray attributes, and include
+  minimum and maximum values for that attribute.  Although statistics are cached,
+  retrieving them may be an extremely expensive operation, since they involve
+  full scans through their respective attributes.  Because of this, callers are
+  encouraged to retrieve statistics only when needed.
 
-.. note::
-    Semicolons must be encoded in browser query strings!
+  GET Model Arrayset Metadata can be called in two ways: without any query string,
+  it will return an array containing metadata for every array in the arrayset,
+  without any statistics.  With the `arrays` argument, the caller can request
+  metadata for an explicit list of semicolon-delimited array indices.  With the
+  `statistics` argument, the caller can request statistics for an explicit list
+  of semicolon-delimited array-attribute pairs separated by forward slashes.  The
+  two arguments can be combined to retrieve arbitrary combinations of array
+  metadata and attribute statistics in a single request.
 
-Requests
---------
+  .. note::
+      Semicolons must be encoded in browser query strings!
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param name: Arrayset artifact name.
+  :type name: string
 
-    GET /models/(mid)/arraysets/(aid)/metadata
+  :query arrays: Semicolon-delimited list of integer array indices.
+  :query statistics: Semicolon-delimited list of integer array-attribute pairs separated by forward slashes.
 
-Responses
----------
+  :responseheader Content-Type: application/json
 
-Returns
-^^^^^^^
+  **Simple Request**
 
-application/json
-
-Examples
---------
-
-Simple Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /models/e97077e27af141d6a06f17c9eed6c17a/arraysets/canonical-variables/metadata HTTP/1.1
     Host: localhost:8092
@@ -65,10 +52,9 @@ Simple Request
     Accept: application/json
     User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.6.2.el6.x86_64
 
-Simple Response
-^^^^^^^^^^^^^^^
+  **Simple Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Tue, 11 Jun 2013 19:00:50 GMT
@@ -91,10 +77,9 @@ Simple Response
       }
     ]
 
-Complex Request
-^^^^^^^^^^^^^^^
+  **Complex Request**
 
-::
+  .. sourcecode:: http
 
     GET /models/e97077e27af141d6a06f17c9eed6c17a/arraysets/foo/metadata?arrays=0%3b1&statistics=0/0%3b0/1 HTTP/1.1
     Host: localhost:8092
@@ -103,10 +88,9 @@ Complex Request
     Accept: application/json
     User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.6.2.el6.x86_64
 
-Complex Response
-^^^^^^^^^^^^^^^^
+  **Complex Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Tue, 11 Jun 2013 19:00:50 GMT
@@ -159,9 +143,9 @@ Complex Response
       ]
     }
 
-
 See Also
 --------
 
--  :ref:`GET Model Arrayset Data`
+- :http:get:`/models/(mid)/arraysets/(name)/data`
+- :http:put:`/models/(mid)/arraysets/(name)/data`
 

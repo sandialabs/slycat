@@ -1,51 +1,31 @@
-.. _GET Agent Video Status:
-
 GET Agent Video Status
 ======================
-Description
------------
 
-Uses an existing agent session and video session to retrieve the status of a
-video creation command.  The session must have been created successfully using
-:ref:`POST Agents` and video creation must have been started using :ref:`POST Agent Video`.
-The caller *must* supply the session id and the video session id
-for the video status to retrieve.
+.. http:get:: /agents/(sid)/videos/(vsid)/status
 
-If the session doesn't exist or has timed-out, the server returns `404`.
+  Uses an existing agent video session to retrieve the status of a
+  video creation command.  The session must have been created successfully using
+  :http:post:`/agents` and video creation must have been started using :http:post:`/agents/(sid)/video`.
 
-Otherwise, the status is returned to the caller.
+  :param sid: Unique agent session identifier.
+  :type sid: string
 
-Requests
---------
+  :param vsid: Unique video creation session identifier.
+  :type vsid: string
 
-Syntax
-^^^^^^
+  :responseheader Content-Type: application/json
 
-::
+  :statuscode 404: If the session doesn't exist or has timed out.
 
-    GET /agents/(session)/videos/(video session)/status
+  **Sample Request**
 
-Responses
----------
+  .. sourcecode:: http
 
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
-
-  GET /agents/505d0e463d5ed4a32bb6b0fe9a000d36/videos/431d0e463d5ed4a32bb6b0fe9a000a37/status
+    GET /agents/505d0e463d5ed4a32bb6b0fe9a000d36/videos/431d0e463d5ed4a32bb6b0fe9a000a37/status
 
 See Also
 --------
 
-* :ref:`POST Agent Video`
-* :ref:`GET Agent Video`
+* :http:post:`/agents/(sid)/videos`
+* :http:get:`/agents/(sid)/videos/(vsid)`
 

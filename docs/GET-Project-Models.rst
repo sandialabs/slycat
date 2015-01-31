@@ -1,26 +1,11 @@
-.. _GET Project Models:
-
 GET Project Models
 ==================
-Description
------------
 
-Returns a list of project models.
+.. http:get:: /projects/(pid)/models
 
-Requests
---------
+  Returns a list of project models.
 
-Syntax
-^^^^^^
+  :param pid: Unique project identifier.
+  :type pid: string
 
-::
-
-    GET /projects/(pid)/models
-
-Responses
----------
-
-Returns
-^^^^^^^
-
-application/json
+  :responseheader Content-Type: application/json

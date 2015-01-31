@@ -175,7 +175,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`GET Bookmark`
+    :http:get:`/bookmarks/(bid)`
     """
     return self.request("GET", "/bookmarks/%s" % (bid))
 
@@ -195,7 +195,7 @@ class Connection(object):
 
     See Also
     --------
-    :Ref:`GET Model`
+    :http:get:`/models/(mid)`
     """
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
@@ -256,7 +256,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`PUT Model Parameter`
+    :http:put:`/models/(mid)/parameters/(name)`
     """
     return self.request("GET", "/models/%s/parameters/%s" % (mid, name), headers={"accept":"application/json"})
 
@@ -294,7 +294,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`GET Project`
+    :http:get:`/projects/(pid)`
     """
     return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
@@ -325,7 +325,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`GET User`
+    :http:get:`/users/(uid)`
     """
     return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
 
@@ -338,7 +338,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`GET Configuration Markings`
+    :http:get:`/configuration/markings`
     """
     return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
 
@@ -351,7 +351,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`GET Configuration Version`
+    :http:get:`/configuration/version`
     """
     return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
 
@@ -368,7 +368,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`POST Model Finish`
+    :http:post:`/models/(mid)/finish`
     """
     self.request("POST", "/models/%s/finish" % (mid))
 
@@ -389,7 +389,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`POST Project Bookmarks`
+    :http:post:`/projects/(pid)/bookmarks`
     """
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
@@ -499,7 +499,7 @@ class Connection(object):
 
     See Also
     --------
-    :ref:`PUT Model Parameter`
+    :http:put:`/models/(mid)/parameters/(name)`
     """
     self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 

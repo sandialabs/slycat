@@ -34,7 +34,7 @@ DELETE Model
 See Also
 --------
 
--  :ref:`POST Project Models`
--  :ref:`GET Model`
--  :ref:`PUT Model`
+- :http:post:`/projects/(pid)/models`
+- :http:get:`/models/(mid)`
+- :http:put:`/models/(mid)`
 

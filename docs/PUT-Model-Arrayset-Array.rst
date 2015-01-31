@@ -1,49 +1,28 @@
-.. _PUT Model Arrayset Array:
-
 PUT Model Arrayset Array
 ========================
 
-Description
------------
+.. http:put:: /models/(mid)/arraysets/(name)/arrays/(array)
 
-Adds an array to an arrayset, ready to upload data.
+  Adds an array to an arrayset, ready to upload data.  The named array set must
+  already have been initialized with :http:put:`/models/(mid)/arraysets/(name)`.
 
-Requests
---------
+  :param mid: Unique model identifier.
+  :type mid: string
 
-Syntax
-^^^^^^
+  :param name: Unique arrayset name.
+  :type name: string
 
-::
+  :param array: Unique array index.
+  :type array: int
 
-    PUT /models/(mid)/arraysets/(name)/arrays/(array)
+  :requestheader Content-Type: application/json
 
-Accepts
-^^^^^^^
+  :<json object attributes: New array attributes.
+  :<json object dimensions: New array dimensions.
 
-application/json
+  **Sample Request**
 
-Preconditions
-^^^^^^^^^^^^^
-
-The named array set must already have been initialized with :ref:`PUT Model
-Arrayset`.
-
-Responses
----------
-
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     PUT /models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set/arrays/0 HTTP/1.1
     Host: localhost:8093
@@ -63,22 +42,21 @@ Sample Request
         {"end": 10, "begin": 0, "type": "int64", "name": "row"}]
     }
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
-    HTTP/1.1 200 OK
-    Date: Mon, 25 Nov 2013 20:36:07 GMT
-    Content-Length: 4
-    Content-Type: application/json
-    Server: CherryPy/3.2.2
+      HTTP/1.1 200 OK
+      Date: Mon, 25 Nov 2013 20:36:07 GMT
+      Content-Length: 4
+      Content-Type: application/json
+      Server: CherryPy/3.2.2
 
-    null
+      null
 
 See Also
 --------
 
--  :ref:`PUT Model Arrayset`
--  :ref:`PUT Model Arrayset Data`
+- :http:put:`/models/(mid)/arraysets/(name)`
+- :http:put:`/models/(mid)/arraysets/(name)/data`
 

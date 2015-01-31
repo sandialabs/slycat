@@ -1,45 +1,27 @@
-.. _POST Project Models:
-
 POST Project Models
 ===================
-Description
------------
 
-Adds a new, empty model to a project.
+.. http:post:: /projects/(pid)/models
 
-Requests
---------
+  Adds a new, empty model to a project.
 
-Syntax
-^^^^^^
+  :param pid: Unique project identifier.
+  :type pid: string
 
-::
+  :requestheader Content-Type: application/json
 
-    POST /projects/(pid)/models
+  :<json string model-type: Model type identifier.
+  :<json string name: Model name.
+  :<json string description: Model description.
+  :<json string marking: Model marking identifier.
 
-Accepts
-^^^^^^^
+  :responseheader Content-Type: application/json
 
-application/json
+  :>json string id: Unique model identifier.
 
-The request body should contain model-type, name, description, and
-marking parameters.
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     POST /projects/505d0e463d5ed4a32bb6b0fe9a000d36/models HTTP/1.1
     Host: localhost:8092
@@ -52,10 +34,9 @@ Sample Request
 
     {"model-type": "generic", "description": "", "name": "Model", "marking": ""}
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 202 Model scheduled for creation.
     Date: Thu, 11 Apr 2013 21:30:16 GMT
@@ -68,7 +49,7 @@ Sample Response
 See Also
 --------
 
-- :ref:`GET Model`
-- :ref:`PUT Model`
+- :http:get:`/models/(mid)`
+- :http:put:`/models/(mid)`
 - :http:delete:`/models/(mid)`
 

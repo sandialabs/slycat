@@ -1,49 +1,30 @@
-.. _POST Projects:
-
 POST Projects
 =============
-Description
------------
 
-Creates a new project. The caller *must* supply a human-readable project
-name. The caller *may* supply a human readable project description
-and/or access control list (ACL). The results will contain the ID of the
-newly-created project.
+.. http:post:: /projects
 
-If an ACL is not specified, the project will have a default ACL with the
-project administrator set to the user creating the project, and no
-project readers or writers.
+  Creates a new project. The caller *must* supply a human-readable project
+  name. The caller *may* supply a human readable project description
+  and/or access control list (ACL). The results will return the ID of the
+  newly-created project.
 
-Requests
---------
+  If an ACL is not specified, the project will have a default ACL with the
+  project administrator set to the user creating the project, and no
+  project readers or writers.
 
-Syntax
-^^^^^^
+  :requestheader Content-Type: application/json
 
-::
+  :<json string name: New project name.
+  :<json string description: New project description.
+  :<json object acl: New project access control list.
 
-    POST /projects
+  :responseheader Content-Type: application/json
 
-Accepts
-^^^^^^^
+  :>json string id: Unique project identifier.
 
-application/json
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     POST /projects HTTP/1.1
     Host: localhost:8092
@@ -56,10 +37,9 @@ Sample Request
 
     {"name": "CCA Model Test", "description": ""}
 
-Sample Result
-^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 201 Project created.
     Date: Thu, 11 Apr 2013 21:30:16 GMT

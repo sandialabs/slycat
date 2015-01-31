@@ -1,41 +1,27 @@
-.. _GET Model Command:
-
 GET Model Command
 =================
-Description
------------
 
-Execute a custom model command.
+.. http:get:: /models/(mid)/commands/(command)
 
-Model plugins may register custom commands to be executed on the server.
-Custom commands are used to perform computation on the server instead of
-the client, and would typically use model artifacts as inputs.
+  Execute a custom model command.
 
-Requests
---------
+  Model plugins may register custom commands to be executed on the server.
+  Custom commands are used to perform computation on the server instead of
+  the client, and would typically use model artifacts as inputs.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param command: Custom model command.
+  :type command: string
 
-    GET /models/(mid)/commands/(command)
+  Note that clients may pass arguments to the command using query strings.
 
-Responses
----------
+  :responseheader Content-Type: \*/\*
 
-Returns
-^^^^^^^
+  **Sample Request**
 
-\*/\*
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /models/e32ef475e084432481655fe41348726b/commands/add HTTP/1.1
     Host: localhost:8093
@@ -44,10 +30,9 @@ Sample Request
     accept: application/json
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:36:01 GMT
@@ -62,5 +47,5 @@ Sample Response
 See Also
 --------
 
--  :ref:`GET Model`
+- :http:get:`/models/(mid)`
 

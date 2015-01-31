@@ -1,37 +1,18 @@
-.. _GET Model:
-
 GET Model
 =========
-Description
------------
 
-Returns a model.
+.. http:get:: /models/(mid)
 
-Requests
---------
+  Returns a model.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :responseheader Content-Type: text/html, application/json
 
-    GET /models/(mid)
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-text/html, application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /models/e32ef475e084432481655fe41348726b HTTP/1.1
     Host: localhost:8093
@@ -40,10 +21,9 @@ Sample Request
     accept: application/json
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:36:01 GMT
@@ -76,7 +56,7 @@ Sample Response
 See Also
 --------
 
-- :ref:`POST Project Models`
-- :ref:`PUT Model`
+- :http:post:`/projects/(pid)/models`
+- :http:put:`/models/(mid)`
 - :http:delete:`/models/(mid)`
 

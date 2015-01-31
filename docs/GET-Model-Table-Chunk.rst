@@ -1,54 +1,41 @@
-.. _GET Model Table Chunk:
-
 GET Model Table Chunk
 =====================
-Description
------------
 
-Used to retrieve a chunk (subset of rows and columns) from a 1D arrayset
-array artifact. Data is returned as a JSON array-of-arrays containing
-column-oriented data, one array for each column specified in the
-request. Both rows and columns may be specified using arbitrary
-combinations of half-open ranges and individual indices. The ordering of
-results (both rows and columns) always matches the order of rows and
-columns in the request. Out-of-range rows or columns are ignored, in
-which case the results will still contain in-range data. If the caller
-specifies a name using the optional "index" query parameter in the
-request, the response will be adjusted to include an additional index
-column with the given name and zero-based row indices. The optional
-"sort" query parameter can be used to return the results in sorted
-order.
+.. http:get:: /models/(mid)/tables/(name)/arrays/(array)/chunk
 
-Requests
---------
+  Used to retrieve a chunk (subset of rows and columns) from a 1D arrayset
+  array artifact. Data is returned as a JSON array-of-arrays containing
+  column-oriented data, one array for each column specified in the
+  request. Both rows and columns may be specified using arbitrary
+  combinations of half-open ranges and individual indices. The ordering of
+  results (both rows and columns) always matches the order of rows and
+  columns in the request. Out-of-range rows or columns are ignored, in
+  which case the results will still contain in-range data. If the caller
+  specifies a name using the optional "index" query parameter in the
+  request, the response will be adjusted to include an additional index
+  column with the given name and zero-based row indices. The optional
+  "sort" query parameter can be used to return the results in sorted
+  order.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param name: Arrayset artifact name.
+  :type name: string
 
-    GET /models/(mid)/tables/(aid)/arrays/(array)/chunk?rows=...&columns=...&index=...&sort=...
+  :param array: Array index.
+  :type array: int
 
-Accepts
-^^^^^^^
+  :query rows: Chunk rows to retrieve.
+  :query columns: Chunk columns to retrieve.
+  :query index: Optional index column to append to the results.
+  :query sort: Response sort order.
 
-Query string.
+  :responseheader Content-Type: application/json
 
-Responses
----------
+  **Sample Request**
 
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /models/6b3c85df433e499e9680a135cabe3ab2/tables/test-array-set/arrays/0/chunk?rows=0,1,2,3,4,5,6,7,8,9&columns=0 HTTP/1.1
     Host: localhost:8093
@@ -57,10 +44,9 @@ Sample Request
     accept: application/json
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Tue, 26 Nov 2013 16:40:16 GMT
@@ -76,20 +62,19 @@ Sample Response
       "columns": [0]
     }
 
-Complex Request
-^^^^^^^^^^^^^^^
+  **Complex Request**
 
-The following request retrieves rows [0, 10), 15, 16, and 17 and columns
-[2, 5) and 8:
+  The following request retrieves rows [0, 10), 15, 16, and 17 and columns
+  [2, 5) and 8:
 
-::
+  .. sourcecode:: http
 
     GET /models/(mid)/tables/(aid)/arrays/(array)chunk?rows=0-10,15,16,17&columns=2-5,8
 
 See Also
 --------
 
--  :ref:`GET Model Table Metadata`
--  :ref:`GET Model Table Sorted Indices`
--  :ref:`GET Model Table Unsorted Indices`
+- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/metadata`
+- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/sorted-indices`
+- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/unsorted-indices`
 

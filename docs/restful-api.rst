@@ -28,7 +28,6 @@ any programming language or library that supports HTTP requests.
    GET-Model-Table-Chunk.rst
    GET-Model-Table-Metadata.rst
    GET-Model-Table-Sorted-Indices.rst
-   GET-Model-Table-Sort-Rank.rst
    GET-Model-Table-Unsorted-Indices.rst
    GET-Project-Models.rst
    GET-Project.rst
@@ -40,7 +39,7 @@ any programming language or library that supports HTTP requests.
    POST-Agents.rst
    POST-Events.rst
    POST-Model-Finish.rst
-   POST-Project-Bookmarks.rst
+   POST-Project-Bookmark.rst
    POST-Project-Models.rst
    POST-Projects.rst
    POST-Remote-Browse.rst

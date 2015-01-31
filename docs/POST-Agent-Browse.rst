@@ -1,92 +1,68 @@
-.. _POST Agent Browse:
-
 POST Agent Browse
 =================
-Description
------------
 
-Uses an existing agent session to retrieve remote filesystem information.  The
-session must have been created successfully using :ref:`POST Agents`.  The
-caller *must* supply the session id, and the path on the remote filesystem to
-retrieve.  The caller *may* supply additional parameters to filter directories
-and files in the results, based on regular expressions.
+.. http:post:: /agents/(sid)/browse(path)
 
-If the session doesn't exist or has timed-out, the server returns `404`.  If some
-other error prevents the data from being returned, the server returns `400`.
+  Uses an existing agent session to retrieve remote filesystem information.
+  The session must have been created successfully using :http:post:`/agents`.
+  The caller *may* supply additional parameters to filter directories and files
+  in the results, based on regular expressions.
 
-Requests
---------
+  If the session doesn't exist or has timed-out, the server returns `404`.  If some
+  other error prevents the data from being returned, the server returns `400`.
 
-Syntax
-^^^^^^
+  :param sid: Unique agent session identifier.
+  :type sid: string
 
-::
+  :param path: Remote filesystem path (must be absolute).
+  :type path: string
 
-    POST /agents/(session)/browse(path)
+  :requestheader Content-Type: application/json
 
-Accepts
-^^^^^^^
+  :<json string directory-reject: optional regular expression for filtering directories.
+  :<json string directory-allow: optional regular expression for retaining directories.
+  :<json string file-reject: optional regular expression for filtering files.
+  :<json string file-allow: optional regular expression for allowing files.
 
-application/json
+  The regular expression parameters are matched against full file / directory
+  paths.  If a file / directory matches a reject expression, it will not be
+  included in the results, unless it also matches an allow expression.  So, to
+  remove JPEG files from the results::
 
-Parameters
-^^^^^^^^^^
+    file-reject: "[.]jpg$|[.]jpeg$"
 
-* directory-reject - optional regular expression for filtering directories.
-* directory-allow - optional regular expression for retaining directories.
-* file-reject - optional regular expression for filtering files.
-* file-allow - optional regular expression for allowing files.
+  but to only return CSV files::
 
-The regular expression parameters are matched against full file / directory
-paths.  If a file / directory matches a reject expression, it will not be
-included in the results, unless it also matches an allow expression.  So, to
-remove JPEG files from the results::
+    file-reject: ".*",
+    file-allow: "[.]csv$"
 
-  file-reject = [.]jpg$|[.]jpeg$  # Reject files that end in .jpg or .jpeg
+  :responseheader Content-Type: application/json
 
-but to only return CSV files::
+  **Sample Request**
 
-  file-reject = .*       # Reject all files
-  file-allow = [.]csv$   # ... except for files that end in .csv
+  .. sourcecode:: http
 
-Responses
----------
+    POST /agents/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
 
-Returns
-^^^^^^^
+    {
+      file-reject: "[.]jpg$"
+    }
 
-application/json
+  Sample Response
 
-Examples
---------
+  .. sourcecode:: http
 
-Sample Request
-^^^^^^^^^^^^^^
-
-::
-
-  POST /agents/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
-
-  {
-    file-reject: "[.]jpg$"
-  }
-
-Sample Response
-^^^^^^^^^^^^^^^
-
-::
-
-  {
-    "path" : "/home/fred",
-    "names" : ["a.txt", "b.png", "c.csv", "subdir"],
-    "sizes" : [1264, 456730, 78005, 4096],
-    "types' : ["f", "f", "f", "d"]
-  }
+    {
+      "path" : "/home/fred",
+      "names" : ["a.txt", "b.png", "c.csv", "subdir"],
+      "sizes" : [1264, 456730, 78005, 4096],
+      "types' : ["f", "f", "f", "d"]
+    }
 
 See Also
 --------
 
-* :ref:`POST Agents`
-* :ref:`GET Agent File`
-* :ref:`GET Agent Image`
+* :http:post:`/agents`
+* :http:get:`/agents/(sid)/file(path)`
+* :http:get:`/agents/(sid)/image(path)`
 

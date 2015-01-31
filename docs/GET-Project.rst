@@ -1,37 +1,18 @@
-.. _GET Project:
-
 GET Project
 ===========
-Description
------------
 
-Returns a project.
+.. http:get:: /projects/(pid)
 
-Requests
---------
+  Returns a project.
 
-Syntax
-^^^^^^
+  :param pid: Unique project identifier.
+  :type pid: string
 
-::
+  :responseheader Content-Type: text/html, application/json
 
-    GET /projects/(pid)
+  **Sample Request**
 
-Responses
----------
-
-Returns
-^^^^^^^
-
-text/html, application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /projects/dbaf026f919620acbf2e961ad73243c5 HTTP/1.1
     Host: localhost:8093
@@ -40,10 +21,9 @@ Sample Request
     accept: application/json
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:35:59 GMT

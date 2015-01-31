@@ -1,38 +1,22 @@
-.. _GET Model Parameter:
-
 GET Model Parameter
 ===================
-Description
------------
 
-Retrieves a model parameter (name / value pair) artifact. The result is a
-JSON expression and may be arbitrarily complex.
+.. http:get:: /models/(mid)/parameters/(name)
 
-Requests
---------
+  Retrieves a model parameter (name / value pair) artifact. The result is a
+  JSON expression and may be arbitrarily complex.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param name: Parameter artifact name.
+  :type name: string
 
-    GET /models/(mid)/parameters/(name)
+  :responseheader Content-Type: application/json
 
-Responses
----------
+  **Sample Request**
 
-Returns
-^^^^^^^
-
-application/json
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     GET /models/1385a75dd2eb4faba884cefdd0b94a56/parameters/baz HTTP/1.1
     Host: localhost:8093
@@ -42,10 +26,9 @@ Sample Request
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:36:04 GMT
@@ -61,7 +44,5 @@ Sample Response
 See Also
 --------
 
--  :ref:`PUT Model Parameter`
-
-
+- :http:put:`/models/(mid)/parameters/(name)`
 

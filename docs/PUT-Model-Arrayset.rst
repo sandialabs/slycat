@@ -1,37 +1,23 @@
-.. _PUT Model Arrayset:
-
 PUT Model Arrayset
 ==================
-Description
------------
 
-Initialize an arrayset, a collection of zero-to-many arrays.
+.. http:put:: /models/(mid)/arraysets/(name)
 
-Requests
---------
+  Initialize an arrayset, a collection of zero-to-many arrays.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param name: Unique arrayset name.
+  :type name: string
 
-    PUT /models/(mid)/arraysets/(name)
+  :requestheader Content-Type: application/json
 
-Accepts
-^^^^^^^
+  :<json bool input: Set to true if this arrayset is a model input.
 
-application/json
+  **Sample Request**
 
-Clients must provide a JSON request body with a boolean "input"
-parameter.
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-::
+  .. sourcecode:: http
 
     PUT /models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set HTTP/1.1
     Host: localhost:8093
@@ -44,10 +30,9 @@ Sample Request
 
     { input : true }
 
-Sample Response
-^^^^^^^^^^^^^^^
+  **Sample Response**
 
-::
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:36:07 GMT
@@ -58,6 +43,6 @@ Sample Response
 See Also
 --------
 
--  :ref:`PUT Model Arrayset Array`
--  :ref:`PUT Model Arrayset Data`
+- :http:put:`/models/(mid)/arraysets/(name)/arrays/(array)`
+- :http:put:`/models/(mid)/arraysets/(name)/data`
 

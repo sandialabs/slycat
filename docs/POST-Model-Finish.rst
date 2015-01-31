@@ -1,31 +1,17 @@
-.. _POST Model Finish:
-
 POST Model Finish
 =================
-Description
------------
 
-Finish (internally compute) a waiting model.
+.. http:post:: /models/(mid)/finish
 
-Requests
---------
+  Finish (internally compute) a waiting model.  The model must be in the waiting state.
 
-Syntax
-^^^^^^
-
-::
-
-    POST /models/(mid)/finish
-
-Preconditions
-^^^^^^^^^^^^^
-
-The model must be in the waiting state.
+  :param mid: Unique model identifier.
+  :type param: string
 
 See Also
 --------
 
-- :ref:`GET Model`
-- :ref:`PUT Model`
+- :http:get:`/models/(mid)`
+- :http:put:`/models/(mid)`
 - :http:delete:`/models/(mid)`
 

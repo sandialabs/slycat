@@ -47,5 +47,5 @@ PUT Project
 See Also
 --------
 
-- :ref:`GET Project`
+- :http:get:`/projects/(pid)`
 - :http:delete:`/projects/(pid)`

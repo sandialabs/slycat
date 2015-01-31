@@ -1,49 +1,29 @@
-.. _GET Model Table Unsorted Indices:
-
 GET Model Table Unsorted Indices
 ================================
-Description
------------
 
-Given a collection of sorted row indices and a specific sort order,
-return the corresponding unsorted row indices.
+.. http:get:: /models/(mid)/tables/(name)/arrays/(array)/unsorted-indices
 
-Requests
---------
+  Given a collection of sorted row indices and a specific sort order,
+  return the corresponding unsorted row indices.
 
-Syntax
-^^^^^^
+  :param mid: Unique model identifier.
+  :type mid: string
 
-::
+  :param name: Arrayset artifact name.
+  :type name: string
 
-    GET /models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices?rows=...&index=...sort=...&byteorder=...
+  :param array: Array index.
+  :type array: int
 
-Accepts
-^^^^^^^
-
-Query string.
-
-Responses
----------
-
-Returns
-^^^^^^^
-
-application/json, application/octet-stream
-
-Examples
---------
-
-Sample Request
-^^^^^^^^^^^^^^
-
-Sample Response
-^^^^^^^^^^^^^^^
+  :query rows: Row indices to be sorted.
+  :query index: Optional index column that can be used for sorting.
+  :query sort: Sort order.
+  :query byteorder: Optionally return the results as binary data.
+  :responseheader Content-Type: application/json, application/octet-stream
 
 See Also
 --------
 
--  :ref:`GET Model Table Chunk`
--  :ref:`GET Model Table Metadata`
--  :ref:`GET Model Table Sorted Indices`
-
+- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/chunk`
+- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/metadata`
+- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/sorted-indices`
