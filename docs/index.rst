@@ -63,7 +63,8 @@ Documentation:
   colophon.rst
   models.rst
   restful-api.rst
-  reference.rst
+  javascript-api.rst
+  python-api.rst
   support.rst
 
 Indices and tables

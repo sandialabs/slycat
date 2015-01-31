@@ -1,4 +1,4 @@
-.. _RESTful API:
+.. _restful-api:
 
 RESTful API
 ===========

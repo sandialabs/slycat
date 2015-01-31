@@ -1,5 +1,11 @@
-API Reference
-=============
+.. _python-api:
+
+Python API
+==========
+
+The Slycat server and plugins used to enhance it are implemented in Python. In
+addition, we provide wrappers around the :ref:`restful-api` for writing Python
+clients, typically used for custom data ingestion.
 
 .. toctree::
    :maxdepth: 2
