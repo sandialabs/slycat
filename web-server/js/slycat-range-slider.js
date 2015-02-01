@@ -28,10 +28,10 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       };
       scrollbar.domain =
       {
-        min: params.domain_min || ko.observable(0),
-        low_value: params.low_value || ko.observable(0.33),
-        high_value: params.high_value || ko.observable(0.66),
-        max: params.domain_max || ko.observable(1),
+        min: params.min || ko.observable(0),
+        low_value: params.low || ko.observable(0.33),
+        high_value: params.high || ko.observable(0.66),
+        max: params.max || ko.observable(1),
       };
       scrollbar.low_range =
       {
