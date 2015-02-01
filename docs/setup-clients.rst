@@ -57,6 +57,6 @@ Now, you can run scripts that use the Slycat package.
 See Also
 --------
 
--  :ref:`restful-api` - Details the underlying Slycat HTTP API, which can
+-  :ref:`rest-api` - Details the underlying Slycat HTTP API, which can
    be used with any programming language.
 

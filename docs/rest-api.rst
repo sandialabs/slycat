@@ -1,9 +1,9 @@
-.. _restful-api:
+.. _rest-api:
 
-RESTful API
-===========
+REST API
+========
 
-The Slycat server exposes a RESTful HTTP API that can be called using
+The Slycat server exposes a REST HTTP API that can be used with
 any programming language or library that supports HTTP requests.
 
 .. toctree::

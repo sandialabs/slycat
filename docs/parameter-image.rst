@@ -37,7 +37,7 @@ are "input", "output", "rating", "category", "image", or "none of the above" whe
 Stored Artifacts
 ----------------
 
-On the server side, a parameter image model includes the following artifacts that are accessible via the :ref:`restful-api`:
+On the server side, a parameter image model includes the following artifacts that are accessible via the :ref:`rest-api`:
 
 * data-table - :py:mod:`darray<slycat.darray>` containing the input table data (a 1D darray with one attribute per table column).
 * category-columns - JSON array containing a zero-based index for every column in `data-table` that contains categorical data.

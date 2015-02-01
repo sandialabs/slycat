@@ -10,7 +10,7 @@ data for a Timeseries model using your web browser. Instead, you'll use
 one Python script to synthesize some time series data in a format
 suitable for use with Slycat, and a second script to compute the model
 and push it to the Slycat Web Server. This will demonstrate how Slycat's
-:ref:`restful-api` can be used to control Slycat programmatically, so you
+:ref:`rest-api` can be used to control Slycat programmatically, so you
 can transform and upload your data using any language that supports HTTP
 networking.
 

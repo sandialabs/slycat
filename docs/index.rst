@@ -62,7 +62,7 @@ Documentation:
   plugins.rst
   colophon.rst
   models.rst
-  restful-api.rst
+  rest-api.rst
   javascript-api.rst
   python-api.rst
   support.rst
