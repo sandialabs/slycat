@@ -11,3 +11,4 @@ around the :ref:`rest-api`.
   :maxdepth: 2
 
   slycat-range-slider.rst
+  slycat-server-root.rst
