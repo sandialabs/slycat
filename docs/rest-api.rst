@@ -3,7 +3,7 @@
 REST API
 ========
 
-The Slycat server exposes a REST HTTP API that can be used with
+The Slycat server exposes a `REST <http://en.wikipedia.org/wiki/Representational_state_transfer>`_ HTTP API that can be used with
 any programming language or library that supports HTTP requests.
 
 .. toctree::

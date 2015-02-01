@@ -1,13 +1,17 @@
 .. _slycat-range-slider:
 .. default-domain:: js
 
-slycat-range-slider Module
-==========================
+slycat-range-slider
+===================
 
-The slycat-range-slider module registers a `Knockout <http://knockoutjs.com>`_
+The slycat-range-slider AMD module registers a `Knockout <http://knockoutjs.com>`_
 component of the same name.  The slycat-range-slider component provides a
 standard GUI widget for selecting a closed range of values from a continuous
 domain.
+
+Note: you don't need to import the slycat-range-slider module using
+:func:`require` or :func:`define` - it registers the slider component
+automatically at startup.
 
 To use slycat-range-slider, create :class:`ko.observable` objects for each of the range
 slider parameters, including the output range values, and bind them to the page DOM:
