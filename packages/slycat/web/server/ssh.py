@@ -12,7 +12,7 @@ a variety of ways:
 
 * Web clients can browse the filesystem of a remote host.
 * Web clients can create a Slycat model using data stored on a remote host.
-* Web clients can retrieve images from a remote host (an essential part of the :ref:`Parameter Image Model`).
+* Web clients can retrieve images from a remote host (an essential part of the :ref:`parameter-image-model`).
 
 When an ssh session is created, the connection to the remote host over ssh is
 setup and a unique session identifier is returned.  Callers can use the session

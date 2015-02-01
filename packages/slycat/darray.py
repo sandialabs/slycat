@@ -19,7 +19,7 @@ Note that darrays are an abstract concept with multiple concrete
 representations.  This module defines an abstract interface for manipulating
 Python darrays, and a concrete implementation with in-memory storage.  The
 :py:mod:`slycat.hdf5` module defines functionality for manipulating darrays
-stored in HDF5 files on disk, and the :ref:`restful-api` defines functionality
+stored in HDF5 files on disk, and the :ref:`rest-api` defines functionality
 for working with darrays using HTTP.
 
 Note that it is rare to manipulate entire darrays in memory at once, due to
