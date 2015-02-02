@@ -91,3 +91,8 @@ def register_slycat_plugin(context):
   ]
   for dev in devs:
     context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Register custom wizards for creating PI models.
+  context.register_wizard("parameter-image", "New Remote Parameter Image Model", require={"action":"create", "context":"project"})
+  context.register_wizard_resource("parameter-image", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
+  context.register_wizard_resource("parameter-image", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
