@@ -108,3 +108,8 @@ def register_slycat_plugin(context):
   ]
   for image in images:
     context.register_model_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), "img", image))
+
+  # Register wizards for creating TI models.
+  context.register_wizard("tracer-image", "New Remote Tracer Image Model", require={"action":"create", "context":"project"})
+  context.register_wizard_resource("tracer-image", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
+  context.register_wizard_resource("tracer-image", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
