@@ -305,6 +305,16 @@ def get_project_models(pid):
   models = sorted(models, key=lambda x: x["created"], reverse=True)
   return models
 
+@cherrypy.tools.json_out(on = True)
+def get_project_references(pid):
+  database = slycat.web.server.database.couchdb.connect()
+  project = database.get("project", pid)
+  slycat.web.server.authentication.require_project_reader(project)
+
+  references = [reference for reference in database.scan("slycat/project-references", startkey=pid, endkey=pid)]
+  references = sorted(references, key=lambda x: x["created"])
+  return references
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_project_models(pid):
@@ -377,6 +387,35 @@ def post_project_bookmarks(pid):
   cherrypy.response.headers["location"] = "%s/bookmarks/%s" % (cherrypy.request.base, bid)
   cherrypy.response.status = "201 Bookmark stored."
   return {"id" : bid}
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_project_references(pid):
+  database = slycat.web.server.database.couchdb.connect()
+  project = database.get("project", pid)
+  slycat.web.server.authentication.require_project_writer(project)
+
+  for key in ["name"]:
+    if key not in cherrypy.request.json:
+      raise cherrypy.HTTPError("400 Missing required key: %s" % key)
+
+  rid = uuid.uuid4().hex
+
+  reference = {
+    "_id" : rid,
+    "type" : "reference",
+    "project" : pid,
+    "created" : datetime.datetime.utcnow().isoformat(),
+    "creator" : cherrypy.request.security["user"],
+    "name" : cherrypy.request.json["name"],
+    "mid" : cherrypy.request.json.get("mid", None),
+    "bid" : cherrypy.request.json.get("bid", None),
+    }
+  database.save(reference)
+
+  cherrypy.response.headers["location"] = "%s/references/%s" % (cherrypy.request.base, rid)
+  cherrypy.response.status = "201 Reference created."
+  return {"id" : rid}
 
 def get_models(revision=None, _=None):
   if get_models.monitor is None:

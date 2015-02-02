@@ -430,6 +430,32 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_project_references = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(
+      {
+        "name": params.name,
+        "mid": params.mid || null,
+        "bid": params.bid || null,
+      }),
+      type: "POST",
+      url: server_root + "projects/" + params.pid + "/references",
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result.id);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.post_remotes = function(params)
   {
     $.ajax(
