@@ -1,4 +1,5 @@
 def register_slycat_plugin(context):
+  import os
 
   def finish(database, model):
     import datetime
@@ -12,5 +13,10 @@ def register_slycat_plugin(context):
         <p>Hello, %s!</p>
       </div>""" % name
 
+  # Register the new model.
   context.register_model("hello-world", finish, html)
 
+  # Register a wizard for creating instances of the new model.
+  context.register_wizard("hello-world", "New Hello World Model", require={"action":"create", "context":"project"})
+  context.register_wizard_resource("hello-world", "ui.js", os.path.join(os.path.dirname(__file__), "ui.js"))
+  context.register_wizard_resource("hello-world", "ui.html", os.path.join(os.path.dirname(__file__), "ui.html"))
