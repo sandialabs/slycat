@@ -64,17 +64,25 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         name: "data-table",
         success: function()
         {
-          client.get_model_table_metadata(
+          client.get_model_command(
           {
             mid: component.model._id(),
-            name: "data-table",
-            success: function(metadata)
+            command: "media-columns",
+            success: function(media_columns)
             {
-              var attributes = [];
-              for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:false})
-              mapping.fromJS(attributes, component.attributes);
-              component.tab(3);
+              client.get_model_table_metadata(
+              {
+                mid: component.model._id(),
+                name: "data-table",
+                success: function(metadata)
+                {
+                  var attributes = [];
+                  for(var i = 0; i != metadata["column-names"].length; ++i)
+                    attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1})
+                  mapping.fromJS(attributes, component.attributes);
+                  component.tab(3);
+                }
+              });
             }
           });
         }

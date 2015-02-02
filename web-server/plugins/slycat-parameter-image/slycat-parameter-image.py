@@ -2,12 +2,33 @@ def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
   import cherrypy
   import datetime
+  import json
+  import numpy
   import os
+  import re
   import slycat.web.server
 
   def finish(database, model):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+
+  def media_columns(database, model, command, **kwargs):
+    """Identify columns in the input data that contain media URIs (image or video)."""
+    expression = re.compile("file://")
+    search = numpy.vectorize(lambda x:bool(expression.search(x)))
+
+    columns = []
+    metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", arrays=[0])["arrays"][0]
+    for index, attribute in enumerate(metadata["attributes"]):
+      if attribute["type"] != "string":
+        continue
+      column = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", (0, index, numpy.index_exp[...])))
+      if not numpy.any(search(column)):
+        continue
+      columns.append(index)
+
+    cherrypy.response.headers["content-type"] = "application/json"
+    return json.dumps(columns)
 
   def html(database, model):
     """Add the HTML representation of the model to the context object."""
@@ -91,6 +112,9 @@ def register_slycat_plugin(context):
   ]
   for dev in devs:
     context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Register a custom command for use by the wizard.
+  context.register_model_command("parameter-image", "media-columns", media_columns)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image", "New Remote Parameter Image Model", require={"action":"create", "context":"project"})
