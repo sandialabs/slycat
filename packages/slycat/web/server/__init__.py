@@ -32,6 +32,43 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         cherrypy.log.error("Reading from arrayset %s array %s attribute %s hyperslice %s" % (name, array, attribute, hyperslice))
         yield hdf5_array.get_data(attribute)[hyperslice]
 
+def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None):
+  with slycat.web.server.database.hdf5.lock:
+    if arrays is not None or statistics is not None:
+      with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
+        hdf5_arrayset = slycat.hdf5.ArraySet(file)
+        results = {}
+        if arrays is not None:
+          results["arrays"] = []
+          for array in arrays:
+            hdf5_array = hdf5_arrayset[array]
+            results["arrays"].append({
+              "index" : int(array),
+              "dimensions" : hdf5_array.dimensions,
+              "attributes" : hdf5_array.attributes,
+              })
+        if statistics is not None:
+          results["statistics"] = []
+          for array, attribute in statistics:
+            statistics = hdf5_arrayset[array].get_statistics(attribute)
+            statistics["array"] = int(array)
+            statistics["attribute"] = int(attribute)
+            results["statistics"].append(statistics)
+        return results
+
+    with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
+      results = []
+      for array in sorted(hdf5_arrayset.keys()):
+        hdf5_array = hdf5_arrayset[array]
+        results.append({
+          "array": int(array),
+          "index" : int(array),
+          "dimensions" : hdf5_array.dimensions,
+          "attributes" : hdf5_array.attributes,
+          })
+      return results
+
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
 
