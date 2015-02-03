@@ -23,11 +23,13 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
     
     //Test for which video types are supported
     var formats = {webm:"webm", h264:"mp4"};
+    //Specific check for chromium issue #54036
+    var codecs = {h264: function(){return document.createElement("video").canPlayType('video/mp4; codecs="mp4v.20.8"');}}
     this.movie = [];
     this.model = model;
     this.table = table;
     this.login = model.login;
-    this.video_type = ["h264", "webm"].filter(function(encoding){return Modernizr.video[encoding];})
+    this.video_type = ["h264", "webm"].filter(function(encoding){return codecs[encoding] ? codecs[encoding]() : formats[encoding]})
                           .map(function(encoding){return formats[encoding];})[0];
     this.fps = 25;
 
