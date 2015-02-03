@@ -7,6 +7,18 @@ rights in this software.
 define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], function(server_root, URI, $)
 {
   var module = {};
+
+  module.current_bid = function()
+  {
+    return URI(window.location).query(true).bid;
+  }
+
+  module.current_mid = function()
+  {
+    var uri = URI(window.location);
+    return uri.segment(-2) == "models" ? uri.segment(-1) : null;
+  }
+
   module.create = function(pid, mid)
   {
     var manager = {};

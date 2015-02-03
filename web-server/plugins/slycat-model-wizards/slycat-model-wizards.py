@@ -8,7 +8,11 @@ def register_slycat_plugin(context):
   context.register_wizard_resource("slycat-edit-model", "ui.js", os.path.join(os.path.dirname(__file__), "edit-ui.js"))
   context.register_wizard_resource("slycat-edit-model", "ui.html", os.path.join(os.path.dirname(__file__), "edit-ui.html"))
 
-  context.register_wizard("slycat-create-template", "New Template", require={"action":"create", "context":"model"})
+  context.register_wizard("slycat-create-template", "Template", require={"action":"create", "context":"model"})
   context.register_wizard_resource("slycat-create-template", "ui.js", os.path.join(os.path.dirname(__file__), "create-template-ui.js"))
   context.register_wizard_resource("slycat-create-template", "ui.html", os.path.join(os.path.dirname(__file__), "create-template-ui.html"))
+
+  context.register_wizard("slycat-create-saved-bookmark", "Saved Bookmark", require={"action":"create", "context":"model"})
+  context.register_wizard_resource("slycat-create-saved-bookmark", "ui.js", os.path.join(os.path.dirname(__file__), "create-saved-bookmark-ui.js"))
+  context.register_wizard_resource("slycat-create-saved-bookmark", "ui.html", os.path.join(os.path.dirname(__file__), "create-saved-bookmark-ui.html"))
 

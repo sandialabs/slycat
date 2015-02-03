@@ -7,17 +7,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
     component.model = params.models()[0];
     component.name = ko.observable("");
 
-    component.save_template = function()
+    component.save_bookmark = function()
     {
       client.post_project_references(
       {
         pid: component.project._id(),
         name: component.name(),
+        mid: bookmark_manager.current_mid(),
         bid: bookmark_manager.current_bid(),
         success: function()
         {
         },
-        error: dialog.ajax_error("Error creating template."),
+        error: dialog.ajax_error("Error creating saved bookmark."),
       });
     }
     return component;
@@ -25,6 +26,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/slycat-create-template/ui.html" },
+    template: { require: "text!" + server_root + "resources/wizards/slycat-create-saved-bookmark/ui.html" },
     };
 });

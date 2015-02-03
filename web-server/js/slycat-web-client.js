@@ -432,15 +432,17 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.post_project_references = function(params)
   {
+    var data = {};
+    data.name = params.name;
+    if("mid" in params)
+      data.mid = params.mid;
+    if("bid" in params)
+      data.bid = params.bid;
+
     $.ajax(
     {
       contentType: "application/json",
-      data: JSON.stringify(
-      {
-        "name": params.name,
-        "mid": params.mid || null,
-        "bid": params.bid || null,
-      }),
+      data: JSON.stringify(data),
       type: "POST",
       url: server_root + "projects/" + params.pid + "/references",
       success: function(result)
