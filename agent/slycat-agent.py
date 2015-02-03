@@ -268,6 +268,7 @@ def main():
   except Exception as e:
     sys.stdout.write("%s\n" % json.dumps({"ok": False, "message":e.message}))
     sys.stdout.flush()
+    exit(1)
 
   # Setup some nonstandard MIME types.
   mimetypes.add_type("text/csv", ".csv", strict=False)
