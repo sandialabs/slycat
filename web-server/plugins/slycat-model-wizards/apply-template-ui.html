@@ -1,0 +1,20 @@
+<div class="modal-header">
+  <h3 class="modal-title">Apply Template</h3>
+</div>
+<div class="modal-body">
+  <div>
+    <p class="lead">Apply an existing visualization template to the current model.</p>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="slycat-template" class="col-sm-2 control-label">Name</label>
+        <div class="col-sm-10">
+          <select id="slycat-template" class="form-control" data-bind="options:references,optionsValue:'bid',optionsText:'name',value:reference,valueAllowUnset:false"></select>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-default" data-bind="click:apply_template" data-dismiss="modal">Apply Template</button>
+</div>

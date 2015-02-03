@@ -8,9 +8,16 @@ define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], funct
 {
   var module = {};
 
-  module.current_bid = function()
+  module.current_bid = function(bid)
   {
-    return URI(window.location).query(true).bid;
+    if(bid !== undefined)
+    {
+      window.location = URI(window.location).removeQuery("bid").addQuery("bid", bid);
+    }
+    else
+    {
+      return URI(window.location).query(true).bid;
+    }
   }
 
   module.current_mid = function()
