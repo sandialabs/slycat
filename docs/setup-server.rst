@@ -88,11 +88,10 @@ the `CherryPy <http://www.cherrypy.org>`_ web server that Slycat is based upon.
 
 The values for each setting in `config.ini` must be valid Python expressions.
 You should note that in the sample `config.ini` we provide, some values are
-simple scalars, such as `[global] server.socket_port`, while some values create
-object instances, such as `[slycat] directory`, which creates a directory
-object that handles looking-up user metadata.  This provides great flexibility to
-customize Slycat for your network.  Here are some common settings you may wish
-to modify:
+simple scalars, such as `[global] server.socket_port`, while some values are
+nested data structures, such as `[slycat] remote-hosts`.  This provides great
+flexibility to customize Slycat for your network.  Here are some common
+settings you may wish to modify:
 
 [global] Section
 ^^^^^^^^^^^^^^^^
@@ -109,13 +108,12 @@ to modify:
 
 * allowed-markings - List of marking types that may be assigned to models.
 * plugins - List of filesystem plugin locations.  You may specify individual .py files to be loaded, or directories.  If you specify a directory, every .py file in the directory will be loaded, but directories are `not` searched recursively.  Relative paths are relative to the slycat-web-server.py executable.
-* remote-hosts - Dict mapping string hostnames to dicts containing host-specific configuration.  Each host dict may contain any of the following:
+* remote-hosts - List containing an entry for each group of hosts that share a specific configuration.  Each entry is a dict containing the following:
 
-    * agent - Optional dict configuring remote agent access on the host.  Some models require the Slycat Agent when accessing a remote host, and agents must be explicitly configured on a host to be used.  The agent dict must contain the following:
+    * hostnames - Required list of hostnames that share a configuration.
+    * agent - Optional dict configuring remote agent access to the entry hostnames.  Some models require the Slycat Agent when accessing a remote host, and agents must be explicitly configured on a host to be used.  The agent dict must contain the following:
 
         * command - Required string with the full remote command-line used to run the Slycat agent on the given host.  Typically `/full/path/to/python /full/path/to/slycat-agent.py`.  Since an agent session can be initiated by any user able to login to the remote host via ssh, you should specify required environment variables as part of this command, too (for example, with `env`).
-
-    * message - Optional string displayed by the user interface when this host is selected.  Use this to warn users of host limitations or suggest alternates.
 
 * server-admins - List of users allowed to administer the Slycat server.  Server administrators have full read/write access to all projects, regardless of project ACLs.
 
