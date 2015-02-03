@@ -230,7 +230,7 @@ def start(root_path, config_file):
   configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
 
   # Expand remote host aliases.
-  configuration["slycat"]["remote-hosts"] = {alias: remote for hostname, remote in configuration["slycat"]["remote-hosts"].items() for alias in [hostname] + remote.get("aliases", [])}
+  configuration["slycat"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
   # Wait for requests to cleanup deleted arrays.
   cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_cleanup_arrays_worker, priority=80)
