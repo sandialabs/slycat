@@ -1,4 +1,4 @@
-define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "d3"], function(server_root, dialog, Movie, d3) {
+define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "slycat-bookmark-manager", "d3"], function(server_root, dialog, Movie, bookmark_manager, d3) {
   //TODO: Refactor. This should be a singleton.
   function Model(login) {
     this.id = null;
@@ -39,7 +39,7 @@ define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "d3"], function
       url : server_root + "models/" + location.pathname.split("/").reverse()[0] /* model ID */,
       success : function(result) {
         self.id = result._id;
-        self.bookmarker = new bookmark_manager(server_root, result.project, self.id);
+        self.bookmarker = bookmark_manager.create(result.project, result._id);
         self.input_columns = result["artifact:input-columns"];
         self.output_columns = result["artifact:output-columns"];
         self.image_columns = result["artifact:image-columns"];
@@ -105,7 +105,7 @@ define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "d3"], function
 
     // TODO integrate into callbacks
     // Retrieve bookmarked state information ...
-    self.bookmarker.get_state(function(state) {
+    self.bookmarker.getState(function(state) {
       self.bookmark = state;
       layout.setup_colorswitcher();
       //self.metadata_loaded();
