@@ -61,7 +61,6 @@ def register_slycat_plugin(context):
     "jquery.layout-latest.min.js",
     "jquery.ba-bbq.min.js",
     "d3.min.js",
-    "bookmarker.js",
     "chunker.js",
     "color-switcher.js",
     #"jquery.mousewheel.js", # This interferes with dynamically-loaded AMD modules, for some reason.
@@ -127,6 +126,15 @@ def register_slycat_plugin(context):
     "stripe1.png",
     "stripe2.png",
     "pin.png",
+    "build-movie.png",
+    "play.png",
+    "pause.png",
+    "play-reverse.png",
+    "fast-forward.png",
+    "rewind.png",
+    "frame-forward.png",
+    "frame-rewind.png",
+    "repeat.png",
   ]
   for image in images:
     context.register_model_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), "img", image))

@@ -27,9 +27,11 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
     this.model = model;
     this.table = table;
     this.login = model.login;
-    this.video_type = ["webm", "h264"].filter(function(encoding){return Modernizr.video[encoding];})
+    this.video_type = ["h264", "webm"].filter(function(encoding){return Modernizr.video[encoding];})
                           .map(function(encoding){return formats[encoding];})[0];
     this.fps = 25;
+
+    console.debug("Using " + this.video_type + " for movie encoding");
   }
 
   Movie.prototype.add_loader = function(plot) {
@@ -84,7 +86,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
 
     self.open_control.append('image')
         .attr('xlink:href', plot.scatterplot_obj.scatterplot("get_option", "server_root") +
-          "css/build-movie.png")
+          "resources/models/tracer-image/build-movie.png")
         .attr('transform', 'translate(' + self.open_control.attr("width")/2 + ',0)')
         .attr('width', width)
         .attr('height', height);
@@ -205,12 +207,12 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
       d3.select("#movie-loop-toggle").attr("opacity", self.video.loop() ? 1 : 0)
     }
 
-    var controls = [{name: "Play", id: "play-pause", action: toggle_pause_play, image: "css/play.png"},
-        {name: "Go to Beginning", id: "begin", action: set_position(0), image: "css/rewind.png"},
-        {name: "Step Back", id: "back", action: step(-1), image: "css/frame-rewind.png"},
-        {name: "Step Forward", id: "forward", action: step(1), image: "css/frame-forward.png"},
-        {name: "Go to end", id: "end", action: set_position(this.video.duration() - (1/this.fps)), image: "css/fast-forward.png"},
-        {name: "Loop", id: "repeat", action: toggle_repeat, image: "css/repeat.png"}];
+    var controls = [{name: "Play", id: "play-pause", action: toggle_pause_play, image: "resources/models/tracer-image/play.png"},
+        {name: "Go to Beginning", id: "begin", action: set_position(0), image: "resources/models/tracer-image/rewind.png"},
+        {name: "Step Back", id: "back", action: step(-1), image: "resources/models/tracer-image/frame-rewind.png"},
+        {name: "Step Forward", id: "forward", action: step(1), image: "resources/models/tracer-image/frame-forward.png"},
+        {name: "Go to end", id: "end", action: set_position(this.video.duration() - (1/this.fps)), image: "resources/models/tracer-image/fast-forward.png"},
+        {name: "Loop", id: "repeat", action: toggle_repeat, image: "resources/models/tracer-image/repeat.png"}];
 
     var control_pane = container.append('rect')
         .attr({
@@ -253,8 +255,8 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
           opacity : 0
         });
 
-    this.video.on("playing", function(){built_controls["play-pause"].attr("href", server_root + "css/pause.png")})
-    this.video.on("pause", function(){built_controls["play-pause"].attr("href", server_root + "css/play.png")})
+    this.video.on("playing", function(){built_controls["play-pause"].attr("href", server_root + "resources/models/tracer-image/pause.png")})
+    this.video.on("pause", function(){built_controls["play-pause"].attr("href", server_root + "resources/models/tracer-image/play.png")})
   }
 
   Movie.prototype.show_movie = function(plot, image_index) {
