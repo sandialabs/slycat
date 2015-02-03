@@ -141,6 +141,7 @@ def create_session(hostname, username, password):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
+    cherrypy.log.error("Starting agent executable for %s@%s with command: %s" % (username, hostname, cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]["command"]))
     stdin, stdout, stderr = ssh.exec_command(cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]["command"])
     # Handle catastrophic startup failures.
     try:
