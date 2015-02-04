@@ -738,6 +738,16 @@ def delete_model(mid):
 
   cherrypy.response.status = "204 Model deleted."
 
+def delete_reference(rid):
+  couchdb = slycat.web.server.database.couchdb.connect()
+  reference = couchdb.get("reference", rid)
+  project = couchdb.get("project", reference["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  couchdb.delete(reference)
+
+  cherrypy.response.status = "204 Reference deleted."
+
 def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
   try:
     attribute = int(attribute)
