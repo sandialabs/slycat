@@ -49,14 +49,17 @@ rights in this software.
             <a class="list-group-item" data-bind="attr: {href:uri}">
               <span class="label label-default" data-bind="text:model_type + ' model'"></span>
               <strong><span data-bind="text:model_name"></span> - <span data-bind="text:name"></span></strong>
-              <p>
                 <small>
                   <em>
                     Created <span data-bind="text:created"></span>
                     by <span data-bind="text:creator"></span>
                   </em>
                 </small>
-              </p>
+              <span class="pull-right">
+<!--
+                <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="glyphicon glyphicon-pencil"></span></button> -->
+                <button type="button" class="btn btn-xs btn-danger" data-bind="click: $parent.delete_saved_bookmark"><span class="glyphicon glyphicon-trash"></span></button>
+              </span>
             </a>
           </div>
         </div>
@@ -68,14 +71,18 @@ rights in this software.
           <div class="list-group" data-bind="foreach: templates">
             <div class="list-group-item">
               <strong data-bind="text:name"></strong>
-              <p>
                 <small>
                   <em>
                     Created <span data-bind="text:created"></span>
                     by <span data-bind="text:creator"></span>
                   </em>
                 </small>
-              </p>
+              </strong>
+              <span class="pull-right">
+<!--
+                <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_template"><span class="glyphicon glyphicon-pencil"></span></button> -->
+                <button type="button" class="btn btn-xs btn-danger" data-bind="click: $parent.delete_template"><span class="glyphicon glyphicon-trash"></span></button>
+              </span>
             </div>
           </div>
         </div>

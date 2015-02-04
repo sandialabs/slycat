@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-models-feed", "knockout", "knockout-mapping", "URI"], function(server_root, client, markings, models_feed, ko, mapping, URI)
+define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-models-feed", "slycat-dialog", "knockout", "knockout-mapping", "URI"], function(server_root, client, markings, models_feed, dialog, ko, mapping, URI)
 {
   var module = {}
   module.start = function()
@@ -47,18 +47,76 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
         uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
       };
     });
+    page.edit_saved_bookmark = function(reference)
+    {
+    }
+    page.delete_saved_bookmark = function(reference)
+    {
+      dialog.dialog(
+      {
+        title: "Delete Saved Bookmark?",
+        message: "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
+        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+        callback: function(button)
+        {
+          if(button.label != "OK")
+            return;
+          client.delete_reference(
+          {
+            rid: reference._id(),
+            success: function()
+            {
+              page.update_references();
+            },
+            error: dialog.ajax_error("Couldn't delete template."),
+          });
+        },
+      });
+    }
     page.templates = page.references.filter(function(reference)
     {
       return reference.bid() && !reference.mid();
     });
-    client.get_project_references(
+    page.edit_template = function(reference)
     {
-      pid: page.project._id(),
-      success: function(references)
+    }
+    page.delete_template = function(reference)
+    {
+      dialog.dialog(
       {
-        mapping.fromJS(references, page.references);
-      }
-    });
+        title: "Delete Template?",
+        message: "The template will be deleted immediately and there is no undo.  This will not affect any existing models.",
+        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+        callback: function(button)
+        {
+          if(button.label != "OK")
+            return;
+          client.delete_reference(
+          {
+            rid: reference._id(),
+            success: function()
+            {
+              page.update_references();
+            },
+            error: dialog.ajax_error("Couldn't delete template."),
+          });
+        },
+      });
+    }
+
+    page.update_references = function()
+    {
+      client.get_project_references(
+      {
+        pid: page.project._id(),
+        success: function(references)
+        {
+          mapping.fromJS(references, page.references);
+        }
+      });
+    }
+
+    page.update_references();
 
     ko.applyBindings(page);
   };
