@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <link id="slycat-server-root" href="/">
+    <link rel="stylesheet" href="css/namespaced-bootstrap.css">
+    <link rel="stylesheet" href="css/slycat.css">
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+    <script src="js/knockout.mapping.js"></script>
+    <script src="js/slycat-server-root.js"></script>
+    <script src="js/slycat-category-select.js"></script>
+    <style>
+      body {
+        background: white;
+      }
+      .cat-button:hover, .cat-button:focus {
+        outline: none !important;
+        outline-style: none;
+      }
+      .cat-button:focus:not(.active) {
+        background-color: white !important;
+      }
+    </style>
+    <title>Slycat Category Select Test</title>
+  </head>
+
+  <body>
+    <slycat-category-select params="categories: categories"></slycat-category-select>
+  </body>
+
+  <script>
+    require(["knockout", "knockout-mapping"], function(ko, mapping) {
+      var bindings = mapping.fromJS({ categories: ['Steel', 'Lead', 'Gold', 'Tungsten', 'Aluminum', 'Unobtanium'] })
+      ko.applyBindings(bindings);
+    });
+  </script>
+</html>
