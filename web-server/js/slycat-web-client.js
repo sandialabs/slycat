@@ -46,6 +46,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.delete_reference = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "references/" + params.rid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.delete_remote = function(params)
   {
     $.ajax(
