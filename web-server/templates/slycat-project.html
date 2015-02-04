@@ -19,8 +19,9 @@ rights in this software.
     <slycat-navbar params="project_id:'{{slycat-project._id}}', project_name:'{{slycat-project.name}}'"></slycat-navbar>
 
     <div id="slycat-project" class="bootstrap-styles slycat-content">
-      <div class="container">
-        <div class="panel panel-default" data-bind="visible: models().length">
+      <div class="container" data-bind="visible: models().length">
+        <h3>Models</h3>
+        <div class="panel panel-default">
           <div class="list-group" data-bind="foreach: models">
             <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
               <span class="label label-default" data-bind="text:$data['model-type']() + ' model'"></span>
@@ -39,6 +40,46 @@ rights in this software.
             </a>
           </div>
         </div>
+      </div>
+
+      <div class="container" data-bind="visible: saved_bookmarks().length">
+        <h3>Saved Bookmarks</h3>
+        <div class="panel panel-default">
+          <div class="list-group" data-bind="foreach: saved_bookmarks">
+            <a class="list-group-item" data-bind="attr: {href:uri}">
+              <span class="label label-default" data-bind="text:model_type + ' model'"></span>
+              <strong><span data-bind="text:model_name"></span> - <span data-bind="text:name"></span></strong>
+              <p>
+                <small>
+                  <em>
+                    Created <span data-bind="text:created"></span>
+                    by <span data-bind="text:creator"></span>
+                  </em>
+                </small>
+              </p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="container" data-bind="visible: templates().length">
+        <h3>Templates</h3>
+        <div class="panel panel-default">
+          <div class="list-group" data-bind="foreach: templates">
+            <div class="list-group-item">
+              <strong data-bind="text:name"></strong>
+              <p>
+                <small>
+                  <em>
+                    Created <span data-bind="text:created"></span>
+                    by <span data-bind="text:creator"></span>
+                  </em>
+                </small>
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
     <script type="text/javascript">

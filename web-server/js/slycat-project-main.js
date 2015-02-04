@@ -25,6 +25,41 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
           return page.markings()[i].badge();
       }
     }
+
+    page.references = mapping.fromJS([]);
+    page.saved_bookmarks = page.references.filter(function(reference)
+    {
+      return reference.bid() && reference.mid();
+    }).map(function(reference)
+    {
+      var model = ko.utils.arrayFirst(page.models(), function(model)
+      {
+        return model._id() == reference.mid();
+      });
+
+      return {
+        _id: reference._id,
+        name: reference.name,
+        model_name: model ? model.name() : "",
+        model_type: model ? model["model-type"]() : "",
+        created: reference.created,
+        creator: reference.creator,
+        uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
+      };
+    });
+    page.templates = page.references.filter(function(reference)
+    {
+      return reference.bid() && !reference.mid();
+    });
+    client.get_project_references(
+    {
+      pid: page.project._id(),
+      success: function(references)
+      {
+        mapping.fromJS(references, page.references);
+      }
+    });
+
     ko.applyBindings(page);
   };
 
