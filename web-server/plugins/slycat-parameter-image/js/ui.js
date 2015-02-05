@@ -35,6 +35,7 @@ var filtered_v = null;
 var table_ready = false;
 var scatterplot_ready = false;
 var controls_ready = false;
+var sliders_ready = false;
 var image_uri = document.createElement("a");
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +57,10 @@ $("#parameter-image-plus-layout").layout(
     //     height: $("#scatterplot-pane").height()
     //   });
     // },
+  },
+  west:
+  {
+    // Sliders
   },
   south:
   {
@@ -145,6 +150,7 @@ function model_loaded()
     bookmark = state;
     setup_controls();
     setup_colorswitcher();
+    setup_sliders();
     metadata_loaded();
   });
 }
@@ -535,6 +541,17 @@ function setup_scatterplot()
       open_images_changed(selection);
     });
   }
+}
+
+function setup_sliders()
+{
+  if( !sliders_ready )
+  {
+    sliders_ready = true;
+    $("#sliders-pane .load-status").css("display", "none");
+    $("#sliders").sliders();
+  }
+    
 }
 
 function setup_controls()

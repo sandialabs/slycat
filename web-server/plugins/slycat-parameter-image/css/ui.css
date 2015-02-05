@@ -509,3 +509,9 @@ rights in this software.
 foreignObject.video body {
   height: 100%;
 }
+
+/* Sliders */
+.slycat-range-slider.vertical
+{
+  display: inline-block;
+}

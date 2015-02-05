@@ -65,6 +65,7 @@ def register_slycat_plugin(context):
     # "parameter-controls.js",
     # "parameter-image-table.js",
     # "parameter-image-scatterplot.js",
+    # "parameter-image-sliders.js",
     # "ui.js",
     #For development and debugging, comment out js here and load it dynamically inside model.
   ]
@@ -108,6 +109,7 @@ def register_slycat_plugin(context):
     "js/parameter-controls.js",
     "js/parameter-image-table.js",
     "js/parameter-image-scatterplot.js",
+    "js/parameter-image-sliders.js",
     "js/ui.js",
   ]
   for dev in devs:

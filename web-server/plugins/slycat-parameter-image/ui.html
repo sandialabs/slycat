@@ -13,6 +13,7 @@ rights in this software.
     "js/parameter-controls.js",
     "js/parameter-image-table.js",
     "js/parameter-image-scatterplot.js",
+    "js/parameter-image-sliders.js",
     "js/ui.js",
   ].forEach(function(src) {
     var script = document.createElement('script');
@@ -64,6 +65,11 @@ rights in this software.
       <div class="load-status"></div>
       <div id="scatterplot"></div>
     </div>
+  </div>
+
+  <div id="sliders-pane" class="ui-layout-west">
+    <div class="load-status"></div>
+    <div id="sliders"></div>
   </div>
 
   <div id="table-pane" class="ui-layout-south">
