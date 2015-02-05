@@ -326,3 +326,13 @@ slycat-navbar .alert pre
   background: #888;
 }
 
+.slycat-clickable
+{
+  cursor: pointer;
+}
+
+.slycat-unclickable
+{
+  cursor: default;
+}
+
