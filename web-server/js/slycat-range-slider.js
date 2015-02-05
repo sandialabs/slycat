@@ -119,14 +119,14 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       scrollbar.low_thumb.mousedown = function(model, event)
       {
         scrollbar.low_thumb.dragging(true);
-        scrollbar.low_thumb.last_drag = [event.screenX, event.screenY];
+        scrollbar.low_thumb.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.low_thumb.mousemove, true);
         window.addEventListener("mouseup", scrollbar.low_thumb.mouseup, true);
       }
       scrollbar.high_thumb.mousedown = function(model, event)
       {
         scrollbar.high_thumb.dragging(true);
-        scrollbar.high_thumb.last_drag = [event.screenX, event.screenY];
+        scrollbar.high_thumb.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.high_thumb.mousemove, true);
         window.addEventListener("mouseup", scrollbar.high_thumb.mouseup, true);
       }
@@ -139,13 +139,13 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         var range_max = scrollbar.low_range.max();
         var reverse = scrollbar.reverse;
 
-        var drange = (scrollbar.axis == "vertical") ? event.screenY - scrollbar.low_thumb.last_drag[1] : event.screenX - scrollbar.low_thumb.last_drag[0];
+        var drange = (scrollbar.axis == "vertical") ? event.pageY - scrollbar.low_thumb.last_drag[1] : event.pageX - scrollbar.low_thumb.last_drag[0];
         if(reverse)
           drange = -drange;
         var new_value = ((range_value + drange) - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
 
         scrollbar.domain.low_value(Math.max(domain_min, Math.min(domain_max, scrollbar.domain.high_value(), new_value)));
-        scrollbar.low_thumb.last_drag = [event.screenX, event.screenY];
+        scrollbar.low_thumb.last_drag = [event.pageX, event.pageY];
       }
       scrollbar.high_thumb.mousemove = function(event)
       {
@@ -156,13 +156,13 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         var range_max = scrollbar.high_range.max();
         var reverse = scrollbar.reverse;
 
-        var drange = (scrollbar.axis == "vertical") ? event.screenY - scrollbar.high_thumb.last_drag[1] : event.screenX - scrollbar.high_thumb.last_drag[0];
+        var drange = (scrollbar.axis == "vertical") ? event.pageY - scrollbar.high_thumb.last_drag[1] : event.pageX - scrollbar.high_thumb.last_drag[0];
         if(reverse)
           drange = -drange;
         var new_value = ((range_value + drange) - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
 
         scrollbar.domain.high_value(Math.max(domain_min, scrollbar.domain.low_value(), Math.min(domain_max, new_value)));
-        scrollbar.high_thumb.last_drag = [event.screenX, event.screenY];
+        scrollbar.high_thumb.last_drag = [event.pageX, event.pageY];
       }
       scrollbar.low_thumb.mouseup = function(event)
       {

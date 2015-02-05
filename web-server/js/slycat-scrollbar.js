@@ -67,7 +67,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       scrollbar.thumb.mousedown = function(model, event)
       {
         scrollbar.thumb.dragging(true);
-        scrollbar.thumb.last_drag = [event.screenX, event.screenY];
+        scrollbar.thumb.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.thumb.mousemove, true);
         window.addEventListener("mouseup", scrollbar.thumb.mouseup, true);
       }
@@ -80,13 +80,13 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         var range_max = scrollbar.range.max();
         var reverse = scrollbar.reverse;
 
-        var drange = (scrollbar.axis == "vertical") ? event.screenY - scrollbar.thumb.last_drag[1] : event.screenX - scrollbar.thumb.last_drag[0];
+        var drange = (scrollbar.axis == "vertical") ? event.pageY - scrollbar.thumb.last_drag[1] : event.pageX - scrollbar.thumb.last_drag[0];
         if(reverse)
           drange = -drange;
         var new_value = ((range_value + drange) - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
 
         scrollbar.domain.value(Math.max(domain_min, Math.min(domain_max, new_value)));
-        scrollbar.thumb.last_drag = [event.screenX, event.screenY];
+        scrollbar.thumb.last_drag = [event.pageX, event.pageY];
       }
       scrollbar.thumb.mouseup = function(event)
       {
