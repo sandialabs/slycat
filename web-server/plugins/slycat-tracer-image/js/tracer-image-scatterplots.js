@@ -557,30 +557,27 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
               });
               ////For reference, this is the more accurate way to do it:
               //var distance = endpoints.map(function(point){ var dx = (point[0] - coord[0]); var dy = (point[1] = coord[1]); return Math.sqrt(dx*dx + dy*dy); })
-              //Push this to the window's event thread, to avoid blocking user responses:
-              window.setTimeout(function() {
-                var image_index = get_closest_image_index
-                      .apply(this, distance.map(function(dist, j) {
-                        return {l: dist, i: index - j};
-                      }).sort(function(a,b){
-                        return a.i - b.i;
-                      })
-                      );
-                if(change_selection) {
-                  if (e.ctrlKey || e.metaKey) {
-                    var not_selected = (self.options.selection.indexOf(image_index) == -1);
-                    if (not_selected) {
-                      self.options.selection.push(image_index);
-                    }
+              var image_index = get_closest_image_index
+                    .apply(this, distance.map(function(dist, j) {
+                      return {l: dist, i: index - j};
+                    }).sort(function(a,b){
+                      return a.i - b.i;
+                    })
+                    );
+              if(change_selection) {
+                if (e.ctrlKey || e.metaKey) {
+                  var not_selected = (self.options.selection.indexOf(image_index) == -1);
+                  if (not_selected) {
+                    self.options.selection.push(image_index);
                   }
-                  else {
-                    self.options.selection = [image_index];
-                  }
-                  self._schedule_update({render_selection:true});
-                  self.element.trigger("selection-changed", [self.options.selection]);
                 }
-                self._open_hover(image_index, true);
-              }, 50);
+                else {
+                  self.options.selection = [image_index];
+                }
+                self._schedule_update({render_selection:true});
+                self.element.trigger("selection-changed", [self.options.selection]);
+              }
+              self._schedule_hover(image_index);
             };
           };
           // thicker line colored according to color var selected
@@ -838,7 +835,6 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
 
       // Create scaffolding and status indicator if we already don't have one
       if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "'][data-id='" + image.data_id + "']").empty() ){
-
         // Define a default size for every image. Should have come in set by hover height/width though.
         image.width = image.width || 200;
         image.height = image.height || 200;
