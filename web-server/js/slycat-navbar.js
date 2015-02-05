@@ -343,9 +343,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
           <li class="dropdown"> \
             <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">Help <span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
-              <li><a data-bind="click:about">About Slycat</a></li> \
-              <li><a data-bind="click:support_request">Support Request</a></li> \
-              <li><a data-bind="click:open_documentation">Documentation</a></li> \
+              <li class="slycat-clickable"><a data-bind="click:about">About Slycat</a></li> \
+              <li class="slycat-clickable"><a data-bind="click:support_request">Support Request</a></li> \
+              <li class="slycat-clickable"><a data-bind="click:open_documentation">Documentation</a></li> \
             </ul> \
           </li> \
         </ul> \
