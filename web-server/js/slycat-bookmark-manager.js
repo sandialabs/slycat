@@ -10,11 +10,23 @@ define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], funct
 
   module.current_bid = function(bid)
   {
-    if(bid !== undefined)
+    if(bid !== undefined) // Caller wants to set a new bid.
     {
-      window.location = URI(window.location).removeQuery("bid").addQuery("bid", bid);
+      var new_location = URI(window.location).removeQuery("bid");
+
+      if(bid === null) // Caller is clearing the bid.
+      {
+        localStorage.removeItem(module.current_mid());
+      }
+      else // Caller is setting a non-null bid.
+      {
+        localStorage[module.current_mid()] = bid;
+        new_location.addQuery("bid", bid);
+      }
+
+      window.location = new_location;
     }
-    else
+    else // No bid was specified, so return the current bid (if any).
     {
       return URI(window.location).query(true).bid;
     }
