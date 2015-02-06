@@ -697,7 +697,7 @@ def put_model_arrayset_array(mid, name, array):
   slycat.web.server.put_model_array(database, model, name, array_index, attributes, dimensions)
 
 def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
-  cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
+  #cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
   parsed_hyperchunks = []
@@ -824,7 +824,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
 
   # New behavior
   if "arrays" in arguments or "statistics" in arguments:
-    cherrypy.log.error("arguments: %s" % arguments)
+    #cherrypy.log.error("arguments: %s" % arguments)
     with slycat.web.server.database.hdf5.lock:
       with slycat.web.server.database.hdf5.open(artifact) as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -841,7 +841,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         if "statistics" in arguments:
           results["statistics"] = []
           for spec in arguments["statistics"].split(";"):
-            cherrypy.log.error("spec: %s" % spec)
+            #cherrypy.log.error("spec: %s" % spec)
             array, attribute = spec.split("/")
             statistics = hdf5_arrayset[array].get_statistics(attribute)
             statistics["array"] = int(array)
@@ -866,7 +866,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         return results
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
-  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
+  #cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
 
   # Sanity check inputs ...
   parsed_hyperchunks = []
@@ -997,11 +997,11 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
     else:
       index_key = "array/%s/index/%s" % (array_index, sort_column)
       if index_key not in file:
-        cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
+        #cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
         sort_index = numpy.argsort(slycat.hdf5.ArraySet(file)[array_index].get_data(sort_column)[...], kind="mergesort")
         file[index_key] = sort_index
       else:
-        cherrypy.log.error("Loading cached sort index.")
+        #cherrypy.log.error("Loading cached sort index.")
         sort_index = file[index_key][...]
     if sort_order == "descending":
       sort_index = sort_index[::-1]
