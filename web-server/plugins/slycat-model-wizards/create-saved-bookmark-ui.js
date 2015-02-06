@@ -13,6 +13,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
       {
         pid: component.project._id(),
         name: component.name(),
+        "model-type": component.model["model-type"](),
         mid: bookmark_manager.current_mid(),
         bid: bookmark_manager.current_bid(),
         success: function()

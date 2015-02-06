@@ -411,6 +411,7 @@ def post_project_references(pid):
     "created" : datetime.datetime.utcnow().isoformat(),
     "creator" : cherrypy.request.security["user"],
     "name" : cherrypy.request.json["name"],
+    "model-type" : cherrypy.request.json.get("model-type", None),
     "mid" : cherrypy.request.json.get("mid", None),
     "bid" : cherrypy.request.json.get("bid", None),
     }
