@@ -473,6 +473,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   {
     var data = {};
     data.name = params.name;
+    if("model-type" in params)
+      data["model-type"] = params["model-type"];
     if("mid" in params)
       data.mid = params.mid;
     if("bid" in params)

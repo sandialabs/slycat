@@ -26,8 +26,9 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
       }
     }
 
-    page.references = mapping.fromJS([]);
-    page.saved_bookmarks = page.references.filter(function(reference)
+    var references = mapping.fromJS([]);
+
+    page.saved_bookmarks = references.filter(function(reference)
     {
       return reference.bid() && reference.mid();
     }).map(function(reference)
@@ -41,7 +42,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
         _id: reference._id,
         name: reference.name,
         model_name: model ? model.name() : "",
-        model_type: model ? model["model-type"]() : "",
+        model_type: reference["model-type"](),
         created: reference.created,
         creator: reference.creator,
         uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
@@ -73,9 +74,18 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
         },
       });
     }
-    page.templates = page.references.filter(function(reference)
+    page.templates = references.filter(function(reference)
     {
       return reference.bid() && !reference.mid();
+    }).map(function(reference)
+    {
+      return {
+        _id: reference._id,
+        name: reference.name,
+        created: reference.created,
+        creator: reference.creator,
+        model_type: reference["model-type"](),
+      };
     });
     page.edit_template = function(reference)
     {
@@ -109,9 +119,9 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
       client.get_project_references(
       {
         pid: page.project._id(),
-        success: function(references)
+        success: function(result)
         {
-          mapping.fromJS(references, page.references);
+          mapping.fromJS(result, references);
         }
       });
     }

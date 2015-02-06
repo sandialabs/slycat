@@ -550,7 +550,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
           var find_closest = function(change_selection) {
             return function() {
               var e = d3.event;
-              var coord = [d3.event.layerX - offsets[0], d3.event.layerY - offsets[1]];
+              var coord = [d3.event.offsetX - offsets[0], d3.event.offsetY - offsets[1]];
               //Just doing this for a rough comparison, why bother with expensive math like sqrt and exponents:
               var distance = endpoints.map(function(point) {
                 return Math.abs(point[0] - coord[0]) + Math.abs(point[1] - coord[1]);

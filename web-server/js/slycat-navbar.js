@@ -263,7 +263,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
             <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
           <!-- /ko --> \
           <!-- ko foreach: model --> \
-            <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:$parent.model_popover()}"></a></li> \
+            <li class="slycat-unclickable"><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:$parent.model_popover()}"></a></li> \
           <!-- /ko --> \
         </ol> \
         <ul class="nav navbar-nav navbar-left"> \
@@ -271,15 +271,15 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
             <button type="button" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
               <!-- ko foreach: model_create_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a class="" data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
               <li class="divider" data-bind="visible: model_create_wizards().length && project_create_wizards().length"></li> \
               <!-- ko foreach: project_create_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
               <li class="divider" data-bind="visible: project_create_wizards().length && global_create_wizards().length"></li> \
               <!-- ko foreach: global_create_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
             </ul> \
           </li> \
@@ -287,15 +287,15 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
             <button type="button" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
               <!-- ko foreach: model_edit_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
               <li class="divider" data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"></li> \
               <!-- ko foreach: project_edit_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
               <li class="divider" data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"></li> \
               <!-- ko foreach: global_edit_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
             </ul> \
           </li> \
@@ -303,11 +303,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
             <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button> \
             <ul class="dropdown-menu"> \
               <!-- ko foreach: model_delete_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
               <li class="divider" data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"></li> \
               <!-- ko foreach: project_delete_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
               <!-- /ko --> \
               <li class="divider" data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"></li> \
               <!-- ko foreach: global_delete_wizards --> \
@@ -339,13 +339,13 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
           </li> \
         </ul> \
         <ul class="nav navbar-nav navbar-right"> \
-          <li class="navbar-text"><span data-bind="text:user.name,popover:{trigger:\'hover\',content:\'Username: \' + user.uid()}"></span></li> \
+          <li class="navbar-text slycat-clickable"><span data-bind="text:user.name,popover:{trigger:\'hover\',content:\'Username: \' + user.uid()}"></span></li> \
           <li class="dropdown"> \
-            <a class="dropdown-toggle" data-toggle="dropdown">Help <span class="caret"></span></a> \
+            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">Help <span class="caret"></span></a> \
             <ul class="dropdown-menu"> \
-              <li><a data-bind="click:about">About Slycat</a></li> \
-              <li><a data-bind="click:support_request">Support Request</a></li> \
-              <li><a data-bind="click:open_documentation">Documentation</a></li> \
+              <li class="slycat-clickable"><a data-bind="click:about">About Slycat</a></li> \
+              <li class="slycat-clickable"><a data-bind="click:support_request">Support Request</a></li> \
+              <li class="slycat-clickable"><a data-bind="click:open_documentation">Documentation</a></li> \
             </ul> \
           </li> \
         </ul> \
