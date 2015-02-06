@@ -1039,11 +1039,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       return;
     }
 
+/*
     // Don't open image if it's already open
     if($(".open-image[data-uri='" + image.uri + "']").size() > 0) {
       self._open_images(images.slice(1));
+      console.log("Image already open.");
       return;
     }
+*/
 
     // If image is hover and we are no longer loading this image, we're done.
     if( image.image_class == "hover-image" &&
