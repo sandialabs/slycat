@@ -94,7 +94,7 @@ $.ajax(
   success : function(result)
   {
     model = result;
-    bookmarker = bookmark_manager.create(model.project, model.id);
+    bookmarker = bookmark_manager.create(model.project, model._id);
     input_columns = model["artifact:input-columns"];
     output_columns = model["artifact:output-columns"];
     image_columns = model["artifact:image-columns"];
