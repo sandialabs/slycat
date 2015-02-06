@@ -69,7 +69,11 @@ rights in this software.
 
   <div id="sliders-pane" class="ui-layout-west">
     <div class="load-status"></div>
-    <div id="sliders"></div>
+    <div id="sliders">
+      <div data-bind="foreach: sliders">
+        <slycat-range-slider data-bind="attr: { params: params }"></slycat-range-slider>
+      </div>
+    </div>
   </div>
 
   <div id="table-pane" class="ui-layout-south">
