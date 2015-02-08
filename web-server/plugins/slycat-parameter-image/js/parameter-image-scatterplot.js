@@ -1039,14 +1039,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       return;
     }
 
-/*
     // Don't open image if it's already open
-    if($(".open-image[data-uri='" + image.uri + "']").size() > 0) {
+    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").size() > 0) {
       self._open_images(images.slice(1));
-      console.log("Image already open.");
       return;
     }
-*/
 
     // If image is hover and we are no longer loading this image, we're done.
     if( image.image_class == "hover-image" &&
@@ -1079,7 +1076,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         .attr("data-transx", image.x)
         .attr("data-transy", image.y)
         .attr('transform', "translate(" + image.x + ", " + image.y + ")")
-        .attr("class", image.image_class + " image-frame")
+        .attr("class", image.image_class + " image-frame scaffolding")
         .attr("data-index", image.index)
         .attr("data-uri", image.uri)
         .call(
@@ -1223,6 +1220,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       }
 
       var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
+      frame.classed("scaffolding", false);
 
       if(blob.type.indexOf('image/') == 0)
       {
