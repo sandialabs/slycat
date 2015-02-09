@@ -42,7 +42,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
         _id: reference._id,
         name: reference.name,
         model_name: model ? model.name() : "",
-        model_type: reference["model-type"](),
+        model_type: reference["model-type"] ? reference["model-type"]() : "",
         created: reference.created,
         creator: reference.creator,
         uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
@@ -84,7 +84,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
         name: reference.name,
         created: reference.created,
         creator: reference.creator,
-        model_type: reference["model-type"](),
+        model_type: reference["model-type"] ? reference["model-type"]() : "",
       };
     });
     page.edit_template = function(reference)

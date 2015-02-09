@@ -47,7 +47,7 @@ rights in this software.
         <div class="panel panel-default">
           <div class="list-group" data-bind="foreach: saved_bookmarks">
             <a class="list-group-item" data-bind="attr: {href:uri}">
-              <span class="label label-default" data-bind="text:model_type + ' model'"></span>
+              <span class="label label-default" data-bind="visible:model_type, text:model_type + ' model'"></span>
               <strong><span data-bind="text:model_name"></span> - <span data-bind="text:name"></span></strong>
                 <small>
                   <em>
@@ -70,7 +70,7 @@ rights in this software.
         <div class="panel panel-default">
           <div class="list-group" data-bind="foreach: templates">
             <div class="list-group-item">
-              <span class="label label-default" data-bind="text:model_type + ' model'"></span>
+              <span class="label label-default" data-bind="visible:model_type, text:model_type + ' model'"></span>
               <strong data-bind="text:name"></strong>
                 <small>
                   <em>
