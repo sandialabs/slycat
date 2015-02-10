@@ -1,16 +1,22 @@
+import argparse
 import sys
 import tornado.websocket
-from tornado import gen
 
+parser = argparse.ArgumentParser(description="Monitor a Slycat server feed.")
+parser.add_argument("--host", default="ws://localhost:8888", help="Root URL of the feed server.  Default: %(default)s")
+arguments = parser.parse_args()
 
-@gen.coroutine
-def test_ws():
-  client = yield tornado.websocket.websocket_connect("ws://localhost:8888/websocket/client-ticket")
+@tornado.gen.coroutine
+def watch_feed():
+  client = yield tornado.websocket.websocket_connect(arguments.host + "/websocket/client-ticket")
   while True:
     message = yield client.read_message()
     if message is None:
       break
-    sys.stderr.write("%s\n" % message)
-    sys.stderr.flush()
+    sys.stdout.write("%s\n" % message)
+    sys.stdout.flush()
 
-tornado.ioloop.IOLoop.instance().run_sync(test_ws)
+try:
+  tornado.ioloop.IOLoop.instance().run_sync(watch_feed)
+except KeyboardInterrupt:
+  tornado.ioloop.IOLoop.instance().stop()
