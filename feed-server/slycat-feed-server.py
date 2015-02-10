@@ -1,4 +1,6 @@
+import tornado.httpserver
 import tornado.ioloop
+import tornado.options
 import tornado.web
 import tornado.websocket
 
@@ -20,11 +22,12 @@ class MainHandler(tornado.web.RequestHandler):
     self.write("""
 <html>
   <head>
+    <title>Slycat Feed Server</title>
   </head>
   <body>
     <h1>Hello, World!</h1>
     <script type="application/javascript">
-      var ws = new WebSocket("ws://192.168.59.103:8888/websocket");
+      var ws = new WebSocket("wss://192.168.59.103:8888/websocket");
       ws.onopen = function()
       {
         ws.send("Hello, world");
@@ -41,8 +44,11 @@ class MainHandler(tornado.web.RequestHandler):
 application = tornado.web.Application([
   (r"/", MainHandler),
   ("/websocket", EchoWebSocket),
-])
+], debug=True)
 
 if __name__ == "__main__":
-  application.listen(8888)
+  tornado.options.parse_command_line()
+  server = tornado.httpserver.HTTPServer(application, ssl_options={"certfile":"../web-server/web-server.pem", "keyfile":"../web-server/web-server.key"})
+  server.listen(8888)
   tornado.ioloop.IOLoop.instance().start()
+
