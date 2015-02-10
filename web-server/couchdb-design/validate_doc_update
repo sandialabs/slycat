@@ -3,7 +3,12 @@ function(new_document, old_document, user_context)
   function require(expression, message)
   {
     if(!expression)
-      throw( { forbidden : message } );
+    {
+      throw(
+      {
+        forbidden: message
+      });
+    }
   }
 
   if(new_document._deleted)
@@ -77,9 +82,23 @@ function(new_document, old_document, user_context)
       require(new_document["project"] == old_document["project"], "Reference project id cannot be modified.");
     }
   }
+  else if(new_document["type"] == "ticket")
+  {
+    require(new_document["created"] != null, "Ticket must contain creation time.");
+    require(new_document["creator"] != null, "Ticket must contain creator.");
+    if(old_document)
+    {
+      require(new_document["ip"] == old_document["ip"], "Ticket IP address cannot be modified.");
+      require(new_document["created"] == old_document["created"], "Ticket creation time cannot be modified.");
+      require(new_document["creator"] == old_document["creator"], "Ticket creator cannot be modified.");
+    }
+  }
   else
   {
-    throw( { forbidden : "Unknown document type: " + new_document["type"] } );
+    throw(
+    {
+      forbidden: "Unknown document type: " + new_document["type"],
+    });
   }
 }
 
