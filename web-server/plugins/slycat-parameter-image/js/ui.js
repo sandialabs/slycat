@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, dialog, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-note-display", "slycat-dialog", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, note_builder, dialog, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -183,6 +183,7 @@ function metadata_loaded()
   if(!indices && table_metadata)
   {
     var count = table_metadata["row-count"];
+    var notes = note_builder.attach("#notes");
     indices = new Int32Array(count);
     for(var i = 0; i != count; ++i)
       indices[i] = i;

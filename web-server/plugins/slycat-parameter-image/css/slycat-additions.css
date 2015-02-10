@@ -1,0 +1,23 @@
+.vertical {
+  -ms-transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+
+.unvertical {
+  -ms-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+
+.link-cursor {
+  cursor: pointer;
+}
+
+.default-cursor {
+  cursor: inherit;
+}
+
+.info-panel {
+  border-left: 2px solid #1b809e !important;
+}

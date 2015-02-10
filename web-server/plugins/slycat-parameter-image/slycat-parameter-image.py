@@ -62,6 +62,7 @@ def register_slycat_plugin(context):
     "chunker.js",
     "login.js",
     "color-switcher.js",
+    "note-display.js",
     # "parameter-controls.js",
     # "parameter-image-table.js",
     # "parameter-image-scatterplot.js",
@@ -79,6 +80,7 @@ def register_slycat_plugin(context):
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
     "ui.css",
+    "slycat-additions.css",
     #For development and debugging, comment out css here and load it dynamically inside model.
   ]
   context.register_model_bundle("parameter-image", "text/css", [
