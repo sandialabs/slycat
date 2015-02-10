@@ -183,7 +183,7 @@ def start_projects_feed():
   get_projects_feed.cache = slycat.web.server.database.couchdb.Cache("projects-feed", "slycat/projects")
 
 @cherrypy.tools.json_out(on = True)
-def get_feed_ticket():
+def get_ticket():
   if cherrypy.request.scheme != "https":
     raise cherrypy.HTTPError("400 SSL connection required.")
   database = slycat.web.server.database.couchdb.connect()
@@ -194,9 +194,10 @@ def get_feed_ticket():
     "created": datetime.datetime.utcnow().isoformat(),
     "creator": cherrypy.request.security["user"],
     })
-  cherrypy.response.headers["location"] = "%s:%s" % (cherrypy.request.base, cherrypy.request.app.config["slycat"]["feed-server-port"])
+  feed_server = "%s:%s" % (cherrypy.request.base, cherrypy.request.app.config["slycat"]["feed-server-port"])
+  cherrypy.response.headers["location"] = feed_server
   cherrypy.response.status = "201 Ticket issued."
-  return {"id": tid}
+  return {"id": tid, "feed-server": feed_server}
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -1512,8 +1513,16 @@ def get_global_resource(resource):
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
 
-def get_agent_test():
+def get_test_agent():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  return slycat.web.server.template.render("slycat-agent-test.html", context)
+  return slycat.web.server.template.render("slycat-test-agent.html", context)
+
+def get_test_feeds():
+  context = {}
+  context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+  context["slycat-css-bundle"] = css_bundle()
+  context["slycat-js-bundle"] = js_bundle()
+  return slycat.web.server.template.render("slycat-test-feeds.html", context)
+
 
