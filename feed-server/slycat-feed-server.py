@@ -88,15 +88,22 @@ class Feed(object):
 class ProjectsFeed(tornado.websocket.WebSocketHandler):
   feed = Feed(arguments.couchdb_host, arguments.couchdb_database, "projects-feed", "slycat/projects")
 
-  def open(self, *args, **kwargs):
+  def get(self, *args, **kwargs):
+    # Validate the authentication ticket first.
+    print repr(self.request)
     tid = self.get_query_argument("ticket")
     database = couch.BlockingCouch("slycat")
     self.ticket = database.get_doc(tid)
-
-    if (datetime.datetime.utcnow() - datetime.datetime.strptime(self.ticket["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_ticket_age:
-      raise Exception("Ticket expired.")
-
     database.delete_doc(self.ticket)
+
+    print self.ticket, self.request.remote_ip
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(self.ticket["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_ticket_age:
+      raise tornado.web.HTTPError(403, reason="Ticket expired.")
+
+    # OK, proceed to upgrade the connection to a websocket.
+    return tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
+
+  def open(self, *args, **kwargs):
     self.id_cache = set() # Keep track of the set of project ids visible to the caller.
     ProjectsFeed.feed.add_client(self)
 
