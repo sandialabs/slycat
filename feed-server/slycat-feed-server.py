@@ -88,10 +88,10 @@ class ProjectsFeed(tornado.websocket.WebSocketHandler):
   feed = Feed(arguments.couchdb_host, arguments.couchdb_database, "projects-feed", "slycat/projects")
 
   def open(self, *args, **kwargs):
-    print("WebSocket opened %s %s" % (args, kwargs))
     tid = self.get_query_argument("ticket")
     database = couch.BlockingCouch("slycat")
     self.ticket = database.get_doc(tid)
+    database.delete_doc(self.ticket)
     self.id_cache = set() # Keep track of the set of project ids visible to the caller.
     ProjectsFeed.feed.add_client(self)
 
@@ -109,11 +109,10 @@ class ProjectsFeed(tornado.websocket.WebSocketHandler):
           self.id_cache.remove(change["id"])
           self.write_message(json.dumps(dict(id=change["id"], deleted=True)))
 
-  def on_message(self, message):
-    pass
+#  def on_message(self, message):
+#    pass
 
   def on_close(self):
-    print("WebSocket closed %s %s" % (self.close_code, self.close_reason))
     ProjectsFeed.feed.remove_client(self)
 
 application = tornado.web.Application([

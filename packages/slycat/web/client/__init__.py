@@ -40,7 +40,7 @@ def _require_array_ranges(ranges):
   else:
     raise Exception("Not a valid ranges object.")
 
-class option_parser(argparse.ArgumentParser):
+class ArgumentParser(argparse.ArgumentParser):
   """Return an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
@@ -86,6 +86,11 @@ class option_parser(argparse.ArgumentParser):
       log.setLevel(logging.CRITICAL)
 
     return arguments
+
+class option_parser(ArgumentParser):
+  def __init__(self, *arguments, **keywords):
+    ArgumentParser.__init__(self, *arguments, **keywords)
+    log.warning("slycat.web.client.option_parser is deprecated, use slycat.web.client.ArgumentParser instead.")
 
 class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
@@ -354,6 +359,19 @@ class Connection(object):
     :http:get:`/configuration/version`
     """
     return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
+
+  def get_ticket(self):
+    """Retrieve an authentication from the server.
+
+    Returns
+    -------
+    tid : ticket id.
+
+    See Also
+    --------
+    :http:get:`/tickets`
+    """
+    return self.request("GET", "/tickets", headers={"accept":"application/json"})["id"]
 
   def post_model_finish(self, mid):
     """Notify the server that a model is fully initialized.
