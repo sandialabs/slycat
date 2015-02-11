@@ -3,7 +3,7 @@ import sys
 import tornado.websocket
 
 parser = argparse.ArgumentParser(description="Monitor a Slycat server feed.")
-parser.add_argument("--host", default="ws://localhost:8888", help="Root URL of the feed server.  Default: %(default)s")
+parser.add_argument("--host", default="ws://localhost:8093", help="Root URL of the feed server.  Default: %(default)s")
 parser.add_argument("--ticket", default="10327d9078b84706b5a274e5c3b39038", help="Authentication ticket.  Default: %(default)s")
 arguments = parser.parse_args()
 
