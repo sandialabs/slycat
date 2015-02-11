@@ -14,6 +14,7 @@ import tornado.websocket
 parser = argparse.ArgumentParser()
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="http://localhost:5984", help="CouchDB host.  Default: %(default)s")
+parser.add_argument("--max-ticket-age", type=float, default=5, help="Maximum age of an authentication ticket in seconds.  Default: %(default)s")
 parser.add_argument("--port", type=int, default=8093, help="Feed server port.  Default: %(default)s")
 arguments = parser.parse_args()
 
@@ -91,6 +92,10 @@ class ProjectsFeed(tornado.websocket.WebSocketHandler):
     tid = self.get_query_argument("ticket")
     database = couch.BlockingCouch("slycat")
     self.ticket = database.get_doc(tid)
+
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(self.ticket["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_ticket_age:
+      raise Exception("Ticket expired.")
+
     database.delete_doc(self.ticket)
     self.id_cache = set() # Keep track of the set of project ids visible to the caller.
     ProjectsFeed.feed.add_client(self)
