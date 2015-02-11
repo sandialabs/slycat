@@ -162,8 +162,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     {
       //console.log("#scatterplot mousedown");
       e.preventDefault();
-      console.debug("Dragging:");
-      console.debug(e);
       output = e
       self.start_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
       s_d = self.start_drag;
@@ -181,8 +179,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       {
         if(self.end_drag) // Already dragging ...
         {
-          console.debug("Dragging:");
-          console.debug(e);
           self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
           output = e;
 
