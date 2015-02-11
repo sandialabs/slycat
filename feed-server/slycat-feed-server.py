@@ -1,3 +1,4 @@
+import couch
 import datetime
 import tornado.httpserver
 import tornado.ioloop
@@ -5,51 +6,35 @@ import tornado.options
 import tornado.web
 import tornado.websocket
 
-class EchoWebSocket(tornado.websocket.WebSocketHandler):
-  clients = []
+class ProjectsFeed(tornado.websocket.WebSocketHandler):
+  clients = set()
 
   def open(self, *args, **kwargs):
     print("WebSocket opened %s %s" % (args, kwargs))
+    tid = self.get_query_argument("ticket")
+    database = couch.BlockingCouch("slycat")
+    ticket = database.get_doc(tid)
+    print "Ticket", ticket
+
     self.write_message("a");
     self.write_message("b");
     self.write_message("c");
-    EchoWebSocket.clients.append(self)
+    ProjectsFeed.clients.add(self)
 
   def on_message(self, message):
     pass
 
   def on_close(self):
     print("WebSocket closed %s %s" % (self.close_code, self.close_reason))
-    EchoWebSocket.clients.remove(self)
-
-class MainHandler(tornado.web.RequestHandler):
-  def get(self):
-    self.write("""
-<html>
-  <head>
-    <title>Slycat Feed Server</title>
-  </head>
-  <body>
-    <h1>Hello, World!</h1>
-    <script type="application/javascript">
-      var ws = new WebSocket("wss://192.168.59.103:8888/websocket/myticket");
-      ws.onmessage = function (evt)
-      {
-        console.log(evt.data);
-      };
-    </script>
-  </body>
-</html>
-""")
+    ProjectsFeed.clients.discard(self)
 
 application = tornado.web.Application([
-  (r"/", MainHandler),
-  ("/websocket/(.*)", EchoWebSocket),
+  ("/projects-feed", ProjectsFeed),
 ], debug=True)
 
 def tick():
   timestamp = datetime.datetime.utcnow().isoformat()
-  for client in EchoWebSocket.clients:
+  for client in ProjectsFeed.clients:
     client.write_message(timestamp)
 
 if __name__ == "__main__":
