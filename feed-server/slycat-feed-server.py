@@ -34,8 +34,8 @@ class RawFeed(object):
     self._database = database
     self._filter = "slycat/projects-models"
     self._last_seq = None
-    self._changes = dict()
-    self._project_model_map = defaultdict(set)
+    self._projects = dict()
+    self._models = dict()
     self._thread = threading.Thread(name="project-models-feed", target=self._run)
     self._thread.daemon = True
     self._thread.start()
@@ -52,11 +52,14 @@ class RawFeed(object):
       self._last_seq = changes["last_seq"]
       for change in changes["results"]:
         if "deleted" in change:
-          if change["id"] in self._changes:
-            del self._changes[change["id"]]
+          self._projects.pop(change["id"], None)
+          self._models.pop(change["id"], None)
         else:
-          self._changes[change["id"]] = dict(id=change["id"], doc=change["doc"])
-      sys.stderr.write("Cached %s objects from %s records, sequence %s.\n" % (len(self._changes), len(changes["results"]), self._last_seq))
+          if change["doc"]["type"] == "project":
+            self._projects[change["id"]] = change["doc"]
+          if change["doc"]["type"] == "model":
+            self._models[change["id"]] = change["doc"]
+      sys.stderr.write("Cached %s projects, %s models from %s records, sequence %s.\n" % (len(self._projects), len(self._models), len(changes["results"]), self._last_seq))
 
     # Keep the cache up-to-date.
     while True:
@@ -66,21 +69,32 @@ class RawFeed(object):
             self._last_seq = change["last_seq"]
           elif "deleted" in change:
             self._last_seq = change["seq"]
-            if change["id"] in self._changes:
-              del self._changes[change["id"]]
+            if change["id"] in self._projects:
+              self._projects.pop(change["id"])
+              for client in self._clients:
+                client.on_change(dict(id=change["id"], deleted=True))
+            elif change["id"] in self._models:
+              self._models.pop(change["id"])
               for client in self._clients:
                 client.on_change(dict(id=change["id"], deleted=True))
           else:
             self._last_seq = change["seq"]
-            self._changes[change["id"]] = dict(id=change["id"], doc=change["doc"])
-            for client in self._clients:
-              client.on_change(dict(id=change["id"], doc=change["doc"]))
+            if change["doc"]["type"] == "project":
+              self._projects[change["id"]] = change["doc"]
+              for client in self._clients:
+                client.on_change(change)
+            elif change["doc"]["type"] == "model":
+              self._models[change["id"]] = change["doc"]
+              for client in self._clients:
+                client.on_change(change)
 
   def add_client(self, client):
     with self._lock:
       self._clients.add(client)
-      for change in self._changes.values():
-        client.on_change(change)
+      for id, project in self._projects.items():
+        client.on_change(dict(id=id, doc=project))
+      for id, model in self._models.items():
+        client.on_change(dict(id=id, doc=model))
 
   def remove_client(self, client):
     with self._lock:
@@ -117,16 +131,21 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
         self.write_message(json.dumps(change))
     else:
       if change["doc"]["type"] == "project":
-        if test_project_reader(change["doc"], self._ticket["creator"]): # Caller visible project has been created/updated.
-          self._projects[change["id"]] = change["doc"]
+        pid, project = change["id"], change["doc"]
+        if test_project_reader(project, self._ticket["creator"]): # Caller visible project has been created/updated.
+          self._projects[pid] = project
           self.write_message(json.dumps(change))
         else:
-          if change["id"] in self._projects: # Caller lost access to the project, make it look like a deletion.
-            del self._projects[change["id"]]
-            self.write_message(json.dumps(dict(id=change["id"], deleted=True)))
+          if pid in self._projects: # Caller lost access to the project, make it look like a deletion.
+            del self._projects[pid]
+            self.write_message(json.dumps(dict(id=pid, deleted=True)))
+            for mid in [model["_id"] for model in self._models.values() if model["project"] == pid]:
+              del self._models[mid]
+              self.write_message(json.dumps(dict(id=mid, deleted=True)))
       elif change["doc"]["type"] == "model":
-        if change["doc"]["project"] in self._projects: # Caller visible model has been created/updated.
-          self._models[change["id"]] = change["doc"]
+        mid, model = change["id"], change["doc"]
+        if model["project"] in self._projects and test_project_reader(self._projects[model["project"]], self._ticket["creator"]): # Caller visible model has been created/updated.
+          self._models[mid] = model
           self.write_message(json.dumps(change))
 
   def on_close(self):
