@@ -76,6 +76,7 @@ class RawFeed(object):
     change_message = json.dumps(dict(id=pid, deleted=True))
     for client in self._clients:
       if is_project_reader(project, client.user):
+        client.projects.discard(pid)
         client.write_message(change_message)
 
   def _delete_model(self, mid):
@@ -94,6 +95,18 @@ class RawFeed(object):
     for client in self._clients:
       if is_project_reader(project, client.user):
         client.write_message(change_message)
+        # The user was added to this project.
+        if pid not in client.projects:
+          client.projects.add(pid)
+          for mid in self._project_models[pid]:
+            client.write_message(json.dumps(dict(id=mid, doc=self._models[mid])))
+      else:
+        # The user was removed from this project.
+        if pid in client.projects:
+          client.projects.discard(pid)
+          client.write_message(json.dumps(dict(id=pid, deleted=True)))
+          for mid in self._project_models[pid]:
+            client.write_message(json.dumps(dict(id=mid, deleted=True)))
 
   def _update_model(self, mid, model):
     self._models[mid] = model
@@ -109,6 +122,7 @@ class RawFeed(object):
       self._clients.add(client)
       for pid, project in self._projects.items():
         if is_project_reader(project, client.user):
+          client.projects.add(pid)
           client.write_message(json.dumps(dict(id=pid, doc=project)))
       for mid, model in self._models.items():
         if is_project_reader(self._projects[model["project"]], client.user):
@@ -132,6 +146,7 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
       raise tornado.web.HTTPError(403, reason="Ticket expired.")
 
     self.user = ticket["creator"]
+    self.projects = set()
 
     # OK, proceed to upgrade the connection to a websocket.
     return tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
