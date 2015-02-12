@@ -29,7 +29,7 @@ rights in this software.
             }
             websocket.onmessage = function(message)
             {
-              console.log("message", message);
+              console.log("message", JSON.parse(message.data));
             }
           }
         });

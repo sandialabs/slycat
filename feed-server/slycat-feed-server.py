@@ -151,6 +151,9 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
     # OK, proceed to upgrade the connection to a websocket.
     return tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
 
+  def check_origin(self, origin):
+    return True
+
   def open(self, *args, **kwargs):
     raw_feed.add_client(self)
 
