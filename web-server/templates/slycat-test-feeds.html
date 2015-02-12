@@ -22,7 +22,15 @@ rights in this software.
         {
           success: function(ticket)
           {
-            console.log("get_ticket", ticket);
+            var websocket = new WebSocket(ticket["feed-server"] + "/change-feed?ticket=" + ticket["id"]);
+            websocket.onopen = function()
+            {
+              console.log("open");
+            }
+            websocket.onmessage = function(message)
+            {
+              console.log("message", message);
+            }
           }
         });
       });

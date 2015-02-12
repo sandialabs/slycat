@@ -175,6 +175,7 @@ def get_ticket():
     "creator": cherrypy.request.security["user"],
     })
   feed_server = "%s:%s" % (cherrypy.request.base, cherrypy.request.app.config["slycat"]["feed-server-port"])
+  feed_server = feed_server.replace("https://", "wss://")
   cherrypy.response.headers["location"] = feed_server
   cherrypy.response.status = "201 Ticket issued."
   return {"id": tid, "feed-server": feed_server}
