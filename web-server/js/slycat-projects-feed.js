@@ -4,12 +4,12 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-projects-feed", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
+define("slycat-projects-feed", ["slycat-changes-feed", "knockout", "knockout-mapping"], function(changes_feed, ko, mapping)
 {
   // Server-side-events loop to keep track of the current user's list of projects.
   var projects = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
   var project_ids = {}
-  var source = null;
+  var started = false;
 
   function sort_projects()
   {
@@ -21,18 +21,20 @@ define("slycat-projects-feed", ["slycat-server-root", "knockout", "knockout-mapp
 
   function start()
   {
-    source = new EventSource(server_root + "projects-feed");
-    source.onmessage = function(event)
+    if(started)
+      return;
+    started = true;
+
+    changes_feed.watch(function(change)
     {
-      message = JSON.parse(event.data);
-      if(message.deleted)
+      if(change.deleted)
       {
-        if(message.id in project_ids)
+        if(change.id in project_ids)
         {
-          delete project_ids[message.id];
+          delete project_ids[change.id];
           for(var i = 0; i != projects().length; ++i)
           {
-            if(projects()[i]._id() == message.id)
+            if(projects()[i]._id() == change.id)
             {
               projects.splice(i, 1);
               break;
@@ -42,30 +44,29 @@ define("slycat-projects-feed", ["slycat-server-root", "knockout", "knockout-mapp
       }
       else
       {
-        var project = message.doc;
-        if(project._id in project_ids)
+        if(change.doc.type == "project")
         {
-          mapping.fromJS(project, project_ids[project._id]);
-        }
-        else
-        {
-          project_ids[project._id] = mapping.fromJS(project);
-          projects.push(project_ids[project._id]);
-          sort_projects();
+          var project = change.doc;
+          if(project._id in project_ids)
+          {
+            mapping.fromJS(project, project_ids[project._id]);
+          }
+          else
+          {
+            project_ids[project._id] = mapping.fromJS(project);
+            projects.push(project_ids[project._id]);
+            sort_projects();
+          }
         }
       }
-    }
-    source.onerror = function(event)
-    {
-    }
+    });
   }
 
   var module = {};
 
   module.watch = function()
   {
-    if(!source)
-      start();
+    start();
     return projects;
   }
 

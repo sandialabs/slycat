@@ -119,7 +119,7 @@ def get_projects(_=None):
     database = slycat.web.server.database.couchdb.connect()
     projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
     projects = sorted(projects, key = lambda x: x["created"], reverse=True)
-    return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
+    return json.dumps({"revision" : 0, "projects" : projects})
 
 def get_projects_feed():
   accept = cherrypy.lib.cptools.accept(["text/event-stream"])

@@ -8,9 +8,14 @@ define("slycat-changes-feed", ["slycat-web-client"], function(client)
 {
   var callbacks = [];
   var websocket = null;
+  var started = false;
 
   function start()
   {
+    if(started)
+      return;
+    started = true;
+
     client.get_ticket(
     {
       success: function(ticket)
@@ -31,8 +36,7 @@ define("slycat-changes-feed", ["slycat-web-client"], function(client)
   module.watch = function(callback)
   {
     callbacks.push(callback);
-    if(!websocket)
-      start();
+    start();
   }
 
   return module;
