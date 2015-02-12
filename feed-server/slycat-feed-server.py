@@ -161,7 +161,7 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
     raw_feed.remove_client(self)
 
 application = tornado.web.Application([
-  ("/change-feed", ChangeFeed),
+  ("/changes-feed", ChangeFeed),
 ], debug=True)
 
 server = tornado.httpserver.HTTPServer(application, ssl_options={"certfile":"../web-server/web-server.pem", "keyfile":"../web-server/web-server.key"})

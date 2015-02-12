@@ -8,6 +8,10 @@ define("slycat-nag", ["slycat-dialog"], function(dialog)
 {
   var nag = false;
 
+  // We use json everywhere.
+  if(!(window.JSON && window.JSON.parse && window.JSON.toString))
+    nag = true;
+
   // We need websockets for our live project and model feeds.
   if(!window.WebSocket)
     nag = true;

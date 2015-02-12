@@ -16,22 +16,11 @@ rights in this software.
   </head>
   <body>
     <script type="text/javascript">
-      require(["slycat-web-client"], function(client)
+      require(["slycat-changes-feed"], function(changes)
       {
-        client.get_ticket(
+        changes.watch(function(change)
         {
-          success: function(ticket)
-          {
-            var websocket = new WebSocket(ticket["feed-server"] + "/change-feed?ticket=" + ticket["id"]);
-            websocket.onopen = function()
-            {
-              console.log("open");
-            }
-            websocket.onmessage = function(message)
-            {
-              console.log("message", JSON.parse(message.data));
-            }
-          }
+          console.log("change", change);
         });
       });
     </script>

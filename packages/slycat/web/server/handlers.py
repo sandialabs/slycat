@@ -74,6 +74,7 @@ def js_bundle():
         "js/slycat-nag.js",
         "js/slycat-model-controls.js",
         "js/slycat-model-results.js",
+        "js/slycat-changes-feed.js",
         "js/slycat-projects-feed.js",
         "js/slycat-models-feed.js",
         "js/slycat-navbar.js",

@@ -4,77 +4,34 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-changes-feed", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping)
+define("slycat-changes-feed", ["slycat-web-client"], function(client)
 {
-  // Keep track of change event observers
   var callbacks = [];
-  var source = null;
+  var websocket = null;
 
   function start()
   {
-  }
-
-/*
-  // Server-side-events loop to keep track of the current user's list of projects.
-  var projects = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
-  var project_ids = {}
-
-  function sort_projects()
-  {
-    projects.sort(function(left, right)
+    client.get_ticket(
     {
-      return left.created() == right.created() ? 0 : (left.created() < right.created() ? 1 : -1);
+      success: function(ticket)
+      {
+        websocket = new WebSocket(ticket["feed-server"] + "/changes-feed?ticket=" + ticket["id"]);
+        websocket.onmessage = function(message)
+        {
+          var change = JSON.parse(message.data);
+          for(var i = 0; i != callbacks.length; ++i)
+            callbacks[i](change);
+        }
+      }
     });
   }
-
-  function start()
-  {
-    source = new EventSource(server_root + "projects-feed");
-    source.onmessage = function(event)
-    {
-      message = JSON.parse(event.data);
-      if(message.deleted)
-      {
-        if(message.id in project_ids)
-        {
-          delete project_ids[message.id];
-          for(var i = 0; i != projects().length; ++i)
-          {
-            if(projects()[i]._id() == message.id)
-            {
-              projects.splice(i, 1);
-              break;
-            }
-          }
-        }
-      }
-      else
-      {
-        var project = message.doc;
-        if(project._id in project_ids)
-        {
-          mapping.fromJS(project, project_ids[project._id]);
-        }
-        else
-        {
-          project_ids[project._id] = mapping.fromJS(project);
-          projects.push(project_ids[project._id]);
-          sort_projects();
-        }
-      }
-    }
-    source.onerror = function(event)
-    {
-    }
-  }
-*/
 
   var module = {};
 
   module.watch = function(callback)
   {
     callbacks.push(callback);
-    if(!source)
+    if(!websocket)
       start();
   }
 
