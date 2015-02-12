@@ -27,6 +27,9 @@ def test_project_reader(project, user):
     return True
   return False
 
+def test_model_reader(model, user):
+  return True
+
 class Feed(object):
   def __init__(self, url, database, name, filter):
     self._url = url
@@ -121,14 +124,55 @@ class ProjectsFeed(tornado.websocket.WebSocketHandler):
           self.id_cache.remove(change["id"])
           self.write_message(json.dumps(dict(id=change["id"], deleted=True)))
 
-#  def on_message(self, message):
-#    pass
-
   def on_close(self):
     ProjectsFeed.feed.remove_client(self)
 
 application = tornado.web.Application([
   ("/projects-feed", ProjectsFeed),
+], debug=True)
+
+class ModelsFeed(tornado.websocket.WebSocketHandler):
+  feed = Feed(arguments.couchdb_host, arguments.couchdb_database, "models-feed", "slycat/models")
+
+  def get(self, *args, **kwargs):
+    # Validate the authentication ticket first.
+    print repr(self.request)
+    tid = self.get_query_argument("ticket")
+    database = couch.BlockingCouch("slycat")
+    self.ticket = database.get_doc(tid)
+    database.delete_doc(self.ticket)
+
+    print self.ticket, self.request.remote_ip
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(self.ticket["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_ticket_age:
+      raise tornado.web.HTTPError(403, reason="Ticket expired.")
+
+    # OK, proceed to upgrade the connection to a websocket.
+    return tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
+
+  def open(self, *args, **kwargs):
+    self.id_cache = set() # Keep track of the set of model ids visible to the caller.
+    ModelsFeed.feed.add_client(self)
+
+  def on_change(self, change):
+    if "deleted" in change:
+      if change["id"] in self.id_cache: # Caller visible model has been deleted.
+        self.write_message(json.dumps(change))
+    else:
+      model = change["doc"]
+      if test_model_reader(model, self.ticket["creator"]): # Caller visible model has been created/updated.
+        self.id_cache.add(change["id"])
+        self.write_message(json.dumps(change))
+      else:
+        if change["id"] in self.id_cache: # Caller lost access to the model, make it look like a deletion.
+          self.id_cache.remove(change["id"])
+          self.write_message(json.dumps(dict(id=change["id"], deleted=True)))
+
+  def on_close(self):
+    ModelsFeed.feed.remove_client(self)
+
+application = tornado.web.Application([
+  ("/projects-feed", ProjectsFeed),
+  ("/models-feed", ModelsFeed),
 ], debug=True)
 
 #server = tornado.httpserver.HTTPServer(application, ssl_options={"certfile":"../web-server/web-server.pem", "keyfile":"../web-server/web-server.key"})
