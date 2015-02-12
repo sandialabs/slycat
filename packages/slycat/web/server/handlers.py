@@ -103,12 +103,7 @@ def require_boolean_parameter(name):
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["server-root"] + "projects")
 
-def get_projects(revision=None, _=None):
-  if get_projects.monitor is None:
-    get_projects.monitor = slycat.web.server.database.couchdb.Monitor(name="Project change monitor", filter="slycat/projects")
-  if get_projects.timeout is None:
-    get_projects.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-
+def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -120,25 +115,10 @@ def get_projects(revision=None, _=None):
     return slycat.web.server.template.render("slycat-projects.html", context)
 
   if accept == "application/json":
-    if revision is not None:
-      revision = int(revision)
-    start_time = time.time()
-    with get_projects.monitor.changed:
-      while revision == get_projects.monitor.revision:
-        get_projects.monitor.changed.wait(1.0)
-        if time.time() - start_time > get_projects.timeout:
-          cherrypy.response.status = "204 No change."
-          return
-        if cherrypy.engine.state != cherrypy.engine.states.STARTED:
-          cherrypy.response.status = "204 Shutting down."
-          return
-      database = slycat.web.server.database.couchdb.connect()
-      projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
-      projects = sorted(projects, key = lambda x: x["created"], reverse=True)
-      return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
-
-get_projects.monitor = None
-get_projects.timeout = None
+    database = slycat.web.server.database.couchdb.connect()
+    projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
+    projects = sorted(projects, key = lambda x: x["created"], reverse=True)
+    return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
 
 def get_projects_feed():
   accept = cherrypy.lib.cptools.accept(["text/event-stream"])
@@ -437,36 +417,6 @@ def post_project_references(pid):
   cherrypy.response.headers["location"] = "%s/references/%s" % (cherrypy.request.base, rid)
   cherrypy.response.status = "201 Reference created."
   return {"id" : rid}
-
-def get_models(revision=None, _=None):
-  if get_models.monitor is None:
-    get_models.monitor = slycat.web.server.database.couchdb.Monitor(name="Model change monitor", filter="slycat/models")
-  if get_models.timeout is None:
-    get_models.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-
-  accept = cherrypy.lib.cptools.accept(media=["application/json"])
-  cherrypy.response.headers["content-type"] = accept
-
-  if accept == "application/json":
-    if revision is not None:
-      revision = int(revision)
-    start_time = time.time()
-    with get_models.monitor.changed:
-      while revision == get_models.monitor.revision:
-        get_models.monitor.changed.wait(1.0)
-        if time.time() - start_time > get_models.timeout:
-          cherrypy.response.status = "204 No change."
-          return
-        if cherrypy.engine.state != cherrypy.engine.states.STARTED:
-          cherrypy.response.status = "204 Shutting down."
-          return
-      database = slycat.web.server.database.couchdb.connect()
-      models = [model for model in database.scan("slycat/open-models")]
-      projects = [database.get("project", model["project"]) for model in models]
-      models = [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
-      return json.dumps({"revision" : get_models.monitor.revision, "models" : models})
-get_models.monitor = None
-get_models.timeout = None
 
 def get_models_feed():
   accept = cherrypy.lib.cptools.accept(["text/event-stream"])
