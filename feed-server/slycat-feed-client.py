@@ -5,7 +5,7 @@ import sys
 import tornado.websocket
 
 parser = slycat.web.client.ArgumentParser()
-parser.add_argument("--feed-host", default="ws://localhost:8093", help="Root URL of the feed server.  Default: %(default)s")
+parser.add_argument("--feed-host", default="wss://localhost", help="Root URL of the feed server.  Default: %(default)s")
 parser.add_argument("--format", choices=["raw", "summary"], default="summary", help="Output data format.  Default: %(default)s")
 arguments = parser.parse_args()
 
@@ -32,7 +32,7 @@ tid = connection.get_ticket()
 
 @tornado.gen.coroutine
 def watch_feed():
-  websocket = yield tornado.websocket.websocket_connect(arguments.feed_host + "/change-feed?ticket=" + tid)
+  websocket = yield tornado.websocket.websocket_connect(arguments.feed_host + "/changes-feed?ticket=" + tid)
   while True:
     message = yield websocket.read_message()
     if message is None:

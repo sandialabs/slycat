@@ -45,7 +45,7 @@ class ArgumentParser(argparse.ArgumentParser):
   def __init__(self, *arguments, **keywords):
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--host", default="https://localhost", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
     self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
