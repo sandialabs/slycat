@@ -166,7 +166,6 @@ application = tornado.web.Application([
   ("/changes-feed", ChangeFeed),
 ], debug=True)
 
-#server = tornado.httpserver.HTTPServer(application, ssl_options={"certfile":"../web-server/web-server.pem", "keyfile":"../web-server/web-server.key"})
 server = tornado.httpserver.HTTPServer(application)
 server.listen(arguments.port)
 tornado.ioloop.IOLoop.instance().start()
