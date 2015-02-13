@@ -136,6 +136,10 @@ raw_feed = RawFeed(arguments.couchdb_host, arguments.couchdb_database)
 
 class ChangeFeed(tornado.websocket.WebSocketHandler):
   def get(self, *args, **kwargs):
+    # We must have a secure connection.
+    if not (self.request.protocol == "https" or self.request.headers.get("x-forwarded-proto") == "https"):
+      raise tornado.web.HTTPError(403, reason="Secure connection required.")
+
     # Validate the authentication ticket first.
     tid = self.get_query_argument("ticket")
     database = couch.BlockingCouch("slycat")

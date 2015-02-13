@@ -1462,16 +1462,24 @@ def get_global_resource(resource):
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
 
-def get_test_agent():
+def get_tests_agent():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   return slycat.web.server.template.render("slycat-test-agent.html", context)
 
-def get_test_feeds():
+def get_tests_feeds():
   context = {}
   context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   context["slycat-css-bundle"] = css_bundle()
   context["slycat-js-bundle"] = js_bundle()
   return slycat.web.server.template.render("slycat-test-feeds.html", context)
 
-
+def tests_request(*arguments, **keywords):
+  cherrypy.log.error("Request: %s" % cherrypy.request.request_line)
+  cherrypy.log.error("  Remote IP: %s" % cherrypy.request.remote.ip)
+  cherrypy.log.error("  Remote Port: %s" % cherrypy.request.remote.port)
+  cherrypy.log.error("  Remote Hostname: %s" % cherrypy.request.remote.name)
+  cherrypy.log.error("  Scheme: %s" % cherrypy.request.scheme)
+  for key, value in sorted(cherrypy.request.headers.items()):
+    cherrypy.log.error("  Header: %s=%s" % (key, value))
+  cherrypy.response.status = 200
