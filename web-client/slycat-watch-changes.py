@@ -1,7 +1,9 @@
 import argparse
 import json
+import os
 import slycat.web.client
 import sys
+import tornado.httpclient
 import tornado.websocket
 
 parser = slycat.web.client.ArgumentParser()
@@ -27,12 +29,20 @@ if arguments.format == "raw":
 elif arguments.format == "summary":
   formatter = format_summary
 
+# We want Tornado to behave like requests.
+websocket_ca = arguments.verify if arguments.verify is not None else os.environ.get("REQUESTS_CA_BUNDLE", None)
+
 connection = slycat.web.client.connect(arguments)
 tid = connection.get_ticket()
 
 @tornado.gen.coroutine
 def watch_feed():
-  websocket = yield tornado.websocket.websocket_connect(arguments.feed_host + "/changes-feed?ticket=" + tid)
+  request = tornado.httpclient.HTTPRequest(
+    arguments.feed_host + "/changes-feed?ticket=" + tid,
+    validate_cert=not arguments.no_verify,
+    ca_certs=websocket_ca,
+    )
+  websocket = yield tornado.websocket.websocket_connect(request)
   while True:
     message = yield websocket.read_message()
     if message is None:
