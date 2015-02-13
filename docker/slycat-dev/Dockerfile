@@ -20,8 +20,5 @@ USER root
 RUN sed -e 's/^#ClientAliveInterval .*$/ClientAliveInterval 60/' -i /etc/ssh/sshd_config
 RUN sed -e 's/^#ClientAliveCountMax .*$/ClientAliveInterval 10080/' -i /etc/ssh/sshd_config
 
-# Setup the Slycat server for development.
-RUN rm /etc/supervisord.d/slycat.conf
-
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.
