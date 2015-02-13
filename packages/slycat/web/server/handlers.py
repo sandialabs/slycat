@@ -173,7 +173,7 @@ def get_ticket():
     "type": "ticket",
     "ip": cherrypy.request.remote.ip,
     "created": datetime.datetime.utcnow().isoformat(),
-    "creator": cherrypy.request.security["user"],
+    "creator": cherrypy.request.login,
     })
   cherrypy.response.status = "201 Ticket issued."
   return {"id": tid}
@@ -187,9 +187,9 @@ def post_projects():
   database = slycat.web.server.database.couchdb.connect()
   pid, rev = database.save({
     "type" : "project",
-    "acl" : {"administrators" : [{"user" : cherrypy.request.security["user"]}], "readers" : [], "writers" : []},
+    "acl" : {"administrators" : [{"user" : cherrypy.request.login}], "readers" : [], "writers" : []},
     "created" : datetime.datetime.utcnow().isoformat(),
-    "creator" : cherrypy.request.security["user"],
+    "creator" : cherrypy.request.login,
     "description" : cherrypy.request.json.get("description", ""),
     "name" : cherrypy.request.json["name"]
     })
@@ -344,7 +344,7 @@ def post_project_models(pid):
     "marking" : marking,
     "project" : pid,
     "created" : datetime.datetime.utcnow().isoformat(),
-    "creator" : cherrypy.request.security["user"],
+    "creator" : cherrypy.request.login,
     "name" : name,
     "description" : description,
     "artifact-types" : {},
@@ -405,7 +405,7 @@ def post_project_references(pid):
     "type" : "reference",
     "project" : pid,
     "created" : datetime.datetime.utcnow().isoformat(),
-    "creator" : cherrypy.request.security["user"],
+    "creator" : cherrypy.request.login,
     "name" : cherrypy.request.json["name"],
     "model-type" : cherrypy.request.json.get("model-type", None),
     "mid" : cherrypy.request.json.get("mid", None),
@@ -1199,7 +1199,7 @@ def get_bookmark(bid):
 @cherrypy.tools.json_out(on = True)
 def get_user(uid):
   if uid == "-":
-    uid = cherrypy.request.security["user"]
+    uid = cherrypy.request.login
   user = cherrypy.request.app.config["slycat"]["directory"](uid)
   if user is None:
     raise cherrypy.HTTPError(404)

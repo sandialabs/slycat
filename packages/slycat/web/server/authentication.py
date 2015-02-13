@@ -13,19 +13,19 @@ def project_acl(project):
 
 def is_server_administrator():
   """Return True if the current request is from a server administrator."""
-  return cherrypy.request.security["user"] in cherrypy.request.app.config["slycat"]["server-admins"]
+  return cherrypy.request.login in cherrypy.request.app.config["slycat"]["server-admins"]
 
 def is_project_administrator(project):
   """Return True if the current request is from a project administrator."""
-  return cherrypy.request.security["user"] in [administrator["user"] for administrator in project_acl(project)["administrators"]]
+  return cherrypy.request.login in [administrator["user"] for administrator in project_acl(project)["administrators"]]
 
 def is_project_writer(project):
   """Return True if the current request is from a project writer."""
-  return cherrypy.request.security["user"] in [writer["user"] for writer in project_acl(project)["writers"]]
+  return cherrypy.request.login in [writer["user"] for writer in project_acl(project)["writers"]]
 
 def is_project_reader(project):
   """Return True if the current request is from a project reader."""
-  return cherrypy.request.security["user"] in [reader["user"] for reader in project_acl(project)["readers"]]
+  return cherrypy.request.login in [reader["user"] for reader in project_acl(project)["readers"]]
 
 def test_server_administrator():
   """Return True if the current request has server administrator privileges."""
