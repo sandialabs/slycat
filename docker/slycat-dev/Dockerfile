@@ -5,7 +5,7 @@ MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 RUN yum install -y htop make python-coverage python-nose python-sphinx python-sphinx_rtd_theme vim wget
 
 # Install Python modules for development.
-RUN pip install behave sphinxcontrib-napoleon
+RUN pip install behave sphinxcontrib-httpdomain sphinxcontrib-napoleon
 
 # Setup the Slycat user for development.
 USER slycat
@@ -22,8 +22,6 @@ RUN sed -e 's/^#ClientAliveCountMax .*$/ClientAliveInterval 10080/' -i /etc/ssh/
 
 # Setup the Slycat server for development.
 RUN rm /etc/supervisord.d/slycat.conf
-
-EXPOSE 8092
 
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.
