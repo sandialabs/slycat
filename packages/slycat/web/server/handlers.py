@@ -165,8 +165,8 @@ def start_projects_feed():
 
 @cherrypy.tools.json_out(on = True)
 def get_ticket():
-  if cherrypy.request.scheme != "https":
-    raise cherrypy.HTTPError("400 SSL connection required.")
+#  if cherrypy.request.scheme != "https":
+#    raise cherrypy.HTTPError("400 SSL connection required.")
   database = slycat.web.server.database.couchdb.connect()
   tid, rev = database.save({
     "_id": uuid.uuid4().hex,
@@ -175,11 +175,8 @@ def get_ticket():
     "created": datetime.datetime.utcnow().isoformat(),
     "creator": cherrypy.request.security["user"],
     })
-  feed_server = "%s:%s" % (cherrypy.request.base, cherrypy.request.app.config["slycat"]["feed-server-port"])
-  feed_server = feed_server.replace("https://", "wss://")
-  cherrypy.response.headers["location"] = feed_server
   cherrypy.response.status = "201 Ticket issued."
-  return {"id": tid, "feed-server": feed_server}
+  return {"id": tid}
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

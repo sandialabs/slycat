@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-changes-feed", ["slycat-web-client"], function(client)
+define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI"], function(server_root, client, URI)
 {
   var callbacks = [];
   var websocket = null;
@@ -20,7 +20,9 @@ define("slycat-changes-feed", ["slycat-web-client"], function(client)
     {
       success: function(ticket)
       {
-        websocket = new WebSocket(ticket["feed-server"] + "/changes-feed?ticket=" + ticket["id"]);
+        var websocket_uri = URI(window.location).scheme("wss").path(server_root + "changes-feed").addQuery("ticket", ticket["id"]);
+        console.log(websocket_uri.toString());
+        var websocket = new WebSocket(websocket_uri);
         websocket.onmessage = function(message)
         {
           var change = JSON.parse(message.data);

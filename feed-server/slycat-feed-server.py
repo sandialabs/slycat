@@ -156,16 +156,18 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
 
   def open(self, *args, **kwargs):
     raw_feed.add_client(self)
+    sys.stderr.write("Opened feed %s\n" % self.request)
 
   def on_close(self):
+    sys.stderr.write("Closed feed %s\n" % self.request)
     raw_feed.remove_client(self)
 
 application = tornado.web.Application([
   ("/changes-feed", ChangeFeed),
 ], debug=True)
 
-server = tornado.httpserver.HTTPServer(application, ssl_options={"certfile":"../web-server/web-server.pem", "keyfile":"../web-server/web-server.key"})
-#server = tornado.httpserver.HTTPServer(application)
+#server = tornado.httpserver.HTTPServer(application, ssl_options={"certfile":"../web-server/web-server.pem", "keyfile":"../web-server/web-server.key"})
+server = tornado.httpserver.HTTPServer(application)
 server.listen(arguments.port)
 tornado.ioloop.IOLoop.instance().start()
 
