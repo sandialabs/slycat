@@ -164,10 +164,11 @@ class Manager(object):
     type : string, required
       A unique identifier for the new check type.
     check : function, required
-      Function that will be called to check a password.  The function
-      will be called with a realm, username, and password, plus optional keyword arguments,
-      and should return a dictionary containing
-      user metadata.
+      Function that will be called to check a password.  The function will be
+      called with a realm, username, and password, plus optional keyword
+      arguments, and should return a (success, groups) tuple, where success is
+      True if authentication succeeded, and groups is a (possibly empty) list
+      of groups to which the user belongs.
     """
     if type in self._password_checks:
       raise Exception("Password check type '%s' has already been registered." % type)

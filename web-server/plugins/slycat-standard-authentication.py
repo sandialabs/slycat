@@ -9,8 +9,9 @@ def register_slycat_plugin(context):
   import datetime
   import functools
   import slycat.web.server.plugin
+  import uuid
 
-  def authenticate(realm, session_timeout=datetime.timedelta(minutes=5)):
+  def authenticate(realm, rules=None, session_timeout=datetime.timedelta(minutes=5)):
     # Sanity-check our inputs.
     if '"' in realm:
       raise ValueError("Realm cannot contain the \" (quote) character.")
@@ -66,8 +67,37 @@ def register_slycat_plugin(context):
         raise cherrypy.HTTPError("500 No password check plugin found.")
       authenticate.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs)
 
-    if authenticate.password_check(realm, username, password):
-      import uuid
+    success, groups = authenticate.password_check(realm, username, password)
+    if success:
+      # Apply (optional) authentication rules.
+      if rules is not None:
+        deny = None
+        for operation, category, members in rules:
+          if operation not in ["allow", "deny"]:
+            raise cherrypy.HTTPError("500 Unknown operation: %s." % operation)
+          if category not in ["users", "groups"]:
+            raise cherrypy.HTTPError("500 Unknown category: %s." % category)
+
+          operation_default = True if operation == "allow" else False
+          operation_deny = False if operation == "allow" else True
+
+          if deny is None:
+            deny = operation_default
+          if category == "users":
+            if username in members:
+              deny = operation_deny
+          elif category == "groups":
+            for group in groups:
+              if group in members:
+                deny = operation_deny
+                break
+
+        if deny:
+          raise cherrypy.HTTPError("403 User denied by authentication rules.")
+
+      # Successful authentication, create a session and return.
+      cherrypy.log.error("%s@%s: Password check succeeded." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
+
       session = uuid.uuid4().hex
       authenticate.sessions[session] = { "started" : datetime.datetime.utcnow(), "username" : username }
 
@@ -76,7 +106,6 @@ def register_slycat_plugin(context):
       cherrypy.response.cookie["slycatauth"]["secure"] = 1
       cherrypy.response.cookie["slycatauth"]["httponly"] = 1
       cherrypy.request.login = username
-      cherrypy.log.error("%s@%s: Password check succeeded." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
       return  # successful authentication
 
     # Authentication failed, tell the client to try again.
@@ -84,48 +113,6 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
     raise cherrypy.HTTPError(401, "Authentication required.")
 
-
-#    def checkpassword(realm, username, password):
-#      try:
-#        dn = user_dn % username
-#
-#        # Check the username and password.
-#        import ldap
-#        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-#        ldap.set_option(ldap.OPT_NETWORK_TIMEOUT, network_timeout.total_seconds())
-#        connection = ldap.initialize(server)
-#        connection.simple_bind_s(dn, password)
-#
-#        # Apply (optional) authentication rules.
-#        if rules is not None:
-#          deny = None
-#          for operation, category, members in rules:
-#            if operation not in ["allow", "deny"]:
-#              raise Exception("Unknown operation: %s." % operation)
-#            if category not in ["users", "groups"]:
-#              raise Exception("Unknown category: %s." % category)
-#
-#            operation_default = True if operation == "allow" else False
-#            operation_deny = False if operation == "allow" else True
-#
-#            if deny is None:
-#              deny = operation_default
-#            if category == "users":
-#              if username in members:
-#                deny = operation_deny
-#            elif category == "groups":
-#              for groupname in members:
-#                group = connection.search_s(group_dn % groupname, ldap.SCOPE_BASE)[0][1]
-#                if dn.lower() in [member.lower() for member in group["uniqueMember"]]:
-#                  deny = operation_deny
-#                  break
-#
-#          if deny:
-#            raise Exception("User denied by authentication rules.")
-#
-#      except Exception as e:
-#        return False
-#
 
   authenticate.password_check = None
   authenticate.sessions = {}

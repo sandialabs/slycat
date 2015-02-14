@@ -6,6 +6,7 @@ def register_slycat_plugin(context):
   import cherrypy
   import datetime
   def check_password(realm, username, password, server="", user_dn="", group=None, timeout=datetime.timedelta(seconds=5)):
+    groups = []
     try:
       user_dn = user_dn.format(username)
 
@@ -14,12 +15,14 @@ def register_slycat_plugin(context):
       ldap.set_option(ldap.OPT_NETWORK_TIMEOUT, timeout.total_seconds())
       connection = ldap.initialize(server)
       connection.simple_bind_s(user_dn, password)
-      if group is not None:
-        entry = connection.search_s(user_dn, ldap.SCOPE_BASE)
-        cherrypy.log.error("%s" % entry)
-      return True
+      entries = connection.search_s(user_dn, ldap.SCOPE_BASE)
+      if len(entries) > 1:
+        raise Exception("More than one matching directory entry.")
+      if group in entries[0][1]:
+        groups = entries[0][1][group]
+      return True, groups
     except Exception as e:
       cherrypy.log.error("%s" % e)
-      return False
+      return False, groups
 
   context.register_password_check("slycat-ldap-password-check", check_password)
