@@ -7,7 +7,7 @@ import numpy
 import slycat.web.client
 
 # Parse command-line arguments.
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-name", default="Sample Matrix Demo Model", help="New model name.  Default: %(default)s")
 parser.add_argument("--project-name", default="Sample Matrix Demo Project", help="New project name.  Default: %(default)s")

@@ -36,7 +36,7 @@ def generate_model(connection, pid, marking, index):
   # The model is ready
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-count", type=int, default=8, help="Model count.  Default: %(default)s")
 parser.add_argument("--project-name", default="Demo Model Progress Project", help="New project name.  Default: %(default)s")

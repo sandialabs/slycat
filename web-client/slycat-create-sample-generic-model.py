@@ -13,7 +13,7 @@ starting-point for custom models of your own.
 import numpy
 import slycat.web.client
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-name", default="Sample Generic Model", help="New model name.  Default: %(default)s")
 parser.add_argument("--project-name", default="Sample Generic Project", help="New project name.  Default: %(default)s")

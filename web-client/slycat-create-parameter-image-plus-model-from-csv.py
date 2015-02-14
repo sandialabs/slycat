@@ -123,7 +123,7 @@ def compute_distance(left, right, storage, cluster_name, measure_name, measure):
   return distance
 
 if __name__ == "__main__":
-  parser = slycat.web.client.option_parser()
+  parser = slycat.web.client.ArgumentParser()
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
   parser.add_argument("--cluster-measure", default="jaccard", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")

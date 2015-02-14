@@ -5,7 +5,7 @@ import scipy.sparse
 import slycat.web.client
 import toyplot, toyplot.browser, toyplot.pdf
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--project", default="cca-performance", help="Test project name.  Default: %(default)s")
 arguments = parser.parse_args()
 connection = slycat.web.client.connect(arguments)

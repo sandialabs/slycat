@@ -23,7 +23,7 @@ def create_model(rows, columns, repetition):
   connection.post_model_finish(mid)
   connection.join_model(mid)
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--start-columns", type=int, default=4, help="Start index.  Default: %(default)s")
 parser.add_argument("--start-rows", type=int, default=10, help="Start index.  Default: %(default)s")
