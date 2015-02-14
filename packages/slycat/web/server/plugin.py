@@ -74,7 +74,7 @@ class Manager(object):
   @property
   def password_checks(self):
     """Return a dict mapping authentication check types to constructors."""
-    return self._directories
+    return self._password_checks
 
   @property
   def models(self):
@@ -172,7 +172,7 @@ class Manager(object):
     if type in self._password_checks:
       raise Exception("Password check type '%s' has already been registered." % type)
 
-    self._password_checks[type] = {"check":check}
+    self._password_checks[type] = check
     cherrypy.log.error("Registered password_check '%s'." % type)
 
   def register_model(self, type, finish, html):

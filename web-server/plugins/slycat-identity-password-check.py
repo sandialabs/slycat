@@ -3,10 +3,10 @@
 # rights in this software.
 
 def register_slycat_plugin(context):
-    def check_password(realm, username, password, blacklist=[]):
-      """Allow any user, so long as their username and password are the same, and
-      their username isn't part of a blacklist.  Obviously, this is suitable only
-      for testing."""
-      return username and password and username == password and username not in blacklist
+  def check_password(realm, username, password, blacklist=[]):
+    """Allow any user, so long as their username and password are the same, and
+    their username isn't part of a blacklist.  Obviously, this is suitable only
+    for testing."""
+    return username and password and username == password and username not in blacklist
 
-  context.register_password_check("slycat-identity-authentication", check_password)
+  context.register_password_check("slycat-identity-password-check", check_password)

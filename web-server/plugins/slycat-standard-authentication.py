@@ -7,6 +7,7 @@ def register_slycat_plugin(context):
   import binascii
   import cherrypy
   import datetime
+  import functools
   import slycat.web.server.plugin
 
   def authenticate(realm, session_timeout=datetime.timedelta(minutes=5)):
@@ -33,7 +34,7 @@ def register_slycat_plugin(context):
           return
       else:
         # Expired or forged cookie
-        cherrypy.log.error("%s - -: expired/unknown session." % (cherrypy.request.remote.name or cherrypy.request.remote.ip))
+        cherrypy.log.error("@%s: expired/unknown session." % (cherrypy.request.remote.name or cherrypy.request.remote.ip))
 
     # If the client hasn't authenticated, tell them to do so.
     authorization = cherrypy.request.headers.get("authorization")
@@ -53,9 +54,19 @@ def register_slycat_plugin(context):
     except:
       raise cherrypy.HTTPError(400)
 
-    cherrypy.log.error("%s - %s: authenticating password." % (cherrypy.request.remote.name or cherrypy.request.remote.ip, username))
-#    if checkpassword(realm, username, password):
-    if False:
+    cherrypy.log.error("%s@%s: Checking password." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
+
+    if authenticate.password_check is None:
+      if "password-check" not in cherrypy.request.app.config["slycat"]:
+        raise cherrypy.HTTPError("500 No password check configured.")
+      plugin = cherrypy.request.app.config["slycat"]["password-check"]["plugin"]
+      args = cherrypy.request.app.config["slycat"]["password-check"].get("args", [])
+      kwargs = cherrypy.request.app.config["slycat"]["password-check"].get("kwargs", {})
+      if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
+        raise cherrypy.HTTPError("500 No password check plugin found.")
+      authenticate.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs)
+
+    if authenticate.password_check(realm, username, password):
       import uuid
       session = uuid.uuid4().hex
       authenticate.sessions[session] = { "started" : datetime.datetime.utcnow(), "username" : username }
@@ -65,10 +76,11 @@ def register_slycat_plugin(context):
       cherrypy.response.cookie["slycatauth"]["secure"] = 1
       cherrypy.response.cookie["slycatauth"]["httponly"] = 1
       cherrypy.request.login = username
+      cherrypy.log.error("%s@%s: Password check succeeded." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
       return  # successful authentication
 
     # Authentication failed, tell the client to try again.
-    cherrypy.log.error("%s - %s: authentication failed." % (cherrypy.request.remote.name or cherrypy.request.remote.ip, username))
+    cherrypy.log.error("%s@%s: Password check failed." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
     cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
     raise cherrypy.HTTPError(401, "Authentication required.")
 
@@ -115,7 +127,7 @@ def register_slycat_plugin(context):
 #        return False
 #
 
-
+  authenticate.password_check = None
   authenticate.sessions = {}
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
