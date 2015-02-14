@@ -21,7 +21,6 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI"]
       success: function(ticket)
       {
         var websocket_uri = URI(window.location).scheme("wss").path(server_root + "changes-feed").addQuery("ticket", ticket["id"]);
-        console.log(websocket_uri.toString());
         var websocket = new WebSocket(websocket_uri);
         websocket.onmessage = function(message)
         {
