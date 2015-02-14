@@ -6,7 +6,7 @@ RUN yum install -y openssh-server
 RUN mkdir /var/run/sshd
 RUN mkdir /var/log/sshd
 RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-ADD sshd.conf /etc/supervisord.d/sshd.conf
+ADD sshd-server-startup.conf /etc/supervisord.d/sshd-server-startup.conf
 
 EXPOSE 22
 

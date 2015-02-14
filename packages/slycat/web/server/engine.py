@@ -65,7 +65,7 @@ def start(root_path, config_file):
 
   # Configuration items we don't recognize are not allowed.
   for key in configuration["slycat"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "long-polling-timeout", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
       raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
@@ -117,7 +117,6 @@ def start(root_path, config_file):
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
   dispatcher.connect("get-agent-file", "/agents/:sid/file{path:.*}", slycat.web.server.handlers.get_agent_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-image", "/agents/:sid/image{path:.*}", slycat.web.server.handlers.get_agent_image, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-agent-test", "/test/agent", slycat.web.server.handlers.get_agent_test, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-video", "/agents/:sid/videos/:vsid", slycat.web.server.handlers.get_agent_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-video-status", "/agents/:sid/videos/:vsid/status", slycat.web.server.handlers.get_agent_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
@@ -136,8 +135,10 @@ def start(root_path, config_file):
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-resource", "/resources/models/:mtype/{resource:.*}", slycat.web.server.handlers.get_model_resource, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-tests-agent", "/tests/agent", slycat.web.server.handlers.get_tests_agent, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-tests-feeds", "/tests/feeds", slycat.web.server.handlers.get_tests_feeds, conditions={"method" : ["GET"]})
+  dispatcher.connect("tests-request", "/tests/request", slycat.web.server.handlers.tests_request, conditions={"method" : ["GET", "PUT", "POST", "DELETE"]})
   dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-models", "/models", slycat.web.server.handlers.get_models, conditions={"method" : ["GET"]})
   dispatcher.connect("get-models-feed", "/models-feed", slycat.web.server.handlers.get_models_feed, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-chunk", "/models/:mid/tables/:aid/arrays/:array/chunk", slycat.web.server.handlers.get_model_table_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-metadata", "/models/:mid/tables/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_table_metadata, conditions={"method" : ["GET"]})

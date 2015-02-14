@@ -8,8 +8,12 @@ define("slycat-nag", ["slycat-dialog"], function(dialog)
 {
   var nag = false;
 
-  // We need EventSource for our live project and model feeds.
-  if(!window.EventSource)
+  // We use json everywhere.
+  if(!(window.JSON && window.JSON.parse && window.JSON.toString))
+    nag = true;
+
+  // We need websockets for our live project and model feeds.
+  if(!window.WebSocket)
     nag = true;
 
   // We need localStorage for many of our standarized controls and bookmarks.

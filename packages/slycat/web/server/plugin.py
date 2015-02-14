@@ -14,6 +14,7 @@ class Manager(object):
     self._modules = []
 
     self._markings = {}
+    self._password_checks = {}
     self._directories = {}
     self._models = {}
     self._model_commands = {}
@@ -69,6 +70,11 @@ class Manager(object):
   def directories(self):
     """Return a dict mapping directory types to constructors."""
     return self._directories
+
+  @property
+  def password_checks(self):
+    """Return a dict mapping authentication check types to constructors."""
+    return self._password_checks
 
   @property
   def models(self):
@@ -149,6 +155,26 @@ class Manager(object):
 
     self._directories[type] = {"init":init, "user":user}
     cherrypy.log.error("Registered directory '%s'." % type)
+
+  def register_password_check(self, type, check):
+    """Register a new password check function.
+
+    Parameters
+    ----------
+    type : string, required
+      A unique identifier for the new check type.
+    check : function, required
+      Function that will be called to check a password.  The function will be
+      called with a realm, username, and password, plus optional keyword
+      arguments, and should return a (success, groups) tuple, where success is
+      True if authentication succeeded, and groups is a (possibly empty) list
+      of groups to which the user belongs.
+    """
+    if type in self._password_checks:
+      raise Exception("Password check type '%s' has already been registered." % type)
+
+    self._password_checks[type] = check
+    cherrypy.log.error("Registered password_check '%s'." % type)
 
   def register_model(self, type, finish, html):
     """Register a new model type.
