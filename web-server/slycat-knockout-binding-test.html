@@ -12,29 +12,35 @@
   <body>
     <div id="header">
       <h1 data-bind="text: title"></h1>
+      <p data-bind="text: paragraph"></p>
     </div>
     <div id="content">
+      <h1 data-bind="text: title"></h1>
       <p data-bind="text: paragraph"></p>
     </div>
     <div id="footer">
-      <p><small><em data-bind="text: title"></em></small></p>
+      <h1 data-bind="text: title"></h1>
+      <p data-bind="text: paragraph"></p>
     </div>
 
     <script>
       require(["knockout"], function(ko)
       {
-        var component =
-        {
-          paragraph: ko.observable("Now is the time for all good men, etc."),
-        };
-        ko.applyBindings(component, document.querySelector("#content"));
-
         var page =
         {
-          title: ko.observable("Hello, World!"),
+          title: ko.observable("Page title"),
+          paragraph: ko.observable("Page paragraph"),
         };
+        var content =
+        {
+          title: ko.observable("Content title"),
+          paragraph: ko.observable("Content paragraph"),
+        };
+
+        ko.applyBindings(content, document.querySelector("#content"));
         ko.applyBindings(page, document.querySelector("head"));
         ko.applyBindings(page, document.querySelector("#header"));
+        //ko.applyBindings(page, document.querySelector("#content"));
         ko.applyBindings(page, document.querySelector("#footer"));
       });
     </script>
