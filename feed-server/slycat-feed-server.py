@@ -6,6 +6,7 @@ import datetime
 import json
 import sys
 import threading
+import time
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
@@ -45,6 +46,14 @@ class RawFeed(object):
 
   def _run(self):
     server = couchdb.client.Server(url = self._url)
+    while True:
+      try:
+        print "Connected to couchdb %s" % server.version()
+        break
+      except:
+        print "Waiting for couchdb."
+        time.sleep(1.0)
+
     database = server[self._database]
 
     # Keep the cache up-to-date.
