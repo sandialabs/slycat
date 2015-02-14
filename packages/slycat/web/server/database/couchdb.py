@@ -28,7 +28,13 @@ class Cache(object):
     self._lock = threading.Lock()
 
   def _run(self):
-    database = connect()
+    while True:
+      try:
+        database = connect()
+        break
+      except:
+        cherrypy.log.error("Waiting for couchdb.")
+        time.sleep(1.0)
 
     # Initialize the cache.
     with self._lock:
