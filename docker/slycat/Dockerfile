@@ -17,7 +17,7 @@ RUN echo 'slycat:slycat' | chpasswd
 USER slycat
 RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.bash_profile
 RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
-RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout 3272c26d9a10a43e4b642238d0cb7a74292653fc
+RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout d7b96f2147770e57c9603397a8540039a1b16672
 
 USER root
 
