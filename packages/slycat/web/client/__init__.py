@@ -360,19 +360,6 @@ class Connection(object):
     """
     return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
 
-  def get_ticket(self):
-    """Retrieve an authentication from the server.
-
-    Returns
-    -------
-    tid : ticket id.
-
-    See Also
-    --------
-    :http:get:`/tickets`
-    """
-    return self.request("GET", "/tickets", headers={"accept":"application/json"})["id"]
-
   def post_model_finish(self, mid):
     """Notify the server that a model is fully initialized.
 

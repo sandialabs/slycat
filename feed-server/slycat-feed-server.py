@@ -16,7 +16,7 @@ import tornado.websocket
 parser = argparse.ArgumentParser()
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="http://localhost:5984", help="CouchDB host.  Default: %(default)s")
-parser.add_argument("--max-ticket-age", type=float, default=5, help="Maximum age of an authentication ticket in seconds.  Default: %(default)s")
+parser.add_argument("--max-session-age", type=float, default=5 * 60, help="Maximum age of an authentication session in seconds.  Default: %(default)s")
 parser.add_argument("--port", type=int, default=8093, help="Feed server port.  Default: %(default)s")
 arguments = parser.parse_args()
 
@@ -149,16 +149,19 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
     if not (self.request.protocol == "https" or self.request.headers.get("x-forwarded-proto") == "https"):
       raise tornado.web.HTTPError(403, reason="Secure connection required.")
 
-    # Validate the authentication ticket first.
-    tid = self.get_query_argument("ticket")
+    # We must have a session cookie.
+    if self.get_cookie("slycatauth", None) is None:
+      raise tornado.web.HTTPError(403, reason="No session.")
+
+    # Validate the session cookie.
+    sid = self.get_cookie("slycatauth")
     database = couch.BlockingCouch("slycat")
-    ticket = database.get_doc(tid)
-    database.delete_doc(ticket)
+    session = database.get_doc(sid)
 
-    if (datetime.datetime.utcnow() - datetime.datetime.strptime(ticket["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_ticket_age:
-      raise tornado.web.HTTPError(403, reason="Ticket expired.")
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_session_age:
+      raise tornado.web.HTTPError(403, reason="Session expired.")
 
-    self.user = ticket["creator"]
+    self.user = session["creator"]
     self.projects = set()
 
     # OK, proceed to upgrade the connection to a websocket.

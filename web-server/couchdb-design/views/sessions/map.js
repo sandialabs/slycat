@@ -6,7 +6,7 @@ rights in this software.
 
 function(doc)
 {
-  if(doc["type"] != "ticket")
+  if(doc["type"] != "session")
     return;
 
   emit(doc._id, null);

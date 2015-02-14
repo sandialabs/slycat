@@ -184,26 +184,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
-  module.get_ticket = function(params)
-  {
-    $.ajax(
-    {
-      dataType: "json",
-      type: "GET",
-      url: server_root + "tickets",
-      success: function(ticket)
-      {
-        if(params.success)
-          params.success(ticket);
-      },
-      error: function(request, status, reason_phrase)
-      {
-        if(params.error)
-          params.error(request, status, reason_phrase);
-      },
-    });
-  }
-
   module.get_model = function(params)
   {
     $.ajax(

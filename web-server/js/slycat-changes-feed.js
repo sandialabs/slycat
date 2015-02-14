@@ -16,20 +16,14 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI"]
       return;
     started = true;
 
-    client.get_ticket(
+    var websocket_uri = URI(window.location).scheme("wss").path(server_root + "changes-feed");
+    var websocket = new WebSocket(websocket_uri);
+    websocket.onmessage = function(message)
     {
-      success: function(ticket)
-      {
-        var websocket_uri = URI(window.location).scheme("wss").path(server_root + "changes-feed").addQuery("ticket", ticket["id"]);
-        var websocket = new WebSocket(websocket_uri);
-        websocket.onmessage = function(message)
-        {
-          var change = JSON.parse(message.data);
-          for(var i = 0; i != callbacks.length; ++i)
-            callbacks[i](change);
-        }
-      }
-    });
+      var change = JSON.parse(message.data);
+      for(var i = 0; i != callbacks.length; ++i)
+        callbacks[i](change);
+    }
   }
 
   var module = {};

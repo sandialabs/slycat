@@ -163,21 +163,6 @@ get_projects_feed.cache = None
 def start_projects_feed():
   get_projects_feed.cache = slycat.web.server.database.couchdb.Cache("projects-feed", "slycat/projects")
 
-@cherrypy.tools.json_out(on = True)
-def get_ticket():
-#  if cherrypy.request.scheme != "https":
-#    raise cherrypy.HTTPError("400 SSL connection required.")
-  database = slycat.web.server.database.couchdb.connect()
-  tid, rev = database.save({
-    "_id": uuid.uuid4().hex,
-    "type": "ticket",
-    "ip": cherrypy.request.remote.ip,
-    "created": datetime.datetime.utcnow().isoformat(),
-    "creator": cherrypy.request.login,
-    })
-  cherrypy.response.status = "201 Ticket issued."
-  return {"id": tid}
-
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_projects():

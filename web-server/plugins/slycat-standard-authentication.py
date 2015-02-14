@@ -8,6 +8,7 @@ def register_slycat_plugin(context):
   import cherrypy
   import datetime
   import functools
+  import slycat.web.server.database.couchdb
   import slycat.web.server.plugin
   import uuid
 
@@ -26,12 +27,14 @@ def register_slycat_plugin(context):
     if "slycatauth" in cherrypy.request.cookie:
       session = cherrypy.request.cookie["slycatauth"].value
       if session in authenticate.sessions:
-        started = authenticate.sessions[session]["started"]
+        started = authenticate.sessions[session]["created"]
         if datetime.datetime.utcnow() - started > session_timeout:
           del authenticate.sessions[session]
+          database = slycat.web.server.database.couchdb.connect()
+          del database[session]
         else:
           # Ensure that the user is logged correctly ...
-          cherrypy.request.login = authenticate.sessions[session]["username"]
+          cherrypy.request.login = authenticate.sessions[session]["creator"]
           return
       else:
         # Expired or forged cookie
@@ -98,10 +101,14 @@ def register_slycat_plugin(context):
       # Successful authentication, create a session and return.
       cherrypy.log.error("%s@%s: Password check succeeded." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
 
-      session = uuid.uuid4().hex
-      authenticate.sessions[session] = { "started" : datetime.datetime.utcnow(), "username" : username }
+      sid = uuid.uuid4().hex
+      session = {"created": datetime.datetime.utcnow(), "creator": username}
+      database = slycat.web.server.database.couchdb.connect()
+      database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"]})
 
-      cherrypy.response.cookie["slycatauth"] = session
+      authenticate.sessions[sid] = session
+
+      cherrypy.response.cookie["slycatauth"] = sid
       cherrypy.response.cookie["slycatauth"]["path"] = "/"
       cherrypy.response.cookie["slycatauth"]["secure"] = 1
       cherrypy.response.cookie["slycatauth"]["httponly"] = 1

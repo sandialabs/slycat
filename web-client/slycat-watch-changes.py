@@ -29,18 +29,20 @@ if arguments.format == "raw":
 elif arguments.format == "summary":
   formatter = format_summary
 
+# Connect to Slycat and issue an HTTP request to force session creation.
+connection = slycat.web.client.connect(arguments)
+connection.get_configuration_version()
+
 # We want Tornado to behave like requests.
 websocket_ca = arguments.verify if arguments.verify is not None else os.environ.get("REQUESTS_CA_BUNDLE", None)
-
-connection = slycat.web.client.connect(arguments)
-tid = connection.get_ticket()
 
 @tornado.gen.coroutine
 def watch_feed():
   request = tornado.httpclient.HTTPRequest(
-    arguments.feed_host + "/changes-feed?ticket=" + tid,
+    arguments.feed_host + "/changes-feed",
     validate_cert=not arguments.no_verify,
     ca_certs=websocket_ca,
+    headers={"cookie": "slycatauth=" + connection.session.cookies["slycatauth"]},
     )
   websocket = yield tornado.websocket.websocket_connect(request)
   while True:
