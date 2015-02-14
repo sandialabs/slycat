@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link id="slycat-server-root" href="/">
+    <link rel="stylesheet" href="css/namespaced-bootstrap.css">
+    <link rel="stylesheet" href="css/slycat.css">
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+    <title data-bind="text: title"></title>
+  </head>
+  <body>
+    <div id="header">
+      <h1 data-bind="text: title"></h1>
+    </div>
+    <div id="content">
+      <p data-bind="text: paragraph"></p>
+    </div>
+    <div id="footer">
+      <p><small><em data-bind="text: title"></em></small></p>
+    </div>
+
+    <script>
+      require(["knockout"], function(ko)
+      {
+        var component =
+        {
+          paragraph: ko.observable("Now is the time for all good men, etc."),
+        };
+        ko.applyBindings(component, document.querySelector("#content"));
+
+        var page =
+        {
+          title: ko.observable("Hello, World!"),
+        };
+        ko.applyBindings(page, document.querySelector("head"));
+        ko.applyBindings(page, document.querySelector("#header"));
+        ko.applyBindings(page, document.querySelector("#footer"));
+      });
+    </script>
+  </body>
+</html>
