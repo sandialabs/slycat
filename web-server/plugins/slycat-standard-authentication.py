@@ -25,16 +25,14 @@ def register_slycat_plugin(context):
 
     # See if the client already has a valid session.
     if "slycatauth" in cherrypy.request.cookie:
-      session = cherrypy.request.cookie["slycatauth"].value
-      if session in authenticate.sessions:
-        started = authenticate.sessions[session]["created"]
+      sid = cherrypy.request.cookie["slycatauth"].value
+      if sid in authenticate.sessions:
+        started = authenticate.sessions[sid]["created"]
         if datetime.datetime.utcnow() - started > session_timeout:
-          del authenticate.sessions[session]
-          database = slycat.web.server.database.couchdb.connect()
-          del database[session]
+          del authenticate.sessions[sid]
         else:
           # Ensure that the user is logged correctly ...
-          cherrypy.request.login = authenticate.sessions[session]["creator"]
+          cherrypy.request.login = authenticate.sessions[sid]["creator"]
           return
       else:
         # Expired or forged cookie
