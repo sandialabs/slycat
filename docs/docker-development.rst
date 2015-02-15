@@ -15,7 +15,7 @@ Prerequisites
 * We provide a special developer's image that modifies the Slycat Docker image
   that you've been working with for easier development, so download and run it now::
 
-    $ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -p 9000:9000 -d --name slycat-dev sandialabs/slycat-dev
+    $ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -p 9001:9001 -d --name slycat-dev sandialabs/slycat-dev
 
 * You will need to note the IP address of the Docker host:
 
