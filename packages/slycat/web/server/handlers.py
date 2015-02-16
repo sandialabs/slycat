@@ -121,48 +121,6 @@ def get_projects(_=None):
     projects = sorted(projects, key = lambda x: x["created"], reverse=True)
     return json.dumps({"revision" : 0, "projects" : projects})
 
-def get_projects_feed():
-  accept = cherrypy.lib.cptools.accept(["text/event-stream"])
-  cherrypy.response.headers["content-type"] = accept
-
-  def content():
-    database = slycat.web.server.database.couchdb.connect()
-    id_cache = set() # Keep track of the set of project ids visible to the caller.
-
-    # Respond quickly with the current set of projects.
-    last_seq, changes = get_projects_feed.cache.current()
-    for change in changes:
-      if slycat.web.server.authentication.test_project_reader(change["doc"]):
-        id_cache.add(change["id"])
-        yield "data: %s\n\n" % json.dumps(change)
-
-    # Keep clients up-to-date as changes happen.
-    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-      for change in database.changes(filter="slycat/projects", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
-        if "last_seq" in change:
-          last_seq = change["last_seq"]
-        elif "deleted" in change:
-          if change["id"] in id_cache: # Caller visible project has been deleted.
-            id_cache.remove(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True))
-        else:
-          project = change["doc"]
-          if slycat.web.server.authentication.test_project_reader(project): # Caller visible project has been created/updated.
-            id_cache.add(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], doc=project))
-          else:
-            if change["id"] in id_cache: # Caller lost access to the project, make it look like a deletion.
-              id_cache.remove(change["id"])
-              yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True));
-      yield ":\n\n" # Keep the connection alive
-    cherrypy.log.error("Stopping get-projects-feed handler.")
-  return content()
-get_projects_feed._cp_config = {"response.stream": True}
-get_projects_feed.cache = None
-
-def start_projects_feed():
-  get_projects_feed.cache = slycat.web.server.database.couchdb.Cache("projects-feed", "slycat/projects")
-
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_projects():
@@ -417,51 +375,6 @@ def post_project_references(pid):
   cherrypy.response.headers["location"] = "%s/references/%s" % (cherrypy.request.base, rid)
   cherrypy.response.status = "201 Reference created."
   return {"id" : rid}
-
-def get_models_feed():
-  accept = cherrypy.lib.cptools.accept(["text/event-stream"])
-  cherrypy.response.headers["content-type"] = accept
-
-  def content():
-    database = slycat.web.server.database.couchdb.connect()
-    id_cache = set()
-
-    # Respond quickly with the current set of models.
-    last_seq, changes = get_models_feed.cache.current()
-    for change in changes:
-      model = change["doc"]
-      project = database.get("project", model["project"])
-      if slycat.web.server.authentication.test_project_reader(project):
-        id_cache.add(change["id"])
-        yield "data: %s\n\n" % json.dumps(change)
-
-    # Keep clients up-to-date as changes happen.
-    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-      for change in database.changes(filter="slycat/models", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
-        if "last_seq" in change:
-          last_seq = change["last_seq"]
-        elif "deleted" in change:
-          if change["id"] in id_cache:
-            id_cache.remove(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True))
-        else:
-          model = change["doc"]
-          project = database.get("project", model["project"])
-          if slycat.web.server.authentication.test_project_reader(project):
-            id_cache.add(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], doc=model))
-          else:
-            if change["id"] in id_cache:
-              id_cache.remove(change["id"])
-              yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True));
-      yield ":\n\n" # Keep the connection alive
-    cherrypy.log.error("Stopping get-models-feed handler.")
-  return content()
-get_models_feed._cp_config = {"response.stream": True}
-get_models_feed.cache = None
-
-def start_models_feed():
-  get_models_feed.cache = slycat.web.server.database.couchdb.Cache("models-feed", "slycat/models")
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -1467,13 +1380,6 @@ def get_tests_agent():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
   return slycat.web.server.template.render("slycat-test-agent.html", context)
-
-def get_tests_feeds():
-  context = {}
-  context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  context["slycat-css-bundle"] = css_bundle()
-  context["slycat-js-bundle"] = js_bundle()
-  return slycat.web.server.template.render("slycat-test-feeds.html", context)
 
 def tests_request(*arguments, **keywords):
   cherrypy.log.error("Request: %s" % cherrypy.request.request_line)

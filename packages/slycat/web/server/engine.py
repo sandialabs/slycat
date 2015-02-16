@@ -136,10 +136,8 @@ def start(root_path, config_file):
   dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-resource", "/resources/models/:mtype/{resource:.*}", slycat.web.server.handlers.get_model_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-tests-agent", "/tests/agent", slycat.web.server.handlers.get_tests_agent, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-tests-feeds", "/tests/feeds", slycat.web.server.handlers.get_tests_feeds, conditions={"method" : ["GET"]})
   dispatcher.connect("tests-request", "/tests/request", slycat.web.server.handlers.tests_request, conditions={"method" : ["GET", "PUT", "POST", "DELETE"]})
   dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-models-feed", "/models-feed", slycat.web.server.handlers.get_models_feed, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-chunk", "/models/:mid/tables/:aid/arrays/:array/chunk", slycat.web.server.handlers.get_model_table_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-metadata", "/models/:mid/tables/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_table_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-sorted-indices", "/models/:mid/tables/:aid/arrays/:array/sorted-indices", slycat.web.server.handlers.get_model_table_sorted_indices, conditions={"method" : ["GET"]})
@@ -148,7 +146,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-references", "/projects/:pid/references", slycat.web.server.handlers.get_project_references, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-projects-feed", "/projects-feed", slycat.web.server.handlers.get_projects_feed, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-file", "/remotes/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("post-agent-browse", "/agents/:sid/browse{path:.*}", slycat.web.server.handlers.post_agent_browse, conditions={"method" : ["POST"]})
@@ -221,10 +218,6 @@ def start(root_path, config_file):
 
   # Cleanup expired sessions.
   cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_session_cleanup_worker, priority=80)
-
-  # Cache data for live feeds.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed, priority=80)
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_models_feed, priority=80)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

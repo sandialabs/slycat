@@ -16,57 +16,6 @@ import threading
 import time
 import uuid
 
-class Cache(object):
-  def __init__(self, name, filter):
-    self._name = name
-    self._filter = filter
-    self._last_seq = None
-    self._storage = dict()
-    self._thread = threading.Thread(name=name, target=self._run)
-    self._thread.daemon = True
-    self._thread.start()
-    self._lock = threading.Lock()
-
-  def _run(self):
-    while True:
-      try:
-        database = connect()
-        break
-      except:
-        cherrypy.log.error("Waiting for couchdb.")
-        time.sleep(1.0)
-
-    # Initialize the cache.
-    with self._lock:
-      changes = database.changes(filter=self._filter, include_docs=True, since=0)
-      self._last_seq = changes["last_seq"]
-      for change in changes["results"]:
-        if "deleted" in change:
-          if change["id"] in self._storage:
-            del self._storage[change["id"]]
-        else:
-          self._storage[change["id"]] = dict(id=change["id"], doc=change["doc"])
-      cherrypy.log.error("%s cached %s objects from %s records, sequence %s." % (self._name, len(self._storage), len(changes["results"]), self._last_seq))
-
-    # Keep the cache up-to-date.
-    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-      for change in database.changes(filter=self._filter, feed="continuous", include_docs=True, since=self._last_seq, timeout=5000):
-        with self._lock:
-          #cherrypy.log.error("%s change %s." % (self._name, change))
-          if "last_seq" in change:
-            self._last_seq = change["last_seq"]
-          elif "deleted" in change:
-            self._last_seq = change["seq"]
-            if change["id"] in self._storage:
-              del self._storage[change["id"]]
-          else:
-            self._last_seq = change["seq"]
-            self._storage[change["id"]] = dict(id=change["id"], doc=change["doc"])
-
-  def current(self):
-    with self._lock:
-      return self._last_seq, self._storage.values()
-
 class Database:
   """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
   def __init__(self, database):
