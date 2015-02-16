@@ -23,6 +23,9 @@ def register_slycat_plugin(context):
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
       raise cherrypy.HTTPError("403 Secure connection required.")
 
+    # Get the client ip, which might be forwarded by a proxy.
+    remote_ip = cherrypy.request.headers.get("x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
+
     # See if the client already has a valid session.
     if "slycatauth" in cherrypy.request.cookie:
       sid = cherrypy.request.cookie["slycatauth"].value
@@ -36,7 +39,7 @@ def register_slycat_plugin(context):
           return
       else:
         # Expired or forged cookie
-        cherrypy.log.error("@%s: expired/unknown session." % (cherrypy.request.remote.name or cherrypy.request.remote.ip))
+        cherrypy.log.error("@%s: expired/unknown session." % (remote_ip))
 
     # If the client hasn't authenticated, tell them to do so.
     authorization = cherrypy.request.headers.get("authorization")
@@ -56,7 +59,7 @@ def register_slycat_plugin(context):
     except:
       raise cherrypy.HTTPError(400)
 
-    cherrypy.log.error("%s@%s: Checking password." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
+    cherrypy.log.error("%s@%s: Checking password." % (username, remote_ip))
 
     if authenticate.password_check is None:
       if "password-check" not in cherrypy.request.app.config["slycat"]:
@@ -97,7 +100,7 @@ def register_slycat_plugin(context):
           raise cherrypy.HTTPError("403 User denied by authentication rules.")
 
       # Successful authentication, create a session and return.
-      cherrypy.log.error("%s@%s: Password check succeeded." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
+      cherrypy.log.error("%s@%s: Password check succeeded." % (username, remote_ip))
 
       sid = uuid.uuid4().hex
       session = {"created": datetime.datetime.utcnow(), "creator": username}
@@ -114,7 +117,7 @@ def register_slycat_plugin(context):
       return  # successful authentication
 
     # Authentication failed, tell the client to try again.
-    cherrypy.log.error("%s@%s: Password check failed." % (username, cherrypy.request.remote.name or cherrypy.request.remote.ip))
+    cherrypy.log.error("%s@%s: Password check failed." % (username, remote_ip))
     cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
     raise cherrypy.HTTPError(401, "Authentication required.")
 
