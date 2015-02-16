@@ -243,25 +243,41 @@ def put_project(pid):
 
   database.save(project)
 
-def cleanup_array_worker():
+def array_cleanup_worker():
   while True:
     cleanup_arrays.queue.get()
     cherrypy.log.error("Array cleanup started.")
-    couchdb = slycat.web.server.database.couchdb.connect()
-    for file in couchdb.view("slycat/hdf5-file-counts", group=True):
+    database = slycat.web.server.database.couchdb.connect()
+    for file in database.view("slycat/hdf5-file-counts", group=True):
       if file.value == 0:
         slycat.web.server.database.hdf5.delete(file.key)
-        couchdb.delete(couchdb[file.key])
+        database.delete(database[file.key])
     cherrypy.log.error("Array cleanup finished.")
 
 def cleanup_arrays():
   cleanup_arrays.queue.put("cleanup")
 cleanup_arrays.queue = Queue.Queue()
-cleanup_arrays.thread = threading.Thread(name="cleanup-arrays", target=cleanup_array_worker)
+cleanup_arrays.thread = threading.Thread(name="array-cleanup", target=array_cleanup_worker)
 cleanup_arrays.thread.daemon = True
 
-def start_cleanup_arrays_worker():
+def start_array_cleanup_worker():
   cleanup_arrays.thread.start()
+
+def session_cleanup_worker():
+  while True:
+    cherrypy.log.error("Session cleanup started.")
+    cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
+    database = slycat.web.server.database.couchdb.connect()
+    for session in database.view("slycat/sessions", include_docs=True):
+      if session.doc["created"] < cutoff:
+        database.delete(session.doc)
+    cherrypy.log.error("Session cleanup finished.")
+    time.sleep(datetime.timedelta(minutes=60).total_seconds())
+session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=session_cleanup_worker)
+session_cleanup_worker.thread.daemon = True
+
+def start_session_cleanup_worker():
+  session_cleanup_worker.thread.start()
 
 def delete_project(pid):
   couchdb = slycat.web.server.database.couchdb.connect()

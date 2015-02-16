@@ -4,6 +4,7 @@
 
 import cherrypy
 import ConfigParser
+import datetime
 import grp
 import json
 import logging
@@ -65,7 +66,7 @@ def start(root_path, config_file):
 
   # Configuration items we don't recognize are not allowed.
   for key in configuration["slycat"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "session-timeout", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
       raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
@@ -235,7 +236,10 @@ def start(root_path, config_file):
   configuration["slycat"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
   # Wait for requests to cleanup deleted arrays.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_cleanup_arrays_worker, priority=80)
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_array_cleanup_worker, priority=80)
+
+  # Cleanup expired sessions.
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_session_cleanup_worker, priority=80)
 
   # Cache data for live feeds.
   cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed, priority=80)

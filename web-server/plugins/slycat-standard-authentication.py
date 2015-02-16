@@ -12,12 +12,10 @@ def register_slycat_plugin(context):
   import slycat.web.server.plugin
   import uuid
 
-  def authenticate(realm, rules=None, session_timeout=datetime.timedelta(minutes=5)):
+  def authenticate(realm, rules=None):
     # Sanity-check our inputs.
     if '"' in realm:
       raise ValueError("Realm cannot contain the \" (quote) character.")
-    if session_timeout.total_seconds() < 0:
-      raise ValueError("Session timeout cannot be negative.")
 
     # Require a secure connection.
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
@@ -31,7 +29,7 @@ def register_slycat_plugin(context):
       sid = cherrypy.request.cookie["slycatauth"].value
       if sid in authenticate.sessions:
         started = authenticate.sessions[sid]["created"]
-        if datetime.datetime.utcnow() - started > session_timeout:
+        if datetime.datetime.utcnow() - started > cherrypy.request.app.config["slycat"]["session-timeout"]:
           del authenticate.sessions[sid]
         else:
           # Ensure that the user is logged correctly ...
@@ -121,8 +119,8 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
     raise cherrypy.HTTPError(401, "Authentication required.")
 
-
   authenticate.password_check = None
   authenticate.sessions = {}
+  authenticate.session_cleanup = None
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
