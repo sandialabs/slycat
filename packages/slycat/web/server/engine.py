@@ -8,7 +8,6 @@ import datetime
 import grp
 import json
 import logging
-import OpenSSL.SSL
 import os
 import pprint
 import pwd
@@ -66,7 +65,7 @@ def start(root_path, config_file):
 
   # Configuration items we don't recognize are not allowed.
   for key in configuration["slycat"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "session-timeout", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "session-timeout", "stdout-log", "stderr-log", "support-email", "uid", "umask"]:
       raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
@@ -193,24 +192,6 @@ def start(root_path, config_file):
   for section in configuration.values():
     if "tools.staticdir.dir" in section:
       section["tools.staticdir.dir"] = abspath(section["tools.staticdir.dir"])
-
-  # Ensure SSL related paths are absolute.
-  if "server.ssl_private_key" in configuration["global"]:
-    configuration["global"]["server.ssl_private_key"] = abspath(configuration["global"]["server.ssl_private_key"])
-  if "server.ssl_certificate" in configuration["global"]:
-    configuration["global"]["server.ssl_certificate"] = abspath(configuration["global"]["server.ssl_certificate"])
-  if "server.ssl_certificate_chain" in configuration["global"]:
-    configuration["global"]["server.ssl_certificate_chain"] = abspath(configuration["global"]["server.ssl_certificate_chain"])
-
-  # We want fine-grained control over PyOpenSSL here.
-  if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
-    cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-    cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
-    cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
-    if "server.ssl_certificate_chain" in configuration["global"]:
-      cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
-    if "ssl-ciphers" in configuration["slycat"]:
-      cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
 
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
