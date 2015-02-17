@@ -22,7 +22,7 @@ RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.b
 # Add our home-grown CA certificate to the environment where push scripts can find it.
 RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
 # Clone the Slycat git repository and switch to a known-good commit.
-RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout 630a2a879685e316ff1e32e689e31d766efc984f
+RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout b89621b3cc0ee0b0667027a26db142329bd06fcb
 
 # The following commands are run as root.
 USER root
