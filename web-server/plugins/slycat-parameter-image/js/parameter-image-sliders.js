@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-parameter-image-sliders", ["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping) {
+define("slycat-parameter-image-sliders", ["slycat-server-root", "knockout", "knockout-mapping", "domReady!"], function(server_root, ko, mapping) {
 $.widget("parameter_image.sliders",
 {
 
@@ -62,16 +62,16 @@ $.widget("parameter_image.sliders",
     // 	.appendTo(this.element)
     // 	;
 
-    var sliders = {
-    	sliders : [
-    		{ params: "axis:'vertical', length:length, low:x_low, high:x_high" },
-    		{ params: "axis:'vertical', length:length, low:x_low, high:x_high" },
-    		{ params: "axis:'vertical', length:length, low:x_low, high:x_high" },
-    		{ params: "axis:'vertical', length:length, low:x_low, high:x_high" },
-    	]
-    }
+    // var sliders = {
+    // 	sliders : [
+    // 		{ paramses: "axis:'vertical', length:length, low:x_low, high:x_high" },
+    // 		{ paramses: "axis:'vertical', length:length, low:x_low, high:x_high" },
+    // 		{ paramses: "axis:'vertical', length:length, low:x_low, high:x_high" },
+    // 		{ paramses: "axis:'vertical', length:length, low:x_low, high:x_high" },
+    // 	]
+    // }
 
-    ko.applyBindings(sliders, this.element[0]);
+    // ko.applyBindingss(sliders, this.element[0]);
 
     // this.container = $("<div data-bind='foreach: sliders'>")
 
@@ -82,7 +82,17 @@ $.widget("parameter_image.sliders",
       length: 600,
     });
 
-    // ko.applyBindings(page, this.element[0]);
+    ko.applyBindings(page, this.element[0]);
+
+    // console.log(this.element);
+
+    // ko.applyBindings({
+    //     people: [
+    //         { firstName: 'Bert', lastName: 'Bertington' },
+    //         { firstName: 'Charles', lastName: 'Charlesforth' },
+    //         { firstName: 'Denise', lastName: 'Dentiste' }
+    //     ]
+    // }, this.element[0]);
 
   },
 
