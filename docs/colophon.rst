@@ -8,6 +8,7 @@ The following are needed to generate this documentation:
 * Sphinx - documentation builder - http://sphinx-doc.org
 * Sphinx readthedocs theme - https://github.com/snide/sphinx_rtd_theme
 * napoleon - http://sphinxcontrib-napoleon.readthedocs.org/en/latest/
+* httpdomain - http://pythonhosted.org/sphinxcontrib-httpdomain/
 
 Writing the Documentation
 -------------------------
@@ -24,11 +25,11 @@ Building the Documentation
 
 To build the documentation, run::
 
-  $ cd toyplot
-  $ python docs/setup.py
+  $ cd slycat/docs
+  $ python setup.py
 
 Once the documentation is built, you can view it by opening
-`toyplot/docs/_build/html/index.html` in a web browser.
+`slycat/docs/_build/html/index.html` in a web browser.
 
 Deploying the Documentation
 ---------------------------
