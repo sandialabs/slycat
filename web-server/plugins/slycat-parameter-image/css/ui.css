@@ -505,7 +505,17 @@ rights in this software.
   max-width: 100%;
 }
 
-/* Video */
-foreignObject.video body {
-  height: 100%;
+/* Media Layer */
+#scatterplot .media-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#scatterplot .image-frame.html {
+  position: absolute;
+  background-color: green;
+  border: 1px solid red;
+}
+#scatterplot .image-frame.html img {
+  display: block;
 }

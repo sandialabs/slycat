@@ -107,6 +107,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.image_layer = self.svg.append("g").attr("class", "image-layer");
     self.video_layer = d3.select(self.element.get(0));
+    self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
 
     self.options.image_cache = {};
 
@@ -633,6 +634,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     {
       self.element.attr("width", self.options.width);
       self.svg.attr("width", self.options.width);
+      self.media_layer.style({"width": self.options.width + "px"});
 
       var total_width = self.options.width;
       var total_height = self.options.height;
@@ -657,6 +659,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     {
       self.element.attr("height", self.options.height);
       self.svg.attr("height", self.options.height);
+      self.media_layer.style({"height": self.options.height + "px"});
 
       var total_width = self.options.width;
       var total_height = self.options.height;
@@ -1067,6 +1070,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
+      var frame_html = self.media_layer.append("div")
+        .attr("data-uri", image.uri)
+        .attr("data-transx", image.x)
+        .attr("data-transy", image.y)
+        .style({
+          "left": image.x + 20 + "px", 
+          "top": image.y + 20 + "px",
+          "width": image.width + "px",
+          "height": image.height + "px",
+        })
+        .attr("class", image.image_class + " image-frame scaffolding html")
+        .attr("data-index", image.index)
+        .attr("data-uri", image.uri)
+
       var frame = self.image_layer.append("g")
         .attr("data-uri", image.uri)
         .attr("data-transx", image.x)
@@ -1215,11 +1232,29 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
+      var frame_html = self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']");
+      frame_html.classed("scaffolding", false);
       var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
       frame.classed("scaffolding", false);
 
       if(blob.type.indexOf('image/') == 0)
       {
+        // Create the html image ...
+        var htmlImage = frame_html.append("img")
+          .attr("class", "image resize")
+          .attr("src", image_url)
+          .style({
+            "max-width": image.width + "px",
+            "max-height": image.height + "px",
+          })
+          .attr("data-ratio", image.width / image.height)
+          ;
+        // Remove dimensions from parent frame to have it size to image
+        d3.select(htmlImage.node().parentNode).style({
+          "width": "auto",
+          "height": "auto",
+        });
+
         // Create the image ...
         var svgImage = frame.append("image")
           .attr("class", "image resize")
@@ -1767,6 +1802,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self._cancel_hover_canvas();
 
     // Close any current hover images and associated videos ...
+    // self.media_layer.selectAll(".hover-image").remove();
+    // TODO: remove this once svg hover is gone
     self.image_layer.selectAll(".hover-image").each(function(){
         var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
         theVideo.remove();
