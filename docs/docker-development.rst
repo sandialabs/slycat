@@ -30,10 +30,11 @@ Working Inside the Running Container
 
   $ ssh slycat@<docker host ip> -p2222
 
-* Once you're logged-in, you can pull the latest version of the source code::
+* Once you're logged-in, you can pull the latest version of the source code (note that when we build the Docker container, we checkout a specific, known-good commit, so you have to switch to a branch before you pull)::
 
-  $ cd src/slycat
-  $ git pull
+    $ cd src/slycat
+    $ git checkout master
+    $ git pull
 
 * And you can edit the source code in-place::
 
@@ -51,21 +52,36 @@ Working Inside the Running Container
     sshd                             RUNNING    pid 9, uptime 0:02:14
     web-server                       RUNNING    pid 12, uptime 0:02:14
 
-  However, development is often much easier
-  when you run one or more of the servers yourself - you can configure the server to restart automatically
-  in response to code or configuration changes, see the server output in the console, and know immediately
-  if a typo or syntax error causes the server to fail.
+  However, development is often much easier when you run one or more of the
+  servers yourself - you can configure the server to restart automatically in
+  response to code or configuration changes, see the server output in the
+  console, and know immediately if a typo or syntax error causes the server to
+  fail.
 
-  You cannot simply kill a server process started by `supervisord`, because it will be automatically restarted.
-  Use `supervisorctl` to stop it instead::
+  You cannot simply kill a server process started by `supervisord`, because it
+  will be automatically restarted.  Use `supervisorctl` to stop it, then start
+  your own copy for development:
+
+  **Running Your Own Web Server**::
 
     $ supervisorctl stop web-server
     web-server: stopped
-
-  Then, you can run the server yourself for development::
-
     $ cd src/slycat/web-server
     $ python slycat-web-server.py
+
+  **Running Your Own Feed Server**::
+
+    $ supervisorctl stop feed-server
+    feed-server: stopped
+    $ cd src/slycat/feed-server
+    $ python slycat-feed-server.py
+
+  **Running Your Own Reverse Proxy**::
+
+    $ supervisorctl stop proxy-server
+    proxy-server: stopped
+    $ cd src/slycat/proxy-server
+    $ sudo haproxy -f configuration.conf -d
 
   Typically, you would then use a separate ssh login for making code changes.
 
