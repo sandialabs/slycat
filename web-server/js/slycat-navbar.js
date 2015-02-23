@@ -244,7 +244,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
 
     },
     template: ' \
-<div class="bootstrap-styles"> \
+<div class="bootstrap-styles zooming-modals"> \
   <nav class="navbar navbar-default"> \
     <div class="container"> \
       <div class="navbar-header"> \
@@ -360,9 +360,9 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
   <!-- /ko --> \
   <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
-      <div class="modal-content"> \
+      <div class="modal-content zoom-sensitive"> \
         <div data-bind="if: wizard"> \
-          <div data-bind="component:{name:wizard,params:{projects:project,models:model}}"> \
+          <div data-bind="component:{name:wizard,params:{projects:project,models:model}}" class="zoom-sensitive"> \
           </div> \
         </div> \
       </div> \

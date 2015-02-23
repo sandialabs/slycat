@@ -336,3 +336,8 @@ slycat-navbar .alert pre
   cursor: default;
 }
 
+.zoom-sensitive
+{
+  max-height: 90%;
+  overflow: auto;
+}

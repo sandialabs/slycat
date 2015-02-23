@@ -1,0 +1,41 @@
+.vertical {
+  -ms-transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+
+.unvertical {
+  -ms-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+
+.light-border-right {
+  border-right: 2px solid rgb(231, 231, 231);
+}
+
+.affix-top-right {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
+.fill-parent-height {
+  height: 100%;
+}
+
+.fill-parent-width {
+  width: 100%;
+}
+
+.link-cursor {
+  cursor: pointer;
+}
+
+.default-cursor {
+  cursor: inherit;
+}
+
+.info-panel {
+  border-left: 2px solid #1b809e !important;
+}
