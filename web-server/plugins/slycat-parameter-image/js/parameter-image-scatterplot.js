@@ -1249,11 +1249,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           })
           .attr("data-ratio", image.width / image.height)
           ;
-        // Remove dimensions from parent frame to have it size to image
-        d3.select(htmlImage.node().parentNode).style({
-          "width": "auto",
-          "height": "auto",
-        });
 
         // Create the image ...
         var svgImage = frame.append("image")
@@ -1314,7 +1309,100 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           ;
       }
 
+      // Remove dimensions from parent frame to have it size to image
+      frame_html.style({
+        "width": "auto",
+        "height": "auto",
+      });
+
       // Create a resize handle
+      var resize_handle_html = frame_html.append("img")
+        .attr("class", "resize-handle")
+        .attr("src", server_root + "resources/models/parameter-image/" + "resize.png")
+        .call(
+          d3.behavior.drag()
+            .on('drag', function(){
+              console.log("resize html drag");
+              // Make sure mouse is inside svg element
+              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+                var frame = d3.select(this.parentNode);
+                var theImage = frame.select(".resize");
+                // var theLine = frame.select("line.leader");
+                var newWidth, newHeight;
+                var x = d3.event.x;
+                var y = d3.event.y;
+                var min = 50;
+                if(x < min)
+                  x = min;
+                if(y < min)
+                  y = min;
+                newWidth = x;
+                newHeight = y;
+                theImage.style({
+                  "max-width": newWidth + "px",
+                  "max-height": newHeight + "px",
+                })
+                // if(blob.type.indexOf('video/') == 0)
+                // {
+                //   theImage.attr("height", newHeight - 50);
+                // }
+                // else
+                // {
+                //   theImage.attr("height", newHeight);
+                // }
+
+                // // Resize associated video
+                // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+                // theVideo
+                //   .attr("width", newWidth)
+                //   .attr("height", newHeight - 50)
+                //   ;
+
+                // theRectangle.attr("width", newWidth+1);
+                // theRectangle.attr("height", newHeight+1);
+                // theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
+                // thePin.attr('transform',  'translate(' + (newWidth-20) + ',0)');
+                // theLine.attr("x1", (newWidth / 2));
+                // theLine.attr("y1", (newHeight / 2));
+
+              }
+            })
+            .on("dragstart", function() {
+              console.log("resize html dragstart");
+              self.state = "resizing";
+              d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
+              d3.event.sourceEvent.stopPropagation(); // silence other listeners
+              // Reset tracking of hover image if we are starting to drag a hover image
+              var frame = d3.select(this.parentNode);
+              if(frame.classed("hover-image"))
+              {
+                self.opening_image = null;
+                if(self.close_hover_timer)
+                {
+                  window.clearTimeout(self.close_hover_timer);
+                  self.close_hover_timer = null;
+                }
+                frame.classed("hover-image", false).classed("open-image", true);
+                image.image_class = "open-image";
+              }
+            })
+            .on("dragend", function() {
+              console.log("resize html dragend");
+              d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
+              self.state = "";
+              self._sync_open_images();
+            })
+        )
+        .on("mousedown", function(){
+          //console.log("resize mousedown");
+          //d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          //console.log("resize mouseup");
+          //d3.event.stopPropagation(); // silence other listeners
+        })
+        ;
+
       var resize_handle = frame.append("g")
         .attr("class", "resize-handle")
         .attr('transform', "translate(" + (image.width-9) + ", " + (image.height-9) + ")")
@@ -1802,7 +1890,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self._cancel_hover_canvas();
 
     // Close any current hover images and associated videos ...
-    // self.media_layer.selectAll(".hover-image").remove();
+    self.media_layer.selectAll(".hover-image").remove();
     // TODO: remove this once svg hover is gone
     self.image_layer.selectAll(".hover-image").each(function(){
         var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");

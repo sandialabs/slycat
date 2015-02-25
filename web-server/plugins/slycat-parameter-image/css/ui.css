@@ -413,8 +413,14 @@ rights in this software.
 #scatterplot .resize-handle:hover {
   cursor: nwse-resize;
 }
+#scatterplot .media-layer .resize-handle {
+  position: absolute;
+  bottom: 1px;
+  right: 0px;
+}
 #scatterplot rect.outline:hover,
-#scatterplot g.image-frame image.image
+#scatterplot g.image-frame image.image,
+#scatterplot .media-layer .image-frame
 {
   cursor: move;
 }
@@ -436,7 +442,8 @@ rights in this software.
 #scatterplot g.image-frame:hover .resize-handle,
 #scatterplot g.open-image.resizing .resize-handle,
 #scatterplot g.hover-image .pin-button,
-#scatterplot g.hover-image .resize-handle
+#scatterplot g.hover-image .resize-handle,
+#scatterplot .media-layer .image-frame:hover .resize-handle
 {
   visibility: visible;
 }
