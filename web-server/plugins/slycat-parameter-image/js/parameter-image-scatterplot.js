@@ -106,6 +106,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.image_layer = self.svg.append("g").attr("class", "image-layer");
+    self.line_layer = self.svg.append("g").attr("class", "line-layer");
     self.video_layer = d3.select(self.element.get(0));
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
 
@@ -1075,8 +1076,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         .attr("data-transx", image.x)
         .attr("data-transy", image.y)
         .style({
-          "left": image.x + 20 + "px", 
-          "top": image.y + 20 + "px",
+          "left": image.x + "px", 
+          "top": image.y + "px",
           "width": image.width + "px",
           "height": image.height + "px",
         })
@@ -1097,20 +1098,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                 theElement.attr("data-transx", transx);
                 theElement.attr("data-transy", transy);
                 theElement.style({
-                  "left": transx + 20 + "px", 
-                  "top": transy + 20 + "px",
+                  "left": transx + "px", 
+                  "top": transy + "px",
                 })
-                // theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+
+                // Adjust leader line
+                self._adjust_leader_line(theElement);
 
                 // // Move associated video
                 // var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
                 // theVideo
                 //   .style({'top':(transy+25)+'px','left':transx+'px'})
                 //   ;
-
-                // var leader = theElement.select(".leader");
-                // leader.attr("x2", Number(leader.attr("data-targetx")) - transx);
-                // leader.attr("y2", Number(leader.attr("data-targety")) - transy);
               }
             })
             .on("dragstart", function() {
@@ -1240,6 +1239,19 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
       {
+        self.line_layer.append("line")
+          .attr("data-uri", image.uri)
+          .attr("class", "leader")
+          .attr("x1", image.x + (image.width / 2))
+          .attr("y1", image.y + (image.height / 2))
+          .attr("x2", image.target_x)
+          .attr("y2", image.target_y)
+          .attr("data-targetx", image.target_x)
+          .attr("data-targety", image.target_y)
+          .style("stroke", "black")
+          .style("stroke-width", 1.0)
+          ;
+
         frame.append("line")
           .attr("class", "leader")
           .attr("x1", (image.width / 2))
@@ -1389,6 +1401,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         "height": "auto",
       });
 
+      // Adjust leader line
+      self._adjust_leader_line(frame_html);
+
       // Create a resize handle
       var resize_handle_html = frame_html.append("img")
         .attr("class", "resize-handle")
@@ -1412,6 +1427,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                     "max-width": x + "px",
                     "max-height": y + "px",
                   })
+                  // Adjust leader line
+                  self._adjust_leader_line(frame);
                 }
                   
                 // if(blob.type.indexOf('video/') == 0)
@@ -1429,9 +1446,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                 //   .attr("width", newWidth)
                 //   .attr("height", newHeight - 50)
                 //   ;
-
-                // theLine.attr("x1", (newWidth / 2));
-                // theLine.attr("y1", (newHeight / 2));
               }
             })
             .on("dragstart", function() {
@@ -1579,8 +1593,33 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         ;
 
       // Create a close button ...
+      var close_button_html = frame_html.append("img")
+        .attr("class", "close-button")
+        .attr("src", server_root + "resources/models/parameter-image/" + "close.png")
+        .on("mousedown", function(){
+          //console.log("close button mousedown");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          //console.log("close button mouseup");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("click", function()
+        {
+          //console.log("close button click");
+          d3.event.stopPropagation(); // silence other listeners
+          var frame = d3.select(d3.event.target.parentNode);
+          frame.remove();
+          // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+          // theVideo.remove();
+          self._sync_open_images();
+        })
+        ;
+
       var close_button = frame.append("g")
-        .attr("class", "close-button");
+        .attr("class", "close-button")
+        ;
+      
       close_button.append("rect")
         .attr("x", 5)
         .attr("y", 5)
@@ -1617,9 +1656,84 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         ;
 
       // Create a pin button ...
+      var pin_button_html = frame_html.append("img")
+        .attr('class', 'pin-button')
+        .attr('src', server_root + "resources/models/parameter-image/" + "pin.png")
+        .on("mousedown", function(){
+          console.log("html pin button mousedown");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          console.log("html pin button mouseup");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("click", function()
+        {
+          d3.event.stopPropagation(); // silence other listeners
+          // Reset tracking of hover image
+          self.opening_image = null;
+          if(self.close_hover_timer)
+          {
+            window.clearTimeout(self.close_hover_timer);
+            self.close_hover_timer = null;
+          }
+
+          var frame = d3.select(d3.event.target.parentNode);
+          var theImage = frame.select(".resize");
+          // var theLine = frame.select("line.leader");
+          frame.classed("hover-image", false)
+            .classed("open-image", true)
+            ;
+
+          // Adjust image position
+          var imageWidth = self.options.pinned_width;
+          var imageHeight = self.options.pinned_height;
+
+          var x = self._getDefaultXPosition(image.index, imageWidth);
+          var y = self._getDefaultYPosition(image.index, imageHeight);
+
+          frame
+            .attr("data-transx", x)
+            .attr("data-transy", y)
+            .style({
+              "left": x + "px", 
+              "top": y + "px",
+            })
+            ;
+
+          // Get associated video
+          // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+          // theVideo
+          //   .attr("width", imageWidth)
+          //   .attr("height", imageHeight - 50)
+          //   .style({'top':(y+25)+'px','left':x+'px'})
+          //   ;
+
+          // Adjust image size
+          theImage.style({
+            "max-width": imageWidth + "px",
+            "max-height": imageHeight + "px",
+          })
+
+          // Adjust leader line
+          self._adjust_leader_line(frame);
+
+          // if(blob.type.indexOf('video/') == 0)
+          // {
+          //   theImage.attr("height", imageHeight - 50);
+          // }
+          // else
+          // {
+          //   theImage.attr("height", imageHeight);
+          // }
+          self._sync_open_images();
+        })
+        ;
+
       var pin_button = frame.append("g")
         .attr('class', 'pin-button')
-        .attr('transform', "translate(" + (image.width-20) + ",0)");
+        .attr('transform', "translate(" + (image.width-20) + ",0)")
+        ;
 
       pin_button.append("image")
         .attr("class", "pin-icon")
@@ -1957,7 +2071,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self._cancel_hover_canvas();
 
     // Close any current hover images and associated videos ...
-    self.media_layer.selectAll(".hover-image").remove();
+    self.media_layer.selectAll(".hover-image").each(function(){
+      var uri = d3.select(this).attr("data-uri");
+      var leader_line = self.line_layer
+        .select("line[data-uri='" + uri + "']")
+        ;
+      leader_line.remove();
+      this.remove();
+    })
     // TODO: remove this once svg hover is gone
     self.image_layer.selectAll(".hover-image").each(function(){
         var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
@@ -1965,6 +2086,21 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         this.remove();
       })
     ;
+  },
+
+  _adjust_leader_line: function(frame_html)
+  {
+    var self = this;
+    var width = $(frame_html.node()).width();
+    var height = $(frame_html.node()).height();
+    var uri = frame_html.attr("data-uri");
+    var x1 = Number(frame_html.attr("data-transx")) + (width / 2);
+    var y1 = Number(frame_html.attr("data-transy")) + (height / 2);
+    var line = self.line_layer
+      .select("line[data-uri='" + uri + "']")
+      .attr("x1", x1)
+      .attr("y1", y1)
+      ;
   },
 
   pin: function(simulations)
