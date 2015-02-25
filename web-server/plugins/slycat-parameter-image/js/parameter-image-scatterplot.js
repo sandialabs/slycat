@@ -1334,6 +1334,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
             "max-height": image.height + "px",
           })
           .attr("data-ratio", image.width / image.height)
+          .on("load", function(){
+            // Remove dimensions from parent frame to have it size to image
+            frame_html.style({
+              "width": "auto",
+              "height": "auto",
+            });
+            self._adjust_leader_line(frame_html);
+          })
           ;
 
         // Create the image ...
@@ -1395,14 +1403,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           ;
       }
 
-      // Remove dimensions from parent frame to have it size to image
-      frame_html.style({
-        "width": "auto",
-        "height": "auto",
-      });
-
       // Adjust leader line
+      console.log("about to adjust leader line.");
       self._adjust_leader_line(frame_html);
+      console.log("finished to adjust leader line.");
 
       // Create a resize handle
       var resize_handle_html = frame_html.append("img")
@@ -1609,7 +1613,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
           //console.log("close button click");
           d3.event.stopPropagation(); // silence other listeners
           var frame = d3.select(d3.event.target.parentNode);
-          frame.remove();
+          self._remove_image_and_leader_line(frame);
           // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
           // theVideo.remove();
           self._sync_open_images();
@@ -2072,12 +2076,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
     // Close any current hover images and associated videos ...
     self.media_layer.selectAll(".hover-image").each(function(){
-      var uri = d3.select(this).attr("data-uri");
-      var leader_line = self.line_layer
-        .select("line[data-uri='" + uri + "']")
-        ;
-      leader_line.remove();
-      this.remove();
+      self._remove_image_and_leader_line(d3.select(this));
     })
     // TODO: remove this once svg hover is gone
     self.image_layer.selectAll(".hover-image").each(function(){
@@ -2101,6 +2100,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       .attr("x1", x1)
       .attr("y1", y1)
       ;
+  },
+
+  _remove_image_and_leader_line: function(frame_html)
+  {
+    var self = this;
+    var uri = frame_html.attr("data-uri");
+    var line = self.line_layer.select("line[data-uri='" + uri + "']");
+    frame_html.remove();
+    line.remove();
   },
 
   pin: function(simulations)
