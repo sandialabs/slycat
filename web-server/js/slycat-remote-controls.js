@@ -38,11 +38,13 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
       {
         success: function(remote_hosts)
         {
+          var current_host = component.hostname();
           remote_hosts.sort(function(left, right)
           {
             return left.hostname == right.hostname ? 0 : left.hostname < right.hostname ? -1 : 1;
           });
           mapping.fromJS(remote_hosts, component.remote_hosts);
+          component.hostname(current_host || component.hostname());
         }
       });
     },
