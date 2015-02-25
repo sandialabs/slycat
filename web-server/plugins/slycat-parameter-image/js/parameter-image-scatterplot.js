@@ -1288,7 +1288,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       //   ;
 
       // Schedule timeout for hover
-      self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
+      self.element.one("mousemove", function(){
+        self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
+      });
     }
 
     // If the image is already in the cache, display it.
@@ -2040,21 +2042,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
   _is_hovering: function(image_index)
   {
     var self = this;
-    var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
+    //var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
+    var hoverEmpty = self.media_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
 
-    if(!hoverEmpty)
-    {
-      return true;
-    }
+    // if(!hoverEmpty)
+    // {
+    //   return true;
+    // }
 
-    self.image_layer.selectAll(".hover-image").each(function(){
-      var data_uri = d3.select(this).attr("data-uri");
-      var videoHoverEmpty = self.video_layer.selectAll("video[data-uri='" + data_uri + "']:hover").empty();
-      if(!videoHoverEmpty)
-      {
-        hoverEmpty = videoHoverEmpty;
-      }
-    });
+    // self.image_layer.selectAll(".hover-image").each(function(){
+    //   var data_uri = d3.select(this).attr("data-uri");
+    //   var videoHoverEmpty = self.video_layer.selectAll("video[data-uri='" + data_uri + "']:hover").empty();
+    //   if(!videoHoverEmpty)
+    //   {
+    //     hoverEmpty = videoHoverEmpty;
+    //   }
+    // });
 
     return !hoverEmpty;
   },
