@@ -1083,6 +1083,80 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         .attr("class", image.image_class + " image-frame scaffolding html")
         .attr("data-index", image.index)
         .attr("data-uri", image.uri)
+        .call(
+          d3.behavior.drag()
+            .on('drag', function(){
+              console.log("frame html drag");
+              // Make sure mouse is inside svg element
+              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
+                var theElement = d3.select(this);
+                var transx = Number(theElement.attr("data-transx"));
+                var transy = Number(theElement.attr("data-transy"));
+                transx += d3.event.dx;
+                transy += d3.event.dy;
+                theElement.attr("data-transx", transx);
+                theElement.attr("data-transy", transy);
+                theElement.style({
+                  "left": transx + 20 + "px", 
+                  "top": transy + 20 + "px",
+                })
+                // theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+
+                // // Move associated video
+                // var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
+                // theVideo
+                //   .style({'top':(transy+25)+'px','left':transx+'px'})
+                //   ;
+
+                // var leader = theElement.select(".leader");
+                // leader.attr("x2", Number(leader.attr("data-targetx")) - transx);
+                // leader.attr("y2", Number(leader.attr("data-targety")) - transy);
+              }
+            })
+            .on("dragstart", function() {
+              console.log("frame html dragstart");
+              self.state = "moving";
+              // Verify source event target
+              var sourceEventTarget = d3.select(d3.event.sourceEvent.target);
+              if(sourceEventTarget.classed("outline") || sourceEventTarget.classed("image"))
+              {
+                d3.event.sourceEvent.stopPropagation(); // silence other listeners
+                // Reset tracking of hover image if we are starting to drag a hover image
+                var frame = d3.select(this);
+                if(frame.classed("hover-image"))
+                {
+                  self.opening_image = null;
+                  if(self.close_hover_timer)
+                  {
+                    window.clearTimeout(self.close_hover_timer);
+                    self.close_hover_timer = null;
+                  }
+                  frame.classed("hover-image", false).classed("open-image", true);
+                  image.image_class = "open-image";
+                }
+              }
+            })
+            .on("dragend", function() {
+              console.log("frame html dragend");
+              self.state = "";
+              self._sync_open_images();
+            })
+        )
+        .on("mousedown", function(){
+          console.log("frame html mousedown");
+          //d3.event.stopPropagation();
+          // Verify that click is on image, not something else like the close button
+          if(d3.event.target.classList.contains("image"))
+          {
+            // Move this image to the top of the Z order ...
+            $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
+          }
+        })
+        .on("mouseup", function(){
+          console.log("frame html mouseup");
+          //d3.event.stopPropagation();
+        })
+        ;
 
       var frame = self.image_layer.append("g")
         .attr("data-uri", image.uri)
@@ -1322,7 +1396,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
         .call(
           d3.behavior.drag()
             .on('drag', function(){
-              console.log("resize html drag");
+              // console.log("resize html drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
                 var frame = d3.select(this.parentNode);
@@ -1332,16 +1406,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                 var x = d3.event.x;
                 var y = d3.event.y;
                 var min = 50;
-                if(x < min)
-                  x = min;
-                if(y < min)
-                  y = min;
-                newWidth = x;
-                newHeight = y;
-                theImage.style({
-                  "max-width": newWidth + "px",
-                  "max-height": newHeight + "px",
-                })
+                if(x > min && y > min)
+                {
+                  theImage.style({
+                    "max-width": x + "px",
+                    "max-height": y + "px",
+                  })
+                }
+                  
                 // if(blob.type.indexOf('video/') == 0)
                 // {
                 //   theImage.attr("height", newHeight - 50);
@@ -1358,17 +1430,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
                 //   .attr("height", newHeight - 50)
                 //   ;
 
-                // theRectangle.attr("width", newWidth+1);
-                // theRectangle.attr("height", newHeight+1);
-                // theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
-                // thePin.attr('transform',  'translate(' + (newWidth-20) + ',0)');
                 // theLine.attr("x1", (newWidth / 2));
                 // theLine.attr("y1", (newHeight / 2));
-
               }
             })
             .on("dragstart", function() {
-              console.log("resize html dragstart");
+              // console.log("resize html dragstart");
               self.state = "resizing";
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
               d3.event.sourceEvent.stopPropagation(); // silence other listeners
@@ -1387,7 +1454,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
               }
             })
             .on("dragend", function() {
-              console.log("resize html dragend");
+              // console.log("resize html dragend");
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
               self.state = "";
               self._sync_open_images();
