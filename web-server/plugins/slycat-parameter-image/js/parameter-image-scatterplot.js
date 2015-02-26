@@ -7,7 +7,7 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-parameter-image-model-login", "d3", "URI"], function(server_root, Login, d3, URI)
+define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-agent-login"], function(server_root, d3, URI, login)
 {
   $.widget("parameter_image.scatterplot",
   {
@@ -78,6 +78,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       self.options.scale_v = self.options.v;
     }
 
+    this.login = login.build(document.querySelector("#login-modal"));
+    
     self.hover_timer = null;
     self.close_hover_timer = null;
 
@@ -88,7 +90,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
     self.start_drag = null;
     self.current_drag = null;
     self.end_drag = null;
-    self.login = new Login();
 
     // Setup the scatterplot ...
     self.svg = d3.select(self.element.get(0)).append("svg");
@@ -1463,70 +1464,67 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
     // If we don't have a session for the image hostname, create one.
     var uri = URI(image.uri);
-    if(!(uri.hostname() in self.login.session_cache))
-    {
-      self._open_session(images);
-      return;
-    }
 
     // Retrieve the image.
     console.log("Loading image " + image.uri + " from server");
-    var xhr = new XMLHttpRequest();
-    var api = "/image";
-    if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
-    {
-      api = "/file";
-    }
-    xhr.image = image;
-    xhr.open("GET", server_root + "agents/" + self.login.session_cache[uri.hostname()] + api + uri.pathname(), true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
-      // If we get 404, the remote session no longer exists because it timed-out.
-      // If we get 500, there was an internal error communicating to the remote host.
-      // Either way, delete the cached session and create a new one.
-      if(this.status == 404 || this.status == 500)
+    self.login.agentId(uri.hostname(), function(sid){
+      var xhr = new XMLHttpRequest();
+      var api = "/image";
+      if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
       {
-        delete self.login.session_cache[uri.hostname()];
-        self._open_session(images);
-        return;
+        api = "/file";
       }
-      // If we get 400, it means that the session is good and we're
-      // communicating with the remote host, but something else went wrong
-      // (probably file permissions issues).
-      if(this.status == 400)
+      xhr.image = image;
+      xhr.open("GET", server_root + "agents/" + sid + api + uri.pathname(), true);
+      xhr.responseType = "arraybuffer";
+      xhr.onload = function(e)
       {
-        console.log(this);
-        console.log(this.getAllResponseHeaders());
-        var message = this.getResponseHeader("slycat-message");
-        var hint = this.getResponseHeader("slycat-hint");
+        // If we get 404, the remote session no longer exists because it timed-out.
+        // If we get 500, there was an internal error communicating to the remote host.
+        // Either way, delete the cached session and create a new one.
+        if(this.status == 404 || this.status == 500)
+        {
+          self.login.clearAgentId(uri.hostname());
+          self._open_session(images);
+          return;
+        }
+        // If we get 400, it means that the session is good and we're
+        // communicating with the remote host, but something else went wrong
+        // (probably file permissions issues).
+        if(this.status == 400)
+        {
+          console.log(this);
+          console.log(this.getAllResponseHeaders());
+          var message = this.getResponseHeader("slycat-message");
+          var hint = this.getResponseHeader("slycat-hint");
 
-        if(message && hint)
-        {
-          window.alert(message + "\n\n" + hint);
+          if(message && hint)
+          {
+            window.alert(message + "\n\n" + hint);
+          }
+          else if(message)
+          {
+            window.alert(message);
+          }
+          else
+          {
+            window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
+          }
+          return;
         }
-        else if(message)
-        {
-          window.alert(message);
-        }
-        else
-        {
-          window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
-        }
+
+        // We received the image, so put it in the cache and start-over.
+        var array_buffer_view = new Uint8Array(this.response);
+        var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
+        self.options.image_cache[image.uri] = blob;
+        // Adding lag for testing purposed. This should not exist in production.
+        // setTimeout(function(){
+        self._open_images(images);
         return;
+        // }, 5000);
       }
-
-      // We received the image, so put it in the cache and start-over.
-      var array_buffer_view = new Uint8Array(this.response);
-      var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
-      self.options.image_cache[image.uri] = blob;
-      // Adding lag for testing purposed. This should not exist in production.
-      // setTimeout(function(){
-      self._open_images(images);
-      return;
-      // }, 5000);
-    }
-    xhr.send();
+      xhr.send();
+    });
   },
 
   _close_hidden_simulations: function()
