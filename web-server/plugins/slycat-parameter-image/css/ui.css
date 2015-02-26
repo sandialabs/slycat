@@ -536,11 +536,18 @@ rights in this software.
   position: absolute;
   background-color: white;
   border: 1px solid black;
+  height: auto;
 }
 #scatterplot .image-frame.html img {
   display: block;
 }
+#scatterplot .image-frame.html img.image {
+  width: 100%;
+  height: auto;
+}
 #scatterplot .image-frame.html video {
   display: block;
   margin: 20px 0;
+  width: 100%;
+  height: auto;
 }
