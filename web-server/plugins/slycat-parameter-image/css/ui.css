@@ -13,11 +13,11 @@ rights in this software.
 
 #table
 {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .x-axis,
@@ -444,6 +444,10 @@ rights in this software.
 }
 #scatterplot .close-button,
 #scatterplot .resize-handle,
+#scatterplot .pin-button
+{
+  visibility: hidden;
+}
 #scatterplot g.open-image:hover .close-button,
 #scatterplot g.open-image.resizing .close-button,
 #scatterplot g.image-frame:hover .resize-handle,
