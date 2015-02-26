@@ -1532,14 +1532,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
   _close_hidden_simulations: function()
   {
     var self = this;
-    $("g.image-frame")
+    $(".media-layer div.image-frame")
       .filter(function(){
         return $.inArray($(this).data("index"), self.options.filtered_indices) == -1
       })
       .each(function(){
-        var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
-        theVideo.remove();
-        this.remove();
+        self._remove_image_and_leader_line(d3.select(this));
       })
       ;
   },
