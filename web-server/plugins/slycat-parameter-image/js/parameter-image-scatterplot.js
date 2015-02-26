@@ -92,7 +92,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.end_drag = null;
 
     // Setup the scatterplot ...
-    self.svg = d3.select(self.element.get(0)).append("svg");
+    self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
+    $('.media-layer').delegate('*', 'mousedown', function(){return false;});
+    self.svg = d3.select(self.element.get(0)).append("svg").style("opacity", ".99");
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
@@ -107,7 +109,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.line_layer = self.svg.append("g").attr("class", "line-layer");
-    self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
 
     self.options.image_cache = {};
 
@@ -1080,6 +1081,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           "top": image.y + "px",
           "width": image.width + "px",
           "height": image.height + "px",
+          "z-index": 1,
         })
         .attr("class", image.image_class + " image-frame scaffolding html")
         .attr("data-index", image.index)
