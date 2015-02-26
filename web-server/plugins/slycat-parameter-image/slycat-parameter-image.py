@@ -63,6 +63,7 @@ def register_slycat_plugin(context):
     "login.js",
     "color-switcher.js",
     "note-display.js",
+    "stickies.core.js",
     # "parameter-controls.js",
     # "parameter-image-table.js",
     # "parameter-image-scatterplot.js",
@@ -79,6 +80,7 @@ def register_slycat_plugin(context):
     "slick-default-theme.css",
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
+    "stickies.css",
     #"ui.css",
     "slycat-additions.css",
     #For development and debugging, comment out css here and load it dynamically inside model.
