@@ -534,8 +534,8 @@ rights in this software.
 }
 #scatterplot .image-frame.html {
   position: absolute;
-  background-color: green;
-  border: 1px solid red;
+  background-color: white;
+  border: 1px solid black;
 }
 #scatterplot .image-frame.html img {
   display: block;
