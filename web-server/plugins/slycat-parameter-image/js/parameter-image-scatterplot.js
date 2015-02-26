@@ -896,9 +896,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
       {
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
-        frame.find(".leader")
-          .attr("x2", self.x_scale(self.options.x[image_index])-Number(frame.attr("data-transx")) )
-          .attr("y2", self.y_scale(self.options.y[image_index])-Number(frame.attr("data-transy")) )
+        var uri = frame.attr("data-uri");
+        self.line_layer.select("line[data-uri='" + uri + "']")
+          .attr("x2", self.x_scale(self.options.x[image_index]) )
+          .attr("y2", self.y_scale(self.options.y[image_index]) )
           .attr("data-targetx", self.x_scale(self.options.x[image_index]))
           .attr("data-targety", self.y_scale(self.options.y[image_index]))
           ;
@@ -1420,7 +1421,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "slycat-para
 
           var frame = d3.select(d3.event.target.parentNode);
           var theImage = frame.select(".resize");
-          // var theLine = frame.select("line.leader");
           frame.classed("hover-image", false)
             .classed("open-image", true)
             ;
