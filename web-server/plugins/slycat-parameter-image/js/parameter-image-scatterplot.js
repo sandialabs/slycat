@@ -106,8 +106,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       ;
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
-    self.image_layer = self.svg.append("g").attr("class", "image-layer");
+    self.line_layer = self.svg.append("g").attr("class", "line-layer");
     self.video_layer = d3.select(self.element.get(0));
+    self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
 
     self.options.image_cache = {};
 
@@ -634,6 +635,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     {
       self.element.attr("width", self.options.width);
       self.svg.attr("width", self.options.width);
+      self.media_layer.style({"width": self.options.width + "px"});
 
       var total_width = self.options.width;
       var total_height = self.options.height;
@@ -658,6 +660,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     {
       self.element.attr("height", self.options.height);
       self.svg.attr("height", self.options.height);
+      self.media_layer.style({"height": self.options.height + "px"});
 
       var total_width = self.options.width;
       var total_height = self.options.height;
@@ -894,9 +897,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       {
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
-        frame.find(".leader")
-          .attr("x2", self.x_scale(self.options.x[image_index])-Number(frame.attr("data-transx")) )
-          .attr("y2", self.y_scale(self.options.y[image_index])-Number(frame.attr("data-transy")) )
+        var uri = frame.attr("data-uri");
+        self.line_layer.select("line[data-uri='" + uri + "']")
+          .attr("x2", self.x_scale(self.options.x[image_index]) )
+          .attr("y2", self.y_scale(self.options.y[image_index]) )
           .attr("data-targetx", self.x_scale(self.options.x[image_index]))
           .attr("data-targety", self.y_scale(self.options.y[image_index]))
           ;
@@ -975,7 +979,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     if(self.updates["update_v_label"])
     {
-      console.log("updating v label.");
+      // console.log("updating v label.");
       self.legend_layer.selectAll(".label").remove();
 
       var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
@@ -1008,14 +1012,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     {
       var frame = $(frame);
       var image = frame.find(".resize");
-      var imageHeight = image.prop("tagName") == 'image' ? Number(image.attr("height")) : Number(image.attr("height")) + 50;
+      // var imageHeight = image.prop("tagName") == 'image' ? Number(image.attr("height")) : Number(image.attr("height")) + 50;
       open_images.push({
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
         relx : Number(frame.attr("data-transx")) / width,
         rely : Number(frame.attr("data-transy")) / height,
-        width : Number(image.attr("width")),
-        height : imageHeight,
+        width : image.width(),
+        height : image.height(),
         });
     });
     self.element.trigger("open-images-changed", [open_images]);
@@ -1050,7 +1054,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       return;
     }
     // Create scaffolding and status indicator if we already don't have one
-    if( self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
+    if( self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
 
       // Define a default size for every image.
       if(image.width === undefined)
@@ -1068,18 +1072,23 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
-      var frame = self.image_layer.append("g")
+      var frame_html = self.media_layer.append("div")
         .attr("data-uri", image.uri)
         .attr("data-transx", image.x)
         .attr("data-transy", image.y)
-        .attr('transform', "translate(" + image.x + ", " + image.y + ")")
-        .attr("class", image.image_class + " image-frame scaffolding")
+        .style({
+          "left": image.x + "px", 
+          "top": image.y + "px",
+          "width": image.width + "px",
+          "height": image.height + "px",
+        })
+        .attr("class", image.image_class + " image-frame scaffolding html")
         .attr("data-index", image.index)
         .attr("data-uri", image.uri)
         .call(
           d3.behavior.drag()
             .on('drag', function(){
-              //console.log("frame drag");
+              // console.log("frame html drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
                 var theElement = d3.select(this);
@@ -1089,21 +1098,23 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 transy += d3.event.dy;
                 theElement.attr("data-transx", transx);
                 theElement.attr("data-transy", transy);
-                theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+                theElement.style({
+                  "left": transx + "px", 
+                  "top": transy + "px",
+                })
 
-                // Move associated video
-                var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
-                theVideo
-                  .style({'top':(transy+25)+'px','left':transx+'px'})
-                  ;
+                // Adjust leader line
+                self._adjust_leader_line(theElement);
 
-                var leader = theElement.select(".leader");
-                leader.attr("x2", Number(leader.attr("data-targetx")) - transx);
-                leader.attr("y2", Number(leader.attr("data-targety")) - transy);
+                // // Move associated video
+                // var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
+                // theVideo
+                //   .style({'top':(transy+25)+'px','left':transx+'px'})
+                //   ;
               }
             })
             .on("dragstart", function() {
-              //console.log("frame dragstart");
+              // console.log("frame html dragstart");
               self.state = "moving";
               // Verify source event target
               var sourceEventTarget = d3.select(d3.event.sourceEvent.target);
@@ -1126,23 +1137,23 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               }
             })
             .on("dragend", function() {
-              //console.log("frame dragend");
+              // console.log("frame html dragend");
               self.state = "";
               self._sync_open_images();
             })
         )
         .on("mousedown", function(){
-          //console.log("frame mousedown");
+          // console.log("frame html mousedown");
           //d3.event.stopPropagation();
           // Verify that click is on image, not something else like the close button
           if(d3.event.target.classList.contains("image"))
           {
             // Move this image to the top of the Z order ...
-            $(d3.event.target.parentNode).detach().appendTo(self.image_layer.node());
+            $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
           }
         })
         .on("mouseup", function(){
-          //console.log("frame mouseup");
+          // console.log("frame html mouseup");
           //d3.event.stopPropagation();
         })
         ;
@@ -1150,30 +1161,19 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
       {
-        frame.append("line")
+        self.line_layer.append("line")
+          .attr("data-uri", image.uri)
           .attr("class", "leader")
-          .attr("x1", (image.width / 2))
-          .attr("y1", (image.height / 2))
-          .attr("x2", image.target_x - Number(frame.attr("data-transx")))
-          .attr("y2", image.target_y - Number(frame.attr("data-transy")))
+          .attr("x1", image.x + (image.width / 2))
+          .attr("y1", image.y + (image.height / 2))
+          .attr("x2", image.target_x)
+          .attr("y2", image.target_y)
           .attr("data-targetx", image.target_x)
           .attr("data-targety", image.target_y)
           .style("stroke", "black")
           .style("stroke-width", 1.0)
           ;
       }
-
-      // Create an outline ...
-      var outline = frame.append("rect")
-        .attr("class", "outline")
-        .attr("x", -0.5)
-        .attr("y", -0.5)
-        .attr("width", image.width + 1)
-        .attr("height", image.height + 1)
-        .style("stroke", "black")
-        .style("stroke-width", "1px")
-        .style("fill", "white")
-        ;
 
       // // Create the loading image ...
       // var timeout_image = frame.append("image")
@@ -1186,7 +1186,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       //   ;
 
       // Schedule timeout for hover
-      self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
+      self.element.one("mousemove", function(){
+        self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
+      });
     }
 
     // If the image is already in the cache, display it.
@@ -1216,59 +1218,43 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
-      var frame = self.image_layer.select("g." + image.image_class + "[data-uri='" + image.uri + "']");
-      frame.classed("scaffolding", false);
+      var frame_html = self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']");
+      frame_html.classed("scaffolding", false);
 
       if(blob.type.indexOf('image/') == 0)
       {
-        // Create the image ...
-        var svgImage = frame.append("image")
+        // Create the html image ...
+        var htmlImage = frame_html.append("img")
           .attr("class", "image resize")
-          .attr("xlink:href", image_url)
-          .attr("x", 0)
-          .attr("y", 0)
-          .attr("width", image.width)
-          .attr("height", image.height)
+          .attr("src", image_url)
+          .style({
+            "max-width": image.width + "px",
+            "max-height": image.height + "px",
+          })
           .attr("data-ratio", image.width / image.height)
+          .on("load", function(){
+            // Remove dimensions from parent frame to have it size to image
+            frame_html.style({
+              "width": "auto",
+              "height": "auto",
+            });
+            self._adjust_leader_line(frame_html);
+          })
           ;
       }
       else if(blob.type.indexOf('video/') == 0)
       {
         // Create the video ...
-        var foreignObject = frame.append("foreignObject")
-          .attr("width", image.width)
-          .attr("height", image.height-50)
-          .attr("transform", "translate(0,25)")
-          .attr("data-ratio", image.width / image.height)
-          .attr("class", "resize video")
-          ;
-        // var video = foreignObject
-        //   .append("xhtml:div")
-        //   .append("xhtml:video")
-        //   .attr("src", image_url)
-        //   .attr("controls", true)
-        //   .attr("width", "100%")
-        //   .attr("height", "100%")
-        //   .on("mousedown", function(){
-        //     //console.log("video mousedown");
-        //     d3.event.stopPropagation(); // silence other listeners
-        //   })
-        //   .on("mouseup", function(){
-        //     //console.log("video mouseup");
-        //     d3.event.stopPropagation(); // silence other listeners
-        //   })
-        //   ;
-
-        var video_html = self.video_layer
+        var video = frame_html
           .append("video")
           .attr("data-uri", image.uri)
           .attr("src", image_url)
           .attr("controls", true)
           .attr("width", image.width)
-          .attr("height", image.height-50)
-          .attr("data-ratio", image.width / image.height)
-          .style("position", "absolute")
-          .style({'top':(image.y+25)+'px', 'left':image.x+'px'})
+          .attr("height", "auto")
+          // .attr("data-ratio", image.width / image.height)
+          // // .style("position", "absolute")
+          // .style({'top':(image.y+25)+'px', 'left':image.x+'px'})
           .on("mousedown", function(){
             //console.log("video mousedown");
             d3.event.stopPropagation(); // silence other listeners
@@ -1277,70 +1263,67 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             //console.log("video mouseup");
             d3.event.stopPropagation(); // silence other listeners
           })
+          .on("loadedmetadata", function(){
+            console.log("video loaded metadata");
+            // Remove dimensions from parent frame to have it size to image
+            frame_html.style({
+              "width": "auto",
+              "height": "auto",
+            });
+            self._adjust_leader_line(frame_html);
+          })
           ;
       }
 
+      // Adjust leader line
+      self._adjust_leader_line(frame_html);
+
       // Create a resize handle
-      var resize_handle = frame.append("g")
+      var resize_handle_html = frame_html.append("img")
         .attr("class", "resize-handle")
-        .attr('transform', "translate(" + (image.width-9) + ", " + (image.height-9) + ")")
+        .attr("src", server_root + "resources/models/parameter-image/" + "resize.png")
         .call(
           d3.behavior.drag()
             .on('drag', function(){
-              //console.log("resize drag");
+              // console.log("resize html drag");
               // Make sure mouse is inside svg element
               if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
                 var frame = d3.select(this.parentNode);
                 var theImage = frame.select(".resize");
-                var width = Number(theImage.attr("width"));
-                var height = Number(theImage.attr("height"));
-                var theRectangle = frame.select("rect.outline");
-                var theHandle = d3.select(this);
-                var theLine = frame.select("line.leader");
-                var thePin = frame.select('.pin-button');
-                var ratio = Number(theImage.attr("data-ratio"));
+                // var theLine = frame.select("line.leader");
                 var newWidth, newHeight;
                 var x = d3.event.x;
                 var y = d3.event.y;
                 var min = 50;
-                if(x < min)
-                  x = min;
-                if(y < min)
-                  y = min;
-                newWidth = x;
-                newHeight = newWidth / ratio;
-                if(newHeight > y) {
-                  newHeight = y;
-                  newWidth = newHeight * ratio;
-                }
-                theImage.attr("width", newWidth);
-                if(blob.type.indexOf('video/') == 0)
+                if(x > min && y > min)
                 {
-                  theImage.attr("height", newHeight - 50);
+                  theImage.style({
+                    "max-width": x + "px",
+                    "max-height": y + "px",
+                  })
+                  // Adjust leader line
+                  self._adjust_leader_line(frame);
                 }
-                else
-                {
-                  theImage.attr("height", newHeight);
-                }
+                  
+                // if(blob.type.indexOf('video/') == 0)
+                // {
+                //   theImage.attr("height", newHeight - 50);
+                // }
+                // else
+                // {
+                //   theImage.attr("height", newHeight);
+                // }
 
-                // Resize associated video
-                var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
-                theVideo
-                  .attr("width", newWidth)
-                  .attr("height", newHeight - 50)
-                  ;
-
-                theRectangle.attr("width", newWidth+1);
-                theRectangle.attr("height", newHeight+1);
-                theHandle.attr('transform', "translate(" + (newWidth-9) + ", " + (newHeight-9) + ")");
-                thePin.attr('transform',  'translate(' + (newWidth-20) + ',0)');
-                theLine.attr("x1", (newWidth / 2));
-                theLine.attr("y1", (newHeight / 2));
-
+                // // Resize associated video
+                // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+                // theVideo
+                //   .attr("width", newWidth)
+                //   .attr("height", newHeight - 50)
+                //   ;
               }
             })
             .on("dragstart", function() {
-              //console.log("resize dragstart");
+              // console.log("resize html dragstart");
               self.state = "resizing";
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
               d3.event.sourceEvent.stopPropagation(); // silence other listeners
@@ -1359,7 +1342,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               }
             })
             .on("dragend", function() {
-              //console.log("resize dragend");
+              // console.log("resize html dragend");
               d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
               self.state = "";
               self._sync_open_images();
@@ -1375,31 +1358,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         })
         ;
 
-      resize_handle.append("path")
-        .attr("d", "M0,8 L8,0 M4,8 L8,4")
-        .style("stroke", "#878787")
-        .style("stroke-width", 1)
-        .style("pointer-events", "none")
-        ;
-
-      resize_handle.append("rect")
-        .attr("class", "resize-handle-mousetarget")
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("fill", "transparent")
-        ;
-
       // Create a close button ...
-      var close_button = frame.append("g")
-        .attr("class", "close-button");
-      close_button.append("rect")
-        .attr("x", 5)
-        .attr("y", 5)
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr("rx", 2)
-        .attr("ry", 2)
-        .style("fill", "rgba(0%,0%,0%,0.2)")
+      var close_button_html = frame_html.append("img")
+        .attr("class", "close-button")
+        .attr("src", server_root + "resources/models/parameter-image/" + "close.png")
         .on("mousedown", function(){
           //console.log("close button mousedown");
           d3.event.stopPropagation(); // silence other listeners
@@ -1412,39 +1374,24 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         {
           //console.log("close button click");
           d3.event.stopPropagation(); // silence other listeners
-          var frame = d3.select(d3.event.target.parentNode.parentNode);
-          frame.remove();
-          var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
-          theVideo.remove();
+          var frame = d3.select(d3.event.target.parentNode);
+          self._remove_image_and_leader_line(frame);
+          // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+          // theVideo.remove();
           self._sync_open_images();
         })
         ;
 
-      close_button.append("path")
-        .attr("d", "M" + (8) + " " + (8) + " l10 10 m0 -10 l-10 10")
-        .style("stroke", "rgba(100%,100%,100%, 0.8)")
-        .style("stroke-width", 3)
-        .style("pointer-events", "none")
-        ;
-
       // Create a pin button ...
-      var pin_button = frame.append("g")
+      var pin_button_html = frame_html.append("img")
         .attr('class', 'pin-button')
-        .attr('transform', "translate(" + (image.width-20) + ",0)");
-
-      pin_button.append("image")
-        .attr("class", "pin-icon")
-        .attr("x", 2)
-        .attr("y", 2)
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr("xlink:href", server_root + "resources/models/parameter-image/" + "pin.png")
+        .attr('src', server_root + "resources/models/parameter-image/" + "pin.png")
         .on("mousedown", function(){
-          //console.log("pin button mousedown");
+          // console.log("html pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
         })
         .on("mouseup", function(){
-          //console.log("pin button mouseup");
+          // console.log("html pin button mouseup");
           d3.event.stopPropagation(); // silence other listeners
         })
         .on("click", function()
@@ -1458,12 +1405,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             self.close_hover_timer = null;
           }
 
-          var frame = d3.select(d3.event.target.parentNode.parentNode);
+          var frame = d3.select(d3.event.target.parentNode);
           var theImage = frame.select(".resize");
-          var theRectangle = frame.select("rect.outline");
-          var theHandle = frame.select("g.resize-handle");
-          var theLine = frame.select("line.leader");
-          var thePin = frame.select('.pin-button');
           frame.classed("hover-image", false)
             .classed("open-image", true)
             ;
@@ -1478,40 +1421,37 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           frame
             .attr("data-transx", x)
             .attr("data-transy", y)
-            .attr('transform', "translate(" + x + ", " + y + ")")
+            .style({
+              "left": x + "px", 
+              "top": y + "px",
+            })
             ;
 
           // Get associated video
-          var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
-          theVideo
-            .attr("width", imageWidth)
-            .attr("height", imageHeight - 50)
-            .style({'top':(y+25)+'px','left':x+'px'})
-            ;
+          // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+          // theVideo
+          //   .attr("width", imageWidth)
+          //   .attr("height", imageHeight - 50)
+          //   .style({'top':(y+25)+'px','left':x+'px'})
+          //   ;
 
           // Adjust image size
-          theImage.attr("width", imageWidth);
-          if(blob.type.indexOf('video/') == 0)
-          {
-            theImage.attr("height", imageHeight - 50);
-          }
-          else
-          {
-            theImage.attr("height", imageHeight);
-          }
-          theRectangle.attr("width", imageWidth+1);
-          theRectangle.attr("height", imageHeight+1);
-          theHandle.attr('transform', "translate(" + (imageWidth-9) + ", " + (imageHeight-9) + ")");
-          thePin.attr('transform', 'translate(' + (imageWidth-20) + ',0)');
+          theImage.style({
+            "max-width": imageWidth + "px",
+            "max-height": imageHeight + "px",
+          })
 
-          // Adjust line
-          theLine
-            .attr("x1", (imageWidth / 2))
-            .attr("y1", (imageHeight / 2))
-            .attr("x2", image.target_x - Number(frame.attr("data-transx")))
-            .attr("y2", image.target_y - Number(frame.attr("data-transy")))
-            ;
+          // Adjust leader line
+          self._adjust_leader_line(frame);
 
+          // if(blob.type.indexOf('video/') == 0)
+          // {
+          //   theImage.attr("height", imageHeight - 50);
+          // }
+          // else
+          // {
+          //   theImage.attr("height", imageHeight);
+          // }
           self._sync_open_images();
         })
         ;
@@ -1590,14 +1530,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   _close_hidden_simulations: function()
   {
     var self = this;
-    $("g.image-frame")
+    $(".media-layer div.image-frame")
       .filter(function(){
         return $.inArray($(this).data("index"), self.options.filtered_indices) == -1
       })
       .each(function(){
-        var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
-        theVideo.remove();
-        this.remove();
+        self._remove_image_and_leader_line(d3.select(this));
       })
       ;
   },
@@ -1730,21 +1668,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   _is_hovering: function(image_index)
   {
     var self = this;
-    var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
+    //var hoverEmpty = self.image_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
+    var hoverEmpty = self.media_layer.selectAll(".hover-image[data-index='" + image_index + "']:hover").empty();
 
-    if(!hoverEmpty)
-    {
-      return true;
-    }
+    // if(!hoverEmpty)
+    // {
+    //   return true;
+    // }
 
-    self.image_layer.selectAll(".hover-image").each(function(){
-      var data_uri = d3.select(this).attr("data-uri");
-      var videoHoverEmpty = self.video_layer.selectAll("video[data-uri='" + data_uri + "']:hover").empty();
-      if(!videoHoverEmpty)
-      {
-        hoverEmpty = videoHoverEmpty;
-      }
-    });
+    // self.image_layer.selectAll(".hover-image").each(function(){
+    //   var data_uri = d3.select(this).attr("data-uri");
+    //   var videoHoverEmpty = self.video_layer.selectAll("video[data-uri='" + data_uri + "']:hover").empty();
+    //   if(!videoHoverEmpty)
+    //   {
+    //     hoverEmpty = videoHoverEmpty;
+    //   }
+    // });
 
     return !hoverEmpty;
   },
@@ -1765,12 +1704,33 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self._cancel_hover_canvas();
 
     // Close any current hover images and associated videos ...
-    self.image_layer.selectAll(".hover-image").each(function(){
-        var theVideo = self.video_layer.select("video[data-uri='" + d3.select(this).attr("data-uri") + "']");
-        theVideo.remove();
-        this.remove();
-      })
-    ;
+    self.media_layer.selectAll(".hover-image").each(function(){
+      self._remove_image_and_leader_line(d3.select(this));
+    });
+  },
+
+  _adjust_leader_line: function(frame_html)
+  {
+    var self = this;
+    var width = $(frame_html.node()).width();
+    var height = $(frame_html.node()).height();
+    var uri = frame_html.attr("data-uri");
+    var x1 = Number(frame_html.attr("data-transx")) + (width / 2);
+    var y1 = Number(frame_html.attr("data-transy")) + (height / 2);
+    var line = self.line_layer
+      .select("line[data-uri='" + uri + "']")
+      .attr("x1", x1)
+      .attr("y1", y1)
+      ;
+  },
+
+  _remove_image_and_leader_line: function(frame_html)
+  {
+    var self = this;
+    var uri = frame_html.attr("data-uri");
+    var line = self.line_layer.select("line[data-uri='" + uri + "']");
+    frame_html.remove();
+    line.remove();
   },
 
   pin: function(simulations)
