@@ -78,7 +78,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self.options.scale_v = self.options.v;
     }
 
-    this.login = login.build(document.querySelector("#login-modal"));
+    this.login = login.build(document.querySelector("#login-modal"), {title: "Login to retrieve images"});
     
     self.hover_timer = null;
     self.close_hover_timer = null;
@@ -1158,6 +1158,30 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .on("mouseup", function(){
           // console.log("frame html mouseup");
           //d3.event.stopPropagation();
+        })
+        ;
+
+      // Create a close button ...
+      var close_button_html = frame_html.append("img")
+        .attr("class", "close-button")
+        .attr("src", server_root + "resources/models/parameter-image/" + "close.png")
+        .on("mousedown", function(){
+          //console.log("close button mousedown");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("mouseup", function(){
+          //console.log("close button mouseup");
+          d3.event.stopPropagation(); // silence other listeners
+        })
+        .on("click", function()
+        {
+          //console.log("close button click");
+          d3.event.stopPropagation(); // silence other listeners
+          var frame = d3.select(d3.event.target.parentNode);
+          self._remove_image_and_leader_line(frame);
+          // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
+          // theVideo.remove();
+          self._sync_open_images();
         })
         ;
 
