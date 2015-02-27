@@ -21,7 +21,7 @@ rights in this software.
     document.head.appendChild(script);
   });
   [
-    //"ui.css",
+    "css/ui.css",
   ].forEach(function(src) {
     var link = document.createElement('link');
     link.href = server_root + "resources/models/parameter-image/" + src;
@@ -74,30 +74,9 @@ rights in this software.
 
   <div class="bootstrap-styles">
       <div id="login-modal" class="modal fade" role="modal" aria-hidden="true">
-          <div class="modal-dialog">
-              <div class="modal-content">
-                  <div class="popover-title">
-                      <button class="close" data-dismiss="modal">x</button>
-                      <h4 class="modal-title">Remote Login</h4>
-                  </div>
-                  <div class="modal-body">
-                      <span id="remote-error"></span>
-                      <span id="remote-hostname"></span>
-                      <form>
-                          <fieldset>
-                              <label for='remote-username'>Username</label>
-                              <input id='remote-username' type='text'/>
-                              <label for='remote-password'>Password</label>
-                              <input id='remote-password' type='password'/>
-                          </fieldset>
-                      </form>
-                  </div>
-                  <div class="modal-footer">
-                      <button id="cancel-login-button" class="btn btn-default" type="button" data-dismiss="modal">Cancel</button>
-                      <button id="login-button" class="btn btn-primary" type="button">Login</button>
-                  </div>
-              </div>
-          </div>
+        <div class="modal-dialog">
+          <slycat-agent-login params="title: title"></slycat-agent-login>
+        </div>
       </div>
   </div>
 </div>

@@ -13,11 +13,11 @@ rights in this software.
 
 #table
 {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .x-axis,
@@ -409,18 +409,35 @@ rights in this software.
 {
   margin-right: 10px;
 }
-#scatterplot.resizing,
-#scatterplot .resize-handle:hover {
-  cursor: nwse-resize;
+#scatterplot .media-layer .resize-handle {
+  position: absolute;
+  bottom: 1px;
+  right: 0px;
+}
+#scatterplot .media-layer .pin-button {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+#scatterplot .media-layer .close-button {
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 #scatterplot rect.outline:hover,
-#scatterplot g.image-frame image.image
+#scatterplot g.image-frame image.image,
+#scatterplot .media-layer .image-frame
 {
   cursor: move;
 }
 #scatterplot .close-button:hover,
 #scatterplot .pin-button:hover {
   cursor: pointer;
+}
+#scatterplot.resizing,
+#scatterplot.resizing .media-layer .image-frame,
+#scatterplot .resize-handle:hover {
+  cursor: nwse-resize !important;
 }
 #scatterplot g.open-image image.image {
 
@@ -436,7 +453,11 @@ rights in this software.
 #scatterplot g.image-frame:hover .resize-handle,
 #scatterplot g.open-image.resizing .resize-handle,
 #scatterplot g.hover-image .pin-button,
-#scatterplot g.hover-image .resize-handle
+#scatterplot g.hover-image .resize-handle,
+#scatterplot .media-layer .image-frame:hover .resize-handle,
+#scatterplot .media-layer .image-frame.resizing .resize-handle,
+#scatterplot .media-layer .image-frame:hover .pin-button,
+#scatterplot .media-layer .open-image:hover .close-button
 {
   visibility: visible;
 }
@@ -505,7 +526,36 @@ rights in this software.
   max-width: 100%;
 }
 
-/* Video */
-foreignObject.video body {
-  height: 100%;
+/* Media Layer */
+#scatterplot .media-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#scatterplot .image-frame.html {
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  height: auto;
+}
+#scatterplot .image-frame.html img {
+  display: block;
+}
+#scatterplot .image-frame.html img.image {
+  width: 100%;
+  height: auto;
+}
+#scatterplot .image-frame.html video {
+  display: block;
+  margin: 20px 0;
+  width: 100%;
+  height: auto;
+}
+#scatterplot .image-frame .loading-image {
+  margin: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
 }
