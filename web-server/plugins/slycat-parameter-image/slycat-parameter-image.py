@@ -103,6 +103,7 @@ def register_slycat_plugin(context):
     "pin.png",
     "resize.png",
     "close.png",
+    "ajax-loader.gif",
   ]
   for image in images:
     context.register_model_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))

@@ -551,3 +551,11 @@ rights in this software.
   width: 100%;
   height: auto;
 }
+#scatterplot .image-frame .loading-image {
+  margin: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+}

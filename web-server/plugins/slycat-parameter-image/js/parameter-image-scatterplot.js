@@ -1202,15 +1202,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           ;
       }
 
-      // // Create the loading image ...
-      // var timeout_image = frame.append("image")
-      //   .attr("class", "loading-image")
-      //   .attr("xlink:href", "/css/ajax-loader.gif")
-      //   .attr("x", (image.width / 2)-16)
-      //   .attr("y", (image.height / 2)-16)
-      //   .attr("width", 32)
-      //   .attr("height", 32)
-      //   ;
+      // Create the loading image ...
+      var loading_image = frame_html.append("img")
+        .attr("class", "loading-image")
+        .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
+        ;
 
       // Schedule timeout for hover
       self.element.one("mousemove", function(){
@@ -1255,18 +1251,16 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .attr("class", "image resize")
           .attr("src", image_url)
           .attr("data-ratio", image.width / image.height)
+          .style({
+            "display": "none",
+          })
           .on("load", function(){
             // Get the actual image dimensions
-            console.log("about to get actual image dimensions");
+            // console.log("about to get actual image dimensions");
             var width = this.naturalWidth;
             var height = this.naturalHeight;
             var ratio = width/height;
             var target_width = self._scale_width(ratio, image.width, image.height);
-            htmlImage
-              .attr("data-width", width)
-              .attr("data-height", height)
-              .attr("data-ratio", width/height)
-              ;
             // Adjust dimensions of frame now that we know the dimensions of the image
             frame_html
               .attr("data-width", width)
@@ -1275,6 +1269,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               .style({
                 "width": target_width + "px",
                 "height": "auto",
+              })
+              ;
+            htmlImage
+              .style({
+                "display": "block",
               })
               ;
             self._adjust_leader_line(frame_html);
@@ -1289,6 +1288,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .attr("data-uri", image.uri)
           .attr("src", image_url)
           .attr("controls", true)
+          .style({
+            "display": "none",
+          })
           .on("mousedown", function(){
             //console.log("video mousedown");
             d3.event.stopPropagation(); // silence other listeners
@@ -1313,10 +1315,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 "width": "400px",
                 "height": "auto",
               });
+            video
+              .style({
+                "display": "block",
+              })
+              ;
             self._adjust_leader_line(frame_html);
           })
           ;
       }
+
+      // Remove loading indicator image
+      frame_html.select(".loading-image").remove();
 
       // Adjust leader line
       self._adjust_leader_line(frame_html);
