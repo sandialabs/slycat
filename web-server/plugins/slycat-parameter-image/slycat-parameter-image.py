@@ -62,7 +62,7 @@ def register_slycat_plugin(context):
     "chunker.js",
     "login.js",
     "color-switcher.js",
-    "note-display.js",
+    "bookmark-display.js",
     "stickies.core.js",
     # "parameter-controls.js",
     # "parameter-image-table.js",

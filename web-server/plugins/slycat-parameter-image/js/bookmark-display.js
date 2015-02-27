@@ -1,4 +1,4 @@
-define("slycat-note-display", ["slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "URI", "domReady!"], function(web_client, bookmark_manager, dialog, URI){
+define("slycat-bookmark-display", ["slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "URI", "domReady!"], function(web_client, bookmark_manager, dialog, URI){
   var module = {};
 
   function NotePanel(parent, container, panel) {
@@ -56,7 +56,7 @@ define("slycat-note-display", ["slycat-web-client", "slycat-bookmark-manager", "
   // Attach panel_class to the selector. In this case, we always use NotePanel.
   // The closure ensures we don't gc the class definition
   module.attach = (function(panel_class){
-    return function(selector){ 
+    return function(selector){
       var parent_object = $(selector);
       var input_group = $('<div>').attr({style: 'float: right; bottom: 0px; width: 100%; position: absolute;'}).append(
         $('<input>').attr({style: 'width: 75%;'})).append(
@@ -64,7 +64,7 @@ define("slycat-note-display", ["slycat-web-client", "slycat-bookmark-manager", "
       var note_container = $('<div>').attr({id: 'note-pane', "aria-expanded": false, style: 'left: 40px;', role: 'tabpanel'}).addClass('panel-collapse fill-parent-height collapse').append(
         $('<div>').addClass('panel-body fill-parent-height').attr({style: 'min-width: 300px;'}).append(input_group));
 
-      var note_panel = 
+      var note_panel =
       $(selector).append(
         $('<div>').attr({id: 'note-panel', style: 'position: absolute; top: 0px; right: 0px; max-width: 20%;'}).addClass('panel affix-top-right fill-parent-height').append(
           $('<div>').attr({role: 'tab'}).addClass('fill-parent-height').append(
@@ -112,7 +112,7 @@ define("slycat-note-display", ["slycat-web-client", "slycat-bookmark-manager", "
 
       //Allow the user to add notes by clicking save or pressing enter:
       input_group.find('button').on('click', save_bookmark);
-      input_group.find('input').on('keypress', 
+      input_group.find('input').on('keypress',
         function(e){
           if(e.keyCode == 13){
             save_bookmark();
