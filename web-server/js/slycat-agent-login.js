@@ -10,6 +10,7 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
     agentIds: {},
     cancel: function(element){
       return function(){
+        viewModel.callbacks.cancel();
       }
     },
     connect: function(element){
@@ -22,7 +23,7 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
           data: data,
           success: function(result){
               viewModel.agentIds[viewModel.remote.hostname()] = ko.observable(result.sid);
-              viewModel.callback(viewModel.agentIds[viewModel.remote.hostname()]());
+              viewModel.callbacks.success(viewModel.agentIds[viewModel.remote.hostname()]());
               $(element).modal('hide');
             },
           error: function(request, status, reason_phrase){
@@ -76,13 +77,13 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
     return (viewModel.agentIds[hostname] && true) || false;
   }
 
-  module.agentId = function(hostname, callback){
+  module.agentId = function(hostname, callbacks){
     viewModel.remote.hostname(hostname);
     if(viewModel.agentIds[hostname]){
-      callback(viewModel.agentIds[hostname]());
+      callbacks.success(viewModel.agentIds[hostname]());
       return;
     }
-    viewModel.callback = callback;
+    viewModel.callbacks = callbacks;
     $(viewModel.element).modal('show');
   }
 
