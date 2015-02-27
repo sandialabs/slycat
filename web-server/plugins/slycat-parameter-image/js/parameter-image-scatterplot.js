@@ -1014,15 +1014,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     $(".open-image").each(function(index, frame)
     {
       var frame = $(frame);
-      var image = frame.find(".resize");
-      // var imageHeight = image.prop("tagName") == 'image' ? Number(image.attr("height")) : Number(image.attr("height")) + 50;
       open_images.push({
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
         relx : Number(frame.attr("data-transx")) / width,
         rely : Number(frame.attr("data-transy")) / height,
-        width : image.width(),
-        height : image.height(),
+        width : frame.outerWidth(),
+        height : frame.outerHeight(),
         });
     });
     self.element.trigger("open-images-changed", [open_images]);
