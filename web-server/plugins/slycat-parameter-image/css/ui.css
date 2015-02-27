@@ -289,11 +289,11 @@ rights in this software.
 }
 .icon-sort-off {
   border: 1px solid transparent;
-  background: transparent url(sort-asc-light.png) no-repeat center center;
+  background: transparent url(../sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
   border: 1px solid transparent !important;
-  background: transparent url(sort-asc-gray.png) no-repeat center center !important;
+  background: transparent url(../sort-asc-gray.png) no-repeat center center !important;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover
@@ -312,12 +312,12 @@ rights in this software.
   top: 4px;
 }
 .slick-header-button.icon-image-off {
-  background: transparent url(image-light.png) no-repeat center center;
+  background: transparent url(../image-light.png) no-repeat center center;
 }
 .slick-header-button.icon-image-on,
 .slick-header-button.icon-image-off:hover
 {
-  background: transparent url(image-gray.png) no-repeat center center;
+  background: transparent url(../image-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off
@@ -326,12 +326,12 @@ rights in this software.
   top: 4px;
 }
 .slick-header-button.icon-y-off {
-  background: transparent url(y-light.png) no-repeat center center;
+  background: transparent url(../y-light.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off:hover
 {
-  background: transparent url(y-gray.png) no-repeat center center;
+  background: transparent url(../y-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off
@@ -340,12 +340,12 @@ rights in this software.
   top: 4px;
 }
 .slick-header-button.icon-x-off {
-  background: transparent url(x-light.png) no-repeat center center;
+  background: transparent url(../x-light.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off:hover
 {
-  background: transparent url(x-gray.png) no-repeat center center;
+  background: transparent url(../x-gray.png) no-repeat center center;
 }
 #page-title {
   padding-top: 5px;
