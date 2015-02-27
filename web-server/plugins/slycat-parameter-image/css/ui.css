@@ -419,6 +419,10 @@ rights in this software.
   top: 0px;
   right: 0px;
 }
+#scatterplot .media-layer .reload-button {
+  position: absolute;
+  left: 1px;
+}
 #scatterplot .media-layer .close-button {
   position: absolute;
   top: 0px;
@@ -444,7 +448,8 @@ rights in this software.
 }
 #scatterplot .close-button,
 #scatterplot .resize-handle,
-#scatterplot .pin-button
+#scatterplot .pin-button,
+#scatterplot .reload-button
 {
   visibility: hidden;
 }
@@ -454,10 +459,12 @@ rights in this software.
 #scatterplot g.open-image.resizing .resize-handle,
 #scatterplot g.hover-image .pin-button,
 #scatterplot g.hover-image .resize-handle,
+#scatterplot g.hover-image .reload-button,
 #scatterplot .media-layer .image-frame:hover .resize-handle,
 #scatterplot .media-layer .image-frame.resizing .resize-handle,
 #scatterplot .media-layer .image-frame:hover .pin-button,
-#scatterplot .media-layer .open-image:hover .close-button
+#scatterplot .media-layer .open-image:hover .close-button,
+#scatterplot .media-layer .image-frame:hover .reload-button
 {
   visibility: visible;
 }

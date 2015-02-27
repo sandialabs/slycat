@@ -92,7 +92,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.end_drag = null;
 
     // Setup the scatterplot ...
-    self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
+    self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
     $('.media-layer').delegate('*', 'mousedown', function(){return false;});
     self.svg = d3.select(self.element.get(0)).append("svg").style({
       "opacity": ".99",
@@ -1060,9 +1060,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     if( self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
 
       // Define a default size for every image.
-      if(image.width === undefined)
+      if(!image.width)
         image.width = self.options.pinned_width;
-      if(image.height === undefined)
+      if(!image.height)
         image.height = self.options.pinned_height;
 
       // Define a default position for every image.
@@ -1185,6 +1185,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         })
         ;
 
+      var reload_button = frame_html.append("span")
+        .attr("class", "glyphicon glyphicon-exclamation-sign reload-button")
+        .style({top: parseInt(frame_html.style("height")) - 18 + "px", cursor: "pointer"})
+        .attr("title", "Could not load image. Click to reconnect.")
+        .on("click", (function(img){
+          return function(){
+            var hostname = URI(img.uri).hostname();
+            var images = $(this).closest(".media-layer").children(".scaffolding").map(function(_, x){return {uri: $(x).attr("data-uri"), image_class: image.image_class}}).filter(function(_, x){return URI(x["uri"]).hostname() == hostname;})
+            self._open_images(images);
+          }})(image));
+
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
       {
@@ -1243,6 +1254,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       var frame_html = self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']");
       frame_html.classed("scaffolding", false);
+      $(frame_html[0][0]).find("span.reload-button").remove();
 
       if(blob.type.indexOf('image/') == 0)
       {
