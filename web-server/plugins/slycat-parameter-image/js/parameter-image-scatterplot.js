@@ -94,7 +94,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer");
     $('.media-layer').delegate('*', 'mousedown', function(){return false;});
-    self.svg = d3.select(self.element.get(0)).append("svg").style("opacity", ".99");
+    self.svg = d3.select(self.element.get(0)).append("svg").style({
+      "opacity": ".99",
+      // "position": "absolute", // Setting position to absolute also brings the svg element in front of .media-layer but keeps .image-frames on top of everything
+    });
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
