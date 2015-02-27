@@ -1312,7 +1312,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               .attr("data-height", height)
               .attr("data-ratio", ratio)
               .style({
-                "width": "400px",
+                "width": target_width + "px",
                 "height": "auto",
               });
             video
