@@ -2,25 +2,25 @@
 //@VERSION 0.0.5
 
 (function( factory ) {
-	if ( typeof define === "function" && define.amd ) {
+	// if ( typeof define === "function" && define.amd ) {
 
-		// AMD. Register as an anonymous module.
-		define([
-			"jquery",
-			"./core",
-			"./widget",
-			"./draggable",
-			"./mouse",
-			"./position",
-			"./resizable"
-		], factory );
-	} else {
+	// 	// AMD. Register as an anonymous module.
+	// 	define([
+	// 		"jquery",
+	// 		"./core",
+	// 		"./widget",
+	// 		"./draggable",
+	// 		"./mouse",
+	// 		"./position",
+	// 		"./resizable"
+	// 	], factory );
+	// } else {
 
 		// Browser globals
 		factory( jQuery );
-	}
+	// }
 }(function($) {
-	
+
 	return $.widget("ot.stickies", {
 		options: {
 			pinned: 0,
@@ -39,16 +39,16 @@
 			}
 		},
 		_create: function() {
-			
+
 			this._createWrapper();
 			this._createHeader();
 			this._createPin();
 			this._createCloseButton();
-			
+
 			this.element
 				.addClass( "ui-sticky-text ui-widget-content" )
 				.appendTo( this.uiSticky );
-				
+
 			this.uiSticky
 				.resizable()
 				.draggable( { containment: "window"} )
@@ -58,7 +58,7 @@
 			this.uiStickyCloseButton = $( "<span>" )
 				.addClass( "ui-sticky-close-button ui-icon ui-icon-closethick" )
 				.appendTo( this.uiStickyHeader );
-				
+
 			this._on( this.uiStickyCloseButton, {
 				"click": function() {
 					this._destroy();
@@ -113,5 +113,5 @@
 			this.uiSticky.remove();
 		}
 	});
-	
+
 }));

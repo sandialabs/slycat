@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, bookmark_builder, dialog, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -13,6 +13,7 @@ var category_columns = null;
 
 var bookmarker = null;
 var bookmark = null;
+var note_manager = new NoteManager();
 
 var table_metadata = null;
 var table_statistics = null;
