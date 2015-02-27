@@ -60,7 +60,6 @@ def register_slycat_plugin(context):
     "slick.autotooltips.js",
     "slick.slycateditors.js",
     "chunker.js",
-    "login.js",
     "color-switcher.js",
     "note-display.js",
     # "parameter-controls.js",
