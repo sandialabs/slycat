@@ -1,5 +1,6 @@
 define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-client"], function(ko, server_root, web_client){
   var viewModel = {
+    title: ko.observable("Login to begin an agent session"),
     remote: {
       hostname: ko.observable(""),
       username: ko.observable(""),
@@ -9,6 +10,7 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
     agentIds: {},
     cancel: function(element){
       return function(){
+        viewModel.callbacks.cancel();
       }
     },
     connect: function(element){
@@ -21,7 +23,7 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
           data: data,
           success: function(result){
               viewModel.agentIds[viewModel.remote.hostname()] = ko.observable(result.sid);
-              viewModel.callback(viewModel.agentIds[viewModel.remote.hostname()]());
+              viewModel.callbacks.success(viewModel.agentIds[viewModel.remote.hostname()]());
               $(element).modal('hide');
             },
           error: function(request, status, reason_phrase){
@@ -35,12 +37,29 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
     }
   };
 
+  ko.components.register("slycat-agent-login",
+  {
+    viewModel: function(params)
+    {
+      subModel = viewModel;
+      this.remote = viewModel.remote;
+      this.connect = viewModel.connect;
+      this.cancel = viewModel.cancel;
+      this.title = params.title;
+    },
+    template: { require: "text!" + server_root + "templates/slycat-agent-login.html"}
+  });
+
   var module = {};
 
-  module.build = function(element){
+  module.build = function(element, params){
+    $.each(params || {}, function(k,v){
+        ko.isObservable(viewModel[k]) ? viewModel[k](v) : viewModel[k] = v;
+      });
     viewModel.element = element;
     viewModel.cancel = viewModel.cancel(element);
     viewModel.connect = viewModel.connect(element);
+    $(element).on('shown.bs.modal', function(){ $(element).find(viewModel.remote.username() ? "#slycat-remote-password" : "#slycat-remote-username").focus(); });
     $(element).on('hide', function(){viewModel.callback = null;});
     ko.applyBindings(viewModel, element);
     return this;
@@ -58,12 +77,13 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
     return (viewModel.agentIds[hostname] && true) || false;
   }
 
-  module.agentId = function(hostname, callback){
+  module.agentId = function(hostname, callbacks){
+    viewModel.remote.hostname(hostname);
     if(viewModel.agentIds[hostname]){
-      callback(viewModel.agentIds[hostname]());
+      callbacks.success(viewModel.agentIds[hostname]());
       return;
     }
-    viewModel.callback = callback;
+    viewModel.callbacks = callbacks;
     $(viewModel.element).modal('show');
   }
 
@@ -72,4 +92,4 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
   }
 
   return module;
-})
+});

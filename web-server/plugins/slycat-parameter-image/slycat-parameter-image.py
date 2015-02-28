@@ -60,7 +60,6 @@ def register_slycat_plugin(context):
     "slick.autotooltips.js",
     "slick.slycateditors.js",
     "chunker.js",
-    "login.js",
     "color-switcher.js",
     "bookmark-display.js",
     "note-manager.js",
@@ -86,7 +85,8 @@ def register_slycat_plugin(context):
     "jquery-ui/jquery-ui.css",
     "jquery-ui/jquery.ui.theme.css",
     "jquery-ui/jquery.ui.resizable.css",
-    #"ui.css",
+    #
+    "ui.css",
     "slycat-additions.css",
     #For development and debugging, comment out css here and load it dynamically inside model.
   ]
@@ -111,6 +111,7 @@ def register_slycat_plugin(context):
     "pin.png",
     "resize.png",
     "close.png",
+    "ajax-loader.gif",
     # for stickies
     'ui-icons_222222_256x240.png',
     'ui-bg_highlight-soft_75_cccccc_1x100.png',
@@ -125,7 +126,7 @@ def register_slycat_plugin(context):
     "js/parameter-image-table.js",
     "js/parameter-image-scatterplot.js",
     "js/ui.js",
-    "css/ui.css",
+    #"css/ui.css",
   ]
   for dev in devs:
     context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))

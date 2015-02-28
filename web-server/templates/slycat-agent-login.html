@@ -1,0 +1,16 @@
+<div class="model-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 data-bind="text:title"></h3>
+    </div>
+    <form class="" data-bind="submit: connect" role="form">
+      <div class="modal-body">
+        <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,error:remote.error"></slycat-remote-controls>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="submit">Login</button>
+        <button class="btn btn-default pull-left" data-bind="click:cancel" data-dismiss="modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
