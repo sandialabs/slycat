@@ -13,7 +13,7 @@ var category_columns = null;
 
 var bookmarker = null;
 var bookmark = null;
-var note_manager = new NoteManager();
+var note_manager = null;
 
 var table_metadata = null;
 var table_statistics = null;
@@ -147,6 +147,8 @@ function model_loaded()
     setup_controls();
     setup_colorswitcher();
     metadata_loaded();
+    // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
+    note_manager = new NoteManager(model_id, bookmarker, bookmark);
   });
 }
 
