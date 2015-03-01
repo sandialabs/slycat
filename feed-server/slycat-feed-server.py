@@ -4,6 +4,7 @@ import couch
 import couchdb.client
 import datetime
 import json
+import logging
 import sys
 import threading
 import time
@@ -14,11 +15,38 @@ import tornado.web
 import tornado.websocket
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--access-log", default="-", help="Access log filename, or '-' for stderr.  Default: %(default)s")
+parser.add_argument("--access-log-count", type=int, default=100, help="Maximum number of access log files.  Default: %(default)s")
+parser.add_argument("--access-log-size", type=int, default=10000000, help="Maximum size of access log files.  Default: %(default)s")
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="http://localhost:5984", help="CouchDB host.  Default: %(default)s")
+parser.add_argument("--error-log", default="-", help="Error log filename, or '-' for stderr.  Default: %(default)s")
+parser.add_argument("--error-log-count", type=int, default=100, help="Maximum number of error log files.  Default: %(default)s")
+parser.add_argument("--error-log-size", type=int, default=10000000, help="Maximum size of error log files.  Default: %(default)s")
 parser.add_argument("--max-session-age", type=float, default=5 * 60, help="Maximum age of an authentication session in seconds.  Default: %(default)s")
 parser.add_argument("--port", type=int, default=8093, help="Feed server port.  Default: %(default)s")
 arguments = parser.parse_args()
+
+access_log = logging.getLogger("access")
+access_log.propagate = False
+access_log.setLevel(logging.INFO)
+if arguments.access_log == "-":
+  access_log.addHandler(logging.StreamHandler(sys.stderr))
+else:
+  access_log.addHandler(logging.handlers.RotatingFileHandler(arguments.access_log, maxBytes=arguments.access_log_size, backupCount=arguments.access_log_count))
+
+error_log = logging.getLogger("error")
+error_log.propagate = False
+error_log.setLevel(logging.INFO)
+if arguments.error_log == "-":
+  error_log.addHandler(logging.StreamHandler(sys.stderr))
+else:
+  error_log.addHandler(logging.handlers.RotatingFileHandler(arguments.error_log, maxBytes=arguments.error_log_size, backupCount=arguments.error_log_count))
+error_log.handlers[-1].setFormatter(logging.Formatter(fmt="%(asctime)s  %(message)s", datefmt="[%d/%b/%Y:%H:%M:%S]"))
+
+class log(object):
+  access = logging.getLogger("access").info
+  error = logging.getLogger("error").info
 
 def is_project_reader(project, user):
   if user in [entry["user"] for entry in project["acl"]["administrators"]]:
@@ -48,10 +76,10 @@ class RawFeed(object):
     server = couchdb.client.Server(url = self._url)
     while True:
       try:
-        print "Connected to couchdb %s" % server.version()
+        log.error("Connected to couchdb %s" % server.version())
         break
       except:
-        print "Waiting for couchdb."
+        log.error("Waiting for couchdb.")
         time.sleep(1.0)
 
     database = server[self._database]
@@ -76,7 +104,7 @@ class RawFeed(object):
             elif change["doc"]["type"] == "model":
               mid, model = change["id"], change["doc"]
               self._update_model(mid, model)
-      sys.stderr.write("Tracking %s projects, %s models, sequence %s.\n" % (len(self._projects), len(self._models), self._last_seq))
+      log.error("Caching %s projects, %s models, sequence %s." % (len(self._projects), len(self._models), self._last_seq))
 
   def _delete_project(self, pid):
     project = self._projects.pop(pid)
@@ -145,37 +173,45 @@ raw_feed = RawFeed(arguments.couchdb_host, arguments.couchdb_database)
 
 class ChangeFeed(tornado.websocket.WebSocketHandler):
   def get(self, *args, **kwargs):
-    # We must have a secure connection.
-    if not (self.request.protocol == "https" or self.request.headers.get("x-forwarded-proto") == "https"):
-      raise tornado.web.HTTPError(403, reason="Secure connection required.")
+    try:
+      # We must have a secure connection.
+      if not (self.request.protocol == "https" or self.request.headers.get("x-forwarded-proto") == "https"):
+        raise tornado.web.HTTPError(403, reason="Secure connection required.")
 
-    # We must have a session cookie.
-    if self.get_cookie("slycatauth", None) is None:
-      raise tornado.web.HTTPError(403, reason="No session.")
+      # We must have a session cookie.
+      if self.get_cookie("slycatauth", None) is None:
+        raise tornado.web.HTTPError(403, reason="No session.")
 
-    # Validate the session cookie.
-    sid = self.get_cookie("slycatauth")
-    database = couch.BlockingCouch("slycat")
-    session = database.get_doc(sid)
+      # Validate the session cookie.
+      sid = self.get_cookie("slycatauth")
+      database = couch.BlockingCouch("slycat")
+      session = database.get_doc(sid)
 
-    if (datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_session_age:
-      raise tornado.web.HTTPError(403, reason="Session expired.")
+      if (datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_session_age:
+        raise tornado.web.HTTPError(403, reason="Session expired.")
 
-    self.user = session["creator"]
-    self.projects = set()
+      self.user = session["creator"]
+      self.projects = set()
 
-    # OK, proceed to upgrade the connection to a websocket.
-    return tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
+      # OK, proceed to upgrade the connection to a websocket.
+      tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
+    except tornado.web.HTTPError as e:
+      self.set_status(e.status, e.reason)
+    except Exception as e:
+      raise
+
+    timestamp = datetime.datetime.utcnow().strftime("%d/%b/%Y:%H:%M:%S")
+    log.access("%s - %s [%s] \"%s %s %s\" %s - \"%s\"" % (self.request.remote_ip, self.user, timestamp, self.request.method, self.request.uri, self.request.version, self.get_status(), self.request.headers.get("user-agent")))
 
   def check_origin(self, origin):
     return True
 
   def open(self, *args, **kwargs):
     raw_feed.add_client(self)
-    sys.stderr.write("Opened feed %s\n" % self.request)
+    log.error("Opened feed for %s@%s" % (self.user, self.request.headers.get("x-forwarded-for")))
 
   def on_close(self):
-    sys.stderr.write("Closed feed %s\n" % self.request)
+    log.error("Closed feed for %s@%s" % (self.user, self.request.headers.get("x-forwarded-for")))
     raw_feed.remove_client(self)
 
 application = tornado.web.Application([
