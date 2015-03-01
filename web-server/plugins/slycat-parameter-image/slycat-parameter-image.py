@@ -61,7 +61,9 @@ def register_slycat_plugin(context):
     "slick.slycateditors.js",
     "chunker.js",
     "color-switcher.js",
-    "note-display.js",
+    "bookmark-display.js",
+    "note-manager.js",
+    "stickies.core.js",
     # "parameter-controls.js",
     # "parameter-image-table.js",
     # "parameter-image-scatterplot.js",
@@ -78,6 +80,12 @@ def register_slycat_plugin(context):
     "slick-default-theme.css",
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
+    "stickies.css",
+    # for stickies
+    "jquery-ui/jquery-ui.css",
+    "jquery-ui/jquery.ui.theme.css",
+    "jquery-ui/jquery.ui.resizable.css",
+    #
     "ui.css",
     "slycat-additions.css",
     #For development and debugging, comment out css here and load it dynamically inside model.
@@ -104,6 +112,11 @@ def register_slycat_plugin(context):
     "resize.png",
     "close.png",
     "ajax-loader.gif",
+    # for stickies
+    'ui-icons_222222_256x240.png',
+    'ui-bg_highlight-soft_75_cccccc_1x100.png',
+    'ui-bg_flat_75_ffffff_40x100.png',
+    'ui-bg_glass_75_e6e6e6_1x400.png',
   ]
   for image in images:
     context.register_model_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))

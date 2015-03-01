@@ -563,3 +563,8 @@ rights in this software.
   right: 0;
   top: 0;
 }
+
+/* Note Layer */
+.ui-sticky {
+  z-index: 3
+}

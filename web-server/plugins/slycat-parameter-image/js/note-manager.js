@@ -1,0 +1,108 @@
+define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(server_root) {
+
+  function NoteManager(model_id, bookmarker, bookmark) {
+    var self = this;
+    self.model_id = model_id;
+    self.bookmarker = bookmarker;
+    self.bookmark = bookmark;
+
+    if ('notes' in bookmark && bookmark['notes'].length > 0) {
+      self.notes = bookmark['notes'];
+      var ids = $.map(self.notes, function(note) { return note.id; });
+      self.id_counter = Math.max.apply(Math, ids) + 1; //ensure there are no id collisions
+      $.each(self.notes, function(index, note) {
+        self.build_note_in_dom(note);
+      });
+    } else {
+      self.notes = [];
+      self.id_counter = 0;
+    }
+
+    self.button = $("<button>Add Note</button>")
+                    .prependTo($('#controls'))
+                    .on('click', function() {
+                      self.add_note();
+                    });
+  };
+
+  NoteManager.prototype.build_note_in_dom = function(attributes) {
+    var self = this;
+    var text_area = $('<textarea placeholder="Write a note...">' + attributes.text + '</textarea>');
+    $('.media-layer').append(text_area);
+    text_area.stickies();
+    var note = text_area.parent();
+    var close_button = note.find('span.ui-sticky-close-button');
+    note.attr('id', 'note-' + attributes.id);
+    note.css({
+      'top': attributes.top,
+      'left': attributes.left,
+    });
+
+
+    close_button.on('click', function(event) {
+      //clicks also trigger another event handler in stickies.core that calls _destroy()
+      //var id = parseInt($(event.target).parent().parent().attr('id').match(/note-(\d+)/)[1]);
+      self.remove_note(attributes.id);
+    });
+
+    text_area.on('blur', function(event) {
+      self.edit_note(attributes.id, { text: event.target.value });
+    });
+
+    note.on('dragstop', function(event) {
+      self.edit_note(attributes.id, { top: $(event.target).css('top'), left: $(event.target).css('left') });
+    });
+
+  };
+
+  NoteManager.prototype.add_note = function() {
+    var self = this;
+    var note = {
+      id: self.id_counter++,
+      text: '',
+      top: '-' + window.innerHeight/2 + 'px',
+      left: window.innerWidth/2 + 'px',
+      width: '140px',
+      height: '110px'
+    };
+    self.notes.push(note);
+    self.build_note_in_dom(note);
+    self.sync_remote();
+  };
+
+  NoteManager.prototype.remove_note = function(id) {
+    var self = this;
+    var note_index;
+    self.notes = self.notes.filter(function(note) {
+        return note.id !== id;
+      });
+    self.sync_remote();
+  };
+
+  NoteManager.prototype.edit_note = function(id, attributes) {
+    var self = this;
+    var note_index;
+    $.each(self.notes, function(index, note) {
+      if (note.id === id) {
+        note_index = index;
+        // TODO break
+      }
+    });
+    for (var attr in attributes) {
+      self.notes[note_index][attr] = attributes[attr];
+    }
+    self.sync_remote();
+  };
+
+  NoteManager.prototype.sync_remote = function() {
+    var self = this;
+    // logging every open image is too slow, so just log the count instead.
+    $.ajax({
+      type : "POST",
+      url : server_root + "events/models/" + self.model_id + "/select/opennotes/count/" + self.notes.length
+    });
+    self.bookmarker.updateState({ "notes" : self.notes });
+  };
+
+  return NoteManager;
+});
