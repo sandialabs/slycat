@@ -28,6 +28,7 @@ any programming language or library that supports HTTP requests.
    GET-Model-Table-Metadata.rst
    GET-Model-Table-Sorted-Indices.rst
    GET-Model-Table-Unsorted-Indices.rst
+   GET-Project-Cache-Object.rst
    GET-Project-Models.rst
    GET-Project.rst
    GET-Projects.rst
