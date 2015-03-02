@@ -28,7 +28,7 @@ class Manager(object):
     try:
       cherrypy.log.error("Loading plugin modules from directory '%s'" % plugin_directory)
       plugin_paths = [x for x in os.listdir(plugin_directory) if x.endswith(".py")]
-      for plugin_path in plugin_paths:
+      for plugin_path in sorted(plugin_paths):
         self._load_module(os.path.join(plugin_directory, plugin_path))
     except Exception as e:
       cherrypy.log.error(traceback.format_exc())
@@ -38,7 +38,7 @@ class Manager(object):
       cherrypy.log.error("Loading plugin '%s'" % plugin_path)
       plugin_directory, plugin_name = os.path.split(plugin_path)
       module_fp, module_pathname, module_description = imp.find_module(plugin_name[:-3], [plugin_directory])
-      self._modules.append(imp.load_module(plugin_name[:-3], module_fp, module_pathname, module_description))
+      self._modules.append((plugin_name[:-3], imp.load_module(plugin_name[:-3], module_fp, module_pathname, module_description)))
       module_fp.close()
     except Exception as e:
       cherrypy.log.error(traceback.format_exc())
@@ -53,7 +53,7 @@ class Manager(object):
 
   def register_plugins(self):
     """Called to register plugins after all plugin modules have been loaded."""
-    for module in self._modules:
+    for module_name, module in sorted(self._modules):
       if hasattr(module, "register_slycat_plugin"):
         try:
           module.register_slycat_plugin(self)
