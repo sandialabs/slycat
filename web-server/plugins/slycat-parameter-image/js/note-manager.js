@@ -36,8 +36,9 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
     note.css({
       'top': attributes.top,
       'left': attributes.left,
+      'width': attributes.width,
+      'height': attributes.height
     });
-
 
     close_button.on('click', function(event) {
       //clicks also trigger another event handler in stickies.core that calls _destroy()
@@ -53,6 +54,9 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
       self.edit_note(attributes.id, { top: $(event.target).css('top'), left: $(event.target).css('left') });
     });
 
+    note.on('resizestop', function(event) {
+      self.edit_note(attributes.id, { width: $(event.target).css('width'), height: $(event.target).css('height') });
+    });
   };
 
   NoteManager.prototype.add_note = function() {
@@ -60,7 +64,7 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
     var note = {
       id: self.id_counter++,
       text: '',
-      top: '-' + window.innerHeight/2 + 'px',
+      top: window.innerHeight/2 + 'px',
       left: window.innerWidth/2 + 'px',
       width: '140px',
       height: '110px'

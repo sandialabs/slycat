@@ -51,8 +51,9 @@
 
 			this.uiSticky
 				.resizable()
-				.draggable( { containment: "window"} )
-				.position( this.options.position );
+				.draggable( { containment: "window" } )
+				.position( this.options.position )
+        .css('position', 'absolute'); // hack to address position conflict between draggable() and resizable() as per http://bugs.jqueryui.com/ticket/5335
 		},
 		_createCloseButton: function() {
 			this.uiStickyCloseButton = $( "<span>" )
@@ -66,44 +67,44 @@
 			});
 		},
 		_createWrapper: function() {
-			
+
 			this.uiSticky = $( "<div>" )
 				.addClass( "ui-sticky ui-sticky-wrapper" )
 				.appendTo( "body" );
 		},
 		_createHeader: function() {
-			
+
 			this.uiStickyHeader = $( "<div>" )
 				.addClass( "ui-sticky-header ui-widget-header" )
 				.prependTo( this.uiSticky );
 		},
 		_createPin: function() {
-			
+
 			this.uiStickyPin = $( "<span>" )
 				.addClass( "ui-sticky-pin ui-icon ui-icon-pin-s" )
 				.prependTo( this.uiStickyHeader );
-				
+
 			this._on( this.uiStickyPin, {
 				"click": this._pin
 			});
 		},
 		_pin: function( value ) {
-			
+
 			if ( typeof( value ) === "object" ) {
 				this.options.pinned = !this.options.pinned;
 				value = this.options.pinned;
 			}
-			
+
 			this.uiStickyPin
 				.toggleClass( "ui-icon-pin-s", !value )
 				.toggleClass( "ui-icon-pin-w", value );
-				
+
 			this.uiSticky.toggleClass( "ui-sticky-pinned", value );
 		},
 		_setOption: function( key, value ) {
-			
+
 			this._super( key, value );
-			
+
 			if ( key === "pinned" ) {
 				this._pin( value );
 			}
