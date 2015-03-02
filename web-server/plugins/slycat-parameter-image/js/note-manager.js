@@ -32,12 +32,17 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
     text_area.stickies();
     var note = text_area.parent();
     var close_button = note.find('span.ui-sticky-close-button');
+    var header = note.find('.ui-sticky-header')
     note.attr('id', 'note-' + attributes.id);
     note.css({
       'top': attributes.top,
       'left': attributes.left,
       'width': attributes.width,
       'height': attributes.height
+    });
+    text_area.css({
+      'width': parseInt(header.css('width')) - 7,
+      'height': note.outerHeight() - header.outerHeight() - 7
     });
 
     close_button.on('click', function(event) {
@@ -52,6 +57,13 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
 
     note.on('dragstop', function(event) {
       self.edit_note(attributes.id, { top: $(event.target).css('top'), left: $(event.target).css('left') });
+    });
+
+    note.on('resize', function(event) {
+      text_area.css({
+        'width': parseInt(header.css('width')) - 7,
+        'height': note.outerHeight() - header.outerHeight() - 7
+      });
     });
 
     note.on('resizestop', function(event) {

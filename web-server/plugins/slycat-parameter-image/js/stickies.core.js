@@ -42,7 +42,7 @@
 
 			this._createWrapper();
 			this._createHeader();
-			this._createPin();
+			//this._createPin();
 			this._createCloseButton();
 
 			this.element
