@@ -22,7 +22,7 @@ RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.b
 # Add our home-grown CA certificate to the environment where push scripts can find it.
 RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
 # Clone the Slycat git repository and switch to a known-good commit.
-RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout b89621b3cc0ee0b0667027a26db142329bd06fcb
+RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout 8fda93001c32d8ebfcdb0655411e66d1713bbb57
 
 # The following commands are run as root.
 USER root
@@ -47,6 +47,7 @@ RUN mkdir -p /var/lib/slycat/data-store
 RUN chown --recursive slycat:slycat /var/lib/slycat
 # Create a directory to contain the Slycat logfiles.
 RUN mkdir -p /var/log/slycat
+RUN chown slycat:slycat /var/log/slycat
 # Configure supervisord to run the Slycat web server at startup.
 ADD web-server-startup.conf /etc/supervisord.d/web-server-startup.conf
 # Configure supervisord to run the Slycat feed server at startup.
