@@ -693,30 +693,5 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
-  module.post_agents = function(params)
-  {
-    var apply_function = function(function_name)
-    {
-      return function()
-      {
-        if(params[function_name])
-        {
-          params[function_name].apply(this, arguments);
-        }
-      };
-    };
-
-    return $.ajax(
-    {
-      contentType: "application/json",
-      data: JSON.stringify(params.data),
-      type: "POST",
-      url: server_root + "agents",
-      success: apply_function("success"),
-      error: apply_function("error"),
-      complete: apply_function("complete"), 
-    });
-  };
-
   return module;
 });

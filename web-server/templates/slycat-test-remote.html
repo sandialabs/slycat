@@ -8,11 +8,58 @@ rights in this software.
 
 <html>
   <head>
-    <title>Slycat Agent Test</title>
-    <script type="text/javascript" src="{{server-root}}js/jquery-2.1.1.min.js"></script>
+    <meta charset="utf-8"/>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    <title>Slycat Remote Test</title>
   </head>
   <body>
     <script type="text/javascript">
+      require(["slycat-web-client"], function(client)
+      {
+        create_remote();
+
+        function create_remote()
+        {
+          client.post_remotes(
+          {
+            hostname: "127.0.0.1",
+            username: "slycat",
+            password: "slycat",
+            success: delete_remote,
+          });
+        }
+
+        function delete_remote(sid)
+        {
+          client.delete_remote(
+          {
+            sid: sid,
+            success: create_remotewa,
+          });
+        }
+
+        function create_remotewa()
+        {
+          client.post_remotes(
+          {
+            hostname: "localhost",
+            username: "slycat",
+            password: "slycat",
+            success: delete_remotewa,
+          });
+        }
+
+        function delete_remotewa(sid)
+        {
+          client.delete_remote(
+          {
+            sid: sid,
+          });
+        }
+
+/*
       var hostname = "127.0.0.1";
       var username = "slycat";
       var password = "slycat";
@@ -171,7 +218,8 @@ rights in this software.
           },
         });
       }
-
+*/
+      });
     </script>
   </body>
 </html>
