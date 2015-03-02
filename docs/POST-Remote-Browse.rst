@@ -3,11 +3,10 @@ POST Remote Browse
 
 .. http:post:: /remotes/(sid)/browse(path)
 
-  Uses an existing session to retrieve remote filesystem information.  The
-  session must have been created successfully using :http:post:`/remotes`.  The caller
-  *must* supply the session id, and the path on the remote filesystem to retrieve.
-  The caller *may* supply additional parameters to filter directories and files in
-  the results, based on regular expressions.
+  Uses an existing remote session to retrieve remote filesystem information.
+  The session must have been created successfully using :http:post:`/remotes`.
+  The caller *may* supply additional parameters to filter directories and files
+  in the results, based on regular expressions.
 
   If the session doesn't exist or has timed-out, the server returns `404`.  If some
   other error prevents the data from being returned, the server returns `400`.
@@ -16,6 +15,7 @@ POST Remote Browse
   :type sid: string
 
   :param path: Remote filesystem path (must be absolute).
+  :type path: string
 
   :requestheader Content-Type: application/json
 
@@ -33,15 +33,10 @@ POST Remote Browse
 
   but to only return CSV files::
 
-    file-reject: ".*"
+    file-reject: ".*",
     file-allow: "[.]csv$"
 
   :responseheader Content-Type: application/json
-
-  :>json string path: The remote path that was requested.
-  :>json array names: Array containing the names of files and directories under the requested path.
-  :>json array sizes: The size in bytes of files and directories under the requested path.
-  :>json array types: Array containing the type of remote object, files ("f") or directories ("d").
 
   **Sample Request**
 
@@ -50,10 +45,10 @@ POST Remote Browse
     POST /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
 
     {
-      file-reject:"[.]jpg$"
+      file-reject: "[.]jpg$"
     }
 
-  **Sample Response**
+  Sample Response
 
   .. sourcecode:: http
 
@@ -69,4 +64,5 @@ See Also
 
 * :http:post:`/remotes`
 * :http:get:`/remotes/(sid)/file(path)`
+* :http:get:`/remotes/(sid)/image(path)`
 

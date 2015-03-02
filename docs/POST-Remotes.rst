@@ -3,10 +3,8 @@ POST Remotes
 
 .. http:post:: /remotes
 
-  Creates a new remote connection from the Slycat server to another host.
-  Currently, the remote uses SSH + SFTP to communicate with the remote host, but
-  this could change in the future.  The caller *must* supply a remote hostname,
-  username, and password.
+  Creates a new remote remote connection from the Slycat server to another host.
+  The caller *must* supply a remote hostname, username, and password.
 
   If the connection is created successfully, a unique session ID is returned.  The
   client must use the session ID in subsequent requests.
@@ -21,6 +19,10 @@ POST Remotes
 
   :>json string sid: Unique remote session identifier.
 
+  :status 400 Unknown remote host.: The server hasn't been configured to connect to the remote host.
+  :status 400 No remote configured for remote host.: The server isn't configured for remote connections to the remote host.
+  :status 500 No startup command configured for remote remote.: The server configuration doesn't include startup information for the remote.
+  :status 500 Remote startup failed.: A remote remote couldn't be started.
   :status 403 Remote authentication failed.: Authentication of the provided username and password failed.
   :status 500 Remote connection failed.: Unknown failure making the remote connection.
 
@@ -33,7 +35,7 @@ POST Remotes
       Content-Length: 45
       Accept-Encoding: gzip, deflate, compress
       Accept: */*
-      User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.2.1.el6.x86_64
+      User-Remote: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.2.1.el6.x86_64
       content-type: application/json
       Authorization: Basic c2x5Y2F0OnNseWNhdA==
 
@@ -43,7 +45,7 @@ POST Remotes
 
   .. sourcecode:: http
 
-      HTTP/1.1 201 Project created.
+      HTTP/1.1 201 Remote created.
       Date: Thu, 11 Apr 2013 21:30:16 GMT
       Content-Length: 42
       Content-Type: application/json
@@ -57,5 +59,6 @@ See Also
 
 - :http:post:`/remotes/(sid)/browse(path)`
 - :http:get:`/remotes/(sid)/file(path)`
+- :http:get:`/remotes/(sid)/image(path)`
 
 
