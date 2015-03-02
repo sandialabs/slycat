@@ -27,7 +27,23 @@ rights in this software.
             hostname: "127.0.0.1",
             username: "slycat",
             password: "slycat",
-            success: delete_remote,
+            success: function(sid)
+            {
+              post_remote_browse(sid)
+            },
+          });
+        }
+
+        function post_remote_browse(sid)
+        {
+          client.post_remote_browse(
+          {
+            sid: sid,
+            path: "/",
+            success: function()
+            {
+              delete_remote(sid);
+            }
           });
         }
 
@@ -71,28 +87,6 @@ rights in this software.
       var vsid = null;
 
       create_remote(0);
-
-      function create_remote(index)
-      {
-        $.ajax(
-        {
-          contentType : "application/json",
-          data: JSON.stringify({
-            "hostname" : hostname,
-            "username" : username,
-            "password": password,
-          }),
-          processData: false,
-          type : "POST",
-          url : "{{server-root}}remotes",
-          success: function(result)
-          {
-            remote = result["sid"];
-            document.querySelector("body").innerHTML += "<p>Created remote session " + remote + "</p>";
-            remote_file(index);
-          },
-        });
-      }
 
       function remote_file(index)
       {

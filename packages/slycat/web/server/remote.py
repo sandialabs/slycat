@@ -84,18 +84,18 @@ class Session(object):
   def hostname(self):
     """Return the remote hostname accessed by the session."""
     return self._hostname
-  @property
-  def ssh(self):
-    """Return a Paramiko ssh object."""
-    return self._ssh
-  @property
-  def sftp(self):
-    """Return a Paramiko sftp object."""
-    return self._sftp
-  @property
-  def created(self):
-    """Return the time the session was created."""
-    return self._created
+#  @property
+#  def ssh(self):
+#    """Return a Paramiko ssh object."""
+#    return self._ssh
+#  @property
+#  def sftp(self):
+#    """Return a Paramiko sftp object."""
+#    return self._sftp
+#  @property
+#  def created(self):
+#    """Return the time the session was created."""
+#    return self._created
   @property
   def accessed(self):
     """Return the time the session was last accessed."""
@@ -181,14 +181,16 @@ def get_session(sid):
   session : :class:`slycat.web.server.remote.Session`
     Session object that encapsulates the connection to a remote host.
   """
+  client = cherrypy.request.headers.get("x-forwarded-for")
+
   with session_cache_lock:
     _expire_session(sid)
 
-    # Only the originating client can access a session.
     if sid in session_cache:
       session = session_cache[sid]
-      if cherrypy.request.remote.ip != session.client:
-        cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (cherrypy.request.remote.ip, session.username, session.hostname, session.client))
+      # Only the originating client can access a session.
+      if client != session.client:
+        cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (client, session.username, session.hostname, session.client))
         del session_cache[sid]
         raise cherrypy.HTTPError("404")
 

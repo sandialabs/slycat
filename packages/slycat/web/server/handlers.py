@@ -1133,14 +1133,9 @@ def post_remotes():
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
 
-@cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
-def post_remote_browse(sid, path):
-  pass
-
 #@cherrypy.tools.json_in(on = True)
 #@cherrypy.tools.json_out(on = True)
-#def post_agent_browse(sid, path):
+#def post_remote_browse(sid, path):
 #  command = {"action":"browse", "path":path}
 #  if "file-reject" in cherrypy.request.json:
 #    command["file-reject"] = cherrypy.request.json["file-reject"]
@@ -1156,15 +1151,17 @@ def post_remote_browse(sid, path):
 #    session.stdin.flush()
 #    return json.loads(session.stdout.readline())
 
-#@cherrypy.tools.json_in(on = True)
-#@cherrypy.tools.json_out(on = True)
-#def post_remote_browse(sid, path):
-#  file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
-#  file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
-#  directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
-#  directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
-#
-#  with slycat.web.server.ssh.get_session(sid) as session:
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_remote_browse(sid, path):
+  file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
+  file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
+  directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
+  directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
+
+  with slycat.web.server.remote.get_session(sid) as session:
+    pass
+
 #    try:
 #      names = []
 #      sizes = []
