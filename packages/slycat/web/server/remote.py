@@ -161,7 +161,7 @@ class Session(object):
         raise cherrypy.HTTPError("400 Can't read directory.")
       elif metadata["message"] == "Access denied.":
         cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (self.hostname, path)
-        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
+        cherrypy.response.headers["x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
         raise cherrypy.HTTPError("400 Access denied.")
 
       cherrypy.response.headers["content-type"] = metadata["content-type"]
@@ -194,12 +194,53 @@ class Session(object):
       if e.strerror == "Permission denied":
         # The file exists, but is not available due to access controls
         cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (self.hostname, path)
-        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
+        cherrypy.response.headers["x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
         raise cherrypy.HTTPError("400 Access denied.")
 
       # Catchall
       cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
       raise cherrypy.HTTPError("400 Remote access failed.")
+
+  def get_image(self, path, content_type, max_size, max_width, max_height):
+    if not self._agent:
+      cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
+      cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (self.hostname)
+      raise cherrypy.HTTPError("400 Agent required.")
+
+    # Use the agent to retrieve an image.
+    stdin, stdout, stderr = self._agent
+
+    command = {"action":"get-image", "path":path}
+    if content_type is not None:
+      command["content-type"] = content_type
+    if max_size is not None:
+      command["max-size"] = max_size
+    if max_width is not None:
+      command["max-width"] = max_width
+    if max_height is not None:
+      command["max-height"] = max_height
+
+    stdin.write("%s\n" % json.dumps(command))
+    stdin.flush()
+    metadata = json.loads(stdout.readline())
+
+    if metadata["message"] == "Path must be absolute.":
+      cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (self.hostname, path)
+      raise cherrypy.HTTPError("400 Path not absolute.")
+    elif metadata["message"] == "Path not found.":
+      cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (self.hostname, path)
+      raise cherrypy.HTTPError("400 File not found.")
+    elif metadata["message"] == "Directory unreadable.":
+      cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
+      raise cherrypy.HTTPError("400 Can't read directory.")
+    elif metadata["message"] == "Access denied.":
+      cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (self.hostname, path)
+      cherrypy.response.headers["x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
+      raise cherrypy.HTTPError("400 Access denied.")
+
+    content = stdout.read(metadata["size"])
+    cherrypy.response.headers["content-type"] = metadata["content-type"]
+    return content
 
 def create_session(hostname, username, password):
   """Create a cached remote session for the given host.

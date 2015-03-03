@@ -55,6 +55,23 @@ rights in this software.
             url : server_root + "remotes/" + sid + "/file/home/slycat/src/slycat/README.md",
             success: function()
             {
+              get_remote_image(sid);
+            },
+          });
+        }
+
+        function get_remote_image(sid)
+        {
+          $.ajax(
+          {
+            type : "GET",
+            url : server_root + "remotes/" + sid + "/image/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.png",
+            success: function()
+            {
+              delete_remote(sid);
+            },
+            error: function()
+            {
               delete_remote(sid);
             },
           });
@@ -68,92 +85,6 @@ rights in this software.
           });
         }
 /*
-      var hostname = "127.0.0.1";
-      var username = "slycat";
-      var password = "slycat";
-      var image_prefix = "/home/slycat/src/slycat/web-client/sample-parameter-images/";
-      var image_suffix = ".jpg";
-
-      var remote = null;
-      var agent = null;
-      var vsid = null;
-
-      create_remote(0);
-
-      function remote_file(index)
-      {
-        $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}remotes/" + remote + "/file" + image_prefix + index + image_suffix,
-          success: function(result)
-          {
-            document.querySelector("body").innerHTML += "<p>Remote loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
-            if(index < 10)
-              remote_file(index + 1);
-            else
-              create_agent(index + 1);
-          },
-        });
-      }
-
-
-      function create_agent(index)
-      {
-        $.ajax(
-        {
-          contentType : "application/json",
-          data: JSON.stringify({
-            "hostname" : hostname,
-            "username" : username,
-            "password": password,
-          }),
-          processData: false,
-          type : "POST",
-          url : "{{server-root}}agents",
-          success: function(result)
-          {
-            agent = result["sid"];
-            document.querySelector("body").innerHTML += "<p>Created agent session " + agent + "</p>";
-            agent_file(index);
-          },
-        });
-      }
-
-      function agent_file(index)
-      {
-        $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}agents/" + agent + "/file" + image_prefix + index + image_suffix,
-          success: function(result)
-          {
-            document.querySelector("body").innerHTML += "<p>Agent loaded file //" + hostname + image_prefix + index + image_suffix + ".</p>";
-            if(index < 20)
-              agent_file(index + 1);
-            else
-              agent_image(index + 1);
-          },
-        });
-      }
-
-      function agent_image(index)
-      {
-        $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}agents/" + agent + "/image" + image_prefix + index + image_suffix + "?max-size=512",
-          success: function(result)
-          {
-            document.querySelector("body").innerHTML += "<p>Agent loaded image //" + hostname + image_prefix + index + image_suffix + ".</p>";
-            if(index < 30)
-              agent_image(index + 1);
-            else
-              agent_video(index + 1);
-          },
-        });
-      }
-
       function agent_video(index)
       {
         var images = [];

@@ -1146,6 +1146,15 @@ def get_remote_file(sid, path):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_file(path)
 
+def get_remote_image(sid, path, **kwargs):
+  content_type = kwargs.get("content-type", None)
+  max_size = kwargs.get("max-size", None)
+  max_width = kwargs.get("max-width", None)
+  max_height = kwargs.get("max-height", None)
+
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_image(path, content_type, max_size, max_width, max_height)
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remote_videos(sid):
@@ -1159,45 +1168,6 @@ def post_remote_videos(sid):
     session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     return json.loads(session.stdout.readline())
-
-def get_remote_image(sid, path, **kwargs):
-  content_type = kwargs.get("content-type", None)
-  max_size = kwargs.get("max-size", None)
-  max_width = kwargs.get("max-width", None)
-  max_height = kwargs.get("max-height", None)
-
-  command = {"action":"get-image", "path":path}
-  if content_type is not None:
-    command["content-type"] = content_type
-  if max_size is not None:
-    command["max-size"] = max_size
-  if max_width is not None:
-    command["max-width"] = max_width
-  if max_height is not None:
-    command["max-height"] = max_height
-
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps(command))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
-
-    if metadata["message"] == "Path must be absolute.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Path not absolute.")
-    elif metadata["message"] == "Path not found.":
-      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 File not found.")
-    elif metadata["message"] == "Directory unreadable.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Can't read directory.")
-    elif metadata["message"] == "Access denied.":
-      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
-      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Access denied.")
-
-    content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"]
-    return content
 
 @cherrypy.tools.json_out(on = True)
 def get_remote_video_status(sid, vsid):
