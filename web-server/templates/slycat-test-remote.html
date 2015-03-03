@@ -29,12 +29,12 @@ rights in this software.
             password: "slycat",
             success: function(sid)
             {
-              remote_browse(sid)
+              browse_remote(sid)
             },
           });
         }
 
-        function remote_browse(sid)
+        function browse_remote(sid)
         {
           client.post_remote_browse(
           {
@@ -68,12 +68,63 @@ rights in this software.
             url : server_root + "remotes/" + sid + "/image/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.png",
             success: function()
             {
-              delete_remote(sid);
+              create_remote_video(sid);
+            },
+            error: function()
+            {
+              create_remote_video(sid);
+            },
+          });
+        }
+
+        function create_remote_video(sid)
+        {
+          var content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
+          var images = [];
+          for(var i = 0; i < 100; ++i)
+            images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/" + i + ".jpg");
+
+          client.post_remote_video(
+          {
+            sid: sid,
+            "content-type": content_type,
+            images: images,
+            success: function(vsid)
+            {
+              wait_for_video(sid, vsid);
             },
             error: function()
             {
               delete_remote(sid);
+            }
+          });
+        }
+
+        function wait_for_video(sid, vsid)
+        {
+          client.get_remote_video_status(
+          {
+            sid: sid,
+            vsid: vsid,
+            success: function(result)
+            {
+              if(result["ok"] == false)
+              {
+                delete_remote(sid);
+              }
+              else if(result["ready"] != true)
+              {
+                setTimeout(wait_for_video.bind(null, sid, vsid), 1000);
+              }
+              else
+              {
+                document.querySelector("body").innerHTML += "<video style='width: 400px' controls src='" + server_root + "remotes/" + sid + "/videos/" + vsid + "'>" + "</video>";
+              }
             },
+            error: function()
+            {
+              delete_remote(sid);
+            }
           });
         }
 
@@ -84,58 +135,6 @@ rights in this software.
             sid: sid,
           });
         }
-/*
-      function agent_video(index)
-      {
-        var images = [];
-        for(var i = index; i < 100; ++i)
-          images.push(image_prefix + i + image_suffix);
-
-        content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
-
-        $.ajax(
-        {
-          contentType : "application/json",
-          data: JSON.stringify({
-            "content-type":content_type,
-            "images":images,
-          }),
-          processData: false,
-          type : "POST",
-          url : "{{server-root}}agents/" + agent + "/videos",
-          success: function(result)
-          {
-            vsid = result["sid"];
-            document.querySelector("body").innerHTML += "<p>Creating video " + vsid + "</p>";
-            query_video();
-          },
-        });
-      }
-
-      function query_video()
-      {
-        $.ajax(
-        {
-          type : "GET",
-          url : "{{server-root}}agents/" + agent + "/videos/" + vsid + "/status",
-          success: function(result)
-          {
-            document.querySelector("body").innerHTML += "<p>" + result["message"] + "</p>";
-            if(result["ok"] == false)
-            {
-            }
-            else if(result["ready"] != true)
-            {
-              setTimeout(query_video, 1000);
-            }
-            else
-            {
-              document.querySelector("body").innerHTML += "<video style='width: 400px' controls src='{{server-root}}agents/" + agent + "/videos/" + vsid + "'>" + "</video>";
-            }
-          },
-        });
-      }
-*/
       });
     </script>
   </body>

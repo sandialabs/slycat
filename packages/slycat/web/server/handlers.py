@@ -1163,31 +1163,17 @@ def post_remote_videos(sid):
   if "images" not in cherrypy.request.json:
     raise cherrypy.HTTPError("400 Missing images.")
 
-  command = {"action":"create-video", "content-type":cherrypy.request.json["content-type"], "images":cherrypy.request.json["images"]}
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps(command))
-    session.stdin.flush()
-    return json.loads(session.stdout.readline())
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.post_video(cherrypy.request.json["content-type"], cherrypy.request.json["images"])
 
 @cherrypy.tools.json_out(on = True)
 def get_remote_video_status(sid, vsid):
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"video-status", "sid":vsid}))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
-
-    if "returncode" in metadata and metadata["returncode"] != 0:
-      sys.stderr.write("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
-
-    return metadata
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_video_status(vsid)
 
 def get_remote_video(sid, vsid):
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
-    sys.stderr.write("\n%s\n" % metadata)
-    return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_video(vsid)
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.

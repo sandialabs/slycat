@@ -35,8 +35,10 @@ import json
 import mimetypes
 import os
 import paramiko
+import slycat.web.server.streaming
 import socket
 import stat
+import sys
 import threading
 import time
 import uuid
@@ -241,6 +243,53 @@ class Session(object):
     content = stdout.read(metadata["size"])
     cherrypy.response.headers["content-type"] = metadata["content-type"]
     return content
+
+  def post_video(self, content_type, images):
+    if not self._agent:
+      cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
+      cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (self.hostname)
+      raise cherrypy.HTTPError("400 Agent required.")
+
+    # Use the agent to generate a video.
+    stdin, stdout, stderr = self._agent
+
+    command = {"action": "create-video", "content-type": content_type, "images": images}
+    stdin.write("%s\n" % json.dumps(command))
+    stdin.flush()
+    return json.loads(stdout.readline())
+
+  def get_video_status(self, vsid):
+    if not self._agent:
+      cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
+      cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (self.hostname)
+      raise cherrypy.HTTPError("400 Agent required.")
+
+    # Get the video status from the agent.
+    stdin, stdout, stderr = self._agent
+
+    stdin.write("%s\n" % json.dumps({"action":"video-status", "sid":vsid}))
+    stdin.flush()
+    metadata = json.loads(stdout.readline())
+
+    if "returncode" in metadata and metadata["returncode"] != 0:
+      sys.stderr.write("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
+
+    return metadata
+
+  def get_video(self, vsid):
+    if not self._agent:
+      cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
+      cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (self.hostname)
+      raise cherrypy.HTTPError("400 Agent required.")
+
+    # Get the video from the agent.
+    stdin, stdout, stderr = self._agent
+
+    stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
+    stdin.flush()
+    metadata = json.loads(stdout.readline())
+    sys.stderr.write("\n%s\n" % metadata)
+    return slycat.web.server.streaming.serve(stdout, metadata["size"], metadata["content-type"])
 
 def create_session(hostname, username, password):
   """Create a cached remote session for the given host.
