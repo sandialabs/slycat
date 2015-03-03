@@ -1126,7 +1126,8 @@ def post_remotes():
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
   password = cherrypy.request.json["password"]
-  return {"sid":slycat.web.server.remote.create_session(hostname, username, password)}
+  agent = cherrypy.request.json.get("agent", None)
+  return {"sid": slycat.web.server.remote.create_session(hostname, username, password, agent)}
 
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)

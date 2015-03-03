@@ -529,6 +529,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         hostname: params.hostname,
         username: params.username,
         password: params.password,
+        agent: params.agent !== undefined ? params.agent : null,
       }),
       type: "POST",
       url: server_root + "remotes",

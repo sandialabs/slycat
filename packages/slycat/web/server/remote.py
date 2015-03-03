@@ -61,7 +61,7 @@ class Session(object):
   ...   print session.username
 
   """
-  def __init__(self, client, username, hostname, ssh, sftp, agent):
+  def __init__(self, client, username, hostname, ssh, sftp, agent=None):
     now = datetime.datetime.utcnow()
     self._client = client
     self._username = username
@@ -291,30 +291,25 @@ class Session(object):
     sys.stderr.write("\n%s\n" % metadata)
     return slycat.web.server.streaming.serve(stdout, metadata["size"], metadata["content-type"])
 
-def create_session(hostname, username, password):
+def create_session(hostname, username, password, agent):
   """Create a cached remote session for the given host.
 
   Parameters
   ----------
   hostname : string
-    Name of the remote host to connect via ssh
+    Name of the remote host to connect via ssh.
   username : string
-    Username for ssh authentication
+    Username for ssh authentication.
   password : string
-    Password for ssh authentication
+    Password for ssh authentication.
+  agent: bool
+    Used to require / prevent agent startup.
 
   Returns
   -------
   sid : string
     A unique session identifier.
   """
-#  if hostname not in cherrypy.request.app.config["slycat"]["remote-hosts"]:
-#    raise cherrypy.HTTPError("400 Unknown remote host.")
-#  if "agent" not in cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]:
-#    raise cherrypy.HTTPError("400 No agent configured for remote host.")
-#  if "command" not in cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]:
-#    raise cherrypy.HTTPError("500 No startup command configured for remote agent.")
-
   _start_session_monitor()
 
   client = cherrypy.request.headers.get("x-forwarded-for")
@@ -328,9 +323,18 @@ def create_session(hostname, username, password):
     sftp = ssh.open_sftp()
 
     # Optionally start an agent.
-    agent = None
     remote_hosts = cherrypy.request.app.config["slycat"]["remote-hosts"]
-    if hostname in remote_hosts and "agent" in remote_hosts[hostname] and "command" in remote_hosts[hostname]["agent"]:
+    if agent is None:
+      agent = hostname in remote_hosts and "agent" in remote_hosts[hostname]
+
+    if agent:
+      if hostname not in remote_hosts:
+        raise cherrypy.HTTPError("400 Missing agent configuration.")
+      if "agent" not in remote_hosts[hostname]:
+        raise cherrypy.HTTPError("400 Missing agent configuration.")
+      if "command" not in remote_hosts[hostname]["agent"]:
+        raise cherrypy.HTTPError("500 Missing agent configuration.")
+
       cherrypy.log.error("Starting agent executable for %s@%s with command: %s" % (username, hostname, remote_hosts[hostname]["agent"]["command"]))
       stdin, stdout, stderr = ssh.exec_command(remote_hosts[hostname]["agent"]["command"])
       # Handle catastrophic startup failures (the agent process failed to start).
@@ -342,9 +346,11 @@ def create_session(hostname, username, password):
       if not startup["ok"]:
         raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
       agent = (stdin, stdout, stderr)
-
-    with session_cache_lock:
-      session_cache[sid] = Session(client, username, hostname, ssh, sftp, agent)
+      with session_cache_lock:
+        session_cache[sid] = Session(client, username, hostname, ssh, sftp, agent)
+    else:
+      with session_cache_lock:
+        session_cache[sid] = Session(client, username, hostname, ssh, sftp)
     return sid
   except cherrypy.HTTPError as e:
     cherrypy.log.error("Agent startup failed for %s@%s: %s" % (username, hostname, e.status))
