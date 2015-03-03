@@ -32,8 +32,10 @@ import cherrypy
 import datetime
 import hashlib
 import json
+import os
 import paramiko
 import socket
+import stat
 import threading
 import time
 import uuid
@@ -100,6 +102,56 @@ class Session(object):
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
+
+  def browse(self, path, file_reject, file_allow, directory_reject, directory_allow):
+    # Use the agent to browse.
+    if self._agent is not None:
+      command = {"action":"browse", "path":path}
+      if file_reject is not None:
+        command["file-reject"] = file_reject
+      if file_allow is not None:
+        command["file-allow"] = file_allow
+      if directory_reject is not None:
+        command["directory-reject"] = directory_reject
+      if directory_allow is not None:
+        command["directory-allow"] = directory_allow
+
+      stdin, stdout, stderr = self._agent
+      stdin.write("%s\n" % json.dumps(command))
+      stdin.flush()
+      return json.loads(stdout.readline())
+
+    # Use sftp to browse.
+    try:
+      names = []
+      sizes = []
+      types = []
+      mtimes = []
+
+      for attribute in sorted(self._sftp.listdir_attr(path), key=lambda x: x.filename):
+        filepath = os.path.join(path, attribute.filename)
+        filetype = "d" if stat.S_ISDIR(attribute.st_mode) else "f"
+
+        if filetype == "d":
+          if directory_reject is not None and directory_reject.search(filepath) is not None:
+            if directory_allow is None or directory_allow.search(filepath) is None:
+              continue
+
+        if filetype == "f":
+          if file_reject is not None and file_reject.search(filepath) is not None:
+            if file_allow is None or file_allow.search(filepath) is None:
+              continue
+
+        names.append(attribute.filename)
+        sizes.append(attribute.st_size)
+        types.append(filetype)
+        mtimes.append(datetime.datetime.fromtimestamp(attribute.st_mtime).isoformat())
+
+      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
+      return response
+    except Exception as e:
+      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
+      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
 
 def create_session(hostname, username, password):
   """Create a cached remote session for the given host.

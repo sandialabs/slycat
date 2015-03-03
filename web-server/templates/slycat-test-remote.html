@@ -29,12 +29,12 @@ rights in this software.
             password: "slycat",
             success: function(sid)
             {
-              post_remote_browse(sid)
+              remote_browse(sid)
             },
           });
         }
 
-        function post_remote_browse(sid)
+        function remote_browse(sid)
         {
           client.post_remote_browse(
           {
@@ -63,7 +63,20 @@ rights in this software.
             hostname: "localhost",
             username: "slycat",
             password: "slycat",
-            success: delete_remotewa,
+            success: remotewa_browse,
+          });
+        }
+
+        function remotewa_browse(sid)
+        {
+          client.post_remote_browse(
+          {
+            sid: sid,
+            path: "/",
+            success: function()
+            {
+              delete_remotewa(sid);
+            }
           });
         }
 

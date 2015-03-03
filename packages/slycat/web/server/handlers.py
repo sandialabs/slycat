@@ -27,7 +27,6 @@ import slycat.web.server.remote
 import slycat.web.server.resource
 import slycat.web.server.streaming
 import slycat.web.server.template
-import stat
 import subprocess
 import sys
 import threading
@@ -1133,24 +1132,6 @@ def post_remotes():
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
 
-#@cherrypy.tools.json_in(on = True)
-#@cherrypy.tools.json_out(on = True)
-#def post_remote_browse(sid, path):
-#  command = {"action":"browse", "path":path}
-#  if "file-reject" in cherrypy.request.json:
-#    command["file-reject"] = cherrypy.request.json["file-reject"]
-#  if "file-allow" in cherrypy.request.json:
-#    command["file-allow"] = cherrypy.request.json["file-allow"]
-#  if "directory-reject" in cherrypy.request.json:
-#    command["directory-reject"] = cherrypy.request.json["directory-reject"]
-#  if "directory-allow" in cherrypy.request.json:
-#    command["directory-allow"] = cherrypy.request.json["directory-allow"]
-#
-#  with slycat.web.server.agent.get_session(sid) as session:
-#    session.stdin.write("%s\n" % json.dumps(command))
-#    session.stdin.flush()
-#    return json.loads(session.stdout.readline())
-
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remote_browse(sid, path):
@@ -1160,38 +1141,7 @@ def post_remote_browse(sid, path):
   directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
 
   with slycat.web.server.remote.get_session(sid) as session:
-    pass
-
-#    try:
-#      names = []
-#      sizes = []
-#      types = []
-#      mtimes = []
-#
-#      for attribute in sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename):
-#        filepath = os.path.join(path, attribute.filename)
-#        filetype = "d" if stat.S_ISDIR(attribute.st_mode) else "f"
-#
-#        if filetype == "d":
-#          if directory_reject is not None and directory_reject.search(filepath) is not None:
-#            if directory_allow is None or directory_allow.search(filepath) is None:
-#              continue
-#
-#        if filetype == "f":
-#          if file_reject is not None and file_reject.search(filepath) is not None:
-#            if file_allow is None or file_allow.search(filepath) is None:
-#              continue
-#
-#        names.append(attribute.filename)
-#        sizes.append(attribute.st_size)
-#        types.append(filetype)
-#        mtimes.append(datetime.datetime.fromtimestamp(attribute.st_mtime).isoformat())
-#
-#      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
-#      return response
-#    except Exception as e:
-#      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
-#      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+    return session.browse(path, file_reject, file_allow, directory_reject, directory_allow)
 
 #def get_remote_file(sid, path):
 #  with slycat.web.server.ssh.get_session(sid) as session:
