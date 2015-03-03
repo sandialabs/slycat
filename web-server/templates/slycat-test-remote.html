@@ -16,15 +16,15 @@ rights in this software.
   </head>
   <body>
     <script type="text/javascript">
-      require(["slycat-web-client"], function(client)
+      require(["slycat-server-root", "slycat-web-client"], function(server_root, client)
       {
-        create_remote();
+        create_remote("localhost");
 
-        function create_remote()
+        function create_remote(hostname)
         {
           client.post_remotes(
           {
-            hostname: "127.0.0.1",
+            hostname: hostname,
             username: "slycat",
             password: "slycat",
             success: function(sid)
@@ -39,11 +39,24 @@ rights in this software.
           client.post_remote_browse(
           {
             sid: sid,
-            path: "/",
+            path: "/home/slycat/src/slycat",
+            success: function()
+            {
+              get_remote_file(sid);
+            }
+          });
+        }
+
+        function get_remote_file(sid)
+        {
+          $.ajax(
+          {
+            type : "GET",
+            url : server_root + "remotes/" + sid + "/file/home/slycat/src/slycat/README.md",
             success: function()
             {
               delete_remote(sid);
-            }
+            },
           });
         }
 
@@ -52,42 +65,8 @@ rights in this software.
           client.delete_remote(
           {
             sid: sid,
-            success: create_remotewa,
           });
         }
-
-        function create_remotewa()
-        {
-          client.post_remotes(
-          {
-            hostname: "localhost",
-            username: "slycat",
-            password: "slycat",
-            success: remotewa_browse,
-          });
-        }
-
-        function remotewa_browse(sid)
-        {
-          client.post_remote_browse(
-          {
-            sid: sid,
-            path: "/",
-            success: function()
-            {
-              delete_remotewa(sid);
-            }
-          });
-        }
-
-        function delete_remotewa(sid)
-        {
-          client.delete_remote(
-          {
-            sid: sid,
-          });
-        }
-
 /*
       var hostname = "127.0.0.1";
       var username = "slycat";

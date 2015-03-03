@@ -32,6 +32,7 @@ import cherrypy
 import datetime
 import hashlib
 import json
+import mimetypes
 import os
 import paramiko
 import socket
@@ -86,18 +87,6 @@ class Session(object):
   def hostname(self):
     """Return the remote hostname accessed by the session."""
     return self._hostname
-#  @property
-#  def ssh(self):
-#    """Return a Paramiko ssh object."""
-#    return self._ssh
-#  @property
-#  def sftp(self):
-#    """Return a Paramiko sftp object."""
-#    return self._sftp
-#  @property
-#  def created(self):
-#    """Return the time the session was created."""
-#    return self._created
   @property
   def accessed(self):
     """Return the time the session was last accessed."""
@@ -106,6 +95,7 @@ class Session(object):
   def browse(self, path, file_reject, file_allow, directory_reject, directory_allow):
     # Use the agent to browse.
     if self._agent is not None:
+      stdin, stdout, stderr = self._agent
       command = {"action":"browse", "path":path}
       if file_reject is not None:
         command["file-reject"] = file_reject
@@ -116,7 +106,6 @@ class Session(object):
       if directory_allow is not None:
         command["directory-allow"] = directory_allow
 
-      stdin, stdout, stderr = self._agent
       stdin.write("%s\n" % json.dumps(command))
       stdin.flush()
       return json.loads(stdout.readline())
@@ -152,6 +141,65 @@ class Session(object):
     except Exception as e:
       cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
       raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+
+  def get_file(self, path):
+    # Use the agent to retrieve a file.
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
+      stdin.flush()
+      metadata = json.loads(stdout.readline())
+
+      if metadata["message"] == "Path must be absolute.":
+        cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (self.hostname, path)
+        raise cherrypy.HTTPError("400 Path not absolute.")
+      elif metadata["message"] == "Path not found.":
+        cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (self.hostname, path)
+        raise cherrypy.HTTPError("400 File not found.")
+      elif metadata["message"] == "Directory unreadable.":
+        cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
+        raise cherrypy.HTTPError("400 Can't read directory.")
+      elif metadata["message"] == "Access denied.":
+        cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (self.hostname, path)
+        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
+        raise cherrypy.HTTPError("400 Access denied.")
+
+      cherrypy.response.headers["content-type"] = metadata["content-type"]
+      return stdout.read(metadata["size"])
+
+    # Use sftp to retrieve a file.
+    try:
+      if stat.S_ISDIR(self._sftp.stat(path).st_mode):
+        cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
+        raise cherrypy.HTTPError("400 Can't read directory.")
+
+      content_type, encoding = mimetypes.guess_type(path, strict=False)
+      if content_type is None:
+        content_type = "application/octet-stream"
+      cherrypy.response.headers["content-type"] = content_type
+      return self._sftp.file(path).read()
+
+    except Exception as e:
+      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
+
+      if str(e) == "Garbage packet received":
+        cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
+        raise cherrypy.HTTPError("500 Remote access failed.")
+
+      if e.strerror == "No such file":
+        # Ideally this would be a 404, but we already use 404 to handle an unknown sessions, and clients need to make the distinction.
+        cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (self.hostname, path)
+        raise cherrypy.HTTPError("400 File not found.")
+
+      if e.strerror == "Permission denied":
+        # The file exists, but is not available due to access controls
+        cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (self.hostname, path)
+        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
+        raise cherrypy.HTTPError("400 Access denied.")
+
+      # Catchall
+      cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
+      raise cherrypy.HTTPError("400 Remote access failed.")
 
 def create_session(hostname, username, password):
   """Create a cached remote session for the given host.

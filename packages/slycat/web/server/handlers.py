@@ -10,7 +10,6 @@ import hashlib
 import itertools
 import json
 import logging.handlers
-import mimetypes
 import numpy
 import os
 import Queue
@@ -1143,38 +1142,9 @@ def post_remote_browse(sid, path):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.browse(path, file_reject, file_allow, directory_reject, directory_allow)
 
-#def get_remote_file(sid, path):
-#  with slycat.web.server.ssh.get_session(sid) as session:
-#    try:
-#      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-#        cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
-#        raise cherrypy.HTTPError("400 Can't read directory.")
-#
-#      content_type, encoding = mimetypes.guess_type(path, strict=False)
-#      cherrypy.response.headers["content-type"] = content_type
-#      return session.sftp.file(path).read()
-#
-#    except Exception as e:
-#      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
-#
-#      if str(e) == "Garbage packet received":
-#        cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
-#        raise cherrypy.HTTPError("500 Remote access failed.")
-#
-#      if e.strerror == "No such file":
-#        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
-#        cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
-#        raise cherrypy.HTTPError("400 File not found.")
-#
-#      if e.strerror == "Permission denied":
-#        # The file exists, but is not available due to access controls
-#        cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
-#        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-#        raise cherrypy.HTTPError("400 Access denied.")
-#
-#      # Catchall
-#      cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
-#      raise cherrypy.HTTPError("400 Remote access failed.")
+def get_remote_file(sid, path):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_file(path)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -1189,30 +1159,6 @@ def post_remote_videos(sid):
     session.stdin.write("%s\n" % json.dumps(command))
     session.stdin.flush()
     return json.loads(session.stdout.readline())
-
-def get_remote_file(sid, path):
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
-
-    if metadata["message"] == "Path must be absolute.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Path not absolute.")
-    elif metadata["message"] == "Path not found.":
-      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 File not found.")
-    elif metadata["message"] == "Directory unreadable.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Can't read directory.")
-    elif metadata["message"] == "Access denied.":
-      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
-      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Access denied.")
-
-    content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"]
-    return content
 
 def get_remote_image(sid, path, **kwargs):
   content_type = kwargs.get("content-type", None)
