@@ -3,7 +3,7 @@ POST Remotes
 
 .. http:post:: /remotes
 
-  Creates a new remote remote connection from the Slycat server to another host.
+  Creates a new remote connection from the Slycat server to another host.
   The caller *must* supply a remote hostname, username, and password.
 
   If the connection is created successfully, a unique session ID is returned.  The
@@ -14,16 +14,16 @@ POST Remotes
   :<json string hostname: Remote hostname.
   :<json string username: Remote host username.
   :<json string password: Remote host password.
+  :<json boolean agent: (optional) Create an agent when the connection is established.  By default, agents are created automatically if the hostname has an agent configuration.  Use this parameter to explicitly require / prevent agent creation.
 
   :responseheader Content-Type: application/json
 
   :>json string sid: Unique remote session identifier.
 
-  :status 400 Unknown remote host.: The server hasn't been configured to connect to the remote host.
-  :status 400 No remote configured for remote host.: The server isn't configured for remote connections to the remote host.
-  :status 500 No startup command configured for remote remote.: The server configuration doesn't include startup information for the remote.
-  :status 500 Remote startup failed.: A remote remote couldn't be started.
+  :status 400 Missing agent configuration.: The server isn't configured to start an agent on the given hostname.
   :status 403 Remote authentication failed.: Authentication of the provided username and password failed.
+  :status 500 Missing agent configuration.: The server isn't properly configured to start an agent on the given hostname.
+  :status 500 Agent startup failed.: The server couldn't start an agent on the given hostname.
   :status 500 Remote connection failed.: Unknown failure making the remote connection.
 
   **Sample Request**
@@ -60,5 +60,7 @@ See Also
 - :http:post:`/remotes/(sid)/browse(path)`
 - :http:get:`/remotes/(sid)/file(path)`
 - :http:get:`/remotes/(sid)/image(path)`
-
+- :http:post:`/remotes/(sid)/videos`
+- :http:get:`/remotes/(sid)/videos/(vsid)/status`
+- :http:get:`/remotes/(sid)/videos/(vsid)`
 
