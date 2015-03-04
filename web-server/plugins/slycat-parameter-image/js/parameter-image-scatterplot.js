@@ -1160,9 +1160,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
 
       // Create a close button ...
-      var close_button_html = frame_html.append("img")
-        .attr("class", "close-button")
-        .attr("src", server_root + "resources/models/parameter-image/" + "close.png")
+      var close_button_html = frame_html.append("span")
+        .attr("class", "close-button frame-icon")
         .on("mousedown", function(){
           //console.log("close button mousedown");
           d3.event.stopPropagation(); // silence other listeners
@@ -1177,12 +1176,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           d3.event.stopPropagation(); // silence other listeners
           var frame = d3.select(d3.event.target.parentNode);
           self._remove_image_and_leader_line(frame);
-          // var theVideo = self.video_layer.select("video[data-uri='" + frame.attr("data-uri") + "']");
-          // theVideo.remove();
           self._sync_open_images();
         })
         ;
-
 
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
@@ -1332,9 +1328,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._adjust_leader_line(frame_html);
 
       // Create a resize handle
-      var resize_handle_html = frame_html.append("img")
-        .attr("class", "resize-handle")
-        .attr("src", server_root + "resources/models/parameter-image/" + "resize.png")
+      var resize_handle_html = frame_html.append("span")
+        .attr("class", "resize-handle frame-icon")
         .call(
           d3.behavior.drag()
             .on('drag', function(){
@@ -1392,32 +1387,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         })
         ;
 
-      // Create a close button ...
-      var close_button_html = frame_html.append("img")
-        .attr("class", "close-button")
-        .attr("src", server_root + "resources/models/parameter-image/" + "close.png")
-        .on("mousedown", function(){
-          //console.log("close button mousedown");
-          d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("mouseup", function(){
-          //console.log("close button mouseup");
-          d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("click", function()
-        {
-          //console.log("close button click");
-          d3.event.stopPropagation(); // silence other listeners
-          var frame = d3.select(d3.event.target.parentNode);
-          self._remove_image_and_leader_line(frame);
-          self._sync_open_images();
-        })
-        ;
-
       // Create a pin button ...
-      var pin_button_html = frame_html.append("img")
-        .attr('class', 'pin-button')
-        .attr('src', server_root + "resources/models/parameter-image/" + "pin.png")
+      var pin_button_html = frame_html.append("span")
+        .attr('class', 'pin-button frame-icon')
         .on("mousedown", function(){
           // console.log("html pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
