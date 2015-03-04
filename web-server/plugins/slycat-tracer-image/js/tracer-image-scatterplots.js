@@ -1267,7 +1267,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
       console.log("Loading image " + image.uri + " from server");
       var xhr = new XMLHttpRequest();
       xhr.image = image;
-      xhr.open("GET", self.options.server_root + "agents/" + self.login.session_cache[parser.hostname] + "/image" + parser.pathname, true);
+      xhr.open("GET", self.options.server_root + "remotes/" + self.login.session_cache[parser.hostname] + "/image" + parser.pathname, true);
       xhr.responseType = "arraybuffer";
       xhr.onload = function(e) {
         // If we get 404, the remote session no longer exists because it timed-out.

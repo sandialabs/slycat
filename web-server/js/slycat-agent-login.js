@@ -17,12 +17,12 @@ define("slycat-agent-login", ["knockout", "slycat-server-root", "slycat-web-clie
       return function(){
         $(element).find('button').prop('disabled', true);
         viewModel.remote.error("");
-        var data = {};
-        $.each(viewModel.remote, function(k,v){data[k] = v();});
-        web_client.post_agents({
-          data: data,
-          success: function(result){
-              viewModel.agentIds[viewModel.remote.hostname()] = ko.observable(result.sid);
+        web_client.post_remotes({
+          hostname: viewModel.remote.hostname(),
+          username: viewModel.remote.username(),
+          password: viewModel.remote.password(),
+          success: function(sid){
+              viewModel.agentIds[viewModel.remote.hostname()] = ko.observable(sid);
               viewModel.callbacks.success(viewModel.agentIds[viewModel.remote.hostname()]());
               $(element).modal('hide');
             },

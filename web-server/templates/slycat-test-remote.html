@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    <title>Slycat Remote Test</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      require(["slycat-server-root", "slycat-web-client"], function(server_root, client)
+      {
+        create_remote("localhost");
+
+        function create_remote(hostname)
+        {
+          client.post_remotes(
+          {
+            hostname: hostname,
+            username: "slycat",
+            password: "slycat",
+            agent: true,
+            success: function(sid)
+            {
+              browse_remote(sid)
+            },
+          });
+        }
+
+        function browse_remote(sid)
+        {
+          client.post_remote_browse(
+          {
+            sid: sid,
+            path: "/home/slycat/src/slycat",
+            success: function()
+            {
+              get_remote_file(sid);
+            }
+          });
+        }
+
+        function get_remote_file(sid)
+        {
+          $.ajax(
+          {
+            type : "GET",
+            url : server_root + "remotes/" + sid + "/file/home/slycat/src/slycat/README.md",
+            success: function()
+            {
+              get_remote_image(sid);
+            },
+          });
+        }
+
+        function get_remote_image(sid)
+        {
+          $.ajax(
+          {
+            type : "GET",
+            url : server_root + "remotes/" + sid + "/image/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.png",
+            success: function()
+            {
+              create_remote_video(sid);
+            },
+            error: function()
+            {
+              create_remote_video(sid);
+            },
+          });
+        }
+
+        function create_remote_video(sid)
+        {
+          var content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
+          var images = [];
+          for(var i = 0; i < 100; ++i)
+            images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/" + i + ".jpg");
+
+          client.post_remote_video(
+          {
+            sid: sid,
+            "content-type": content_type,
+            images: images,
+            success: function(vsid)
+            {
+              wait_for_video(sid, vsid);
+            },
+            error: function()
+            {
+              delete_remote(sid);
+            }
+          });
+        }
+
+        function wait_for_video(sid, vsid)
+        {
+          client.get_remote_video_status(
+          {
+            sid: sid,
+            vsid: vsid,
+            success: function(result)
+            {
+              if(result["ok"] == false)
+              {
+                delete_remote(sid);
+              }
+              else if(result["ready"] != true)
+              {
+                setTimeout(wait_for_video.bind(null, sid, vsid), 1000);
+              }
+              else
+              {
+                document.querySelector("body").innerHTML += "<video style='width: 400px' controls src='" + server_root + "remotes/" + sid + "/videos/" + vsid + "'>" + "</video>";
+              }
+            },
+            error: function()
+            {
+              delete_remote(sid);
+            }
+          });
+        }
+
+        function delete_remote(sid)
+        {
+          client.delete_remote(
+          {
+            sid: sid,
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

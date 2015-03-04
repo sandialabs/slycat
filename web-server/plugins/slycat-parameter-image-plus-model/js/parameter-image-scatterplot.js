@@ -1541,7 +1541,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     console.log("Loading image " + image.uri + " from server");
     var xhr = new XMLHttpRequest();
     xhr.image = image;
-    xhr.open("GET", server_root + "agents/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
+    xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e)
     {
@@ -1626,7 +1626,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
           {
             async : true,
             type : "POST",
-            url : server_root + "agents",
+            url : server_root + "remotes",
             contentType : "application/json",
             data : JSON.stringify({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
             processData : false,

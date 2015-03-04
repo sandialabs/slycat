@@ -36,11 +36,9 @@ class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
 class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
   def __init__(self):
-    self._agent_pattern = re.compile("/agents/[^/]+/")
     self._remote_pattern = re.compile("/remotes/[^/]+/")
 
   def filter(self, record):
-    record.msg = self._agent_pattern.sub("/agents/----/", record.msg)
     record.msg = self._remote_pattern.sub("/remotes/----/", record.msg)
     return True
 
@@ -115,10 +113,6 @@ def start(root_path, config_file):
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-reference", "/references/:rid", slycat.web.server.handlers.delete_reference, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
-  dispatcher.connect("get-agent-file", "/agents/:sid/file{path:.*}", slycat.web.server.handlers.get_agent_file, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-agent-image", "/agents/:sid/image{path:.*}", slycat.web.server.handlers.get_agent_image, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-agent-video", "/agents/:sid/videos/:vsid", slycat.web.server.handlers.get_agent_video, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-agent-video-status", "/agents/:sid/videos/:vsid/status", slycat.web.server.handlers.get_agent_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
@@ -135,7 +129,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-resource", "/resources/models/:mtype/{resource:.*}", slycat.web.server.handlers.get_model_resource, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-tests-agent", "/tests/agent", slycat.web.server.handlers.get_tests_agent, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-tests-remote", "/tests/remote", slycat.web.server.handlers.get_tests_remote, conditions={"method" : ["GET"]})
   dispatcher.connect("tests-request", "/tests/request", slycat.web.server.handlers.tests_request, conditions={"method" : ["GET", "PUT", "POST", "DELETE"]})
   dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-chunk", "/models/:mid/tables/:aid/arrays/:array/chunk", slycat.web.server.handlers.get_model_table_chunk, conditions={"method" : ["GET"]})
@@ -147,10 +141,10 @@ def start(root_path, config_file):
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-file", "/remotes/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remote-image", "/remotes/:sid/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remote-video", "/remotes/:sid/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remote-video-status", "/remotes/:sid/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
-  dispatcher.connect("post-agent-browse", "/agents/:sid/browse{path:.*}", slycat.web.server.handlers.post_agent_browse, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-agents", "/agents", slycat.web.server.handlers.post_agents, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-agent-videos", "/agents/:sid/videos", slycat.web.server.handlers.post_agent_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
@@ -158,6 +152,8 @@ def start(root_path, config_file):
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remote-browse", "/remotes/:sid/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-remote-videos", "/remotes/:sid/videos", slycat.web.server.handlers.post_remote_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:name/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:name/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
