@@ -20,6 +20,7 @@ POST Remotes
 
   :>json string sid: Unique remote session identifier.
 
+  :status 200: The connection was created successfully.
   :status 400 Missing agent configuration.: The server isn't configured to start an agent on the given hostname.
   :status 403 Remote authentication failed.: Authentication of the provided username and password failed.
   :status 500 Missing agent configuration.: The server isn't properly configured to start an agent on the given hostname.
@@ -45,7 +46,7 @@ POST Remotes
 
   .. sourcecode:: http
 
-      HTTP/1.1 201 Remote created.
+      HTTP/1.1 200 OK.
       Date: Thu, 11 Apr 2013 21:30:16 GMT
       Content-Length: 42
       Content-Type: application/json
