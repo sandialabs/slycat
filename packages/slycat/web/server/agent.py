@@ -143,25 +143,25 @@ def create_session(hostname, username, password):
     ssh.connect(hostname=hostname, username=username, password=password)
     cherrypy.log.error("Starting agent executable for %s@%s with command: %s" % (username, hostname, cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]["command"]))
     stdin, stdout, stderr = ssh.exec_command(cherrypy.request.app.config["slycat"]["remote-hosts"][hostname]["agent"]["command"])
-    # Handle catastrophic startup failures.
+    # Handle catastrophic startup failures (the agent process failed to start).
     try:
       startup = json.loads(stdout.readline())
     except Exception as e:
       raise cherrypy.HTTPError("500 Agent startup failed: %s" % str(e))
-    cherrypy.log.error("Agent for %s@%s reported %s" % (username, hostname, startup))
-    # Handle clean startup failures.
+    # Handle clean startup failures (the agent process started, but reported an error).
     if not startup["ok"]:
       raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
     with session_cache_lock:
       session_cache[sid] = Session(username, hostname, cherrypy.request.remote.ip, ssh, stdin, stdout, stderr)
     return sid
-  except cherrypy.HTTPError:
+  except cherrypy.HTTPError as e:
+    cherrypy.log.error("Agent startup failed for %s@%s: %s" % (username, hostname, e.status))
     raise
   except paramiko.AuthenticationException as e:
-    cherrypy.log.error("%s %s" % (type(e), str(e)))
+    cherrypy.log.error("Authentication failed for %s@%s: %s" % (username, hostname, str(e)))
     raise cherrypy.HTTPError("403 Remote authentication failed.")
   except Exception as e:
-    cherrypy.log.error("%s %s" % (type(e), str(e)))
+    cherrypy.log.error("Unknown exception for %s@%s: %s %s" % (username, hostname, type(e), str(e)))
     raise cherrypy.HTTPError("500 Remote connection failed: %s" % str(e))
 
 def get_session(sid):

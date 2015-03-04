@@ -1,7 +1,7 @@
 FROM fedora:20
 MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
-# Setup the supervisor service.
+# Install supervisord
 RUN yum install -y supervisor
 ADD supervisord.conf /etc/supervisord.conf
 

@@ -74,6 +74,7 @@ def js_bundle():
         "js/slycat-nag.js",
         "js/slycat-model-controls.js",
         "js/slycat-model-results.js",
+        "js/slycat-changes-feed.js",
         "js/slycat-projects-feed.js",
         "js/slycat-models-feed.js",
         "js/slycat-navbar.js",
@@ -84,6 +85,8 @@ def js_bundle():
         "js/slycat-projects-main.js",
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
+        "js/slycat-agent-login.js",
+        "js/slycat-resizing-modals.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()
@@ -103,12 +106,7 @@ def require_boolean_parameter(name):
 def get_home():
   raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["server-root"] + "projects")
 
-def get_projects(revision=None, _=None):
-  if get_projects.monitor is None:
-    get_projects.monitor = slycat.web.server.database.couchdb.Monitor(name="Project change monitor", filter="slycat/projects")
-  if get_projects.timeout is None:
-    get_projects.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-
+def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -120,67 +118,10 @@ def get_projects(revision=None, _=None):
     return slycat.web.server.template.render("slycat-projects.html", context)
 
   if accept == "application/json":
-    if revision is not None:
-      revision = int(revision)
-    start_time = time.time()
-    with get_projects.monitor.changed:
-      while revision == get_projects.monitor.revision:
-        get_projects.monitor.changed.wait(1.0)
-        if time.time() - start_time > get_projects.timeout:
-          cherrypy.response.status = "204 No change."
-          return
-        if cherrypy.engine.state != cherrypy.engine.states.STARTED:
-          cherrypy.response.status = "204 Shutting down."
-          return
-      database = slycat.web.server.database.couchdb.connect()
-      projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
-      projects = sorted(projects, key = lambda x: x["created"], reverse=True)
-      return json.dumps({"revision" : get_projects.monitor.revision, "projects" : projects})
-
-get_projects.monitor = None
-get_projects.timeout = None
-
-def get_projects_feed():
-  accept = cherrypy.lib.cptools.accept(["text/event-stream"])
-  cherrypy.response.headers["content-type"] = accept
-
-  def content():
     database = slycat.web.server.database.couchdb.connect()
-    id_cache = set() # Keep track of the set of project ids visible to the caller.
-
-    # Respond quickly with the current set of projects.
-    last_seq, changes = get_projects_feed.cache.current()
-    for change in changes:
-      if slycat.web.server.authentication.test_project_reader(change["doc"]):
-        id_cache.add(change["id"])
-        yield "data: %s\n\n" % json.dumps(change)
-
-    # Keep clients up-to-date as changes happen.
-    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-      for change in database.changes(filter="slycat/projects", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
-        if "last_seq" in change:
-          last_seq = change["last_seq"]
-        elif "deleted" in change:
-          if change["id"] in id_cache: # Caller visible project has been deleted.
-            id_cache.remove(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True))
-        else:
-          project = change["doc"]
-          if slycat.web.server.authentication.test_project_reader(project): # Caller visible project has been created/updated.
-            id_cache.add(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], doc=project))
-          else:
-            if change["id"] in id_cache: # Caller lost access to the project, make it look like a deletion.
-              id_cache.remove(change["id"])
-              yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True));
-      yield ":\n\n" # Keep the connection alive
-    cherrypy.log.error("Stopping get-projects-feed handler.")
-  return content()
-get_projects_feed._cp_config = {"response.stream": True}
-get_projects_feed.cache = None
-
-def start_projects_feed():
-  get_projects_feed.cache = slycat.web.server.database.couchdb.Cache("projects-feed", "slycat/projects")
+    projects = [project for project in database.scan("slycat/projects") if slycat.web.server.authentication.is_project_reader(project) or slycat.web.server.authentication.is_project_writer(project) or slycat.web.server.authentication.is_project_administrator(project) or slycat.web.server.authentication.is_server_administrator()]
+    projects = sorted(projects, key = lambda x: x["created"], reverse=True)
+    return json.dumps({"revision" : 0, "projects" : projects})
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -191,9 +132,9 @@ def post_projects():
   database = slycat.web.server.database.couchdb.connect()
   pid, rev = database.save({
     "type" : "project",
-    "acl" : {"administrators" : [{"user" : cherrypy.request.security["user"]}], "readers" : [], "writers" : []},
+    "acl" : {"administrators" : [{"user" : cherrypy.request.login}], "readers" : [], "writers" : []},
     "created" : datetime.datetime.utcnow().isoformat(),
-    "creator" : cherrypy.request.security["user"],
+    "creator" : cherrypy.request.login,
     "description" : cherrypy.request.json.get("description", ""),
     "name" : cherrypy.request.json["name"]
     })
@@ -262,25 +203,41 @@ def put_project(pid):
 
   database.save(project)
 
-def cleanup_array_worker():
+def array_cleanup_worker():
   while True:
     cleanup_arrays.queue.get()
     cherrypy.log.error("Array cleanup started.")
-    couchdb = slycat.web.server.database.couchdb.connect()
-    for file in couchdb.view("slycat/hdf5-file-counts", group=True):
+    database = slycat.web.server.database.couchdb.connect()
+    for file in database.view("slycat/hdf5-file-counts", group=True):
       if file.value == 0:
         slycat.web.server.database.hdf5.delete(file.key)
-        couchdb.delete(couchdb[file.key])
+        database.delete(database[file.key])
     cherrypy.log.error("Array cleanup finished.")
 
 def cleanup_arrays():
   cleanup_arrays.queue.put("cleanup")
 cleanup_arrays.queue = Queue.Queue()
-cleanup_arrays.thread = threading.Thread(name="cleanup-arrays", target=cleanup_array_worker)
+cleanup_arrays.thread = threading.Thread(name="array-cleanup", target=array_cleanup_worker)
 cleanup_arrays.thread.daemon = True
 
-def start_cleanup_arrays_worker():
+def start_array_cleanup_worker():
   cleanup_arrays.thread.start()
+
+def session_cleanup_worker():
+  while True:
+    cherrypy.log.error("Session cleanup started.")
+    cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
+    database = slycat.web.server.database.couchdb.connect()
+    for session in database.view("slycat/sessions", include_docs=True):
+      if session.doc["created"] < cutoff:
+        database.delete(session.doc)
+    cherrypy.log.error("Session cleanup finished.")
+    time.sleep(datetime.timedelta(minutes=60).total_seconds())
+session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=session_cleanup_worker)
+session_cleanup_worker.thread.daemon = True
+
+def start_session_cleanup_worker():
+  session_cleanup_worker.thread.start()
 
 def delete_project(pid):
   couchdb = slycat.web.server.database.couchdb.connect()
@@ -348,7 +305,7 @@ def post_project_models(pid):
     "marking" : marking,
     "project" : pid,
     "created" : datetime.datetime.utcnow().isoformat(),
-    "creator" : cherrypy.request.security["user"],
+    "creator" : cherrypy.request.login,
     "name" : name,
     "description" : description,
     "artifact-types" : {},
@@ -409,7 +366,7 @@ def post_project_references(pid):
     "type" : "reference",
     "project" : pid,
     "created" : datetime.datetime.utcnow().isoformat(),
-    "creator" : cherrypy.request.security["user"],
+    "creator" : cherrypy.request.login,
     "name" : cherrypy.request.json["name"],
     "model-type" : cherrypy.request.json.get("model-type", None),
     "mid" : cherrypy.request.json.get("mid", None),
@@ -420,81 +377,6 @@ def post_project_references(pid):
   cherrypy.response.headers["location"] = "%s/references/%s" % (cherrypy.request.base, rid)
   cherrypy.response.status = "201 Reference created."
   return {"id" : rid}
-
-def get_models(revision=None, _=None):
-  if get_models.monitor is None:
-    get_models.monitor = slycat.web.server.database.couchdb.Monitor(name="Model change monitor", filter="slycat/models")
-  if get_models.timeout is None:
-    get_models.timeout = cherrypy.tree.apps[""].config["slycat"]["long-polling-timeout"]
-
-  accept = cherrypy.lib.cptools.accept(media=["application/json"])
-  cherrypy.response.headers["content-type"] = accept
-
-  if accept == "application/json":
-    if revision is not None:
-      revision = int(revision)
-    start_time = time.time()
-    with get_models.monitor.changed:
-      while revision == get_models.monitor.revision:
-        get_models.monitor.changed.wait(1.0)
-        if time.time() - start_time > get_models.timeout:
-          cherrypy.response.status = "204 No change."
-          return
-        if cherrypy.engine.state != cherrypy.engine.states.STARTED:
-          cherrypy.response.status = "204 Shutting down."
-          return
-      database = slycat.web.server.database.couchdb.connect()
-      models = [model for model in database.scan("slycat/open-models")]
-      projects = [database.get("project", model["project"]) for model in models]
-      models = [model for model, project in zip(models, projects) if slycat.web.server.authentication.test_project_reader(project)]
-      return json.dumps({"revision" : get_models.monitor.revision, "models" : models})
-get_models.monitor = None
-get_models.timeout = None
-
-def get_models_feed():
-  accept = cherrypy.lib.cptools.accept(["text/event-stream"])
-  cherrypy.response.headers["content-type"] = accept
-
-  def content():
-    database = slycat.web.server.database.couchdb.connect()
-    id_cache = set()
-
-    # Respond quickly with the current set of models.
-    last_seq, changes = get_models_feed.cache.current()
-    for change in changes:
-      model = change["doc"]
-      project = database.get("project", model["project"])
-      if slycat.web.server.authentication.test_project_reader(project):
-        id_cache.add(change["id"])
-        yield "data: %s\n\n" % json.dumps(change)
-
-    # Keep clients up-to-date as changes happen.
-    while cherrypy.engine.state == cherrypy.engine.states.STARTED:
-      for change in database.changes(filter="slycat/models", feed="continuous", include_docs=True, since=last_seq, timeout=5000):
-        if "last_seq" in change:
-          last_seq = change["last_seq"]
-        elif "deleted" in change:
-          if change["id"] in id_cache:
-            id_cache.remove(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True))
-        else:
-          model = change["doc"]
-          project = database.get("project", model["project"])
-          if slycat.web.server.authentication.test_project_reader(project):
-            id_cache.add(change["id"])
-            yield "data: %s\n\n" % json.dumps(dict(id=change["id"], doc=model))
-          else:
-            if change["id"] in id_cache:
-              id_cache.remove(change["id"])
-              yield "data: %s\n\n" % json.dumps(dict(id=change["id"], deleted=True));
-      yield ":\n\n" # Keep the connection alive
-    cherrypy.log.error("Stopping get-models-feed handler.")
-  return content()
-get_models_feed._cp_config = {"response.stream": True}
-get_models_feed.cache = None
-
-def start_models_feed():
-  get_models_feed.cache = slycat.web.server.database.couchdb.Cache("models-feed", "slycat/models")
 
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -697,7 +579,7 @@ def put_model_arrayset_array(mid, name, array):
   slycat.web.server.put_model_array(database, model, name, array_index, attributes, dimensions)
 
 def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
-  cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
+  #cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
 
   # Sanity check inputs ...
   parsed_hyperchunks = []
@@ -824,7 +706,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
 
   # New behavior
   if "arrays" in arguments or "statistics" in arguments:
-    cherrypy.log.error("arguments: %s" % arguments)
+    #cherrypy.log.error("arguments: %s" % arguments)
     with slycat.web.server.database.hdf5.lock:
       with slycat.web.server.database.hdf5.open(artifact) as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -841,7 +723,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         if "statistics" in arguments:
           results["statistics"] = []
           for spec in arguments["statistics"].split(";"):
-            cherrypy.log.error("spec: %s" % spec)
+            #cherrypy.log.error("spec: %s" % spec)
             array, attribute = spec.split("/")
             statistics = hdf5_arrayset[array].get_statistics(attribute)
             statistics["array"] = int(array)
@@ -866,7 +748,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         return results
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
-  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
+  #cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
 
   # Sanity check inputs ...
   parsed_hyperchunks = []
@@ -997,11 +879,11 @@ def get_table_sort_index(file, metadata, array_index, sort, index):
     else:
       index_key = "array/%s/index/%s" % (array_index, sort_column)
       if index_key not in file:
-        cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
+        #cherrypy.log.error("Caching array index for file %s array %s attribute %s" % (file.filename, array_index, sort_column))
         sort_index = numpy.argsort(slycat.hdf5.ArraySet(file)[array_index].get_data(sort_column)[...], kind="mergesort")
         file[index_key] = sort_index
       else:
-        cherrypy.log.error("Loading cached sort index.")
+        #cherrypy.log.error("Loading cached sort index.")
         sort_index = file[index_key][...]
     if sort_order == "descending":
       sort_index = sort_index[::-1]
@@ -1233,7 +1115,7 @@ def get_bookmark(bid):
 @cherrypy.tools.json_out(on = True)
 def get_user(uid):
   if uid == "-":
-    uid = cherrypy.request.security["user"]
+    uid = cherrypy.request.login
   user = cherrypy.request.app.config["slycat"]["directory"](uid)
   if user is None:
     raise cherrypy.HTTPError(404)
@@ -1496,8 +1378,17 @@ def get_global_resource(resource):
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
 
-def get_agent_test():
+def get_tests_agent():
   context = {}
   context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  return slycat.web.server.template.render("slycat-agent-test.html", context)
+  return slycat.web.server.template.render("slycat-test-agent.html", context)
 
+def tests_request(*arguments, **keywords):
+  cherrypy.log.error("Request: %s" % cherrypy.request.request_line)
+  cherrypy.log.error("  Remote IP: %s" % cherrypy.request.remote.ip)
+  cherrypy.log.error("  Remote Port: %s" % cherrypy.request.remote.port)
+  cherrypy.log.error("  Remote Hostname: %s" % cherrypy.request.remote.name)
+  cherrypy.log.error("  Scheme: %s" % cherrypy.request.scheme)
+  for key, value in sorted(cherrypy.request.headers.items()):
+    cherrypy.log.error("  Header: %s=%s" % (key, value))
+  cherrypy.response.status = 200

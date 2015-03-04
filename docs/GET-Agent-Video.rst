@@ -5,7 +5,7 @@ GET Agent Video
 
   Uses an existing agent video session to retrieve a remote video.  The session must
   have been created successfully using :http:post:`/agents` and video creation must have been
-  started using :http:post:`/agents/(sid)/video`.  The caller *must*
+  started using :http:post:`/agents/(sid)/videos`.  The caller *must*
   supply the session id and video session id of the video to retrieve.
 
   :param sid: Unique agent session identifier.

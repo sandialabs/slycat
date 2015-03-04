@@ -76,9 +76,7 @@ at https://docs.docker.com/installation/#installation
 
   * If your site uses SSL interception, you must append the certificate to
     /etc/ssl/cacerts.pem and restart the Docker service before downloading
-    images every time you restart boot2docker.  We will provide updated
-    information when we have a process to install the certificate permanently.
-
+    images every time you restart boot2docker.
 
 Download the Image and Create a Container
 -----------------------------------------
@@ -86,7 +84,7 @@ Download the Image and Create a Container
 Now that you have the Docker daemon running and DOCKER_HOST set to connect to it,
 you're ready to download the Slycat image and create a container::
 
-  $ docker run -d -p 2222:22 -p 443:443 --name slycat sandialabs/slycat
+  $ docker run -d -p 2222:22 -p 80:80 -p 443:443 --name slycat sandialabs/slycat
 
 Docker will begin downloading the `sandialabs/slycat` image, and will create a
 container with the name `slycat` (you will use this name as a convenient way to
@@ -107,7 +105,7 @@ Open a web browser and point it to the Slycat server at https://<docker host ip>
      
     The VM's Host only interface IP address is: 192.168.59.103
 
-Note that the `https://` is *required*.
+* The browser will complain that the server certificate is untrusted.  This is because we use a self-signed certificate for the Docker container.  Follow your browser's procedures to temporarily trust the connection.
 
 * When prompted for a username and password, enter *slycat* for both.
 

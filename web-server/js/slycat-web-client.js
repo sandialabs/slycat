@@ -189,9 +189,9 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax(
     {
       dataType: "json",
-      type : "GET",
-      url : server_root + "models/" + params.mid,
-      success : function(result)
+      type: "GET",
+      url: server_root + "models/" + params.mid,
+      success: function(result)
       {
         if(params.success)
           params.success(result);
@@ -345,9 +345,9 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax(
     {
       dataType: "json",
-      type : "GET",
-      url : server_root + "projects/" + params.pid + "/references",
-      success : function(references)
+      type: "GET",
+      url: server_root + "projects/" + params.pid + "/references",
+      success: function(references)
       {
         if(params.success)
           params.success(references);
@@ -364,9 +364,9 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   {
     $.ajax(
     {
-      type : "GET",
-      url : server_root + "users/" + (params.uid || "-"),
-      success : function(user)
+      type: "GET",
+      url: server_root + "users/" + (params.uid || "-"),
+      success: function(user)
       {
         if(params.success)
           params.success(user);
@@ -690,6 +690,31 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         if(params.error)
           params.error(request, status, reason_phrase);
       },
+    });
+  };
+
+  module.post_agents = function(params)
+  {
+    var apply_function = function(function_name)
+    {
+      return function()
+      {
+        if(params[function_name])
+        {
+          params[function_name].apply(this, arguments);
+        }
+      };
+    };
+
+    return $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(params.data),
+      type: "POST",
+      url: server_root + "agents",
+      success: apply_function("success"),
+      error: apply_function("error"),
+      complete: apply_function("complete"), 
     });
   };
 

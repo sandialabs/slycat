@@ -18,7 +18,7 @@ rights in this software.
     {{#slycat-plugin-js-bundles}}
       <script src="{{slycat-server-root}}resources/models/{{slycat-model-type}}/{{bundle}}" type="text/javascript"></script>
     {{/slycat-plugin-js-bundles}}
-    <title>{{slycat-model.name}} - Slycat Model</title>
+    <title data-bind="text: title">{{slycat-model.name}} - Slycat Model</title>
   </head>
 
   <body>

@@ -5,7 +5,7 @@
 
 import slycat.web.client
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 arguments = parser.parse_args()
 
 connection = slycat.web.client.connect(arguments)

@@ -17,7 +17,7 @@ in your own scripts:
 import numpy
 import slycat.web.client
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--column-prefix", default="a", help="Column prefix.  Default: %(default)s")
 parser.add_argument("--duplicate-input-count", type=int, default=0, help="Number of input columns to duplicate.  Default: %(default)s")
 parser.add_argument("--duplicate-output-count", type=int, default=0, help="Number of output columns to duplicate.  Default: %(default)s")

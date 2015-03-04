@@ -1,0 +1,27 @@
+.vertical {
+  -ms-transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+
+.unvertical {
+  -ms-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+
+.link-cursor {
+  cursor: pointer;
+}
+
+.default-cursor {
+  cursor: inherit;
+}
+
+.vertical-toggle-pane-resizer {
+  right-border: 2px solid rgb(231,231,231);
+}
+
+.fill-parent-height {
+  height: 100%;
+}

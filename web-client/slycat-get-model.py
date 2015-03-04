@@ -6,7 +6,7 @@
 import pprint
 import slycat.web.client
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("mid", help="The ID of the model to retrieve")
 arguments = parser.parse_args()
 

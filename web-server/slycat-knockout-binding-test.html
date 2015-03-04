@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link id="slycat-server-root" href="/">
+    <link rel="stylesheet" href="css/namespaced-bootstrap.css">
+    <link rel="stylesheet" href="css/slycat.css">
+    <script src="js/curl.js"></script>
+    <script src="js/slycat-curl-config.js"></script>
+    <script src="js/knockout-3.2.0.js"></script>
+    <title data-bind="text: title"></title>
+  </head>
+  <body>
+    <div id="header">
+      <h1 data-bind="text: title"></h1>
+      <p data-bind="text: paragraph"></p>
+    </div>
+    <div id="content">
+      <h1 data-bind="text: title"></h1>
+      <p data-bind="text: paragraph"></p>
+    </div>
+    <div id="footer">
+      <h1 data-bind="text: title"></h1>
+      <p data-bind="text: paragraph"></p>
+    </div>
+
+    <script>
+      require(["knockout"], function(ko)
+      {
+        var page =
+        {
+          title: ko.observable("Page title"),
+          paragraph: ko.observable("Page paragraph"),
+        };
+        var content =
+        {
+          title: ko.observable("Content title"),
+          paragraph: ko.observable("Content paragraph"),
+        };
+
+        ko.applyBindings(content, document.querySelector("#content"));
+        ko.applyBindings(page, document.querySelector("head"));
+        ko.applyBindings(page, document.querySelector("#header"));
+        //ko.applyBindings(page, document.querySelector("#content"));
+        ko.applyBindings(page, document.querySelector("#footer"));
+      });
+    </script>
+  </body>
+</html>

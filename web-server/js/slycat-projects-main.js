@@ -12,7 +12,7 @@ define("slycat-projects-main", ["slycat-server-root", "slycat-projects-feed", "k
     var page = {}
     page.server_root = server_root;
     page.projects = projects_feed.watch();
-    ko.applyBindings(page);
+    ko.applyBindings(page, document.querySelector("html"));
   }
 
   return module;

@@ -9,7 +9,7 @@ import re
 import slycat.web.client
 import urlparse
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--image-columns", default=None, nargs="*", help="Image column names.")
 parser.add_argument("--image-hostname", default=None, help="Optionally override the hostname where images are stored.")
 parser.add_argument("--input-columns", default=[], nargs="*", help="Input column names.")

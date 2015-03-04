@@ -16,8 +16,8 @@ following the instructions at :ref:`install-slycat`, you can simply ssh into the
 
   $ ssh slycat@<docker ip address> -p2222
 
-make a few configuration changes (assigning real passwords to the root and slycat users, replacing
-our self-signed server certificate with one of your own, changing the listening port, locking-down ssh access, etc.)
+make a few configuration changes (assign real passwords to the root and slycat users, replace
+our self-signed server certificate with one of your own, lock-down ssh access, etc.)
 then continue using the image in production.  Because the Slycat Docker image is a container
 rather than a VM, there is absolutely no performance penalty for using it in this configuration.
 You can even use Docker to automate this process, building your own site-specific Slycat image
@@ -26,7 +26,7 @@ with our Slycat image as the base!
 Installing Slycat from Scratch
 ------------------------------
 
-If you insist on creating your own Slycat instance from scratch, 
+If you insist on creating your own Slycat instance from scratch,
 we still prefer to point you to our `Dockerfiles` for
 information on installing Slycat and its dependencies, because these files are the actual scripts
 that we use to build the Slycat Docker image - thus they're an
@@ -47,10 +47,10 @@ previous, adding new functionality:
   will be used to startup the other processes.
 * sshd - Installs an SSH server on top of the supervisord image, and configures supervisord
   to automatically start it when the container is run.
-* slycat - Installs the Slycat server and its dependencies atop the sshd image, and configures
-  supervisord to automatically start it when the container is run.
-* slycat-dev - Adds development tools to the base Slycat image, and disables automatic Slycat
-  startup so developers can run it themselves.
+* slycat - Installs the Slycat servers and their dependencies atop the sshd image, and configures
+  supervisord to automatically start them when the container is run.
+* slycat-dev - Adds development tools to the base Slycat image, and configures the supervisorctl
+  command so developers can easily start and stop servers themselves.
 
 The main differences between platforms will be in how you install the various
 dependencies.  One platform - such as Fedora Core in our Dockerfile - installs

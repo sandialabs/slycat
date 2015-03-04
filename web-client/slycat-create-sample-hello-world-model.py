@@ -5,7 +5,7 @@
 
 import slycat.web.client
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--name", default="World", help="Name.  Default: %(default)s")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-name", default="Sample Hello World Model", help="New model name.  Default: %(default)s")

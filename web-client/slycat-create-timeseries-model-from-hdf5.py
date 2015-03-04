@@ -26,7 +26,7 @@ import scipy.spatial.distance
 import slycat.hdf5
 import slycat.web.client
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
 parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Sample count used for the uniform-pla and uniform-paa resampling algorithms.  Default: %(default)s")
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
@@ -42,6 +42,8 @@ arguments = parser.parse_args()
 if arguments.cluster_sample_count < 1:
   raise Exception("Cluster sample count must be greater than zero.")
 
+_numSamples = arguments.cluster_sample_count
+
 if arguments.model_name is None:
   arguments.model_name = os.path.basename(os.path.abspath(arguments.directory))
 
@@ -49,8 +51,6 @@ if arguments.model_description is None:
   arguments.model_description = ""
   arguments.model_description += "Input directory: %s.\n" % os.path.abspath(arguments.directory)
   arguments.model_description += "Cluster sampling algorithm: %s.\n" % {"uniform-pla":"Uniform PLA","uniform-paa":"Uniform PAA"}[arguments.cluster_sample_type]
-  if arguments.cluster_sample_type in ["uniform-pla", "uniform-paa"]:
-    arguments.model_description += "Cluster sample count: %s.\n" % arguments.cluster_sample_count
   arguments.model_description += "Cluster method: %s.\n" % arguments.cluster_type
   arguments.model_description += "Cluster distance metric: %s.\n" % arguments.cluster_metric
 
@@ -68,16 +68,37 @@ connection = slycat.web.client.connect(arguments)
 # Create a new project to contain our model.
 pid = connection.find_or_create_project(arguments.project_name, arguments.project_description)
 
-# Create the new, empty model.
-mid = connection.post_project_models(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
-
 # Compute the model.
 try:
+  # find number of timeseries and accurate cluster sample count before starting model  
+  with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
+    array = slycat.hdf5.ArraySet(file)[0]
+    dimensions = array.dimensions
+    if len(dimensions) != 1:
+      raise Exception("Inputs table must have exactly one dimension.")
+    _numTimeseries = dimensions[0]["end"] - dimensions[0]["begin"]
+
+  timeseries_samples = numpy.zeros(shape=(_numTimeseries))
+  for timeseries_index in range(_numTimeseries):
+    with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+      timeseries_samples[timeseries_index] = len(slycat.hdf5.ArraySet(file)[0].get_data(0)[:])
+
+  # reduce the num of samples if fewer timeseries that curr cluster-sample-count
+  if timeseries_samples.min() < _numSamples:
+    _numSamples = timeseries_samples.min()
+    slycat.web.client.log.info("Reducing cluster sample count to minimum found in data: %s", _numSamples)
+
+  if arguments.cluster_sample_type in ["uniform-pla", "uniform-paa"]:
+    arguments.model_description += "Cluster sample count: %s.\n" % _numSamples
+
+  # Create the new, empty model.
+  mid = connection.post_project_models(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
+    
   # Store clustering parameters.
   connection.update_model(mid, message="Storing clustering parameters.")
   slycat.web.client.log.info("Storing clustering parameters.")
 
-  connection.put_model_parameter(mid, "cluster-bin-count", arguments.cluster_sample_count)
+  connection.put_model_parameter(mid, "cluster-bin-count", _numSamples)
   connection.put_model_parameter(mid, "cluster-bin-type", arguments.cluster_sample_type)
   connection.put_model_parameter(mid, "cluster-type", arguments.cluster_type)
   connection.put_model_parameter(mid, "cluster-metric", arguments.cluster_metric)
@@ -105,9 +126,11 @@ try:
   connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
 
   clusters = collections.defaultdict(list)
+  timeseries_samples = numpy.zeros(shape=(timeseries_count))
   for timeseries_index in range(timeseries_count):
     with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
       attributes = slycat.hdf5.ArraySet(file)[0].attributes[1:] # Skip the timestamps
+      timeseries_samples[timeseries_index] = len(slycat.hdf5.ArraySet(file)[0].get_data(0)[:])
     if len(attributes) < 1:
       raise Exception("A timeseries must have at least one attribute.")
     for attribute_index, attribute in enumerate(attributes):
@@ -164,7 +187,7 @@ try:
       directories = list(itertools.repeat(arguments.directory, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
-      bin_counts = list(itertools.repeat(arguments.cluster_sample_count, len(storage)))
+      bin_counts = list(itertools.repeat(_numSamples, len(storage)))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
       waveforms = pool[:].map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
@@ -182,8 +205,8 @@ try:
           original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
         bin_indices = numpy.digitize(original_times, bin_edges)
         bin_indices[-1] -= 1
-        bin_counts = numpy.bincount(bin_indices)[1:]
-        bin_sums = numpy.bincount(bin_indices, original_values)[1:]
+        bin_counts = numpy.bincount(bin_indices, minlength=bin_count+1)[1:]
+        bin_sums = numpy.bincount(bin_indices, original_values, minlength=bin_count+1)[1:]
         lonely_bins = (bin_counts < 2)
         bin_counts[lonely_bins] = 1
         bin_sums[lonely_bins] = numpy.interp(bin_times, original_times, original_values)[lonely_bins]
@@ -196,7 +219,7 @@ try:
       directories = list(itertools.repeat(arguments.directory, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
-      bin_counts = list(itertools.repeat(arguments.cluster_sample_count, len(storage)))
+      bin_counts = list(itertools.repeat(_numSamples, len(storage)))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
       waveforms = pool[:].map_sync(uniform_paa, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)

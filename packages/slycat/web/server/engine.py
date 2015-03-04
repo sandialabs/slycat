@@ -4,10 +4,10 @@
 
 import cherrypy
 import ConfigParser
+import datetime
 import grp
 import json
 import logging
-import OpenSSL.SSL
 import os
 import pprint
 import pwd
@@ -65,7 +65,7 @@ def start(root_path, config_file):
 
   # Configuration items we don't recognize are not allowed.
   for key in configuration["slycat"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "long-polling-timeout", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "stdout-log", "stderr-log", "ssl-ciphers", "support-email", "uid", "umask"]:
+    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "session-timeout", "stdout-log", "stderr-log", "support-email", "uid", "umask"]:
       raise Exception("Unrecognized or obsolete configuration key: %s" % key)
 
   # Allow both numeric and named uid and gid
@@ -117,7 +117,6 @@ def start(root_path, config_file):
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
   dispatcher.connect("get-agent-file", "/agents/:sid/file{path:.*}", slycat.web.server.handlers.get_agent_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-image", "/agents/:sid/image{path:.*}", slycat.web.server.handlers.get_agent_image, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-agent-test", "/test/agent", slycat.web.server.handlers.get_agent_test, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-video", "/agents/:sid/videos/:vsid", slycat.web.server.handlers.get_agent_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-agent-video-status", "/agents/:sid/videos/:vsid/status", slycat.web.server.handlers.get_agent_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
@@ -136,9 +135,9 @@ def start(root_path, config_file):
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-resource", "/resources/models/:mtype/{resource:.*}", slycat.web.server.handlers.get_model_resource, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-tests-agent", "/tests/agent", slycat.web.server.handlers.get_tests_agent, conditions={"method" : ["GET"]})
+  dispatcher.connect("tests-request", "/tests/request", slycat.web.server.handlers.tests_request, conditions={"method" : ["GET", "PUT", "POST", "DELETE"]})
   dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-models", "/models", slycat.web.server.handlers.get_models, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-models-feed", "/models-feed", slycat.web.server.handlers.get_models_feed, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-chunk", "/models/:mid/tables/:aid/arrays/:array/chunk", slycat.web.server.handlers.get_model_table_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-metadata", "/models/:mid/tables/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_table_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-sorted-indices", "/models/:mid/tables/:aid/arrays/:array/sorted-indices", slycat.web.server.handlers.get_model_table_sorted_indices, conditions={"method" : ["GET"]})
@@ -147,7 +146,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-references", "/projects/:pid/references", slycat.web.server.handlers.get_project_references, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-projects-feed", "/projects-feed", slycat.web.server.handlers.get_projects_feed, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-file", "/remotes/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("post-agent-browse", "/agents/:sid/browse{path:.*}", slycat.web.server.handlers.post_agent_browse, conditions={"method" : ["POST"]})
@@ -192,24 +190,6 @@ def start(root_path, config_file):
     if "tools.staticdir.dir" in section:
       section["tools.staticdir.dir"] = abspath(section["tools.staticdir.dir"])
 
-  # Ensure SSL related paths are absolute.
-  if "server.ssl_private_key" in configuration["global"]:
-    configuration["global"]["server.ssl_private_key"] = abspath(configuration["global"]["server.ssl_private_key"])
-  if "server.ssl_certificate" in configuration["global"]:
-    configuration["global"]["server.ssl_certificate"] = abspath(configuration["global"]["server.ssl_certificate"])
-  if "server.ssl_certificate_chain" in configuration["global"]:
-    configuration["global"]["server.ssl_certificate_chain"] = abspath(configuration["global"]["server.ssl_certificate_chain"])
-
-  # We want fine-grained control over PyOpenSSL here.
-  if "server.ssl_private_key" in configuration["global"] and "server.ssl_certificate" in configuration["global"]:
-    cherrypy.server.ssl_context = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
-    cherrypy.server.ssl_context.use_privatekey_file(configuration["global"]["server.ssl_private_key"])
-    cherrypy.server.ssl_context.use_certificate_file(configuration["global"]["server.ssl_certificate"])
-    if "server.ssl_certificate_chain" in configuration["global"]:
-      cherrypy.server.ssl_context.load_verify_locations(configuration["global"]["server.ssl_certificate_chain"])
-    if "ssl-ciphers" in configuration["slycat"]:
-      cherrypy.server.ssl_context.set_cipher_list(":".join(configuration["slycat"]["ssl-ciphers"]))
-
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
   for item in configuration["slycat"]["plugins"]:
@@ -234,11 +214,10 @@ def start(root_path, config_file):
   configuration["slycat"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
   # Wait for requests to cleanup deleted arrays.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_cleanup_arrays_worker, priority=80)
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_array_cleanup_worker, priority=80)
 
-  # Cache data for live feeds.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_projects_feed, priority=80)
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_models_feed, priority=80)
+  # Cleanup expired sessions.
+  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_session_cleanup_worker, priority=80)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

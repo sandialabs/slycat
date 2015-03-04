@@ -40,12 +40,12 @@ def _require_array_ranges(ranges):
   else:
     raise Exception("Not a valid ranges object.")
 
-class option_parser(argparse.ArgumentParser):
+class ArgumentParser(argparse.ArgumentParser):
   """Return an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
   def __init__(self, *arguments, **keywords):
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_argument("--host", default="https://localhost:8092", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--host", default="https://localhost", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
     self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
@@ -86,6 +86,11 @@ class option_parser(argparse.ArgumentParser):
       log.setLevel(logging.CRITICAL)
 
     return arguments
+
+class option_parser(ArgumentParser):
+  def __init__(self, *arguments, **keywords):
+    ArgumentParser.__init__(self, *arguments, **keywords)
+    log.warning("slycat.web.client.option_parser is deprecated, use slycat.web.client.ArgumentParser instead.")
 
 class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword

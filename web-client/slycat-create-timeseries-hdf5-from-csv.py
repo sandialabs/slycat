@@ -27,7 +27,7 @@ import h5py
 import slycat.web.client
 import slycat.hdf5
 
-parser = slycat.web.client.option_parser()
+parser = slycat.web.client.ArgumentParser()
 parser.add_argument("file", default="-", help="Input CSV file.  Use - for stdin.  Default: %(default)s")
 parser.add_argument("--file-delimiter", default=",", help="Delimeter for the input file")
 parser.add_argument("--id-field", default="id", help="Field used to represent the id of a series")

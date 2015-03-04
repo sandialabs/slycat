@@ -15,7 +15,7 @@ Prerequisites
 * We provide a special developer's image that modifies the Slycat Docker image
   that you've been working with for easier development, so download and run it now::
 
-    $ docker run -p 2222:22 -p 5984:5984 -p 443:8092 -d --name slycat-dev sandialabs/slycat-dev
+    $ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -p 9001:9001 -d --name slycat-dev sandialabs/slycat-dev
 
 * You will need to note the IP address of the Docker host:
 
@@ -30,31 +30,60 @@ Working Inside the Running Container
 
   $ ssh slycat@<docker host ip> -p2222
 
-* Once you're logged-in, you can pull the latest version of the source code::
+* Once you're logged-in, you can pull the latest version of the source code (note that when we build the Docker container, we checkout a specific, known-good commit, so you have to switch to a branch before you pull)::
 
-  $ cd src/slycat
-  $ git pull
+    $ cd src/slycat
+    $ git checkout master
+    $ git pull
 
 * And you can edit the source code in-place::
 
   $ vi packages/slycat/...
 
-* Note that the Slycat server isn't running by default when you start the slycat-dev container.
-  That's because when you make source code changes, the Slycat server automatically
-  restarts.  However, if you insert a typo or other syntax error, the server won't
-  be able to restart.  Thus, it's better when coding to just run your own Slycat server
-  instead, so you can see when it's died, and restart it more easily::
+* The Slycat software stack includes four running servers: the couchdb database, the Slycat web server, the
+  Slycat feed server, and an haproxy reverse proxy server.  All four servers are automatically started
+  by `supervisord` when you start the slycat-dev container.  To check on their status, use the `supervisorctl`
+  command::
 
+    $ supervisorctl status
+    couchdb                          RUNNING    pid 10, uptime 0:02:14
+    feed-server                      RUNNING    pid 11, uptime 0:02:14
+    proxy-server                     RUNNING    pid 13, uptime 0:02:14
+    sshd                             RUNNING    pid 9, uptime 0:02:14
+    web-server                       RUNNING    pid 12, uptime 0:02:14
+
+  However, development is often much easier when you run one or more of the
+  servers yourself - you can configure the server to restart automatically in
+  response to code or configuration changes, see the server output in the
+  console, and know immediately if a typo or syntax error causes the server to
+  fail.
+
+  You cannot simply kill a server process started by `supervisord`, because it
+  will be automatically restarted.  Use `supervisorctl` to stop it, then start
+  your own copy for development:
+
+  **Running Your Own Web Server**::
+
+    $ supervisorctl stop web-server
+    web-server: stopped
     $ cd src/slycat/web-server
     $ python slycat-web-server.py
 
-  Then use another ssh login for code editing.
+  **Running Your Own Feed Server**::
 
-* When you run the Slycat server from the source directory, the default configuration logs
-  everything to stderr / stdout, so you won't need to watch any Slycat logs.  However, you
-  can still watch the couchdb logs if necessary::
+    $ supervisorctl stop feed-server
+    feed-server: stopped
+    $ cd src/slycat/feed-server
+    $ python slycat-feed-server.py
 
-  $ tail -f /var/log/couchdb/*
+  **Running Your Own Reverse Proxy**::
+
+    $ supervisorctl stop proxy-server
+    proxy-server: stopped
+    $ cd src/slycat/proxy-server
+    $ sudo haproxy -f configuration.conf -d
+
+  Typically, you would then use a separate ssh login for making code changes.
 
 * To commit changes while logged-in to the container, you'll need to add your
   personal information to `~/.gitconfig`::
@@ -92,7 +121,7 @@ Working Inside the Running Container
 
 .. NOTE::
 
-  If you're working behind a proxy, you'll need to add it to /etc/yum.conf to yum can download packages::
+  If you're working behind a proxy, you'll also want to add it to /etc/yum.conf to yum can download packages::
 
     proxy=http://your.proxy.name:80
 

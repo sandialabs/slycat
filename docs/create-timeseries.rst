@@ -43,9 +43,9 @@ When prompted, enter password `slycat`.
 
 * Synthesize some time series data, organized for use with Slycat::
 
-  $ python slycat-generate-hdf5-timeseries.py mydata
+  $ python slycat-create-sample-timeseries-hdf5.py
 
-* The script creates a *mydata* directory and populates it with a set
+* The script creates a *sample-timeseries* directory and populates it with a set
   of random input variables and ten output time series, each containing
   two variables (additional command line parameters are available to
   synthesize data of arbitrary size).
@@ -53,12 +53,14 @@ When prompted, enter password `slycat`.
 Compute a Timeseries Model
 --------------------------
 
-* Now that you have some sample data, run
-  *slycat-hdf5-to-timeseries-model.py*, entering the password `slycat`
+* Now that you have some sample data, run::
+
+    $ python slycat-create-timeseries-model-from-hdf5.py --no-verify sample-timeseries
+
+  and enter the password `slycat`
   when prompted (this script also runs in parallel, using the workers
   you started previously)::
 
-    $ python slycat-hdf5-to-timeseries-model.py --host=https://localhost mydata
     slycat password:
     INFO - Storing clustering parameters.
     INFO - Storing input table attribute 0
@@ -71,13 +73,17 @@ View a Timeseries Model
 -----------------------
 
 * Point your web browser to the Slycat home page at
-  https://<docker host ip> again. Wait for the model icon in the *Worker
-  Pane* to switch to a green check, if it hasn't already.
-* Note that the push script created a new project, "HDF5-Timeseries".
-  Click on the project's name, and the browser opens the project page.
-* In the project page, note that there is a new model entry named "my
-  data". Click on on the model's name, and the browser opens the
-  timeseries page.
+  https://<docker host ip>, if it isn't already.
+* In the Slycat navbar at the top of
+  the page, you should see a gray status dropdown containing two numbers
+  separated by a slash.  Those numbers are the number of models being
+  computed, and the number of recently completed models, respectively.
+* Click on the status dropdown to see a menu containing an entry for
+  all in-progress and recently completed models.
+* Wait for the *sample-timeseries* model to be a completed (a green
+  check appears to its left), if it hasn't already.
+* Click the *sample-timeseries* entry in the status dropdown,
+  and the browser opens the new model page.
 * At the top of the page there is a list of output variables.
 * At page left is a hierarchical clustering of the output variable
   timeseries, displayed as a dendrogram.

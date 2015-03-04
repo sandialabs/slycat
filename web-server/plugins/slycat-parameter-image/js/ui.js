@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, dialog, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -13,6 +13,7 @@ var category_columns = null;
 
 var bookmarker = null;
 var bookmark = null;
+var note_manager = null;
 
 var table_metadata = null;
 var table_statistics = null;
@@ -99,7 +100,7 @@ $.ajax(
   success : function(result)
   {
     model = result;
-    bookmarker = bookmark_manager.create(model.project, model.id);
+    bookmarker = bookmark_manager.create(model.project, model._id);
     input_columns = model["artifact:input-columns"];
     output_columns = model["artifact:output-columns"];
     image_columns = model["artifact:image-columns"];
@@ -152,6 +153,8 @@ function model_loaded()
     setup_colorswitcher();
     setup_sliders();
     metadata_loaded();
+    // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
+    note_manager = new NoteManager(model_id, bookmarker, bookmark);
   });
 }
 
@@ -189,6 +192,7 @@ function metadata_loaded()
   if(!indices && table_metadata)
   {
     var count = table_metadata["row-count"];
+    var saved_bookmarks = bookmark_builder.attach("#bookmarks");
     indices = new Int32Array(count);
     for(var i = 0; i != count; ++i)
       indices[i] = i;
