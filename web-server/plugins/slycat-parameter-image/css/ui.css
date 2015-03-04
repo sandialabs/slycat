@@ -409,24 +409,36 @@ rights in this software.
 {
   margin-right: 10px;
 }
-#scatterplot .media-layer .resize-handle {
+#scatterplot .media-layer .frame-icon {
   position: absolute;
-  bottom: 1px;
+  width: 16px;
+  height: 16px;
+  background-image: url("ui-icons_222222_256x240.png");
+  background-repeat: no-repeat;
+  display: block;
+  overflow: hidden;
+  text-indent: -99999px;
+  background-color: white;
+}
+#scatterplot .media-layer .resize-handle {
+  bottom: 0px;
   right: 0px;
+  background-position: -80px -224px;
 }
 #scatterplot .media-layer .pin-button {
-  position: absolute;
+  background-image: url("pin.png");
   top: 0px;
-  right: 0px;
+  left: 0px;
 }
 #scatterplot .media-layer .reload-button {
   position: absolute;
   font-size: 32px;
 }
 #scatterplot .media-layer .close-button {
-  position: absolute;
   top: 0px;
-  left: 0px;
+  right: 0px;
+  width: 16px;
+  background-position: -96px -128px;
 }
 #scatterplot rect.outline:hover,
 #scatterplot g.image-frame image.image,
