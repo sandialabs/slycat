@@ -26,6 +26,7 @@ import slycat.web.server.remote
 import slycat.web.server.resource
 import slycat.web.server.streaming
 import slycat.web.server.template
+import stat
 import subprocess
 import sys
 import threading
@@ -530,7 +531,7 @@ def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
     data = file.file.read()
     filename = file.filename
   elif file is None and sid is not None and path is not None:
-    with slycat.web.server.ssh.get_session(sid) as session:
+    with slycat.web.server.remote.get_session(sid) as session:
       filename = "%s@%s:%s" % (session.username, session.hostname, path)
       if stat.S_ISDIR(session.sftp.stat(path).st_mode):
         raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)

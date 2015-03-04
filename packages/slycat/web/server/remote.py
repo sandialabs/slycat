@@ -90,6 +90,9 @@ class Session(object):
     """Return the remote hostname accessed by the session."""
     return self._hostname
   @property
+  def sftp(self):
+    return self._sftp
+  @property
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
