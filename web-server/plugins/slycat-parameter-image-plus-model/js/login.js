@@ -95,7 +95,7 @@ Login.prototype.show_prompt = function(images, callback, this_arg) {
       {
         create_session(
           {
-            url : "agents",
+            url : "remotes",
             contentType : "application/json",
             data : JSON.stringify,
             success : parser.hostname,

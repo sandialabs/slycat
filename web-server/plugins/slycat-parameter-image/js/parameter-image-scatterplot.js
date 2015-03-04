@@ -1479,7 +1479,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           api = "/file";
         }
         xhr.image = image;
-        xhr.open("GET", server_root + "agents/" + sid + api + uri.pathname(), true);
+        xhr.open("GET", server_root + "remotes/" + sid + api + uri.pathname(), true);
         xhr.responseType = "arraybuffer";
         xhr.onload = function(e)
         {

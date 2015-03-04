@@ -164,7 +164,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
       this.model.get_image_column(plot.images_index, function(images) {
         $.ajax({
           type: "POST",
-          url: server_root + "agents/" + self.agent_id + "/videos",
+          url: server_root + "remotes/" + self.agent_id + "/videos",
           contentType: "application/json",
           data: JSON.stringify({
             "content-type": "video/" + self.video_type,
@@ -269,7 +269,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
       setTimeout(function(){$.ajax({
           type: "GET",
           accepts: "application/json",
-          url: server_root + "agents/" + self.agent_id + "/videos/" + self.movie[image_index].sid + "/status",
+          url: server_root + "remotes/" + self.agent_id + "/videos/" + self.movie[image_index].sid + "/status",
           success: function(result){
             if(result.message == "Creating video." || result.message == "Not ready."){
               wait_until_build();
@@ -330,7 +330,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
     this.video
       .append("xhtml:source")
         .attr({
-          src: server_root + "agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid,
+          src: server_root + "remotes/" + this.agent_id + "/videos/" + this.movie[image_index].sid,
           type: "video/" + this.video_type
         });
 
@@ -348,7 +348,7 @@ define("Movie", ["slycat-server-root", "d3"], function(server_root, d3){
   Movie.prototype.get_status = function(image_index) {
     $.ajax({
       type: "GET",
-      url : server_root + "agents/" + this.agent_id + "/videos/" + this.movie[image_index].sid + "/status",
+      url : server_root + "remotes/" + this.agent_id + "/videos/" + this.movie[image_index].sid + "/status",
       success : function(){console.debug(arguments)},
       error : function(){console.debug(arguments)},
     });
