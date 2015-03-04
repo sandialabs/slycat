@@ -5,6 +5,15 @@ rights in this software.
 */
 
 define("slycat-parameter-image-sliders", ["slycat-server-root", "knockout", "knockout-mapping", "domReady!"], function(server_root, ko, mapping) {
+
+    // ko.applyBindings({
+    //     people: [
+    //         { firstName: 'Bert', lastName: 'Bertington' },
+    //         { firstName: 'Charles', lastName: 'Charlesforth' },
+    //         { firstName: 'Denise', lastName: 'Dentiste' }
+    //     ]
+    // }, document.getElementById('sliders'));
+
 $.widget("parameter_image.sliders",
 {
 
@@ -75,14 +84,14 @@ $.widget("parameter_image.sliders",
 
     // this.container = $("<div data-bind='foreach: sliders'>")
 
-    var page = mapping.fromJS(
-    {
-      x_low: 0.3,
-      x_high: 0.7,
-      length: 600,
-    });
+    // var page = mapping.fromJS(
+    // {
+    //   x_low: 0.3,
+    //   x_high: 0.7,
+    //   length: 600,
+    // });
 
-    ko.applyBindings(page, this.element[0]);
+    // ko.applyBindings(page, this.element[0]);
 
     // console.log(this.element);
 
@@ -94,7 +103,24 @@ $.widget("parameter_image.sliders",
     //     ]
     // }, this.element[0]);
 
+    // ko.applyBindings({
+    //   people: [
+    //       { firstName: 'Bert', lastName: 'Bertington' },
+    //       { firstName: 'Charles', lastName: 'Charlesforth' },
+    //       { firstName: 'Denise', lastName: 'Dentiste' }
+    //   ]
+    // }, document.getElementById('sliders'));
+
+    ko.applyBindings({
+      people: [
+          { firstName: 'Bert', lastName: 'Bertington' },
+          { firstName: 'Charles', lastName: 'Charlesforth' },
+          { firstName: 'Denise', lastName: 'Dentiste' }
+      ]
+    }, this.element[0]);
+
   },
 
 });
+
 });
