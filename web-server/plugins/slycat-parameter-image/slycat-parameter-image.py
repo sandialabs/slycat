@@ -109,8 +109,6 @@ def register_slycat_plugin(context):
     "stripe1.png",
     "stripe2.png",
     "pin.png",
-    "resize.png",
-    "close.png",
     "ajax-loader.gif",
     # for stickies
     'ui-icons_222222_256x240.png',

@@ -418,6 +418,7 @@ rights in this software.
   display: block;
   overflow: hidden;
   text-indent: -99999px;
+  background-color: white;
 }
 #scatterplot .media-layer .resize-handle {
   bottom: 0px;
@@ -425,7 +426,7 @@ rights in this software.
   background-position: -80px -224px;
 }
 #scatterplot .media-layer .pin-button {
-  position: absolute;
+  background-image: url("pin.png");
   top: 0px;
   left: 0px;
 }

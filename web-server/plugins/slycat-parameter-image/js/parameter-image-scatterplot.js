@@ -1388,9 +1388,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
 
       // Create a pin button ...
-      var pin_button_html = frame_html.append("img")
-        .attr('class', 'pin-button')
-        .attr('src', server_root + "resources/models/parameter-image/" + "pin.png")
+      var pin_button_html = frame_html.append("span")
+        .attr('class', 'pin-button frame-icon')
         .on("mousedown", function(){
           // console.log("html pin button mousedown");
           d3.event.stopPropagation(); // silence other listeners
