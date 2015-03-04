@@ -417,7 +417,7 @@ rights in this software.
 #scatterplot .media-layer .pin-button {
   position: absolute;
   top: 0px;
-  right: 0px;
+  left: 0px;
 }
 #scatterplot .media-layer .reload-button {
   position: absolute;
@@ -426,7 +426,7 @@ rights in this software.
 #scatterplot .media-layer .close-button {
   position: absolute;
   top: 0px;
-  left: 0px;
+  right: 0px;
 }
 #scatterplot rect.outline:hover,
 #scatterplot g.image-frame image.image,
