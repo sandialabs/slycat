@@ -10,7 +10,6 @@ import hashlib
 import itertools
 import json
 import logging.handlers
-import mimetypes
 import numpy
 import os
 import Queue
@@ -18,14 +17,13 @@ import re
 import slycat.hdf5
 import slycat.hyperslice
 import slycat.web.server
-import slycat.web.server.agent
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
 import slycat.web.server.model
 import slycat.web.server.plugin
+import slycat.web.server.remote
 import slycat.web.server.resource
-import slycat.web.server.ssh
 import slycat.web.server.streaming
 import slycat.web.server.template
 import stat
@@ -533,7 +531,7 @@ def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
     data = file.file.read()
     filename = file.filename
   elif file is None and sid is not None and path is not None:
-    with slycat.web.server.ssh.get_session(sid) as session:
+    with slycat.web.server.remote.get_session(sid) as session:
       filename = "%s@%s:%s" % (session.username, session.hostname, path)
       if stat.S_ISDIR(session.sftp.stat(path).st_mode):
         raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
@@ -1129,10 +1127,11 @@ def post_remotes():
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
   password = cherrypy.request.json["password"]
-  return {"sid":slycat.web.server.ssh.create_session(hostname, username, password)}
+  agent = cherrypy.request.json.get("agent", None)
+  return {"sid": slycat.web.server.remote.create_session(hostname, username, password, agent)}
 
 def delete_remote(sid):
-  slycat.web.server.ssh.delete_session(sid)
+  slycat.web.server.remote.delete_session(sid)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
@@ -1142,193 +1141,41 @@ def post_remote_browse(sid, path):
   directory_reject = re.compile(cherrypy.request.json.get("directory-reject")) if "directory-reject" in cherrypy.request.json else None
   directory_allow = re.compile(cherrypy.request.json.get("directory-allow")) if "directory-allow" in cherrypy.request.json else None
 
-  with slycat.web.server.ssh.get_session(sid) as session:
-    try:
-      names = []
-      sizes = []
-      types = []
-      mtimes = []
-
-      for attribute in sorted(session.sftp.listdir_attr(path), key=lambda x: x.filename):
-        filepath = os.path.join(path, attribute.filename)
-        filetype = "d" if stat.S_ISDIR(attribute.st_mode) else "f"
-
-        if filetype == "d":
-          if directory_reject is not None and directory_reject.search(filepath) is not None:
-            if directory_allow is None or directory_allow.search(filepath) is None:
-              continue
-
-        if filetype == "f":
-          if file_reject is not None and file_reject.search(filepath) is not None:
-            if file_allow is None or file_allow.search(filepath) is None:
-              continue
-
-        names.append(attribute.filename)
-        sizes.append(attribute.st_size)
-        types.append(filetype)
-        mtimes.append(datetime.datetime.fromtimestamp(attribute.st_mtime).isoformat())
-
-      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
-      return response
-    except Exception as e:
-      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
-      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.browse(path, file_reject, file_allow, directory_reject, directory_allow)
 
 def get_remote_file(sid, path):
-  with slycat.web.server.ssh.get_session(sid) as session:
-    try:
-      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-        cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
-        raise cherrypy.HTTPError("400 Can't read directory.")
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_file(path)
 
-      content_type, encoding = mimetypes.guess_type(path, strict=False)
-      cherrypy.response.headers["content-type"] = content_type
-      return session.sftp.file(path).read()
-
-    except Exception as e:
-      cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
-
-      if str(e) == "Garbage packet received":
-        cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
-        raise cherrypy.HTTPError("500 Remote access failed.")
-
-      if e.strerror == "No such file":
-        # TODO this would ideally be a 404, but the alert is not handled the same in the JS -- PM
-        cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
-        raise cherrypy.HTTPError("400 File not found.")
-
-      if e.strerror == "Permission denied":
-        # The file exists, but is not available due to access controls
-        cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
-        cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-        raise cherrypy.HTTPError("400 Access denied.")
-
-      # Catchall
-      cherrypy.response.headers["slycat-message"] = "Remote access failed: %s" % str(e)
-      raise cherrypy.HTTPError("400 Remote access failed.")
-
-@cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
-def post_agents():
-  username = cherrypy.request.json["username"]
-  hostname = cherrypy.request.json["hostname"]
-  password = cherrypy.request.json["password"]
-  return {"sid":slycat.web.server.agent.create_session(hostname, username, password)}
-
-@cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
-def post_agent_browse(sid, path):
-  command = {"action":"browse", "path":path}
-  if "file-reject" in cherrypy.request.json:
-    command["file-reject"] = cherrypy.request.json["file-reject"]
-  if "file-allow" in cherrypy.request.json:
-    command["file-allow"] = cherrypy.request.json["file-allow"]
-  if "directory-reject" in cherrypy.request.json:
-    command["directory-reject"] = cherrypy.request.json["directory-reject"]
-  if "directory-allow" in cherrypy.request.json:
-    command["directory-allow"] = cherrypy.request.json["directory-allow"]
-
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps(command))
-    session.stdin.flush()
-    return json.loads(session.stdout.readline())
-
-@cherrypy.tools.json_in(on = True)
-@cherrypy.tools.json_out(on = True)
-def post_agent_videos(sid):
-  if "content-type" not in cherrypy.request.json:
-    raise cherrypy.HTTPError("400 Missing content-type.")
-  if "images" not in cherrypy.request.json:
-    raise cherrypy.HTTPError("400 Missing images.")
-
-  command = {"action":"create-video", "content-type":cherrypy.request.json["content-type"], "images":cherrypy.request.json["images"]}
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps(command))
-    session.stdin.flush()
-    return json.loads(session.stdout.readline())
-
-def get_agent_file(sid, path):
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"get-file", "path":path}))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
-
-    if metadata["message"] == "Path must be absolute.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Path not absolute.")
-    elif metadata["message"] == "Path not found.":
-      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 File not found.")
-    elif metadata["message"] == "Directory unreadable.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Can't read directory.")
-    elif metadata["message"] == "Access denied.":
-      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
-      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Access denied.")
-
-    content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"]
-    return content
-
-def get_agent_image(sid, path, **kwargs):
+def get_remote_image(sid, path, **kwargs):
   content_type = kwargs.get("content-type", None)
   max_size = kwargs.get("max-size", None)
   max_width = kwargs.get("max-width", None)
   max_height = kwargs.get("max-height", None)
 
-  command = {"action":"get-image", "path":path}
-  if content_type is not None:
-    command["content-type"] = content_type
-  if max_size is not None:
-    command["max-size"] = max_size
-  if max_width is not None:
-    command["max-width"] = max_width
-  if max_height is not None:
-    command["max-height"] = max_height
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_image(path, content_type, max_size, max_width, max_height)
 
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps(command))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_remote_videos(sid):
+  if "content-type" not in cherrypy.request.json:
+    raise cherrypy.HTTPError("400 Missing content-type.")
+  if "images" not in cherrypy.request.json:
+    raise cherrypy.HTTPError("400 Missing images.")
 
-    if metadata["message"] == "Path must be absolute.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is not absolute." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Path not absolute.")
-    elif metadata["message"] == "Path not found.":
-      cherrypy.response.headers["slycat-message"] = "The remote file %s:%s does not exist." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 File not found.")
-    elif metadata["message"] == "Directory unreadable.":
-      cherrypy.response.headers["slycat-message"] = "Remote path %s:%s is a directory." % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Can't read directory.")
-    elif metadata["message"] == "Access denied.":
-      cherrypy.response.headers["slycat-message"] = "You do not have permission to retrieve %s:%s" % (session.hostname, path)
-      cherrypy.response.headers["slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (session.hostname, path)
-      raise cherrypy.HTTPError("400 Access denied.")
-
-    content = session.stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"]
-    return content
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.post_video(cherrypy.request.json["content-type"], cherrypy.request.json["images"])
 
 @cherrypy.tools.json_out(on = True)
-def get_agent_video_status(sid, vsid):
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"video-status", "sid":vsid}))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
+def get_remote_video_status(sid, vsid):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_video_status(vsid)
 
-    if "returncode" in metadata and metadata["returncode"] != 0:
-      sys.stderr.write("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
-
-    return metadata
-
-def get_agent_video(sid, vsid):
-  with slycat.web.server.agent.get_session(sid) as session:
-    session.stdin.write("%s\n" % json.dumps({"action":"get-video", "sid":vsid}))
-    session.stdin.flush()
-    metadata = json.loads(session.stdout.readline())
-    sys.stderr.write("\n%s\n" % metadata)
-    return slycat.web.server.streaming.serve(session.stdout, metadata["size"], metadata["content-type"])
+def get_remote_video(sid, vsid):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_video(vsid)
 
 def post_events(event):
   # We don't actually have to do anything here, since the request is already logged.
@@ -1378,10 +1225,12 @@ def get_global_resource(resource):
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
 
-def get_tests_agent():
+def get_tests_remote():
   context = {}
-  context["server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
-  return slycat.web.server.template.render("slycat-test-agent.html", context)
+  context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+  context["slycat-css-bundle"] = css_bundle()
+  context["slycat-js-bundle"] = js_bundle()
+  return slycat.web.server.template.render("slycat-test-remote.html", context)
 
 def tests_request(*arguments, **keywords):
   cherrypy.log.error("Request: %s" % cherrypy.request.request_line)

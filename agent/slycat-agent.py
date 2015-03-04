@@ -10,6 +10,7 @@ import PIL.Image
 # Python standard library
 import argparse
 import cStringIO as StringIO
+import datetime
 import errno
 import json
 import mimetypes
@@ -81,6 +82,7 @@ def browse(command):
     "names": [],
     "sizes": [],
     "types": [],
+    "mtimes": [],
     }
 
   for name in names:
@@ -101,6 +103,7 @@ def browse(command):
     listing["names"].append(name)
     listing["sizes"].append(fstat.st_size)
     listing["types"].append(ftype)
+    listing["mtimes"].append(datetime.datetime.fromtimestamp(fstat.st_mtime).isoformat())
 
   sys.stdout.write("%s\n" % json.dumps(listing))
   sys.stdout.flush()

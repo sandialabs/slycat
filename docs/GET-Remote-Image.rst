@@ -1,18 +1,18 @@
-GET Agent Image
-===============
+GET Remote Image
+================
 
-.. http:get:: /agents/(sid)/image(path)
+.. http:get:: /remotes/(sid)/image(path)
 
-  Uses an existing agent session to retrieve a remote image.  The caller *may*
+  Uses an existing remote session to retrieve a remote image.  The caller *may*
   supply additional parameters to resize the image and / or convert it to
   another file type.
 
   Note that specifying max-size, max-width, max-height, or a content-type that
   doesn't match the type of the underlying file can reduce performance
-  significantly as the agent must then decompress, resample, and recompress the
+  significantly as the remote must then decompress, resample, and recompress the
   image before sending it to the client.
 
-  :param sid: Unique session identifier returned from :http:post:`/agents`.
+  :param sid: Unique session identifier returned from :http:post:`/remotes`.
   :type sid: string
 
   :param path: Remote filesystem absolute path to be retrieved.
@@ -37,12 +37,12 @@ GET Agent Image
 
   .. sourcecode:: http
 
-    GET /agents/505d0e463d5ed4a32bb6b0fe9a000d36/image/home/fred/avatar.png?content-type=image/jpeg&max-width=64
+    GET /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/image/home/fred/avatar.png?content-type=image/jpeg&max-width=64
 
 See Also
 --------
 
-* :http:post:`/agents`
-* :http:post:`/agents/(sid)/browse(path)`
-* :http:get:`/agents/(sid)/file(path)`
+* :http:post:`/remotes`
+* :http:post:`/remotes/(sid)/browse(path)`
+* :http:get:`/remotes/(sid)/file(path)`
 

@@ -123,7 +123,7 @@ define("slycat-tracer-model-login", ["slycat-server-root"], function(server_root
         var button = $(this);
         button.prop("disabled", true);
         create_session({
-          url : "agents",
+          url : "remotes",
           contentType : "application/json",
           data : JSON.stringify,
           success : parser.hostname,

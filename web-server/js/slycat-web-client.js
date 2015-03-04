@@ -360,6 +360,26 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.get_remote_video_status = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "remotes/" + params.sid + "/videos/" + params.vsid + "/status",
+      success: function(metadata)
+      {
+        if(params.success)
+          params.success(metadata);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  }
+
   module.get_user = function(params)
   {
     $.ajax(
@@ -509,6 +529,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         hostname: params.hostname,
         username: params.username,
         password: params.password,
+        agent: params.agent !== undefined ? params.agent : null,
       }),
       type: "POST",
       url: server_root + "remotes",
@@ -539,6 +560,31 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
         if(params.success)
           params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
+  module.post_remote_video = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(
+      {
+        "content-type": params["content-type"],
+        "images": params.images,
+      }),
+      type: "POST",
+      url: server_root + "remotes/" + params.sid + "/videos",
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result.sid);
       },
       error: function(request, status, reason_phrase)
       {
@@ -690,31 +736,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         if(params.error)
           params.error(request, status, reason_phrase);
       },
-    });
-  };
-
-  module.post_agents = function(params)
-  {
-    var apply_function = function(function_name)
-    {
-      return function()
-      {
-        if(params[function_name])
-        {
-          params[function_name].apply(this, arguments);
-        }
-      };
-    };
-
-    return $.ajax(
-    {
-      contentType: "application/json",
-      data: JSON.stringify(params.data),
-      type: "POST",
-      url: server_root + "agents",
-      success: apply_function("success"),
-      error: apply_function("error"),
-      complete: apply_function("complete"), 
     });
   };
 

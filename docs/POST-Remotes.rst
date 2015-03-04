@@ -4,9 +4,7 @@ POST Remotes
 .. http:post:: /remotes
 
   Creates a new remote connection from the Slycat server to another host.
-  Currently, the remote uses SSH + SFTP to communicate with the remote host, but
-  this could change in the future.  The caller *must* supply a remote hostname,
-  username, and password.
+  The caller *must* supply a remote hostname, username, and password.
 
   If the connection is created successfully, a unique session ID is returned.  The
   client must use the session ID in subsequent requests.
@@ -16,12 +14,16 @@ POST Remotes
   :<json string hostname: Remote hostname.
   :<json string username: Remote host username.
   :<json string password: Remote host password.
+  :<json boolean agent: (optional) Create an agent when the connection is established.  By default, agents are created automatically if the hostname has an agent configuration.  Use this parameter to explicitly require / prevent agent creation.
 
   :responseheader Content-Type: application/json
 
   :>json string sid: Unique remote session identifier.
 
+  :status 400 Missing agent configuration.: The server isn't configured to start an agent on the given hostname.
   :status 403 Remote authentication failed.: Authentication of the provided username and password failed.
+  :status 500 Missing agent configuration.: The server isn't properly configured to start an agent on the given hostname.
+  :status 500 Agent startup failed.: The server couldn't start an agent on the given hostname.
   :status 500 Remote connection failed.: Unknown failure making the remote connection.
 
   **Sample Request**
@@ -33,7 +35,7 @@ POST Remotes
       Content-Length: 45
       Accept-Encoding: gzip, deflate, compress
       Accept: */*
-      User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.2.1.el6.x86_64
+      User-Remote: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.2.1.el6.x86_64
       content-type: application/json
       Authorization: Basic c2x5Y2F0OnNseWNhdA==
 
@@ -43,7 +45,7 @@ POST Remotes
 
   .. sourcecode:: http
 
-      HTTP/1.1 201 Project created.
+      HTTP/1.1 201 Remote created.
       Date: Thu, 11 Apr 2013 21:30:16 GMT
       Content-Length: 42
       Content-Type: application/json
@@ -57,5 +59,8 @@ See Also
 
 - :http:post:`/remotes/(sid)/browse(path)`
 - :http:get:`/remotes/(sid)/file(path)`
-
+- :http:get:`/remotes/(sid)/image(path)`
+- :http:post:`/remotes/(sid)/videos`
+- :http:get:`/remotes/(sid)/videos/(vsid)/status`
+- :http:get:`/remotes/(sid)/videos/(vsid)`
 
