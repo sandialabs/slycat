@@ -27,6 +27,29 @@ define("slycat-dialog", ["slycat-server-root", "slycat-web-client", "knockout", 
     });
   }
 
+  module.confirm = function(params)
+  {
+    module.dialog(
+    {
+      title: params.title || "Confirm",
+      message: params.message || "",
+      buttons: [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
+      callback: function(button)
+      {
+        if(button.label == "OK")
+        {
+          if(params.ok)
+            params.ok();
+        }
+        else
+        {
+          if(params.cancel)
+            params.cancel();
+        }
+      }
+    });
+  }
+
   module.ajax_error = function(message)
   {
     return function(request, status, reason_phrase)
