@@ -79,7 +79,7 @@ def js_bundle():
         "js/slycat-local-browser.js",
         "js/slycat-remote-browser.js",
         "js/slycat-remote-controls.js",
-        "js/slycat-remote.js",
+        "js/slycat-remotes.js",
         "js/slycat-login-controls.js",
         "js/slycat-range-slider.js",
         "js/slycat-projects-main.js",
