@@ -16,11 +16,18 @@ define("slycat-login-controls", ["slycat-server-root", "slycat-web-client", "kno
       component.error = params.error;
 
       if(!component.username())
-        component.username(localStorage.getItem("slycat-remote-controls-username"));
+        component.username(localStorage.getItem("slycat-login-controls-username"));
 
       component.username.subscribe(function(value)
       {
         localStorage.setItem("slycat-login-controls-username", value);
+        component.error("");
+      });
+
+      component.password.subscribe(function(value)
+      {
+        console.log(value);
+        component.error("");
       });
     },
     template: { require: "text!" + server_root + "templates/slycat-login-controls.html" }
