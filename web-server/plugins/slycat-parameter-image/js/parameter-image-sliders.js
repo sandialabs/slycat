@@ -4,7 +4,12 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-parameter-image-sliders", ["slycat-server-root", "knockout", "knockout-mapping", "domReady!"], function(server_root, ko, mapping) {
+require(["slycat-server-root", "knockout", "knockout-mapping", "domReady!"], function(server_root, ko, mapping) {
+  ko.components.register("slycat-parameter-image-slidera",
+  {
+
+  }); 
+
 
     // ko.applyBindings({
     //     people: [
@@ -14,17 +19,17 @@ define("slycat-parameter-image-sliders", ["slycat-server-root", "knockout", "kno
     //     ]
     // }, document.getElementById('sliders'));
 
-$.widget("parameter_image.sliders",
-{
+// $.widget("parameter_image.sliders",
+// {
 
-	options:
-  {
-    mid : null,
-  },
+// 	options:
+//   {
+//     mid : null,
+//   },
 
-  _create: function()
-  {
-  	var self = this;
+//   _create: function()
+//   {
+//   	var self = this;
 
   	// this.x_slider = $("<slycat-range-slider params=\"axis:'vertical', length:length, low:x_low, high:x_high\"></slycat-range-slider>")
    //    .appendTo(this.element)
@@ -111,16 +116,16 @@ $.widget("parameter_image.sliders",
     //   ]
     // }, document.getElementById('sliders'));
 
-    ko.applyBindings({
-      people: [
-          { firstName: 'Bert', lastName: 'Bertington' },
-          { firstName: 'Charles', lastName: 'Charlesforth' },
-          { firstName: 'Denise', lastName: 'Dentiste' }
-      ]
-    }, this.element[0]);
+    // ko.applyBindings({
+    //   people: [
+    //       { firstName: 'Bert', lastName: 'Bertington' },
+    //       { firstName: 'Charles', lastName: 'Charlesforth' },
+    //       { firstName: 'Denise', lastName: 'Dentiste' }
+    //   ]
+    // }, this.element[0]);
 
-  },
+//   },
 
-});
+// });
 
 });

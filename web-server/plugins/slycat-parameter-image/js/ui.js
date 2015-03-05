@@ -553,7 +553,8 @@ function setup_sliders()
   {
     sliders_ready = true;
     $("#sliders-pane .load-status").css("display", "none");
-    $("#sliders").sliders();
+    // This is where KO comes in instead
+    //$("#sliders").sliders();
   }
     
 }
