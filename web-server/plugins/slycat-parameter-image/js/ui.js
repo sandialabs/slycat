@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "knockout", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, ko, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -555,6 +555,15 @@ function setup_sliders()
     $("#sliders-pane .load-status").css("display", "none");
     // This is where KO comes in instead
     //$("#sliders").sliders();
+    ko.applyBindings({
+        slycatsliders: ko.observableArray([
+          { type: 'Bert', lastName: 'Bertington' },
+          { type: 'Charles', lastName: 'Charlesforth' },
+          { type: 'Denise', lastName: 'Dentiste' }
+        ]),
+        somethingelse: 5,
+
+    }, document.getElementById('sliders'));
   }
     
 }

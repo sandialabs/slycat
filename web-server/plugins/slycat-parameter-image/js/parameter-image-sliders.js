@@ -5,9 +5,18 @@ rights in this software.
 */
 
 require(["slycat-server-root", "knockout", "knockout-mapping", "domReady!"], function(server_root, ko, mapping) {
-  ko.components.register("slycat-parameter-image-slidera",
+  ko.components.register("slycat-parameter-image-sliders",
   {
-
+    viewModel: function(params)
+    {
+      // this.sliders = ko.observableArray([
+      //   { name: "Bungle", type: "Bear" },
+      //   { name: "George", type: "Hippo" },
+      //   { name: "Zippy", type: "Unknown" }
+      // ]);
+      this.sliders = params.sliders;
+    },
+    template: { require: "text!" + server_root + "resources/models/parameter-image/parameter-image-sliders.html" }
   }); 
 
 

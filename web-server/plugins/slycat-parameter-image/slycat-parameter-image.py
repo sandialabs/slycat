@@ -127,6 +127,7 @@ def register_slycat_plugin(context):
     "js/parameter-image-sliders.js",
     "js/ui.js",
     #"css/ui.css",
+    "parameter-image-sliders.html",
   ]
   for dev in devs:
     context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
