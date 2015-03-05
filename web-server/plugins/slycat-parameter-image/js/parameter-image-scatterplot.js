@@ -7,7 +7,7 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-agent-login"], function(server_root, d3, URI, login)
+define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes"], function(server_root, d3, URI, remotes)
 {
   $.widget("parameter_image.scatterplot",
   {
@@ -78,8 +78,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self.options.scale_v = self.options.v;
     }
 
-    this.login = login.build(document.querySelector("#login-modal"), {title: "Login to retrieve images"});
-    
+    this.remotes = remotes.create_pool();
+
     self.hover_timer = null;
     self.close_hover_timer = null;
 
@@ -1451,27 +1451,32 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     // Retrieve the image.
     console.log("Loading image " + image.uri + " from server");
-    self.login.agentId(uri.hostname(), {cancel: function(){
-      var frame = d3.select(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
-      frame.select(".loading-image").remove();
+    self.remotes.get_remote(
+    {
+      hostname: uri.hostname(),
+      cancel: function()
+      {
+        var frame = d3.select(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
+        frame.select(".loading-image").remove();
 
-      var reload_button = frame.append("span")
-        .attr("class", "glyphicon glyphicon-exclamation-sign reload-button")
-        .style({top: (parseInt(frame.style("height"))/2 - 16) + "px", left: (parseInt(frame.style("width"))/2 - 16) + "px", cursor: "pointer"})
-        .attr("title", "Could not load image. Click to reconnect.")
-        .on("click", (function(img, frame){
-          return function(){
-            var loading_image = frame.append("img")
-              .attr("class", "loading-image")
-              .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
-              ;
-            var hostname = URI(img.uri).hostname();
-            var images = $(this).closest(".media-layer").children(".scaffolding").map(function(_, x){return {uri: $(x).attr("data-uri"), image_class: image.image_class}}).filter(function(_, x){return URI(x["uri"]).hostname() == hostname;})
-            $(this).remove();
-            self._open_images(images);
-          }})(image, frame));
+        var reload_button = frame.append("span")
+          .attr("class", "glyphicon glyphicon-exclamation-sign reload-button")
+          .style({top: (parseInt(frame.style("height"))/2 - 16) + "px", left: (parseInt(frame.style("width"))/2 - 16) + "px", cursor: "pointer"})
+          .attr("title", "Could not load image. Click to reconnect.")
+          .on("click", (function(img, frame){
+            return function(){
+              var loading_image = frame.append("img")
+                .attr("class", "loading-image")
+                .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
+                ;
+              var hostname = URI(img.uri).hostname();
+              var images = $(this).closest(".media-layer").children(".scaffolding").map(function(_, x){return {uri: $(x).attr("data-uri"), image_class: image.image_class}}).filter(function(_, x){return URI(x["uri"]).hostname() == hostname;})
+              $(this).remove();
+              self._open_images(images);
+            }})(image, frame));
       },
-      success: function(sid){
+      success: function(sid)
+      {
         var xhr = new XMLHttpRequest();
         var api = "/image";
         if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
@@ -1488,7 +1493,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           // Either way, delete the cached session and create a new one.
           if(this.status == 404 || this.status == 500)
           {
-            self.login.clearAgentId(uri.hostname());
+            self.remotes.delete_remote(uri.hostname());
             self._open_session(images);
             return;
           }
@@ -1528,7 +1533,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           // }, 5000);
         }
         xhr.send();
-      }
+      },
     });
   },
 
@@ -1543,11 +1548,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._remove_image_and_leader_line(d3.select(this));
       })
       ;
-  },
-
-  _open_session: function(images)
-  {
-    this.login.show_prompt(images, this._open_images, this);
   },
 
   _schedule_hover_canvas: function(e)
