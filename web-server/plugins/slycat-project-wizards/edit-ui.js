@@ -26,38 +26,61 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         {
           if(component.permission() == "reader")
           {
-            if(window.confirm("Add " + user.name + " to the project?  They will have read access to all project data."))
+            dialog.confirm(
             {
-              component.remove_user(user.uid);
-              component.modified.acl.readers.push({user:ko.observable(user.uid)})
-            }
+              title: "Add Project Reader",
+              message: "Add " + user.name + " to the project?  They will have read access to all project data.",
+              ok: function()
+              {
+                component.remove_user(user.uid);
+                component.modified.acl.readers.push({user:ko.observable(user.uid)})
+              }
+            });
           }
           if(component.permission() == "writer")
           {
-            if(window.confirm("Add " + user.name + " to the project?  They will have read and write access to all project data."))
+            dialog.confirm(
             {
-              component.remove_user(user.uid);
-              component.modified.acl.writers.push({user:ko.observable(user.uid)})
-            }
+              title: "Add Project Writer",
+              message: "Add " + user.name + " to the project?  They will have read and write access to all project data.",
+              ok: function()
+              {
+                component.remove_user(user.uid);
+                component.modified.acl.writers.push({user:ko.observable(user.uid)})
+              }
+            });
           }
           if(component.permission() == "administrator")
           {
-            if(window.confirm("Add " + user.name + " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members."))
+            dialog.confirm(
             {
-              component.remove_user(user.uid);
-              component.modified.acl.administrators.push({user:ko.observable(user.uid)})
-            }
+              title: "Add Project Administrator",
+              message: "Add " + user.name + " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members.",
+              ok: function()
+              {
+                component.remove_user(user.uid);
+                component.modified.acl.administrators.push({user:ko.observable(user.uid)})
+              }
+            });
           }
         },
         error: function(request, status, reason_phrase)
         {
           if(request.status == 404)
           {
-            window.alert("User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.");
+            dialog.dialog(
+            {
+              title: "Unknown User",
+              message: "User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.",
+            });
           }
           else
           {
-            window.alert("Error retrieving user information: " + reason_phrase);
+            dialog.dialog(
+            {
+              title: "Error retrieving user information",
+              message: reason_phrase
+            });
           }
         }
       });

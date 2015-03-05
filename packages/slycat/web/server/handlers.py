@@ -79,11 +79,12 @@ def js_bundle():
         "js/slycat-local-browser.js",
         "js/slycat-remote-browser.js",
         "js/slycat-remote-controls.js",
+        "js/slycat-remotes.js",
+        "js/slycat-login-controls.js",
         "js/slycat-range-slider.js",
         "js/slycat-projects-main.js",
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
-        "js/slycat-agent-login.js",
         "js/slycat-resizing-modals.js"
       ])
   return js_bundle._bundle
