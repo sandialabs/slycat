@@ -29,10 +29,16 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
       component.hostname.subscribe(function(value)
       {
         localStorage.setItem("slycat-remote-controls-hostname", value);
+        component.error("");
       });
       component.username.subscribe(function(value)
       {
         localStorage.setItem("slycat-remote-controls-username", value);
+        component.error("");
+      });
+      component.password.subscribe(function(value)
+      {
+        component.error("");
       });
       client.get_configuration_remote_hosts(
       {
