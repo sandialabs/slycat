@@ -68,6 +68,8 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
       module.login(
       {
         hostname: params.hostname,
+        title: params.title,
+        message: params.message,
         success: function(sid)
         {
           remotes[params.hostname] = sid;

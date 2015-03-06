@@ -1454,6 +1454,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.remotes.get_remote(
     {
       hostname: uri.hostname(),
+      title: "Login to " + uri.hostname(),
+      message: "Loading " + uri.pathname(),
       cancel: function()
       {
         var frame = d3.select(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
