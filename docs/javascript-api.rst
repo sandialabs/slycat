@@ -10,6 +10,8 @@ around the :ref:`rest-api`.
 .. toctree::
   :maxdepth: 2
 
+  slycat-login-controls.rst
   slycat-range-slider.rst
+  slycat-remote-controls.rst
   slycat-server-root.rst
   slycat-web-client.rst
