@@ -8,12 +8,12 @@
         </div>
           <div class="modal-body">
             <form class="form-horizontal" role="form">
-              <slycat-login-controls params="username:remote.username,password:remote.password,error:remote.error"></slycat-login-controls>
+              <slycat-login-controls params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,activate:login"></slycat-login-controls>
             </form>
           </div>
           <div class="modal-footer">
             <button class="btn btn-default pull-left" data-bind="click:cancel" data-dismiss="modal">Cancel</button>
-            <button class="btn btn-default" data-bind="click:login">Login</button>
+            <button class="btn btn-default" data-bind="click:login,enable:remote.enable">Login</button>
           </div>
         </form>
       </div>
