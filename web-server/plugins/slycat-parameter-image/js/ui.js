@@ -199,6 +199,7 @@ function metadata_loaded()
   }
 
   setup_controls();
+  setup_sliders();
 
   if(table_metadata && bookmark)
   {
@@ -320,6 +321,7 @@ function metadata_loaded()
       setup_scatterplot();
     }
     setup_controls();
+    setup_sliders();
   }
 }
 
@@ -547,27 +549,6 @@ function setup_scatterplot()
   }
 }
 
-function setup_sliders()
-{
-  if( !sliders_ready )
-  {
-    sliders_ready = true;
-    $("#sliders-pane .load-status").css("display", "none");
-    // This is where KO comes in instead
-    //$("#sliders").sliders();
-    ko.applyBindings({
-        slycatsliders: ko.observableArray([
-          { type: 'Bert', lastName: 'Bertington' },
-          { type: 'Charles', lastName: 'Charlesforth' },
-          { type: 'Denise', lastName: 'Dentiste' }
-        ]),
-        somethingelse: 5,
-
-    }, document.getElementById('sliders'));
-  }
-    
-}
-
 function setup_controls()
 {
   if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null)
@@ -791,6 +772,64 @@ function setup_controls()
       update_widgets_when_hidden_simulations_change();
     });
   }
+}
+
+function setup_sliders()
+{
+  if( !sliders_ready && controls_ready)
+  {
+    sliders_ready = true;
+    $("#sliders-pane .load-status").css("display", "none");
+
+    var filters = ko.observableArray([
+      { name: 'one',
+        index: 1,
+        max: ko.observable(250),
+        min: ko.observable(25),
+        high: ko.observable(250),
+        low: ko.observable(25),
+        active: ko.observable(true) 
+      },
+      { name: 'two is a very long label and we want to make sure it will not break things',
+        index: 2,
+        max: ko.observable(1),
+        min: ko.observable(-1),
+        high: ko.observable(0.25),
+        low: ko.observable(-1),
+        active: ko.observable(false)  
+      },
+      { name: 'three',
+        index: 3,
+        max: ko.observable(1200),
+        min: ko.observable(1100),
+        high: ko.observable(1150),
+        low: ko.observable(1100),
+        active: ko.observable(true)  
+      },
+    ]);
+
+    var ViewModel = function(params){
+      var self = this;
+      self.filters = filters;
+      self.allActive = ko.pureComputed(function() {
+        var allActive = false;
+        for(var i=0; i < self.filters().length; i++)
+        {
+          if(!self.filters()[i].active())
+          {
+            return false;
+          }
+        }
+        return true;
+      });
+    };
+
+    ko.applyBindings(
+      new ViewModel(),
+      document.getElementById('parameter-image-plus-layout')
+    );
+  }
+    
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

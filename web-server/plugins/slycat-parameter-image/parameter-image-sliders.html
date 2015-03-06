@@ -1,3 +1,13 @@
 <div data-bind="foreach: sliders">
-	<strong data-bind="text: type">it doesn't work!</strong>
+	<!-- ko if: active -->
+		<slycat-range-slider 
+			params="
+				axis: 'vertical', 
+				length: $parent.length,
+				min: min,
+				max: max,
+				low: low,
+				high: high
+			"></slycat-range-slider>
+	<!-- /ko -->
 </div>

@@ -36,7 +36,20 @@ rights in this software.
 
 	<div id="controls-pane" class="ui-layout-north">
     <div class="center">
-      <div id="controls"></div>
+      <div id="controls">
+        <!-- ko if: filters().length > 0 -->
+          <select id='filter-selector' name='filter-selector'
+            data-bind="disable: allActive">
+            <option selected="selected">Filter By:</option>
+            <!-- ko foreach: filters -->
+              <!-- ko ifnot: active -->
+              <option data-bind="text: name"></option>
+              <!-- /ko -->
+            <!-- /ko -->
+            </optgroup>
+          </select>
+        <!-- /ko -->
+      </div>
       <div id="color-switcher"></div>
     </div>
     <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
@@ -72,19 +85,7 @@ rights in this software.
     <div class="load-status"></div>
     <div id="sliders">
 
-      <slycat-parameter-image-sliders params="sliders: slycatsliders"></slycat-parameter-image-sliders>
-
-<!--       <table>
-          <thead>
-              <tr><th>First name</th><th>Last name</th></tr>
-          </thead>
-          <tbody data-bind="foreach: people">
-              <tr>
-                  <td data-bind="text: firstName"></td>
-                  <td data-bind="text: lastName"></td>
-              </tr>
-          </tbody>
-      </table> -->
+      <slycat-parameter-image-sliders params="filters: filters"></slycat-parameter-image-sliders>
 
     </div>
   </div>

@@ -90,9 +90,9 @@ $.widget("parameter_image.controls",
       .appendTo(this.element)
       ;
 
-    this.selection_label = $("<label for='selection-control'>Selection:</label>")
-      .appendTo(this.element)
-      ;
+    // this.selection_label = $("<label for='selection-control'>Selection:</label>")
+    //   .appendTo(this.element)
+    //   ;
     this.selection_select = $("<select id='selection-control' name='selection-control' />")
       .change(function(){
 
@@ -493,7 +493,7 @@ $.widget("parameter_image.controls",
     this.selection_select.empty();
     // Start with empty option
     $("<option />")
-      .text("Pick Action")
+      .text("Selection Action:")
       .appendTo(this.selection_select)
       ;
 
@@ -622,7 +622,7 @@ $.widget("parameter_image.controls",
   {
     var self = this;
     this.selection_select.prop("disabled", this.options.selection.length == 0);
-    this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
+    // this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
   },
 
   _set_show_all: function()
