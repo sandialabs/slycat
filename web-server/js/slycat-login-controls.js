@@ -26,7 +26,6 @@ define("slycat-login-controls", ["slycat-server-root", "slycat-web-client", "kno
 
       component.password.subscribe(function(value)
       {
-        console.log(value);
         component.error("");
       });
     },
