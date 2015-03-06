@@ -16,6 +16,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         component.hostname = params.hostname;
         component.username = params.username;
         component.password = params.password;
+        component.enable = params.enable || ko.observable(true);
         component.status = params.status || ko.observable(null);
         component.status_type = params.status_type || ko.observable(null);
         component.remote_hosts = mapping.fromJS([]);

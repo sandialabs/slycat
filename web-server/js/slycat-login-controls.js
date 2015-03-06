@@ -17,6 +17,7 @@ define("slycat-login-controls", ["slycat-server-root", "slycat-web-client", "kno
         component.password = params.password;
         component.status = params.status || ko.observable(null);
         component.status_type = params.status_type || ko.observable(null);
+        component.enable = params.enable || ko.observable(true);
 
         component.status_classes = ko.pureComputed(function()
         {

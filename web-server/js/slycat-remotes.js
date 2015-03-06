@@ -15,6 +15,7 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
       }
       component.login = function()
       {
+        component.remote.enable(false);
         component.remote.status_type("info");
         component.remote.status("Connecting ...");
         client.post_remotes(
@@ -30,6 +31,7 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
           },
           error: function(request, status, reason_phrase)
           {
+            component.remote.enable(true);
             component.remote.status_type("danger");
             component.remote.status(reason_phrase);
           },
@@ -37,7 +39,7 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
       }
       component.title = ko.observable(params.title || "Login");
       component.message = ko.observable(params.message || "");
-      component.remote = mapping.fromJS({username: null, password: null, status: null, status_type: null});
+      component.remote = mapping.fromJS({username: null, password: null, status: null, enable: true, status_type: null});
       component.container = $($.parseHTML(template)).appendTo($("body"));
       component.container.children().on("hidden.bs.modal", function()
       {
