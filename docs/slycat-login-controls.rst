@@ -53,4 +53,5 @@ See Also
 --------
 
 - :ref:`slycat-remote-controls` - if you also need to prompt users for a hostname.
+- :ref:`slycat-remotes` - for a higher-level API that provides a modal login dialog, and can manage a pool of remote connections.
 
