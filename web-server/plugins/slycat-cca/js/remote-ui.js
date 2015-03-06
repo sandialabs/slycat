@@ -6,7 +6,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, error: null, sid: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, sid: null});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
@@ -50,6 +50,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
     component.connect = function()
     {
+      component.remote.status_type("info");
+      component.remote.status("Connecting ...");
       client.post_remotes(
       {
         hostname: component.remote.hostname(),
@@ -62,7 +64,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         },
         error: function(request, status, reason_phrase)
         {
-          component.remote.error(reason_phrase);
+          component.remote.status_type("danger");
+          component.remote.status(reason_phrase);
         },
       });
     }
