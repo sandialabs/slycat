@@ -17,6 +17,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         component.username = params.username;
         component.password = params.password;
         component.enable = params.enable || ko.observable(true);
+        component.focus = params.focus || ko.observable(false);
         component.status = params.status || ko.observable(null);
         component.status_type = params.status_type || ko.observable(null);
         component.remote_hosts = mapping.fromJS([]);
@@ -56,6 +57,51 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         component.password.subscribe(function(value)
         {
           component.status(null);
+        });
+
+        component.focus.subscribe(function(value)
+        {
+          var hostname = component.hostname();
+          var username = component.username();
+          var password = component.password();
+          var hostname_input = $(component_info.element).find("input").eq(0);
+          var username_input = $(component_info.element).find("input").eq(1);
+          var password_input = $(component_info.element).find("input").eq(2);
+
+          if(value == true)
+          {
+            if(component.hostname() && component.username())
+            {
+              value = "password";
+            }
+            else if(component.hostname())
+            {
+              value = "username";
+            }
+            else
+            {
+              value = "hostname";
+            }
+          }
+
+          if(value == "hostname")
+          {
+            hostname_input.focus();
+            if(hostname)
+              hostname_input.get(0).setSelectionRange(0, hostname.length);
+          }
+          if(value == "username")
+          {
+            username_input.focus();
+            if(username)
+              username_input.get(0).setSelectionRange(0, username.length);
+          }
+          if(value == "password")
+          {
+            password_input.focus();
+            if(password)
+              password_input.get(0).setSelectionRange(0, password.length);
+          }
         });
 
         $(component_info.element).find("input").keydown(function(e)
