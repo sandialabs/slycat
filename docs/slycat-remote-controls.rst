@@ -50,6 +50,7 @@ The full set of parameters supported by slycat-remote-controls are as follows:
 * status, :class:`ko.observable`: Optional string status message to be displayed under the controls.
 * status_type, :class:`ko.observable`: Optional string status type that controls the appearance of the status message.  Must be one of "success", "info", "warning", or "danger".
 * enable, :class:`ko.observable`: Optional boolean value to enable / disable the controls.
+* focus, :class:`ko.observable`: Optional, used to focus the controls.  Set to `"hostname"` to focus the hostname control, `"username"` to focus the username control, `"password"` to focus the password control, or `true` to automatically choose which control to focus.  Because the caller may wish to focus the same control more than once in a row (for example: to refocus the password control after a failed login attempt), it is useful to configure the focus observable to always notify subscribers, even if its value doesn't change, using `focus.extend({notify: "always"})`.
 * activate, function: Optional callback function that will be invoked if the user presses the "enter" key while using the login controls.
 
 See Also
