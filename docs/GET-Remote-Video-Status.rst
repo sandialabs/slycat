@@ -13,9 +13,9 @@ GET Remote Video Status
   :param vsid: Unique video creation session identifier.
   :type vsid: string
 
-  :responseheader Content-Type: application/json
-
   :statuscode 404: If the session doesn't exist or has timed out.
+
+  :responseheader Content-Type: application/json
 
   **Sample Request**
 

@@ -21,6 +21,10 @@ POST Remote Browse
   :<json string file-reject: Optional regular expression for filtering files.
   :<json string file-allow: Optional regular expression for allowing files.
 
+  :status 200: The response contains the requested browsing information.
+  :status 400: The remote access failed.
+  :status 404: The remote session ID was invalid or expired.
+
   :responseheader Content-Type: application/json
 
   :>json string path: Remote filesystem path
@@ -28,10 +32,6 @@ POST Remote Browse
   :>json array sizes: Array of integer file sizes.
   :>json array types: Array of string file types, "f" for regular files, "d" for directories.
   :>json array mtimes: Array of string file modification times, in ISO-8601 format.
-
-  :status 200: The response contains the requested browsing information.
-  :status 400: The remote access failed.
-  :status 404: The remote session ID was invalid or expired.
 
   The regular expression parameters are matched against full file / directory
   paths.  If a file / directory matches a reject expression, it will not be

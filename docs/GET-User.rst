@@ -10,14 +10,14 @@ GET User
     about the currently-logged-in user.
   :type uid: string
 
-  :resheader Content-Type: application/json
+  :status 200: User metadata retrieved.
+  :status 404: Unknown user.
+
+  :responseheader Content-Type: application/json
 
   :>json string uid: User id of the requested user.
   :>json string email: Email address of the requested user.
   :>json string name: Full name of the requested user.
-
-  :status 200: User metadata retrieved.
-  :status 404: Unknown user.
 
   **Sample Response**
 
