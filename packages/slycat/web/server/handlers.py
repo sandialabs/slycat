@@ -39,9 +39,11 @@ def css_bundle():
       css_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/css",
       [
         "css/namespaced-bootstrap.css",
+        "css/font-awesome.css",
         "css/slycat.css",
       ])
       slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+      slycat.web.server.resource.manager.add_directory("fonts/font-awesome", "fonts/font-awesome")
       slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
       slycat.web.server.resource.manager.add_file("directory-small.png", "css/directory-small.png")
       slycat.web.server.resource.manager.add_file("file-small.png", "css/file-small.png")
