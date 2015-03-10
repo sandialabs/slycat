@@ -432,6 +432,11 @@ rights in this software.
 }
 #scatterplot .media-layer .reload-button {
   position: absolute;
+  left: 1px;
+  font-size: 32px;
+}
+#scatterplot .media-layer .close-button {
+  position: absolute;
   font-size: 32px;
 }
 #scatterplot .media-layer .close-button {
@@ -460,7 +465,7 @@ rights in this software.
 }
 #scatterplot .close-button,
 #scatterplot .resize-handle,
-#scatterplot .pin-button
+#scatterplot .pin-button,
 {
   visibility: hidden;
 }
@@ -473,7 +478,7 @@ rights in this software.
 #scatterplot .media-layer .image-frame:hover .resize-handle,
 #scatterplot .media-layer .image-frame.resizing .resize-handle,
 #scatterplot .media-layer .image-frame:hover .pin-button,
-#scatterplot .media-layer .open-image:hover .close-button
+#scatterplot .media-layer .open-image:hover .close-button,
 {
   visibility: visible;
 }

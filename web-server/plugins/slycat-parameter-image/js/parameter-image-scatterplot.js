@@ -1462,7 +1462,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         frame.select(".loading-image").remove();
 
         var reload_button = frame.append("span")
-          .attr("class", "fa fa-exclamation-circle reload-button")
+          .attr("class", "fa fa-refresh reload-button")
           .style({top: (parseInt(frame.style("height"))/2 - 16) + "px", left: (parseInt(frame.style("width"))/2 - 16) + "px", cursor: "pointer"})
           .attr("title", "Could not load image. Click to reconnect.")
           .on("click", (function(img, frame){
