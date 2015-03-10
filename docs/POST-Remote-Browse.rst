@@ -22,12 +22,14 @@ POST Remote Browse
   :<json string file-allow: Optional regular expression for allowing files.
 
   :status 200: The response contains the requested browsing information.
-  :status 400: The remote access failed.
+  :status 400: The browse request failed due to invalid parameters (e.g: the path doesn't exist).
   :status 404: The remote session ID was invalid or expired.
 
   :responseheader Content-Type: application/json
+  :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
+  :responseheader X-Slycat-Hint: For errors, contains an optional description of how to fix the problem.
 
-  :>json string path: Remote filesystem path
+  :>json string path: Remote filesystem path.
   :>json array names: Array of string filenames contained within the remote filesystem path.
   :>json array sizes: Array of integer file sizes.
   :>json array types: Array of string file types, "f" for regular files, "d" for directories.
