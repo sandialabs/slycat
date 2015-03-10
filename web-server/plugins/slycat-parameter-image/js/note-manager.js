@@ -51,9 +51,9 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
       self.remove_note(attributes.id);
     });
 
-    text_area.on('blur', function(event) {
+    text_area.on('keyup', _.debounce(function(event) {
       self.edit_note(attributes.id, { text: event.target.value });
-    });
+    }, 1000));
 
     note.on('dragstop', function(event) {
       self.edit_note(attributes.id, { top: $(event.target).css('top'), left: $(event.target).css('left') });
