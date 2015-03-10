@@ -263,7 +263,13 @@ class Session(object):
     command = {"action": "create-video", "content-type": content_type, "images": images}
     stdin.write("%s\n" % json.dumps(command))
     stdin.flush()
-    return json.loads(stdout.readline())
+    response = json.loads(stdout.readline())
+    if not response["ok"]:
+      cherrypy.response.headers["x-slycat-message"] = response["message"]
+      raise cherrypy.HTTPError(400)
+
+    cherrypy.response.status = 202
+    return {"sid" : response["sid"]}
 
   def get_video_status(self, vsid):
     if not self._agent:
@@ -278,8 +284,10 @@ class Session(object):
     stdin.flush()
     metadata = json.loads(stdout.readline())
 
+    cherrypy.response.headers["x-slycat-message"] = metadata["message"]
+
     if "returncode" in metadata and metadata["returncode"] != 0:
-      sys.stderr.write("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
+      cherrypy.log.error("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
 
     return metadata
 

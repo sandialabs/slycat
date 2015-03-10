@@ -4,8 +4,9 @@ GET Remote Image
 .. http:get:: /remotes/(sid)/image(path)
 
   Uses an existing remote session to retrieve a remote image.  The remote
-  session must have been created using :http:post:`/remotes`.  Use
-  :http:post:`/remotes/(sid)/browse(path)` to lookup remote file paths.
+  session must have been created using :http:post:`/remotes`, and the session
+  must have a running agent.  Use :http:post:`/remotes/(sid)/browse(path)` to
+  lookup remote file paths.
 
   The caller *may* optionally choose to resize the image and / or convert it to
   another file type.  Note that this can reduce performance significantly as
@@ -25,10 +26,11 @@ GET Remote Image
   :query int max-height: optional, Maximum image height.  Taller images will be resized to fit while maintaining their aspect ratio.
 
   :status 200: The requested file is returned in the body of the response.
-  :status 404: The session doesn't exist or has timed-out.
+  :status 400 Access denied.: The session user doesn't have permissions to access the file.
+  :status 400 Agent required.: This call requires a remote agent, but the current session isn't running an agent.
   :status 400 Can't read directory.: The remote path is a directory instead of a file.
   :status 400 File not found.: The remote path doesn't exist.
-  :status 400 Access denied.: The session user doesn't have permissions to access the file.
+  :status 404: The session doesn't exist or has timed-out.
 
   :responseheader Content-Type: image/jpeg or image/png, depending on the type of the remote file and optional conversion.
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.

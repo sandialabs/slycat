@@ -45,8 +45,6 @@ def css_bundle():
       slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
       slycat.web.server.resource.manager.add_directory("fonts/font-awesome", "fonts/font-awesome")
       slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
-      slycat.web.server.resource.manager.add_file("directory-small.png", "css/directory-small.png")
-      slycat.web.server.resource.manager.add_file("file-small.png", "css/file-small.png")
   return css_bundle._bundle
 css_bundle._lock = threading.Lock()
 css_bundle._bundle = None

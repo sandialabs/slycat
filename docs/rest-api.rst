@@ -41,7 +41,7 @@ any programming language or library that supports HTTP requests.
    POST-Project-Models.rst
    POST-Projects.rst
    POST-Remote-Browse.rst
-   POST-Remote-Video.rst
+   POST-Remote-Videos.rst
    POST-Remotes.rst
    PUT-Model-Arrayset-Array.rst
    PUT-Model-Arrayset-Data.rst
