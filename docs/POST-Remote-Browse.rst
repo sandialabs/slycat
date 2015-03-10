@@ -34,6 +34,7 @@ POST Remote Browse
   :>json array sizes: Array of integer file sizes.
   :>json array types: Array of string file types, "f" for regular files, "d" for directories.
   :>json array mtimes: Array of string file modification times, in ISO-8601 format.
+  :>json array mime-types Array of string MIME types.
 
   The regular expression parameters are matched against full file / directory
   paths.  If a file / directory matches a reject expression, it will not be
@@ -66,7 +67,8 @@ POST Remote Browse
       "names" : ["a.txt", "b.png", "c.csv", "subdir"],
       "sizes" : [1264, 456730, 78005, 4096],
       "types' : ["f", "f", "f", "d"],
-      "mtimes" : ["2015-03-03T16:52:34.599466", "2015-03-02T21:03:50", "2015-03-02T21:03:50", "2015-03-02T21:03:50", "2015-03-03T16:04:42.899485"],
+      "mtimes" : ["2015-03-03T16:52:34.599466", "2015-03-02T21:03:50", "2015-03-02T21:03:50", "2015-03-02T21:03:50"],
+      "mime-types" : ["text/plain", "image/png", "text/csv", null],
     }
 
 See Also

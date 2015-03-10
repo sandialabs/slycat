@@ -117,7 +117,7 @@ class Session(object):
       if not response["ok"]:
         cherrypy.response.headers["x-slycat-message"] = response["message"]
         raise cherrypy.HTTPError(400)
-      return {"path": response["path"], "names": response["names"], "sizes": response["sizes"], "types": response["types"], "mtimes": response["mtimes"]}
+      return {"path": response["path"], "names": response["names"], "sizes": response["sizes"], "types": response["types"], "mtimes": response["mtimes"], "mime-types": response["mime-types"]}
 
     # Use sftp to browse.
     try:
@@ -125,6 +125,7 @@ class Session(object):
       sizes = []
       types = []
       mtimes = []
+      mime_types = []
 
       for attribute in sorted(self._sftp.listdir_attr(path), key=lambda x: x.filename):
         filepath = os.path.join(path, attribute.filename)
@@ -140,12 +141,20 @@ class Session(object):
             if file_allow is None or file_allow.search(filepath) is None:
               continue
 
+        if filetype == "f":
+          mime_type = mimetypes.guess_type(path, strict=False)[0]
+          if mime_type is None:
+            mime_type = "application/octet-stream"
+        else:
+          mime_type = "application/x-directory"
+
         names.append(attribute.filename)
         sizes.append(attribute.st_size)
         types.append(filetype)
         mtimes.append(datetime.datetime.fromtimestamp(attribute.st_mtime).isoformat())
+        mime_types.append(mime_type)
 
-      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
+      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes, "mime-types": mime_types}
       return response
     except Exception as e:
       cherrypy.response.headers["x-slycat-message"] = str(e)
