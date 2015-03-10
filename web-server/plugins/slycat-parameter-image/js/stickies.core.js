@@ -56,10 +56,9 @@
         .css('position', 'absolute'); // hack to address position conflict between draggable() and resizable() as per http://bugs.jqueryui.com/ticket/5335
 		},
 		_createCloseButton: function() {
-			this.uiStickyCloseButton = $( "<span>" )
-				.addClass( "ui-sticky-close-button ui-icon ui-icon-closethick" )
-				.appendTo( this.uiStickyHeader );
-
+      this.uiStickCloseButton = $('<i>')
+        .addClass("fa fa-close pull-right")
+        .appendTo(this.uiStickyHeader);
 			this._on( this.uiStickyCloseButton, {
 				"click": function() {
 					this._destroy();
