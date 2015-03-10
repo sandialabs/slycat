@@ -85,6 +85,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
     }
     page.templates = references.filter(function(reference)
     {
+      console.log("templates", reference, reference.bid(), reference.mid());
       return reference.bid() && !reference.mid();
     }).map(function(reference)
     {

@@ -321,7 +321,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
               <!-- ko foreach: finished_models --> \
                 <li> \
                   <a data-bind="attr:{href:$parent.server_root + \'models/\' + $data._id()},popover:{trigger:\'hover\',content:$data.message()}"> \
-                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{\'btn-success\':$data.result()===\'succeeded\',\'btn-danger\':$data.result()!==\'succeeded\'}"><span class="glyphicon glyphicon-ok"></span></button> \
+                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{\'btn-success\':$data.result()===\'succeeded\',\'btn-danger\':$data.result()!==\'succeeded\'}"><span class="fa fa-check"></span></button> \
                     <span data-bind="text:name"></span> \
                   </a> \
                 </li> \
