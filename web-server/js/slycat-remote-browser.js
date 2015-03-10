@@ -17,7 +17,24 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.path = params.path;
       component.selection = params.selection;
       component.open_file_callback = params.open_file_callback;
-      component.files = mapping.fromJS([]);
+      component.raw_files = mapping.fromJS([]);
+
+      component.files = component.raw_files.map(function(file)
+      {
+        var icon = "";
+        if(file.type() == "d")
+          icon = "<span class='fa fa-folder-o'></span>";
+        else if(file.type() == "f")
+          icon = "<span class='fa fa-file-text-o'></span>";
+
+        return {
+          type: file.type,
+          name: file.name,
+          size: file.size,
+          mtime: file.mtime,
+          icon: icon,
+        };
+      });
 
       function path_dirname(path)
       {
@@ -83,7 +100,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
               files.push({type: "", name: "..", size: "", mtime: ""});
             for(var i = 0; i != results.names.length; ++i)
               files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i]});
-            mapping.fromJS(files, component.files);
+            mapping.fromJS(files, component.raw_files);
           }
         });
       }

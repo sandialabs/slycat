@@ -188,27 +188,14 @@ slycat-navbar .alert pre
   -o-user-select: none;
   user-select: none;
 
+  overflow-x: auto;
   overflow-y: auto;
 }
 
-.slycat-remote-browser table
+.slycat-remote-browser td:first-child
 {
-  width: 100%;
-}
-
-.slycat-remote-browser td.type
-{
-  width: 20px;
-}
-
-.slycat-remote-browser .directory td.type
-{
-  background: url('directory-small.png') no-repeat;
-}
-
-.slycat-remote-browser .file td.type
-{
-  background: url('file-small.png') no-repeat;
+  font-size: 120%;
+  width: 24px;
 }
 
 .slycat-remote-browser tr:hover
