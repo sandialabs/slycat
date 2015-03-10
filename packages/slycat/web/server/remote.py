@@ -113,7 +113,11 @@ class Session(object):
 
       stdin.write("%s\n" % json.dumps(command))
       stdin.flush()
-      return json.loads(stdout.readline())
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        raise cherrypy.HTTPError(400)
+      return {"path": response["path"], "names": response["names"], "sizes": response["sizes"], "types": response["types"], "mtimes": response["mtimes"]}
 
     # Use sftp to browse.
     try:
@@ -144,8 +148,8 @@ class Session(object):
       response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
       return response
     except Exception as e:
-      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
-      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+      cherrypy.response.headers["x-slycat-message"] = str(e)
+      raise cherrypy.HTTPError(400)
 
   def get_file(self, path):
     # Use the agent to retrieve a file.

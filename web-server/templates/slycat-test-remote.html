@@ -28,6 +28,7 @@ rights in this software.
             username: "slycat",
             password: "slycat",
             agent: true,
+            //agent: false,
             success: function(sid)
             {
               browse_remote(sid)
@@ -41,6 +42,7 @@ rights in this software.
           {
             sid: sid,
             path: "/home/slycat/src/slycat",
+            //path: "/home/slycat/src/foo",
             success: function()
             {
               get_remote_file(sid);
@@ -120,6 +122,7 @@ rights in this software.
               else
               {
                 document.querySelector("body").innerHTML += "<video style='width: 400px' controls src='" + server_root + "remotes/" + sid + "/videos/" + vsid + "'>" + "</video>";
+                setTimeout(delete_remote.bind(null, sid), 5000);
               }
             },
             error: function()

@@ -1133,6 +1133,7 @@ def post_remotes():
 
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
+  cherrypy.response.status = "204 Remote deleted."
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
