@@ -192,6 +192,11 @@ slycat-navbar .alert pre
   overflow-y: auto;
 }
 
+.slycat-remote-browser table
+{
+  min-width: 100%;
+}
+
 .slycat-remote-browser td:first-child
 {
   font-size: 120%;
