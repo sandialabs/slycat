@@ -58,10 +58,6 @@ POST Remotes
 See Also
 --------
 
+- :http:delete:`/remotes/(sid)`
 - :http:post:`/remotes/(sid)/browse(path)`
-- :http:get:`/remotes/(sid)/file(path)`
-- :http:get:`/remotes/(sid)/image(path)`
-- :http:post:`/remotes/(sid)/videos`
-- :http:get:`/remotes/(sid)/videos/(vsid)/status`
-- :http:get:`/remotes/(sid)/videos/(vsid)`
 
