@@ -1458,23 +1458,30 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       message: "Loading " + uri.pathname(),
       cancel: function()
       {
-        var frame = d3.select(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
-        frame.select(".loading-image").remove();
+        var jFrame = $(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
+        var frame = d3.select(jFrame[0]);
+        var related_frames = jFrame.closest('.media-layer').children('.scaffolding').filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == uri.hostname(); });
+        related_frames.find(".loading-image").remove();
 
-        var reload_button = frame.append("span")
+        var reload_button = d3.selectAll(related_frames.filter(":not(:has(>.reload-button))")).append("span")
           .attr("class", "fa fa-refresh reload-button")
-          .style({top: (parseInt(frame.style("height"))/2 - 16) + "px", left: (parseInt(frame.style("width"))/2 - 16) + "px", cursor: "pointer"})
           .attr("title", "Could not load image. Click to reconnect.")
+          .each(function(){
+            var parent = d3.select(this.parentNode);
+            d3.select(this).style({
+              top: (parseInt(parent.style("height"))/2 - 16) + "px",
+              left: (parseInt(parent.style("width"))/2 - 16) + "px",
+              cursor: "pointer"})})
           .on("click", (function(img, frame){
             return function(){
-              var loading_image = frame.append("img")
+              var hostname = URI(img.uri).hostname();
+              var images = $(this).closest(".media-layer").children(".scaffolding").filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == hostname; })
+              var loading_image = d3.selectAll(images).append("img")
                 .attr("class", "loading-image")
                 .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
                 ;
-              var hostname = URI(img.uri).hostname();
-              var images = $(this).closest(".media-layer").children(".scaffolding").map(function(_, x){return {uri: $(x).attr("data-uri"), image_class: image.image_class}}).filter(function(_, x){return URI(x["uri"]).hostname() == hostname;})
-              $(this).remove();
-              self._open_images(images);
+              images.find(".reload-button").remove();
+              self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
             }})(image, frame));
       },
       success: function(sid)
