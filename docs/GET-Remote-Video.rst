@@ -15,9 +15,14 @@ GET Remote Video
   :param vsid: Unique video creation session identifier.
   :type vsid: string
 
+  :status 200: The video has been returned in the response body.
+  :status 206: A portion of the video has been returned in the response body.
+  :status 400 Agent required.: This call requires a remote agent, but the current session isn't running an agent.
   :status 404: The session doesn't exist or has timed-out.
 
   :responseheader Content-Type: video/mp4 or video/webm, depending on the original :http:post:`/remotes/(sid)/videos` request.
+  :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
+  :responseheader X-Slycat-Hint: For errors, contains an optional description of how to fix the problem.
 
   **Sample Request**
 

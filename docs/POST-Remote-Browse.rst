@@ -75,4 +75,5 @@ See Also
 * :http:post:`/remotes`
 * :http:get:`/remotes/(sid)/file(path)`
 * :http:get:`/remotes/(sid)/image(path)`
+* :http:post:`/remotes/(sid)/videos`
 
