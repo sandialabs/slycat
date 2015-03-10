@@ -1055,7 +1055,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       return;
     }
     // Create scaffolding and status indicator if we already don't have one
-    if( self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']").empty() ){
+    if( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ){
 
       // Define a default size for every image.
       if(!image.width)
