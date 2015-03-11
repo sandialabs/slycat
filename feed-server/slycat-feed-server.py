@@ -62,7 +62,6 @@ class RawFeed(object):
     self._url = url
     self._database = database
     self._filter = "slycat/projects-models"
-    self._last_seq = 0
     self._projects = dict() # Keep track of all projects.
     self._models = dict() # Keep track of all models.
     self._project_models = collections.defaultdict(set) # Provide quick access to a project's models.
@@ -73,38 +72,42 @@ class RawFeed(object):
     self._clients = set()
 
   def _run(self):
-    server = couchdb.client.Server(url = self._url)
+    last_seq = 0
+    last_logged_seq = 0
     while True:
       try:
+        server = couchdb.client.Server(url = self._url)
+        database = server[self._database]
         log.error("Connected to couchdb %s" % server.version())
-        break
-      except:
+
+        # Keep the cache up-to-date.
+        while True:
+          for change in database.changes(filter=self._filter, feed="continuous", include_docs=True, since=last_seq, timeout=60000):
+            with self._lock:
+              if "last_seq" in change:
+                last_seq = change["last_seq"]
+              elif "deleted" in change:
+                last_seq = change["seq"]
+                if change["id"] in self._projects:
+                  self._delete_project(change["id"])
+                elif change["id"] in self._models:
+                  self._delete_model(change["id"])
+              else:
+                last_seq = change["seq"]
+                if change["doc"]["type"] == "project":
+                  pid, project = change["id"], change["doc"]
+                  self._update_project(pid, project)
+                elif change["doc"]["type"] == "model":
+                  mid, model = change["id"], change["doc"]
+                  self._update_model(mid, model)
+          if last_seq != last_logged_seq:
+            last_logged_seq = last_seq
+            log.error("Caching %s projects, %s models, sequence %s." % (len(self._projects), len(self._models), last_seq))
+
+      except Exception as e:
+        log.error("%s" % str(e))
         log.error("Waiting for couchdb.")
-        time.sleep(1.0)
-
-    database = server[self._database]
-
-    # Keep the cache up-to-date.
-    while True:
-      for change in database.changes(filter=self._filter, feed="continuous", include_docs=True, since=self._last_seq, timeout=60000):
-        with self._lock:
-          if "last_seq" in change:
-            self._last_seq = change["last_seq"]
-          elif "deleted" in change:
-            self._last_seq = change["seq"]
-            if change["id"] in self._projects:
-              self._delete_project(change["id"])
-            elif change["id"] in self._models:
-              self._delete_model(change["id"])
-          else:
-            self._last_seq = change["seq"]
-            if change["doc"]["type"] == "project":
-              pid, project = change["id"], change["doc"]
-              self._update_project(pid, project)
-            elif change["doc"]["type"] == "model":
-              mid, model = change["id"], change["doc"]
-              self._update_model(mid, model)
-      log.error("Caching %s projects, %s models, sequence %s." % (len(self._projects), len(self._models), self._last_seq))
+        time.sleep(2.0)
 
   def _delete_project(self, pid):
     project = self._projects.pop(pid)
