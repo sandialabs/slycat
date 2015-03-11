@@ -776,37 +776,59 @@ function setup_controls()
 
 function setup_sliders()
 {
-  if( !sliders_ready && controls_ready)
+  if( !sliders_ready && controls_ready && table_metadata)
   {
     sliders_ready = true;
     $("#sliders-pane .load-status").css("display", "none");
 
+    var numeric_variables = [];
+    for(var i = 0; i < table_metadata["column-count"]; i++)
+    {
+      if(table_metadata["column-types"][i] != 'string')
+      {
+        numeric_variables.push(i);
+      }
+    }
+
     var filters = ko.observableArray([
-      { name: 'one',
-        index: 1,
-        max: ko.observable(250),
-        min: ko.observable(25),
-        high: ko.observable(250),
-        low: ko.observable(25),
-        active: ko.observable(true) 
-      },
-      { name: 'two is a very long label and we want to make sure it will not break things',
-        index: 2,
-        max: ko.observable(1),
-        min: ko.observable(-1),
-        high: ko.observable(0.25),
-        low: ko.observable(-1),
-        active: ko.observable(false)  
-      },
-      { name: 'three',
-        index: 3,
-        max: ko.observable(1200),
-        min: ko.observable(1100),
-        high: ko.observable(1150),
-        low: ko.observable(1100),
-        active: ko.observable(true)  
-      },
+      // { name: 'one',
+      //   index: 1,
+      //   max: ko.observable(250),
+      //   min: ko.observable(25),
+      //   high: ko.observable(250),
+      //   low: ko.observable(25),
+      //   active: ko.observable(true) 
+      // },
+      // { name: 'two is a very long label and we want to make sure it will not break things',
+      //   index: -1,
+      //   max: ko.observable(1),
+      //   min: ko.observable(-1),
+      //   high: ko.observable(0.25),
+      //   low: ko.observable(-1),
+      //   active: ko.observable(false)  
+      // },
+      // { name: 'three',
+      //   index: 3,
+      //   max: ko.observable(1200),
+      //   min: ko.observable(1100),
+      //   high: ko.observable(1150),
+      //   low: ko.observable(1100),
+      //   active: ko.observable(true)
+      // },
     ]);
+
+    for(var i = 0; i < numeric_variables.length; i++)
+    {
+      filters.push({
+        name: table_metadata["column-names"][numeric_variables[i]],
+        index: numeric_variables[i],
+        max: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
+        min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
+        high: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
+        low: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
+        active: ko.observable(false)
+      });
+    }
 
     var ViewModel = function(params){
       var self = this;
