@@ -22,6 +22,9 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.icon_map = {
         "application/x-directory" : "<span class='fa fa-folder-o'></span>",
         "application/octet-stream" : "<span class='fa fa-file-o'></span>",
+        "text/csv" : "<span class='fa fa-file-excel-o'></span>",
+        "text/x-python" : "<span class='fa fa-file-code-o'></span>",
+
       };
 
       component.files = component.raw_files.map(function(file)
