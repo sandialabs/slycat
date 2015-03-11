@@ -59,7 +59,8 @@ def js_bundle():
         "js/slycat-curl-config.js", # Load this immediately following curl to configure it.
         "js/uri.min.js",
         "js/jquery-2.1.1.min.js",
-        "js/underscore-min.js",
+        "js/lodash.min.js",
+        "js/slycat-lodash-wrap.js",
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",
