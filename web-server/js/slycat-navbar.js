@@ -182,6 +182,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
       component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
       component.wizard = ko.observable(false);
+      component.show_wizard = ko.observable(false).extend({notify: "always"});
+      component.show_wizard.subscribe(function(value)
+      {
+        $("#slycat-wizard").modal(value ? "show" : "hide");
+      });
 
       // Get information about the current user.
       component.user = mapping.fromJS({uid:"", name:""});
@@ -209,7 +214,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
       {
         component.wizard(false);
         component.wizard(item.type());
-        $("#slycat-wizard").modal("show");
+        component.show_wizard(true);
       }
 
       component.about = function()
@@ -362,7 +367,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-proj
     <div class="modal-dialog"> \
       <div class="modal-content zoom-sensitive"> \
         <div data-bind="if: wizard"> \
-          <div data-bind="component:{name:wizard,params:{projects:project,models:model}}" class="zoom-sensitive"> \
+          <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" class="zoom-sensitive"> \
           </div> \
         </div> \
       </div> \
