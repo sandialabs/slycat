@@ -82,6 +82,15 @@ function(new_document, old_document, user_context)
       require(new_document["project"] == old_document["project"], "Reference project id cannot be modified.");
     }
   }
+  else if(new_document["type"] == "cache-object")
+  {
+    require(new_document["project"] != null, "Cache object must contain project id.");
+
+    if(old_document)
+    {
+      require(new_document["project"] == old_document["project"], "Cache object project id cannot be modified.");
+    }
+  }
   else if(new_document["type"] == "session")
   {
     require(new_document["created"] != null, "Session must contain creation time.");
