@@ -245,6 +245,8 @@ def delete_project(pid):
   project = couchdb.get("project", pid)
   slycat.web.server.authentication.require_project_administrator(project)
 
+  for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
+    couchdb.delete(cache_object)
   for reference in couchdb.scan("slycat/project-references", startkey=pid, endkey=pid):
     couchdb.delete(reference)
   for bookmark in couchdb.scan("slycat/project-bookmarks", startkey=pid, endkey=pid):
