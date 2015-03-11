@@ -6,7 +6,7 @@ DELETE Project Cache Object
   Deletes an object from the project cache.
 
   :param pid: Unique project identifier.
-  :type mid: string
+  :type pid: string
 
   :param cid: Unique cache object identifier.
   :type cid: string
