@@ -190,7 +190,7 @@ To use a password check plugin, you would have to add it to your server's
 In a more realistic authentication scenario,
 you might use the LDAP password check plugin that ships with Slycat to connect
 to an LDAP server.  The following configuration enables the LDAP plugin and
-configures it to connect to a public test server.
+configures it to connect to a public test server::
 
   [slycat]
   password-check: {"plugin": "slycat-ldap-password-check", "kwargs":{"server":"ldaps://ldap.forumsys.com:389", "user_dn":"uid={},dc=example,dc=com"}}
