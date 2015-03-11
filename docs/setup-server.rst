@@ -17,7 +17,7 @@ following the instructions at :ref:`install-slycat`, you can simply ssh into the
   $ ssh slycat@<docker ip address> -p2222
 
 make a few configuration changes (assign real passwords to the root and slycat users, replace
-our self-signed server certificate with one of your own, lock-down ssh access, etc.)
+our self-signed server certificate with one of your own, configure a real password-check plugin, etc.)
 then continue using the image in production.  Because the Slycat Docker image is a container
 rather than a VM, there is absolutely no performance penalty for using it in this configuration.
 You can even use Docker to automate this process, building your own site-specific Slycat image

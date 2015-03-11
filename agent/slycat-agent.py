@@ -83,6 +83,7 @@ def browse(command):
     "sizes": [],
     "types": [],
     "mtimes": [],
+    "mime-types": [],
     }
 
   for name in names:
@@ -100,10 +101,18 @@ def browse(command):
         if file_allow is None or file_allow.search(fpath) is None:
           continue
 
+    if ftype == "f":
+      mime_type = mimetypes.guess_type(name, strict=False)[0]
+      if mime_type is None:
+        mime_type = "application/octet-stream"
+    else:
+      mime_type = "application/x-directory"
+
     listing["names"].append(name)
     listing["sizes"].append(fstat.st_size)
     listing["types"].append(ftype)
     listing["mtimes"].append(datetime.datetime.fromtimestamp(fstat.st_mtime).isoformat())
+    listing["mime-types"].append(mime_type)
 
   sys.stdout.write("%s\n" % json.dumps(listing))
   sys.stdout.flush()

@@ -42,13 +42,13 @@
         <div class="row">
           <div class="col-sm-12">
           <!-- ko foreach: modified.acl.administrators -->
-            <button style="margin: 5px;" class="btn btn-xs btn-danger" data-bind="click:$parent.remove_project_member"><span class="glyphicon glyphicon-remove"></span> <span data-bind="text:user"></span></button>
+            <button style="margin: 5px;" class="btn btn-xs btn-danger" data-bind="click:$parent.remove_project_member"><span class="fa fa-trash-o"></span> <span data-bind="text:user"></span></button>
           <!-- /ko -->
           <!-- ko foreach: modified.acl.writers -->
-            <button style="margin: 5px;" class="btn btn-xs btn-warning" data-bind="click:$parent.remove_project_member"><span class="glyphicon glyphicon-remove"></span> <span data-bind="text:user"></span></button>
+            <button style="margin: 5px;" class="btn btn-xs btn-warning" data-bind="click:$parent.remove_project_member"><span class="fa fa-trash-o"></span> <span data-bind="text:user"></span></button>
           <!-- /ko -->
           <!-- ko foreach: modified.acl.readers -->
-            <button style="margin: 5px;" class="btn btn-xs btn-primary" data-bind="click:$parent.remove_project_member"><span class="glyphicon glyphicon-remove"></span> <span data-bind="text:user"></span></button>
+            <button style="margin: 5px;" class="btn btn-xs btn-primary" data-bind="click:$parent.remove_project_member"><span class="fa fa-trash-o"></span> <span data-bind="text:user"></span></button>
           <!-- /ko -->
           </div>
         </div>

@@ -21,17 +21,20 @@ POST Remote Browse
   :<json string file-reject: Optional regular expression for filtering files.
   :<json string file-allow: Optional regular expression for allowing files.
 
-  :responseheader Content-Type: application/json
+  :status 200: The response contains the requested browsing information.
+  :status 400: The browse request failed due to invalid parameters (e.g: the path doesn't exist).
+  :status 404: The remote session ID was invalid or expired.
 
-  :>json string path: Remote filesystem path
+  :responseheader Content-Type: application/json
+  :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
+  :responseheader X-Slycat-Hint: For errors, contains an optional description of how to fix the problem.
+
+  :>json string path: Remote filesystem path.
   :>json array names: Array of string filenames contained within the remote filesystem path.
   :>json array sizes: Array of integer file sizes.
   :>json array types: Array of string file types, "f" for regular files, "d" for directories.
   :>json array mtimes: Array of string file modification times, in ISO-8601 format.
-
-  :status 200: The response contains the requested browsing information.
-  :status 400: The remote access failed.
-  :status 404: The remote session ID was invalid or expired.
+  :>json array mime-types Array of string MIME types.
 
   The regular expression parameters are matched against full file / directory
   paths.  If a file / directory matches a reject expression, it will not be
@@ -64,7 +67,8 @@ POST Remote Browse
       "names" : ["a.txt", "b.png", "c.csv", "subdir"],
       "sizes" : [1264, 456730, 78005, 4096],
       "types' : ["f", "f", "f", "d"],
-      "mtimes" : ["2015-03-03T16:52:34.599466", "2015-03-02T21:03:50", "2015-03-02T21:03:50", "2015-03-02T21:03:50", "2015-03-03T16:04:42.899485"],
+      "mtimes" : ["2015-03-03T16:52:34.599466", "2015-03-02T21:03:50", "2015-03-02T21:03:50", "2015-03-02T21:03:50"],
+      "mime-types" : ["text/plain", "image/png", "text/csv", null],
     }
 
 See Also
@@ -73,4 +77,5 @@ See Also
 * :http:post:`/remotes`
 * :http:get:`/remotes/(sid)/file(path)`
 * :http:get:`/remotes/(sid)/image(path)`
+* :http:post:`/remotes/(sid)/videos`
 

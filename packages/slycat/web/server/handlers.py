@@ -39,12 +39,12 @@ def css_bundle():
       css_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/css",
       [
         "css/namespaced-bootstrap.css",
+        "css/font-awesome.css",
         "css/slycat.css",
       ])
       slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
+      slycat.web.server.resource.manager.add_directory("fonts/font-awesome", "fonts/font-awesome")
       slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
-      slycat.web.server.resource.manager.add_file("directory-small.png", "css/directory-small.png")
-      slycat.web.server.resource.manager.add_file("file-small.png", "css/file-small.png")
   return css_bundle._bundle
 css_bundle._lock = threading.Lock()
 css_bundle._bundle = None
@@ -59,6 +59,8 @@ def js_bundle():
         "js/slycat-curl-config.js", # Load this immediately following curl to configure it.
         "js/uri.min.js",
         "js/jquery-2.1.1.min.js",
+        "js/lodash.min.js",
+        "js/slycat-lodash-wrap.js",
         "js/bootstrap.js",
         "js/knockout-3.2.0.js",
         "js/knockout.mapping.js",
@@ -1133,6 +1135,7 @@ def post_remotes():
 
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
+  cherrypy.response.status = "204 Remote deleted."
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

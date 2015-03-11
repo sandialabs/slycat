@@ -28,6 +28,7 @@ rights in this software.
             username: "slycat",
             password: "slycat",
             agent: true,
+            //agent: false,
             success: function(sid)
             {
               browse_remote(sid)
@@ -41,6 +42,7 @@ rights in this software.
           {
             sid: sid,
             path: "/home/slycat/src/slycat",
+            //path: "/home/slycat/src/foo",
             success: function()
             {
               get_remote_file(sid);
@@ -54,6 +56,8 @@ rights in this software.
           {
             type : "GET",
             url : server_root + "remotes/" + sid + "/file/home/slycat/src/slycat/README.md",
+            //url : server_root + "remotes/" + sid + "/file/home/slycat/src/slycat/README.mdf",
+            //url : server_root + "remotes/" + sid + "/file/etc/shadow",
             success: function()
             {
               get_remote_image(sid);
@@ -67,6 +71,8 @@ rights in this software.
           {
             type : "GET",
             url : server_root + "remotes/" + sid + "/image/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.png",
+            //url : server_root + "remotes/" + sid + "/image/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.spng",
+            //url : server_root + "remotes/" + sid + "/image/etc/shadow",
             success: function()
             {
               create_remote_video(sid);
@@ -81,9 +87,11 @@ rights in this software.
         function create_remote_video(sid)
         {
           var content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
+          //var content_type = "video/tim";
           var images = [];
           for(var i = 0; i < 100; ++i)
             images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/" + i + ".jpg");
+          //images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/k.jpg");
 
           client.post_remote_video(
           {
@@ -120,6 +128,7 @@ rights in this software.
               else
               {
                 document.querySelector("body").innerHTML += "<video style='width: 400px' controls src='" + server_root + "remotes/" + sid + "/videos/" + vsid + "'>" + "</video>";
+                setTimeout(delete_remote.bind(null, sid), 5000);
               }
             },
             error: function()

@@ -77,15 +77,14 @@ def register_slycat_plugin(context):
 
   # Register CSS
   stylesheets = [
+    "jquery-ui/jquery-ui.css",
+    "jquery-ui/jquery.ui.theme.css",
+    "jquery-ui/jquery.ui.resizable.css",
+    "stickies.css",
     "slick.grid.css",
     "slick-default-theme.css",
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
-    "stickies.css",
-    # for stickies
-    "jquery-ui/jquery-ui.css",
-    "jquery-ui/jquery.ui.theme.css",
-    "jquery-ui/jquery.ui.resizable.css",
     #
     "ui.css",
     "slycat-additions.css",

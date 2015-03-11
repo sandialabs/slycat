@@ -4,11 +4,11 @@
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title" data-bind="text:title"></h3>
-          <p data-bind="visible:message, text:message"></p>
         </div>
           <div class="modal-body">
+            <p data-bind="visible:message, text:message"></p>
             <form class="form-horizontal" role="form">
-              <slycat-login-controls params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,activate:login"></slycat-login-controls>
+              <slycat-login-controls params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:login"></slycat-login-controls>
             </form>
           </div>
           <div class="modal-footer">

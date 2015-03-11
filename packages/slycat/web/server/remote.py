@@ -113,7 +113,11 @@ class Session(object):
 
       stdin.write("%s\n" % json.dumps(command))
       stdin.flush()
-      return json.loads(stdout.readline())
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        raise cherrypy.HTTPError(400)
+      return {"path": response["path"], "names": response["names"], "sizes": response["sizes"], "types": response["types"], "mtimes": response["mtimes"], "mime-types": response["mime-types"]}
 
     # Use sftp to browse.
     try:
@@ -121,6 +125,7 @@ class Session(object):
       sizes = []
       types = []
       mtimes = []
+      mime_types = []
 
       for attribute in sorted(self._sftp.listdir_attr(path), key=lambda x: x.filename):
         filepath = os.path.join(path, attribute.filename)
@@ -136,16 +141,24 @@ class Session(object):
             if file_allow is None or file_allow.search(filepath) is None:
               continue
 
+        if filetype == "f":
+          mime_type = mimetypes.guess_type(path, strict=False)[0]
+          if mime_type is None:
+            mime_type = "application/octet-stream"
+        else:
+          mime_type = "application/x-directory"
+
         names.append(attribute.filename)
         sizes.append(attribute.st_size)
         types.append(filetype)
         mtimes.append(datetime.datetime.fromtimestamp(attribute.st_mtime).isoformat())
+        mime_types.append(mime_type)
 
-      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes}
+      response = {"path": path, "names": names, "sizes": sizes, "types": types, "mtimes": mtimes, "mime-types": mime_types}
       return response
     except Exception as e:
-      cherrypy.log.error("Error accessing %s: %s %s" % (path, type(e), str(e)))
-      raise cherrypy.HTTPError("400 Remote access failed: %s" % str(e))
+      cherrypy.response.headers["x-slycat-message"] = str(e)
+      raise cherrypy.HTTPError(400)
 
   def get_file(self, path):
     # Use the agent to retrieve a file.
@@ -259,7 +272,13 @@ class Session(object):
     command = {"action": "create-video", "content-type": content_type, "images": images}
     stdin.write("%s\n" % json.dumps(command))
     stdin.flush()
-    return json.loads(stdout.readline())
+    response = json.loads(stdout.readline())
+    if not response["ok"]:
+      cherrypy.response.headers["x-slycat-message"] = response["message"]
+      raise cherrypy.HTTPError(400)
+
+    cherrypy.response.status = 202
+    return {"sid" : response["sid"]}
 
   def get_video_status(self, vsid):
     if not self._agent:
@@ -274,8 +293,10 @@ class Session(object):
     stdin.flush()
     metadata = json.loads(stdout.readline())
 
+    cherrypy.response.headers["x-slycat-message"] = metadata["message"]
+
     if "returncode" in metadata and metadata["returncode"] != 0:
-      sys.stderr.write("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
+      cherrypy.log.error("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
 
     return metadata
 

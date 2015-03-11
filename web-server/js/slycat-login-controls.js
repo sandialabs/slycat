@@ -18,6 +18,7 @@ define("slycat-login-controls", ["slycat-server-root", "slycat-web-client", "kno
         component.status = params.status || ko.observable(null);
         component.status_type = params.status_type || ko.observable(null);
         component.enable = params.enable || ko.observable(true);
+        component.focus = params.focus || ko.observable(false);
 
         component.status_classes = ko.pureComputed(function()
         {
@@ -41,6 +42,39 @@ define("slycat-login-controls", ["slycat-server-root", "slycat-web-client", "kno
         component.password.subscribe(function(value)
         {
           component.status(null);
+        });
+
+        component.focus.subscribe(function(value)
+        {
+          var username = component.username();
+          var password = component.password();
+          var username_input = $(component_info.element).find("input").eq(0);
+          var password_input = $(component_info.element).find("input").eq(1);
+
+          if(value == true)
+          {
+            if(component.username())
+            {
+              value = "password";
+            }
+            else
+            {
+              value = "username";
+            }
+          }
+
+          if(value == "username")
+          {
+            username_input.focus();
+            if(username)
+              username_input.get(0).setSelectionRange(0, username.length);
+          }
+          if(value == "password")
+          {
+            password_input.focus();
+            if(password)
+              password_input.get(0).setSelectionRange(0, password.length);
+          }
         });
 
         $(component_info.element).find("input").keydown(function(e)

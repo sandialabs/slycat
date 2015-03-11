@@ -3,14 +3,16 @@ GET Remote Image
 
 .. http:get:: /remotes/(sid)/image(path)
 
-  Uses an existing remote session to retrieve a remote image.  The caller *may*
-  supply additional parameters to resize the image and / or convert it to
-  another file type.
+  Uses an existing remote session to retrieve a remote image.  The remote
+  session must have been created using :http:post:`/remotes`, and the session
+  must have a running agent.  Use :http:post:`/remotes/(sid)/browse(path)` to
+  lookup remote file paths.
 
-  Note that specifying max-size, max-width, max-height, or a content-type that
-  doesn't match the type of the underlying file can reduce performance
-  significantly as the remote must then decompress, resample, and recompress the
-  image before sending it to the client.
+  The caller *may* optionally choose to resize the image and / or convert it to
+  another file type.  Note that this can reduce performance significantly as
+  the remote must then decompress, resample, and recompress the image before
+  sending it to the client.  Testing should be performed to verify that the
+  bandwidth reduction of a smaller image is worth the increased latency.
 
   :param sid: Unique session identifier returned from :http:post:`/remotes`.
   :type sid: string
@@ -23,15 +25,16 @@ GET Remote Image
   :query int max-width: optional, Maximum image width.  Wider images will be resized to fit while maintaining their aspect ratio.
   :query int max-height: optional, Maximum image height.  Taller images will be resized to fit while maintaining their aspect ratio.
 
+  :status 200: The requested file is returned in the body of the response.
+  :status 400 Access denied.: The session user doesn't have permissions to access the file.
+  :status 400 Agent required.: This call requires a remote agent, but the current session isn't running an agent.
+  :status 400 Can't read directory.: The remote path is a directory instead of a file.
+  :status 400 File not found.: The remote path doesn't exist.
+  :status 404: The session doesn't exist or has timed-out.
+
   :responseheader Content-Type: image/jpeg or image/png, depending on the type of the remote file and optional conversion.
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
   :responseheader X-Slycat-Hint: For errors, contains an optional description of how to fix the problem.
-
-  :status 200: The requested file is returned in the body of the response.
-  :status 404: The session doesn't exist or has timed-out.
-  :status 400 Can't read directory.: The remote path is a directory instead of a file.
-  :status 400 File not found.: The remote path doesn't exist.
-  :status 400 Access denied.: The session user doesn't have permissions to access the file.
 
   **Sample Request**
 
@@ -42,7 +45,6 @@ GET Remote Image
 See Also
 --------
 
-* :http:post:`/remotes`
-* :http:post:`/remotes/(sid)/browse(path)`
 * :http:get:`/remotes/(sid)/file(path)`
+* :http:get:`/remotes/(sid)/videos/(vsid)`
 

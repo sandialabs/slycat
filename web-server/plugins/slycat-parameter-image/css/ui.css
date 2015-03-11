@@ -435,6 +435,11 @@ rights in this software.
 }
 #scatterplot .media-layer .reload-button {
   position: absolute;
+  left: 1px;
+  font-size: 32px;
+}
+#scatterplot .media-layer .close-button {
+  position: absolute;
   font-size: 32px;
 }
 #scatterplot .media-layer .close-button {
@@ -463,7 +468,7 @@ rights in this software.
 }
 #scatterplot .close-button,
 #scatterplot .resize-handle,
-#scatterplot .pin-button
+#scatterplot .pin-button,
 {
   visibility: hidden;
 }
@@ -476,7 +481,7 @@ rights in this software.
 #scatterplot .media-layer .image-frame:hover .resize-handle,
 #scatterplot .media-layer .image-frame.resizing .resize-handle,
 #scatterplot .media-layer .image-frame:hover .pin-button,
-#scatterplot .media-layer .open-image:hover .close-button
+#scatterplot .media-layer .open-image:hover .close-button,
 {
   visibility: visible;
 }
@@ -585,13 +590,38 @@ rights in this software.
   top: 0;
 }
 
+/* Sliders */
+/* undoing vertical class cause it's making vertical sliders horizontal */
+.vertical {
+  transform: none !important;
+}
+
 /* Note Layer */
 .ui-sticky {
   z-index: 3
 }
 
-/* Sliders */
-/* undoing vertical class cause it's making vertical sliders horizontal */
-.vertical {
-  transform: none !important;
+.ui-sticky-header .fa.fa-close {
+  padding-right: 2px;
+  visibility: hidden;
+}
+
+.ui-sticky:hover .fa.fa-close, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
+  visibility: visible;
+}
+
+.ui-icon.ui-icon-gripsmall-diagonal-se {
+  visibility: hidden;
+  bottom: 2px;
+  right: 2px;
+  background-position: -80px -224px;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-image: url("ui-icons_222222_256x240.png");
+  background-repeat: no-repeat;
+  display: block;
+  overflow: hidden;
+  text-indent: -99999px;
+  background-color: white;
 }

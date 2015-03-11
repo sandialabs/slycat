@@ -34,13 +34,19 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
             component.remote.enable(true);
             component.remote.status_type("danger");
             component.remote.status(reason_phrase);
+            component.remote.focus("password");
           },
         });
       }
       component.title = ko.observable(params.title || "Login");
       component.message = ko.observable(params.message || "");
-      component.remote = mapping.fromJS({username: null, password: null, status: null, enable: true, status_type: null});
+      component.remote = mapping.fromJS({username: null, password: null, status: null, enable: true, focus: false, status_type: null});
+      component.remote.focus.extend({notify: "always"});
       component.container = $($.parseHTML(template)).appendTo($("body"));
+      component.container.children().on("shown.bs.modal", function()
+      {
+        component.remote.focus(true);
+      });
       component.container.children().on("hidden.bs.modal", function()
       {
         component.container.remove();
@@ -68,6 +74,8 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
       module.login(
       {
         hostname: params.hostname,
+        title: params.title,
+        message: params.message,
         success: function(sid)
         {
           remotes[params.hostname] = sid;

@@ -6,7 +6,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, sid: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
+    component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
@@ -44,6 +45,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         {
           component.model._id(mid);
           component.tab(1);
+          component.remote.focus(true);
         },
         error: dialog.ajax_error("Error creating model."),
       });
@@ -68,6 +70,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           component.remote.enable(true);
           component.remote.status_type("danger");
           component.remote.status(reason_phrase);
+          component.remote.focus("password");
         },
       });
     }
