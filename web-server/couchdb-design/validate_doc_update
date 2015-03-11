@@ -85,10 +85,12 @@ function(new_document, old_document, user_context)
   else if(new_document["type"] == "cache-object")
   {
     require(new_document["project"] != null, "Cache object must contain project id.");
+    require(new_document["key"] != null, "Cache object must contain key.");
 
     if(old_document)
     {
       require(new_document["project"] == old_document["project"], "Cache object project id cannot be modified.");
+      require(new_document["key"] == old_document["key"], "Cache object key cannot be modified.");
     }
   }
   else if(new_document["type"] == "session")
