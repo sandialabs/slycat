@@ -3,9 +3,8 @@
 Plugins
 =======
 
-We have recently introduced a new plugin system for Slycat.  This system is
-intended to streamline the process of customizing and adding new Slycat
-features.
+The Slycat server includes a plugin system that streamlines the process of
+customizing it to suit your environment and adding new Slycat features.
 
 Overview
 --------
@@ -25,10 +24,11 @@ config file altogether.
 Once all plugin modules have been loaded, the server will call the
 `register_slycat_plugin` function in each module, if it exists.  The function
 will be called with a `context` object as its sole argument.  The plugin code
-uses the API provided by the `context` object to register new functionality.
-This explicit registration process allows a single plugin module to register as
-many new capabilities as it wishes, and the registration API will expand as we
-add new categories of plugin functionality to the server.
+uses the API provided by the `context` object to register new functionality
+with the server.  This explicit registration process allows a single plugin
+module to register as many new capabilities as it wishes, and the registration
+API continues to expand as we add new categories of plugin functionality to the
+server.
 
 .. NOTE::
 
@@ -51,29 +51,33 @@ add new categories of plugin functionality to the server.
 New Marking Types
 -----------------
 
-`Examples: slycat-no-marking.py, slycat-faculty-only-marking.py`
+`Examples: plugins/slycat-no-marking.py, plugins/slycat-airmail-marking.py, plugins/slycat-faculty-only-marking.py`
 
 A plugin can register new `marking` types with the Slycat server.  Markings are
-used to apply user-specific administrative or organizational labels to models.
+used to apply user-specific administrative or organizational labels to models such as "Draft"
+or "Human Resources Only".
+
 A marking consists of the following:
 
-* A unique string identifier called the `marking type`.
-* A human-readable label that will become part of the user interface when prompting end-users
+1) A unique string identifier called the `marking type`.
+2) A human-readable label that will become part of the user interface when prompting end-users
   to choose the marking for a model.
-* A block of HTML code that will be inserted into the user interface to display the marking.
+3) A block of HTML markup that provides a "badge" representation of the marking used in lists.
+4) Optional block of HTML markup that will be inserted into the user interface before marked content.
+5) Optional block of HTML markup that will be inserted into the user interface after marked content.
 
-For example, the following plugin allows models to be marked `Faculty Only`::
+If the plugin doesn't provide 5), 4) will be displayed at the top and bottom of
+marked content.  If 4) and 5) are omitted, 3) will be displayed at the top and
+bottom of marked content.
 
-  def register_slycat_plugin(context):
-    context.register_marking("faculty", "Faculty Only", """<div>FACULTY ONLY</div>""")
-
-In practice, most marking plugins will wish to include inline style information to control the
-appearance of the marking.  Note that models can currently have a single marking applied.
+In practice, most marking plugins should include inline style information in
+their HTML markup to control the appearance of the marking.  Note that models
+can currently have a single marking applied.
 
 New Model Types
 ---------------
 
-`Examples: slycat-hello-world-model/slycat-hello-world-model.py, slycat-generic-model/slycat-generic-model.py, slycat-calculator-model/slycat-calculator-model.py`
+`Examples: plugins/slycat-hello-world, plugins/slycat-linear-regression-demo, plugins/slycat-bookmark-demo`
 
 A plugin can add a new type of model to the Slycat server.  In this context,
 a plugin model consists of the following:
@@ -84,12 +88,6 @@ a plugin model consists of the following:
 * A block of HTML code that will be used as the model's interactive user interface.  This
   block of HTML will be inserted into a larger HTML frame that provides common functionality
   for manipulating models, and delivered to the end-user's client.
-
-..
-  * Future: additional code that can be executed on the server when requested by the model HTML.
-  * Future: additional Javascript and CSS resources for use by the model HTML.
-  * Future: a means for the model to reigster a "wizard" to be used for creating new instances
-    of the model directly from the Slycat browser user interface.
 
 Here is a bare-minimum example of a do-nothing model plugin::
 
@@ -143,7 +141,7 @@ html() function.
 Model Commands
 --------------
 
-`Examples: slycat-calculator-model/slycat-calculator-model.py`
+`Examples: plugins/slycat-matrix-demo-model`
 
 Typically, we assume that a Slycat model is created, artifacts are ingested,
 one-time server-side computation is performed (using a model plugin's
@@ -151,7 +149,7 @@ one-time server-side computation is performed (using a model plugin's
 the results (using the output of a model plugin's `html()` function).
 
 However, in some circumstances this may be insufficient - a model may need to
-provide additional server-side computation under control by the client.  In
+provide additional server-side computation to be executed by the client.  In
 this case, a model command plugin is used to register additional server-side
 `commands` that can be invoked by the client.
 
@@ -163,53 +161,37 @@ this case, a model command plugin is used to register additional server-side
   that client-side scripts will be invoked by users to create model instances.  `Wizard`
   plugins provide a way for users to create new model instances using their web browsers.
 
-User Authentication Plugins
----------------------------
+Password Check Plugins
+----------------------
 
-`Examples: slycat-disable-authentication.py, slycat-identity-authentication.py, slycat-ldap-authentication.py`
+`Examples: plugins/slycat-identity-password-check.py, plugins/slycat-ldap-password-check.py`
 
-Plugins can register a special type of callback called a "tool", that can be invoked
-whenever the Slycat server receives a client request.  Tools have many possible uses,
-including custom authentication.  For example::
+Password check plugins are callbacks that are executed whenever the server needs to
+verify a user's credentials.  The password check plugin registers a callback that will
+be called with an authentication realm, username, and password, and returns a tuple
+containing `True` if the username and password can be authenticated, and a (possibly empty)
+list of groups of which the user is a member::
 
   def register_slycat_plugin(context):
-    import cherrypy
-    def authenticate(realm, passwords):
-      def checkpassword(realm, username, password):
-        return username and password and username in passwords and passwords[username] == passwords
-      cherrypy.lib.auth_basic.basic_auth(realm, checkpassword)
-      cherrypy.request.security = { "user" : cherrypy.request.login, "name" : cherrypy.request.login }
+    def check_password(realm, username, password):
+      """Allow any user, so long as their username and password are the same.
+      Obviously, this is suitable only for testing."""
+      groups = []
+      return username and password and username == password, groups
 
-    context.register_tool("my-authentication", "on_start_resource", authenticate)
+    context.register_password_check("slycat-identity-password-check", check_password)
 
-In this example, the `authenticate` function is registered as a tool, and will
-be called before every server request is processed by a handler, giving the
-tool an opportunity to accept or reject the request.  Note that the
-`authenticate` function takes two arguments, which are part of its
-configuration.  To use the new configuration, you would add the following to
-your Server's `config.ini`::
+To use a password check plugin, you would have to add it to your server's
+`config.ini`::
 
-  [/]
-  tools.my-authentication.on : True
-  tools.my-authentication.realm : "My Organization"
-  tools.my-authentication.passwords : {"fred" : "foo", "tom" : "bar"}
+  [slycat]
+  password-check: {"plugin": "slycat-identity-password-check"}
 
-Note that the registered name `my-authentication` is used to enable the tool in
-the configuration, and specify values for each of its callback arguments.
-
-Of course, managing a list of usernames and passwords in your config.ini is
-awkward (and extremely insecure).  In a more realistic authentication scenario,
-you might use the LDAP authentication plugin that ships with Slycat to connect
+In a more realistic authentication scenario,
+you might use the LDAP password check plugin that ships with Slycat to connect
 to an LDAP server.  The following configuration enables the LDAP plugin and
-configures it to connect to a public test server.  The optional `rules`
-parameter can be used to allow or deny users and / or groups.  Note that in
-this example, all members of the `mathematicians` group are allowed access,
-along with user `einstein`; all other users will be denied::
+configures it to connect to a public test server.
 
-  [/]
-  tools.slycat-ldap-authentication.on : True
-  tools.slycat-ldap-authentication.realm : "Slycat"
-  tools.slycat-ldap-authentication.server : "ldap://ldap.forumsys.com:389"
-  tools.slycat-ldap-authentication.user_dn : "uid=%%s,dc=example,dc=com"
-  tools.slycat-ldap-authentication.group_dn : "ou=%%s,dc=example,dc=com"
-  tools.slycat-ldap-authentication.rules : [("allow", "groups", ["mathematicians"]), ("allow", "users", ["einstein"])]
+  [slycat]
+  password-check: {"plugin": "slycat-ldap-password-check", "kwargs":{"server":"ldaps://ldap.forumsys.com:389", "user_dn":"uid={},dc=example,dc=com"}}
+
