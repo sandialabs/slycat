@@ -194,6 +194,9 @@ slycat-navbar .alert pre
 
 .slycat-remote-browser table
 {
+  cursor: default;
+  -moz-user-select: none;
+  -webkit-user-select: none;
   min-width: 100%;
 }
 

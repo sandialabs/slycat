@@ -3,6 +3,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
   function constructor(params)
   {
     var component = {};
+    component.show_wizard = params.show_wizard;
     component.project = params.projects()[0];
     component.model = params.models()[0];
     component.name = ko.observable("");
@@ -15,12 +16,23 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
         name: component.name(),
         "model-type": component.model["model-type"](),
         bid: bookmark_manager.current_bid(),
-        success: function()
-        {
-        },
         error: dialog.ajax_error("Error creating template."),
       });
     }
+
+    if(!bookmark_manager.current_bid())
+    {
+      dialog.dialog(
+      {
+        title: "Can't Create Template",
+        message: "Since you haven't made any changes to the model state, there's nothing to save as a template.",
+        callback: function()
+        {
+          component.show_wizard(false);
+        }
+      });
+    }
+
     return component;
   }
 

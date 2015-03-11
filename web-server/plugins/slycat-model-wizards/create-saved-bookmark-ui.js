@@ -3,6 +3,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
   function constructor(params)
   {
     var component = {};
+    component.show_wizard = params.show_wizard;
     component.project = params.projects()[0];
     component.model = params.models()[0];
     component.name = ko.observable("");
@@ -16,12 +17,23 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
         "model-type": component.model["model-type"](),
         mid: bookmark_manager.current_mid(),
         bid: bookmark_manager.current_bid(),
-        success: function()
-        {
-        },
         error: dialog.ajax_error("Error creating saved bookmark."),
       });
     }
+
+    if(!bookmark_manager.current_bid())
+    {
+      dialog.dialog(
+      {
+        title: "Can't Save Bookmark",
+        message: "Since you haven't made any changes to the model state, there is no bookmark to save.",
+        callback: function()
+        {
+          component.show_wizard(false);
+        }
+      });
+    }
+
     return component;
   }
 

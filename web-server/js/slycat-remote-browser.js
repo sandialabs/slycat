@@ -19,19 +19,40 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.open_file_callback = params.open_file_callback;
       component.raw_files = mapping.fromJS([]);
 
+      component.icon_map = {
+        "application/x-directory" : "<span class='fa fa-folder-o'></span>",
+        "application/octet-stream" : "<span class='fa fa-file-o'></span>",
+        "text/csv" : "<span class='fa fa-file-excel-o'></span>",
+        "text/x-python" : "<span class='fa fa-file-code-o'></span>",
+
+      };
+
       component.files = component.raw_files.map(function(file)
       {
         var icon = "";
-        if(file.type() == "d")
-          icon = "<span class='fa fa-folder-o'></span>";
-        else if(file.type() == "f")
+        if(file.mime_type() in component.icon_map)
+        {
+          icon = component.icon_map[file.mime_type()];
+        }
+        else if(file.mime_type().startsWith("text/"))
+        {
           icon = "<span class='fa fa-file-text-o'></span>";
+        }
+        else if(file.mime_type().startsWith("image/"))
+        {
+          icon = "<span class='fa fa-file-image-o'></span>";
+        }
+        else if(file.mime_type().startsWith("video/"))
+        {
+          icon = "<span class='fa fa-file-video-o'></span>";
+        }
 
         return {
           type: file.type,
           name: file.name,
           size: file.size,
           mtime: file.mtime,
+          mime_type: file.mime_type,
           icon: icon,
         };
       });
@@ -97,9 +118,9 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             component.path(path);
             var files = []
             if(path != "/")
-              files.push({type: "", name: "..", size: "", mtime: ""});
+              files.push({type: "", name: "..", size: "", mtime: "", mime_type:"application/x-directory"});
             for(var i = 0; i != results.names.length; ++i)
-              files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i]});
+              files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mime_type:results["mime-types"][i]});
             mapping.fromJS(files, component.raw_files);
           }
         });
