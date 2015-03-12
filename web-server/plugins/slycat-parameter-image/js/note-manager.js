@@ -1,4 +1,4 @@
-define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(server_root) {
+define("slycat-parameter-image-note-manager", ["slycat-server-root", "jquery", "lodash"], function(server_root, $, _) {
 
   function NoteManager(model_id, bookmarker, bookmark) {
     var self = this;
@@ -32,7 +32,11 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
     text_area.stickies();
     var note = text_area.parent();
     var close_button = note.find('i.fa.fa-close');
-    var header = note.find('.ui-sticky-header')
+    var header = note.find('.ui-sticky-header');
+    var title_button = $('<i class="fa fa-text-height">');
+    var note_button = $('<i class="fa fa-file-text-o">');
+    header.append(title_button).append(note_button);
+
     note.attr('id', 'note-' + attributes.id);
     note.css({
       'top': attributes.top,
@@ -45,7 +49,29 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
       'height': note.outerHeight() - header.outerHeight() - 7
     });
 
-    close_button.on('click', function(event) {
+    if (attributes.title) {
+      note.addClass('title');
+      title_button.hide();
+    }
+    else {
+      note_button.hide();
+    }
+
+    title_button.on('click', function() {
+      title_button.hide();
+      note_button.show();
+      note.addClass('title');
+      self.edit_note(attributes.id, { title: true });
+    });
+
+    note_button.on('click', function() {
+      note_button.hide();
+      title_button.show();
+      note.removeClass('title');
+      self.edit_note(attributes.id, { title: false });
+    });
+
+    close_button.on('click', function() {
       //clicks also trigger another event handler in stickies.core that calls _destroy()
       //var id = parseInt($(event.target).parent().parent().attr('id').match(/note-(\d+)/)[1]);
       self.remove_note(attributes.id);
@@ -76,6 +102,7 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root"], function(s
     var note = {
       id: self.id_counter++,
       text: '',
+      title: false,
       top: window.innerHeight/2 + 'px',
       left: window.innerWidth/2 + 'px',
       width: '140px',

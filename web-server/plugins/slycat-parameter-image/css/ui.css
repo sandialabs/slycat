@@ -601,16 +601,31 @@ rights in this software.
   z-index: 3
 }
 
-.ui-sticky-header .fa.fa-close {
+.ui-sticky-header {
+  cursor: move;
+}
+
+.ui-sticky-header i.fa {
   padding-right: 2px;
+  padding-left: 2px;
+  cursor: pointer;
   visibility: hidden;
 }
 
-.ui-sticky:hover .fa.fa-close, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
+.ui-sticky:hover i.fa, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
   visibility: visible;
 }
 
+.ui-resizable-handle.ui-resizable-e {
+  cursor: ew-resize;
+}
+
+.ui-resizable-handle.ui-resizable-s {
+  cursor: ns-resize;
+}
+
 .ui-icon.ui-icon-gripsmall-diagonal-se {
+  cursor: nwse-resize;
   visibility: hidden;
   bottom: 2px;
   right: 2px;
@@ -624,4 +639,9 @@ rights in this software.
   overflow: hidden;
   text-indent: -99999px;
   background-color: white;
+}
+
+.ui-sticky.title textarea {
+  font-size: 28px;
+  padding: 3.5px;
 }
