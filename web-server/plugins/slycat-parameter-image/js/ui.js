@@ -817,6 +817,33 @@ function setup_sliders()
       // },
     ]);
 
+    var activeFilters = ko.observableArray([
+      { name: 'one',
+        index: 1,
+        max: ko.observable(250),
+        min: ko.observable(25),
+        high: ko.observable(250),
+        low: ko.observable(25),
+        active: ko.observable(true) 
+      },
+      { name: 'two is a very long label and we want to make sure it will not break things',
+        index: -1,
+        max: ko.observable(1),
+        min: ko.observable(-1),
+        high: ko.observable(0.25),
+        low: ko.observable(-1),
+        active: ko.observable(false)  
+      },
+      { name: 'three',
+        index: 3,
+        max: ko.observable(1200),
+        min: ko.observable(1100),
+        high: ko.observable(1150),
+        low: ko.observable(1100),
+        active: ko.observable(true)
+      },
+    ]);
+
     for(var i = 0; i < numeric_variables.length; i++)
     {
       filters.push({
@@ -833,6 +860,7 @@ function setup_sliders()
     var ViewModel = function(params){
       var self = this;
       self.filters = filters;
+      self.activeFilters = activeFilters;
       self.allActive = ko.pureComputed(function() {
         var allActive = false;
         for(var i=0; i < self.filters().length; i++)
@@ -844,6 +872,21 @@ function setup_sliders()
         }
         return true;
       });
+      self.activateFilter = function(item, event){
+        console.log('it changed!!!');
+        var activateFilter = event.target.value;
+        for(var i = 0; i < self.filters().length; i++)
+        {
+          if(self.filters()[i].index == Number(activateFilter))
+          {
+            //self.filters()[i].active(true);
+            //self.activeFilters.push( self.filters.splice(i, 1) );
+
+            var newFilter = self.filters.splice(i, 1);
+            self.activeFilters.push( newFilter[0] );
+          }
+        }
+      }
     };
 
     ko.applyBindings(
