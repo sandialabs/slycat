@@ -586,8 +586,13 @@ rights in this software.
   z-index: 3
 }
 
+.ui-sticky-header {
+  cursor: move;
+}
+
 .ui-sticky-header .fa.fa-close {
   padding-right: 2px;
+  cursor: pointer;
   visibility: hidden;
 }
 
@@ -595,7 +600,16 @@ rights in this software.
   visibility: visible;
 }
 
+.ui-resizable-handle.ui-resizable-e {
+  cursor: ew-resize;
+}
+
+.ui-resizable-handle.ui-resizable-s {
+  cursor: ns-resize;
+}
+
 .ui-icon.ui-icon-gripsmall-diagonal-se {
+  cursor: nwse-resize;
   visibility: hidden;
   bottom: 2px;
   right: 2px;
