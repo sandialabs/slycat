@@ -82,7 +82,28 @@ rights in this software.
   <div id="sliders-pane" class="ui-layout-west">
     <div class="load-status"></div>
     <div id="sliders">
-      <slycat-parameter-image-sliders params="filters: activeFilters, length: sliderHeight"></slycat-parameter-image-sliders>
+      <!-- <slycat-parameter-image-sliders params="filters: activeFilters, length: sliderHeight"></slycat-parameter-image-sliders> -->
+
+      <div data-bind="foreach: activeFilters">
+        <div class="slycat-pim-filter">
+          <div class="varNameContainer">
+            <div class="varName" data-bind="text: name">[variable name]</div>
+          </div>
+          <slycat-range-slider 
+            params="
+              axis: 'vertical', 
+              length: $parent.sliderHeight,
+              min: min,
+              max: max,
+              low: low,
+              high: high
+            "></slycat-range-slider>
+          <span class="close-button frame-icon"
+            data-bind="click: $parent.removeFilter"
+          ></span>
+        </div>
+      </div>
+
     </div>
   </div>
 

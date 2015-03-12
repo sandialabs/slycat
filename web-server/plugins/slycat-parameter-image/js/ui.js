@@ -813,8 +813,8 @@ function setup_sliders()
       if(activeIndexes.indexOf(numeric_variables[i]) == -1)
       {
         filters.push({
-          name: table_metadata["column-names"][numeric_variables[i]],
-          index: numeric_variables[i],
+          name: ko.observable( table_metadata["column-names"][numeric_variables[i]] ),
+          index: ko.observable( numeric_variables[i] ),
           max: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
           min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
           high: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
@@ -836,7 +836,7 @@ function setup_sliders()
         var activateFilter = event.target.value;
         for(var i = 0; i < self.filters().length; i++)
         {
-          if(self.filters()[i].index == Number(activateFilter))
+          if(self.filters()[i].index() == Number(activateFilter))
           {
             var newFilter = self.filters.splice(i, 1)[0];
             self.activeFilters.push(newFilter);
@@ -844,6 +844,12 @@ function setup_sliders()
         }
         var unmappedActiveFilters = mapping.toJS(self.activeFilters());
         bookmarker.updateState( {"activeFilters" : unmappedActiveFilters} );
+      }
+      self.removeFilter = function(item, event){
+        console.log('you clicked it');
+        var filterIndex = self.activeFilters.indexOf(item);
+        self.filters.push(item);
+        self.activeFilters.splice(filterIndex, 1);
       }
     };
 
