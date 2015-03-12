@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "knockout", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, ko, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, ko, mapping, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -38,6 +38,7 @@ var scatterplot_ready = false;
 var controls_ready = false;
 var sliders_ready = false;
 var image_uri = document.createElement("a");
+var slidersPaneHeight = ko.observable();
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout.
@@ -62,6 +63,10 @@ $("#parameter-image-plus-layout").layout(
   west:
   {
     // Sliders
+    onresize: function(pane_name, pane_element, pane_state, pane_options, layout_name)
+    {
+      slidersPaneHeight( pane_state.innerHeight );
+    }
   },
   south:
   {
@@ -551,7 +556,7 @@ function setup_scatterplot()
 
 function setup_controls()
 {
-  if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null)
+  if( !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
     && indices)
@@ -776,7 +781,7 @@ function setup_controls()
 
 function setup_sliders()
 {
-  if( !sliders_ready && controls_ready && table_metadata)
+  if( !sliders_ready && bookmark && controls_ready && table_metadata)
   {
     sliders_ready = true;
     $("#sliders-pane .load-status").css("display", "none");
@@ -790,88 +795,42 @@ function setup_sliders()
       }
     }
 
-    var filters = ko.observableArray([
-      // { name: 'one',
-      //   index: 1,
-      //   max: ko.observable(250),
-      //   min: ko.observable(25),
-      //   high: ko.observable(250),
-      //   low: ko.observable(25),
-      //   active: ko.observable(true) 
-      // },
-      // { name: 'two is a very long label and we want to make sure it will not break things',
-      //   index: -1,
-      //   max: ko.observable(1),
-      //   min: ko.observable(-1),
-      //   high: ko.observable(0.25),
-      //   low: ko.observable(-1),
-      //   active: ko.observable(false)  
-      // },
-      // { name: 'three',
-      //   index: 3,
-      //   max: ko.observable(1200),
-      //   min: ko.observable(1100),
-      //   high: ko.observable(1150),
-      //   low: ko.observable(1100),
-      //   active: ko.observable(true)
-      // },
-    ]);
+    var filters = ko.observableArray();
+    var activeFilters = ko.observableArray();
+    var activeIndexes = [];
 
-    var activeFilters = ko.observableArray([
-      { name: 'one',
-        index: 1,
-        max: ko.observable(250),
-        min: ko.observable(25),
-        high: ko.observable(250),
-        low: ko.observable(25),
-        active: ko.observable(true) 
-      },
-      { name: 'two is a very long label and we want to make sure it will not break things',
-        index: -1,
-        max: ko.observable(1),
-        min: ko.observable(-1),
-        high: ko.observable(0.25),
-        low: ko.observable(-1),
-        active: ko.observable(false)  
-      },
-      { name: 'three',
-        index: 3,
-        max: ko.observable(1200),
-        min: ko.observable(1100),
-        high: ko.observable(1150),
-        low: ko.observable(1100),
-        active: ko.observable(true)
-      },
-    ]);
+    if("activeFilters" in bookmark)
+    {
+      activeFilters = mapping.fromJS(bookmark["activeFilters"]);
+      for(var i=0; i < activeFilters().length; i++)
+      {
+        activeIndexes.push(activeFilters()[i].index());
+      }
+    }
 
     for(var i = 0; i < numeric_variables.length; i++)
     {
-      filters.push({
-        name: table_metadata["column-names"][numeric_variables[i]],
-        index: numeric_variables[i],
-        max: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
-        min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
-        high: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
-        low: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
-        active: ko.observable(false)
-      });
+      if(activeIndexes.indexOf(numeric_variables[i]) == -1)
+      {
+        filters.push({
+          name: table_metadata["column-names"][numeric_variables[i]],
+          index: numeric_variables[i],
+          max: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
+          min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
+          high: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
+          low: ko.observable( table_metadata["column-min"][numeric_variables[i]] )
+        });
+      }
     }
 
     var ViewModel = function(params){
       var self = this;
+      slidersPaneHeight( $("#sliders-pane").height() );
+      self.sliderHeight = ko.pureComputed(function() {
+        return slidersPaneHeight() - 75;
+      }, this);
       self.filters = filters;
       self.activeFilters = activeFilters;
-      self.allActive = ko.pureComputed(function() {
-        var allActive = false;
-        for(var i=0; i < self.filters().length; i++)
-        {
-          if(!self.filters()[i].active())
-          {
-            return false;
-          }
-        }
-        return true;
-      });
       self.activateFilter = function(item, event){
         console.log('it changed!!!');
         var activateFilter = event.target.value;
@@ -879,13 +838,12 @@ function setup_sliders()
         {
           if(self.filters()[i].index == Number(activateFilter))
           {
-            //self.filters()[i].active(true);
-            //self.activeFilters.push( self.filters.splice(i, 1) );
-
-            var newFilter = self.filters.splice(i, 1);
-            self.activeFilters.push( newFilter[0] );
+            var newFilter = self.filters.splice(i, 1)[0];
+            self.activeFilters.push(newFilter);
           }
         }
+        var unmappedActiveFilters = mapping.toJS(self.activeFilters());
+        bookmarker.updateState( {"activeFilters" : unmappedActiveFilters} );
       }
     };
 

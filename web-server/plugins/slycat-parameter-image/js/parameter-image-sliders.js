@@ -11,7 +11,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "domReady!"], fun
     viewModel: function(params)
     {
       this.sliders = params.filters;
-      this.length = ko.observable(400);
+      this.length = params.length || ko.observable(400);
     },
     template: { require: "text!" + server_root + "resources/models/parameter-image/parameter-image-sliders.html" }
   }); 
