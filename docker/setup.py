@@ -5,7 +5,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("command", nargs="?", default="build", choices=["build", "push"])
 arguments = parser.parse_args()
 
-images = ["supervisord", "sshd", "slycat", "slycat-dev"]
+images = ["supervisord", "slycat-base", "slycat-demo", "slycat-dev"]
 
 if arguments.command == "build":
   for image in images:

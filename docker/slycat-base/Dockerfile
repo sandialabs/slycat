@@ -1,4 +1,4 @@
-FROM sandialabs/sshd
+FROM sandialabs/supervisord
 MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages.
@@ -8,13 +8,8 @@ RUN yum install -y couchdb dejavu-serif-fonts "ffmpeg >= 1.1" gcc git "haproxy >
 # Install Python modules.
 RUN pip install cherrypy==3.2.6 ipython tornado-couchdb
 
-# Assign a password to root.
-RUN echo 'root:slycat' | chpasswd
-
 # Create a slycat user.
 RUN /usr/sbin/useradd --create-home --home-dir /home/slycat --shell /bin/bash -G wheel slycat
-# Assign a password to the slycat user.
-RUN echo 'slycat:slycat' | chpasswd
 # The following commands are run as user "slycat".
 USER slycat
 # Add the Slycat packages to the PYTHONPATH environment variable so our executables can find them.
@@ -22,7 +17,7 @@ RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.b
 # Add our home-grown CA certificate to the environment where push scripts can find it.
 RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
 # Clone the Slycat git repository and switch to a known-good commit.
-RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout 14818c68e6cab4dc3b4bc2c8ef673d59f420883a
+RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout f5a5b80ffdde1b9c8e223e5cb9dce89bd89df7b4
 
 # The following commands are run as root.
 USER root
