@@ -412,7 +412,9 @@ rights in this software.
 #controls #filter-selector {
   width: 90px;
 }
-#scatterplot .media-layer .frame-icon {
+#scatterplot .media-layer .frame-icon,
+#sliders-pane .frame-icon
+{
   position: absolute;
   width: 16px;
   height: 16px;
@@ -455,7 +457,9 @@ rights in this software.
   cursor: move;
 }
 #scatterplot .close-button:hover,
-#scatterplot .pin-button:hover {
+#scatterplot .pin-button:hover,
+#sliders-pane .close-button:hover
+{
   cursor: pointer;
 }
 #scatterplot.resizing,
@@ -594,6 +598,37 @@ rights in this software.
 /* undoing vertical class cause it's making vertical sliders horizontal */
 .vertical {
   transform: none !important;
+}
+.slycat-pim-filter {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+}
+.slycat-pim-filter .close-button {
+  position: absolute;
+  font-size: 32px;
+  top: 0px;
+  left: 0px;
+  background-position: -96px -128px;
+}
+.slycat-pim-filter .varNameContainer {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+.slycat-pim-filter .varName {
+  transform: rotate(270deg);
+  position: absolute;
+  width: 1000px;
+  text-align: center;
+  left: -493px;
+  top: 50%;
+  font-size: 13px;
+  font-weight: bold;
+}
+.slycat-range-slider {
+  top: 4px;
+  left: 20px;
 }
 
 /* Note Layer */

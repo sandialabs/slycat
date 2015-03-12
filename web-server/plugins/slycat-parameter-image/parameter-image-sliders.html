@@ -1,4 +1,9 @@
 <div data-bind="foreach: sliders">
+	<div class="slycat-pim-filter">
+		<span class="close-button frame-icon"></span>
+		<div class="varNameContainer">
+			<div class="varName" data-bind="text: name">[variable name]</div>
+		</div>
 		<slycat-range-slider 
 			params="
 				axis: 'vertical', 
@@ -8,4 +13,5 @@
 				low: low,
 				high: high
 			"></slycat-range-slider>
+	</div>
 </div>
