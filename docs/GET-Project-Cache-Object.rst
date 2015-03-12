@@ -1,16 +1,16 @@
 GET Project Cache Object
 ========================
 
-.. http:get:: /projects/(pid)/cache/(cid)
+.. http:get:: /projects/(pid)/cache/(key)
 
-  Retrieves an object from a project's cache. Objects are opaque binary blobs
-  that may contain arbitrary data, plus an explicit content type.
+  Retrieves an object from a project's cache. Cache objects are opaque binary
+  blobs that may contain arbitrary data, plus an explicit content type.
 
   :param pid: Unique project identifier.
   :type mid: string
 
-  :param cid: Unique cache object identifier.
-  :type cid: string
+  :param key: Cache object identifier.
+  :type key: string
 
   :status 200: The requested file is returned in the body of the response.
   :status 404 Not in cache.: The requested object isn't in the cache.
@@ -20,7 +20,7 @@ GET Project Cache Object
 See Also
 --------
 
-- :http:delete:`/projects/(pid)/cache/(cid)`
+- :http:delete:`/projects/(pid)/cache/(key)`
 - :http:get:`/remotes/(sid)/file(path)`
 - :http:get:`/remotes/(sid)/image(path)`
 - :http:get:`/remotes/(sid)/videos/(vsid)`

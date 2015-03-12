@@ -245,6 +245,8 @@ def delete_project(pid):
   project = couchdb.get("project", pid)
   slycat.web.server.authentication.require_project_administrator(project)
 
+  for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
+    couchdb.delete(cache_object)
   for reference in couchdb.scan("slycat/project-references", startkey=pid, endkey=pid):
     couchdb.delete(reference)
   for bookmark in couchdb.scan("slycat/project-bookmarks", startkey=pid, endkey=pid):
@@ -632,6 +634,30 @@ def delete_reference(rid):
   couchdb.delete(reference)
 
   cherrypy.response.status = "204 Reference deleted."
+
+def get_project_cache_object(pid, key):
+  couchdb = slycat.web.server.database.couchdb.connect()
+  project = couchdb.get("project", pid)
+  slycat.web.server.authentication.require_project_reader(project)
+
+  lookup = pid + "-" + key
+  for cache_object in couchdb.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
+    return
+
+  raise cherrypy.HTTPError(404)
+
+def delete_project_cache_object(pid, key):
+  couchdb = slycat.web.server.database.couchdb.connect()
+  project = couchdb.get("project", pid)
+  slycat.web.server.authentication.require_project_writer(project)
+
+  lookup = pid + "-" + key
+  for cache_object in couchdb.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
+    couchdb.delete(cache_object)
+    cherrypy.response.status = "204 Cache object deleted."
+    return
+
+  raise cherrypy.HTTPError(404)
 
 def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
   try:

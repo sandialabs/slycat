@@ -1,15 +1,15 @@
 DELETE Project Cache Object
 ===========================
 
-.. http:delete:: /projects/(pid)/cache/(cid)
+.. http:delete:: /projects/(pid)/cache/(key)
 
   Deletes an object from the project cache.
 
   :param pid: Unique project identifier.
-  :type mid: string
+  :type pid: string
 
-  :param cid: Unique cache object identifier.
-  :type cid: string
+  :param key: Cache object identifier.
+  :type key: string
 
   :status 204 Object deleted.: The cached object has been deleted.
 
@@ -37,5 +37,5 @@ DELETE Project Cache Object
 See Also
 --------
 
-- :http:get:`/projects/(pid)/cache/(cid)`
+- :http:get:`/projects/(pid)/cache/(key)`
 

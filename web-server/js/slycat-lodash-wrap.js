@@ -1,3 +1,4 @@
-define("lodash", [], function() {
-  return _.noConflict();
+require(["lodash"], function(lodash)
+{
+  lodash.noConflict();
 });
