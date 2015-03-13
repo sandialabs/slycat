@@ -6,12 +6,18 @@ GET Remote File
   Uses an existing remote session to retrieve a remote file.  The remote
   session must have been created using :http:post:`/remotes`.  Use
   :http:post:`/remotes/(sid)/browse(path)` to lookup remote file paths.
+  The returned file may be optionally cached on the server and retrieved
+  using :http:get:`/projects/(pid)/cache/(key)`.
 
   :param sid: Unique session identifier returned from :http:post:`/remotes`.
   :type sid: string
 
   :param path: Remote filesystem path (must be absolute).
   :type path: string
+
+  :query cache: Optional cache identifier.  Set to `project` to store the retrieved file in a project cache.
+  :query project: Project identifier.  Required when `cache` is set to `project`.
+  :query key: Cached object key.  Must be specified when `cache` is set to `project`.
 
   :status 200: The requested file is returned in the body of the response.
   :status 404: The session doesn't exist or has timed-out.
