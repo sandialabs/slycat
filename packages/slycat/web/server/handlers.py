@@ -642,7 +642,8 @@ def get_project_cache_object(pid, key):
 
   lookup = pid + "-" + key
   for cache_object in couchdb.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
-    return
+    cherrypy.response.headers["content-type"] = cache_object["_attachments"]["content"]["content_type"]
+    return database.get_attachment(cache_object, "content")
 
   raise cherrypy.HTTPError(404)
 
@@ -1174,9 +1175,9 @@ def post_remote_browse(sid, path):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.browse(path, file_reject, file_allow, directory_reject, directory_allow)
 
-def get_remote_file(sid, path):
+def get_remote_file(sid, path, **kwargs):
   with slycat.web.server.remote.get_session(sid) as session:
-    return session.get_file(path)
+    return session.get_file(path, **kwargs)
 
 def get_remote_image(sid, path, **kwargs):
   content_type = kwargs.get("content-type", None)
