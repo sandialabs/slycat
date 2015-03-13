@@ -32,6 +32,7 @@ var colormap = null;
 var colorscale = null;
 var auto_scale = null;
 var filtered_v = null;
+var filter_cache = null;
 
 var table_ready = false;
 var scatterplot_ready = false;
@@ -236,6 +237,48 @@ function metadata_loaded()
     hidden_simulations = [];
     if("hidden-simulations" in bookmark)
       hidden_simulations = bookmark["hidden-simulations"];
+
+    // Retrieve and cache each column that has active filters
+    filter_cache = {};
+    if("activeFilters" in bookmark)
+    {
+      var activeFilters = bookmark["activeFilters"];
+      var filtered_columns = [];
+      for(var i=0; i < activeFilters.length; i++)
+      {
+        filtered_columns.push(activeFilters[i].index);
+      }
+      var requests = Array();
+      for(var i=0; i < filtered_columns.length; i++)
+      {
+        var request = get_model_array_attribute({
+          server_root : server_root,
+          mid : model_id,
+          aid : "data-table",
+          array : 0,
+          attribute : filtered_columns[i],
+          success : function(result)
+          {
+            filter_cache[filtered_columns[i]] = result;
+          },
+          error : artifact_missing
+        });
+        requests.push(request);
+      }
+      var defer = $.when.apply($, requests);
+      defer.done(function(){
+
+        // This is executed only after every ajax request has been completed
+
+        $.each(arguments, function(index, responseData){
+            // "responseData" will contain an array of response information for each specific request
+            console.log("here is responseData: " + responseData);
+        });
+
+      });
+    }
+    
+
 
     get_model_array_attribute({
       server_root : server_root,
@@ -789,7 +832,7 @@ function setup_sliders()
     var numeric_variables = [];
     for(var i = 0; i < table_metadata["column-count"]; i++)
     {
-      if(table_metadata["column-types"][i] != 'string')
+      if(table_metadata["column-types"][i] != 'string' && table_metadata["column-count"]-1 > i)
       {
         numeric_variables.push(i);
       }
@@ -798,6 +841,8 @@ function setup_sliders()
     var filters = ko.observableArray();
     var activeFilters = ko.observableArray();
     var activeIndexes = [];
+    var rateLimitedValues = [];
+    var rateLimit = 500;
 
     if("activeFilters" in bookmark)
     {
@@ -805,6 +850,8 @@ function setup_sliders()
       for(var i=0; i < activeFilters().length; i++)
       {
         activeIndexes.push(activeFilters()[i].index());
+        rateLimitedValues.push( ko.pureComputed(activeFilters()[i].high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
+        rateLimitedValues.push( ko.pureComputed(activeFilters()[i].low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
       }
     }
 
@@ -820,6 +867,8 @@ function setup_sliders()
           high: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
           low: ko.observable( table_metadata["column-min"][numeric_variables[i]] )
         });
+        rateLimitedValues.push( ko.pureComputed(filters()[filters().length-1].high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
+        rateLimitedValues.push( ko.pureComputed(filters()[filters().length-1].low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
       }
     }
 
@@ -831,8 +880,16 @@ function setup_sliders()
       }, this);
       self.filters = filters;
       self.activeFilters = activeFilters;
+
+      for(var i = 0; i < rateLimitedValues.length; i++)
+      {
+        rateLimitedValues[i].subscribe(function(newValue){
+          console.log("rateLimitedValue is: " + newValue);
+          bookmarker.updateState( {"activeFilters" : mapping.toJS(self.activeFilters())} );
+        });
+      }
+
       self.activateFilter = function(item, event){
-        console.log('it changed!!!');
         var activateFilter = event.target.value;
         for(var i = 0; i < self.filters().length; i++)
         {
@@ -846,10 +903,11 @@ function setup_sliders()
         bookmarker.updateState( {"activeFilters" : unmappedActiveFilters} );
       }
       self.removeFilter = function(item, event){
-        console.log('you clicked it');
         var filterIndex = self.activeFilters.indexOf(item);
         self.filters.push(item);
         self.activeFilters.splice(filterIndex, 1);
+        var unmappedActiveFilters = mapping.toJS(self.activeFilters());
+        bookmarker.updateState( {"activeFilters" : unmappedActiveFilters} );
       }
     };
 
