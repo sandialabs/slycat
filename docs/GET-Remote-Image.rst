@@ -7,6 +7,8 @@ GET Remote Image
   session must have been created using :http:post:`/remotes`, and the session
   must have a running agent.  Use :http:post:`/remotes/(sid)/browse(path)` to
   lookup remote file paths.
+  The returned file may be optionally cached on the server and retrieved
+  using :http:get:`/projects/(pid)/cache/(key)`.
 
   The caller *may* optionally choose to resize the image and / or convert it to
   another file type.  Note that this can reduce performance significantly as
@@ -20,10 +22,13 @@ GET Remote Image
   :param path: Remote filesystem absolute path to be retrieved.
   :type path: string
 
-  :query string content-type: optional, Image content type to return.  Currently limited to `image/jpeg` or `image/png`.  If the requested content type doesn't match the content type of the remote image, it will be converted.
-  :query int max-size: optional, Maximum image size in pixels along either dimension.  Images larger than this size will be resized to fit while maintaining their aspect ratio.
-  :query int max-width: optional, Maximum image width.  Wider images will be resized to fit while maintaining their aspect ratio.
-  :query int max-height: optional, Maximum image height.  Taller images will be resized to fit while maintaining their aspect ratio.
+  :query string content-type: Optional image content type to return.  Currently limited to `image/jpeg` or `image/png`.  If the requested content type doesn't match the content type of the remote image, it will be converted.
+  :query int max-size: Optional maximum image size in pixels along either dimension.  Images larger than this size will be resized to fit while maintaining their aspect ratio.
+  :query int max-width: Optional maximum image width.  Wider images will be resized to fit while maintaining their aspect ratio.
+  :query int max-height: Optional maximum image height.  Taller images will be resized to fit while maintaining their aspect ratio.
+  :query cache: Optional cache identifier.  Set to `project` to store the retrieved image in a project cache.
+  :query project: Project identifier.  Required when `cache` is set to `project`.
+  :query key: Cached object key.  Must be specified when `cache` is set to `project`.
 
   :status 200: The requested file is returned in the body of the response.
   :status 400 Access denied.: The session user doesn't have permissions to access the file.
