@@ -53,5 +53,11 @@ ADD proxy-server-startup.conf /etc/supervisord.d/proxy-server-startup.conf
 EXPOSE 80
 EXPOSE 443
 
+# Create mount points for persistent data.
+VOLUME /var/lib/couchdb
+VOLUME /var/lib/slycat
+VOLUME /var/log/couchdb
+VOLUME /var/log/slycat
+
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.
