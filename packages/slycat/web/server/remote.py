@@ -32,7 +32,7 @@ import cherrypy
 import datetime
 import hashlib
 import json
-import mimetypes
+import slycat.mime_type
 import os
 import paramiko
 import slycat.web.server.streaming
@@ -144,12 +144,10 @@ class Session(object):
             if file_allow is None or file_allow.search(filepath) is None:
               continue
 
-        if filetype == "f":
-          mime_type = mimetypes.guess_type(path, strict=False)[0]
-          if mime_type is None:
-            mime_type = "application/octet-stream"
-        else:
+        if filetype == "d":
           mime_type = "application/x-directory"
+        else:
+          mime_type = slycat.mime_type.guess_type(path)[0]
 
         names.append(attribute.filename)
         sizes.append(attribute.st_size)
@@ -209,7 +207,7 @@ class Session(object):
         cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
         raise cherrypy.HTTPError("400 Can't read directory.")
 
-      content_type, encoding = mimetypes.guess_type(path, strict=False)
+      content_type, encoding = slycat.mime_type.guess_type(path)
       if content_type is None:
         content_type = "application/octet-stream"
       content = self._sftp.file(path).read()

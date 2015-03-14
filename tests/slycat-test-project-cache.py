@@ -7,7 +7,7 @@ arguments = parser.parse_args()
 
 connection = slycat.web.client.connect(arguments)
 pid = connection.find_or_create_project(arguments.project_name)
-sid = connection.post_remotes("localhost", "slycat", "slycat", agent=False)
+sid = connection.post_remotes("localhost", "slycat", "slycat")
 
 print connection.post_remote_browse(sid, "/home/slycat/src/slycat")
 print connection.get_remote_file(sid, "/home/slycat/src/slycat/README.md", cache="project", project=pid, key="test")
