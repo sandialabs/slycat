@@ -32,11 +32,12 @@ import cherrypy
 import datetime
 import hashlib
 import json
-import slycat.mime_type
 import os
 import paramiko
+import slycat.mime_type
+import slycat.web.server.authentication
+import slycat.web.server.database
 import slycat.web.server.streaming
-import socket
 import stat
 import sys
 import threading
@@ -45,6 +46,20 @@ import uuid
 
 def cache_object(pid, key, content_type, content):
   cherrypy.log.error("cache_object %s %s %s" % (pid, key, content_type))
+  database = slycat.web.server.database.couchdb.connect()
+  project = database.get("project", pid)
+  slycat.web.server.authentication.require_project_writer(project)
+
+  cache_object = {
+    "_id": uuid.uuid4().hex,
+    "type": "cache-object",
+    "project": pid,
+    "key": key,
+    "created": datetime.datetime.utcnow().isoformat(),
+    "creator": cherrypy.request.login,
+  }
+  database.save(cache_object)
+  database.put_attachment(cache_object, filename="content", content_type=content_type, content=content)
 
 session_cache = {}
 session_cache_lock = threading.Lock()

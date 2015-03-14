@@ -636,12 +636,12 @@ def delete_reference(rid):
   cherrypy.response.status = "204 Reference deleted."
 
 def get_project_cache_object(pid, key):
-  couchdb = slycat.web.server.database.couchdb.connect()
-  project = couchdb.get("project", pid)
+  database = slycat.web.server.database.couchdb.connect()
+  project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project)
 
   lookup = pid + "-" + key
-  for cache_object in couchdb.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
+  for cache_object in database.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
     cherrypy.response.headers["content-type"] = cache_object["_attachments"]["content"]["content_type"]
     return database.get_attachment(cache_object, "content")
 

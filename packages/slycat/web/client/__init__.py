@@ -317,6 +317,26 @@ class Connection(object):
     """
     return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
+  def get_project_cache_object(self, pid, key):
+    """Retrieve an object from a project cache.
+
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+    key: string, required
+      Cache object identifier.
+
+    Returns
+    -------
+    content: Cached object content.
+
+    See Also
+    --------
+    :http:get:`/projects/(pid)/cache/(key)`
+    """
+    return self.request("GET", "/projects/%s/cache/%s" % (pid, key))
+
   def get_projects(self):
     """Retrieve all projects.
 
