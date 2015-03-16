@@ -15,4 +15,6 @@ print connection.get_project_cache_object(pid, "test")
 print connection.get_remote_file(sid, "/home/slycat/src/slycat/README.md", cache="project", project=pid, key="test")
 print connection.get_project_cache_object(pid, "test")
 
+connection.delete_project_cache_object(pid, "test")
+
 connection.delete_remote(sid)

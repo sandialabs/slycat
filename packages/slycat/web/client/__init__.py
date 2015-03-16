@@ -164,6 +164,22 @@ class Connection(object):
     """
     self.request("DELETE", "/projects/%s" % (pid))
 
+  def delete_project_cache_object(self, pid, key):
+    """Delete an existing project cache object.
+
+    Parameters
+    ----------
+    pid: string, required
+      The unique project identifier.
+    key: string, required
+      Unique cache object key.
+
+    See Also
+    --------
+    :http:delete:`/projects/(pid)/cache/(key)`
+    """
+    self.request("DELETE", "/projects/%s/cache/%s" % (pid, key))
+
   def delete_remote(self, sid):
     """Delete an existing remote session.
 
