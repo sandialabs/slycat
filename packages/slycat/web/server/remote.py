@@ -50,6 +50,11 @@ def cache_object(pid, key, content_type, content):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
 
+  lookup = pid + "-" + key
+  for cache_object in database.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
+    database.put_attachment(cache_object, filename="content", content_type=content_type, content=content)
+    return
+
   cache_object = {
     "_id": uuid.uuid4().hex,
     "type": "cache-object",
