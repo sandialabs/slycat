@@ -207,13 +207,19 @@ def put_project(pid):
 def array_cleanup_worker():
   while True:
     cleanup_arrays.queue.get()
-    cherrypy.log.error("Array cleanup started.")
-    database = slycat.web.server.database.couchdb.connect()
-    for file in database.view("slycat/hdf5-file-counts", group=True):
-      if file.value == 0:
-        slycat.web.server.database.hdf5.delete(file.key)
-        database.delete(database[file.key])
-    cherrypy.log.error("Array cleanup finished.")
+    while True:
+      try:
+        database = slycat.web.server.database.couchdb.connect()
+        cherrypy.log.error("Array cleanup started.")
+        for file in database.view("slycat/hdf5-file-counts", group=True):
+          if file.value == 0:
+            slycat.web.server.database.hdf5.delete(file.key)
+            database.delete(database[file.key])
+        cherrypy.log.error("Array cleanup finished.")
+        break
+      except Exception as e:
+        cherrypy.log.error("Array cleanup thread aiting for couchdb.")
+        time.sleep(2)
 
 def cleanup_arrays():
   cleanup_arrays.queue.put("cleanup")
@@ -226,14 +232,18 @@ def start_array_cleanup_worker():
 
 def session_cleanup_worker():
   while True:
-    cherrypy.log.error("Session cleanup started.")
-    cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
-    database = slycat.web.server.database.couchdb.connect()
-    for session in database.view("slycat/sessions", include_docs=True):
-      if session.doc["created"] < cutoff:
-        database.delete(session.doc)
-    cherrypy.log.error("Session cleanup finished.")
-    time.sleep(datetime.timedelta(minutes=60).total_seconds())
+    try:
+      database = slycat.web.server.database.couchdb.connect()
+      cherrypy.log.error("Session cleanup started.")
+      cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
+      for session in database.view("slycat/sessions", include_docs=True):
+        if session.doc["created"] < cutoff:
+          database.delete(session.doc)
+      cherrypy.log.error("Session cleanup finished.")
+      time.sleep(datetime.timedelta(minutes=60).total_seconds())
+    except Exception as e:
+      cherrypy.log.error("Session cleanup thread waiting for couchdb.")
+      time.sleep(2)
 session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=session_cleanup_worker)
 session_cleanup_worker.thread.daemon = True
 
