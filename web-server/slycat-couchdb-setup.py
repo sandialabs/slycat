@@ -2,29 +2,43 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import couchdb
-import getpass
 import argparse
+import couchdb
+import logging
+import sys
+import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--askpass", default=False, action="store_true", help="Prompt for a password.")
 parser.add_argument("--database", default="slycat", help="Specify the database name.  Default: %(default)s")
+parser.add_argument("--error-log", default="-", help="Error log filename, or '-' for stderr.  Default: %(default)s")
+parser.add_argument("--error-log-count", type=int, default=100, help="Maximum number of error log files.  Default: %(default)s")
+parser.add_argument("--error-log-size", type=int, default=10000000, help="Maximum size of error log files.  Default: %(default)s")
 parser.add_argument("--host", default="http://localhost:5984", help="CouchDB server.  Default: %(default)s")
-parser.add_argument("--password", default=None, help="CouchDB password.  Use --askpass to be prompted for your password instead.")
-parser.add_argument("--username", default=None, help="CouchDB username.")
 arguments = parser.parse_args()
 
-if arguments.askpass:
-  arguments.password = getpass.getpass()
+error_log = logging.getLogger("error")
+error_log.propagate = False
+error_log.setLevel(logging.INFO)
+if arguments.error_log == "-":
+  error_log.addHandler(logging.StreamHandler(sys.stderr))
+else:
+  error_log.addHandler(logging.handlers.RotatingFileHandler(arguments.error_log, maxBytes=arguments.error_log_size, backupCount=arguments.error_log_count))
+error_log.handlers[-1].setFormatter(logging.Formatter(fmt="%(asctime)s  %(message)s", datefmt="[%d/%b/%Y:%H:%M:%S]"))
 
-server = couchdb.Server(arguments.host)
-if arguments.username is not None and arguments.password is not None:
-  server.resource.credentials = (arguments.username, arguments.password)
-database = server[arguments.database]
+class log(object):
+  error = logging.getLogger("error").info
+
+while True:
+  try:
+    server = couchdb.Server(arguments.host)
+    database = server[arguments.database]
+    break
+  except:
+    log.error("Waiting for couchdb.")
+    time.sleep(2)
 
 design = {
   "_id": "_design/slycat",
-
   "filters": {
     "projects-models": """function(doc, req) { return doc._deleted || doc.type == "project" || doc.type == "model"; }""",
     },
@@ -316,9 +330,9 @@ design = {
 }
 
 if design["_id"] in database:
-  print "Deleting %s from %s" % (design["_id"], arguments.database)
+  log.error("Deleting %s from %s" % (design["_id"], arguments.database))
   database.delete(database[design["_id"]])
 
-print "Saving %s to %s" % (design["_id"], arguments.database)
+log.error("Saving %s to %s" % (design["_id"], arguments.database))
 database.save(design)
 
