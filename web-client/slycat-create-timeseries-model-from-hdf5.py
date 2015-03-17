@@ -70,6 +70,7 @@ pid = connection.find_or_create_project(arguments.project_name, arguments.projec
 
 # Compute the model.
 try:
+  slycat.web.client.log.info("Examining and verifying data.")
   # find number of timeseries and accurate cluster sample count before starting model  
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
     array = slycat.hdf5.ArraySet(file)[0]
@@ -203,8 +204,7 @@ try:
         with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
           original_times = slycat.hdf5.ArraySet(file)[0].get_data(0)[:]
           original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
-        bin_indices = numpy.digitize(original_times, bin_edges)
-        bin_indices[-1] -= 1
+        bin_indices = numpy.digitize(original_times, bin_edges[1:])
         bin_counts = numpy.bincount(bin_indices, minlength=bin_count+1)[1:]
         bin_sums = numpy.bincount(bin_indices, original_values, minlength=bin_count+1)[1:]
         lonely_bins = (bin_counts < 2)
