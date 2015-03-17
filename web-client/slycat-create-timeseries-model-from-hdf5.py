@@ -297,13 +297,16 @@ try:
       "input-indices":[waveform["input-index"] for waveform in waveforms],
       }), "application/json")
 
-    connection.put_model_arrayset(mid, "preview-%s" % name)
+    arrayset_name = "preview-%s" % name
+    connection.put_model_arrayset(mid, arrayset_name)
     for index, waveform in enumerate(waveforms):
-      slycat.web.client.log.info("Creating preview %s" % index)
+      slycat.web.client.log.info("Uploading preview timeseries %s" % index)
       dimensions = [dict(name="sample", end=len(waveform["times"]))]
       attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
-      connection.put_model_arrayset_array(mid, "preview-%s" % name, index, dimensions, attributes)
-      connection.put_model_arrayset_data(mid, "preview-%s" % name, [(index, 0, numpy.index_exp[...], waveform["times"]), (index, 1, numpy.index_exp[...], waveform["values"])])
+      slycat.web.client.log.debug("Creating array %s %s" % (attributes, dimensions))
+      connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
+      slycat.web.client.log.debug("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
+      connection.put_model_arrayset_data(mid, arrayset_name, [(index, 0, numpy.index_exp[...], waveform["times"]), (index, 1, numpy.index_exp[...], waveform["values"])])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
