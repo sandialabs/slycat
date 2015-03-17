@@ -2,92 +2,336 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
-import base64
 import couchdb
 import getpass
-import json
-import mimetypes
-import optparse
-import os
+import argparse
 
-def add_attachments(full_path, relative_path, database, document):
-  for child in os.listdir(full_path):
-    if child in [".gitattributes", ".svn"]:
-      continue
-    child_path = os.path.join(full_path, child)
-    if os.path.isdir(child_path):
-      add_attachments(child_path, os.path.join(relative_path, child), database, document)
-    else:
-      content = open(child_path, "r")
-      mime_type = mimetypes.guess_type(child_path)
-      database.put_attachment(document, content.read(), filename = os.path.join(relative_path, child).replace("\\", "/"), content_type = mime_type[0])
+parser = argparse.ArgumentParser()
+parser.add_argument("--askpass", default=False, action="store_true", help="Prompt for a password.")
+parser.add_argument("--database", default="slycat", help="Specify the database name.  Default: %(default)s")
+parser.add_argument("--host", default="http://localhost:5984", help="CouchDB server.  Default: %(default)s")
+parser.add_argument("--password", default=None, help="CouchDB password.  Use --askpass to be prompted for your password instead.")
+parser.add_argument("--username", default=None, help="CouchDB username.")
+arguments = parser.parse_args()
 
-def add_directory(path, object):
-  for child in os.listdir(path):
-    if child in ["_attachments",".couchapprc","couchapp.json","language",".svn"]:
-      continue
-    child_path = os.path.join(path, child)
-    if os.path.isdir(child_path):
-      object[child] = {}
-      add_directory(child_path, object[child])
-    else:
-      try:
-        if child in ["rewrites.json"]:
-          object[os.path.splitext(child)[0]] = json.loads(open(child_path, "r").read())
-        else:
-          object[os.path.splitext(child)[0]] = unicode(open(child_path, "r").read().strip())
-      except Exception as e:
-        print child_path, e
+if arguments.askpass:
+  arguments.password = getpass.getpass()
 
-def main():
-  parser = optparse.OptionParser()
-  parser.add_option("--askpass", default=False, action="store_true", help="Prompt for a password.")
-  parser.add_option("--database", default="slycat", help="Specify the database name.  Default: %default")
-  parser.add_option("--delete", default=False, action="store_true", help="Delete existing database.")
-  parser.add_option("--host", default="http://localhost:5984", help="CouchDB server.  Default: %default")
-  parser.add_option("--password", default=None, help="CouchDB password.  Default: %default.  Use --askpass to be prompted for your password instead.")
-  parser.add_option("--username", default=None, help="CouchDB username.  Default: %default")
-  (options, arguments) = parser.parse_args()
+server = couchdb.Server(arguments.host)
+if arguments.username is not None and arguments.password is not None:
+  server.resource.credentials = (arguments.username, arguments.password)
+database = server[arguments.database]
 
-  if options.askpass:
-    options.password = getpass.getpass()
+design = {
+  "_id": "_design/slycat",
 
-  server = couchdb.Server(options.host)
-  if options.username is not None and options.password is not None:
-    server.resource.credentials = (options.username, options.password)
+  "filters": {
+    "models": """function(doc, req) { return doc._deleted || doc.type == "model"; }""",
+    "projects": """function(doc, req) { return doc._deleted || doc.type == "project"; }""",
+    "projects-models": """function(doc, req) { return doc._deleted || doc.type == "project" || doc.type == "model"; }""",
+    },
 
-  databases = [options.database]
-  directories = ["couchdb-design"]
+  "views": {
+    "cache-objects": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "cache-object")
+            return;
 
-  if options.delete and options.database in server:
-    server.delete(options.database)
+          emit(doc._id, null);
+        }
+        """,
+      },
+    "hdf5-file-counts": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] == "hdf5")
+          {
+            emit(doc["_id"], 0);
+          }
+          else if(doc["type"] == "model")
+          {
+            artifact_types = doc["artifact-types"];
+            if(artifact_types)
+            {
+              for(var artifact in artifact_types)
+              {
+                if(artifact_types[artifact] == "hdf5")
+                {
+                  emit(doc["artifact:" + artifact], 1);
+                }
+              }
+            }
+          }
+        }
+        """,
+      "reduce": """
+        function(keys, values)
+        {
+            return sum(values);
+        }
+        """,
+      },
+    "hdf5-files": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "hdf5")
+            return;
 
-  for database_name in databases:
-    if database_name not in server:
-      print "Creating database %s" % database_name
-      server.create(database_name)
-    database = server[database_name]
+          emit(doc._id, null);
+        }
+        """,
+      },
+    "model-names": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "model")
+            return;
 
-    for directory in directories:
-      design = {}
-      add_directory(directory, design)
+          emit(doc.name, doc.description);
+        }
+        """,
+      },
+    "models": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "model")
+            return;
 
-      if not design.has_key("_id"):
-        raise Exception("Missing %s/_id" % directory)
+          emit(doc._id, null);
+        }
+        """,
+      },
+    "open-models": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "model")
+            return;
+          if(doc["state"] == null)
+            return;
+          if(doc["state"] == "closed")
+            return;
+          emit(doc._id, null);
+        }
+        """,
+      },
+    "project-bookmarks": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "bookmark")
+            return;
 
-      if design["_id"] in database:
-        print "Deleting %s from %s" % (design["_id"], database_name)
-        database.delete(database[design["_id"]])
+          emit(doc["project"], null);
+        }
+        """,
+      },
+    "project-cache-objects": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "cache-object")
+            return;
 
-      # This is a workaround for a bizarro problem in py-couchdb ...
-      server = couchdb.Server(options.host)
-      if options.username is not None and options.password is not None:
-        server.resource.credentials = (options.username, options.password)
-      database = server[database_name]
+          emit(doc["project"], null);
+        }
+        """,
+      },
+    "project-key-cache-objects": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "cache-object")
+            return;
 
-      print "Saving %s to %s" % (design["_id"], database_name)
-      database.save(design)
-      #add_attachments(os.path.join(directory, "_attachments"), "", database, design)
+          emit(doc["project"] + "-" + doc["key"], null);
+        }
+        """,
+      },
+    "project-models": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "model")
+            return;
 
-if __name__ == "__main__":
-  main()
+          emit(doc["project"], null);
+        }
+        """,
+      },
+    "project-references": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "reference")
+            return;
+
+          emit(doc["project"], null);
+        }
+        """,
+      },
+    "projects": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "project")
+            return;
+
+          emit(doc._id, null);
+        }
+        """,
+      },
+    "references": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "reference")
+            return;
+
+          emit(doc._id, null);
+        }
+        """,
+      },
+    "sessions": {
+      "map": """
+        function(doc)
+        {
+          if(doc["type"] != "session")
+            return;
+
+          emit(doc._id, null);
+        }
+        """,
+      },
+    },
+
+  "validate_doc_update": """
+    function(new_document, old_document, user_context)
+    {
+      function require(expression, message)
+      {
+        if(!expression)
+        {
+          throw(
+          {
+            forbidden: message
+          });
+        }
+      }
+
+      if(new_document._deleted)
+        return;
+
+      if(old_document)
+      {
+        require(new_document["type"] == old_document["type"], "Document type cannot be modified." + new_document["type"] + " " + old_document["type"]);
+      }
+      else
+      {
+        require(new_document["type"] != null, "Document type is required.");
+      }
+
+      if(new_document["type"] == "project")
+      {
+        require(new_document["acl"] != null, "Project must contain security object.");
+        require(new_document["acl"].administrators != null, "Project security object must contain adminstrators.");
+        require(new_document["acl"].readers != null, "Project security object must contain readers.");
+        require(new_document["acl"].writers != null, "Project security object must contain writers.");
+
+        require(new_document["acl"].administrators.length > 0, "Project security object must contain at least one administrator.");
+
+        require(new_document["created"] != null, "Project must contain creation time.");
+        require(new_document["creator"] != null, "Project must contain creator.");
+        require(new_document["name"] != null, "Project must contain name.");
+
+        if(old_document)
+        {
+          require(new_document["created"] == old_document["created"], "Project creation time cannot be modified.");
+          require(new_document["creator"] == old_document["creator"], "Project creator cannot be modified.");
+        }
+      }
+      else if(new_document["type"] == "model")
+      {
+        require(new_document["project"] != null, "Model must contain project id.");
+        require(new_document["created"] != null, "Model must contain creation time.");
+        require(new_document["creator"] != null, "Model must contain creator.");
+        require(new_document["marking"] != null, "Model must contain marking information.");
+        require(new_document["name"] != null, "Model must have a name.");
+        require(new_document["model-type"] != null, "Model must have a model-type.");
+        require(new_document["state"] == null || new_document["state"] == "waiting" || new_document["state"] == "running" || new_document["state"] == "finished" || new_document["state"] == "closed", "Invalid model state.");
+        require(new_document["result"] == null || new_document["result"] == "succeeded" || new_document["result"] == "failed", "Invalid model result.");
+
+        if(old_document)
+        {
+          require(new_document["state"] == null || new_document["state"] == "waiting" || new_document["state"] == "running" || new_document["state"] == "finished" || new_document["state"] == "closed", "Invalid model state.");
+          require(new_document["project"] == old_document["project"], "Model project id cannot be modified.");
+          require(new_document["created"] == old_document["created"], "Model creation time cannot be modified.");
+          require(new_document["creator"] == old_document["creator"], "Model creator creator cannot be modified.");
+        }
+      }
+      else if(new_document["type"] == "hdf5")
+      {
+      }
+      else if(new_document["type"] == "bookmark")
+      {
+        require(new_document["project"] != null, "Bookmark must contain project id.");
+
+        if(old_document)
+        {
+          require(new_document["project"] == old_document["project"], "Bookmark project id cannot be modified.");
+        }
+      }
+      else if(new_document["type"] == "reference")
+      {
+        require(new_document["project"] != null, "Reference must contain project id.");
+
+        if(old_document)
+        {
+          require(new_document["project"] == old_document["project"], "Reference project id cannot be modified.");
+        }
+      }
+      else if(new_document["type"] == "cache-object")
+      {
+        require(new_document["project"] != null, "Cache object must contain project id.");
+        require(new_document["key"] != null, "Cache object must contain key.");
+
+        if(old_document)
+        {
+          require(new_document["project"] == old_document["project"], "Cache object project id cannot be modified.");
+          require(new_document["key"] == old_document["key"], "Cache object key cannot be modified.");
+        }
+      }
+      else if(new_document["type"] == "session")
+      {
+        require(new_document["created"] != null, "Session must contain creation time.");
+        require(new_document["creator"] != null, "Session must contain creator.");
+        if(old_document)
+        {
+          require(new_document["created"] == old_document["created"], "Session creation time cannot be modified.");
+          require(new_document["creator"] == old_document["creator"], "Session creator cannot be modified.");
+        }
+      }
+      else
+      {
+        throw(
+        {
+          forbidden: "Unknown document type: " + new_document["type"],
+        });
+      }
+    }
+    """,
+}
+
+if design["_id"] in database:
+  print "Deleting %s from %s" % (design["_id"], arguments.database)
+  database.delete(database[design["_id"]])
+
+print "Saving %s to %s" % (design["_id"], arguments.database)
+database.save(design)
+
