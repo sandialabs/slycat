@@ -26,8 +26,6 @@ design = {
   "_id": "_design/slycat",
 
   "filters": {
-    "models": """function(doc, req) { return doc._deleted || doc.type == "model"; }""",
-    "projects": """function(doc, req) { return doc._deleted || doc.type == "project"; }""",
     "projects-models": """function(doc, req) { return doc._deleted || doc.type == "project" || doc.type == "model"; }""",
     },
 
@@ -82,17 +80,6 @@ design = {
             return;
 
           emit(doc._id, null);
-        }
-        """,
-      },
-    "model-names": {
-      "map": """
-        function(doc)
-        {
-          if(doc["type"] != "model")
-            return;
-
-          emit(doc.name, doc.description);
         }
         """,
       },
