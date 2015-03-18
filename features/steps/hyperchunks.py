@@ -3,33 +3,33 @@ from behave import *
 import nose.tools
 import slycat.hyperchunks
 
-@when(u'creating an empty Hyperchunks object.')
+@when(u'a Hyperchunks object is created without parameters.')
 def step_impl(context):
   context.hyperchunks = slycat.hyperchunks.Hyperchunks()
 
-@then(u'the result should be an empty Hyperchunks object.')
+@then(u'the Hyperchunks object should be empty.')
 def step_impl(context):
   nose.tools.assert_equal(len(context.hyperchunks), 0)
   nose.tools.assert_equal(context.hyperchunks.format(), "")
 
-@when(u'creating an empty Hyperchunk object.')
+@when(u'a Hyperchunk object is created without parameters.')
 def step_impl(context):
   context.hyperchunk = slycat.hyperchunks.Hyperchunk()
 
-@then(u'the result should be an empty Hyperchunk object.')
+@then(u'the Hyperchunk object should select all arrays and all attributes.')
 def step_impl(context):
   nose.tools.assert_equal(context.hyperchunk.format(), ".../...")
 
-@when(u'creating an empty Hyperslices object.')
+@when(u'a Hyperslices object is created without parameters.')
 def step_impl(context):
   context.hyperslices = slycat.hyperchunks.Hyperslices()
 
-@then(u'the result should be an empty Hyperslices object.')
+@then(u'the Hyperslices object should be empty.')
 def step_impl(context):
   nose.tools.assert_equal(len(context.hyperslices), 0)
   nose.tools.assert_equal(context.hyperslices.format(), "")
 
-@when(u'creating an empty Hyperslice object, an exception should be raised.')
+@when(u'a Hyperslice object is created without parameters, an exception should be raised.')
 def step_impl(context):
   with nose.tools.assert_raises(TypeError):
     slycat.hyperchunks.Hyperslice()

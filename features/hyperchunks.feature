@@ -1,17 +1,17 @@
 Feature: Slycat Agent
 
-  Scenario: Create an empty Hyperchunks object.
-    When creating an empty Hyperchunks object.
-    Then the result should be an empty Hyperchunks object.
+  Scenario: Create a default Hyperchunks object.
+    When a Hyperchunks object is created without parameters.
+    Then the Hyperchunks object should be empty.
 
-  Scenario: Create an empty Hyperchunk object.
-    When creating an empty Hyperchunk object.
-    Then the result should be an empty Hyperchunk object.
+  Scenario: Create a default Hyperchunk object.
+    When a Hyperchunk object is created without parameters.
+    Then the Hyperchunk object should select all arrays and all attributes.
 
-  Scenario: Create an empty Hyperslices object.
-    When creating an empty Hyperslices object.
-    Then the result should be an empty Hyperslices object.
+  Scenario: Create a default Hyperslices object.
+    When a Hyperslices object is created without parameters.
+    Then the Hyperslices object should be empty.
 
   Scenario: Create an empty Hyperslice object.
-    When creating an empty Hyperslice object, an exception should be raised.
+    When a Hyperslice object is created without parameters, an exception should be raised.
 
