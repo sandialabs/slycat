@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-projects-feed", "slycat-models-feed", "slycat-dialog", "knockout", "knockout-mapping", "URI"], function(server_root, client, markings, projects_feed, models_feed, dialog, ko, mapping, URI)
+define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-changes-feed", "slycat-dialog", "knockout", "knockout-mapping", "URI"], function(server_root, client, markings, changes_feed, dialog, ko, mapping, URI)
 {
   var module = {}
   module.start = function()
@@ -12,7 +12,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
     var page = {};
     page.server_root = server_root;
     page.project = mapping.fromJS({_id: URI(window.location).segment(-1), name: "", description: "",created: "",creator: "",acl:{administrators:[],writers:[],readers:[]}});
-    page.projects = projects_feed.watch().filter(function(project)
+    page.projects = changes_feed.projects().filter(function(project)
     {
       return page.project._id() == project._id();
     });
@@ -21,7 +21,7 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
       var projects = page.projects();
       return projects.length ? projects[0].name() + " - Slycat Project" : "";
     });
-    page.models = models_feed.watch().filter(function(model)
+    page.models = changes_feed.models().filter(function(model)
     {
       return model.project() == page.project._id();
     });
