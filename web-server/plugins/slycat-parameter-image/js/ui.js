@@ -838,37 +838,35 @@ function setup_sliders()
       }
     }
 
-    var filters = ko.observableArray();
-    var activeFilters = ko.observableArray();
-    var activeIndexes = [];
-    var rateLimitedValues = [];
+    var allFilters = ko.observableArray();
     var rateLimit = 500;
 
-    if("activeFilters" in bookmark)
+    if("allFilters" in bookmark)
     {
-      activeFilters = mapping.fromJS(bookmark["activeFilters"]);
-      for(var i=0; i < activeFilters().length; i++)
+      allFilters = mapping.fromJS(bookmark["allFilters"]);
+      for(var i=0; i < allFilters().length; i++)
       {
-        activeIndexes.push(activeFilters()[i].index());
-        rateLimitedValues.push( ko.pureComputed(activeFilters()[i].high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
-        rateLimitedValues.push( ko.pureComputed(activeFilters()[i].low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
+        allFilters()[i].rateLimitedHigh = ko.pureComputed( allFilters()[i].high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+        allFilters()[i].rateLimitedLow = ko.pureComputed( allFilters()[i].low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
       }
     }
-
-    for(var i = 0; i < numeric_variables.length; i++)
+    else
     {
-      if(activeIndexes.indexOf(numeric_variables[i]) == -1)
+      for(var i = 0; i < numeric_variables.length; i++)
       {
-        filters.push({
+        var high = ko.observable( table_metadata["column-max"][numeric_variables[i]] );
+        var low = ko.observable( table_metadata["column-min"][numeric_variables[i]] );
+        allFilters.push({
           name: ko.observable( table_metadata["column-names"][numeric_variables[i]] ),
           index: ko.observable( numeric_variables[i] ),
           max: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
           min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
-          high: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
-          low: ko.observable( table_metadata["column-min"][numeric_variables[i]] )
+          high: high,
+          low: low,
+          active: ko.observable(false),
+          rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
+          rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
         });
-        rateLimitedValues.push( ko.pureComputed(filters()[filters().length-1].high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
-        rateLimitedValues.push( ko.pureComputed(filters()[filters().length-1].low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }) );
       }
     }
 
@@ -878,36 +876,41 @@ function setup_sliders()
       self.sliderHeight = ko.pureComputed(function() {
         return slidersPaneHeight() - 75;
       }, this);
-      self.filters = filters;
-      self.activeFilters = activeFilters;
+      self.allFilters = allFilters;
+      self.filters = self.allFilters.filter(function(filter){
+        return !filter.active();
+      });
+      self.activeFilters = self.allFilters.filter(function(filter){
+        return filter.active();
+      });
 
-      for(var i = 0; i < rateLimitedValues.length; i++)
+      for(var i = 0; i < self.allFilters().length; i++)
       {
-        rateLimitedValues[i].subscribe(function(newValue){
-          console.log("rateLimitedValue is: " + newValue);
-          bookmarker.updateState( {"activeFilters" : mapping.toJS(self.activeFilters())} );
+        self.allFilters()[i].rateLimitedHigh.subscribe(function(newValue){
+          // console.log("rateLimitedHighValue is: " + newValue);
+          bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
+        });
+        self.allFilters()[i].rateLimitedLow.subscribe(function(newValue){
+          // console.log("rateLimitedLowValue is: " + newValue);
+          bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
         });
       }
 
       self.activateFilter = function(item, event){
         var activateFilter = event.target.value;
-        for(var i = 0; i < self.filters().length; i++)
+        for(var i = 0; i < self.allFilters().length; i++)
         {
-          if(self.filters()[i].index() == Number(activateFilter))
+          if(self.allFilters()[i].index() == Number(activateFilter))
           {
-            var newFilter = self.filters.splice(i, 1)[0];
-            self.activeFilters.push(newFilter);
+            self.allFilters()[i].active(true);
           }
         }
-        var unmappedActiveFilters = mapping.toJS(self.activeFilters());
-        bookmarker.updateState( {"activeFilters" : unmappedActiveFilters} );
+        bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
       self.removeFilter = function(item, event){
-        var filterIndex = self.activeFilters.indexOf(item);
-        self.filters.push(item);
-        self.activeFilters.splice(filterIndex, 1);
-        var unmappedActiveFilters = mapping.toJS(self.activeFilters());
-        bookmarker.updateState( {"activeFilters" : unmappedActiveFilters} );
+        var filterIndex = self.allFilters.indexOf(item);
+        self.allFilters()[filterIndex].active(false);
+        bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
     };
 
