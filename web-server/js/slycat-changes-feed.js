@@ -9,10 +9,14 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI",
   var websocket = null;
   var started = false;
 
-  var projects = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
+  // Don't rate-limit the array, it seems to cause incorrect results with projections.
+  //var projects = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
+  var projects = ko.observableArray();
   var project_ids = {}
 
-  var models = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
+  // Don't rate-limit the array, it seems to cause incorrect results with projections.
+  //var models = ko.observableArray().extend({rateLimit: {timeout: 10, method: "notifyWhenChangesStop"}});
+  var models = ko.observableArray();
   var model_ids = {}
 
   function sort_projects()

@@ -87,6 +87,15 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       });
 
       // If the current model is finished, close it.
+      component.close_model = function(model)
+      {
+        client.put_model(
+        {
+          mid: model._id(),
+          state: "closed",
+        });
+      }
+
       component.model.filter(function(model)
       {
         return model.state() == "finished";
@@ -200,15 +209,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
 
       // Keep track of information about the current server version.
       component.version = mapping.fromJS({version:"unknown", commit:"unknown"});
-
-      component.close_model = function(model)
-      {
-        client.put_model(
-        {
-          mid: model._id(),
-          state: "closed",
-        });
-      }
 
       component.run_wizard = function(item)
       {
