@@ -32,16 +32,39 @@ import cherrypy
 import datetime
 import hashlib
 import json
-import mimetypes
 import os
 import paramiko
+import slycat.mime_type
+import slycat.web.server.authentication
+import slycat.web.server.database
 import slycat.web.server.streaming
-import socket
 import stat
 import sys
 import threading
 import time
 import uuid
+
+def cache_object(pid, key, content_type, content):
+  cherrypy.log.error("cache_object %s %s %s" % (pid, key, content_type))
+  database = slycat.web.server.database.couchdb.connect()
+  project = database.get("project", pid)
+  slycat.web.server.authentication.require_project_writer(project)
+
+  lookup = pid + "-" + key
+  for cache_object in database.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
+    database.put_attachment(cache_object, filename="content", content_type=content_type, content=content)
+    return
+
+  cache_object = {
+    "_id": uuid.uuid4().hex,
+    "type": "cache-object",
+    "project": pid,
+    "key": key,
+    "created": datetime.datetime.utcnow().isoformat(),
+    "creator": cherrypy.request.login,
+  }
+  database.save(cache_object)
+  database.put_attachment(cache_object, filename="content", content_type=content_type, content=content)
 
 session_cache = {}
 session_cache_lock = threading.Lock()
@@ -141,12 +164,10 @@ class Session(object):
             if file_allow is None or file_allow.search(filepath) is None:
               continue
 
-        if filetype == "f":
-          mime_type = mimetypes.guess_type(path, strict=False)[0]
-          if mime_type is None:
-            mime_type = "application/octet-stream"
-        else:
+        if filetype == "d":
           mime_type = "application/x-directory"
+        else:
+          mime_type = slycat.mime_type.guess_type(path)[0]
 
         names.append(attribute.filename)
         sizes.append(attribute.st_size)
@@ -160,7 +181,16 @@ class Session(object):
       cherrypy.response.headers["x-slycat-message"] = str(e)
       raise cherrypy.HTTPError(400)
 
-  def get_file(self, path):
+  def get_file(self, path, cache=None, project=None, key=None):
+    # Sanity-check arguments.
+    if cache not in [None, "project"]:
+      raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
+    if cache is not None:
+      if project is None:
+        raise cherrypy.HTTPError("400 Must specify project id.")
+      if key is None:
+        raise cherrypy.HTTPError("400 Must specify cache key.")
+
     # Use the agent to retrieve a file.
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
@@ -182,8 +212,14 @@ class Session(object):
         cherrypy.response.headers["x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
         raise cherrypy.HTTPError("400 Access denied.")
 
-      cherrypy.response.headers["content-type"] = metadata["content-type"]
-      return stdout.read(metadata["size"])
+      content_type = metadata["content-type"]
+      content = stdout.read(metadata["size"])
+
+      if cache == "project":
+        cache_object(project, key, content_type, content)
+
+      cherrypy.response.headers["content-type"] = content_type
+      return content
 
     # Use sftp to retrieve a file.
     try:
@@ -191,11 +227,16 @@ class Session(object):
         cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
         raise cherrypy.HTTPError("400 Can't read directory.")
 
-      content_type, encoding = mimetypes.guess_type(path, strict=False)
+      content_type, encoding = slycat.mime_type.guess_type(path)
       if content_type is None:
         content_type = "application/octet-stream"
+      content = self._sftp.file(path).read()
+
+      if cache == "project":
+        cache_object(project, key, content_type, content)
+
       cherrypy.response.headers["content-type"] = content_type
-      return self._sftp.file(path).read()
+      return content
 
     except Exception as e:
       cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
@@ -220,6 +261,15 @@ class Session(object):
       raise cherrypy.HTTPError("400 Remote access failed.")
 
   def get_image(self, path, content_type, max_size, max_width, max_height):
+    # Sanity-check arguments.
+    if cache not in [None, "project"]:
+      raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
+    if cache is not None:
+      if project is None:
+        raise cherrypy.HTTPError("400 Must specify project id.")
+      if key is None:
+        raise cherrypy.HTTPError("400 Must specify cache key.")
+
     if not self._agent:
       cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
       cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (self.hostname)
@@ -256,8 +306,13 @@ class Session(object):
       cherrypy.response.headers["x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
       raise cherrypy.HTTPError("400 Access denied.")
 
+    content_type = metadata["content-type"]
     content = stdout.read(metadata["size"])
-    cherrypy.response.headers["content-type"] = metadata["content-type"]
+
+    if cache == "project":
+      cache_object(project, key, content_type, content)
+
+    cherrypy.response.headers["content-type"] = content_type
     return content
 
   def post_video(self, content_type, images):

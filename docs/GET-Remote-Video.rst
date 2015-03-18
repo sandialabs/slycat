@@ -8,12 +8,18 @@ GET Remote Video
   started using :http:post:`/remotes/(sid)/videos`.  The caller should not attempt retrieving
   a video until a call to :http:get:`/remotes/(sid)/videos/(vsid)/status` indicates that video
   creation is complete.
+  The returned file may be optionally cached on the server and retrieved
+  using :http:get:`/projects/(pid)/cache/(key)`.
 
   :param sid: Unique remote session identifier.
   :type sid: string
 
   :param vsid: Unique video creation session identifier.
   :type vsid: string
+
+  :query cache: Optional cache identifier.  Set to `project` to store the retrieved video in a project cache.
+  :query project: Project identifier.  Required when `cache` is set to `project`.
+  :query key: Cached object key.  Must be specified when `cache` is set to `project`.
 
   :status 200: The video has been returned in the response body.
   :status 206: A portion of the video has been returned in the response body.

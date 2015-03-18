@@ -13,7 +13,7 @@ import cStringIO as StringIO
 import datetime
 import errno
 import json
-import mimetypes
+import slycat.mime_type
 import os
 import re
 import stat
@@ -39,7 +39,7 @@ class VideoSession(threading.Thread):
     self.finished = False
   def run(self):
     try:
-      fd, path = tempfile.mkstemp(suffix=mimetypes.guess_extension(self.content_type, strict=False))
+      fd, path = tempfile.mkstemp(suffix=slycat.mime_type.guess_extension(self.content_type, strict=False))
       os.close(fd)
       command = [self._ffmpeg, "-y"]
       command += ["-f", "concat"]
@@ -101,12 +101,10 @@ def browse(command):
         if file_allow is None or file_allow.search(fpath) is None:
           continue
 
-    if ftype == "f":
-      mime_type = mimetypes.guess_type(name, strict=False)[0]
-      if mime_type is None:
-        mime_type = "application/octet-stream"
-    else:
+    if ftype == "d":
       mime_type = "application/x-directory"
+    else:
+      mime_type = slycat.mime_type.guess_type(name)[0]
 
     listing["names"].append(name)
     listing["sizes"].append(fstat.st_size)
@@ -138,7 +136,7 @@ def get_file(command):
   except Exception as e:
     raise Exception(e.strerror + ".")
 
-  content_type, encoding = mimetypes.guess_type(path, strict=False)
+  content_type, encoding = slycat.mime_type.guess_type(path)
   sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "File retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
   sys.stdout.flush()
 
@@ -154,7 +152,7 @@ def get_image(command):
   if os.path.isdir(path):
     raise Exception("Directory unreadable.")
 
-  file_content_type, encoding = mimetypes.guess_type(path)
+  file_content_type, encoding = slycat.mime_type.guess_type(path)
   requested_content_type = command.get("content-type", file_content_type)
 
   # Optional fast path if the client hasn't requested anything that would alter the image contents:
@@ -168,7 +166,7 @@ def get_image(command):
     except Exception as e:
       raise Exception(e.strerror + ".")
 
-    content_type, encoding = mimetypes.guess_type(path, strict=False)
+    content_type, encoding = slycat.mime_type.guess_type(path)
     sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "Image retrieved.", "path": path, "content-type": content_type, "size": len(content)}), content))
     sys.stdout.flush()
     return
@@ -281,10 +279,6 @@ def main():
     sys.stdout.write("%s\n" % json.dumps({"ok": False, "message":e.message}))
     sys.stdout.flush()
     exit(1)
-
-  # Setup some nonstandard MIME types.
-  mimetypes.add_type("text/csv", ".csv", strict=False)
-  mimetypes.add_type("video/webm", ".webm", strict=False)
 
   # Let the caller know we're ready to handle commands.
   sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Ready."}))

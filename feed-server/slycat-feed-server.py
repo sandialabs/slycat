@@ -105,7 +105,6 @@ class RawFeed(object):
             log.error("Caching %s projects, %s models, sequence %s." % (len(self._projects), len(self._models), last_seq))
 
       except Exception as e:
-        log.error("%s" % str(e))
         log.error("Waiting for couchdb.")
         time.sleep(2.0)
 

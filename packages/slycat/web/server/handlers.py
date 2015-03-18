@@ -75,8 +75,6 @@ def js_bundle():
         "js/slycat-model-controls.js",
         "js/slycat-model-results.js",
         "js/slycat-changes-feed.js",
-        "js/slycat-projects-feed.js",
-        "js/slycat-models-feed.js",
         "js/slycat-navbar.js",
         "js/slycat-local-browser.js",
         "js/slycat-remote-browser.js",
@@ -207,13 +205,19 @@ def put_project(pid):
 def array_cleanup_worker():
   while True:
     cleanup_arrays.queue.get()
-    cherrypy.log.error("Array cleanup started.")
-    database = slycat.web.server.database.couchdb.connect()
-    for file in database.view("slycat/hdf5-file-counts", group=True):
-      if file.value == 0:
-        slycat.web.server.database.hdf5.delete(file.key)
-        database.delete(database[file.key])
-    cherrypy.log.error("Array cleanup finished.")
+    while True:
+      try:
+        database = slycat.web.server.database.couchdb.connect()
+        cherrypy.log.error("Array cleanup started.")
+        for file in database.view("slycat/hdf5-file-counts", group=True):
+          if file.value == 0:
+            slycat.web.server.database.hdf5.delete(file.key)
+            database.delete(database[file.key])
+        cherrypy.log.error("Array cleanup finished.")
+        break
+      except Exception as e:
+        cherrypy.log.error("Array cleanup thread aiting for couchdb.")
+        time.sleep(2)
 
 def cleanup_arrays():
   cleanup_arrays.queue.put("cleanup")
@@ -226,14 +230,18 @@ def start_array_cleanup_worker():
 
 def session_cleanup_worker():
   while True:
-    cherrypy.log.error("Session cleanup started.")
-    cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
-    database = slycat.web.server.database.couchdb.connect()
-    for session in database.view("slycat/sessions", include_docs=True):
-      if session.doc["created"] < cutoff:
-        database.delete(session.doc)
-    cherrypy.log.error("Session cleanup finished.")
-    time.sleep(datetime.timedelta(minutes=60).total_seconds())
+    try:
+      database = slycat.web.server.database.couchdb.connect()
+      cherrypy.log.error("Session cleanup started.")
+      cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
+      for session in database.view("slycat/sessions", include_docs=True):
+        if session.doc["created"] < cutoff:
+          database.delete(session.doc)
+      cherrypy.log.error("Session cleanup finished.")
+      time.sleep(datetime.timedelta(minutes=60).total_seconds())
+    except Exception as e:
+      cherrypy.log.error("Session cleanup thread waiting for couchdb.")
+      time.sleep(2)
 session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=session_cleanup_worker)
 session_cleanup_worker.thread.daemon = True
 
@@ -636,13 +644,14 @@ def delete_reference(rid):
   cherrypy.response.status = "204 Reference deleted."
 
 def get_project_cache_object(pid, key):
-  couchdb = slycat.web.server.database.couchdb.connect()
-  project = couchdb.get("project", pid)
+  database = slycat.web.server.database.couchdb.connect()
+  project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project)
 
   lookup = pid + "-" + key
-  for cache_object in couchdb.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
-    return
+  for cache_object in database.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
+    cherrypy.response.headers["content-type"] = cache_object["_attachments"]["content"]["content_type"]
+    return database.get_attachment(cache_object, "content")
 
   raise cherrypy.HTTPError(404)
 
@@ -1174,9 +1183,9 @@ def post_remote_browse(sid, path):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.browse(path, file_reject, file_allow, directory_reject, directory_allow)
 
-def get_remote_file(sid, path):
+def get_remote_file(sid, path, **kwargs):
   with slycat.web.server.remote.get_session(sid) as session:
-    return session.get_file(path)
+    return session.get_file(path, **kwargs)
 
 def get_remote_image(sid, path, **kwargs):
   content_type = kwargs.get("content-type", None)

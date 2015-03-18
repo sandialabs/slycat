@@ -1,4 +1,4 @@
-FROM sandialabs/slycat
+FROM sandialabs/slycat-demo
 MAINTAINER Timothy M. Shead <tshead@sandia.gov>
 
 # Install yum packages for development.

@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-model-main", ["slycat-models-feed", "knockout", "URI"], function(models_feed, ko, URI)
+define("slycat-model-main", ["slycat-changes-feed", "knockout", "URI"], function(changes_feed, ko, URI)
 {
   var module = {};
 
@@ -13,7 +13,7 @@ define("slycat-model-main", ["slycat-models-feed", "knockout", "URI"], function(
     // Enable knockout
     var mid = URI(window.location).segment(-1);
     var page = {};
-    page.models = models_feed.watch().filter(function(model)
+    page.models = changes_feed.models().filter(function(model)
     {
       return mid == model._id();
     });

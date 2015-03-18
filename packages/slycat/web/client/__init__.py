@@ -141,7 +141,7 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       The unique model identifier.
 
     See Also
@@ -155,7 +155,7 @@ class Connection(object):
 
     Parameters
     ----------
-    pid : string, required
+    pid: string, required
       The unique project identifier.
 
     See Also
@@ -164,17 +164,47 @@ class Connection(object):
     """
     self.request("DELETE", "/projects/%s" % (pid))
 
+  def delete_project_cache_object(self, pid, key):
+    """Delete an existing project cache object.
+
+    Parameters
+    ----------
+    pid: string, required
+      The unique project identifier.
+    key: string, required
+      Unique cache object key.
+
+    See Also
+    --------
+    :http:delete:`/projects/(pid)/cache/(key)`
+    """
+    self.request("DELETE", "/projects/%s/cache/%s" % (pid, key))
+
+  def delete_remote(self, sid):
+    """Delete an existing remote session.
+
+    Parameters
+    ----------
+    sid: string, required
+      The unique remote session identifier.
+
+    See Also
+    --------
+    :http:delete:`/remotes/(sid)`
+    """
+    self.request("DELETE", "/remotes/%s" % (sid))
+
   def get_bookmark(self, bid):
     """Retrieve an existing bookmark.
 
     Parameters
     ----------
-    bid : string, required
+    bid: string, required
       The unique bookmark identifier.
 
     Returns
     -------
-    bookmark : object
+    bookmark: object
       The bookmark object, which is an arbitrary collection of
       JSON-compatible data.
 
@@ -189,12 +219,12 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       The unique model identifier
 
     Returns
     -------
-    model : object
+    model: object
       The model object, which is an arbitrary collection of
       JSON-compatible data.
 
@@ -211,22 +241,22 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       Unique model identifier.
-    name : string, required
+    name: string, required
       Arrayset artifact name.
-    array : integer, required
+    array: integer, required
       Zero-based array index.
-    attribute : integer, required
+    attribute: integer, required
       Zero-based attribute index.
-    ranges : hyperslice, required.
+    ranges: hyperslice, required.
       Range of values to retrieve along each dimension.
-    type : numpy dtype, optional
+    type: numpy dtype, optional
       Output data type.
 
     Returns
     -------
-    chunk : Python list, or numpy ndarray
+    chunk: Python list, or numpy ndarray
     """
     ranges = _require_array_ranges(ranges)
     if ranges is None:
@@ -250,14 +280,14 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       Unique model identifier.
-    name : string, required
+    name: string, required
       Unique (within the model) artifact name.
 
     Returns
     -------
-    parameter : JSON-compatible object
+    parameter: JSON-compatible object
 
     See Also
     --------
@@ -290,12 +320,12 @@ class Connection(object):
 
     Parameters
     ----------
-    pid : string, required
+    pid: string, required
       Unique project identifier.
 
     Returns
     -------
-    project : Arbitrary collection of JSON-compatible data.
+    project: Arbitrary collection of JSON-compatible data.
 
     See Also
     --------
@@ -303,12 +333,32 @@ class Connection(object):
     """
     return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
 
+  def get_project_cache_object(self, pid, key):
+    """Retrieve an object from a project cache.
+
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+    key: string, required
+      Cache object identifier.
+
+    Returns
+    -------
+    content: Cached object content.
+
+    See Also
+    --------
+    :http:get:`/projects/(pid)/cache/(key)`
+    """
+    return self.request("GET", "/projects/%s/cache/%s" % (pid, key))
+
   def get_projects(self):
     """Retrieve all projects.
 
     Returns
     -------
-    projects : List of projects.  Each project is an arbitrary collection of JSON-compatible data.
+    projects: List of projects.  Each project is an arbitrary collection of JSON-compatible data.
 
     See Also
     --------
@@ -316,17 +366,43 @@ class Connection(object):
     """
     return self.request("GET", "/projects", headers={"accept":"application/json"})
 
+  def get_remote_file(self, sid, path, cache=None, project=None, key=None):
+    """Retrieve a file using a remote session.
+
+    Parameters
+    ----------
+    sid: string, required
+      Unique remote session identifier.
+    path: string, required
+      Remote filesystem path (must be absolute).
+    cache: string, optional
+      Optional server-side cache for the retrieved file.  Must be `None` or "project".
+    project: string, optional
+      If `cache` is set to "project", this must specify a unique project identifier.
+    key: string, optional
+      if `cache` is set to "project", this must specify a unique key for the cached object.
+
+    Returns
+    -------
+    file: Remote file contents.
+
+    See Also
+    --------
+    :http:get:`/remotes/(sid)/file(path)`
+    """
+    return self.request("GET", "/remotes/%s/file%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
+
   def get_user(self, uid):
     """Retrieve directory information about an existing user.
 
     Parameters
     ----------
-    uid : string, required
+    uid: string, required
       Unique user identifier.
 
     Returns
     -------
-    user : Arbitrary collection of JSON-compatible data.
+    user: Arbitrary collection of JSON-compatible data.
 
     See Also
     --------
@@ -339,7 +415,7 @@ class Connection(object):
 
     Returns
     -------
-    markings : server marking information.
+    markings: server marking information.
 
     See Also
     --------
@@ -352,7 +428,7 @@ class Connection(object):
 
     Returns
     -------
-    version : server version information.
+    version: server version information.
 
     See Also
     --------
@@ -368,7 +444,7 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       Unique model identifier.
 
     See Also
@@ -382,14 +458,14 @@ class Connection(object):
 
     Parameters
     ----------
-    pid : string, required
+    pid: string, required
       Unique project identifier.
-    bookmark : object
+    bookmark: object
       Arbitrary collection of JSON-compatible data.
 
     Returns
     -------
-    bid : string
+    bid: string
       Unique bookmark identifier.
 
     See Also
@@ -406,8 +482,8 @@ class Connection(object):
     """Creates a new project, returning the project ID."""
     return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
-  def post_remotes(self, hostname, username, password):
-    return self.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password}))["sid"]
+  def post_remotes(self, hostname, username, password, agent=None):
+    return self.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password, "agent": agent}))["sid"]
 
   def post_remote_browse(self, sid, path, file_reject=None, file_allow=None, directory_allow=None, directory_reject=None):
     body = {}
@@ -493,13 +569,13 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       Unique model identifier.
-    name : string, required
+    name: string, required
       Unique (within the model) artifact name.
-    value : object, required
+    value: object, required
       An arbitrary collection of JSON-compatible data.
-    input : boolean, optional
+    input: boolean, optional
       Marks whether this artifact is a model input.
 
     See Also
@@ -520,12 +596,12 @@ class Connection(object):
 
     Parameters
     ----------
-    name : string, required
+    name: string, required
       The name of the project to return.
 
     Returns
     -------
-    project : The matching project, which is an arbitrary collection of JSON-compatible data.
+    project: The matching project, which is an arbitrary collection of JSON-compatible data.
 
     Raises
     ------
@@ -550,14 +626,14 @@ class Connection(object):
 
     Parameters
     ----------
-    name : string, required
+    name: string, required
       The name of the project to return (or create).
     description: string, optional
       Description to use for the new project (if a new project is created).
 
     Returns
     -------
-    pid : string
+    pid: string
       Unique identifier of the matching (or newly created) project.
 
     Raises
@@ -587,7 +663,7 @@ class Connection(object):
     --------
     :func:`put_model`
     """
-    model = {key : value for key, value in kwargs.items() if value is not None}
+    model = {key: value for key, value in kwargs.items() if value is not None}
     self.put_model(mid, model)
 
   def join_model(self, mid):
@@ -606,7 +682,7 @@ class Connection(object):
 
     Parameters
     ----------
-    mid : string, required
+    mid: string, required
       Unique model identifier.
 
     Notes
