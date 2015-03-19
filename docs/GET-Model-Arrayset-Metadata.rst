@@ -36,8 +36,8 @@ GET Model Arrayset Metadata
   :param name: Arrayset artifact name.
   :type name: string
 
-  :query arrays: Semicolon-delimited list of integer array indices.
-  :query statistics: Semicolon-delimited list of integer array-attribute pairs separated by forward slashes.
+  :query arrays: Optional semicolon-delimited list of integer array indices.
+  :query statistics: Optional semicolon-delimited list of integer array-attribute pairs separated by forward slashes.
 
   :responseheader Content-Type: application/json
 

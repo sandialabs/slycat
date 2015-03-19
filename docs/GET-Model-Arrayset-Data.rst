@@ -33,27 +33,30 @@ GET Model Arrayset Data
     * `:5` - specifies indices `0, 1, 2, 3, 4`.
     * `4:` - specifies indices from `4` through the end of the array dimension.
     * `:` - specifies every index in the array dimension.
+    * `...` - specifies every index in the array dimension.
     * `::3` - specifies every third index in the array dimension, starting at `0`.
     * `1::3` - specifies every third index in the array dimension, starting at `1`.
 
   :query byteorder:
 
-    The request may optionally contain a parameter `byteorder` that specifies that
-    the request data is binary data with the given endianness. The byteorder
-    parameter must be either "little" or "big".  Note that the byteorder parameter
-    can only be used if every attribute in every hyperchunk is of numeric type.  If
-    the byteorder parameter is used, the request must accept
-    application/octet-stream as the result content-type, and the returned data will
-    contain contiguous raw data bytes in the given byteorder, in the same order as
-    the hyperchunks / hyperslices.  For multi-dimension arrays, hyperslice array
-    elements will be in "C" order (the last coordinate varies the fastest).
+    The request may optionally contain a parameter `byteorder` that specifies
+    that the response should be binary data with the given endianness. The
+    byteorder parameter must be either "little" or "big".  Note that the
+    byteorder parameter can only be used if every attribute in every hyperchunk
+    is of numeric type.  If the byteorder parameter is used, the request must
+    accept application/octet-stream as the result content-type, and the
+    response data will contain contiguous raw data bytes in the given
+    byteorder, in the same order as the requested hyperchunks / hyperslices.
+    For multi-dimension arrays, hyperslice array elements will be in "C" order
+    (the last coordinate varies the fastest).
 
-    If the byteorder parameter isn't specified, the result data will be a
-    JSON-encoded array with length equal to the total number of hyperslices.  Each
-    element in this top level array will be an array containing the data for the
-    corresponding hyperslice, in the same order as the hyperchunks / hyperslices.
-    For multi-dimension arrays, data for the corresponding hyperslice will be
-    nested further.
+    If the byteorder parameter isn't specified, the response data will be a
+    JSON-encoded array with length equal to the total number of hyperslices.
+    Each element in this top level array will be an array containing the data
+    for the corresponding hyperslice, in the same order as the requested
+    hyperchunks / hyperslices.  For multi-dimension arrays, data for the
+    corresponding hyperslice will be nested further, in "C" order (the last
+    coordinate varies the fastest).
 
   :responseheader Content-Type: application/octet-stream or application/json
 
