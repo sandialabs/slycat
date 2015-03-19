@@ -32,7 +32,6 @@ var colormap = null;
 var colorscale = null;
 var auto_scale = null;
 var filtered_v = null;
-var filter_cache = null;
 
 var table_ready = false;
 var scatterplot_ready = false;
@@ -40,12 +39,13 @@ var controls_ready = false;
 var sliders_ready = false;
 var image_uri = document.createElement("a");
 var slidersPaneHeight = ko.observable();
+var layout = null;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-$("#parameter-image-plus-layout").layout(
+layout = $("#parameter-image-plus-layout").layout(
 {
   north:
   {
@@ -64,6 +64,8 @@ $("#parameter-image-plus-layout").layout(
   west:
   {
     // Sliders
+    initClosed: true,
+    size: $("#parameter-image-plus-layout").width() / 4,
     onresize: function(pane_name, pane_element, pane_state, pane_options, layout_name)
     {
       slidersPaneHeight( pane_state.innerHeight );
@@ -238,45 +240,45 @@ function metadata_loaded()
     if("hidden-simulations" in bookmark)
       hidden_simulations = bookmark["hidden-simulations"];
 
-    // Retrieve and cache each column that has active filters
-    filter_cache = {};
-    if("activeFilters" in bookmark)
-    {
-      var activeFilters = bookmark["activeFilters"];
-      var filtered_columns = [];
-      for(var i=0; i < activeFilters.length; i++)
-      {
-        filtered_columns.push(activeFilters[i].index);
-      }
-      var requests = Array();
-      for(var i=0; i < filtered_columns.length; i++)
-      {
-        var request = get_model_array_attribute({
-          server_root : server_root,
-          mid : model_id,
-          aid : "data-table",
-          array : 0,
-          attribute : filtered_columns[i],
-          success : function(result)
-          {
-            filter_cache[filtered_columns[i]] = result;
-          },
-          error : artifact_missing
-        });
-        requests.push(request);
-      }
-      var defer = $.when.apply($, requests);
-      defer.done(function(){
+    // // Retrieve and cache each column that has active filters
+    // filter_cache = {};
+    // if("activeFilters" in bookmark)
+    // {
+    //   var activeFilters = bookmark["activeFilters"];
+    //   var filtered_columns = [];
+    //   for(var i=0; i < activeFilters.length; i++)
+    //   {
+    //     filtered_columns.push(activeFilters[i].index);
+    //   }
+    //   var requests = Array();
+    //   for(var i=0; i < filtered_columns.length; i++)
+    //   {
+    //     var request = get_model_array_attribute({
+    //       server_root : server_root,
+    //       mid : model_id,
+    //       aid : "data-table",
+    //       array : 0,
+    //       attribute : filtered_columns[i],
+    //       success : function(result)
+    //       {
+    //         filter_cache[filtered_columns[i]] = result;
+    //       },
+    //       error : artifact_missing
+    //     });
+    //     requests.push(request);
+    //   }
+    //   var defer = $.when.apply($, requests);
+    //   defer.done(function(){
 
-        // This is executed only after every ajax request has been completed
+    //     // This is executed only after every ajax request has been completed
 
-        $.each(arguments, function(index, responseData){
-            // "responseData" will contain an array of response information for each specific request
-            console.log("here is responseData: " + responseData);
-        });
+    //     $.each(arguments, function(index, responseData){
+    //         // "responseData" will contain an array of response information for each specific request
+    //         console.log("here is responseData: " + responseData);
+    //     });
 
-      });
-    }
+    //   });
+    // }
     
 
 
@@ -872,17 +874,21 @@ function setup_sliders()
 
     var ViewModel = function(params){
       var self = this;
-      slidersPaneHeight( $("#sliders-pane").height() );
+      slidersPaneHeight( $("#sliders-pane").innerHeight() );
       self.sliderHeight = ko.pureComputed(function() {
-        return slidersPaneHeight() - 75;
+        return slidersPaneHeight() - 55;
       }, this);
       self.allFilters = allFilters;
-      self.filters = self.allFilters.filter(function(filter){
+      self.availableFilters = self.allFilters.filter(function(filter){
         return !filter.active();
       });
       self.activeFilters = self.allFilters.filter(function(filter){
         return filter.active();
       });
+      if(self.activeFilters().length > 0)
+      {
+        layout.open("west");
+      }
 
       for(var i = 0; i < self.allFilters().length; i++)
       {
@@ -897,6 +903,10 @@ function setup_sliders()
       }
 
       self.activateFilter = function(item, event){
+        if(self.activeFilters().length == 0)
+        {
+          layout.open("west");
+        }
         var activateFilter = event.target.value;
         for(var i = 0; i < self.allFilters().length; i++)
         {
@@ -910,6 +920,10 @@ function setup_sliders()
       self.removeFilter = function(item, event){
         var filterIndex = self.allFilters.indexOf(item);
         self.allFilters()[filterIndex].active(false);
+        if(self.activeFilters().length == 0)
+        {
+          layout.close("west");
+        }
         bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
     };

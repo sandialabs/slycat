@@ -37,11 +37,11 @@ rights in this software.
 	<div id="controls-pane" class="ui-layout-north">
     <div class="center">
       <div id="controls">
-        <!-- ko if: filters().length > 0 || activeFilters().length > 0 -->
+        <!-- ko if: allFilters().length > 0 -->
           <select id='filter-selector' name='filter-selector'
-            data-bind="disable: filters().length == 0, event: { change: activateFilter }">
+            data-bind="disable: availableFilters().length == 0, event: { change: activateFilter }">
             <option selected="selected" value="-1">Filter By:</option>
-            <!-- ko foreach: filters -->
+            <!-- ko foreach: availableFilters -->
               <option data-bind="text: name, value: index"></option>
             <!-- /ko -->
             </optgroup>
@@ -79,6 +79,7 @@ rights in this software.
     </div>
   </div>
 
+  <!-- ko if: allFilters().length > 0 -->
   <div id="sliders-pane" class="ui-layout-west">
     <div class="load-status"></div>
     <div id="sliders">
@@ -106,6 +107,7 @@ rights in this software.
 
     </div>
   </div>
+  <!-- /ko -->
 
   <div id="table-pane" class="ui-layout-south">
     <div class="load-status"></div>

@@ -554,12 +554,6 @@ rights in this software.
   max-width: 100%;
 }
 
-/* Sliders */
-.slycat-range-slider.vertical
-{
-  display: inline-block;
-}
-
 /* Media Layer */
 #scatterplot .media-layer {
   position: absolute;
@@ -595,6 +589,17 @@ rights in this software.
 }
 
 /* Sliders */
+#sliders-pane {
+  white-space: nowrap;
+  overflow: auto;
+}
+#sliders {
+  margin: 20px 0 0 0;
+}
+.slycat-range-slider.vertical
+{
+  display: inline-block;
+}
 /* undoing vertical class cause it's making vertical sliders horizontal */
 .vertical {
   transform: none !important;
@@ -615,6 +620,7 @@ rights in this software.
   position: absolute;
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 .slycat-pim-filter .varName {
   transform: rotate(270deg);
