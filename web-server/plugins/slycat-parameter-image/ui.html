@@ -113,11 +113,11 @@ rights in this software.
               low: low,
               high: high,
               thumb_length: $parent.thumb_length,
+              invert: invert,
               reverse: true
             "></slycat-range-slider>
-          <span class="close-button frame-icon"
-            data-bind="click: $parent.removeFilter"
-          ></span>
+          <i class="fa fa-times close-button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
+          <i class="fa invert-button" title="Invert filter" data-bind="click: $parent.invertFilter, css: { 'fa-compress': invert(), 'fa-expand': !invert() }"></i>
         </div>
       </div>
 

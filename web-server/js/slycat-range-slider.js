@@ -12,6 +12,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
     {
       var scrollbar = this;
       scrollbar.axis = ko.unwrap(params.axis) || "vertical";
+      scrollbar.invert = params.invert || ko.observable(false);
       scrollbar.reverse = ko.unwrap(params.reverse) || false;
       scrollbar.length = params.length || ko.observable(500);
       scrollbar.low_thumb =
@@ -74,7 +75,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       });
       scrollbar.css = ko.pureComputed(function()
       {
-        return scrollbar.axis + (scrollbar.low_thumb.dragging() || scrollbar.high_thumb.dragging() ? " dragging" : "");
+        return scrollbar.axis + (scrollbar.low_thumb.dragging() || scrollbar.high_thumb.dragging() ? " dragging" : "") + (scrollbar.invert() ? " invert" : "");
       });
       scrollbar.style = ko.pureComputed(function()
       {

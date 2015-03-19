@@ -256,6 +256,22 @@ slycat-navbar .alert pre
   border-radius: 6px;
 }
 
+.slycat-range-slider.invert .domain
+{
+  background: #aabbff;
+  border: 1px solid #aabbff;
+  border-radius: 6px;
+}
+
+.slycat-range-slider.invert:hover .domain
+{
+  background: #7788ff;
+  border-color: #7788ff;
+  transition: all .25s ease-in-out;
+  -moz-transition: all .25s ease-in-out;
+  -webkit-transition: all .25s ease-in-out;
+}
+
 .slycat-range-slider.vertical .domain
 {
   left: 3px;
@@ -277,12 +293,26 @@ slycat-navbar .alert pre
   background: #aabbff;
 }
 
+.slycat-range-slider.invert .range
+{
+  background: #ddd;
+  border: 1px solid #ccc;
+}
+
 .slycat-range-slider:hover .range
 {
   background: #7788ff;
   transition: background .25s ease-in-out;
   -moz-transition: background .25s ease-in-out;
   -webkit-transition: background .25s ease-in-out;
+}
+
+.slycat-range-slider.invert:hover .range
+{
+  background: #ddd;
+  transition: none;
+  -moz-transition: none;
+  -webkit-transition: none;
 }
 
 .slycat-range-slider.vertical .range

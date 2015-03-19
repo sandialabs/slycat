@@ -865,6 +865,7 @@ function setup_sliders()
           min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
           high: high,
           low: low,
+          invert: ko.observable(false),
           active: ko.observable(false),
           rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
           rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
@@ -925,6 +926,11 @@ function setup_sliders()
         {
           layout.close("west");
         }
+        bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
+      }
+      self.invertFilter = function(item, event){
+        var filterIndex = self.allFilters.indexOf(item);
+        self.allFilters()[filterIndex].invert( !self.allFilters()[filterIndex].invert() );
         bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
     };

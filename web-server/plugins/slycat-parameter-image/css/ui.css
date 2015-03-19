@@ -457,8 +457,7 @@ rights in this software.
   cursor: move;
 }
 #scatterplot .close-button:hover,
-#scatterplot .pin-button:hover,
-#sliders-pane .close-button:hover
+#scatterplot .pin-button:hover
 {
   cursor: pointer;
 }
@@ -615,9 +614,13 @@ rights in this software.
   -moz-transition: none;
   -webkit-transition: none;
 }
-.slycat-range-slider .thumb
+.slycat-range-slider.invert:hover .domain
 {
-  
+  background: #aabbff;
+  border-color: #aabbff;
+  transition: none;
+  -moz-transition: none;
+  -webkit-transition: none;
 }
 
 .slycat-pim-filter {
@@ -628,12 +631,21 @@ rights in this software.
   margin-right: 20px;
   background-color: white;
 }
+.slycat-pim-filter .close-button:hover,
+.slycat-pim-filter .invert-button:hover
+{
+  cursor: pointer;
+}
 .slycat-pim-filter .close-button {
   position: absolute;
-  font-size: 32px;
-  top: 0px;
-  left: 18px;
-  background-position: -96px -128px;
+  top: 4px;
+  left: 25px;
+}
+.slycat-pim-filter .invert-button {
+  transform: rotate(135deg);
+  position: absolute;
+  left: 25px;
+  bottom: 7px;
 }
 .slycat-pim-filter .minMaxHighLow .max,
 .slycat-pim-filter .minMaxHighLow .min,
