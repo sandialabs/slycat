@@ -13,7 +13,7 @@ def _format_index(index):
   elif isinstance(index, type(Ellipsis)):
     return "..."
   elif isinstance(index, slice):
-    return ("%s:%s" % ("" if dimension.start is None else dimension.start, "" if dimension.stop is None else dimension.stop)) + ("" if dimension.step is None else ":%s" % dimension.step)
+    return ("%s:%s" % ("" if index.start is None else index.start, "" if index.stop is None else index.stop)) + ("" if index.step is None else ":%s" % index.step)
   else:
     raise ValueError("Not a valid index expression: %s" % index)
 
@@ -26,12 +26,12 @@ def _validate_index_expression(index_expression):
   for dimension in index_expression:
     if not isinstance(dimension, (numbers.Integral, slice, type(Ellipsis))):
       raise ValueError("Each dimension in an index expression must be an integer, slice, or Ellipsis.")
+  return index_expression
 
 class Hyperslice(object):
   """Represents a multi-dimensional array hyperslice (set of indices for every dimension in the array)."""
   def __init__(self, indices):
-    _validate_index_expression(indices)
-    self._indices = indices
+    self._indices = _validate_index_expression(indices)
 
   def format(self):
     return _format_index_expression(self._indices)
@@ -51,14 +51,19 @@ class Hyperslices(object):
     return ""
 
 class Hyperchunk(object):
-  """Represents a hyperchunk (a set of array indices, a set of attribute indices, and zero-to-many Hyperslices instances)."""
-  def __init__(self):
-    self._arrays = numpy.index_exp[...]
-    self._attributes = numpy.index_exp[...]
+  """Represents a hyperchunk (a set of array indices, optional set of attribute indices, and zero-to-many Hyperslices instances)."""
+  def __init__(self, arrays, attributes=None):
+    self._arrays = _validate_index_expression(arrays)
+    self._attributes = _validate_index_expression(attributes) if attributes is not None else None
     self._hyperslices = Hyperslices()
 
   def format(self):
-    return "%s/%s" % (_format_index_expression(self._arrays), _format_index_expression(self._attributes)) + ("/" + self._hyperslices.format() if len(self._hyperslices) else "")
+    sections = [_format_index_expression(self._arrays)]
+    if self._attributes is not None:
+      sections.append(_format_index_expression(self._attributes))
+    if len(self._hyperslices):
+      sections.append(self._hyperslices.format())
+    return "/".join(sections)
 
 class Hyperchunks(object):
   """Represents a collection zero-to-many Hyperchunk instances."""
