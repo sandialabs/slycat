@@ -33,6 +33,12 @@ class Hyperslice(object):
   def __init__(self, indices):
     self._indices = _validate_index_expression(indices)
 
+  def __repr__(self):
+    return """slycat.hyperchunks.Hyperslice("%s")""" % self.format()
+
+  def __str__(self):
+    return self.format()
+
   def format(self):
     return _format_index_expression(self._indices)
 
@@ -47,8 +53,14 @@ class Hyperslices(object):
   def __getitem__(self, index):
     return self._hyperslices[index]
 
+  def __repr__(self):
+    return """slycat.hyperchunks.Hyperslices("%s")""" % self.format()
+
+  def __str__(self):
+    return self.format()
+
   def format(self):
-    return ""
+    return "|".join([hyperslice.format() for hyperslice in self._hyperslices])
 
 class Hyperchunk(object):
   """Represents a hyperchunk (a set of array indices, optional set of attribute indices, and zero-to-many Hyperslices instances)."""
@@ -56,6 +68,12 @@ class Hyperchunk(object):
     self._arrays = _validate_index_expression(arrays)
     self._attributes = _validate_index_expression(attributes) if attributes is not None else None
     self._hyperslices = Hyperslices()
+
+  def __repr__(self):
+    return """slycat.hyperchunks.Hyperchunk("%s")""" % self.format()
+
+  def __str__(self):
+    return self.format()
 
   def format(self):
     sections = [_format_index_expression(self._arrays)]
@@ -75,6 +93,12 @@ class Hyperchunks(object):
 
   def __getitem__(self, index):
     return self._hyperchunks[index]
+
+  def __repr__(self):
+    return """slycat.hyperchunks.Hyperchunks("%s")""" % self.format()
+
+  def __str__(self):
+    return self.format()
 
   def format(self):
     return ";".join([hyperchunk.format() for hyperchunk in self._hyperchunks])
