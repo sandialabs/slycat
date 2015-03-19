@@ -392,6 +392,32 @@ class Connection(object):
     """
     return self.request("GET", "/remotes/%s/file%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
 
+  def get_remote_image(self, sid, path, cache=None, project=None, key=None):
+    """Retrieve an image using a remote session.
+
+    Parameters
+    ----------
+    sid: string, required
+      Unique remote session identifier.
+    path: string, required
+      Remote filesystem path (must be absolute).
+    cache: string, optional
+      Optional server-side cache for the retrieved image.  Must be `None` or "project".
+    project: string, optional
+      If `cache` is set to "project", this must specify a unique project identifier.
+    key: string, optional
+      if `cache` is set to "project", this must specify a unique key for the cached object.
+
+    Returns
+    -------
+    image: Remote image contents.
+
+    See Also
+    --------
+    :http:get:`/remotes/(sid)/image(path)`
+    """
+    return self.request("GET", "/remotes/%s/image%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
+
   def get_user(self, uid):
     """Retrieve directory information about an existing user.
 

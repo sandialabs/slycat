@@ -9,12 +9,11 @@ connection = slycat.web.client.connect(arguments)
 pid = connection.find_or_create_project(arguments.project_name)
 sid = connection.post_remotes("localhost", "slycat", "slycat")
 
-#print connection.post_remote_browse(sid, "/home/slycat/src/slycat")
-print connection.get_remote_file(sid, "/home/slycat/src/slycat/README.md", cache="project", project=pid, key="test")
-print connection.get_project_cache_object(pid, "test")
-print connection.get_remote_file(sid, "/home/slycat/src/slycat/README.md", cache="project", project=pid, key="test")
-print connection.get_project_cache_object(pid, "test")
+connection.get_remote_image(sid, "/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.png", cache="project", project=pid, key="test")
+connection.get_project_cache_object(pid, "test")
+connection.get_remote_image(sid, "/home/slycat/src/slycat/artwork/slycat-logo-original-artwork.png", cache="project", project=pid, key="test")
+connection.get_project_cache_object(pid, "test")
 
-connection.delete_project_cache_object(pid, "test")
+#connection.delete_project_cache_object(pid, "test")
 
 connection.delete_remote(sid)
