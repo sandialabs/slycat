@@ -90,6 +90,20 @@ rights in this software.
           <div class="varNameContainer">
             <div class="varName" data-bind="text: name">[variable name]</div>
           </div>
+          <div class="minMaxHighLow">
+            <div class="max" data-bind="text: max().toPrecision(3).length > max().toExponential(2).length ? max().toExponential(2) : max().toPrecision(3)">[max]</div>
+            <div class="min" data-bind="text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), style: { top: $parent.sliderHeight() + 20 + 'px' }">[min]</div>
+            <div class="high" 
+              data-bind="
+                text: high().toPrecision(3).length > high().toExponential(2).length ? high().toExponential(2) : high().toPrecision(3), 
+                style: { top: ( $parent.sliderHeight() - (2 * $parent.thumb_length()) ) * ( (max() - high()) / (max() - min()) ) + 11 + (0.5 * $parent.thumb_length()) + 'px' }"
+            >[max]</div>
+            <div class="low" 
+              data-bind="
+                text: low().toPrecision(3).length > low().toExponential(2).length ? low().toExponential(2) : low().toPrecision(3), 
+                style: { top: ( $parent.sliderHeight() - (2 * $parent.thumb_length()) ) * ( (max() - low()) / (max() - min()) ) + 11 + (1.5 * $parent.thumb_length()) + 'px' }"
+            >[min]</div>
+          </div>
           <slycat-range-slider 
             params="
               axis: 'vertical', 
@@ -97,7 +111,9 @@ rights in this software.
               min: min,
               max: max,
               low: low,
-              high: high
+              high: high,
+              thumb_length: $parent.thumb_length,
+              reverse: true
             "></slycat-range-slider>
           <span class="close-button frame-icon"
             data-bind="click: $parent.removeFilter"

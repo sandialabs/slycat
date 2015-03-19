@@ -594,11 +594,13 @@ rights in this software.
   overflow: auto;
 }
 #sliders {
-  margin: 20px 0 0 0;
+  margin: 20px 0 0 20px;
 }
 .slycat-range-slider.vertical
 {
   display: inline-block;
+  margin: 20px 0;
+  left: 20px;
 }
 /* undoing vertical class cause it's making vertical sliders horizontal */
 .vertical {
@@ -607,14 +609,30 @@ rights in this software.
 .slycat-pim-filter {
   position: relative;
   display: inline-block;
-  width: 60px;
+  width: 120px;
 }
 .slycat-pim-filter .close-button {
   position: absolute;
   font-size: 32px;
   top: 0px;
-  left: 0px;
+  left: 18px;
   background-position: -96px -128px;
+}
+.slycat-pim-filter .minMaxHighLow .max,
+.slycat-pim-filter .minMaxHighLow .min,
+.slycat-pim-filter .minMaxHighLow .high,
+.slycat-pim-filter .minMaxHighLow .low
+{
+  position: absolute;
+  left: 44px;
+}
+.slycat-pim-filter .max
+{
+
+}
+.slycat-pim-filter .min
+{
+
 }
 .slycat-pim-filter .varNameContainer {
   position: absolute;
@@ -631,10 +649,6 @@ rights in this software.
   top: 50%;
   font-size: 13px;
   font-weight: bold;
-}
-.slycat-range-slider {
-  top: 4px;
-  left: 20px;
 }
 
 /* Note Layer */

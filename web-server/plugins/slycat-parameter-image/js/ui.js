@@ -876,8 +876,9 @@ function setup_sliders()
       var self = this;
       slidersPaneHeight( $("#sliders-pane").innerHeight() );
       self.sliderHeight = ko.pureComputed(function() {
-        return slidersPaneHeight() - 55;
+        return slidersPaneHeight() - 95;
       }, this);
+      self.thumb_length = ko.observable(12);
       self.allFilters = allFilters;
       self.availableFilters = self.allFilters.filter(function(filter){
         return !filter.active();
