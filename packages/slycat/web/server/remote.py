@@ -181,7 +181,11 @@ class Session(object):
       cherrypy.response.headers["x-slycat-message"] = str(e)
       raise cherrypy.HTTPError(400)
 
-  def get_file(self, path, cache=None, project=None, key=None):
+  def get_file(self, path, **kwargs):
+    cache = kwargs.get("cache", None)
+    project = kwargs.get("project", None)
+    key = kwargs.get("key", None)
+
     # Sanity-check arguments.
     if cache not in [None, "project"]:
       raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
@@ -260,7 +264,16 @@ class Session(object):
       cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
       raise cherrypy.HTTPError("400 Remote access failed.")
 
-  def get_image(self, path, content_type, max_size, max_width, max_height):
+  def get_image(self, path, **kwargs):
+    content_type = kwargs.get("content-type", None)
+    max_size = kwargs.get("max-size", None)
+    max_width = kwargs.get("max-width", None)
+    max_height = kwargs.get("max-height", None)
+
+    cache = kwargs.get("cache", None)
+    project = kwargs.get("project", None)
+    key = kwargs.get("key", None)
+
     # Sanity-check arguments.
     if cache not in [None, "project"]:
       raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)

@@ -1188,13 +1188,8 @@ def get_remote_file(sid, path, **kwargs):
     return session.get_file(path, **kwargs)
 
 def get_remote_image(sid, path, **kwargs):
-  content_type = kwargs.get("content-type", None)
-  max_size = kwargs.get("max-size", None)
-  max_width = kwargs.get("max-width", None)
-  max_height = kwargs.get("max-height", None)
-
   with slycat.web.server.remote.get_session(sid) as session:
-    return session.get_image(path, content_type, max_size, max_width, max_height)
+    return session.get_image(path, **kwargs)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
