@@ -263,7 +263,8 @@ slycat-navbar .alert pre
   border-radius: 6px;
 }
 
-.slycat-range-slider.invert:hover .domain
+.slycat-range-slider.invert:hover .domain,
+.slycat-range-slider.dragging.invert .domain
 {
   background: #7788ff;
   border-color: #7788ff;
@@ -299,7 +300,8 @@ slycat-navbar .alert pre
   border: 1px solid #ccc;
 }
 
-.slycat-range-slider:hover .range
+.slycat-range-slider:hover .range,
+.slycat-range-slider.dragging .range
 {
   background: #7788ff;
   transition: background .25s ease-in-out;
@@ -307,7 +309,8 @@ slycat-navbar .alert pre
   -webkit-transition: background .25s ease-in-out;
 }
 
-.slycat-range-slider.invert:hover .range
+.slycat-range-slider.invert:hover .range,
+.slycat-range-slider.dragging.invert .range
 {
   background: #ddd;
   transition: none;
