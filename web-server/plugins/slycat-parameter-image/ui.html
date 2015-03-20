@@ -83,8 +83,6 @@ rights in this software.
   <div id="sliders-pane" class="ui-layout-west">
     <div class="load-status"></div>
     <div id="sliders">
-      <!-- <slycat-parameter-image-sliders params="filters: activeFilters, length: sliderHeight"></slycat-parameter-image-sliders> -->
-
       <div data-bind="foreach: activeFilters">
         <div class="slycat-pim-filter">
           <div class="varNameContainer">
@@ -120,7 +118,6 @@ rights in this software.
           <i class="fa invert-button" title="Invert filter" data-bind="click: $parent.invertFilter, css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }"></i>
         </div>
       </div>
-
     </div>
   </div>
   <!-- /ko -->
