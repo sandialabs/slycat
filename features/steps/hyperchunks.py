@@ -19,7 +19,7 @@ def step_impl(context):
 
 @when(u'a Hyperchunk object is created without parameters, an exception must be raised.')
 def step_impl(context):
-  with nose.tools.assert_raises(TypeError):
+  with nose.tools.assert_raises(ValueError):
     slycat.hyperchunks.Hyperchunk()
 
 @when(u'creating a Hyperchunk with one array')
@@ -81,9 +81,11 @@ def step_impl(context):
   nose.tools.assert_equal(len(context.hyperslices), 0)
   nose.tools.assert_equal(context.hyperslices.format(), "")
 
+
+
 @when(u'a Hyperslice object is created without parameters, an exception must be raised.')
 def step_impl(context):
-  with nose.tools.assert_raises(TypeError):
+  with nose.tools.assert_raises(ValueError):
     slycat.hyperchunks.Hyperslice()
 
 @when(u'creating a Hyperslice with one index')

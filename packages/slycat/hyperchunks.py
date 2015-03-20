@@ -100,6 +100,8 @@ class Hyperslices(object):
       self._hyperslices = []
       for hyperslice in args[0]:
         self.append(hyperslice)
+    elif len(args) == 0:
+      self._hyperslices = []
 
   def __len__(self):
     return len(self._hyperslices)
@@ -123,9 +125,9 @@ class Hyperslices(object):
 
 class Hyperchunk(object):
   """Represents a hyperchunk (a set of array indices, optional set of attribute indices, and zero-to-many Hyperslices instances)."""
-  def __init__(self, arrays, attributes=None, hyperslices=Hyperslices()):
-    if isinstance(arrays, basestring):
-      sections = arrays.split("/")
+  def __init__(self, *args):
+    if len(args) == 1 and isinstance(args[0], basestring):
+      sections = args[0].split("/")
       if len(sections) == 1:
         self._arrays = _parse_index_expression(sections[0])
         self._attributes = None
@@ -134,10 +136,20 @@ class Hyperchunk(object):
         hyperchunks.append(Hyperchunk(_parse_index_expression(sections[0]), _parse_index_expression(sections[1])))
       elif len(sections) == 3:
         hyperchunks.append(Hyperchunk(_parse_index_expression(sections[0]), _parse_index_expression(sections[1]), _parse_index_expression(sections[2])))
+    elif len(args) == 1:
+      self._arrays = _validate_index_expression(args[0], dimension_count=1)
+      self._attributes = None
+      self._hyperslices = Hyperslices()
+    elif len(args) == 2:
+      self._arrays = _validate_index_expression(args[0], dimension_count=1)
+      self._attributes = _validate_index_expression(args[1], dimension_count=1)
+      self._hyperslices = Hyperslices()
+    elif len(args) == 3:
+      self._arrays = _validate_index_expression(args[0], dimension_count=1)
+      self._attributes = _validate_index_expression(args[1], dimension_count=1)
+      self._hyperslices = Hyperslices(args[2])
     else:
-      self._arrays = _validate_index_expression(arrays, dimension_count=1)
-      self._attributes = _validate_index_expression(attributes, dimension_count=1) if attributes is not None else None
-      self._hyperslices = _validate_index_expression(hyperslices)
+      raise ValueError()
 
   def __repr__(self):
     return """slycat.hyperchunks.Hyperchunk("%s")""" % self.format()
