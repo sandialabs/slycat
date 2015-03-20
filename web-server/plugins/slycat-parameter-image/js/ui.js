@@ -917,6 +917,12 @@ function setup_sliders()
             self.allFilters()[i].active(true);
           }
         }
+        var underlying_array = self.activeFilters();
+        underlying_array.sort(function(one, two){
+          return one.name() < two.name() ? -1 : 1;
+        });
+        // Notify subscribers when underlying array changes, but this still causes problems with activeFilters not updating when underlying observables that are in a different spot in the array udpate.
+        self.activeFilters.notifySubscribers(underlying_array);
         bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
       self.removeFilter = function(item, event){
