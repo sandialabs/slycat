@@ -72,6 +72,23 @@ Feature: Tracer Model
     And the points associated with the selected rows should be redrawn with highlighting in all of the graphs
     And any previously selected points should be redrawn without highlighting in all of the graphs
 
+  Scenario: Clear selected graph points by clicking in the tracer model
+    Given a graph with zero to many selected points
+    When the mouse is clicked off of the graph line
+    Then any previously selected points should cease to be selected
+    And any previously unselected points should remain unselected
+    And any previously selected points that were highlighted in the graphs should be redrawn without highlighting
+    And any table rows that correspond to the previously selected points should no longer be highlighted
+
+  Scenario: Clear selected graph points by rubberbanding empty region in the tracer model 
+    Given a graph with zero to many selected points and a rubberband rectangle
+    When the mouse button is released to complete the rectangle definition and the rectangle does not contain any points
+    Then any previously selected points should cease to be selected
+    And any previously unselected points should remain unselected
+    And any previously selected points that were highlighted in the graphs should be redrawn without highlighting
+    And any table rows that correspond to the previously selected points should no longer be highlighted
+    And the rectangle should disappear
+
   # Images
 
   Scenario: Image retrieval in the tracer model
@@ -127,8 +144,42 @@ Feature: Tracer Model
   Scenario: Play animation in the tracer model
     Given a graph and an image set
     When the animation button is clicked
-    Then the associated graph is replaced by the video player
-    And an animation is created from the selected image set
-    And the point selection in the remaining graphs is replaced by a moving point corresponding to the current image in the animation
+    Then the associated graph should be replaced by the video player
+    And an animation should be created from the selected image set
+    And the point selection in the remaining graphs should be replaced by a moving point corresponding to the current image in the animation
 
+  # Resizing
 
+  Scenario: When the browser window is resized in the tracer model
+    Given a set of graphs, displayed images, and a table
+    When the browser window is resized
+    Then the sizes of the graph view and the table should adjust to fill the space
+    And the relative vertical proportions of the graph view and the table should be maintained
+    And the sizes of each of the graphs should adjust to equally divide the available space both vertically and horizontally
+    And each graph should be centered in its region
+    And the font size of the axes and legend tic labels should scale to match the width of the axes and legend regions
+    And the font size should not shrink below a minimum size, nor expand beyond a maximum size
+    And the sizes of any images should scale while maintaining their aspect ratios
+    And image locations should be transformed to maintain their relative positions relative to their graphs
+    And lines connecting images to graphs should connect the new graph point location with the location for the scaled image
+    And rubberbands should be scaled and transformed to enclose the same set of selected points as were enclosed prior to the resizing
+
+  Scenario: When the table is resized in the tracer model
+    Given a set of graphs, displayed images, and a table
+    When the table view is resized
+    Then the sizes of the graph view and the table should adjust to fill their available vertical space
+    And the sizes of each of the graphs should adjust to equally divide the available space both vertically and horizontally
+    And each graph should be centered in its region
+    And the font size of the axes and legend tic labels should scale to match the width of the axes and legend regions
+    And the font size should not shrink below a minimum size, nor expand beyond a maximum size
+    And the sizes of any images should scale while maintaining their aspect ratios
+    And image locations should be transformed to maintain their relative positions relative to their graphs
+    And lines connecting images to graphs should connect the new graph point location with the location for the scaled image
+    And rubberbands should be scaled and transformed to enclose the same set of selected points as were enclosed prior to the resizing
+
+  # Table
+
+  Scenario: When a table column is sorted
+    Given a table
+    When the sorting icon is clicked
+    Then the column is sorted in either ascending or descending order
