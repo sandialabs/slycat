@@ -936,6 +936,7 @@ function setup_sliders()
           }
         }
         event.target.selectedIndex = 0;
+        $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
         bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
       self.removeFilter = function(item, event){
