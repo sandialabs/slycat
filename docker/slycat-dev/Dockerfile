@@ -23,6 +23,11 @@ USER root
 RUN sed -e 's/^#ClientAliveInterval .*$/ClientAliveInterval 60/' -i /etc/ssh/sshd_config
 RUN sed -e 's/^#ClientAliveCountMax .*$/ClientAliveInterval 10080/' -i /etc/ssh/sshd_config
 
+# We want CouchDB to listen on all network interfaces, so developers can use its web UI.
+RUN sed -e 's/^bind_address = .*$/bind_address = 0.0.0.0/' -i /etc/couchdb/default.ini
+# CouchDB will be listening on port 5984.
+EXPOSE 5984
+
 # Overwrite the default supervisord configuration so we can use supervisorctl.
 ADD supervisord.conf /etc/supervisord.conf
 # Supervisord will be listening on port 9001.

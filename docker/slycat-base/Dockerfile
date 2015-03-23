@@ -22,15 +22,11 @@ RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sa
 # The following commands are run as root.
 USER root
 
-# We want CouchDB to listen on all network interfaces.
-RUN sed -e 's/^bind_address = .*$/bind_address = 0.0.0.0/' -i /etc/couchdb/default.ini
 # Run the Slycat CouchDB setup script, which sets-up a "slycat" database and configures its schema.
 ADD couchdb-setup.ini /tmp/couchdb-setup.ini
 RUN /usr/bin/couchdb -a /etc/couchdb/default.ini -a /etc/couchdb/local.ini -a /tmp/couchdb-setup.ini -b -r 5; sleep 5; cd /home/slycat/src/slycat/web-server; /usr/bin/python slycat-couchdb-setup.py
 # Configure supervisord to run CouchDB at startup.
 ADD couchdb-server-startup.conf /etc/supervisord.d/couchdb-server-startup.conf
-# CouchDB will be listening on port 5984.
-EXPOSE 5984
 
 # Create a directory to contain Slycat configuration.
 RUN mkdir -p /etc/slycat
