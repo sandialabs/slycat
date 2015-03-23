@@ -1074,7 +1074,7 @@ function update_widgets_after_color_variable_change()
   $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
 }
 
-function update_widgets_when_hidden_simulations_change(skip_dendrogram_update)
+function update_widgets_when_hidden_simulations_change()
 {
   hidden_simulations_changed();
   if(auto_scale)

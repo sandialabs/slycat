@@ -83,7 +83,10 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         result[scrollbar.axis == "vertical" ? "height" : "width"] = scrollbar.length() + "px";
         return result;
       });
-      scrollbar.range = {};
+      scrollbar.range = {
+        dragging: params.dragging || ko.observable(false),
+        last_drag: null
+      };
       scrollbar.range.style = ko.pureComputed(function()
       {
         var axis = scrollbar.axis;
@@ -131,6 +134,14 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         window.addEventListener("mousemove", scrollbar.high_thumb.mousemove, true);
         window.addEventListener("mouseup", scrollbar.high_thumb.mouseup, true);
       }
+      scrollbar.range.mousedown = function(model, event)
+      {
+        scrollbar.low_thumb.dragging(true);
+        scrollbar.high_thumb.dragging(true);
+        scrollbar.range.last_drag = [event.pageX, event.pageY];
+        window.addEventListener("mousemove", scrollbar.range.mousemove, true);
+        window.addEventListener("mouseup", scrollbar.range.mouseup, true);
+      }
       scrollbar.low_thumb.mousemove = function(event)
       {
         var domain_min = scrollbar.domain.min();
@@ -145,7 +156,16 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
           drange = -drange;
         var new_value = ((range_value + drange) - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
 
-        scrollbar.domain.low_value(Math.max(domain_min, Math.min(domain_max, scrollbar.domain.high_value(), new_value)));
+        scrollbar.domain.low_value(
+          Math.max(
+            domain_min, 
+            Math.min(
+              domain_max, 
+              scrollbar.domain.high_value(), 
+              new_value
+            )
+          )
+        );
         scrollbar.low_thumb.last_drag = [event.pageX, event.pageY];
       }
       scrollbar.high_thumb.mousemove = function(event)
@@ -162,8 +182,55 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
           drange = -drange;
         var new_value = ((range_value + drange) - range_min) / (range_max - range_min) * (domain_max - domain_min) + domain_min;
 
-        scrollbar.domain.high_value(Math.max(domain_min, scrollbar.domain.low_value(), Math.min(domain_max, new_value)));
+        scrollbar.domain.high_value(
+          Math.max(
+            domain_min, 
+            scrollbar.domain.low_value(), 
+            Math.min(domain_max, new_value)
+          )
+        );
         scrollbar.high_thumb.last_drag = [event.pageX, event.pageY];
+      }
+      scrollbar.range.mousemove = function(event)
+      {
+        var domain_min = scrollbar.domain.min();
+        var domain_max = scrollbar.domain.max();
+        var low_range_min = scrollbar.low_range.min();
+        var low_range_value = scrollbar.low_range.value();
+        var low_range_max = scrollbar.low_range.max();
+        var high_range_min = scrollbar.high_range.min();
+        var high_range_value = scrollbar.high_range.value();
+        var high_range_max = scrollbar.high_range.max();
+        var range = scrollbar.domain.high_value() - scrollbar.domain.low_value();
+        var reverse = scrollbar.reverse;
+
+        var drange = (scrollbar.axis == "vertical") ? event.pageY - scrollbar.range.last_drag[1] : event.pageX - scrollbar.range.last_drag[0];
+        if(reverse)
+          drange = -drange;
+        var high_new_value = ((high_range_value + drange) - high_range_min) / (high_range_max - high_range_min) * (domain_max - domain_min) + domain_min;
+        var low_new_value = ((low_range_value + drange) - low_range_min) / (low_range_max - low_range_min) * (domain_max - domain_min) + domain_min;
+
+        scrollbar.domain.low_value(
+          Math.max(
+            domain_min, 
+            Math.min(
+              domain_max - range, 
+              scrollbar.domain.high_value(), 
+              low_new_value
+            )
+          )
+        );
+        scrollbar.domain.high_value(
+          Math.max(
+            domain_min + range, 
+            scrollbar.domain.low_value(), 
+            Math.min(
+              domain_max, 
+              high_new_value
+            )
+          )
+        );
+        scrollbar.range.last_drag = [event.pageX, event.pageY];
       }
       scrollbar.low_thumb.mouseup = function(event)
       {
@@ -176,6 +243,12 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
         scrollbar.high_thumb.dragging(false);
         window.removeEventListener("mousemove", scrollbar.high_thumb.mousemove, true);
         window.removeEventListener("mouseup", scrollbar.high_thumb.mouseup, true);
+      }
+      scrollbar.range.mouseup = function(event)
+      {
+        scrollbar.range.dragging(false);
+        window.removeEventListener("mousemove", scrollbar.range.mousemove, true);
+        window.removeEventListener("mouseup", scrollbar.range.mouseup, true);
       }
     },
     template: { require: "text!" + server_root + "templates/slycat-range-slider.html" }
