@@ -75,7 +75,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       });
       scrollbar.css = ko.pureComputed(function()
       {
-        return scrollbar.axis + (scrollbar.low_thumb.dragging() || scrollbar.high_thumb.dragging() ? " dragging" : "") + (scrollbar.invert() ? " invert" : "");
+        return scrollbar.axis + (scrollbar.low_thumb.dragging() || scrollbar.high_thumb.dragging() || scrollbar.range.dragging() ? " dragging" : "") + (scrollbar.invert() ? " invert" : "");
       });
       scrollbar.style = ko.pureComputed(function()
       {
@@ -136,8 +136,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       }
       scrollbar.range.mousedown = function(model, event)
       {
-        scrollbar.low_thumb.dragging(true);
-        scrollbar.high_thumb.dragging(true);
+        scrollbar.range.dragging(true);
         scrollbar.range.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.range.mousemove, true);
         window.addEventListener("mouseup", scrollbar.range.mouseup, true);
