@@ -1449,101 +1449,131 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     // If we don't have a session for the image hostname, create one.
     var uri = URI(image.uri);
 
+    var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
+
+
+    console.log("Attempting to load image from server-side cache");
     // Retrieve the image.
     console.log("Loading image " + image.uri + " from server");
-    self.remotes.get_remote(
+
+    var xhr = new XMLHttpRequest();
+    var api = "/image";
+    if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
     {
-      hostname: uri.hostname(),
-      title: "Login to " + uri.hostname(),
-      message: "Loading " + uri.pathname(),
-      cancel: function()
+      api = "/file";
+    }
+    xhr.image = image;
+    xhr.open("GET", server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function(e)
+    {
+      //If the image isn't in cache, open an agent session:
+      if(this.status == 404)
       {
-        var jFrame = $(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
-        var frame = d3.select(jFrame[0]);
-        var related_frames = jFrame.closest('.media-layer').children('.scaffolding').filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == uri.hostname(); });
-        related_frames.find(".loading-image").remove();
+        self.remotes.get_remote(
+        {
+          hostname: uri.hostname(),
+          title: "Login to " + uri.hostname(),
+          message: "Loading " + uri.pathname(),
+          cancel: function()
+          {
+            var jFrame = $(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
+            var frame = d3.select(jFrame[0]);
+            var related_frames = jFrame.closest('.media-layer').children('.scaffolding').filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == uri.hostname(); });
+            related_frames.find(".loading-image").remove();
 
-        var reload_button = d3.selectAll(related_frames.filter(":not(:has(>.reload-button))")).append("span")
-          .attr("class", "fa fa-refresh reload-button")
-          .attr("title", "Could not load image. Click to reconnect.")
-          .each(function(){
-            var parent = d3.select(this.parentNode);
-            d3.select(this).style({
-              top: (parseInt(parent.style("height"))/2 - 16) + "px",
-              left: (parseInt(parent.style("width"))/2 - 16) + "px",
-              cursor: "pointer"})})
-          .on("click", (function(img, frame){
-            return function(){
-              var hostname = URI(img.uri).hostname();
-              var images = $(this).closest(".media-layer").children(".scaffolding").filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == hostname; })
-              var loading_image = d3.selectAll(images).append("img")
-                .attr("class", "loading-image")
-                .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
-                ;
-              images.find(".reload-button").remove();
-              self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
-            }})(image, frame));
-      },
-      success: function(sid)
+            var reload_button = d3.selectAll(related_frames.filter(":not(:has(>.reload-button))")).append("span")
+              .attr("class", "fa fa-refresh reload-button")
+              .attr("title", "Could not load image. Click to reconnect.")
+              .each(function(){
+                var parent = d3.select(this.parentNode);
+                d3.select(this).style({
+                  top: (parseInt(parent.style("height"))/2 - 16) + "px",
+                  left: (parseInt(parent.style("width"))/2 - 16) + "px",
+                  cursor: "pointer"})})
+              .on("click", (function(img, frame){
+                return function(){
+                  var hostname = URI(img.uri).hostname();
+                  var images = $(this).closest(".media-layer").children(".scaffolding").filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == hostname; })
+                  var loading_image = d3.selectAll(images).append("img")
+                    .attr("class", "loading-image")
+                    .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
+                    ;
+                  images.find(".reload-button").remove();
+                  self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
+                }})(image, frame));
+          },
+          success: function(sid)
+          {
+            var xhr = new XMLHttpRequest();
+            var api = "/image";
+            if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
+            {
+              api = "/file";
+            }
+            xhr.image = image;
+            //Double encode to avoid cherrypy's auto unencode in the controller
+            xhr.open("GET", server_root + "remotes/" + sid + api + uri.pathname() + "?cache=project&project=" + model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
+            xhr.responseType = "arraybuffer";
+            xhr.onload = function(e)
+            {
+              // If we get 404, the remote session no longer exists because it timed-out.
+              // If we get 500, there was an internal error communicating to the remote host.
+              // Either way, delete the cached session and create a new one.
+              if(this.status == 404 || this.status == 500)
+              {
+                self.remotes.delete_remote(uri.hostname());
+                self._open_session(images);
+                return;
+              }
+              // If we get 400, it means that the session is good and we're
+              // communicating with the remote host, but something else went wrong
+              // (probably file permissions issues).
+              if(this.status == 400)
+              {
+                console.log(this);
+                console.log(this.getAllResponseHeaders());
+                var message = this.getResponseHeader("slycat-message");
+                var hint = this.getResponseHeader("slycat-hint");
+
+                if(message && hint)
+                {
+                  window.alert(message + "\n\n" + hint);
+                }
+                else if(message)
+                {
+                  window.alert(message);
+                }
+                else
+                {
+                  window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
+                }
+                return;
+              }
+              else
+              {
+                console.debug("Loaded image");
+                // We received the image, so put it in the cache and start-over.
+                var array_buffer_view = new Uint8Array(this.response);
+                var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
+                self.options.image_cache[image.uri] = blob;
+                self._open_images(images);
+              }
+            }
+            xhr.send();
+          },
+        })
+      }
+      else
       {
-        var xhr = new XMLHttpRequest();
-        var api = "/image";
-        if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
-        {
-          api = "/file";
-        }
-        xhr.image = image;
-        xhr.open("GET", server_root + "remotes/" + sid + api + uri.pathname(), true);
-        xhr.responseType = "arraybuffer";
-        xhr.onload = function(e)
-        {
-          // If we get 404, the remote session no longer exists because it timed-out.
-          // If we get 500, there was an internal error communicating to the remote host.
-          // Either way, delete the cached session and create a new one.
-          if(this.status == 404 || this.status == 500)
-          {
-            self.remotes.delete_remote(uri.hostname());
-            self._open_session(images);
-            return;
-          }
-          // If we get 400, it means that the session is good and we're
-          // communicating with the remote host, but something else went wrong
-          // (probably file permissions issues).
-          if(this.status == 400)
-          {
-            console.log(this);
-            console.log(this.getAllResponseHeaders());
-            var message = this.getResponseHeader("slycat-message");
-            var hint = this.getResponseHeader("slycat-hint");
-
-            if(message && hint)
-            {
-              window.alert(message + "\n\n" + hint);
-            }
-            else if(message)
-            {
-              window.alert(message);
-            }
-            else
-            {
-              window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
-            }
-            return;
-          }
-
-          // We received the image, so put it in the cache and start-over.
-          var array_buffer_view = new Uint8Array(this.response);
-          var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
-          self.options.image_cache[image.uri] = blob;
-          // Adding lag for testing purposed. This should not exist in production.
-          // setTimeout(function(){
-          self._open_images(images);
-          return;
-          // }, 5000);
-        }
-        xhr.send();
-      },
-    });
+        // We received the image, so put it in the cache and start-over.
+        var array_buffer_view = new Uint8Array(this.response);
+        var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
+        self.options.image_cache[image.uri] = blob;
+        self._open_images(images);
+      }
+    }
+    xhr.send();
   },
 
   _close_hidden_simulations: function()
