@@ -10,6 +10,7 @@ var output_columns = null;
 var image_columns = null;
 var rating_columns = null;
 var category_columns = null;
+var other_columns = null;
 
 var bookmarker = null;
 var bookmark = null;
@@ -195,6 +196,17 @@ function setup_colorswitcher()
 
 function metadata_loaded()
 {
+  if(table_metadata)
+  {
+    other_columns = [];
+    for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
+    {
+      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1
+        && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
+        other_columns.push(i);
+    }
+  }
+
   setup_table();
 
   if(!indices && table_metadata)
@@ -379,19 +391,12 @@ function setup_table()
 {
   if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && colorscale
     && bookmark && (x_index != null) && (y_index != null) && (images_index !== null)
-    && (selected_simulations != null) && (hidden_simulations != null) )
+    && (selected_simulations != null) && (hidden_simulations != null) 
+    && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null)
   {
     table_ready = true;
 
     $("#table-pane .load-status").css("display", "none");
-
-    var other_columns = [];
-    for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
-    {
-      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1
-        && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
-        other_columns.push(i);
-    }
 
     var table_options =
     {
@@ -601,10 +606,12 @@ function setup_scatterplot()
 
 function setup_controls()
 {
-  if( !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
+  if( 
+    !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
-    && indices)
+    && indices
+    )
   {
     controls_ready = true;
     var numeric_variables = [];
@@ -826,11 +833,15 @@ function setup_controls()
 
 function setup_sliders()
 {
-  if( !sliders_ready && bookmark && controls_ready && table_metadata)
+  if( 
+    !sliders_ready && bookmark && controls_ready && table_metadata
+    && input_columns != null && output_columns != null && other_columns != null && rating_columns != null && category_columns != null
+    )
   {
     sliders_ready = true;
     $("#sliders-pane .load-status").css("display", "none");
 
+    var variable_order = input_columns.concat(output_columns, rating_columns, category_columns, other_columns);
     var numeric_variables = [];
     for(var i = 0; i < table_metadata["column-count"]; i++)
     {
@@ -867,6 +878,7 @@ function setup_sliders()
           low: low,
           invert: ko.observable(false),
           active: ko.observable(false),
+          order: ko.observable( variable_order.indexOf(numeric_variables[i]) ),
           rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
           rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
         });
@@ -881,9 +893,11 @@ function setup_sliders()
       }, this);
       self.thumb_length = ko.observable(12);
       self.allFilters = allFilters;
-      self.availableFilters = self.allFilters.filter(function(filter){
-        return !filter.active();
-      });
+      self.availableFilters = ko.observableArray( 
+        self.allFilters.slice(0).sort(function(one, two){
+          return one.order() < two.order() ? -1 : 1;
+        }) 
+      );
       self.activeFilters = self.allFilters.filter(function(filter){
         return filter.active();
       });
@@ -914,15 +928,14 @@ function setup_sliders()
         {
           if(self.allFilters()[i].index() == Number(activateFilter))
           {
-            self.allFilters()[i].active(true);
+            var activate = self.allFilters()[i];
+            // Move it to the end of the array
+            self.allFilters.push( self.allFilters.remove(activate)[0] );
+            // Show it
+            activate.active(true);
           }
         }
-        var underlying_array = self.activeFilters();
-        underlying_array.sort(function(one, two){
-          return one.name() < two.name() ? -1 : 1;
-        });
-        // Notify subscribers when underlying array changes, but this still causes problems with activeFilters not updating when underlying observables that are in a different spot in the array udpate.
-        self.activeFilters.notifySubscribers(underlying_array);
+        event.target.selectedIndex = 0;
         bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
       }
       self.removeFilter = function(item, event){

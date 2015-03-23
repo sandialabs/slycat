@@ -42,7 +42,7 @@ rights in this software.
             data-bind="disable: availableFilters().length == 0, event: { change: activateFilter }">
             <option selected="selected" value="-1">Filter By:</option>
             <!-- ko foreach: availableFilters -->
-              <option data-bind="text: name, value: index"></option>
+              <option data-bind="text: name, value: index, visible: !active()"></option>
             <!-- /ko -->
             </optgroup>
           </select>
