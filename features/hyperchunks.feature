@@ -7,7 +7,7 @@ Feature: Slycat Agent
   Scenario: Create an empty Hyperchunk object.
     When a Hyperchunk object is created without parameters, an exception must be raised.
 
-  Scenario Outline: Create a Hyperchunk object. 
+  Scenario Outline: Create a Hyperchunk object.
     When creating a Hyperchunk with <input>
     Then the Hyperchunk should contain <input>
 
@@ -27,7 +27,7 @@ Feature: Slycat Agent
   Scenario: Create an empty Hyperslice object.
     When a Hyperslice object is created without parameters, an exception must be raised.
 
-  Scenario Outline: Create a Hyperslice object. 
+  Scenario Outline: Create a Hyperslice object.
     When creating a Hyperslice with <input>
     Then the Hyperslice should contain <input>
 
