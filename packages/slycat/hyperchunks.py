@@ -95,6 +95,8 @@ class Hyperslices(object):
   def __init__(self, *args):
     if len(args) == 1 and isinstance(args[0], basestring):
       self._hyperslices = [Hyperslice(hyperslice) for hyperslice in args[0].split("|")]
+    elif len(args) == 1 and isinstance(args[0], Hyperslice):
+      self._hyperslices = [args[0]]
     elif len(args) == 1:
       self._hyperslices = []
       for hyperslice in args[0]:
@@ -185,6 +187,8 @@ class Hyperchunks(object):
   def __init__(self, *args):
     if len(args) == 1 and isinstance(args[0], basestring):
       self._hyperchunks = [Hyperchunk(hyperchunk) for hyperchunk in args[0].split(";")]
+    elif len(args) == 1 and isinstance(args[0], Hyperchunk):
+      self._hyperchunks = [args[0]]
     elif len(args) == 1:
       self._hyperchunks = []
       for hyperchunk in args[0]:
@@ -269,3 +273,15 @@ class Hyperchunks(object):
 def parse(string):
   return Hyperchunks(string)
 
+class HypersliceBuilder(object):
+  def __getitem__(self, index):
+    if isinstance(index, tuple):
+      return Hyperslice(index)
+    else:
+      return Hyperslice((index,))
+
+hyperslice = HypersliceBuilder()
+
+def simple(array, attribute, hyperslice):
+  """Create a hyperchunks object containing a single array, single attribute, and single hyperslice."""
+  return Hyperchunks(Hyperchunk((array,), (attribute,), Hyperslices(hyperslice)))
