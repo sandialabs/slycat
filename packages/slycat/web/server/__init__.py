@@ -20,17 +20,14 @@ def update_model(database, model, **kwargs):
   database.save(model)
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
-  if isinstance(hyperchunks, tuple):
-    hyperchunks = [hyperchunks]
-  hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices]) for array, attribute, hyperslices in hyperchunks]
-
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
-    for array, attribute, hyperslices in hyperchunks:
-      hdf5_array = slycat.hdf5.ArraySet(file)[array]
-      #stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute]["type"])
-      for hyperslice in hyperslices:
-        cherrypy.log.error("Reading from arrayset %s array %s attribute %s hyperslice %s" % (name, array, attribute, hyperslice))
-        yield hdf5_array.get_data(attribute)[hyperslice]
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+          yield hdf5_array.get_data(attribute.index)[hyperslice]
 
 def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None):
   with slycat.web.server.database.hdf5.lock:

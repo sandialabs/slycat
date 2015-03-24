@@ -743,7 +743,6 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
 
   # New behavior
   if "arrays" in arguments or "statistics" in arguments:
-    cherrypy.log.error("arguments: %s" % arguments)
     with slycat.web.server.database.hdf5.lock:
       with slycat.web.server.database.hdf5.open(artifact) as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -751,7 +750,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         if "arrays" in arguments:
           results["arrays"] = []
           try:
-            hyperchunks = slycat.hyperchunks.Hyperchunks(arguments["arrays"])
+            hyperchunks = slycat.hyperchunks.parse(arguments["arrays"])
           except:
             raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
           for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
@@ -764,7 +763,7 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
         if "statistics" in arguments:
           results["statistics"] = []
           try:
-            hyperchunks = slycat.hyperchunks.Hyperchunks(arguments["statistics"])
+            hyperchunks = slycat.hyperchunks.parse(arguments["statistics"])
           except:
             raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
           for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
@@ -795,23 +794,10 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   #cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
 
-  # Sanity check inputs ...
-  parsed_hyperchunks = []
-
   try:
-    for hyperchunk in hyperchunks.split(";"):
-      array, attribute, hyperslices = hyperchunk.split("/")
-      array = int(array)
-      if array < 0:
-        raise Exception()
-      attribute = int(attribute)
-      if attribute < 0:
-        raise Exception()
-      hyperslices = [slycat.hyperslice.parse(hyperslice) for hyperslice in hyperslices.split("|")]
-      parsed_hyperchunks.append((array, attribute, hyperslices))
-  except Exception as e:
-    cherrypy.log.error("Parsing exception: %s" % e)
-    raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
+    hyperchunks = slycat.hyperchunks.parse(hyperchunks)
+  except:
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
@@ -842,9 +828,9 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
 
   def content():
     if byteorder is None:
-      yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks)])
+      yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
     else:
-      for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, parsed_hyperchunks):
+      for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
         if sys.byteorder != byteorder:
           yield hyperslice.byteswap().tostring(order="C")
         else:
