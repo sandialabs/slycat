@@ -265,3 +265,7 @@ class Hyperchunks(object):
         start, stop, step = arrays.indices(array_count)
         for array in numpy.arange(start, stop, step):
           yield Hyperchunks.ArrayWrapper(array, hyperchunk.attributes, hyperchunk.hyperslices)
+
+def parse(string):
+  return Hyperchunks(string)
+
