@@ -15,6 +15,7 @@ import os
 import Queue
 import re
 import slycat.hdf5
+import slycat.hyperchunks
 import slycat.hyperslice
 import slycat.web.server
 import slycat.web.server.authentication
@@ -742,29 +743,37 @@ def get_model_arrayset_metadata(mid, aid, **arguments):
 
   # New behavior
   if "arrays" in arguments or "statistics" in arguments:
-    #cherrypy.log.error("arguments: %s" % arguments)
+    cherrypy.log.error("arguments: %s" % arguments)
     with slycat.web.server.database.hdf5.lock:
       with slycat.web.server.database.hdf5.open(artifact) as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
         results = {}
         if "arrays" in arguments:
           results["arrays"] = []
-          for array in arguments["arrays"].split(";"):
-            hdf5_array = hdf5_arrayset[array]
+          try:
+            hyperchunks = slycat.hyperchunks.Hyperchunks(arguments["arrays"])
+          except:
+            raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+          for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
             results["arrays"].append({
-              "index" : int(array),
+              "index" : array.index,
               "dimensions" : hdf5_array.dimensions,
               "attributes" : hdf5_array.attributes,
               })
         if "statistics" in arguments:
           results["statistics"] = []
-          for spec in arguments["statistics"].split(";"):
-            #cherrypy.log.error("spec: %s" % spec)
-            array, attribute = spec.split("/")
-            statistics = hdf5_arrayset[array].get_statistics(attribute)
-            statistics["array"] = int(array)
-            statistics["attribute"] = int(attribute)
-            results["statistics"].append(statistics)
+          try:
+            hyperchunks = slycat.hyperchunks.Hyperchunks(arguments["statistics"])
+          except:
+            raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+          for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
+            for attribute in array.attributes(len(hdf5_array.attributes)):
+              statistics = hdf5_array.get_statistics(attribute.index)
+              statistics["array"] = array.index
+              statistics["attribute"] = attribute.index
+              results["statistics"].append(statistics)
         return results
 
   # Legacy behavior
