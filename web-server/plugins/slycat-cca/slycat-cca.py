@@ -5,6 +5,7 @@ def register_slycat_plugin(context):
   import os
   import numpy
   import slycat.cca
+  import slycat.hyperchunks
   import slycat.web.server
   import slycat.web.server.database.couchdb
   import slycat.web.server.model
@@ -63,31 +64,29 @@ def register_slycat_plugin(context):
       # Store canonical variable indices (scatterplot indices) as a |sample| vector of indices ...
       slycat.web.server.put_model_arrayset(database, model, "canonical-indices")
       slycat.web.server.put_model_array(database, model, "canonical-indices", 0, [dict(name="index", type="int32")],[dict(name="sample", end=sample_count)])
-      slycat.web.server.put_model_arrayset_data(database, model, "canonical-indices", (0, 0, numpy.index_exp[...], indices))
+      slycat.web.server.put_model_arrayset_data(database, model, "canonical-indices", slycat.hyperchunks.parse("0/0/..."), [indices])
 
       # Store canonical variables (scatterplot data) as a component x sample matrix of x/y attributes ...
       slycat.web.server.put_model_arrayset(database, model, "canonical-variables")
       slycat.web.server.put_model_array(database, model, "canonical-variables", 0, [dict(name="input", type="float64"), dict(name="output", type="float64")], [dict(name="component", end=component_count), dict(name="sample", end=sample_count)])
-      slycat.web.server.put_model_arrayset_data(database, model, "canonical-variables", (0, 0, numpy.index_exp[...], x.T))
-      slycat.web.server.put_model_arrayset_data(database, model, "canonical-variables", (0, 1, numpy.index_exp[...], y.T))
+      slycat.web.server.put_model_arrayset_data(database, model, "canonical-variables", slycat.hyperchunks.parse("0/0/...;0/1/..."), [x.T, y.T])
       slycat.web.server.update_model(database, model, progress=0.80)
 
       # Store structure correlations (barplot data) as a component x variable matrix of correlation attributes ...
       slycat.web.server.put_model_arrayset(database, model, "input-structure-correlation")
       slycat.web.server.put_model_array(database, model, "input-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="input", end=len(input_columns))])
-      slycat.web.server.put_model_arrayset_data(database, model, "input-structure-correlation", (0, 0, numpy.index_exp[...], x_loadings.T))
+      slycat.web.server.put_model_arrayset_data(database, model, "input-structure-correlation", slycat.hyperchunks.parse("0/0/..."), [x_loadings.T])
       slycat.web.server.update_model(database, model, progress=0.85)
 
       slycat.web.server.put_model_arrayset(database, model, "output-structure-correlation")
       slycat.web.server.put_model_array(database, model, "output-structure-correlation", 0, [dict(name="correlation", type="float64")], [dict(name="component", end=component_count), dict(name="output", end=len(output_columns))])
-      slycat.web.server.put_model_arrayset_data(database, model, "output-structure-correlation", (0, 0, numpy.index_exp[...], y_loadings.T))
+      slycat.web.server.put_model_arrayset_data(database, model, "output-structure-correlation", slycat.hyperchunks.parse("0/0/..."), [y_loadings.T])
       slycat.web.server.update_model(database, model, progress=0.90)
 
       # Store statistics as a vector of component r2/p attributes
       slycat.web.server.put_model_arrayset(database, model, "cca-statistics")
       slycat.web.server.put_model_array(database, model, "cca-statistics", 0, [dict(name="r2", type="float64"), dict(name="p", type="float64")], [dict(name="component", end=component_count)])
-      slycat.web.server.put_model_arrayset_data(database, model, "cca-statistics", (0, 0, numpy.index_exp[...], r))
-      slycat.web.server.put_model_arrayset_data(database, model, "cca-statistics", (0, 1, numpy.index_exp[...], wilks))
+      slycat.web.server.put_model_arrayset_data(database, model, "cca-statistics", slycat.hyperchunks.parse("0/0/...;0/1/..."), [r, wilks])
 
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 

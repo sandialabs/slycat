@@ -88,24 +88,24 @@ def put_model_array(database, model, name, array_index, attributes, dimensions):
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
-def put_model_arrayset_data(database, model, name, hyperchunks):
+def put_model_arrayset_data(database, model, name, hyperchunks, data):
   slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
 
-  if isinstance(hyperchunks, tuple):
-    hyperchunks = [hyperchunks]
-  hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices], data if isinstance(data, list) else [data]) for array, attribute, hyperslices, data in hyperchunks]
+  data = iter(data)
 
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
-    for array, attribute, hyperslices, data in hyperchunks:
-      hdf5_array = slycat.hdf5.ArraySet(file)[array]
-      stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute]["type"])
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
 
-      for hyperslice, data_hyperslice in zip(hyperslices, data):
-        cherrypy.log.error("Writing to arrayset %s array %s attribute %s hyperslice %s" % (name, array, attribute, hyperslice))
-        if isinstance(data_hyperslice, list):
-          data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-
-        hdf5_array.set_data(attribute, hyperslice, data_hyperslice)
+          data_hyperslice = next(data)
+          if isinstance(data_hyperslice, list):
+            data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
+          hdf5_array.set_data(attribute.index, hyperslice, data_hyperslice)
 
 def put_model_file(database, model, name, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
