@@ -242,7 +242,10 @@ class Hyperchunks(object):
       if self._attributes is not None:
         for attributes in self._attributes:
           if isinstance(attributes, numbers.Integral):
-            attributes = slice(attributes, attributes + 1)
+            if attributes < 0:
+              attributes = slice(attribute_count + attributes, attribute_count + attributes + 1)
+            else:
+              attributes = slice(attributes, attributes + 1)
           elif isinstance(attributes, type(Ellipsis)):
             attributes = slice(0, attribute_count)
           start, stop, step = attributes.indices(attribute_count)
@@ -253,7 +256,10 @@ class Hyperchunks(object):
     for hyperchunk in self._hyperchunks:
       for arrays in hyperchunk.arrays:
         if isinstance(arrays, numbers.Integral):
-          arrays = slice(arrays, arrays + 1)
+          if arrays < 0:
+            arrays = slice(array_count + arrays, array_count + arrays + 1)
+          else:
+            arrays = slice(arrays, arrays + 1)
         elif isinstance(arrays, type(Ellipsis)):
           arrays = slice(0, array_count)
         start, stop, step = arrays.indices(array_count)
