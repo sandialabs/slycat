@@ -16,5 +16,14 @@ RUN echo 'root:slycat' | chpasswd
 # Assign a password to the slycat user.
 RUN echo 'slycat:slycat' | chpasswd
 
+# Add our home-grown CA certificate to the environment where push scripts can find it.
+RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
+
+# Create mount points for persistent data.
+VOLUME /var/lib/couchdb
+VOLUME /var/lib/slycat
+VOLUME /var/log/couchdb
+VOLUME /var/log/slycat
+
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.

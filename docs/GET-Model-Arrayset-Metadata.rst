@@ -21,9 +21,9 @@ GET Model Arrayset Metadata
   GET Model Arrayset Metadata can be called in two ways: without any query string,
   it will return an array containing metadata for every array in the arrayset,
   without any statistics.  With the `arrays` argument, the caller can request
-  metadata for an explicit list of semicolon-delimited array indices.  With the
+  metadata for an explicit list of arrays.  With the
   `statistics` argument, the caller can request statistics for an explicit list
-  of semicolon-delimited array-attribute pairs separated by forward slashes.  The
+  of array attributes.  The
   two arguments can be combined to retrieve arbitrary combinations of array
   metadata and attribute statistics in a single request.
 
@@ -36,8 +36,8 @@ GET Model Arrayset Metadata
   :param name: Arrayset artifact name.
   :type name: string
 
-  :query arrays: Optional semicolon-delimited list of integer array indices.
-  :query statistics: Optional semicolon-delimited list of integer array-attribute pairs separated by forward slashes.
+  :query arrays: Optional, retrieve array metadata for a set of arrays in :ref:`hyperchunks` format.
+  :query statistics: Optional, retrive statistics for a set of array attributes in :ref:`hyperchunks` format.
 
   :responseheader Content-Type: application/json
 
@@ -146,6 +146,7 @@ GET Model Arrayset Metadata
 See Also
 --------
 
+- :ref:`hyperchunks`
 - :http:get:`/models/(mid)/arraysets/(name)/data`
 - :http:put:`/models/(mid)/arraysets/(name)/data`
 
