@@ -8,7 +8,6 @@ def register_slycat_plugin(context):
   import slycat.hyperchunks
   import slycat.web.server
   import slycat.web.server.database.couchdb
-  import slycat.web.server.model
   import threading
   import traceback
 

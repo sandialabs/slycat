@@ -17,11 +17,11 @@ import re
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.hyperslice
+import slycat.table
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.database.couchdb
 import slycat.web.server.database.hdf5
-import slycat.web.server.model
 import slycat.web.server.plugin
 import slycat.web.server.remote
 import slycat.web.server.resource
@@ -552,7 +552,23 @@ def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
       data = session.sftp.file(path).read()
   else:
     raise cherrypy.HTTPError("400 Must supply a file parameter, or sid and path parameters.")
-  slycat.web.server.model.store_table_file(database, model, name, data, filename, nan_row_filtering=False, input=input)
+
+  slycat.web.server.update_model(database, model, message="Loading table %s from %s." % (name, filename))
+  try:
+    array = slycat.table.parse(data)
+  except:
+    raise cherrypy.HTTPError("400 Could not parse file %s" % filename)
+
+  storage = uuid.uuid4().hex
+  with slycat.web.server.database.hdf5.create(storage) as file:
+    database.save({"_id" : storage, "type" : "hdf5"})
+    model["artifact:%s" % name] = storage
+    model["artifact-types"][name] = "hdf5"
+    if input:
+      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    database.save(model)
+    arrayset = slycat.hdf5.ArraySet(file)
+    arrayset.store_array(0, array)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_parameter(mid, name):
@@ -607,8 +623,6 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  #slycat.web.server.model.store_arrayset_data(database, model, name, parsed_hyperchunks, data, byteorder)
-#def store_arrayset_data(database, model, name, hyperchunks, data, byteorder):
   slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
 
   if byteorder is None:
