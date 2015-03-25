@@ -591,37 +591,69 @@ def put_model_arrayset_array(mid, name, array):
   slycat.web.server.put_model_array(database, model, name, array_index, attributes, dimensions)
 
 def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
-  #cherrypy.log.error("PUT Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (name, hyperchunks, byteorder))
-
-  # Sanity check inputs ...
-  parsed_hyperchunks = []
-
+  # Validate inputs.
   try:
-    for hyperchunk in hyperchunks.split(";"):
-      array, attribute, hyperslices = hyperchunk.split("/")
-      array = int(array)
-      if array < 0:
-        raise Exception()
-      attribute = int(attribute)
-      if attribute < 0:
-        raise Exception()
-      hyperslices = [slycat.hyperslice.parse(hyperslice) for hyperslice in hyperslices.split("|")]
-      parsed_hyperchunks.append((array, attribute, hyperslices))
-  except Exception as e:
-    cherrypy.log.error("Parsing exception: %s" % e)
-    raise cherrypy.HTTPError("400 hyperchunks argument must be a semicolon-separated sequence of array-index/attribute-index/hyperslices.  Array and attribute indices must be non-negative integers.  Hyperslices must be a vertical-bar-separated sequence of hyperslice specifications.  Each hyperslice must be a comma-separated sequence of dimensions.  Dimensions must be integers, colon-delimmited slice specifications, or ellipses.")
+    hyperchunks = slycat.hyperchunks.parse(hyperchunks)
+  except:
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
       raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
 
-  # Handle the request ...
+  # Handle the request.
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.model.store_arrayset_data(database, model, name, parsed_hyperchunks, data, byteorder)
+  #slycat.web.server.model.store_arrayset_data(database, model, name, parsed_hyperchunks, data, byteorder)
+#def store_arrayset_data(database, model, name, hyperchunks, data, byteorder):
+  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
+
+  if byteorder is None:
+    data = json.load(data.file)
+    data_iterator = iter(data)
+
+  with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+
+          # We have to convert our hyperslice into a shape with explicit extents so we can compute
+          # how many bytes to extract from the input data.
+          if hyperslice == (Ellipsis,):
+            data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
+          else:
+            data_shape = []
+            for hyperslice_dimension, array_dimension in zip(hyperslice, hdf5_array.dimensions):
+              if isinstance(hyperslice_dimension, numbers.Integral):
+                data_shape.append(1)
+              elif isinstance(hyperslice_dimension, type(Ellipsis)):
+                data_shape.append(array_dimension["end"] - array_dimension["begin"])
+              elif isinstance(hyperslice_dimension, slice):
+                # TODO: Handle step
+                start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
+                data_shape.append(stop - start)
+              else:
+                raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
+
+          # Convert data to an array ...
+          data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+          data_size = numpy.prod(data_shape)
+
+          if byteorder is None:
+            hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
+          elif byteorder == sys.byteorder:
+            hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
+          else:
+            raise NotImplementedError()
+
+          hdf5_array.set_data(attribute.index, hyperslice, hyperslice_data)
+
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
