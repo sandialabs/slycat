@@ -117,6 +117,19 @@ def put_model_file(database, model, name, value, content_type, input=False):
   database.save(model)
   return model
 
+def put_model_inputs(database, model, source):
+  slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
+  for name in source["input-artifacts"]:
+    original_type = source["artifact-types"][name]
+    original_value = source["artifact:%s" % name]
+    if original_type in ["json", "hdf5"]:
+      model["artifact-types"][name] = original_type
+      model["artifact:%s" % name] = original_value
+      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    else:
+      raise Exception("Cannot copy unknown input artifact type %s." & original_type)
+  database.save(model)
+
 def put_model_parameter(database, model, name, value, input=False):
   model["artifact:%s" % name] = value
   model["artifact-types"][name] = "json"

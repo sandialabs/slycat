@@ -25,19 +25,6 @@ def load_hdf5_artifact(model, name):
     raise Exception("Not an hdf5 artifact.")
   return model["artifact:%s" % name]
 
-def copy_model_inputs(database, source, target):
-  slycat.web.server.update_model(database, target, message="Copying existing model inputs.")
-  for name in source["input-artifacts"]:
-    original_type = source["artifact-types"][name]
-    original_value = source["artifact:%s" % name]
-    if original_type in ["json", "hdf5"]:
-      target["artifact-types"][name] = original_type
-      target["artifact:%s" % name] = original_value
-      target["input-artifacts"] = list(set(target["input-artifacts"] + [name]))
-    else:
-      raise Exception("Cannot copy unknown input artifact type %s." & original_type)
-  database.save(target)
-
 def store_table_file(database, model, name, data, filename, nan_row_filtering, input=False):
   slycat.web.server.update_model(database, model, message="Loading table %s from %s." % (name, filename))
   try:

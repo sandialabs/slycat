@@ -529,7 +529,7 @@ def put_model_inputs(mid):
   if source["project"] != model["project"]:
     raise cherrypy.HTTPError("400 Cannot duplicate a model from another project.")
 
-  slycat.web.server.model.copy_model_inputs(database, source, model)
+  slycat.web.server.put_model_inputs(database, model, source)
 
 def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
   database = slycat.web.server.database.couchdb.connect()
