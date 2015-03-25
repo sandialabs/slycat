@@ -37,20 +37,22 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
         results = {}
         if arrays is not None:
           results["arrays"] = []
-          for array in arrays:
-            hdf5_array = hdf5_arrayset[array]
+          for array in arrays.arrays(hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
             results["arrays"].append({
-              "index" : int(array),
+              "index" : array.index,
               "dimensions" : hdf5_array.dimensions,
               "attributes" : hdf5_array.attributes,
               })
         if statistics is not None:
           results["statistics"] = []
-          for array, attribute in statistics:
-            statistics = hdf5_arrayset[array].get_statistics(attribute)
-            statistics["array"] = int(array)
-            statistics["attribute"] = int(attribute)
-            results["statistics"].append(statistics)
+          for array in statistics.arrays(hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
+            for attribute in array.attributes(len(hdf5_array.attributes)):
+              statistics = hdf5_array.get_statistics(attribute.index)
+              statistics["array"] = array.index
+              statistics["attribute"] = attribute.index
+              results["statistics"].append(statistics)
         return results
 
     with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:

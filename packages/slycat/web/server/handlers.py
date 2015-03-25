@@ -760,68 +760,30 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
           return data.tostring(order="C")
 
 @cherrypy.tools.json_out(on = True)
-def get_model_arrayset_metadata(mid, aid, **arguments):
+def get_model_arrayset_metadata(mid, name, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
 
-  artifact = model.get("artifact:%s" % aid, None)
+  artifact = model.get("artifact:%s" % name, None)
   if artifact is None:
     raise cherrypy.HTTPError(404)
-  artifact_type = model["artifact-types"][aid]
+  artifact_type = model["artifact-types"][name]
   if artifact_type not in ["hdf5"]:
-    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % name)
 
-  # New behavior
-  if "arrays" in arguments or "statistics" in arguments:
-    with slycat.web.server.database.hdf5.lock:
-      with slycat.web.server.database.hdf5.open(artifact) as file:
-        hdf5_arrayset = slycat.hdf5.ArraySet(file)
-        results = {}
-        if "arrays" in arguments:
-          results["arrays"] = []
-          try:
-            hyperchunks = slycat.hyperchunks.parse(arguments["arrays"])
-          except:
-            raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
-          for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
-            hdf5_array = hdf5_arrayset[array.index]
-            results["arrays"].append({
-              "index" : array.index,
-              "dimensions" : hdf5_array.dimensions,
-              "attributes" : hdf5_array.attributes,
-              })
-        if "statistics" in arguments:
-          results["statistics"] = []
-          try:
-            hyperchunks = slycat.hyperchunks.parse(arguments["statistics"])
-          except:
-            raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
-          for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
-            hdf5_array = hdf5_arrayset[array.index]
-            for attribute in array.attributes(len(hdf5_array.attributes)):
-              statistics = hdf5_array.get_statistics(attribute.index)
-              statistics["array"] = array.index
-              statistics["attribute"] = attribute.index
-              results["statistics"].append(statistics)
-        return results
+  try:
+    arrays = slycat.hyperchunks.parse(kwargs["arrays"]) if "arrays" in kwargs else None
+  except:
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
-  # Legacy behavior
-  else:
-    with slycat.web.server.database.hdf5.lock:
-      with slycat.web.server.database.hdf5.open(artifact) as file:
-        hdf5_arrayset = slycat.hdf5.ArraySet(file)
-        results = []
-        for array in sorted(hdf5_arrayset.keys()):
-          hdf5_array = hdf5_arrayset[array]
-          results.append({
-            "array": int(array),
-            "index" : int(array),
-            "dimensions" : hdf5_array.dimensions,
-            "attributes" : hdf5_array.attributes,
-            })
-        return results
+  try:
+    statistics = slycat.hyperchunks.parse(kwargs["statistics"]) if "statistics" in kwargs else None
+  except:
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+
+  return slycat.web.server.get_model_arrayset_metadata(database, model, name, arrays, statistics)
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   #cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
