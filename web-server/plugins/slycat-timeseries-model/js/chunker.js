@@ -217,12 +217,17 @@ function get_model_array_attribute(parameters) {
 // Retrieve an arrayset asynchronously, calling a callback when it's ready ...
 function get_model_arrayset(parameters)
 {
-  if(parameters.metadata !== undefined) {
+  if(parameters.metadata !== undefined) 
+  {
     retrieve_model_arrayset(parameters);
-  } else if (arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
+  } 
+  else if (arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) 
+  {
     parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
     retrieve_model_arrayset(parameters);
-  } else {
+  } 
+  else 
+  {
     parameters.metadataSuccess = retrieve_model_arrayset;
     get_model_arrayset_metadata(parameters);
   }
@@ -232,25 +237,26 @@ function get_model_arrayset(parameters)
     var metadata = parameters.metadata;
 
     var arrays = [];
+    var hyperchunks = [];
+
     if("arrays" in parameters)
     {
       for(var i = parseInt(parameters.arrays.split(":")[0]); i != parseInt(parameters.arrays.split(":")[1]); ++i)
+      {
         arrays.push(i);
+      }
+      for(var i = 0; i != arrays.length; ++i)
+      {
+        var array = arrays[i];
+        for(var attribute = 0; attribute != metadata[array].attributes.length; ++attribute)
+        {
+          hyperchunks.push(array + "/" + attribute + "/...");
+        }
+      }
     }
     else
     {
-      for(var i = 0; i != metadata.length; ++i)
-        arrays.push(i);
-    }
-
-    var hyperchunks = [];
-    for(var i = 0; i != arrays.length; ++i)
-    {
-      var array = arrays[i];
-      for(var attribute = 0; attribute != metadata[array].attributes.length; ++attribute)
-      {
-        hyperchunks.push(array + "/" + attribute + "/...");
-      }
+      hyperchunks.push(".../.../...");
     }
 
     var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian() ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));

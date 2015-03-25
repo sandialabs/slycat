@@ -9,13 +9,11 @@ RUN yum install -y couchdb dejavu-serif-fonts "ffmpeg >= 1.1" gcc git "haproxy >
 RUN pip install cherrypy==3.2.6 ipython tornado-couchdb
 
 # Create a slycat user.
-RUN /usr/sbin/useradd --create-home --home-dir /home/slycat --shell /bin/bash -G wheel slycat
+RUN /usr/sbin/useradd --create-home --home-dir /home/slycat --shell /bin/bash slycat
 # The following commands are run as user "slycat".
 USER slycat
 # Add the Slycat packages to the PYTHONPATH environment variable so our executables can find them.
 RUN echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.bash_profile
-# Add our home-grown CA certificate to the environment where push scripts can find it.
-RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
 # Clone the Slycat git repository and switch to a known-good commit.
 RUN mkdir /home/slycat/src; cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git; cd slycat; git checkout f5a5b80ffdde1b9c8e223e5cb9dce89bd89df7b4
 
@@ -48,12 +46,6 @@ ADD proxy-server-startup.conf /etc/supervisord.d/proxy-server-startup.conf
 # The reverse proxy will be listening on ports 80 and 443.
 EXPOSE 80
 EXPOSE 443
-
-# Create mount points for persistent data.
-VOLUME /var/lib/couchdb
-VOLUME /var/lib/slycat
-VOLUME /var/log/couchdb
-VOLUME /var/log/slycat
 
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.

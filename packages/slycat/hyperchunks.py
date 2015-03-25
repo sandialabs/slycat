@@ -271,6 +271,12 @@ class Hyperchunks(object):
           yield Hyperchunks.ArrayWrapper(array, hyperchunk.attributes, hyperchunk.hyperslices)
 
 def parse(string):
+  """Parse a string hyperchunks representation.
+
+  Returns
+  -------
+  hyperchunks: :class:`slycat.Hyperchunks`
+  """
   return Hyperchunks(string)
 
 class HypersliceBuilder(object):
@@ -283,5 +289,15 @@ class HypersliceBuilder(object):
 hyperslice = HypersliceBuilder()
 
 def simple(array, attribute, hyperslice):
-  """Create a hyperchunks object containing a single array, single attribute, and single hyperslice."""
+  """Return a hyperchunks object containing a single array, single attribute, and single hyperslice.
+
+  Parameters
+  ----------
+  array: integer
+    Zero-based index of the array to read/write.
+  attribute: integer
+    Zero-based index of the attribute to read/write.
+  hyperslice: tuple of one-or-more slices
+    Specifies a single hyperslice to read/write.
+  """
   return Hyperchunks(Hyperchunk((array,), (attribute,), Hyperslices(hyperslice)))
