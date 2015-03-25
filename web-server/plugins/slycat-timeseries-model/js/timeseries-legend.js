@@ -170,6 +170,12 @@ define("slycat-timeseries-legend", ["d3"], function(d3)
           .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
           .call(self.legend_axis)
           ;
+
+        // Need to re-assign fill style to get around this firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=652991
+        // It only seems to affect fill gradients and only when the URI changes, like it does for us with bookmarking.
+        var colorbar = self.legend_layer.select("rect.color")
+          .style("fill", "url(#color-gradient)")
+          ;
       }
 
       if(self.updates["update_label"])

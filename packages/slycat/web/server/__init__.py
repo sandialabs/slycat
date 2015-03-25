@@ -20,17 +20,14 @@ def update_model(database, model, **kwargs):
   database.save(model)
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
-  if isinstance(hyperchunks, tuple):
-    hyperchunks = [hyperchunks]
-  hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices]) for array, attribute, hyperslices in hyperchunks]
-
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
-    for array, attribute, hyperslices in hyperchunks:
-      hdf5_array = slycat.hdf5.ArraySet(file)[array]
-      #stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute]["type"])
-      for hyperslice in hyperslices:
-        cherrypy.log.error("Reading from arrayset %s array %s attribute %s hyperslice %s" % (name, array, attribute, hyperslice))
-        yield hdf5_array.get_data(attribute)[hyperslice]
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+          yield hdf5_array.get_data(attribute.index)[hyperslice]
 
 def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None):
   with slycat.web.server.database.hdf5.lock:
@@ -40,20 +37,23 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
         results = {}
         if arrays is not None:
           results["arrays"] = []
-          for array in arrays:
-            hdf5_array = hdf5_arrayset[array]
+          for array in arrays.arrays(hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
             results["arrays"].append({
-              "index" : int(array),
+              "index" : array.index,
               "dimensions" : hdf5_array.dimensions,
               "attributes" : hdf5_array.attributes,
+              "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
               })
         if statistics is not None:
           results["statistics"] = []
-          for array, attribute in statistics:
-            statistics = hdf5_arrayset[array].get_statistics(attribute)
-            statistics["array"] = int(array)
-            statistics["attribute"] = int(attribute)
-            results["statistics"].append(statistics)
+          for array in statistics.arrays(hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
+            for attribute in array.attributes(len(hdf5_array.attributes)):
+              statistics = hdf5_array.get_statistics(attribute.index)
+              statistics["array"] = array.index
+              statistics["attribute"] = attribute.index
+              results["statistics"].append(statistics)
         return results
 
     with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
@@ -66,6 +66,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
           "index" : int(array),
           "dimensions" : hdf5_array.dimensions,
           "attributes" : hdf5_array.attributes,
+          "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
           })
       return results
 
@@ -91,24 +92,24 @@ def put_model_array(database, model, name, array_index, attributes, dimensions):
   with slycat.web.server.database.hdf5.open(storage, "r+") as file:
     slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
-def put_model_arrayset_data(database, model, name, hyperchunks):
+def put_model_arrayset_data(database, model, name, hyperchunks, data):
   slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
 
-  if isinstance(hyperchunks, tuple):
-    hyperchunks = [hyperchunks]
-  hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices], data if isinstance(data, list) else [data]) for array, attribute, hyperslices, data in hyperchunks]
+  data = iter(data)
 
   with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
-    for array, attribute, hyperslices, data in hyperchunks:
-      hdf5_array = slycat.hdf5.ArraySet(file)[array]
-      stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute]["type"])
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
 
-      for hyperslice, data_hyperslice in zip(hyperslices, data):
-        cherrypy.log.error("Writing to arrayset %s array %s attribute %s hyperslice %s" % (name, array, attribute, hyperslice))
-        if isinstance(data_hyperslice, list):
-          data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-
-        hdf5_array.set_data(attribute, hyperslice, data_hyperslice)
+          data_hyperslice = next(data)
+          if isinstance(data_hyperslice, list):
+            data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
+          hdf5_array.set_data(attribute.index, hyperslice, data_hyperslice)
 
 def put_model_file(database, model, name, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
@@ -119,6 +120,19 @@ def put_model_file(database, model, name, value, content_type, input=False):
     model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
   database.save(model)
   return model
+
+def put_model_inputs(database, model, source):
+  slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
+  for name in source["input-artifacts"]:
+    original_type = source["artifact-types"][name]
+    original_value = source["artifact:%s" % name]
+    if original_type in ["json", "hdf5"]:
+      model["artifact-types"][name] = original_type
+      model["artifact:%s" % name] = original_value
+      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    else:
+      raise Exception("Cannot copy unknown input artifact type %s." & original_type)
+  database.save(model)
 
 def put_model_parameter(database, model, name, value, input=False):
   model["artifact:%s" % name] = value

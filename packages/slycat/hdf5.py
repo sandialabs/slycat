@@ -175,6 +175,10 @@ class ArraySet(object):
   def keys(self):
     return [int(key) for key in self._storage["array"].keys()]
 
+  def array_count(self):
+    """Note: this assumes that array indices are contiguous, which we don't explicitly enforce."""
+    return len(self._storage["array"].keys())
+
   def start_array(self, array_index, dimensions, attributes):
     """Add an uninitialized darray to the arrayset.
 

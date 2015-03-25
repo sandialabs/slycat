@@ -6,6 +6,7 @@ def register_slycat_plugin(context):
   import numpy
   import os
   import re
+  import slycat.hyperchunks
   import slycat.web.server
 
   def media_columns(database, model, command, **kwargs):
@@ -18,7 +19,7 @@ def register_slycat_plugin(context):
     for index, attribute in enumerate(metadata["attributes"]):
       if attribute["type"] != "string":
         continue
-      column = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", (0, index, numpy.index_exp[...])))
+      column = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, index, slycat.hyperchunks.hyperslice[...])))
       if not numpy.any(search(column)):
         continue
       columns.append(index)

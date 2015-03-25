@@ -3,7 +3,7 @@ def register_slycat_plugin(context):
 
   def finish(database, model):
     import datetime
-    import slycat.web.server.model
+    import slycat.web.server
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def html(database, model):
