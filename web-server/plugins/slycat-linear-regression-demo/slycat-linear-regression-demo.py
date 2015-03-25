@@ -7,6 +7,7 @@ def register_slycat_plugin(context):
     import datetime
     import numpy
     import scipy.stats
+    import slycat.hyperchunks
     import slycat.web.server.database.couchdb
 
     try:
@@ -14,7 +15,6 @@ def register_slycat_plugin(context):
       model = database.get("model", mid)
 
       # Get required inputs ...
-      data_table = slycat.web.server.model.load_hdf5_artifact(model, "data-table")
       input_column = slycat.web.server.get_model_parameter(database, model, "x-column")
       output_column = slycat.web.server.get_model_parameter(database, model, "y-column")
 
@@ -24,12 +24,10 @@ def register_slycat_plugin(context):
         raise Exception("Linear regression model requires an output column.")
 
       # Extract a column of x values and a column of y values.
-      with slycat.web.server.database.hdf5.open(data_table) as file:
-        array = slycat.hdf5.ArraySet(file)[0]
-        x = array.get_data(input_column)[...]
-        slycat.web.server.update_model(database, model, progress=0.25)
-        y = array.get_data(output_column)[...]
-        slycat.web.server.update_model(database, model, progress=0.50)
+      x = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, input_column, slycat.hyperchunks.hyperslice[...])))
+      slycat.web.server.update_model(database, model, progress=0.25)
+      y = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, output_column, slycat.hyperchunks.hyperslice[...])))
+      slycat.web.server.update_model(database, model, progress=0.50)
 
       # Remove rows containing NaNs.
       xy = numpy.column_stack((x, y))
