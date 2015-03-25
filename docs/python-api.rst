@@ -13,7 +13,7 @@ clients, typically used for custom data ingestion.
    slycat.cca.rst
    slycat.darray.rst
    slycat.hdf5.rst
-   slycat.hyperslice.rst
+   slycat.hyperchunks.rst
    slycat.table.rst
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
