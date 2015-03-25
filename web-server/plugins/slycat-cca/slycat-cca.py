@@ -23,8 +23,6 @@ def register_slycat_plugin(context):
       output_columns = slycat.web.server.get_model_parameter(database, model, "output-columns")
       scale_inputs = slycat.web.server.get_model_parameter(database, model, "scale-inputs")
 
-      cherrypy.log.error("scale_inputs: %s" % scale_inputs)
-
       if len(input_columns) < 1:
         raise Exception("CCA model requires at least one input column.")
       if len(output_columns) < 1:
