@@ -30,7 +30,6 @@ ADD couchdb-server-startup.conf /etc/supervisord.d/couchdb-server-startup.conf
 RUN mkdir -p /etc/slycat
 ADD web-server-config.ini /etc/slycat/web-server-config.ini
 ADD proxy-server-config.conf /etc/slycat/proxy-server-config.conf
-ADD ssl.pem /etc/slycat/ssl.pem
 # Create a directory to contain HDF5 files stored by Slycat.
 RUN mkdir -p /var/lib/slycat/data-store
 RUN chown --recursive slycat:slycat /var/lib/slycat

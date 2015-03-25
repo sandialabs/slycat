@@ -16,8 +16,19 @@ RUN echo 'root:slycat' | chpasswd
 # Assign a password to the slycat user.
 RUN echo 'slycat:slycat' | chpasswd
 
-# Add our home-grown CA certificate to the environment where push scripts can find it.
-RUN echo "export REQUESTS_CA_BUNDLE=/home/slycat/src/slycat/docker/slycat/root-ca.pem" >> /home/slycat/.bash_profile
+# Generate a private certificate authority.
+RUN yum install -y openssl
+RUN openssl genrsa -out /root-ca.key 2048
+RUN openssl req -x509 -new -nodes -key /root-ca.key -days 365 -out /root-ca.cert -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=Slycat"
+# Generate a self-signed certificate.
+RUN openssl genrsa -out /web-server.key 2048
+RUN openssl req -new -key /web-server.key -out /web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
+RUN openssl x509 -req -in /web-server.csr -CA /root-ca.cert -CAkey /root-ca.key -CAcreateserial -out /web-server.cert -days 365
+# Put the server key and certificate where the reverse proxy can find them.
+RUN cat /web-server.key /web-server.cert > /etc/slycat/ssl.pem
+# Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
+RUN cp /root-ca.cert /etc/pki/ca-trust/source/anchors/
+RUN /usr/bin/update-ca-trust
 
 # Create mount points for persistent data.
 VOLUME /var/lib/couchdb
