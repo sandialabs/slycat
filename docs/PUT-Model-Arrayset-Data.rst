@@ -18,28 +18,7 @@ PUT Model Arrayset Data
 
   :form hyperchunks:
 
-    (Required) The arrays, attributes, and hyperslices to be overwritten.
-
-    The `hyperchunks` parameter shall be a
-    semicolon-separated list of one-or-more hyperchunks.  Each hyperchunk will
-    contain an array index, attribute index, and list of hyperslices, separated
-    by forward slashes.  The array index and attribute index must be non-negative
-    integers.  The list of hyperslices will contain one-or-more hyperslices,
-    separated by vertical bars.  Each hyperslice will contain one-or-more slice
-    dimensions, separated by commas.  Each slice dimension may be an integer, a
-    colon-delimited start:stop:step range, or an ellipsis ("...").  When
-    specifying ranges, the :step may be omitted, in which case the step defaults
-    to `1`.  If the start value is omitted (empty string), the start value
-    defaults to `0`.  If the stop value is omitted (empty string), the stop value
-    defaults to the end of the corresponding array dimension.  So for example:
-
-    * `0:10:2` - specifies even numbered indices `0, 2, 4, 6, 8`.
-    * `0:10` - specifies indices `0, 1, 2, 3, 4, 5, 6, 7, 8, 9`.
-    * `:5` - specifies indices `0, 1, 2, 3, 4`.
-    * `4:` - specifies indices from `4` through the end of the array dimension.
-    * `:` - specifies every index in the array dimension.
-    * `::3` - specifies every third index in the array dimension, starting at `0`.
-    * `1::3` - specifies every third index in the array dimension, starting at `1`.
+    (Required) The arrays, attributes, and hyperslices to be overwritten, in :ref:`hyperchunks` format.
 
   :form byteorder:
 
@@ -115,6 +94,7 @@ PUT Model Arrayset Data
 See Also
 --------
 
+- :ref:`hyperchunks`
 - :http:put:`/models/(mid)/arraysets/(name)`
 - :http:put:`/models/(mid)/arraysets/(name)/arrays/(array)`
 

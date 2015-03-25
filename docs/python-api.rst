@@ -25,7 +25,6 @@ clients, typically used for custom data ingestion.
    slycat.web.server.database.hdf5.rst
    slycat.web.server.engine.rst
    slycat.web.server.handlers.rst
-   slycat.web.server.model.rst
    slycat.web.server.plugin.rst
    slycat.web.server.ssh.rst
    slycat.web.server.template.rst
