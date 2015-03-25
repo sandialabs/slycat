@@ -19,12 +19,6 @@ import uuid
 # Deprecated functions that shouldn't be used in new code.  Prefer to use the
 # functions in slycat.web.server wherever possible.
 
-def load_hdf5_artifact(model, name):
-  """Retrieve an hdf5 artifact from a model."""
-  if model["artifact-types"][name] not in ["hdf5"]:
-    raise Exception("Not an hdf5 artifact.")
-  return model["artifact:%s" % name]
-
 def store_table_file(database, model, name, data, filename, nan_row_filtering, input=False):
   slycat.web.server.update_model(database, model, message="Loading table %s from %s." % (name, filename))
   try:

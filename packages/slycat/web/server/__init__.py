@@ -43,6 +43,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
               "index" : array.index,
               "dimensions" : hdf5_array.dimensions,
               "attributes" : hdf5_array.attributes,
+              "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
               })
         if statistics is not None:
           results["statistics"] = []
@@ -65,6 +66,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
           "index" : int(array),
           "dimensions" : hdf5_array.dimensions,
           "attributes" : hdf5_array.attributes,
+          "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
           })
       return results
 

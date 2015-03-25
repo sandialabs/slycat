@@ -18,7 +18,7 @@ def register_slycat_plugin(context):
       model = database.get("model", mid)
 
       # Get required inputs ...
-      data_table = slycat.web.server.model.load_hdf5_artifact(model, "data-table")
+      metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
       input_columns = slycat.web.server.get_model_parameter(database, model, "input-columns")
       output_columns = slycat.web.server.get_model_parameter(database, model, "output-columns")
       scale_inputs = slycat.web.server.get_model_parameter(database, model, "scale-inputs")
@@ -29,20 +29,17 @@ def register_slycat_plugin(context):
         raise Exception("CCA model requires at least one output column.")
 
       # Transform the input data table to a form usable with our cca() function ...
-      with slycat.web.server.database.hdf5.open(data_table) as file:
-        array = slycat.hdf5.ArraySet(file)[0]
-        row_count = array.shape[0]
-        indices = numpy.arange(row_count, dtype="int32")
+      row_count = metadata[0]["shape"][0]
+      indices = numpy.arange(row_count, dtype="int32")
+      X = numpy.empty((row_count, len(input_columns)))
+      for j, input_column in enumerate(input_columns):
+        slycat.web.server.update_model(database, model, progress=slycat.web.server.mix(0.0, 0.25, float(j) / float(len(input_columns))))
+        X[:,j] = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, input_column, slycat.hyperchunks.hyperslice[...])))
 
-        X = numpy.empty((row_count, len(input_columns)))
-        for j, input in enumerate(input_columns):
-          slycat.web.server.update_model(database, model, progress=slycat.web.server.mix(0.0, 0.25, float(j) / float(len(input_columns))))
-          X[:,j] = array.get_data(input)[...]
-
-        Y = numpy.empty((row_count, len(output_columns)))
-        for j, output in enumerate(output_columns):
-          slycat.web.server.update_model(database, model, progress=slycat.web.server.mix(0.25, 0.50, float(j) / float(len(output_columns))))
-          Y[:,j] = array.get_data(output)[...]
+      Y = numpy.empty((row_count, len(output_columns)))
+      for j, output_column in enumerate(output_columns):
+        slycat.web.server.update_model(database, model, progress=slycat.web.server.mix(0.25, 0.50, float(j) / float(len(output_columns))))
+        Y[:,j] = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, output_column, slycat.hyperchunks.hyperslice[...])))
 
       # Remove rows containing NaNs ...
       good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))
