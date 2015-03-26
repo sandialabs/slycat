@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, ko, mapping, client, bookmark_manager, bookmark_builder, dialog, NoteManager, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, ko, mapping, client, bookmark_manager, bookmark_builder, dialog, NoteManager, FilterManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -15,6 +15,7 @@ var other_columns = null;
 var bookmarker = null;
 var bookmark = null;
 var note_manager = null;
+var filter_manager = null;
 
 var table_metadata = null;
 var table_statistics = null;
@@ -39,7 +40,6 @@ var scatterplot_ready = false;
 var controls_ready = false;
 var sliders_ready = false;
 var image_uri = document.createElement("a");
-var slidersPaneHeight = ko.observable();
 var layout = null;
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ layout = $("#parameter-image-plus-layout").layout(
     size: $("#parameter-image-plus-layout").width() / 4,
     onresize: function(pane_name, pane_element, pane_state, pane_options, layout_name)
     {
-      slidersPaneHeight( pane_state.innerHeight );
+      filter_manager.slidersPaneHeight( pane_state.innerHeight );
     }
   },
   south:
@@ -115,6 +115,7 @@ $.ajax(
     image_columns = model["artifact:image-columns"];
     rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
     category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
+    filter_manager = new FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns);
     model_loaded();
   },
   error: function(request, status, reason_phrase)
@@ -147,6 +148,7 @@ function model_loaded()
     success: function(metadata)
     {
       table_metadata = metadata;
+      filter_manager.set_table_metadata(table_metadata);
       table_statistics = new Array(metadata["column-count"]);
       table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
       load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
@@ -158,9 +160,10 @@ function model_loaded()
   bookmarker.getState(function(state)
   {
     bookmark = state;
+    // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
+    filter_manager.set_bookmark(bookmark);
     setup_controls();
     setup_colorswitcher();
-    setup_sliders();
     metadata_loaded();
     // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
     note_manager = new NoteManager(model_id, bookmarker, bookmark);
@@ -205,6 +208,7 @@ function metadata_loaded()
         && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
         other_columns.push(i);
     }
+    filter_manager.set_other_columns();
   }
 
   setup_table();
@@ -219,7 +223,7 @@ function metadata_loaded()
   }
 
   setup_controls();
-  setup_sliders();
+  filter_manager.build_sliders();
 
   if(table_metadata && bookmark)
   {
@@ -291,8 +295,6 @@ function metadata_loaded()
 
     //   });
     // }
-    
-
 
     get_model_array_attribute({
       server_root : server_root,
@@ -383,7 +385,7 @@ function metadata_loaded()
       setup_scatterplot();
     }
     setup_controls();
-    setup_sliders();
+    filter_manager.build_sliders();
   }
 }
 
@@ -614,6 +616,7 @@ function setup_controls()
     )
   {
     controls_ready = true;
+    filter_manager.notify_controls_ready();
     var numeric_variables = [];
     var axes_variables = [];
     var color_variables = [];
@@ -829,138 +832,6 @@ function setup_controls()
       update_widgets_when_hidden_simulations_change();
     });
   }
-}
-
-function setup_sliders()
-{
-  if( 
-    !sliders_ready && bookmark && controls_ready && table_metadata
-    && input_columns != null && output_columns != null && other_columns != null && rating_columns != null && category_columns != null
-    )
-  {
-    sliders_ready = true;
-    $("#sliders-pane .load-status").css("display", "none");
-
-    var variable_order = input_columns.concat(output_columns, rating_columns, category_columns, other_columns);
-    var numeric_variables = [];
-    for(var i = 0; i < table_metadata["column-count"]; i++)
-    {
-      if(table_metadata["column-types"][i] != 'string' && table_metadata["column-count"]-1 > i)
-      {
-        numeric_variables.push(i);
-      }
-    }
-
-    var allFilters = ko.observableArray();
-    var rateLimit = 500;
-
-    if("allFilters" in bookmark)
-    {
-      allFilters = mapping.fromJS(bookmark["allFilters"]);
-      for(var i=0; i < allFilters().length; i++)
-      {
-        allFilters()[i].rateLimitedHigh = ko.pureComputed( allFilters()[i].high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
-        allFilters()[i].rateLimitedLow = ko.pureComputed( allFilters()[i].low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
-      }
-    }
-    else
-    {
-      for(var i = 0; i < numeric_variables.length; i++)
-      {
-        var high = ko.observable( table_metadata["column-max"][numeric_variables[i]] );
-        var low = ko.observable( table_metadata["column-min"][numeric_variables[i]] );
-        allFilters.push({
-          name: ko.observable( table_metadata["column-names"][numeric_variables[i]] ),
-          index: ko.observable( numeric_variables[i] ),
-          max: ko.observable( table_metadata["column-max"][numeric_variables[i]] ),
-          min: ko.observable( table_metadata["column-min"][numeric_variables[i]] ),
-          high: high,
-          low: low,
-          invert: ko.observable(false),
-          active: ko.observable(false),
-          order: ko.observable( variable_order.indexOf(numeric_variables[i]) ),
-          rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
-          rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
-        });
-      }
-    }
-
-    var ViewModel = function(params){
-      var self = this;
-      slidersPaneHeight( $("#sliders-pane").innerHeight() );
-      self.sliderHeight = ko.pureComputed(function() {
-        return slidersPaneHeight() - 95;
-      }, this);
-      self.thumb_length = ko.observable(12);
-      self.allFilters = allFilters;
-      self.availableFilters = ko.observableArray( 
-        self.allFilters.slice(0).sort(function(one, two){
-          return one.order() < two.order() ? -1 : 1;
-        }) 
-      );
-      self.activeFilters = self.allFilters.filter(function(filter){
-        return filter.active();
-      });
-      if(self.activeFilters().length > 0)
-      {
-        layout.open("west");
-      }
-
-      for(var i = 0; i < self.allFilters().length; i++)
-      {
-        self.allFilters()[i].rateLimitedHigh.subscribe(function(newValue){
-          // console.log("rateLimitedHighValue is: " + newValue);
-          bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
-        });
-        self.allFilters()[i].rateLimitedLow.subscribe(function(newValue){
-          // console.log("rateLimitedLowValue is: " + newValue);
-          bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
-        });
-      }
-
-      self.activateFilter = function(item, event){
-        if(self.activeFilters().length == 0)
-        {
-          layout.open("west");
-        }
-        var activateFilter = event.target.value;
-        for(var i = 0; i < self.allFilters().length; i++)
-        {
-          if(self.allFilters()[i].index() == Number(activateFilter))
-          {
-            var activate = self.allFilters()[i];
-            // Move it to the end of the array
-            self.allFilters.push( self.allFilters.remove(activate)[0] );
-            // Show it
-            activate.active(true);
-          }
-        }
-        event.target.selectedIndex = 0;
-        $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
-        bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
-      }
-      self.removeFilter = function(item, event){
-        var filterIndex = self.allFilters.indexOf(item);
-        self.allFilters()[filterIndex].active(false);
-        if(self.activeFilters().length == 0)
-        {
-          layout.close("west");
-        }
-        bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
-      }
-      self.invertFilter = function(item, event){
-        var filterIndex = self.allFilters.indexOf(item);
-        self.allFilters()[filterIndex].invert( !self.allFilters()[filterIndex].invert() );
-        bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
-      }
-    };
-
-    ko.applyBindings(
-      new ViewModel(),
-      document.getElementById('parameter-image-plus-layout')
-    );
-  }
-    
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

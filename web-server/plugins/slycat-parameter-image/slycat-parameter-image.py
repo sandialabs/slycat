@@ -64,6 +64,7 @@ def register_slycat_plugin(context):
     "color-switcher.js",
     "bookmark-display.js",
     "note-manager.js",
+    "filter-manager.js",
     "stickies.core.js",
     # "parameter-controls.js",
     # "parameter-image-table.js",
