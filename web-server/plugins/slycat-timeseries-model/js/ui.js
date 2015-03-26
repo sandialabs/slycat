@@ -111,6 +111,7 @@ var color_array = null; // This holds the sorted array of values for the color s
 var selected_column = null; // This holds the currently selected column
 var selected_column_min = null; // This holds the min value of the currently selected column
 var selected_column_max = null; // This holds the max value of the currently selected column
+var selected_simulations = null; // This hold the currently selected rows
 
 var colorswitcher_ready = false;
 var cluster_ready = false;
@@ -193,6 +194,16 @@ function setup_page()
   bookmarker.getState(function(state)
   {
     bookmark = state;
+
+    // Set state of selected simulations
+    selected_simulations = [];
+    if("simulation-selection" in bookmark)
+      selected_simulations = bookmark["simulation-selection"];
+    else if("cluster-index" in bookmark && (bookmark["cluster-index"] + "-selected-row-simulations") in bookmark)
+    {
+      selected_simulations = bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
+    }
+
     setup_cluster();
     setup_widgets();
     setup_waveforms();
@@ -406,7 +417,10 @@ function setup_widgets()
   }
 
   // Setup the waveform plot ...
-  if(!waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined) && color_array !== null && table_metadata !== null)
+  if(
+    !waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined) 
+    && color_array !== null && table_metadata !== null && selected_simulations !== null
+    )
   {
     waveformplot_ready = true;
 
@@ -432,13 +446,11 @@ function setup_widgets()
       waveforms: waveforms_data[initial_cluster],
       color_scale: color_scale,
       color_array: color_array,
+      highlight: selected_simulations,
     };
 
     if(bookmark[initial_cluster + "-selected-waveform-indexes"] !== undefined)
       waveformplot_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
-
-    if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
-      waveformplot_options["highlight"] = bookmark[initial_cluster + "-selected-row-simulations"];
 
     $("#waveform-viewer").waveformplot(waveformplot_options);
 
@@ -448,9 +460,7 @@ function setup_widgets()
       // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
       if(parameters.skip_bookmarking != true) {
         $("#waveform-viewer").waveformplot("option", "selection", getWaveformIndexes(parameters.selection));
-
-        if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
-          $("#waveform-viewer").waveformplot("option", "highlight", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
+        $("#waveform-viewer").waveformplot("option", "highlight", selected_simulations);
       }
     });
 
@@ -487,7 +497,7 @@ function setup_widgets()
   }
 
   // Setup the table ...
-  if( !table_ready && bookmark && table_metadata && (initial_cluster !==  null) )
+  if( !table_ready && bookmark && table_metadata && initial_cluster !==  null && selected_simulations !== null)
   {
     table_ready = true;
 
@@ -513,8 +523,7 @@ function setup_widgets()
       table_options["variable-selection"] = [table_metadata["column-count"] - 1];
     }
 
-    if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
-      table_options["row-selection"] = bookmark[initial_cluster + "-selected-row-simulations"];
+    table_options["row-selection"] = selected_simulations;
 
     if("sort-variable" in bookmark && "sort-order" in bookmark)
     {
@@ -527,9 +536,7 @@ function setup_widgets()
     // Changing the selected dendrogram node updates the table ...
     $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
     {
-      if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] !== undefined)
-        $("#table").table("option", "row-selection-silent", bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"]);
-      
+      $("#table").table("option", "row-selection-silent", selected_simulations);
       $("#table").table("option", "selection", parameters.selection);
     });
     
@@ -599,7 +606,9 @@ function setup_widgets()
   }
 
   // Setup the dendrogram ...
-  if(!dendrogram_ready && bookmark && clusters && (initial_cluster !==  null) && (clusters_data[initial_cluster] !== undefined) && color_array !== null )
+  if(!dendrogram_ready && bookmark && clusters && initial_cluster !==  null && clusters_data[initial_cluster] !== undefined 
+      && color_array !== null && selected_simulations !== null
+    )
   {
     dendrogram_ready = true;
 
@@ -626,9 +635,6 @@ function setup_widgets()
     if(bookmark["sort-variable"] != undefined) {
       dendrogram_options.dendrogram_sort_order = false;
     }
-
-    if(bookmark[initial_cluster + "-selected-row-simulations"] !== undefined)
-      dendrogram_options["highlight"] = bookmark[initial_cluster + "-selected-row-simulations"];
 
     $("#dendrogram-viewer").dendrogram(dendrogram_options);
 
@@ -727,6 +733,7 @@ function selected_node_changed(parameters)
 
 function selected_simulations_changed(selection)
 {
+  selected_simulations = selection;
   // Logging every selected item is too slow, so just log the count instead.
   $.ajax(
   {
@@ -734,7 +741,7 @@ function selected_simulations_changed(selection)
     url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selection.length
   });
   var selected_simulations = {};
-  selected_simulations[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-row-simulations"] = selection;
+  selected_simulations["simulation-selection"] = selection;
   bookmarker.updateState(selected_simulations);
 }
 
@@ -817,7 +824,7 @@ function update_waveformplot(cluster)
         {
           waveforms: waveforms_data[cluster],
           selection: bookmark[cluster + "-selected-waveform-indexes"],
-          highlight: bookmark[cluster + "-selected-row-simulations"],
+          highlight: bookmark["simulation-selection"],
         };
         $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
       },
@@ -828,7 +835,7 @@ function update_waveformplot(cluster)
     {
       waveforms: waveforms_data[cluster],
       selection: bookmark[cluster + "-selected-waveform-indexes"],
-      highlight: bookmark[cluster + "-selected-row-simulations"],
+      highlight: bookmark["simulation-selection"],
     };
     $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
   }
@@ -843,7 +850,7 @@ function build_dendrogram_node_options(cluster)
   dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
   dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
   dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
-  dendrogram_options.highlight = bookmark[cluster  + "-selected-row-simulations"];
+  dendrogram_options.highlight = bookmark["simulation-selection"];
 
   return dendrogram_options;
 }

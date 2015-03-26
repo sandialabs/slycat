@@ -44,4 +44,4 @@ class null_lock(object):
     pass
 
 #lock = null_lock()
-lock = threading.Lock()
+lock = threading.RLock()
