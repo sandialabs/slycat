@@ -5,7 +5,7 @@
 import cherrypy
 import numpy
 import slycat.hdf5
-import slycat.web.server.database.hdf5
+import slycat.web.server.hdf5
 import uuid
 
 def mix(a, b, amount):
@@ -19,20 +19,10 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
-def get_model_arrayset_data(database, model, name, hyperchunks):
-  with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
-    hdf5_arrayset = slycat.hdf5.ArraySet(file)
-    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
-      hdf5_array = hdf5_arrayset[array.index]
-      for attribute in array.attributes(len(hdf5_array.attributes)):
-        for hyperslice in attribute.hyperslices():
-          cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
-          yield hdf5_array.get_data(attribute.index)[hyperslice]
-
 def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None):
-  with slycat.web.server.database.hdf5.lock:
+  with slycat.web.server.hdf5.lock:
     if arrays is not None or statistics is not None:
-      with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
+      with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
         results = {}
         if arrays is not None:
@@ -56,7 +46,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
               results["statistics"].append(statistics)
         return results
 
-    with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r") as file:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       results = []
       for array in sorted(hdf5_arrayset.keys()):
@@ -70,6 +60,16 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
           })
       return results
 
+def get_model_arrayset_data(database, model, name, hyperchunks):
+  with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+          yield hdf5_array.get_data(attribute.index)[hyperslice]
+
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
 
@@ -77,7 +77,7 @@ def put_model_arrayset(database, model, name, input=False):
   """Start a new model array set artifact."""
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (name))
   storage = uuid.uuid4().hex
-  with slycat.web.server.database.hdf5.create(storage) as file:
+  with slycat.web.server.hdf5.create(storage) as file:
     arrayset = slycat.hdf5.start_arrayset(file)
     database.save({"_id" : storage, "type" : "hdf5"})
     model["artifact:%s" % name] = storage
@@ -89,7 +89,7 @@ def put_model_arrayset(database, model, name, input=False):
 def put_model_array(database, model, name, array_index, attributes, dimensions):
   slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (name, array_index))
   storage = model["artifact:%s" % name]
-  with slycat.web.server.database.hdf5.open(storage, "r+") as file:
+  with slycat.web.server.hdf5.open(storage, "r+") as file:
     slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def put_model_arrayset_data(database, model, name, hyperchunks, data):
@@ -97,7 +97,7 @@ def put_model_arrayset_data(database, model, name, hyperchunks, data):
 
   data = iter(data)
 
-  with slycat.web.server.database.hdf5.open(model["artifact:%s" % name], "r+") as file:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
     hdf5_arrayset = slycat.hdf5.ArraySet(file)
     for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
       hdf5_array = hdf5_arrayset[array.index]
