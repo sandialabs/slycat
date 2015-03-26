@@ -559,15 +559,16 @@ def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
     raise cherrypy.HTTPError("400 Could not parse file %s" % filename)
 
   storage = uuid.uuid4().hex
-  with slycat.web.server.hdf5.create(storage) as file:
-    database.save({"_id" : storage, "type" : "hdf5"})
-    model["artifact:%s" % name] = storage
-    model["artifact-types"][name] = "hdf5"
-    if input:
-      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
-    database.save(model)
-    arrayset = slycat.hdf5.ArraySet(file)
-    arrayset.store_array(0, array)
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.create(storage) as file:
+      database.save({"_id" : storage, "type" : "hdf5"})
+      model["artifact:%s" % name] = storage
+      model["artifact-types"][name] = "hdf5"
+      if input:
+        model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+      database.save(model)
+      arrayset = slycat.hdf5.ArraySet(file)
+      arrayset.store_array(0, array)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_parameter(mid, name):
@@ -628,44 +629,45 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
     data = json.load(data.file)
     data_iterator = iter(data)
 
-  with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
-    hdf5_arrayset = slycat.hdf5.ArraySet(file)
-    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
-      hdf5_array = hdf5_arrayset[array.index]
-      for attribute in array.attributes(len(hdf5_array.attributes)):
-        for hyperslice in attribute.hyperslices():
-          cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
+      for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+        hdf5_array = hdf5_arrayset[array.index]
+        for attribute in array.attributes(len(hdf5_array.attributes)):
+          for hyperslice in attribute.hyperslices():
+            cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
 
-          # We have to convert our hyperslice into a shape with explicit extents so we can compute
-          # how many bytes to extract from the input data.
-          if hyperslice == (Ellipsis,):
-            data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
-          else:
-            data_shape = []
-            for hyperslice_dimension, array_dimension in zip(hyperslice, hdf5_array.dimensions):
-              if isinstance(hyperslice_dimension, numbers.Integral):
-                data_shape.append(1)
-              elif isinstance(hyperslice_dimension, type(Ellipsis)):
-                data_shape.append(array_dimension["end"] - array_dimension["begin"])
-              elif isinstance(hyperslice_dimension, slice):
-                # TODO: Handle step
-                start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
-                data_shape.append(stop - start)
-              else:
-                raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
+            # We have to convert our hyperslice into a shape with explicit extents so we can compute
+            # how many bytes to extract from the input data.
+            if hyperslice == (Ellipsis,):
+              data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
+            else:
+              data_shape = []
+              for hyperslice_dimension, array_dimension in zip(hyperslice, hdf5_array.dimensions):
+                if isinstance(hyperslice_dimension, numbers.Integral):
+                  data_shape.append(1)
+                elif isinstance(hyperslice_dimension, type(Ellipsis)):
+                  data_shape.append(array_dimension["end"] - array_dimension["begin"])
+                elif isinstance(hyperslice_dimension, slice):
+                  # TODO: Handle step
+                  start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
+                  data_shape.append(stop - start)
+                else:
+                  raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
 
-          # Convert data to an array ...
-          data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
-          data_size = numpy.prod(data_shape)
+            # Convert data to an array ...
+            data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+            data_size = numpy.prod(data_shape)
 
-          if byteorder is None:
-            hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
-          elif byteorder == sys.byteorder:
-            hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
-          else:
-            raise NotImplementedError()
+            if byteorder is None:
+              hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
+            elif byteorder == sys.byteorder:
+              hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
+            else:
+              raise NotImplementedError()
 
-          hdf5_array.set_data(attribute.index, hyperslice, hyperslice_data)
+            hdf5_array.set_data(attribute.index, hyperslice, hyperslice_data)
 
 
 def delete_model(mid):

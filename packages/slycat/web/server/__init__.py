@@ -20,9 +20,9 @@ def update_model(database, model, **kwargs):
   database.save(model)
 
 def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None):
-  with slycat.web.server.hdf5.lock:
-    if arrays is not None or statistics is not None:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
+  if arrays is not None or statistics is not None:
+    with slycat.web.server.hdf5.lock:
+      with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
         results = {}
         if arrays is not None:
@@ -46,7 +46,8 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
               results["statistics"].append(statistics)
         return results
 
-    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file: 
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       results = []
       for array in sorted(hdf5_arrayset.keys()):
@@ -61,14 +62,15 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
-  with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
-    hdf5_arrayset = slycat.hdf5.ArraySet(file)
-    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
-      hdf5_array = hdf5_arrayset[array.index]
-      for attribute in array.attributes(len(hdf5_array.attributes)):
-        for hyperslice in attribute.hyperslices():
-          cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
-          yield hdf5_array.get_data(attribute.index)[hyperslice]
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
+      for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+        hdf5_array = hdf5_arrayset[array.index]
+        for attribute in array.attributes(len(hdf5_array.attributes)):
+          for hyperslice in attribute.hyperslices():
+            cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+            yield hdf5_array.get_data(attribute.index)[hyperslice]
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
@@ -77,39 +79,42 @@ def put_model_arrayset(database, model, name, input=False):
   """Start a new model array set artifact."""
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (name))
   storage = uuid.uuid4().hex
-  with slycat.web.server.hdf5.create(storage) as file:
-    arrayset = slycat.hdf5.start_arrayset(file)
-    database.save({"_id" : storage, "type" : "hdf5"})
-    model["artifact:%s" % name] = storage
-    model["artifact-types"][name] = "hdf5"
-    if input:
-      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
-    database.save(model)
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.create(storage) as file:
+      arrayset = slycat.hdf5.start_arrayset(file)
+      database.save({"_id" : storage, "type" : "hdf5"})
+      model["artifact:%s" % name] = storage
+      model["artifact-types"][name] = "hdf5"
+      if input:
+        model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+      database.save(model)
 
 def put_model_array(database, model, name, array_index, attributes, dimensions):
   slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (name, array_index))
   storage = model["artifact:%s" % name]
-  with slycat.web.server.hdf5.open(storage, "r+") as file:
-    slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.open(storage, "r+") as file:
+      slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def put_model_arrayset_data(database, model, name, hyperchunks, data):
   slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
 
   data = iter(data)
 
-  with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
-    hdf5_arrayset = slycat.hdf5.ArraySet(file)
-    for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
-      hdf5_array = hdf5_arrayset[array.index]
-      for attribute in array.attributes(len(hdf5_array.attributes)):
-        stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
-        for hyperslice in attribute.hyperslices():
-          cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+  with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
+      hdf5_arrayset = slycat.hdf5.ArraySet(file)
+      for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+        hdf5_array = hdf5_arrayset[array.index]
+        for attribute in array.attributes(len(hdf5_array.attributes)):
+          stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+          for hyperslice in attribute.hyperslices():
+            cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
 
-          data_hyperslice = next(data)
-          if isinstance(data_hyperslice, list):
-            data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-          hdf5_array.set_data(attribute.index, hyperslice, data_hyperslice)
+            data_hyperslice = next(data)
+            if isinstance(data_hyperslice, list):
+              data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
+            hdf5_array.set_data(attribute.index, hyperslice, data_hyperslice)
 
 def put_model_file(database, model, name, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
