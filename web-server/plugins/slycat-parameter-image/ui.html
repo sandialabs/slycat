@@ -118,6 +118,11 @@ rights in this software.
           <i class="fa invert-button" title="Invert filter" data-bind="click: $parent.invertFilter, css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }"></i>
         </div>
       </div>
+      <div data-bind="foreach: activeCategoryFilters">
+        <div class="category-filter">
+          <slycat-category-select params="category: index, model_id: $parent.model_id"></slycat-category-select>
+        </div>
+      </div>
     </div>
   </div>
   <!-- /ko -->

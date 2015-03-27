@@ -616,6 +616,14 @@ rights in this software.
   margin-right: 20px;
   background-color: white;
 }
+
+.category-filter {
+  position: relative;
+  display: inline-block;
+  width: 95px;
+  padding-left: 5px;
+  margin-right: 20px;
+}
 .slycat-pim-filter .close-button:hover,
 .slycat-pim-filter .invert-button:hover
 {

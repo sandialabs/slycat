@@ -65,6 +65,7 @@ def register_slycat_plugin(context):
     "bookmark-display.js",
     "note-manager.js",
     "filter-manager.js",
+    "category-select.js",
     "stickies.core.js",
     # "parameter-controls.js",
     # "parameter-image-table.js",

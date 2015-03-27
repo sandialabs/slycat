@@ -115,6 +115,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
       var ViewModel = function(params) {
         var vm = this;
         self.slidersPaneHeight( $("#sliders-pane").innerHeight() );
+        vm.model_id = ko.observable(self.model_id);
         vm.sliderHeight = ko.pureComputed(function() {
           return self.slidersPaneHeight() - 95;
         }, this);
@@ -156,8 +157,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             self.layout.open("west");
           }
           var activateFilter = event.target.value;
+          var filterType;
           _.each(vm.allFilters(), function (filter) {
             if (filter.index() == Number(activateFilter)) {
+              filterType = filter.type();
               // Move it to the end of the array
               vm.allFilters.push( vm.allFilters.remove(filter)[0] );
               // Show it
@@ -166,7 +169,12 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           });
 
           event.target.selectedIndex = 0;
-          $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
+          if (filterType === 'numeric') {
+            $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
+          }
+          else {
+            $("#sliders-pane #sliders .category-filter:last-child").get(0).scrollIntoView();
+          }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
         vm.removeFilter = function(item, event) {
