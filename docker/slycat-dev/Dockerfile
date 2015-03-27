@@ -19,6 +19,8 @@ RUN HOME=/home/slycat git config --global color.ui true
 
 # The following commands are run as root.
 USER root
+# Make the slycat user a sudoer.
+RUN /usr/sbin/usermod -a -G wheel slycat
 # Set reasonable ssh timeouts for development.
 RUN sed -e 's/^#ClientAliveInterval .*$/ClientAliveInterval 60/' -i /etc/ssh/sshd_config
 RUN sed -e 's/^#ClientAliveCountMax .*$/ClientAliveInterval 10080/' -i /etc/ssh/sshd_config
