@@ -31,11 +31,15 @@ class log(object):
 while True:
   try:
     server = couchdb.Server(arguments.host)
-    database = server[arguments.database]
+    version = server.version()
     break
   except:
     log.error("Waiting for couchdb.")
     time.sleep(2)
+
+if arguments.database not in server:
+  server.create(arguments.database)
+database = server[arguments.database]
 
 design = {
   "_id": "_design/slycat",
