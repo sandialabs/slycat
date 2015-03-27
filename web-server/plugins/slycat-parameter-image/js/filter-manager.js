@@ -50,38 +50,55 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
       var variable_order = self.input_columns.concat(self.output_columns, self.rating_columns, self.category_columns, self.other_columns);
       var numeric_variables = [];
       for (var i = 0; i < self.table_metadata["column-count"]; i++) {
-        if (self.table_metadata["column-types"][i] != 'string' && self.table_metadata["column-count"]-1 > i) {
+        if (self.table_metadata["column-types"][i] != 'string' && !(_.includes(self.category_columns, i)) && self.table_metadata["column-count"]-1 > i) {
           numeric_variables.push(i);
         }
       }
 
       var allFilters = ko.observableArray();
+      var numericFilters = ko.pureComputed( function() {
+        return _.filter(allFilters(), function(f) { return f.type === 'numeric'; });
+      });
+      var categoryFilters = ko.pureComputed( function() {
+        return _.filter(allFilters(), function(f) { return f.type === 'category'; });
+      });
       var rateLimit = 500;
       if ("allFilters" in self.bookmark) {
         allFilters = mapping.fromJS(self.bookmark["allFilters"]);
-        for(var i=0; i < allFilters().length; i++) {
-          allFilters()[i].rateLimitedHigh = ko.pureComputed( allFilters()[i].high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
-          allFilters()[i].rateLimitedLow = ko.pureComputed( allFilters()[i].low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
-        }
+        _.each(numericFilters, function (filter) {
+          filter.rateLimitedHigh = ko.pureComputed( allFilters()[i].high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+          filter.rateLimitedLow = ko.pureComputed( allFilters()[i].low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+        });
       }
       else {
-        for (var i = 0; i < numeric_variables.length; i++) {
-          var high = ko.observable( self.table_metadata["column-max"][numeric_variables[i]] );
-          var low = ko.observable( self.table_metadata["column-min"][numeric_variables[i]] );
+        _.each(self.category_columns, function(i) {
           allFilters.push({
-            name: ko.observable( self.table_metadata["column-names"][numeric_variables[i]] ),
-            index: ko.observable( numeric_variables[i] ),
-            max: ko.observable( self.table_metadata["column-max"][numeric_variables[i]] ),
-            min: ko.observable( self.table_metadata["column-min"][numeric_variables[i]] ),
+            name: ko.observable( self.table_metadata["column-names"][i] ),
+            type: 'category',
+            index: ko.observable( i ),
+            active: ko.observable(false),
+            order: ko.observable(100) // always put category filters on the right
+          });
+        });
+
+        _.each(numeric_variables, function(i) {
+          var high = ko.observable( self.table_metadata["column-max"][i] );
+          var low = ko.observable( self.table_metadata["column-min"][i] );
+          allFilters.push({
+            name: ko.observable( self.table_metadata["column-names"][i] ),
+            type: 'numeric',
+            index: ko.observable( i ),
+            max: ko.observable( self.table_metadata["column-max"][i] ),
+            min: ko.observable( self.table_metadata["column-min"][i] ),
             high: high,
             low: low,
             invert: ko.observable(false),
             active: ko.observable(false),
-            order: ko.observable( variable_order.indexOf(numeric_variables[i]) ),
+            order: ko.observable( variable_order.indexOf(i) ),
             rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
             rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
           });
-        }
+        });
       }
 
       var ViewModel = function(params) {
@@ -92,43 +109,51 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         }, this);
         vm.thumb_length = ko.observable(12);
         vm.allFilters = allFilters;
+        vm.numericFilters = numericFilters;
+        vm.categoryFilters = categoryFilters;
         vm.availableFilters = ko.observableArray(
           vm.allFilters.slice(0).sort(function(one, two) {
             return one.order() < two.order() ? -1 : 1;
           })
         );
-        vm.activeFilters = vm.allFilters.filter(function(filter) {
-          return filter.active();
+
+        // TODO make pureComputed?
+        vm.activeNumericFilters = vm.allFilters.filter(function(filter) {
+          return filter.type === 'numeric' && filter.active();
         });
-        if (vm.activeFilters().length > 0) {
+        vm.activeCategoryFilters = vm.allFilters.filter(function(filter) {
+          return filter.type === 'category' && filter.active();
+        });
+
+        if (vm.activeNumericFilters().length > 0 || vm.activeCategoryFilters().length > 0) {
           self.layout.open("west");
         }
 
-        for (var i = 0; i < vm.allFilters().length; i++) {
-          vm.allFilters()[i].rateLimitedHigh.subscribe(function(newValue) {
+        _.each(vm.numericFilters(), function (filter) {
+          filter.rateLimitedHigh.subscribe(function(newValue) {
             // console.log("rateLimitedHighValue is: " + newValue);
             self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           });
-          vm.allFilters()[i].rateLimitedLow.subscribe(function(newValue) {
+          filter.rateLimitedLow.subscribe(function(newValue) {
             // console.log("rateLimitedLowValue is: " + newValue);
             self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           });
-        }
+        });
 
         vm.activateFilter = function(item, event) {
-          if (vm.activeFilters().length == 0) {
+          if (vm.activeNumericFilters().length === 0 && vm.activeCategoryFilters().length === 0) {
             self.layout.open("west");
           }
           var activateFilter = event.target.value;
-          for(var i = 0; i < vm.allFilters().length; i++) {
-            if (vm.allFilters()[i].index() == Number(activateFilter)) {
-              var activate = vm.allFilters()[i];
+          _.each(vm.allFilters(), function (filter) {
+            if (filter.index() == Number(activateFilter)) {
               // Move it to the end of the array
-              vm.allFilters.push( vm.allFilters.remove(activate)[0] );
+              vm.allFilters.push( vm.allFilters.remove(filter)[0] );
               // Show it
-              activate.active(true);
+              filter.active(true);
             }
-          }
+          });
+
           event.target.selectedIndex = 0;
           $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
@@ -136,7 +161,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         vm.removeFilter = function(item, event) {
           var filterIndex = vm.allFilters.indexOf(item);
           vm.allFilters()[filterIndex].active(false);
-          if (vm.activeFilters().length == 0) {
+          if (vm.activeNumericFilters().length == 0 && vm.activeCategoryFilters().length == 0) {
             self.layout.close("west");
           }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
