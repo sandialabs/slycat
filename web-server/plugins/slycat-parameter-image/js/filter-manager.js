@@ -56,15 +56,24 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
       }
 
       var allFilters = ko.observableArray();
-      var numericFilters = ko.pureComputed( function() {
-        return _.filter(allFilters(), function(f) { return f.type === 'numeric'; });
-      });
-      var categoryFilters = ko.pureComputed( function() {
-        return _.filter(allFilters(), function(f) { return f.type === 'category'; });
-      });
+      var numericFilters, categoryFilters;
+
+      // have to be built after allFilters is assigned, and it's reassigned from bookmark,
+      // so call this from both conditional clauses
+      var buildComputedFilters = function(filters) {
+        numericFilters = ko.pureComputed(function() {
+          return _.filter(filters(), function(f) { return f.type() === 'numeric'; });
+        });
+        categoryFilters = ko.pureComputed(function() {
+          return _.filter(filters(), function(f) { return f.type() === 'category'; });
+        });
+      };
+
       var rateLimit = 500;
       if ("allFilters" in self.bookmark) {
         allFilters = mapping.fromJS(self.bookmark["allFilters"]);
+        buildComputedFilters(allFilters);
+
         _.each(numericFilters, function (filter) {
           filter.rateLimitedHigh = ko.pureComputed( allFilters()[i].high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
           filter.rateLimitedLow = ko.pureComputed( allFilters()[i].low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
@@ -74,7 +83,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         _.each(self.category_columns, function(i) {
           allFilters.push({
             name: ko.observable( self.table_metadata["column-names"][i] ),
-            type: 'category',
+            type: ko.observable('category'),
             index: ko.observable( i ),
             active: ko.observable(false),
             order: ko.observable(100) // always put category filters on the right
@@ -86,7 +95,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           var low = ko.observable( self.table_metadata["column-min"][i] );
           allFilters.push({
             name: ko.observable( self.table_metadata["column-names"][i] ),
-            type: 'numeric',
+            type: ko.observable('numeric'),
             index: ko.observable( i ),
             max: ko.observable( self.table_metadata["column-max"][i] ),
             min: ko.observable( self.table_metadata["column-min"][i] ),
@@ -99,6 +108,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
           });
         });
+
+        buildComputedFilters(allFilters);
       }
 
       var ViewModel = function(params) {
@@ -119,10 +130,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
 
         // TODO make pureComputed?
         vm.activeNumericFilters = vm.allFilters.filter(function(filter) {
-          return filter.type === 'numeric' && filter.active();
+          return filter.type() === 'numeric' && filter.active();
         });
         vm.activeCategoryFilters = vm.allFilters.filter(function(filter) {
-          return filter.type === 'category' && filter.active();
+          return filter.type() === 'category' && filter.active();
         });
 
         if (vm.activeNumericFilters().length > 0 || vm.activeCategoryFilters().length > 0) {
