@@ -15,7 +15,7 @@ def register_slycat_plugin(context):
     search = numpy.vectorize(lambda x:bool(expression.search(x)))
 
     columns = []
-    metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", arrays=[0])["arrays"][0]
+    metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", slycat.hyperchunks.parse("0"))["arrays"][0]
     for index, attribute in enumerate(metadata["attributes"]):
       if attribute["type"] != "string":
         continue
