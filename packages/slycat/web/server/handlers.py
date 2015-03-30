@@ -103,7 +103,7 @@ def require_boolean_parameter(name):
   return value
 
 def get_home():
-  raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat"]["server-root"] + "projects")
+  raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat-web-server"]["server-root"] + "projects")
 
 def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
@@ -111,7 +111,7 @@ def get_projects(_=None):
 
   if accept == "text/html":
     context = {}
-    context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     return slycat.web.server.template.render("slycat-projects.html", context)
@@ -160,14 +160,14 @@ def get_project(pid):
       model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
     context = {}
-    context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-project"] = project
     return slycat.web.server.template.render("slycat-project.html", context)
 
 def get_remote_host_dict():
-  remote_host_dict = cherrypy.request.app.config["slycat"]["remote-hosts"]
+  remote_host_dict = cherrypy.request.app.config["slycat-web-server"]["remote-hosts"]
   remote_host_list = []
   for host in remote_host_dict:
     if "message" in remote_host_dict[host]:
@@ -303,8 +303,8 @@ def post_project_models(pid):
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
   marking = cherrypy.request.json["marking"]
 
-  if marking not in cherrypy.request.app.config["slycat"]["allowed-markings"]:
-    raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat"]["allowed-markings"]))
+  if marking not in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]:
+    raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
   name = cherrypy.request.json["name"]
   description = cherrypy.request.json.get("description", "")
   mid = uuid.uuid4().hex
@@ -408,7 +408,7 @@ def get_model(mid, **kwargs):
     marking = slycat.web.server.plugin.manager.markings[model["marking"]]
 
     context = {}
-    context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
     context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking["page-before"]
     context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking["page-after"]
     context["slycat-model"] = model
@@ -1166,7 +1166,7 @@ def get_bookmark(bid):
 def get_user(uid):
   if uid == "-":
     uid = cherrypy.request.login
-  user = cherrypy.request.app.config["slycat"]["directory"](uid)
+  user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
   if user is None:
     raise cherrypy.HTTPError(404)
   # Add the uid to the record, since the caller may not know it.
@@ -1231,19 +1231,19 @@ def post_events(event):
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_markings():
-  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat"]["allowed-markings"]]
+  return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_remote_hosts():
   remote_hosts = []
-  for hostname, remote in cherrypy.request.app.config["slycat"]["remote-hosts"].items():
+  for hostname, remote in cherrypy.request.app.config["slycat-web-server"]["remote-hosts"].items():
     agent = True if remote.get("agent", False) else False
     remote_hosts.append({"hostname": hostname, "agent": agent})
   return remote_hosts
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_support_email():
-  return cherrypy.request.app.config["slycat"]["support-email"]
+  return cherrypy.request.app.config["slycat-web-server"]["support-email"]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_version():
@@ -1275,7 +1275,7 @@ def get_global_resource(resource):
 
 def get_tests_remote():
   context = {}
-  context["slycat-server-root"] = cherrypy.request.app.config["slycat"]["server-root"]
+  context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
   context["slycat-css-bundle"] = css_bundle()
   context["slycat-js-bundle"] = js_bundle()
   return slycat.web.server.template.render("slycat-test-remote.html", context)

@@ -59,31 +59,26 @@ def start(root_path, config_file):
   parser = ConfigParser.SafeConfigParser()
   parser.read(config_file)
   configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
-  configuration["slycat"]["root-path"] = root_path
-
-  # Configuration items we don't recognize are not allowed.
-  for key in configuration["slycat"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "session-timeout", "stdout-log", "stderr-log", "support-email", "uid", "umask"]:
-      raise Exception("Unrecognized or obsolete configuration key: %s" % key)
+  configuration["slycat-web-server"]["root-path"] = root_path
 
   # Allow both numeric and named uid and gid
-  uid = configuration["slycat"]["uid"]
+  uid = configuration["slycat-web-server"]["uid"]
   if isinstance(uid, basestring):
     uid = pwd.getpwnam(uid).pw_uid
 
-  gid = configuration["slycat"]["gid"]
+  gid = configuration["slycat-web-server"]["gid"]
   if isinstance(gid, basestring):
     gid = grp.getgrnam(gid).gr_gid
 
   # Configure loggers.
-  if configuration["slycat"]["access-log"] != "-":
+  if configuration["slycat-web-server"]["access-log"] != "-":
     cherrypy.log.access_log.handlers = []
-    if configuration["slycat"]["access-log"] is not None:
-      cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["access-log"], "a", configuration["slycat"]["access-log-size"], configuration["slycat"]["access-log-count"]))
-  if configuration["slycat"]["error-log"] != "-":
+    if configuration["slycat-web-server"]["access-log"] is not None:
+      cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat-web-server"]["access-log"], "a", configuration["slycat-web-server"]["access-log-size"], configuration["slycat-web-server"]["access-log-count"]))
+  if configuration["slycat-web-server"]["error-log"] != "-":
     cherrypy.log.error_log.handlers = []
-    if configuration["slycat"]["error-log"] is not None:
-      cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat"]["error-log"], "a", configuration["slycat"]["error-log-size"], configuration["slycat"]["error-log-count"]))
+    if configuration["slycat-web-server"]["error-log"] is not None:
+      cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat-web-server"]["error-log"], "a", configuration["slycat-web-server"]["error-log-size"], configuration["slycat-web-server"]["error-log-count"]))
 
   cherrypy.log.access_log.handlers[-1].addFilter(SessionIdFilter())
 
@@ -96,16 +91,16 @@ def start(root_path, config_file):
     cherrypy.log.error("PYTHONPATH: %s" % path)
 
   # Optionally generate a pidfile for startup scripts
-  if configuration["slycat"]["pidfile"] is not None:
-    cherrypy.process.plugins.PIDFile(cherrypy.engine, configuration["slycat"]["pidfile"]).subscribe()
+  if configuration["slycat-web-server"]["pidfile"] is not None:
+    cherrypy.process.plugins.PIDFile(cherrypy.engine, configuration["slycat-web-server"]["pidfile"]).subscribe()
 
   # Optionally drop privileges so we can safely bind to low port numbers ...
-  if uid is not None and gid is not None and configuration["slycat"]["umask"] is not None:
-    cherrypy.process.plugins.DropPrivileges(cherrypy.engine, uid=uid, gid=gid, umask=configuration["slycat"]["umask"]).subscribe()
+  if uid is not None and gid is not None and configuration["slycat-web-server"]["umask"] is not None:
+    cherrypy.process.plugins.DropPrivileges(cherrypy.engine, uid=uid, gid=gid, umask=configuration["slycat-web-server"]["umask"]).subscribe()
 
   # Optionally daemonize our process ...
-  if configuration["slycat"]["daemon"] == True:
-    cherrypy.process.plugins.Daemonizer(cherrypy.engine, stdout=configuration["slycat"]["stdout-log"], stderr=configuration["slycat"]["stderr-log"]).subscribe()
+  if configuration["slycat-web-server"]["daemon"] == True:
+    cherrypy.process.plugins.Daemonizer(cherrypy.engine, stdout=configuration["slycat-web-server"]["stdout-log"], stderr=configuration["slycat-web-server"]["stderr-log"]).subscribe()
 
   dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
@@ -178,38 +173,85 @@ def start(root_path, config_file):
         cherrypy.log.error("%s%s: %s" % (indent, key, value))
   log_configuration(configuration)
 
-  # Setup our RESTful request dispatcher.
-  if "/" not in configuration:
-    configuration["/"] = {}
+  # Setup global server parameters.
+  configuration["global"] = {
+    "engine.autoreload.on": configuration["slycat-web-server"]["autoreload"],
+    "request.show_tracebacks": configuration["slycat-web-server"]["show-tracebacks"],
+    "server.socket_host": configuration["slycat-web-server"]["socket-host"],
+    "server.socket_port": configuration["slycat-web-server"]["socket-port"],
+    "server.thread_pool": configuration["slycat-web-server"]["thread-pool"],
+    }
+
+  # Setup root server parameters.
+  configuration["/"] = {}
   configuration["/"]["request.dispatch"] = dispatcher
 
-  # Generate absolute paths for static content directories.
-  for section in configuration.values():
-    if "tools.staticdir.dir" in section:
-      section["tools.staticdir.dir"] = abspath(section["tools.staticdir.dir"])
+  authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
+  configuration["/"]["tools.%s.on" % authentication] = True
+  for key, value in configuration["slycat-web-server"]["authentication"]["kwargs"].items():
+    configuration["/"]["tools.%s.%s" % (authentication, key)] = value
+
+  # Setup our static content directories.
+  configuration["/css"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.staticdir.dir": abspath("css"),
+    "tools.staticdir.on": True,
+    }
+
+  configuration["/js"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.staticdir.dir": abspath("js"),
+    "tools.staticdir.on": True,
+    }
+
+  configuration["/fonts"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.staticdir.dir": abspath("fonts"),
+    "tools.staticdir.on": True,
+    }
+
+  configuration["/resources"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    }
+
+  configuration["/templates"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.staticdir.dir": abspath("templates"),
+    "tools.staticdir.on": True,
+    }
 
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
-  for item in configuration["slycat"]["plugins"]:
+  for item in configuration["slycat-web-server"]["plugins"]:
     manager.load(abspath(item))
   manager.register_plugins()
 
   # Sanity-check to ensure that we have a marking plugin for every allowed marking type.
-  for allowed_marking in configuration["slycat"]["allowed-markings"]:
+  for allowed_marking in configuration["slycat-web-server"]["allowed-markings"]:
     if allowed_marking not in manager.markings.keys():
       raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Setup the requested directory plugin.
-  directory_type = configuration["slycat"]["directory"]["plugin"]
+  directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
   if directory_type not in manager.directories.keys():
     raise Exception("No directory plugin for type: %s" % directory_type)
-  directory_args = configuration["slycat"]["directory"].get("args", [])
-  directory_kwargs = configuration["slycat"]["directory"].get("kwargs", {})
+  directory_args = configuration["slycat-web-server"]["directory"].get("args", [])
+  directory_kwargs = configuration["slycat-web-server"]["directory"].get("kwargs", {})
   manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
-  configuration["slycat"]["directory"] = manager.directories[directory_type]["user"]
+  configuration["slycat-web-server"]["directory"] = manager.directories[directory_type]["user"]
 
   # Expand remote host aliases.
-  configuration["slycat"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
+  configuration["slycat-web-server"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat-web-server"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
   # Wait for requests to cleanup deleted arrays.
   cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_array_cleanup_worker, priority=80)
