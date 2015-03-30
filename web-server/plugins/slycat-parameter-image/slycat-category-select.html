@@ -1,0 +1,6 @@
+<div class="slycat-category-filter bootstrap-styles" data-bind="style:style">
+  <div data-bind="foreach: categories" class="slycat-category-select btn-group-vertical" role="group" style="position: relative">
+    <button type="button" class="btn btn-default cat-button" data-bind="text: $data, css: { active: $parent.isSelected($data) }, click: $parent.toggle">
+    </button>
+  </div>
+</div>

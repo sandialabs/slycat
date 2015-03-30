@@ -12,6 +12,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
       self.categories = ko.observableArray();
       self.selectedCategories = ko.observableArray();
       //this.selectedCategories = ko.observableArray(this.categories()); // selected by default
+      self.length = params.length || ko.observable(500);
 
       $.ajax({
           type: "GET",
@@ -38,15 +39,25 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
           self.selectedCategories.push(category);
         }
       };
+
+      self.style = ko.pureComputed(function()
+      {
+        var result = {};
+        result["height"] = self.length() + "px";
+        return result;
+      });
+
     },
 
-    template: ' \
-      <div class="bootstrap-styles"> \
-        <div data-bind="foreach: categories" class="slycat-category-select btn-group-vertical" role="group" style="position: relative"> \
-          <button type="button" class="btn btn-default cat-button" data-bind="text: $data, css: { active: $parent.isSelected($data) }, click: $parent.toggle"> \
-          </button> \
-        </div> \
-      </div> \
-    '
+    // template: ' \
+    //   <div class="bootstrap-styles"> \
+    //     <div data-bind="foreach: categories" class="slycat-category-select btn-group-vertical" role="group" style="position: relative"> \
+    //       <button type="button" class="btn btn-default cat-button" data-bind="text: $data, css: { active: $parent.isSelected($data) }, click: $parent.toggle"> \
+    //       </button> \
+    //     </div> \
+    //   </div> \
+    // '
+
+    template: { require: "text!" + server_root + "resources/models/parameter-image/slycat-category-select.html" }
   });
 });

@@ -83,7 +83,7 @@ rights in this software.
   <div id="sliders-pane" class="ui-layout-west">
     <div class="load-status"></div>
     <div id="sliders">
-      <div data-bind="foreach: activeNumericFilters">
+      <div class="numeric-filters" data-bind="foreach: activeNumericFilters">
         <div class="slycat-pim-filter">
           <div class="varNameContainer">
             <div class="varName" data-bind="text: name">[variable name]</div>
@@ -118,9 +118,18 @@ rights in this software.
           <i class="fa invert-button" title="Invert filter" data-bind="click: $parent.invertFilter, css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }"></i>
         </div>
       </div>
-      <div data-bind="foreach: activeCategoryFilters">
+      <div class="category-filters" data-bind="foreach: activeCategoryFilters">
         <div class="category-filter">
-          <slycat-category-select params="category: index, model_id: $parent.model_id"></slycat-category-select>
+          <div class="varNameContainer">
+            <div class="varName" data-bind="text: name">[variable name]</div>
+          </div>
+          <slycat-category-select 
+            params="
+              length: $parent.sliderHeight,
+              category: index, 
+              model_id: $parent.model_id
+            "></slycat-category-select>
+          <i class="fa fa-times close-button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
         </div>
       </div>
     </div>

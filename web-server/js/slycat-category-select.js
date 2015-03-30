@@ -4,27 +4,45 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_root, ko, mapping) {
+require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], function(server_root, ko, mapping, _) {
   ko.components.register("slycat-category-select", {
 
     viewModel: function(params) {
-      var self = this;
-      this.categories = params.categories;
-      this.selectedCategories = ko.observableArray();
-      this.isSelected = function(category) {
+      var select = this;
+      select.categories = params.categories;
+      select.selectedCategories = ko.observableArray();
+      select.length = params.length || ko.observable(500);
+
+      $.ajax({
+          type: "GET",
+          url : server_root + "models/" + params.model_id() + "/arraysets/data-table/arrays/0/attributes/" + params.category() + "/chunk?ranges=0,100",
+          success : function(result) {
+             _(result).uniq().sort().each(function(c) { select.categories.push(c); select.selectedCategories.push(c); }).value(); // selected by default
+          },
+          error: function(result) {
+          }
+      });
+
+      select.isSelected = function(category) {
         var category = category;
         return ko.pureComputed(function() {
-          return self.selectedCategories.indexOf(category) !== -1;
+          return select.selectedCategories.indexOf(category) !== -1;
         });
       };
-      this.toggle = function(category) {
-        if (self.isSelected(category)()) {
-          self.selectedCategories.remove(category);
+      select.toggle = function(category) {
+        if (select.isSelected(category)()) {
+          select.selectedCategories.remove(category);
         }
         else {
-          self.selectedCategories.push(category);
+          select.selectedCategories.push(category);
         }
       };
+      select.style = ko.pureComputed(function()
+      {
+        var result = {};
+        result["height"] = select.length() + "px";
+        return result;
+      });
     },
 
     template: { require: "text!" + server_root + "templates/slycat-category-select.html" }

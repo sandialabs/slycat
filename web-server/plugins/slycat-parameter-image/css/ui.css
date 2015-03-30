@@ -616,7 +616,6 @@ rights in this software.
   margin-right: 20px;
   background-color: white;
 }
-
 .category-filter {
   position: relative;
   display: inline-block;
@@ -625,11 +624,14 @@ rights in this software.
   margin-right: 20px;
 }
 .slycat-pim-filter .close-button:hover,
+.category-filter .close-button:hover,
 .slycat-pim-filter .invert-button:hover
 {
   cursor: pointer;
 }
-.slycat-pim-filter .close-button {
+.slycat-pim-filter .close-button,
+.category-filter .close-button
+{
   position: absolute;
   top: 4px;
   left: 25px;
@@ -664,13 +666,17 @@ rights in this software.
 {
 
 }
-.slycat-pim-filter .varNameContainer {
+.slycat-pim-filter .varNameContainer,
+.category-filter .varNameContainer
+{
   position: absolute;
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
-.slycat-pim-filter .varName {
+.slycat-pim-filter .varName, 
+.category-filter .varName
+{
   transform: rotate(270deg);
   -ms-transform: rotate(270deg);
   -webkit-transform: rotate(270deg);
@@ -681,6 +687,32 @@ rights in this software.
   top: 50%;
   font-size: 13px;
   font-weight: bold;
+}
+
+.numeric-filters,
+.category-filters
+{
+  display: inline-block;
+}
+
+.category-filter {
+  background-color: white;
+}
+.slycat-category-filter {
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: inline-block;
+  margin: 20px 0;
+  left: 20px;
+  position: relative;
+}
+.slycat-category-select {
+  width: 70px;
+}
+.slycat-category-select button {
+  /*width: 50px;*/
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Note Layer */
