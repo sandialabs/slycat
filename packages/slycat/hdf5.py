@@ -68,9 +68,10 @@ class DArray(slycat.darray.Prototype):
   def get_statistics(self, attribute=0):
     attribute = self._storage["attribute/%s" % attribute]
 
-    if "min" not in attribute.attrs or "max" not in attribute.attrs:
+    if "min" not in attribute.attrs or "max" not in attribute.attrs or "unique" not in attribute.attrs:
       attribute_min = None
       attribute_max = None
+      attribute_unique = None
 
       chunk_size = 1000
       for begin in numpy.arange(0, len(attribute), chunk_size):
@@ -78,22 +79,32 @@ class DArray(slycat.darray.Prototype):
         if attribute.dtype.char in ["O", "S", "U"]:
           data_min = min(slice)
           data_max = max(slice)
+          data_unique = numpy.unique(slice)
           attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
           attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
+          attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
         else:
           slice = slice[numpy.invert(numpy.isnan(slice))]
           if len(slice):
             data_min = numpy.asscalar(slice.min())
             data_max = numpy.asscalar(slice.max())
+            data_unique = numpy.unique(slice)
             attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
             attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
+            attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
 
       if attribute_min is not None:
         attribute.attrs["min"] = attribute_min
       if attribute_max is not None:
         attribute.attrs["max"] = attribute_max
+      if attribute_unique is not None:
+        attribute.attrs["unique"] = len(attribute_unique)
 
-    return dict(min=attribute.attrs.get("min", None), max=attribute.attrs.get("max", None))
+    return {
+      "min": attribute.attrs.get("min", None),
+      "max": attribute.attrs.get("max", None),
+      "unique": attribute.attrs.get("unique", None),
+      }
 
   def get_data(self, attribute=0):
     """Return a reference to the data storage for a darray attribute.
@@ -160,6 +171,8 @@ class DArray(slycat.darray.Prototype):
       del attribute_storage.attrs["min"]
     if "max" in attribute_storage.attrs:
       del attribute_storage.attrs["max"]
+    if "unique" in attribute_storage.attrs:
+      del attribute_storage.attrs["unique"]
 
 class ArraySet(object):
   """Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset."""
