@@ -61,11 +61,6 @@ def start(root_path, config_file):
   configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
   configuration["slycat-web-server"]["root-path"] = root_path
 
-  # Configuration items we don't recognize are not allowed.
-  for key in configuration["slycat-web-server"].keys():
-    if key not in ["access-log", "access-log-count", "access-log-size", "allowed-markings", "couchdb-database", "couchdb-host", "daemon", "data-store", "directory", "error-log", "error-log-count", "error-log-size", "gid", "password-check", "pidfile", "plugins", "projects-redirect", "remote-hosts", "root-path", "server-admins", "server-root", "session-timeout", "stdout-log", "stderr-log", "support-email", "uid", "umask"]:
-      raise Exception("Unrecognized or obsolete configuration key: %s" % key)
-
   # Allow both numeric and named uid and gid
   uid = configuration["slycat-web-server"]["uid"]
   if isinstance(uid, basestring):
@@ -178,10 +173,23 @@ def start(root_path, config_file):
         cherrypy.log.error("%s%s: %s" % (indent, key, value))
   log_configuration(configuration)
 
-  # Setup our RESTful request dispatcher.
-  if "/" not in configuration:
-    configuration["/"] = {}
+  # Setup global server parameters.
+  configuration["global"] = {
+    "engine.autoreload.on": configuration["slycat-web-server"]["autoreload"],
+    "request.show_tracebacks": configuration["slycat-web-server"]["show-tracebacks"],
+    "server.socket_host": configuration["slycat-web-server"]["socket-host"],
+    "server.socket_port": configuration["slycat-web-server"]["socket-port"],
+    "server.thread_pool": configuration["slycat-web-server"]["thread-pool"],
+    }
+
+  # Setup root server parameters.
+  configuration["/"] = {}
   configuration["/"]["request.dispatch"] = dispatcher
+
+  authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
+  configuration["/"]["tools.%s.on" % authentication] = True
+  for key, value in configuration["slycat-web-server"]["authentication"]["kwargs"].items():
+    configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
   # Setup our static content directories.
   configuration["/css"] = {
