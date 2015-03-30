@@ -19,46 +19,58 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
-def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None):
-  if arrays is not None or statistics is not None:
+def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None, unique=None):
+  # Handle legacy behavior.
+  if arrays is None and statistics is None and unique is None:
     with slycat.web.server.hdf5.lock:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
+      with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file: 
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
-        results = {}
-        if arrays is not None:
-          results["arrays"] = []
-          for array in arrays.arrays(hdf5_arrayset.array_count()):
-            hdf5_array = hdf5_arrayset[array.index]
-            results["arrays"].append({
-              "index" : array.index,
-              "dimensions" : hdf5_array.dimensions,
-              "attributes" : hdf5_array.attributes,
-              "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-              })
-        if statistics is not None:
-          results["statistics"] = []
-          for array in statistics.arrays(hdf5_arrayset.array_count()):
-            hdf5_array = hdf5_arrayset[array.index]
-            for attribute in array.attributes(len(hdf5_array.attributes)):
-              statistics = hdf5_array.get_statistics(attribute.index)
-              statistics["array"] = array.index
-              statistics["attribute"] = attribute.index
-              results["statistics"].append(statistics)
+        results = []
+        for array in sorted(hdf5_arrayset.keys()):
+          hdf5_array = hdf5_arrayset[array]
+          results.append({
+            "array": int(array),
+            "index" : int(array),
+            "dimensions" : hdf5_array.dimensions,
+            "attributes" : hdf5_array.attributes,
+            "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
+            })
         return results
 
   with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file: 
+    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      results = []
-      for array in sorted(hdf5_arrayset.keys()):
-        hdf5_array = hdf5_arrayset[array]
-        results.append({
-          "array": int(array),
-          "index" : int(array),
-          "dimensions" : hdf5_array.dimensions,
-          "attributes" : hdf5_array.attributes,
-          "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-          })
+      results = {}
+      if arrays is not None:
+        results["arrays"] = []
+        for array in arrays.arrays(hdf5_arrayset.array_count()):
+          hdf5_array = hdf5_arrayset[array.index]
+          results["arrays"].append({
+            "index" : array.index,
+            "dimensions" : hdf5_array.dimensions,
+            "attributes" : hdf5_array.attributes,
+            "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
+            })
+      if statistics is not None:
+        results["statistics"] = []
+        for array in statistics.arrays(hdf5_arrayset.array_count()):
+          hdf5_array = hdf5_arrayset[array.index]
+          for attribute in array.attributes(len(hdf5_array.attributes)):
+            statistics = hdf5_array.get_statistics(attribute.index)
+            statistics["array"] = array.index
+            statistics["attribute"] = attribute.index
+            results["statistics"].append(statistics)
+      if unique is not None:
+        results["unique"] = []
+        for array in unique.arrays(hdf5_arrayset.array_count()):
+          hdf5_array = hdf5_arrayset[array.index]
+          for attribute in array.attributes(len(hdf5_array.attributes)):
+            for hyperslice in attribute.hyperslices():
+              unique = hdf5_array.get_unique(attribute.index, hyperslice)
+              unique["array"] = array.index
+              unique["attribute"] = attribute.index
+              results["unique"].append(unique)
+
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):

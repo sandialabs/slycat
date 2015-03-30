@@ -8,27 +8,26 @@ GET Model Arrayset Metadata
   multi-dimensional, multi-attribute array, suitable for storage of arbitrarily-large
   data.
 
-  The metadata for a single darray includes the name, type, and half-open range
-  of coordinate values for each dimension in the array, plus the name and
-  type of each attribute.
+  The metadata for a single darray includes the name, type, half-open range of
+  coordinate values, and shape for each dimension in the array, plus the name
+  and type of each attribute.
 
   Statistics can be retrieved for individual darray attributes, and include
-  minimum and maximum values for that attribute.  Although statistics are cached,
-  retrieving them may be an extremely expensive operation, since they involve
-  full scans through their respective attributes.  Because of this, callers are
-  encouraged to retrieve statistics only when needed.
+  minimum and maximum values, plus a count of unique values for an attribute.
+  Although statistics are cached, retrieving them may be an extremely expensive
+  operation, since they involve full scans through their respective attributes.
+  Because of this, callers are encouraged to retrieve statistics only when
+  needed.
 
-  GET Model Arrayset Metadata can be called in two ways: without any query string,
-  it will return an array containing metadata for every array in the arrayset,
-  without any statistics.  With the `arrays` argument, the caller can request
-  metadata for an explicit list of arrays.  With the
-  `statistics` argument, the caller can request statistics for an explicit list
-  of array attributes.  The
-  two arguments can be combined to retrieve arbitrary combinations of array
-  metadata and attribute statistics in a single request.
-
-  .. note::
-      Semicolons must be encoded in browser query strings!
+  GET Model Arrayset Metadata can be called in two ways: without any query
+  string, it will return an array containing metadata for every array in the
+  arrayset, without any statistics.  Using the `arrays` argument, the caller
+  can request metadata for an explicit list of arrays.  The `statistics`
+  argument is used to request statistics for an explicit list of array
+  attributes.  The `unique` argument is used to request unique values for an
+  explicit list of array attributes.  The three arguments can be combined to
+  retrieve arbitrary combinations of array metadata and attribute statistics in
+  a single request.
 
   :param mid: Unique model identifier.
   :type mid: string
@@ -36,8 +35,9 @@ GET Model Arrayset Metadata
   :param name: Arrayset artifact name.
   :type name: string
 
-  :query arrays: Optional, retrieve array metadata for a set of arrays in :ref:`hyperchunks` format.
-  :query statistics: Optional, retrive statistics for a set of array attributes in :ref:`hyperchunks` format.
+  :query arrays: Optional, retrieve array metadata for a set of arrays specified in :ref:`hyperchunks` format.  Note that only the array part of the hyperchunk is used in this case - attributes and hyperslices, if provided, are ignored.
+  :query statistics: Optional, retrive statistics for a set of array attributes specified in :ref:`hyperchunks` format.  Note that only the array and attribute parts of the hyperchunk is used in this case - hyperslices, if provided, are ignored.
+  :query unique: Optional, retrieve unique values for a set of array attributes specified in :ref:`hyperchunks` format.  Note that you must provide a full hyperchunk with array, attribute, and hyperslice(s), and that the hyperslice(s) refer to ranges of unique values, not ranges of attribute values.  So a hyperchunk `0/1/:100` means "return the first 100 unique values in array 0, attribute 1".
 
   :responseheader Content-Type: application/json
 
@@ -72,8 +72,12 @@ GET Model Arrayset Metadata
         "dimensions":
         [
           {"end": 3, "begin": 0, "type": "int64", "name": "component"},
-          {"end": 3, "begin": 0, "type": "int64", "name": "input"}
-        ]
+          {"end": 5, "begin": 0, "type": "int64", "name": "input"}
+        ],
+        "shape":
+        [
+          3, 5
+        ],
       }
     ]
 
@@ -111,7 +115,11 @@ GET Model Arrayset Metadata
           "dimensions":
           [
             {"end": 10, "begin": 0, "type": "int64", "name": "i"},
-          ]
+          ],
+          "shape":
+          [
+            10,
+          ],
         },
         {
           "index": 1,
@@ -123,7 +131,11 @@ GET Model Arrayset Metadata
           "dimensions":
           [
             {"end": 10, "begin": 0, "type": "int64", "name": "i"},
-          ]
+          ],
+          "shape":
+          [
+            10,
+          ],
         }
       ],
       "statistics":
@@ -133,12 +145,14 @@ GET Model Arrayset Metadata
           "attribute": 0,
           "min": 0.1,
           "max": 1237.3,
+          "unique": 3704,
         },
         {
           "array": 0,
           "attribute": 1,
           "min": "aardvark",
           "max": "zebra",
+          "unique": 4,
         }
       ]
     }
