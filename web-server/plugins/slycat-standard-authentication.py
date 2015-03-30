@@ -60,11 +60,11 @@ def register_slycat_plugin(context):
     cherrypy.log.error("%s@%s: Checking password." % (username, remote_ip))
 
     if authenticate.password_check is None:
-      if "password-check" not in cherrypy.request.app.config["slycat"]:
+      if "password-check" not in cherrypy.request.app.config["slycat-web-server"]:
         raise cherrypy.HTTPError("500 No password check configured.")
-      plugin = cherrypy.request.app.config["slycat"]["password-check"]["plugin"]
-      args = cherrypy.request.app.config["slycat"]["password-check"].get("args", [])
-      kwargs = cherrypy.request.app.config["slycat"]["password-check"].get("kwargs", {})
+      plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
+      args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
+      kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
       if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
         raise cherrypy.HTTPError("500 No password check plugin found.")
       authenticate.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs)

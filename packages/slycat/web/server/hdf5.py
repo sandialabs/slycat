@@ -12,7 +12,7 @@ import types
 def path(array):
   """Convert an array identifier to a data store filesystem path."""
   if path.root is None:
-    path.root = cherrypy.tree.apps[""].config["slycat"]["data-store"]
+    path.root = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
   return slycat.hdf5.path(array, path.root)
 path.root = None
 

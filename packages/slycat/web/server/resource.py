@@ -25,7 +25,7 @@ class Manager(object):
 
       for path in paths:
         if not os.path.isabs(path):
-          path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], path)
+          path = os.path.join(cherrypy.tree.apps[""].config["slycat-web-server"]["root-path"], path)
         cherrypy.log.error("  %s" % path)
         cherrypy.engine.autoreload.files.add(path)
         resource_content = open(path, "rb").read()
@@ -42,7 +42,7 @@ class Manager(object):
     with self._file_lock:
       cherrypy.log.error("Registered global resources")
       if not os.path.isabs(directory_path):
-        directory_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], directory_path)
+        directory_path = os.path.join(cherrypy.tree.apps[""].config["slycat-web-server"]["root-path"], directory_path)
       for file_path in os.listdir(directory_path):
         resource_file_path = os.path.join(resource_path, file_path)
         file_path = os.path.join(directory_path, file_path)
@@ -53,7 +53,7 @@ class Manager(object):
   def add_file(self, resource_path, file_path):
     with self._file_lock:
       if not os.path.isabs(file_path):
-        file_path = os.path.join(cherrypy.tree.apps[""].config["slycat"]["root-path"], file_path)
+        file_path = os.path.join(cherrypy.tree.apps[""].config["slycat-web-server"]["root-path"], file_path)
       self._files[resource_path] = file_path
       cherrypy.log.error("Registered resource")
       cherrypy.log.error("  %s" % file_path)

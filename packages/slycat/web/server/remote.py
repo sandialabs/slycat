@@ -415,7 +415,7 @@ def create_session(hostname, username, password, agent):
     sftp = ssh.open_sftp()
 
     # Optionally start an agent.
-    remote_hosts = cherrypy.request.app.config["slycat"]["remote-hosts"]
+    remote_hosts = cherrypy.request.app.config["slycat-web-server"]["remote-hosts"]
     if agent is None:
       agent = hostname in remote_hosts and "agent" in remote_hosts[hostname]
 
