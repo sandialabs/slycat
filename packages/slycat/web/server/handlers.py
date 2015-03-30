@@ -798,7 +798,17 @@ def get_model_arrayset_metadata(mid, name, **kwargs):
   except:
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
-  return slycat.web.server.get_model_arrayset_metadata(database, model, name, arrays, statistics)
+  try:
+    unique = slycat.hyperchunks.parse(kwargs["unique"]) if "unique" in kwargs else None
+  except:
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+
+  results = slycat.web.server.get_model_arrayset_metadata(database, model, name, arrays, statistics, unique)
+  if "unique" in results:
+    for unique in results["unique"]:
+      unique["values"] = unique["values"].tolist()
+
+  return results
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   #cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))

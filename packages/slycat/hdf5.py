@@ -65,48 +65,64 @@ class DArray(slycat.darray.Prototype):
     """
     return [dict(name=name, type=type) for name, type in zip(self._metadata["attribute-names"], self._metadata["attribute-types"])]
 
-  def get_statistics(self, attribute=0):
-    attribute = self._storage["attribute/%s" % attribute]
+  def _update_cache(self, attribute_index):
+    attribute_key = "attribute/%s" % attribute_index
+    unique_key = "unique/%s" % attribute_index
 
-    if "min" not in attribute.attrs or "max" not in attribute.attrs or "unique" not in attribute.attrs:
-      attribute_min = None
-      attribute_max = None
-      attribute_unique = None
+    attribute = self._storage[attribute_key]
+    if "min" in attribute.attrs and "max" in attribute.attrs and "unique" in attribute.attrs and unique_key in self._storage:
+      return
 
-      chunk_size = 1000
-      for begin in numpy.arange(0, len(attribute), chunk_size):
-        slice = attribute[begin : begin + chunk_size]
-        if attribute.dtype.char in ["O", "S", "U"]:
-          data_min = min(slice)
-          data_max = max(slice)
+    attribute_min = None
+    attribute_max = None
+    attribute_unique = None
+
+    chunk_size = 1000
+    for begin in numpy.arange(0, len(attribute), chunk_size):
+      slice = attribute[begin : begin + chunk_size]
+      if attribute.dtype.char in ["O", "S", "U"]:
+        data_min = min(slice)
+        data_max = max(slice)
+        data_unique = numpy.unique(slice)
+        attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
+        attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
+        attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
+      else:
+        slice = slice[numpy.invert(numpy.isnan(slice))]
+        if len(slice):
+          data_min = numpy.asscalar(slice.min())
+          data_max = numpy.asscalar(slice.max())
           data_unique = numpy.unique(slice)
-          attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
-          attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
+          attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
+          attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
           attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
-        else:
-          slice = slice[numpy.invert(numpy.isnan(slice))]
-          if len(slice):
-            data_min = numpy.asscalar(slice.min())
-            data_max = numpy.asscalar(slice.max())
-            data_unique = numpy.unique(slice)
-            attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
-            attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
-            attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
 
-      if attribute_min is not None:
-        attribute.attrs["min"] = attribute_min
-      if attribute_max is not None:
-        attribute.attrs["max"] = attribute_max
-      if attribute_unique is not None:
-        attribute.attrs["unique"] = len(attribute_unique)
+    if attribute_min is not None:
+      attribute.attrs["min"] = attribute_min
+    if attribute_max is not None:
+      attribute.attrs["max"] = attribute_max
+    if attribute_unique is not None:
+      attribute.attrs["unique"] = len(attribute_unique)
+      self._storage.create_dataset(unique_key, data=attribute_unique, dtype=dtype(self._metadata["attribute-types"][attribute_index]))
 
+  def get_statistics(self, attribute):
+    self._update_cache(attribute)
+
+    attribute = self._storage["attribute/%s" % attribute]
     return {
       "min": attribute.attrs.get("min", None),
       "max": attribute.attrs.get("max", None),
       "unique": attribute.attrs.get("unique", None),
       }
 
-  def get_data(self, attribute=0):
+  def get_unique(self, attribute, hyperslice):
+    self._update_cache(attribute)
+
+    return {
+      "values": self._storage["unique/%s" % attribute][hyperslice]
+      }
+
+  def get_data(self, attribute):
     """Return a reference to the data storage for a darray attribute.
 
     Parameters
@@ -157,16 +173,21 @@ class DArray(slycat.darray.Prototype):
     else:
       raise ValueError("Unsupported hyperslice type.")
 
-    # Store the data ...
+    # Store the data.
     attribute_storage = self._storage["attribute/%s" % attribute]
     attribute_storage[hyperslice] = data
 
-    # Flush cached sort indices ...
+    # Flush cached sort indices.
     index_key = "index/%s" % attribute
     if index_key in self._storage:
       del self._storage[index_key]
 
-    # Flush cached statistics ...
+    # Flush cached unique values.
+    unique_key = "unique/%s" % attribute
+    if unique_key in self._storage:
+      del self._storage[unique_key]
+
+    # Flush cached statistics.
     if "min" in attribute_storage.attrs:
       del attribute_storage.attrs["min"]
     if "max" in attribute_storage.attrs:
