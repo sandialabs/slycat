@@ -56,11 +56,14 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
       }
 
       var allFilters = ko.observableArray();
-      var numericFilters, categoryFilters;
+      var numericFilters, categoryFilters, activeFilters;
 
       // have to be built after allFilters is assigned, and it's reassigned from bookmark,
       // so call this from both conditional clauses
       var buildComputedFilters = function(filters) {
+        activeFilters = ko.pureComputed(function() {
+          return _.filter(filters(), function(f) { return f.active(); });
+        });
         numericFilters = ko.pureComputed(function() {
           return _.filter(filters(), function(f) { return f.type() === 'numeric'; });
         });
@@ -86,7 +89,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             type: ko.observable('category'),
             index: ko.observable( i ),
             active: ko.observable(false),
-            order: ko.observable(100) // always put category filters on the right
+            order: ko.observable( variable_order.indexOf(i) ) // always put category filters on the right
           });
         });
 
@@ -123,21 +126,14 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         vm.allFilters = allFilters;
         vm.numericFilters = numericFilters;
         vm.categoryFilters = categoryFilters;
+        vm.activeFilters = activeFilters;
         vm.availableFilters = ko.observableArray(
           vm.allFilters.slice(0).sort(function(one, two) {
             return one.order() < two.order() ? -1 : 1;
           })
         );
 
-        // TODO make pureComputed?
-        vm.activeNumericFilters = vm.allFilters.filter(function(filter) {
-          return filter.type() === 'numeric' && filter.active();
-        });
-        vm.activeCategoryFilters = vm.allFilters.filter(function(filter) {
-          return filter.type() === 'category' && filter.active();
-        });
-
-        if (vm.activeNumericFilters().length > 0 || vm.activeCategoryFilters().length > 0) {
+        if (vm.activeFilters().length > 0) {
           self.layout.open("west");
         }
 
@@ -153,7 +149,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         });
 
         vm.activateFilter = function(item, event) {
-          if (vm.activeNumericFilters().length === 0 && vm.activeCategoryFilters().length === 0) {
+          if (vm.activeFilters().length === 0) {
             self.layout.open("west");
           }
           var activateFilter = event.target.value;
@@ -180,7 +176,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         vm.removeFilter = function(item, event) {
           var filterIndex = vm.allFilters.indexOf(item);
           vm.allFilters()[filterIndex].active(false);
-          if (vm.activeNumericFilters().length == 0 && vm.activeCategoryFilters().length == 0) {
+          if (vm.activeFilters().length == 0) {
             self.layout.close("west");
           }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );

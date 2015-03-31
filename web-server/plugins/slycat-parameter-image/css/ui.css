@@ -689,12 +689,6 @@ rights in this software.
   font-weight: bold;
 }
 
-.numeric-filters,
-.category-filters
-{
-  display: inline-block;
-}
-
 .category-filter {
   background-color: white;
 }
