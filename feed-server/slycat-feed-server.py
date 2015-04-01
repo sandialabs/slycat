@@ -57,6 +57,8 @@ def log_configuration(tree, indent=""):
 log_configuration(configuration)
 
 def is_project_reader(project, user):
+  if user in configuration["slycat"]["server-admins"]:
+    return True
   if user in [entry["user"] for entry in project["acl"]["administrators"]]:
     return True
   if user in [entry["user"] for entry in project["acl"]["writers"]]:
