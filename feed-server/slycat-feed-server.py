@@ -1,10 +1,12 @@
 import argparse
 import collections
+import ConfigParser
 import couch
 import couchdb.client
 import datetime
 import json
 import logging
+import os
 import sys
 import threading
 import time
@@ -15,40 +17,48 @@ import tornado.web
 import tornado.websocket
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--access-log", default="-", help="Access log filename, or '-' for stderr.  Default: %(default)s")
-parser.add_argument("--access-log-count", type=int, default=100, help="Maximum number of access log files.  Default: %(default)s")
-parser.add_argument("--access-log-size", type=int, default=10000000, help="Maximum size of access log files.  Default: %(default)s")
-parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
-parser.add_argument("--couchdb-host", default="http://localhost:5984", help="CouchDB host.  Default: %(default)s")
-parser.add_argument("--error-log", default="-", help="Error log filename, or '-' for stderr.  Default: %(default)s")
-parser.add_argument("--error-log-count", type=int, default=100, help="Maximum number of error log files.  Default: %(default)s")
-parser.add_argument("--error-log-size", type=int, default=10000000, help="Maximum size of error log files.  Default: %(default)s")
-parser.add_argument("--max-session-age", type=float, default=5 * 60, help="Maximum age of an authentication session in seconds.  Default: %(default)s")
-parser.add_argument("--port", type=int, default=8093, help="Feed server port.  Default: %(default)s")
+parser.add_argument("--config", default="config.ini", help="Path to a file containing configuration parameters.")
 arguments = parser.parse_args()
+
+root_path = os.path.dirname(os.path.abspath(__file__))
+config_path = arguments.config if os.path.isabs(arguments.config) else os.path.join(root_path, arguments.config)
+parser = ConfigParser.SafeConfigParser()
+parser.read(config_path)
+configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
 
 access_log = logging.getLogger("access")
 access_log.propagate = False
 access_log.setLevel(logging.INFO)
-if arguments.access_log == "-":
+if configuration["slycat-feed-server"]["access-log"] == "-":
   access_log.addHandler(logging.StreamHandler(sys.stderr))
 else:
-  access_log.addHandler(logging.handlers.RotatingFileHandler(arguments.access_log, maxBytes=arguments.access_log_size, backupCount=arguments.access_log_count))
+  access_log.addHandler(logging.handlers.RotatingFileHandler(configuration["slycat-feed-server"]["access-log"], maxBytes=configuration["slycat-feed-server"]["access-log-size"], backupCount=configuration["slycat-feed-server"]["access-log-count"]))
 
 error_log = logging.getLogger("error")
 error_log.propagate = False
 error_log.setLevel(logging.INFO)
-if arguments.error_log == "-":
+if configuration["slycat-feed-server"]["error-log"] == "-":
   error_log.addHandler(logging.StreamHandler(sys.stderr))
 else:
-  error_log.addHandler(logging.handlers.RotatingFileHandler(arguments.error_log, maxBytes=arguments.error_log_size, backupCount=arguments.error_log_count))
+  error_log.addHandler(logging.handlers.RotatingFileHandler(configuration["slycat-feed-server"]["error-log"], maxBytes=configuration["slycat-feed-server"]["error-log-size"], backupCount=configuration["slycat-feed-server"]["error-log-count"]))
 error_log.handlers[-1].setFormatter(logging.Formatter(fmt="%(asctime)s  %(message)s", datefmt="[%d/%b/%Y:%H:%M:%S]"))
 
 class log(object):
   access = logging.getLogger("access").info
   error = logging.getLogger("error").info
 
+def log_configuration(tree, indent=""):
+  for key, value in sorted(tree.items()):
+    if isinstance(value, dict):
+      log.error("%s%s:" % (indent, key))
+      log_configuration(value, indent + "  ")
+    else:
+      log.error("%s%s: %s" % (indent, key, value))
+log_configuration(configuration)
+
 def is_project_reader(project, user):
+  if user in configuration["slycat"]["server-admins"]:
+    return True
   if user in [entry["user"] for entry in project["acl"]["administrators"]]:
     return True
   if user in [entry["user"] for entry in project["acl"]["writers"]]:
@@ -171,7 +181,7 @@ class RawFeed(object):
     with self._lock:
       self._clients.discard(client)
 
-raw_feed = RawFeed(arguments.couchdb_host, arguments.couchdb_database)
+raw_feed = RawFeed(configuration["slycat"]["couchdb-host"], configuration["slycat"]["couchdb-database"])
 
 class ChangeFeed(tornado.websocket.WebSocketHandler):
   def get(self, *args, **kwargs):
@@ -189,7 +199,7 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
       database = couch.BlockingCouch("slycat")
       session = database.get_doc(sid)
 
-      if (datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > arguments.max_session_age:
+      if (datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > configuration["slycat"]["session-timeout"].total_seconds():
         raise tornado.web.HTTPError(403, reason="Session expired.")
 
       self.user = session["creator"]
@@ -221,6 +231,6 @@ application = tornado.web.Application([
 ], debug=True)
 
 server = tornado.httpserver.HTTPServer(application)
-server.listen(arguments.port)
+server.listen(configuration["slycat-feed-server"]["socket-port"], configuration["slycat-feed-server"]["socket-host"])
 tornado.ioloop.IOLoop.instance().start()
 
