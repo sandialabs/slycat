@@ -89,7 +89,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             type: ko.observable('category'),
             index: ko.observable( i ),
             active: ko.observable(false),
-            order: ko.observable( variable_order.indexOf(i) ) // always put category filters on the right
+            all: ko.observable(true),
+            order: ko.observable( variable_order.indexOf(i) ) 
           });
         });
 

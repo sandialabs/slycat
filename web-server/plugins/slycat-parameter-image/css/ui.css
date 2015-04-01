@@ -625,7 +625,9 @@ rights in this software.
 }
 .slycat-pim-filter .close-button:hover,
 .category-filter .close-button:hover,
-.slycat-pim-filter .invert-button:hover
+.slycat-pim-filter .invert-button:hover,
+.category-filter .invert-button:hover,
+.category-filter .select-all-none-button:hover
 {
   cursor: pointer;
 }
@@ -634,9 +636,12 @@ rights in this software.
 {
   position: absolute;
   top: 4px;
-  left: 25px;
+  left: 6px;
 }
-.slycat-pim-filter .invert-button {
+.slycat-pim-filter .invert-button,
+.category-filter .invert-button,
+.category-filter .select-all-none-button
+{
   position: absolute;
 }
 .slycat-pim-filter .fa-arrows-v {
@@ -648,6 +653,14 @@ rights in this software.
   -ms-transform: rotate(135deg);
   -webkit-transform: rotate(135deg);
   left: 25px;
+  bottom: 7px;
+}
+.category-filter .invert-button {
+  left: 25px;
+  bottom: 7px;
+}
+.category-filter .select-all-none-button {
+  left: 45px;
   bottom: 7px;
 }
 .slycat-pim-filter .minMaxHighLow .max,
