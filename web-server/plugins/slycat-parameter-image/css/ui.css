@@ -709,6 +709,15 @@ rights in this software.
   text-overflow: ellipsis;
 }
 
+.cat-button:hover, .cat-button:focus {
+  outline: none !important;
+  outline-style: none;
+}
+
+.cat-button:focus:not(.active) {
+  background-color: white !important;
+}
+
 /* Note Layer */
 .ui-sticky {
   z-index: 3
