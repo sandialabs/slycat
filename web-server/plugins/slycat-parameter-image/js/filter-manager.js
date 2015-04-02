@@ -43,7 +43,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
 
   FilterManager.prototype.build_sliders = function(controls_ready) {
     var self = this;
-    if (!self.sliders_ready && self.controls_ready && self.table_metadata) {
+    if (!self.sliders_ready && self.controls_ready && self.table_metadata && self.other_columns) {
       self.sliders_ready = true;
       $("#sliders-pane .load-status").css("display", "none");
 

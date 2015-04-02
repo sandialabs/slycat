@@ -208,7 +208,7 @@ function metadata_loaded()
         && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
         other_columns.push(i);
     }
-    filter_manager.set_other_columns();
+    filter_manager.set_other_columns(other_columns);
   }
 
   setup_table();
