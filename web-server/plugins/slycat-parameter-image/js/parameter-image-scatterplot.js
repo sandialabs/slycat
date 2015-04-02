@@ -199,7 +199,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         }
         else
         {
-          if(Math.abs(e.originalEvent.offsetX || e.originalEvent.layerX - self.start_drag[0]) > self.options.drag_threshold || Math.abs(e.originalEvent.offsetY || e.originalEvent.layerY - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
+          if(Math.abs((e.originalEvent.offsetX || e.originalEvent.layerX) - self.start_drag[0]) > self.options.drag_threshold || Math.abs((e.originalEvent.offsetY || e.originalEvent.layerY) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
           {
             self.state = "rubber-band-drag";
             self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
@@ -264,10 +264,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
       else // Pick selection ...
       {
-        var x1 = e.originalEvent.offsetX || e.originalEvent.layerX - self.options.pick_distance;
-        var x2 = e.originalEvent.offsetX || e.originalEvent.layerX + self.options.pick_distance;
-        var y1 = e.originalEvent.offsetY || e.originalEvent.layerY - self.options.pick_distance;
-        var y2 = e.originalEvent.offsetY || e.originalEvent.layerY + self.options.pick_distance;
+        var x1 = (e.originalEvent.offsetX || e.originalEvent.layerX) - self.options.pick_distance;
+        var x2 = (e.originalEvent.offsetX || e.originalEvent.layerX) + self.options.pick_distance;
+        var y1 = (e.originalEvent.offsetY || e.originalEvent.layerY) - self.options.pick_distance;
+        var y2 = (e.originalEvent.offsetY || e.originalEvent.layerY) + self.options.pick_distance;
 
         for(var i = count - 1; i > -1; i--)
         {
