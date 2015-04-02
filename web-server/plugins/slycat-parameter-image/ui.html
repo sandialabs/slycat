@@ -134,12 +134,17 @@ rights in this software.
                     model_id: $parent.model_id
                     "></slycat-category-select>
             <i class="fa fa-times close-button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
-            <i class="fa fa-hand-o-down invert-button" title="Invert filter" data-bind="click: $parent.invertFilter"></i>
-            <i class="fa select-all-none-button"
+            <i class="fa fa-toggle-on select-all-button" title="Select all"
               data-bind="
-                click: $parent.selectAllNone, 
-                css: { 'fa-square-o': all(), 'fa-check-square-o': !all() },
-                attr: { title: all() ? 'Select none' : 'Select all' }
+                click: $parent.selectAll, 
+                css: { 'active': true }
+              "
+            ></i>
+            <i class="fa fa-random invert-button" title="Invert filter" data-bind="click: $parent.invertFilter"></i>
+            <i class="fa fa-toggle-off select-none-button" title="Select none"
+              data-bind="
+                click: $parent.selectNone, 
+                css: { 'active': false }
               "
             ></i>
           </div>

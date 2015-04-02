@@ -627,7 +627,8 @@ rights in this software.
 .category-filter .close-button:hover,
 .slycat-pim-filter .invert-button:hover,
 .category-filter .invert-button:hover,
-.category-filter .select-all-none-button:hover
+.category-filter .select-all-button:hover,
+.category-filter .select-none-button:hover
 {
   cursor: pointer;
 }
@@ -640,7 +641,8 @@ rights in this software.
 }
 .slycat-pim-filter .invert-button,
 .category-filter .invert-button,
-.category-filter .select-all-none-button
+.category-filter .select-all-button,
+.category-filter .select-none-button
 {
   position: absolute;
 }
@@ -656,11 +658,15 @@ rights in this software.
   bottom: 7px;
 }
 .category-filter .invert-button {
+  left: 46px;
+  bottom: 7px;
+}
+.category-filter .select-all-button {
   left: 25px;
   bottom: 7px;
 }
-.category-filter .select-all-none-button {
-  left: 45px;
+.category-filter .select-none-button {
+  left: 65px;
   bottom: 7px;
 }
 .slycat-pim-filter .minMaxHighLow .max,
