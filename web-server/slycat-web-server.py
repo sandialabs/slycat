@@ -10,5 +10,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--config", default="config.ini", help="Path to a file containing configuration parameters.")
 arguments = parser.parse_args()
 
-slycat.web.server.engine.start(os.path.dirname(os.path.abspath(__file__)), arguments.config)
+root_path = os.path.dirname(os.path.abspath(__file__))
+slycat.web.server.engine.start(root_path, arguments.config)
 

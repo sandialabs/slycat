@@ -168,8 +168,6 @@ def start(root_path, config_file):
         cherrypy.log.error("%s%s:" % (indent, key))
         log_configuration(value, indent + "  ")
       else:
-        if "password" in key.lower():
-          value = "********"
         cherrypy.log.error("%s%s: %s" % (indent, key, value))
   log_configuration(configuration)
 
