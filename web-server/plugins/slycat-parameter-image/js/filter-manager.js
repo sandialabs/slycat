@@ -77,9 +77,9 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         allFilters = mapping.fromJS(self.bookmark["allFilters"]);
         buildComputedFilters(allFilters);
 
-        _.each(numericFilters, function (filter) {
-          filter.rateLimitedHigh = ko.pureComputed( allFilters()[i].high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
-          filter.rateLimitedLow = ko.pureComputed( allFilters()[i].low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+        _.each(numericFilters(), function (filter) {
+          filter.rateLimitedHigh = ko.pureComputed( filter.high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+          filter.rateLimitedLow = ko.pureComputed( filter.low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
         });
       }
       else {
