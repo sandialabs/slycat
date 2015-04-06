@@ -9,20 +9,10 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
   ko.components.register("slycat-category-select", {
     viewModel: function(params) {
       var self = this;
-      self.categories = ko.observableArray();
+      self.categories = params.categories;
       self.selectedCategories = ko.observableArray();
       //this.selectedCategories = ko.observableArray(this.categories()); // selected by default
       self.length = params.length || ko.observable(500);
-
-      $.ajax({
-          type: "GET",
-          url : server_root + "models/" + params.model_id() + "/arraysets/data-table/arrays/0/attributes/" + params.category() + "/chunk?ranges=0,100",
-          success : function(result) {
-             _(result).uniq().sort().each(function(c) { self.categories.push(c); self.selectedCategories.push(c); }).value(); // selected by default
-          },
-          error: function(result) {
-          }
-      });
 
       this.isSelected = function(category) {
         var category = category; //capture in closure scope
@@ -32,11 +22,13 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
       };
 
       this.toggle = function(category) {
-        if (self.isSelected(category)()) {
-          self.selectedCategories.remove(category);
+        if(category.selected())
+        {
+          category.selected(false);
         }
-        else {
-          self.selectedCategories.push(category);
+        else
+        {
+          category.selected(true);
         }
       };
 
@@ -48,15 +40,6 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
       });
 
     },
-
-    // template: ' \
-    //   <div class="bootstrap-styles"> \
-    //     <div data-bind="foreach: categories" class="slycat-category-select btn-group-vertical" role="group" style="position: relative"> \
-    //       <button type="button" class="btn btn-default cat-button" data-bind="text: $data, css: { active: $parent.isSelected($data) }, click: $parent.toggle"> \
-    //       </button> \
-    //     </div> \
-    //   </div> \
-    // '
 
     template: { require: "text!" + server_root + "resources/models/parameter-image/slycat-category-select.html" }
   });

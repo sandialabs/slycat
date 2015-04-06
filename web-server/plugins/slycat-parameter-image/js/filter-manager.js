@@ -89,6 +89,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             type: ko.observable('category'),
             index: ko.observable( i ),
             active: ko.observable(false),
+            categories : ko.observableArray(),
             all: ko.observable(true),
             order: ko.observable( variable_order.indexOf(i) ) 
           });
@@ -149,29 +150,53 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           });
         });
 
+        _.each(vm.categoryFilters(), function (filter) {
+          filter.categories.subscribe(function(newValue) {
+            self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+          });
+
+          _.each(filter.categories(), function(category) {
+            category.selected.subscribe(function(newValue){
+              self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+            });
+          });
+        });
+
         vm.activateFilter = function(item, event) {
           if (vm.activeFilters().length === 0) {
             self.layout.open("west");
           }
           var activateFilter = event.target.value;
-          var filterType;
-          _.each(vm.allFilters(), function (filter) {
+          var filter, targetFilter, filterType, categories;
+          for(var i = vm.allFilters().length-1; i >= 0; i--)
+          {
+            filter = vm.allFilters()[i];
             if (filter.index() == Number(activateFilter)) {
               filterType = filter.type();
+              targetFilter = vm.allFilters.remove(filter)[0];
+              if(filterType == 'category' && targetFilter.categories().length == 0)
+              {
+                categories = ko.observableArray();
+                $.ajax({
+                  type: "GET",
+                  url : server_root + "models/" + vm.model_id() + "/arraysets/data-table/metadata?unique=0/" + targetFilter.index() + "/...",
+                  success : function(result) {
+                     _(result.unique[0].values).sort().each(function(c) { targetFilter.categories.push({value: ko.observable(c), selected: ko.observable(true)}); }).value(); // selected by default
+                    // Bookmark once all unique values are set
+                    self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+                  },
+                  error: function(result) {
+                  }
+                });
+              }
               // Move it to the end of the array
-              vm.allFilters.push( vm.allFilters.remove(filter)[0] );
+              vm.allFilters.push( targetFilter );
               // Show it
-              filter.active(true);
+              targetFilter.active(true);
             }
-          });
-
+          }
           event.target.selectedIndex = 0;
-          if (filterType === 'numeric') {
-            $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
-          }
-          else {
-            $("#sliders-pane #sliders .category-filter:last-child").get(0).scrollIntoView();
-          }
+          $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
         vm.removeFilter = function(item, event) {

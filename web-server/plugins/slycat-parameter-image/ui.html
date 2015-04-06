@@ -85,7 +85,7 @@ rights in this software.
     <div id="sliders">
       <div data-bind="foreach: activeFilters">
         <!-- ko if: type() === 'numeric' -->
-          <div class="slycat-pim-filter">
+          <div class="slycat-pim-filter numeric-filter">
             <div class="varNameContainer">
               <div class="varName" data-bind="text: name">[variable name]</div>
             </div>
@@ -121,7 +121,7 @@ rights in this software.
           </div>
         <!-- /ko -->
         <!-- ko if: type() === 'category' -->
-          <div class="category-filter">
+          <div class="slycat-pim-filter category-filter">
             <div class="varNameContainer">
               <div class="varName" data-bind="text: name">
                 [variable name]
@@ -131,6 +131,7 @@ rights in this software.
             params="
                     length: $parent.sliderHeight,
                     category: index,
+                    categories: categories,
                     model_id: $parent.model_id
                     "></slycat-category-select>
             <i class="fa fa-times close-button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
