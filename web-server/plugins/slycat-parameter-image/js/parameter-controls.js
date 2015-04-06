@@ -550,7 +550,7 @@ $.widget("parameter_image.controls",
       .appendTo(scatterplotOptgroup)
       ;
     $("<option />")
-      .text("Hide Unselectred")
+      .text("Hide Unselected")
       .attr("value", "hide_unselected")
       .appendTo(scatterplotOptgroup)
       ;
