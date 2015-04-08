@@ -86,7 +86,7 @@ class DArray(slycat.darray.Prototype):
         data_unique = numpy.unique(slice)
         attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
         attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
-        attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
+        attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concatenate((data_unique, attribute_unique)))
       else:
         slice = slice[numpy.invert(numpy.isnan(slice))]
         if len(slice):
@@ -95,7 +95,7 @@ class DArray(slycat.darray.Prototype):
           data_unique = numpy.unique(slice)
           attribute_min = data_min if attribute_min is None else min(data_min, attribute_min)
           attribute_max = data_max if attribute_max is None else max(data_max, attribute_max)
-          attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concat((data_unique, attribute_unique)))
+          attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concatenate((data_unique, attribute_unique)))
 
     if attribute_min is not None:
       attribute.attrs["min"] = attribute_min
