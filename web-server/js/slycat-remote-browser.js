@@ -133,7 +133,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
 
             current_path = current_path || "/"
 
-            localStorage.removeItem(key);
+            localStorage.setItem(key, "/");
             component.browse(current_path);
           }
         });
