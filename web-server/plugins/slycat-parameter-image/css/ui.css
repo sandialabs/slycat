@@ -718,9 +718,46 @@ rights in this software.
   margin: 20px 0;
   left: 20px;
   position: relative;
+  width: 70px;
+}
+.slycat-category-filter .category-button {
+  border-width: 1px 1px 1px 1px;
+  border-style: solid;
+  border-color: #cfcfcf;
+  /*border-color: #78f;*/
+  background-color: #e7e7e7;
+  color: #8f8f8f;
+  font-size: 13px;
+  padding: 1px 5px;
+  margin-top: -1px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.slycat-category-filter .category-button:first-child {
+  border-radius: 3px 3px 0 0;
+  margin-top: 0;
+}
+.slycat-category-filter .category-button:last-child {
+  border-bottom-width: 1px;
+  border-radius: 0 0 3px 3px;
+}
+.slycat-category-filter .category-button.active {
+  background-color: #abf;
+  border-color: #97A3FE;
+  color: #333;
+  z-index: 5;
+  position: relative;
+}
+.slycat-category-filter .category-button:hover {
+  cursor: pointer;
+  background-color: #cccccc;
+}
+.slycat-category-filter .category-button.active:hover {
+  background-color: #78f;
+  border-color: #78f;
 }
 .slycat-category-select {
-  width: 70px;
+  /*max-width: 70px;*/
 }
 .slycat-category-select button {
   /*width: 50px;*/
