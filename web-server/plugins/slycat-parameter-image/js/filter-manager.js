@@ -206,17 +206,14 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
-        vm.removeFilter = function(item, event) {
-          var filterIndex = vm.allFilters.indexOf(item);
-          vm.allFilters()[filterIndex].active(false);
+        vm.removeFilter = function(filter, event) {
+          filter.active(false);
           if (vm.activeFilters().length == 0) {
             self.layout.close("west");
           }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
-        vm.toggleAutoWidth = function(item, event) {
-          var filterIndex = vm.allFilters.indexOf(item);
-          var filter = vm.allFilters()[filterIndex];
+        vm.toggleAutoWidth = function(filter, event) {
           if(filter.autowidth())
           {
             filter.autowidth(false);
@@ -227,12 +224,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
-        vm.invertFilter = function(item, event) {
-          var filterIndex = vm.allFilters.indexOf(item);
-          var filter = vm.allFilters()[filterIndex];
+        vm.invertFilter = function(filter, event) {
           if(filter.type() === 'numeric')
           {
-            vm.allFilters()[filterIndex].invert( !vm.allFilters()[filterIndex].invert() );
+            filter.invert( !filter.invert() );
             self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           }
           else if(filter.type() === 'category') 
@@ -249,16 +244,12 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             });
           }
         };
-        vm.selectAll = function(item, event) {
-          var filterIndex = vm.allFilters.indexOf(item);
-          var filter = vm.allFilters()[filterIndex];
+        vm.selectAll = function(filter, event) {
           _.each(filter.categories(), function(category){
               category.selected(true);
           });
         };
-        vm.selectNone = function(item, event) {
-          var filterIndex = vm.allFilters.indexOf(item);
-          var filter = vm.allFilters()[filterIndex];
+        vm.selectNone = function(filter, event) {
           _.each(filter.categories(), function(category){
               category.selected(false);
           });
