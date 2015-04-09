@@ -740,9 +740,9 @@ function selected_simulations_changed(selection)
     type : "POST",
     url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selection.length
   });
-  var selected_simulations = {};
-  selected_simulations["simulation-selection"] = selection;
-  bookmarker.updateState(selected_simulations);
+  var bookmark_selected_simulations = {};
+  bookmark_selected_simulations["simulation-selection"] = selection;
+  bookmarker.updateState(bookmark_selected_simulations);
 }
 
 function selected_variable_changed(variable)
