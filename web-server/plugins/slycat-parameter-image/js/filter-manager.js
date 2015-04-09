@@ -100,7 +100,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             selected: ko.pureComputed( function(){ 
               return _.filter(categories(), function(category) { return category.selected() === true; });
             }),
-            all: ko.observable(true),
+            autowidth: ko.observable(false),
             order: ko.observable( variable_order.indexOf(i) ) 
           });
         });
@@ -211,6 +211,19 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           vm.allFilters()[filterIndex].active(false);
           if (vm.activeFilters().length == 0) {
             self.layout.close("west");
+          }
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+        };
+        vm.toggleAutoWidth = function(item, event) {
+          var filterIndex = vm.allFilters.indexOf(item);
+          var filter = vm.allFilters()[filterIndex];
+          if(filter.autowidth())
+          {
+            filter.autowidth(false);
+          }
+          else
+          {
+            filter.autowidth(true);
           }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };

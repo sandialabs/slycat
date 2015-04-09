@@ -116,12 +116,17 @@ rights in this software.
                     reverse: true
                     "></slycat-range-slider>
             <i class="fa fa-times close-button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
-            <i class="fa invert-button" title="Invert filter" data-bind="click: $parent.invertFilter, css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }"></i>
-
+            <i class="fa invert-button" title="Invert filter" 
+              data-bind="
+                click: $parent.invertFilter, 
+                css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }
+              "
+            ></i>
           </div>
         <!-- /ko -->
         <!-- ko if: type() === 'category' -->
-          <div class="slycat-pim-filter category-filter">
+          <div class="slycat-pim-filter category-filter"
+            data-bind="css: { 'auto-width': autowidth() }">
             <div class="varNameContainer">
               <div class="varName" data-bind="text: name">
                 [variable name]
@@ -135,6 +140,13 @@ rights in this software.
                     model_id: $parent.model_id
                     "></slycat-category-select>
             <i class="fa fa-times close-button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
+            <i class="fa auto-width-button" title="Close filter" 
+              data-bind="
+                click: $parent.toggleAutoWidth, 
+                css: { 'fa-chevron-left': autowidth(), 'fa-chevron-right': !autowidth() },
+                attr: { title: autowidth() ? 'Collapse' : 'Expand' }
+              "
+            ></i>
             <i class="fa fa-toggle-on select-all-button" title="Select all"
               data-bind="
                 click: $parent.selectAll, 

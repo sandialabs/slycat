@@ -620,15 +620,20 @@ rights in this software.
   position: relative;
   display: inline-block;
   width: 95px;
+  min-width: 95px;
   padding-left: 5px;
   margin-right: 20px;
+}
+.category-filter.auto-width {
+  width: auto;
 }
 .slycat-pim-filter .close-button:hover,
 .category-filter .close-button:hover,
 .slycat-pim-filter .invert-button:hover,
 .category-filter .invert-button:hover,
 .category-filter .select-all-button:hover,
-.category-filter .select-none-button:hover
+.category-filter .select-none-button:hover,
+.category-filter .auto-width-button:hover
 {
   cursor: pointer;
 }
@@ -639,10 +644,16 @@ rights in this software.
   top: 4px;
   left: 6px;
 }
+.category-filter .auto-width-button {
+  top: 5px;
+  right: 5px;
+  font-size: 12px;
+}
 .slycat-pim-filter .invert-button,
 .category-filter .invert-button,
 .category-filter .select-all-button,
-.category-filter .select-none-button
+.category-filter .select-none-button,
+.category-filter .auto-width-button
 {
   position: absolute;
 }
@@ -715,10 +726,14 @@ rights in this software.
   overflow-x: hidden;
   overflow-y: auto;
   display: inline-block;
-  margin: 20px 0;
-  left: 20px;
+  margin: 20px 4px 20px 20px;
+  /*left: 20px;*/
   position: relative;
   width: 70px;
+  min-width: 70px;
+}
+.auto-width .slycat-category-filter {
+  width: auto;
 }
 .slycat-category-filter .category-button {
   border-width: 1px 1px 1px 1px;
@@ -732,6 +747,10 @@ rights in this software.
   margin-top: -1px;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+.auto-width .slycat-category-filter .category-button {
+  padding-right: 30px;
+  overflow: visible;
 }
 .slycat-category-filter .category-button:first-child {
   border-radius: 3px 3px 0 0;
