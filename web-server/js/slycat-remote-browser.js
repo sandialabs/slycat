@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping"], function(server_root, client, ko, mapping)
+define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "lodash"], function(server_root, client, ko, mapping, _)
 {
   ko.components.register("slycat-remote-browser",
   {
@@ -34,15 +34,15 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
         {
           icon = component.icon_map[file.mime_type()];
         }
-        else if(file.mime_type().startsWith("text/"))
+        else if(_.startsWith(file.mime_type(), "text/"))
         {
           icon = "<span class='fa fa-file-text-o'></span>";
         }
-        else if(file.mime_type().startsWith("image/"))
+        else if(_.startsWith(file.mime_type(), "image/"))
         {
           icon = "<span class='fa fa-file-image-o'></span>";
         }
-        else if(file.mime_type().startsWith("video/"))
+        else if(_.startsWith(file.mime_type(), "video/"))
         {
           icon = "<span class='fa fa-file-video-o'></span>";
         }
