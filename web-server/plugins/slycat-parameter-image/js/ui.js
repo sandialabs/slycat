@@ -395,7 +395,7 @@ function metadata_loaded()
 
 function setup_table()
 {
-  if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && colorscale
+  if( !table_ready && table_metadata && colorscale
     && bookmark && (x_index != null) && (y_index != null) && (images_index !== null)
     && (selected_simulations != null) && (hidden_simulations != null) 
     && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null)
@@ -410,7 +410,6 @@ function setup_table()
       mid : model_id,
       aid : "data-table",
       metadata : table_metadata,
-      statistics : table_statistics,
       inputs : input_columns,
       outputs : output_columns,
       others : other_columns,
@@ -728,7 +727,6 @@ function setup_controls()
               update_scatterplot_y(variable);
 
             load_table_statistics([variable], function(){
-              $("#table").table("option", "statistics", table_statistics);
               if(variable == v_index)
               {
                 update_v(variable);

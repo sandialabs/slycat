@@ -15,7 +15,6 @@ $.widget("parameter_image.table",
     mid : null,
     aid : null,
     metadata : null,
-    statistics : null,
     inputs : [],
     outputs : [],
     others : [],
@@ -362,11 +361,6 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
     }
-    else if(key == "statistics")
-    {
-      self.options[key] = value;
-      self._color_variables(self.options["variable-selection"]);
-    }
     else if(key == "hidden_simulations")
     {
       self.options[key] = value;
@@ -503,21 +497,49 @@ $.widget("parameter_image.table",
         if(self.sort_column !== null && self.sort_order !== null)
           sort = "&sort=" + self.sort_column + ":" + self.sort_order;
 
+        // $.ajax(
+        // {
+        //   type : "GET",
+        //   url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+        //   async : false,
+        //   success : function(data)
+        //   {
+        //     self.pages[page] = [];
+        //     for(var i=0; i < data.rows.length; i++)
+        //     {
+        //       result = {};
+        //       for(var j = column_begin; j != column_end; ++j)
+        //         result[j] = data.data[j][i];
+        //       self.pages[page].push(result);
+        //     }
+        //   },
+        //   error: function(request, status, reason_phrase)
+        //   {
+        //     console.log("error", request, status, reason_phrase);
+        //   }
+        // });
+
+        var column_end_no_index = column_end - 1;
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + column_end_no_index + "/" + row_begin + ":" + row_end,
           async : false,
           success : function(data)
           {
             self.pages[page] = [];
-            for(var i=0; i < data.rows.length; i++)
+            //var arrayPage = [];
+            for(var i=0; i < data[0].length; i++)
             {
               result = {};
-              for(var j = column_begin; j != column_end; ++j)
-                result[j] = data.data[j][i];
+              for(var j = column_begin; j != column_end_no_index; ++j)
+              {
+                result[j] = data[j][i];
+              }
+              result[column_end_no_index] = row_begin + i;
               self.pages[page].push(result);
             }
+            var alex = 1;
           },
           error: function(request, status, reason_phrase)
           {
