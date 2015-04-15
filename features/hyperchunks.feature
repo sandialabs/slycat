@@ -1,46 +1,23 @@
 Feature: Slycat Agent
 
-  Scenario: Create a default Hyperchunks object.
-    When a Hyperchunks object is created without parameters.
-    Then the Hyperchunks object should be empty.
-
-  Scenario: Create an empty Hyperchunk object.
-    When a Hyperchunk object is created without parameters, an exception must be raised.
-
-  Scenario Outline: Create a Hyperchunk object.
-    When creating a Hyperchunk with <input>
-    Then the Hyperchunk should contain <input>
+  Scenario Outline: Parsing valid hyperchunk expressions.
+    When parsing a hyperchunk expression, <expression> is valid.
 
     Examples:
-      | input                                     |
-      | one array                                 |
-      | an array range                            |
-      | all arrays                                |
-      | one array and one attribute               |
-      | one array and a range of attributes       |
-      | one array and all attributes              |
-
-  Scenario: Create a default Hyperslices object.
-    When a Hyperslices object is created without parameters.
-    Then the Hyperslices object should be empty.
-
-  Scenario: Create an empty Hyperslice object.
-    When a Hyperslice object is created without parameters, an exception must be raised.
-
-  Scenario Outline: Create a Hyperslice object.
-    When creating a Hyperslice with <input>
-    Then the Hyperslice should contain <input>
-
-    Examples:
-      | input                                     |
-      | one index                                 |
-      | a half-open range [...) of indices        |
-      | a half-open range (...] of indices        |
-      | a full-open range                         |
-      | a closed range                            |
-      | all indices                               |
-      | stepped half-open range [...) of indices  |
-      | stepped half-open range (...] of indices  |
-      | stepped full-open range of indices        |
-      | stepped closed range of indices           |
+      | expression                            |
+      | 0                                     |
+      | 0;1                                   |
+      | 0/1                                   |
+      | 0/1;2/3                               |
+      | 0:10                                  |
+      | 0:10:2                                |
+      | :10:2                                 |
+      | 0::2                                  |
+      | 0:10/20:30                            |
+      | .../20:30                             |
+      | 0:10/...                              |
+      | 0/1/20                                |
+      | 0/1/20:30                             |
+      | 0/1/20,30                             |
+      | 0/1/20:30,40:50                       |
 
