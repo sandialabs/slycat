@@ -12,6 +12,9 @@ class AttributeWrapper(object):
     self._attribute = attribute
     self._hyperslices = hyperslices
 
+  def __len__(self):
+    return 0 if self._hyperslices is None else len(self._hyperslices)
+
   @property
   def index(self):
     return self._attribute
@@ -19,13 +22,16 @@ class AttributeWrapper(object):
   def hyperslices(self):
     if self._hyperslices is not None:
       for hyperslice in self._hyperslices:
-        yield hyperslice
+        yield hyperslice[0]
 
 class ArrayWrapper(object):
   def __init__(self, array, attributes, hyperslices):
     self._array = array
     self._attributes = attributes
     self._hyperslices = hyperslices
+
+  def __len__(self):
+    return 0 if self._attributes is None else 1
 
   @property
   def index(self):
