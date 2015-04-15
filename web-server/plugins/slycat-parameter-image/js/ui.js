@@ -386,6 +386,10 @@ function metadata_loaded()
     }
     setup_controls();
     filter_manager.build_sliders();
+    // Changes to active filters ...
+    filter_manager.active_filters.subscribe(function(newValue) {
+      console.log("active_filters changed! The new value is " + newValue);
+    });
   }
 }
 

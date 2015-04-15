@@ -15,6 +15,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
     self.sliders_ready = false;
     self.slidersPaneHeight = ko.observable();
     self.controls_ready = false;
+    self.active_filters = null;
+
   }
 
   /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
@@ -64,6 +66,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         activeFilters = ko.pureComputed(function() {
           return _.filter(filters(), function(f) { return f.active(); });
         });
+        // activeFilters = filters.filter(function(f) { return f.active(); });
+        self.active_filters = ko.pureComputed(function() {
+          return _.filter(filters(), function(f) { return f.active(); });
+        }).extend({ rateLimit: { timeout: 5000, method: "notifyWhenChangesStop" } });
         numericFilters = ko.pureComputed(function() {
           return _.filter(filters(), function(f) { return f.type() === 'numeric'; });
         });
