@@ -2,6 +2,7 @@ from behave import *
 
 import nose.tools
 import numpy
+import pyparsing
 import slycat.hyperchunks
 
 def assert_round_trip_equal(string):
@@ -97,4 +98,39 @@ def step_impl(context):
 def step_impl(context):
   assert_round_trip_equal("0/1/20:25,30:35")
   assert_expansion_equal("0/1/20:25,30:35", 5, 5, [(0, 1, (slice(20, 25), slice(30, 35)))])
+
+@when(u'parsing a hyperchunk expression, 0/1/20!25 is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/1/20|25")
+
+@when(u'parsing a hyperchunk expression, 0/1/20:25!30:35 is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/1/20:25|30:35")
+  assert_expansion_equal("0/1/20:25|30:35", 5, 5, [(0, 1, (slice(20, 25),)), (0, 1, (slice(30, 35),))])
+
+@when(u'parsing a hyperchunk expression, 0!1 is invalid.')
+def step_impl(context):
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("0|1")
+
+@when(u'parsing a hyperchunk expression, 0/1!2 is invalid.')
+def step_impl(context):
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("0/1|2")
+
+@when(u'parsing a hyperchunk expression, foo is invalid.')
+def step_impl(context):
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("foo")
+
+@when(u'parsing a hyperchunk expression, 0/foo is invalid.')
+def step_impl(context):
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("0/foo")
+
+@when(u'parsing a hyperchunk expression, 0/1/foo is invalid.')
+def step_impl(context):
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("0/1/foo")
+
 
