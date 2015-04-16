@@ -115,25 +115,26 @@ def format(hyperchunks):
 
   return ";".join([format_hyperchunk(hyperchunk) for hyperchunk in hyperchunks])
 
-#class HypersliceBuilder(object):
-#  def __getitem__(self, index):
-#    if isinstance(index, tuple):
-#      return Hyperslice(index)
-#    else:
-#      return Hyperslice((index,))
-#
-#hyperslice = HypersliceBuilder()
-#
-#def simple(array, attribute, hyperslice):
-#  """Return a hyperchunks object containing a single array, single attribute, and single hyperslice.
-#
-#  Parameters
-#  ----------
-#  array: integer
-#    Zero-based index of the array to read/write.
-#  attribute: integer
-#    Zero-based index of the attribute to read/write.
-#  hyperslice: tuple of one-or-more slices
-#    Specifies a single hyperslice to read/write.
-#  """
-#  return Hyperchunks(Hyperchunk((array,), (attribute,), Hyperslices(hyperslice)))
+class HypersliceBuilder(object):
+  def __getitem__(self, index):
+    if isinstance(index, tuple):
+      return index
+    else:
+      return (index,)
+
+hyperslice = HypersliceBuilder()
+
+
+def simple(array, attribute, hyperslice):
+  """Return a hyperchunks object containing a single array, single attribute, and single hyperslice.
+
+  Parameters
+  ----------
+  array: integer
+    Zero-based index of the array to read/write.
+  attribute: integer
+    Zero-based index of the attribute to read/write.
+  hyperslice: tuple of one-or-more slices
+    Specifies a single hyperslice to read/write.
+  """
+  return [[array, attribute, [hyperslice]]]

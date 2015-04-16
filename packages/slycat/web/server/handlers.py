@@ -633,7 +633,7 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
