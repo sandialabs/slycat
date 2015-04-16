@@ -164,9 +164,11 @@ function model_loaded()
       }
 
       filter_manager.set_table_metadata(table_metadata);
-      table_statistics = new Array(table_metadata["column-count"]);
-      table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
-      load_table_statistics(d3.range(table_metadata["column-count"]-1), metadata_loaded);
+      table_statistics = new Array();
+      load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
+        table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+        metadata_loaded();
+      });
     },
     error: artifact_missing
   });
