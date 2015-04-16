@@ -539,7 +539,6 @@ $.widget("parameter_image.table",
               result[column_end_no_index] = row_begin + i;
               self.pages[page].push(result);
             }
-            var alex = 1;
           },
           error: function(request, status, reason_phrase)
           {

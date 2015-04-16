@@ -39,13 +39,19 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
 
   /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
      but it makes these dependencies explicit and thus will be easier to decouple later. */
+  FilterManager.prototype.set_table_statistics = function(table_statistics) {
+    this.table_statistics = table_statistics;
+  };
+
+  /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
+     but it makes these dependencies explicit and thus will be easier to decouple later. */
   FilterManager.prototype.notify_controls_ready = function() {
     this.controls_ready = true;
   };
 
   FilterManager.prototype.build_sliders = function(controls_ready) {
     var self = this;
-    if (!self.sliders_ready && self.controls_ready && self.table_metadata && self.other_columns) {
+    if (!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics && (self.table_statistics.length == self.table_metadata["column-count"]) && self.other_columns) {
       self.sliders_ready = true;
       $("#sliders-pane .load-status").css("display", "none");
 
@@ -112,14 +118,14 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         });
 
         _.each(numeric_variables, function(i) {
-          var high = ko.observable( self.table_metadata["column-max"][i] );
-          var low = ko.observable( self.table_metadata["column-min"][i] );
+          var high = ko.observable( self.table_statistics[i]["max"] );
+          var low = ko.observable( self.table_statistics[i]["min"] );
           allFilters.push({
             name: ko.observable( self.table_metadata["column-names"][i] ),
             type: ko.observable('numeric'),
             index: ko.observable( i ),
-            max: ko.observable( self.table_metadata["column-max"][i] ),
-            min: ko.observable( self.table_metadata["column-min"][i] ),
+            max: ko.observable( self.table_statistics[i]["max"] ),
+            min: ko.observable( self.table_statistics[i]["min"] ),
             high: high,
             low: low,
             invert: ko.observable(false),

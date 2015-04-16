@@ -143,15 +143,30 @@ function model_loaded()
 
   // Load data table metadata.
   $.ajax({
-    url : server_root + "models/" + model_id + "/tables/data-table/arrays/0/metadata?index=Index",
+    url : server_root + "models/" + model_id + "/arraysets/data-table/metadata?arrays=0",
     contentType : "application/json",
     success: function(metadata)
     {
-      table_metadata = metadata;
+      var raw_metadata = metadata.arrays[0];
+      // Mapping data from new metadata format to old table_metadata format
+      table_metadata = {};
+      table_metadata["row-count"] = raw_metadata.shape[0];
+
+      // This is going to be one short for now since there is no index. Perhaps just add one for now?
+      table_metadata["column-count"] = raw_metadata.attributes.length;
+
+      table_metadata["column-names"] = [];
+      table_metadata["column-types"] = [];
+      for(var i = 0; i < raw_metadata.attributes.length; i++)
+      {
+        table_metadata["column-names"].push(raw_metadata.attributes[i].name);
+        table_metadata["column-types"].push(raw_metadata.attributes[i].type);
+      }
+
       filter_manager.set_table_metadata(table_metadata);
-      table_statistics = new Array(metadata["column-count"]);
-      table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
-      load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
+      table_statistics = new Array(table_metadata["column-count"]);
+      table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+      load_table_statistics(d3.range(table_metadata["column-count"]-1), metadata_loaded);
     },
     error: artifact_missing
   });
@@ -223,6 +238,7 @@ function metadata_loaded()
   }
 
   setup_controls();
+  filter_manager.set_table_statistics(table_statistics);
   filter_manager.build_sliders();
 
   if(table_metadata && bookmark)
@@ -255,46 +271,6 @@ function metadata_loaded()
     hidden_simulations = [];
     if("hidden-simulations" in bookmark)
       hidden_simulations = bookmark["hidden-simulations"];
-
-    // // Retrieve and cache each column that has active filters
-    // filter_cache = {};
-    // if("activeFilters" in bookmark)
-    // {
-    //   var activeFilters = bookmark["activeFilters"];
-    //   var filtered_columns = [];
-    //   for(var i=0; i < activeFilters.length; i++)
-    //   {
-    //     filtered_columns.push(activeFilters[i].index);
-    //   }
-    //   var requests = Array();
-    //   for(var i=0; i < filtered_columns.length; i++)
-    //   {
-    //     var request = get_model_array_attribute({
-    //       server_root : server_root,
-    //       mid : model_id,
-    //       aid : "data-table",
-    //       array : 0,
-    //       attribute : filtered_columns[i],
-    //       success : function(result)
-    //       {
-    //         filter_cache[filtered_columns[i]] = result;
-    //       },
-    //       error : artifact_missing
-    //     });
-    //     requests.push(request);
-    //   }
-    //   var defer = $.when.apply($, requests);
-    //   defer.done(function(){
-
-    //     // This is executed only after every ajax request has been completed
-
-    //     $.each(arguments, function(index, responseData){
-    //         // "responseData" will contain an array of response information for each specific request
-    //         console.log("here is responseData: " + responseData);
-    //     });
-
-    //   });
-    // }
 
     get_model_array_attribute({
       server_root : server_root,
