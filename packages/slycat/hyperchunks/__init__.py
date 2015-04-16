@@ -20,9 +20,10 @@ class AttributeWrapper(object):
     return self._attribute
 
   def hyperslices(self):
+    """Iterate over the hyperslices in a hyperchunk."""
     if self._hyperslices is not None:
       for hyperslice in self._hyperslices:
-        yield hyperslice[0]
+        yield tuple(hyperslice)
 
 class ArrayWrapper(object):
   def __init__(self, array, attributes, hyperslices):
@@ -38,6 +39,7 @@ class ArrayWrapper(object):
     return self._array
 
   def attributes(self, attribute_count):
+    """Iterate over the attributes in a hyperchunk."""
     if self._attributes is not None:
       #for attributes in self._attributes:
       attributes = self._attributes
@@ -53,6 +55,7 @@ class ArrayWrapper(object):
         yield AttributeWrapper(attribute, self._hyperslices)
 
 def arrays(hyperchunks, array_count):
+  """Iterate over the arrayes in a set of hyperchunks."""
   for hyperchunk in hyperchunks:
     #for arrays in hyperchunk.arrays:
     arrays = hyperchunk[0]

@@ -66,6 +66,7 @@ def step_impl(context):
 @when(u'parsing a hyperchunk expression, 0:5/10:15 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0:5/10:15")
+  assert_expansion_equal("0:5/10:15", 2, 13, [(0, 10), (0, 11), (0, 12), (1, 10), (1, 11), (1, 12)])
 
 @when(u'parsing a hyperchunk expression, .../10:15 is valid.')
 def step_impl(context):
@@ -80,18 +81,20 @@ def step_impl(context):
 @when(u'parsing a hyperchunk expression, 0/1/20 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/1/20")
-  assert_expansion_equal("0/1/20", 5, 5, [(0, 1, 20)])
+  assert_expansion_equal("0/1/20", 5, 5, [(0, 1, (20,))])
 
 @when(u'parsing a hyperchunk expression, 0/1/20:25 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/1/20:25")
-  assert_expansion_equal("0/1/20:25", 5, 5, [(0, 1, slice(20, 25))])
+  assert_expansion_equal("0/1/20:25", 5, 5, [(0, 1, (slice(20, 25),))])
 
 @when(u'parsing a hyperchunk expression, 0/1/20,25 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/1/20,25")
+  assert_expansion_equal("0/1/20,25", 5, 5, [(0, 1, (20, 25))])
 
 @when(u'parsing a hyperchunk expression, 0/1/20:25,30:35 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/1/20:25,30:35")
+  assert_expansion_equal("0/1/20:25,30:35", 5, 5, [(0, 1, (slice(20, 25), slice(30, 35)))])
 
