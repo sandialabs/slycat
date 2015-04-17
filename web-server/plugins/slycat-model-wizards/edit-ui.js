@@ -9,6 +9,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
 
     component.save_model = function()
     {
+      var force_reload = false;
+      // Marking changes may alter the page structure / dimensions in arbitrary ways, so force a page reload.
+      if(component.modified.marking() !== component.model.marking())
+        force_reload = true;
+
       client.put_model(
       {
         mid: component.model._id(),
@@ -17,9 +22,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout-ma
         marking: component.modified.marking(),
         success: function()
         {
-          // Since marking changes have the potential to alter the page
-          // structure in arbitrary ways, it's easier to just reload.
-          if(component.modified.marking() !== component.model.marking())
+          if(force_reload)
           {
             window.location.href = server_root + "models/" + component.model._id();
           }
