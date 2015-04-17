@@ -116,6 +116,16 @@ $.ajax(
     rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
     category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
     filter_manager = new FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns);
+    filter_manager.active_filters_ready.subscribe(function(newValue) {
+      if(newValue)
+      {
+        console.log("active_filters are now ready! The new value is " + newValue);
+
+        filter_manager.active_filters.subscribe(function(newValue) {
+          console.log("active_filters changed! The new value is " + newValue);
+        });
+      }
+    });
     model_loaded();
   },
   error: function(request, status, reason_phrase)
@@ -364,10 +374,6 @@ function metadata_loaded()
     }
     setup_controls();
     filter_manager.build_sliders();
-    // Changes to active filters ...
-    filter_manager.active_filters.subscribe(function(newValue) {
-      console.log("active_filters changed! The new value is " + newValue);
-    });
   }
 }
 
