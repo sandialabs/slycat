@@ -79,7 +79,7 @@ def parse(string):
   -------
   hyperchunks: parsed representation of a hyperchunk.
   """
-  from slycat.hyperchunks.grammar import hyperchunks as parser
+  from slycat.hyperchunks.grammar import hyperchunks_p as parser
   return parser.parseString(string, parseAll=True)
 
 def format(hyperchunks):
