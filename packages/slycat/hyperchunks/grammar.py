@@ -11,8 +11,8 @@ ellipsis = Literal("...").setParseAction(lambda tokens: [Ellipsis])
 slice_expr = range_expr | ellipsis | integer
 hyperslice = Group(delimitedList(slice_expr, delim=","))
 hyperslices = Group(delimitedList(hyperslice, delim="|"))
-attributes = slice_expr
-arrays = slice_expr
+attributes = Group(delimitedList(slice_expr, delim="|"))
+arrays = Group(delimitedList(slice_expr, delim="|"))
 hyperchunk = Group(arrays + Optional(Suppress("/") + attributes + Optional(Suppress("/") + hyperslices)))
 hyperchunks = delimitedList(hyperchunk, delim=";")
 

@@ -22,14 +22,14 @@ Feature: Slycat Agent
       | 0/1/20:25,30:35                       |
       | 0/1/20!25                             |
       | 0/1/20:25!30:35                       |
+      | 0!1                                   |
+      | 0/1!2                                 |
 
   Scenario Outline: Parsing invalid hyperchunk expressions.
     When parsing a hyperchunk expression, <expression> is invalid.
 
     Examples:
       | expression                            |
-      | 0!1                                   |
-      | 0/1!2                                 |
       | foo                                   |
       | 0/foo                                 |
       | 0/1/foo                               |

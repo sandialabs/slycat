@@ -41,34 +41,32 @@ class ArrayWrapper(object):
   def attributes(self, attribute_count):
     """Iterate over the attributes in a hyperchunk."""
     if self._attributes is not None:
-      #for attributes in self._attributes:
-      attributes = self._attributes
-      if isinstance(attributes, numbers.Integral):
-        if attributes < 0:
-          attributes = slice(attribute_count + attributes, attribute_count + attributes + 1)
-        else:
-          attributes = slice(attributes, attributes + 1)
-      elif isinstance(attributes, type(Ellipsis)):
-        attributes = slice(0, attribute_count)
-      start, stop, step = attributes.indices(attribute_count)
-      for attribute in numpy.arange(start, stop, step):
-        yield AttributeWrapper(attribute, self._hyperslices)
+      for attributes in self._attributes:
+        if isinstance(attributes, numbers.Integral):
+          if attributes < 0:
+            attributes = slice(attribute_count + attributes, attribute_count + attributes + 1)
+          else:
+            attributes = slice(attributes, attributes + 1)
+        elif isinstance(attributes, type(Ellipsis)):
+          attributes = slice(0, attribute_count)
+        start, stop, step = attributes.indices(attribute_count)
+        for attribute in numpy.arange(start, stop, step):
+          yield AttributeWrapper(attribute, self._hyperslices)
 
 def arrays(hyperchunks, array_count):
   """Iterate over the arrayes in a set of hyperchunks."""
   for hyperchunk in hyperchunks:
-    #for arrays in hyperchunk.arrays:
-    arrays = hyperchunk[0]
-    if isinstance(arrays, numbers.Integral):
-      if arrays < 0:
-        arrays = slice(array_count + arrays, array_count + arrays + 1)
-      else:
-        arrays = slice(arrays, arrays + 1)
-    elif isinstance(arrays, type(Ellipsis)):
-      arrays = slice(0, array_count)
-    start, stop, step = arrays.indices(array_count)
-    for array in numpy.arange(start, stop, step):
-      yield ArrayWrapper(array, hyperchunk[1] if len(hyperchunk) > 1 else None, hyperchunk[2] if len(hyperchunk) > 2 else None)
+    for arrays in hyperchunk[0]:
+      if isinstance(arrays, numbers.Integral):
+        if arrays < 0:
+          arrays = slice(array_count + arrays, array_count + arrays + 1)
+        else:
+          arrays = slice(arrays, arrays + 1)
+      elif isinstance(arrays, type(Ellipsis)):
+        arrays = slice(0, array_count)
+      start, stop, step = arrays.indices(array_count)
+      for array in numpy.arange(start, stop, step):
+        yield ArrayWrapper(array, hyperchunk[1] if len(hyperchunk) > 1 else None, hyperchunk[2] if len(hyperchunk) > 2 else None)
 
 def parse(string):
   """Parse a string hyperchunks representation.
@@ -97,6 +95,9 @@ def format(hyperchunks):
     else:
       raise ValueError()
 
+  def format_slices(slices):
+    return "|".join([format_slice_expr(slice_expr) for slice_expr in slices])
+
   def format_hyperslice(hyperslice):
     return ",".join([format_slice_expr(slice_expr) for slice_expr in hyperslice])
 
@@ -105,11 +106,11 @@ def format(hyperchunks):
 
   def format_hyperchunk(hyperchunk):
     if len(hyperchunk) == 1:
-      return format_slice_expr(hyperchunk[0])
+      return format_slices(hyperchunk[0])
     elif len(hyperchunk) == 2:
-      return format_slice_expr(hyperchunk[0]) + "/" + format_slice_expr(hyperchunk[1])
+      return format_slices(hyperchunk[0]) + "/" + format_slices(hyperchunk[1])
     elif len(hyperchunk) == 3:
-      return format_slice_expr(hyperchunk[0]) + "/" + format_slice_expr(hyperchunk[1]) + "/" + format_hyperslices(hyperchunk[2])
+      return format_slices(hyperchunk[0]) + "/" + format_slices(hyperchunk[1]) + "/" + format_hyperslices(hyperchunk[2])
     else:
       raise ValueError()
 
