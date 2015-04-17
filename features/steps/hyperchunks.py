@@ -118,6 +118,30 @@ def step_impl(context):
   assert_round_trip_equal("0/1|2")
   assert_expansion_equal("0/1|2", 5, 5, [(0, 1), (0, 2)])
 
+@when(u'parsing a hyperchunk expression, 0/coords(0) is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/coords(0)")
+  assert_expansion_equal("0/coords(0)", 5, 5, [(0,)])
+
+@when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
+def step_impl(context):
+  slycat.hyperchunks.parse("0/a1 > 2")
+
+@when(u'parsing a hyperchunk expression, 0/1!a1 > 2 is valid.')
+def step_impl(context):
+  slycat.hyperchunks.parse("0/1|a1 > 2")
+
+
+
+
+
+
+
+
+
+
+
+
 @when(u'parsing a hyperchunk expression, foo is invalid.')
 def step_impl(context):
   with nose.tools.assert_raises(pyparsing.ParseException):
