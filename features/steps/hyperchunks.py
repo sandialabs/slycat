@@ -134,11 +134,11 @@ def step_impl(context):
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):
-  slycat.hyperchunks.parse("0/a1 > 2")
+  assert_round_trip_equal("0/a1 > 2.0")
 
 @when(u'parsing a hyperchunk expression, 0/1!a1 > 2 is valid.')
 def step_impl(context):
-  slycat.hyperchunks.parse("0/1|a1 > 2")
+  assert_round_trip_equal("0/1|a1 > 2.0")
 
 
 

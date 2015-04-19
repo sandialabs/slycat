@@ -7,35 +7,44 @@ class FunctionCall(object):
   def __eq__(self, other):
     return self._name == other._name and self._args == other._args
 
+class BinaryOperator(object):
+  def __init__(self, *tokens):
+    self._left = tokens[0]
+    self._operator = tokens[1]
+    self._right = tokens[2]
+  def __repr__(self):
+    return "BinaryOperator(%s %s %s)" % (self._left, self._operator, self._right)
+
+def printTokens(tokens):
+  print tokens
+
 integer_p = Optional("-") + Word(nums)
-integer_p.setParseAction(lambda tokens: [int("".join(tokens))])
+integer_p.setParseAction(lambda tokens: int("".join(tokens)))
 
 float_p = Optional("-") + Word(nums) + Optional("." + Word(nums))
-float_p.setParseAction(lambda tokens: [float("".join(tokens))])
+float_p.setParseAction(lambda tokens: float("".join(tokens)))
 
 attribute_id_p = Word("a", nums, min=2)
 
-empty_p = Empty()
-empty_p.setParseAction(lambda tokens: [None])
+range_index_p = integer_p.copy().setParseAction(lambda tokens: [int("".join(tokens))]) | Empty().setParseAction(lambda tokens: [None])
 
-optional_integer_p = integer_p | empty_p
-
-range_p = optional_integer_p + Suppress(":") + optional_integer_p + Optional(Suppress(":") + optional_integer_p)
+range_p = range_index_p + Suppress(":") + range_index_p + Optional(Suppress(":") + range_index_p)
 range_p.setParseAction(lambda tokens: tokens[0] if len(tokens) == 1 else slice(*tokens))
 
 ellipsis_p = Literal("...")
-ellipsis_p.setParseAction(lambda tokens: [Ellipsis])
+ellipsis_p.setParseAction(lambda tokens: Ellipsis)
 
 slice_p = range_p | ellipsis_p | integer_p
 
 comparison_operator_p = oneOf("== >= <= != < >")
 
 comparison_p = attribute_id_p + comparison_operator_p + float_p
+comparison_p.setParseAction(lambda tokens: BinaryOperator(*tokens))
 
 logical_expression_p = infixNotation(comparison_p,
 [
-  (Literal("and"), 2, opAssoc.LEFT),
-  (Literal("or"), 2, opAssoc.LEFT),
+  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
+  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
 ])
 
 function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(integer_p, delim=",")) + Suppress(")")

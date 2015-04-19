@@ -122,8 +122,9 @@ def format(hyperchunks):
       return format_slice(value)
     elif isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
       return "%s(%s)" % (value._name, ",".join([str(arg) for arg in value._args]))
+    elif isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
+      return "%s %s %s" % (value._left, value._operator, value._right)
     else:
-      return repr(value)
       raise ValueError()
 
   def format_slices(values):
