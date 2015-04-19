@@ -28,6 +28,7 @@ Feature: Slycat Agent
       | 0/coords(0)/0:50                      |
       | 0/a1 > 2                              |
       | 0/a1 > 2/0:50                         |
+      | 0/a1 > 2 and a1 < 4/0:50              |
 
   Scenario Outline: Parsing invalid hyperchunk expressions.
     When parsing a hyperchunk expression, <expression> is invalid.

@@ -15,6 +15,17 @@ class FunctionCall(object):
   def args(self):
     return self._args
 
+class AttributeIndex(object):
+  def __init__(self, *tokens):
+    self._index = int(tokens[0][1:])
+  def __eq__(self, other):
+    return self._index == other._index
+  def __repr__(self):
+    return "a%s" % self._index
+  @property
+  def index(self):
+    return self._index
+
 class BinaryOperator(object):
   def __init__(self, *tokens):
     self._left = tokens[0]
@@ -23,7 +34,7 @@ class BinaryOperator(object):
   def __eq__(self, other):
     return self._left == other._left and self._operator == other._operator and self._right == other._right
   def __repr__(self):
-    return "BinaryOperator(%s %s %s)" % (self._left, self._operator, self._right)
+    return "%s %s %s" % (self._left, self._operator, self._right)
 
 integer_p = Optional("-") + Word(nums)
 integer_p.setParseAction(lambda tokens: int("".join(tokens)))
@@ -32,6 +43,7 @@ float_p = Optional("-") + Word(nums) + Optional("." + Word(nums))
 float_p.setParseAction(lambda tokens: float("".join(tokens)))
 
 attribute_id_p = Word("a", nums, min=2)
+attribute_id_p.setParseAction(lambda tokens: AttributeIndex(*tokens))
 
 range_index_p = integer_p.copy().setParseAction(lambda tokens: [int("".join(tokens))]) | Empty().setParseAction(lambda tokens: [None])
 
