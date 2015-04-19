@@ -6,6 +6,14 @@ class FunctionCall(object):
     self._args = tokens[1:]
   def __eq__(self, other):
     return self._name == other._name and self._args == other._args
+  def __repr__(self):
+    return "%s(%s)" % (self._name, ",".join([repr(arg) for arg in self._args]))
+  @property
+  def name(self):
+    return self._name
+  @property
+  def args(self):
+    return self._args
 
 class BinaryOperator(object):
   def __init__(self, *tokens):

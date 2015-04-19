@@ -82,8 +82,18 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
-            yield hdf5_array.get_data(attribute.index)[hyperslice]
+            if isinstance(attribute, slycat.hyperchunks.IndexAttribute):
+              cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+              data = hdf5_array.get_data(attribute.index)[hyperslice]
+            elif isinstance(attribute, slycat.hyperchunks.FunctionAttribute):
+              cherrypy.log.error("Reading from %s/%s/%r/%s" % (name, array.index, attribute.function, hyperslice))
+              if attribute.function.name == "indices":
+                data = numpy.indices(hdf5_array.shape)[attribute.function.args[0]][hyperslice] 
+              else:
+                raise ValueError("Unknown function: %s" % attribute.function.name)
+            else:
+              raise ValueError()
+            yield data
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
