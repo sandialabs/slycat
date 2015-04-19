@@ -9,25 +9,31 @@ def assert_round_trip_equal(string):
   nose.tools.assert_equal(slycat.hyperchunks.format(slycat.hyperchunks.parse(string)), string)
 
 def expansion(hyperchunks, array_count, attribute_count):
-  for array_iterator in slycat.hyperchunks.arrays(hyperchunks, array_count):
-    if len(array_iterator):
-      for attribute_iterator in array_iterator.attributes(attribute_count):
-        if isinstance(attribute_iterator, slycat.hyperchunks.AttributeIndexIterator):
-          if len(attribute_iterator):
-            for hyperslice in attribute_iterator.hyperslices():
-              yield (array_iterator.index, attribute_iterator.index, hyperslice)
+  for array in slycat.hyperchunks.arrays(hyperchunks, array_count):
+    if array.attribute_count:
+      for attribute in array.attributes(attribute_count):
+        if isinstance(attribute, slycat.hyperchunks.IndexAttribute):
+          if attribute.hyperslice_count:
+            for hyperslice in attribute.hyperslices():
+              yield (array.index, attribute.index, hyperslice)
           else:
-            yield (array_iterator.index, attribute_iterator.index)
-        elif isinstance(attribute_iterator, slycat.hyperchunks.AttributeFunctionIterator):
-          if len(attribute_iterator):
-            for hyperslice in attribute_iterator.hyperslices():
-              yield (array_iterator.index, attribute_iterator.function, hyperslice)
+            yield (array.index, attribute.index)
+        elif isinstance(attribute, slycat.hyperchunks.FunctionAttribute):
+          if attribute.hyperslice_count:
+            for hyperslice in attribute.hyperslices():
+              yield (array.index, attribute.function, hyperslice)
           else:
-            yield (array_iterator.index, attribute_iterator.function)
+            yield (array.index, attribute.function)
+        elif isinstance(attribute, slycat.hyperchunks.BinaryOperatorAttribute):
+          if attribute.hyperslice_count:
+            for hyperslice in attribute.hyperslices():
+              yield (array.index, attribute.operator, hyperslice)
+          else:
+            yield (array.index, attribute.operator)
         else:
           raise ValueError()
     else:
-      yield (array_iterator.index,)
+      yield (array.index,)
 
 def assert_expansion_equal(string, array_count, attribute_count, reference):
   hyperchunks = slycat.hyperchunks.parse(string)
@@ -132,14 +138,20 @@ def step_impl(context):
   assert_round_trip_equal("0/coords(0)")
   assert_expansion_equal("0/coords(0)", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("coords", 0))])
 
+@when(u'parsing a hyperchunk expression, 0/coords(0)/0:50 is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/coords(0)/0:50")
+  assert_expansion_equal("0/coords(0)/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("coords", 0), (slice(0, 50),))])
+
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/a1 > 2.0")
+  assert_expansion_equal("0/a1 > 2.0", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator("a1", ">", 2.0))])
 
-@when(u'parsing a hyperchunk expression, 0/1!a1 > 2 is valid.')
+@when(u'parsing a hyperchunk expression, 0/a1 > 2/0:50 is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/1|a1 > 2.0")
-
+  assert_round_trip_equal("0/a1 > 2.0/0:50")
+  assert_expansion_equal("0/a1 > 2.0/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator("a1", ">", 2.0), (slice(0, 50),))])
 
 
 

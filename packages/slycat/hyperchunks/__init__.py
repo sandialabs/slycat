@@ -8,11 +8,12 @@ import numbers
 import numpy
 import slycat.hyperchunks.grammar
 
-class AttributeIterator(object):
+class Attribute(object):
   def __init__(self, hyperslices):
     self._hyperslices = hyperslices
 
-  def __len__(self):
+  @property
+  def hyperslice_count(self):
     return 0 if self._hyperslices is None else len(self._hyperslices)
 
   def hyperslices(self):
@@ -21,32 +22,42 @@ class AttributeIterator(object):
       for hyperslice in self._hyperslices:
         yield tuple(hyperslice)
 
-class AttributeIndexIterator(AttributeIterator):
+class IndexAttribute(Attribute):
   def __init__(self, index, hyperslices):
-    AttributeIterator.__init__(self, hyperslices)
+    Attribute.__init__(self, hyperslices)
     self._index = index
 
   @property
   def index(self):
     return self._index
 
-class AttributeFunctionIterator(AttributeIterator):
+class FunctionAttribute(Attribute):
   def __init__(self, function, hyperslices):
-    AttributeIterator.__init__(self, hyperslices)
+    Attribute.__init__(self, hyperslices)
     self._function = function
 
   @property
   def function(self):
     return self._function
 
-class ArrayIterator(object):
+class BinaryOperatorAttribute(Attribute):
+  def __init__(self, operator, hyperslices):
+    Attribute.__init__(self, hyperslices)
+    self._operator = operator
+
+  @property
+  def operator(self):
+    return self._operator
+
+class Array(object):
   def __init__(self, index, attributes, hyperslices):
     self._index = index
     self._attributes = attributes
     self._hyperslices = hyperslices
 
-  def __len__(self):
-    return 0 if self._attributes is None else 1
+  @property
+  def attribute_count(self):
+    return 0 if self._attributes is None else len(self._attributes)
 
   @property
   def index(self):
@@ -66,9 +77,11 @@ class ArrayIterator(object):
             attributes = slice(0, attribute_count)
           start, stop, step = attributes.indices(attribute_count)
           for index in numpy.arange(start, stop, step):
-            yield AttributeIndexIterator(index, self._hyperslices)
+            yield IndexAttribute(index, self._hyperslices)
         elif isinstance(attributes, slycat.hyperchunks.grammar.FunctionCall):
-          yield AttributeFunctionIterator(attributes, self._hyperslices)
+          yield FunctionAttribute(attributes, self._hyperslices)
+        elif isinstance(attributes, slycat.hyperchunks.grammar.BinaryOperator):
+          yield BinaryOperatorAttribute(attributes, self._hyperslices)
         else:
           raise ValueError("Unexpected attribute: %r" % attributes)
 
@@ -87,7 +100,7 @@ def arrays(hyperchunks, array_count):
           arrays = slice(0, array_count)
         start, stop, step = arrays.indices(array_count)
         for index in numpy.arange(start, stop, step):
-          yield ArrayIterator(index, hyperchunk[1] if len(hyperchunk) > 1 else None, hyperchunk[2] if len(hyperchunk) > 2 else None)
+          yield Array(index, hyperchunk[1] if len(hyperchunk) > 1 else None, hyperchunk[2] if len(hyperchunk) > 2 else None)
       else:
         raise ValueError("Unexpected array: %r" % arrays)
 

@@ -12,11 +12,10 @@ class BinaryOperator(object):
     self._left = tokens[0]
     self._operator = tokens[1]
     self._right = tokens[2]
+  def __eq__(self, other):
+    return self._left == other._left and self._operator == other._operator and self._right == other._right
   def __repr__(self):
     return "BinaryOperator(%s %s %s)" % (self._left, self._operator, self._right)
-
-def printTokens(tokens):
-  print tokens
 
 integer_p = Optional("-") + Word(nums)
 integer_p.setParseAction(lambda tokens: int("".join(tokens)))
