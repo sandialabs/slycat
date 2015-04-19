@@ -9,16 +9,25 @@ def assert_round_trip_equal(string):
   nose.tools.assert_equal(slycat.hyperchunks.format(slycat.hyperchunks.parse(string)), string)
 
 def expansion(hyperchunks, array_count, attribute_count):
-  for array in slycat.hyperchunks.arrays(hyperchunks, array_count):
-    if len(array):
-      for attribute in array.attributes(attribute_count):
-        if len(attribute):
-          for hyperslice in attribute.hyperslices():
-            yield (array.index, attribute.index, hyperslice)
+  for array_iterator in slycat.hyperchunks.arrays(hyperchunks, array_count):
+    if len(array_iterator):
+      for attribute_iterator in array_iterator.attributes(attribute_count):
+        if isinstance(attribute_iterator, slycat.hyperchunks.AttributeIndexIterator):
+          if len(attribute_iterator):
+            for hyperslice in attribute_iterator.hyperslices():
+              yield (array_iterator.index, attribute_iterator.index, hyperslice)
+          else:
+            yield (array_iterator.index, attribute_iterator.index)
+        elif isinstance(attribute_iterator, slycat.hyperchunks.AttributeFunctionIterator):
+          if len(attribute_iterator):
+            for hyperslice in attribute_iterator.hyperslices():
+              yield (array_iterator.index, attribute_iterator.function, hyperslice)
+          else:
+            yield (array_iterator.index, attribute_iterator.function)
         else:
-          yield (array.index, attribute.index)
+          raise ValueError()
     else:
-      yield (array.index,)
+      yield (array_iterator.index,)
 
 def assert_expansion_equal(string, array_count, attribute_count, reference):
   hyperchunks = slycat.hyperchunks.parse(string)
@@ -121,7 +130,7 @@ def step_impl(context):
 @when(u'parsing a hyperchunk expression, 0/coords(0) is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/coords(0)")
-  assert_expansion_equal("0/coords(0)", 5, 5, [(0,)])
+  assert_expansion_equal("0/coords(0)", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("coords", 0))])
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):

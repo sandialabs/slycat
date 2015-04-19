@@ -1,9 +1,11 @@
 from pyparsing import *
 
-class Call(object):
-  def __init__(self, tokens):
+class FunctionCall(object):
+  def __init__(self, *tokens):
     self._name = tokens[0]
     self._args = tokens[1:]
+  def __eq__(self, other):
+    return self._name == other._name and self._args == other._args
 
 integer_p = Optional("-") + Word(nums)
 integer_p.setParseAction(lambda tokens: [int("".join(tokens))])
@@ -36,10 +38,10 @@ logical_expression_p = infixNotation(comparison_p,
   (Literal("or"), 2, opAssoc.LEFT),
 ])
 
-call_p = Word(alphas, alphanums) + Suppress("(") + integer_p + Suppress(")")
-call_p.setParseAction(lambda tokens: [Call(tokens)])
+function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(integer_p, delim=",")) + Suppress(")")
+function_call_p.setParseAction(lambda tokens: [FunctionCall(*tokens)])
 
-expression_p = logical_expression_p | call_p
+expression_p = logical_expression_p | function_call_p
 
 slice_or_expression_p = slice_p | expression_p
 
