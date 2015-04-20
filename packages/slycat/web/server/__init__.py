@@ -88,7 +88,7 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
       cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, expression.index, hyperslice))
       stack.append(hdf5_array.get_data(expression.index)[hyperslice])
-    elif isinstance(expression, slycat.hyperchunks.grammar.CallFunction):
+    elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
       cherrypy.log.error("Calling %s/%s/%r/%s" % (name, array.index, expression, hyperslice))
       if expression.name == "indices":
         stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice])

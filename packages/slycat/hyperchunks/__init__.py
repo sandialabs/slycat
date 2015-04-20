@@ -106,7 +106,7 @@ def format(hyperchunks):
   def format_slice_or_expression(value):
     if isinstance(value, (numbers.Integral, type(Ellipsis), slice)):
       return format_slice(value)
-    elif isinstance(value, slycat.hyperchunks.grammar.CallFunction):
+    elif isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
       return "%s(%s)" % (value._name, ",".join([str(arg) for arg in value._args]))
     elif isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
       return "%s %s %s" % (value._left, value._operator, value._right)

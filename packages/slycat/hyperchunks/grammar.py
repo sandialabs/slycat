@@ -1,6 +1,6 @@
 from pyparsing import *
 
-class CallFunction(object):
+class FunctionCall(object):
   def __init__(self, *tokens):
     self._name = tokens[0]
     self._args = tokens[1:]
@@ -76,7 +76,7 @@ logical_expression_p = infixNotation(comparison_p,
 ])
 
 function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(integer_p, delim=",")) + Suppress(")")
-function_call_p.setParseAction(lambda tokens: [CallFunction(*tokens)])
+function_call_p.setParseAction(lambda tokens: [FunctionCall(*tokens)])
 
 attribute_expression_p = logical_expression_p | function_call_p | attribute_id_p | slice_p
 

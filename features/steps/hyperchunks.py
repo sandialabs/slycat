@@ -125,15 +125,15 @@ def step_impl(context):
   assert_round_trip_equal("0/1|2")
   assert_expansion_equal("0/1|2", 5, 5, [(0, 1), (0, 2)])
 
-@when(u'parsing a hyperchunk expression, 0/coords(0) is valid.')
+@when(u'parsing a hyperchunk expression, 0/indices(0) is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/coords(0)")
-  assert_expansion_equal("0/coords(0)", 5, 5, [(0, slycat.hyperchunks.grammar.CallFunction("coords", 0))])
+  assert_round_trip_equal("0/indices(0)")
+  assert_expansion_equal("0/indices(0)", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0))])
 
-@when(u'parsing a hyperchunk expression, 0/coords(0)/0:50 is valid.')
+@when(u'parsing a hyperchunk expression, 0/indices(0)/0:50 is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/coords(0)/0:50")
-  assert_expansion_equal("0/coords(0)/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.CallFunction("coords", 0), (slice(0, 50),))])
+  assert_round_trip_equal("0/indices(0)/0:50")
+  assert_expansion_equal("0/indices(0)/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0), (slice(0, 50),))])
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):
