@@ -69,15 +69,13 @@ logical_expression_p = infixNotation(comparison_p,
 function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(integer_p, delim=",")) + Suppress(")")
 function_call_p.setParseAction(lambda tokens: [CallFunction(*tokens)])
 
-expression_p = logical_expression_p | function_call_p
-
-slice_or_expression_p = slice_p | expression_p
+expression_p = logical_expression_p | function_call_p | attribute_id_p | slice_p
 
 hyperslice_p = Group(delimitedList(slice_p, delim=","))
 
 hyperslices_p = Group(delimitedList(hyperslice_p, delim="|"))
 
-attributes_p = Group(delimitedList(slice_or_expression_p, delim="|"))
+attributes_p = Group(delimitedList(expression_p, delim="|"))
 
 arrays_p = Group(delimitedList(slice_p, delim="|"))
 
