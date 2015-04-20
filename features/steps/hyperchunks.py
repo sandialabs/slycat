@@ -5,8 +5,8 @@ import numpy
 import pyparsing
 import slycat.hyperchunks
 
-def assert_round_trip_equal(string):
-  nose.tools.assert_equal(slycat.hyperchunks.format(slycat.hyperchunks.parse(string)), string)
+def assert_round_trip_equal(string, result=None):
+  nose.tools.assert_equal(slycat.hyperchunks.format(slycat.hyperchunks.parse(string)), string if result is None else result)
 
 def expansion(hyperchunks, array_count, attribute_count):
   for array in slycat.hyperchunks.arrays(hyperchunks, array_count):
@@ -125,10 +125,30 @@ def step_impl(context):
   assert_round_trip_equal("0/1|2")
   assert_expansion_equal("0/1|2", 5, 5, [(0, 1), (0, 2)])
 
+@when(u'parsing a hyperchunk expression, 0/indices() is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/indices()")
+  assert_expansion_equal("0/indices()", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices"))])
+
 @when(u'parsing a hyperchunk expression, 0/indices(0) is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/indices(0)")
   assert_expansion_equal("0/indices(0)", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0))])
+
+@when(u'parsing a hyperchunk expression, 0/indices(0.5) is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/indices(0.5)")
+  assert_expansion_equal("0/indices(0.5)", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0.5))])
+
+@when(u'parsing a hyperchunk expression, 0/indices("red") is valid.')
+def step_impl(context):
+  assert_round_trip_equal("""0/indices("red")""", "0/indices('red')")
+  assert_expansion_equal("""0/indices("red")""", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", "red"))])
+
+@when(u'parsing a hyperchunk expression, 0/indices(0, 0.5, "red") is valid.')
+def step_impl(context):
+  assert_round_trip_equal("""0/indices(0, 0.5, "red")""", "0/indices(0, 0.5, 'red')")
+  assert_expansion_equal("""0/indices(0, 0.5, "red")""", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0, 0.5, "red"))])
 
 @when(u'parsing a hyperchunk expression, 0/indices(0)/0:50 is valid.')
 def step_impl(context):

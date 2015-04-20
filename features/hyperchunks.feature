@@ -24,7 +24,11 @@ Feature: Slycat Agent
       | 0/1/20:25!30:35                       |
       | 0!1                                   |
       | 0/1!2                                 |
+      | 0/indices()                           |
       | 0/indices(0)                          |
+      | 0/indices(0.5)                        |
+      | 0/indices("red")                      |
+      | 0/indices(0, 0.5, "red")              |
       | 0/indices(0)/0:50                     |
       | 0/a1 > 2                              |
       | 0/a1 > 2/0:50                         |
