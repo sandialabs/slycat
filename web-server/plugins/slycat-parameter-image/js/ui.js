@@ -16,7 +16,7 @@ var bookmarker = null;
 var bookmark = null;
 var note_manager = null;
 var filter_manager = null;
-var filter_expression = "";
+var filter_expression = null;
 
 var table_metadata = null;
 var table_statistics = null;
@@ -1220,7 +1220,7 @@ function filters_changed(newValue)
   new_filter_expression = new_filters.join(' and ');
   console.log("Here is the new filter_expression: " + new_filter_expression);
 
-  if(new_filter_expression != filter_expression)
+  if(filter_expression == null || new_filter_expression != filter_expression)
   {
     filter_expression = new_filter_expression;
     if(new_filters.length == 0)
