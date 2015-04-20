@@ -8,85 +8,58 @@ import numbers
 import numpy
 import slycat.hyperchunks.grammar
 
-class Attribute(object):
-  def __init__(self, hyperslices):
-    self._hyperslices = hyperslices
-
-  @property
-  def hyperslice_count(self):
-    return 0 if self._hyperslices is None else len(self._hyperslices)
-
-  def hyperslices(self):
-    """Iterate over the hyperslices in a hyperchunk."""
-    if self._hyperslices is not None:
-      for hyperslice in self._hyperslices:
-        yield tuple(hyperslice)
-
-class IndexAttribute(Attribute):
-  def __init__(self, index, hyperslices):
-    Attribute.__init__(self, hyperslices)
-    self._index = index
-
-  @property
-  def index(self):
-    return self._index
-
-class FunctionAttribute(Attribute):
-  def __init__(self, function, hyperslices):
-    Attribute.__init__(self, hyperslices)
-    self._function = function
-
-  @property
-  def function(self):
-    return self._function
-
-class BinaryOperatorAttribute(Attribute):
-  def __init__(self, operator, hyperslices):
-    Attribute.__init__(self, hyperslices)
-    self._operator = operator
-
-  @property
-  def operator(self):
-    return self._operator
-
-class Array(object):
-  def __init__(self, index, attributes, hyperslices):
-    self._index = index
-    self._attributes = attributes
-    self._hyperslices = hyperslices
-
-  @property
-  def attribute_count(self):
-    return 0 if self._attributes is None else len(self._attributes)
-
-  @property
-  def index(self):
-    return self._index
-
-  def attributes(self, attribute_count):
-    """Iterate over the attributes in a hyperchunk."""
-    if self._attributes is not None:
-      for attributes in self._attributes:
-        if isinstance(attributes, (numbers.Integral, type(Ellipsis), slice)):
-          if isinstance(attributes, numbers.Integral):
-            if attributes < 0:
-              attributes = slice(attribute_count + attributes, attribute_count + attributes + 1)
-            else:
-              attributes = slice(attributes, attributes + 1)
-          elif isinstance(attributes, type(Ellipsis)):
-            attributes = slice(0, attribute_count)
-          start, stop, step = attributes.indices(attribute_count)
-          for index in numpy.arange(start, stop, step):
-            yield IndexAttribute(index, self._hyperslices)
-        elif isinstance(attributes, slycat.hyperchunks.grammar.FunctionCall):
-          yield FunctionAttribute(attributes, self._hyperslices)
-        elif isinstance(attributes, slycat.hyperchunks.grammar.BinaryOperator):
-          yield BinaryOperatorAttribute(attributes, self._hyperslices)
-        else:
-          raise ValueError("Unexpected attribute: %r" % attributes)
-
 def arrays(hyperchunks, array_count):
   """Iterate over the arrays in a set of hyperchunks."""
+  class Attribute(object):
+    def __init__(self, data, hyperslices):
+      self._data = data
+      self._hyperslices = hyperslices
+
+    @property
+    def data(self):
+      return self._data
+
+    @property
+    def hyperslice_count(self):
+      return 0 if self._hyperslices is None else len(self._hyperslices)
+
+    def hyperslices(self):
+      """Iterate over the hyperslices in a hyperchunk."""
+      if self._hyperslices is not None:
+        for hyperslice in self._hyperslices:
+          yield tuple(hyperslice)
+
+  class Array(object):
+    def __init__(self, index, attributes, hyperslices):
+      self._index = index
+      self._attributes = attributes
+      self._hyperslices = hyperslices
+
+    @property
+    def attribute_count(self):
+      return 0 if self._attributes is None else len(self._attributes)
+
+    @property
+    def index(self):
+      return self._index
+
+    def attributes(self, attribute_count):
+      """Iterate over the attributes in a hyperchunk."""
+      if self._attributes is not None:
+        for attributes in self._attributes:
+          if isinstance(attributes, (numbers.Integral, type(Ellipsis), slice)):
+            if isinstance(attributes, numbers.Integral):
+              if attributes < 0:
+                attributes = slice(attribute_count + attributes, attribute_count + attributes + 1)
+              else:
+                attributes = slice(attributes, attributes + 1)
+            elif isinstance(attributes, type(Ellipsis)):
+              attributes = slice(0, attribute_count)
+            start, stop, step = attributes.indices(attribute_count)
+            for index in numpy.arange(start, stop, step):
+              yield Attribute(slycat.hyperchunks.grammar.AttributeIndex(index), self._hyperslices)
+          else:
+            yield Attribute(attributes, self._hyperslices)
 
   for hyperchunk in hyperchunks:
     for arrays in hyperchunk[0]:

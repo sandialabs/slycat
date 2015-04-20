@@ -12,26 +12,18 @@ def expansion(hyperchunks, array_count, attribute_count):
   for array in slycat.hyperchunks.arrays(hyperchunks, array_count):
     if array.attribute_count:
       for attribute in array.attributes(attribute_count):
-        if isinstance(attribute, slycat.hyperchunks.IndexAttribute):
+        if isinstance(attribute.data, slycat.hyperchunks.grammar.AttributeIndex):
           if attribute.hyperslice_count:
             for hyperslice in attribute.hyperslices():
-              yield (array.index, attribute.index, hyperslice)
+              yield (array.index, attribute.data.index, hyperslice)
           else:
-            yield (array.index, attribute.index)
-        elif isinstance(attribute, slycat.hyperchunks.FunctionAttribute):
-          if attribute.hyperslice_count:
-            for hyperslice in attribute.hyperslices():
-              yield (array.index, attribute.function, hyperslice)
-          else:
-            yield (array.index, attribute.function)
-        elif isinstance(attribute, slycat.hyperchunks.BinaryOperatorAttribute):
-          if attribute.hyperslice_count:
-            for hyperslice in attribute.hyperslices():
-              yield (array.index, attribute.operator, hyperslice)
-          else:
-            yield (array.index, attribute.operator)
+            yield (array.index, attribute.data.index)
         else:
-          raise ValueError()
+          if attribute.hyperslice_count:
+            for hyperslice in attribute.hyperslices():
+              yield (array.index, attribute.data, hyperslice)
+          else:
+            yield (array.index, attribute.data)
     else:
       yield (array.index,)
 
@@ -146,21 +138,21 @@ def step_impl(context):
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/a1 > 2.0")
-  assert_expansion_equal("0/a1 > 2.0", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex("a1"), ">", 2.0))])
+  assert_expansion_equal("0/a1 > 2.0", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), ">", 2.0))])
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2/0:50 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/a1 > 2.0/0:50")
-  assert_expansion_equal("0/a1 > 2.0/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex("a1"), ">", 2.0), (slice(0, 50),))])
+  assert_expansion_equal("0/a1 > 2.0/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), ">", 2.0), (slice(0, 50),))])
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 and a1 < 4/0:50 is valid.')
 def step_impl(context):
   assert_round_trip_equal("0/a1 > 2.0 and a1 < 4.0/0:50")
   assert_expansion_equal("0/a1 > 2.0 and a1 < 4.0/0:50", 5, 5, [(0,
     slycat.hyperchunks.grammar.BinaryOperator(
-      slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex("a1"), ">", 2.0),
+      slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), ">", 2.0),
       "and",
-      slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex("a1"), "<", 4.0),
+      slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), "<", 4.0),
       ), (slice(0, 50),))])
 
 
