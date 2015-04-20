@@ -7,6 +7,25 @@ RUN yum install -y htop make python-coverage python-nose python-sphinx python-sp
 # Install Python modules for development.
 RUN pip install behave sphinxcontrib-httpdomain sphinxcontrib-napoleon
 
+# Set reasonable ssh timeouts for development.
+RUN sed -e 's/^#ClientAliveInterval .*$/ClientAliveInterval 60/' -i /etc/ssh/sshd_config
+RUN sed -e 's/^#ClientAliveCountMax .*$/ClientAliveInterval 10080/' -i /etc/ssh/sshd_config
+
+# Make the slycat user a sudoer.
+RUN /usr/sbin/usermod -a -G wheel slycat
+
+# We want CouchDB to listen on all network interfaces, so developers can use its web UI.
+RUN sed -e 's/^bind_address = .*$/bind_address = 0.0.0.0/' -i /etc/couchdb/default.ini
+# CouchDB will be listening on port 5984.
+EXPOSE 5984
+
+# Create mount points for persistent data.
+VOLUME /home/slycat
+VOLUME /var/lib/couchdb
+VOLUME /var/lib/slycat
+VOLUME /var/log/couchdb
+VOLUME /var/log/slycat
+
 # The following commands are run as user "slycat".
 USER slycat
 # Configure vim and setup useful aliases.
@@ -19,21 +38,6 @@ RUN HOME=/home/slycat git config --global color.ui true
 
 # The following commands are run as root.
 USER root
-# Make the slycat user a sudoer.
-RUN /usr/sbin/usermod -a -G wheel slycat
-# Set reasonable ssh timeouts for development.
-RUN sed -e 's/^#ClientAliveInterval .*$/ClientAliveInterval 60/' -i /etc/ssh/sshd_config
-RUN sed -e 's/^#ClientAliveCountMax .*$/ClientAliveInterval 10080/' -i /etc/ssh/sshd_config
-
-# We want CouchDB to listen on all network interfaces, so developers can use its web UI.
-RUN sed -e 's/^bind_address = .*$/bind_address = 0.0.0.0/' -i /etc/couchdb/default.ini
-# CouchDB will be listening on port 5984.
-EXPOSE 5984
-
-# Overwrite the default supervisord configuration so we can use supervisorctl.
-ADD supervisord.conf /etc/supervisord.conf
-# Supervisord will be listening on port 9001.
-EXPOSE 9001
 
 # We don't specify a startup command, since the base image already starts
 # supervisord for us.
