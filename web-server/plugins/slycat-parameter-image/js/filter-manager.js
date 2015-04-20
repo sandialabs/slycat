@@ -15,6 +15,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
     self.sliders_ready = false;
     self.slidersPaneHeight = ko.observable();
     self.controls_ready = false;
+    self.allFilters = null;
     self.active_filters = null;
     self.active_filters_ready = ko.observable(false);
 
@@ -64,7 +65,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         }
       }
 
-      var allFilters = ko.observableArray();
+      self.allFilters = ko.observableArray();
       var numericFilters, categoryFilters, activeFilters;
 
       // have to be built after allFilters is assigned, and it's reassigned from bookmark,
@@ -89,8 +90,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
 
       var rateLimit = 500;
       if ("allFilters" in self.bookmark) {
-        allFilters = mapping.fromJS(self.bookmark["allFilters"]);
-        buildComputedFilters(allFilters);
+        self.allFilters = mapping.fromJS(self.bookmark["allFilters"]);
+        buildComputedFilters(self.allFilters);
 
         _.each(numericFilters(), function (filter) {
           filter.rateLimitedHigh = ko.pureComputed( filter.high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
@@ -99,22 +100,26 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
 
         _.each(categoryFilters(), function (filter) {
           filter.selected = ko.pureComputed( function(){ 
-            return _.filter(filter.categories(), function(category) { return category.selected() === true; });
-          });
+              return _.filter(filter.categories(), function(category) { return category.selected() === true; });
+            })
+            .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
+            ;
         });
       }
       else {
         _.each(self.category_columns, function(i) {
           var categories = ko.observableArray();
-          allFilters.push({
+          self.allFilters.push({
             name: ko.observable( self.table_metadata["column-names"][i] ),
             type: ko.observable('category'),
             index: ko.observable( i ),
             active: ko.observable(false),
             categories: categories,
             selected: ko.pureComputed( function(){ 
-              return _.filter(categories(), function(category) { return category.selected() === true; });
-            }),
+                return _.filter(categories(), function(category) { return category.selected() === true; });
+              })
+              .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
+              ,
             autowidth: ko.observable(false),
             order: ko.observable( variable_order.indexOf(i) ) 
           });
@@ -123,7 +128,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         _.each(numeric_variables, function(i) {
           var high = ko.observable( self.table_statistics[i]["max"] );
           var low = ko.observable( self.table_statistics[i]["min"] );
-          allFilters.push({
+          self.allFilters.push({
             name: ko.observable( self.table_metadata["column-names"][i] ),
             type: ko.observable('numeric'),
             index: ko.observable( i ),
@@ -139,7 +144,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           });
         });
 
-        buildComputedFilters(allFilters);
+        buildComputedFilters(self.allFilters);
       }
 
       var ViewModel = function(params) {
@@ -150,7 +155,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           return self.slidersPaneHeight() - 95;
         }, this);
         vm.thumb_length = ko.observable(12);
-        vm.allFilters = allFilters;
+        vm.allFilters = self.allFilters;
         vm.numericFilters = numericFilters;
         vm.categoryFilters = categoryFilters;
         vm.activeFilters = activeFilters;

@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, ko, mapping, client, bookmark_manager, bookmark_builder, dialog, NoteManager, FilterManager, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, _, ko, mapping, client, bookmark_manager, bookmark_builder, dialog, NoteManager, FilterManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -16,6 +16,7 @@ var bookmarker = null;
 var bookmark = null;
 var note_manager = null;
 var filter_manager = null;
+var filter_expression = "";
 
 var table_metadata = null;
 var table_statistics = null;
@@ -30,6 +31,8 @@ var v = null;
 var images = null;
 var selected_simulations = null;
 var hidden_simulations = null;
+var manually_hidden_simulations = null;
+var filtered_simulations = null;
 var colormap = null;
 var colorscale = null;
 var auto_scale = null;
@@ -116,14 +119,21 @@ $.ajax(
     rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
     category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
     filter_manager = new FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns);
-    filter_manager.active_filters_ready.subscribe(function(newValue) {
-      if(newValue)
-      {
-        active_filters_ready();
-        // Terminating subscription
-        this.dispose();
-      }
-    });
+    if(filter_manager.active_filters_ready())
+    {
+      active_filters_ready();
+    }
+    else
+    {
+      filter_manager.active_filters_ready.subscribe(function(newValue) {
+        if(newValue)
+        {
+          active_filters_ready();
+          // Terminating subscription
+          this.dispose();
+        }
+      });
+    }
     model_loaded();
   },
   error: function(request, status, reason_phrase)
@@ -1141,9 +1151,138 @@ function load_table_statistics(columns, callback)
 
 function active_filters_ready()
 {
+  var filter;
+  var allFilters = filter_manager.allFilters;
+  for(var i = 0; i < allFilters().length; i++)
+  {
+    filter = allFilters()[i];
+    if(filter.type() == 'numeric')
+    {
+      filter.rateLimitedHigh.subscribe(function(newValue){
+        filters_changed(newValue);
+      });
+      filter.rateLimitedLow.subscribe(function(newValue){
+        filters_changed(newValue);
+      });
+      filter.invert.subscribe(function(newValue){
+        filters_changed(newValue);
+      });
+    }
+    else if(filter.type() == 'category')
+    {
+      filter.selected.subscribe(function(newValue){
+        filters_changed(newValue);
+      });
+    }
+  }
+
   filter_manager.active_filters.subscribe(function(newValue) {
     console.log("active_filters changed! The new value is " + newValue);
+    filters_changed(newValue);
   });
+}
+
+function filters_changed(newValue)
+{
+  console.log("change occurred to filters. newValue is: " + newValue);
+  var allFilters = filter_manager.allFilters;
+  var new_filter_expression = "";
+  var filter_var, selected_values;
+  var new_filters = [];
+  for(var i = 0; i < allFilters().length; i++)
+  {
+    filter = allFilters()[i];
+    if(filter.active())
+    {
+      filter_var = 'a' + filter.index();
+      if(filter.type() == 'numeric')
+      {
+        if( filter.invert() && (filter.high() != filter.low()) )
+        {
+          new_filters.push( '(' + filter_var + ' > ' + filter.high() + ' or ' + filter_var + ' < ' + filter.low() + ')' );
+        }
+        else if( !filter.invert() && ( filter.high() != filter.max() || filter.low() != filter.min() ) )
+        {
+          new_filters.push( '(' + filter_var + ' <= ' + filter.high() + ' and ' + filter_var + ' >= ' + filter.low() + ')' );
+        }
+      }
+      else if(filter.type() == 'category' && filter.categories().length > filter.selected().length)
+      {
+        selected_values = [];
+        for(var j = 0; j < filter.selected().length; j++)
+        {
+          selected_values.push( filter.selected()[j].value() );
+        }
+        new_filters.push( '(' + filter_var + ' in [' + selected_values.join(', ') + '])' );
+      }
+    }
+  }
+  new_filter_expression = new_filters.join(' and ');
+  console.log("Here is the new filter_expression: " + new_filter_expression);
+
+  if(new_filter_expression != filter_expression)
+  {
+    filter_expression = new_filter_expression;
+    if(new_filters.length == 0)
+    {
+      filtered_simulations = [];
+      // Clear hidden_simulations
+      while(hidden_simulations.length > 0) {
+        hidden_simulations.pop();
+      }
+
+      update_widgets_when_hidden_simulations_change();
+    }
+    else
+    {
+      $.ajax(
+      {
+        type : "GET",
+        url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/indices(0)|" + new_filter_expression + "/...",
+        async : false,
+        success : function(data)
+        {
+          var indices = data[0];
+          var filter_status = data[1];
+          var new_filtered_simulations = [];
+
+          for(var i=0; i < filter_status.length; i++)
+          {
+            if(!filter_status[i])
+            {
+              new_filtered_simulations.push( indices[i] );
+            }
+          }
+
+          new_filtered_simulations.sort();
+          if( !_.isEmpty(_.xor(filtered_simulations, new_filtered_simulations)) )
+          {
+            filtered_simulations = new_filtered_simulations;
+            console.log("Filtered simulations changed: " + filtered_simulations);
+
+            // Clear hidden_simulations
+            while(hidden_simulations.length > 0) {
+              hidden_simulations.pop();
+            }
+
+            for(var i=0; i<filtered_simulations.length; i++){
+              hidden_simulations.push(filtered_simulations[i]);
+            }
+
+            update_widgets_when_hidden_simulations_change();
+          }
+          else
+          {
+            console.log("Nothing changed in filtered simulations.");
+          }
+        },
+        error: function(request, status, reason_phrase)
+        {
+          console.log("error", request, status, reason_phrase);
+        }
+      });
+    }
+  }
 }
 
 });
