@@ -15,7 +15,7 @@ class CallFunction(object):
   def args(self):
     return self._args
 
-class LoadAttribute(object):
+class AttributeIndex(object):
   def __init__(self, index):
     self._index = index
   def __eq__(self, other):
@@ -52,7 +52,7 @@ float_p = Optional("-") + Word(nums) + Optional("." + Word(nums))
 float_p.setParseAction(lambda tokens: float("".join(tokens)))
 
 attribute_id_p = Word("a", nums, min=2)
-attribute_id_p.setParseAction(lambda tokens: LoadAttribute(int(tokens[0][1:])))
+attribute_id_p.setParseAction(lambda tokens: AttributeIndex(int(tokens[0][1:])))
 
 range_index_p = integer_p.copy().setParseAction(lambda tokens: [int("".join(tokens))]) | Empty().setParseAction(lambda tokens: [None])
 

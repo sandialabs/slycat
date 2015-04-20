@@ -636,7 +636,7 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
-          if not isinstance(attribute.expression, slycat.hyperchunks.grammar.LoadAttribute):
+          if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
             raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
           for hyperslice in attribute.hyperslices():
             cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.expression.index, hyperslice))

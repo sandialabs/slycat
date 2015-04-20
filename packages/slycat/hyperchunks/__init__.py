@@ -70,7 +70,7 @@ def arrays(hyperchunks, array_count):
               attributes = slice(0, attribute_count)
             start, stop, step = attributes.indices(attribute_count)
             for index in numpy.arange(start, stop, step):
-              yield Attribute(slycat.hyperchunks.grammar.LoadAttribute(index), self._hyperslices)
+              yield Attribute(slycat.hyperchunks.grammar.AttributeIndex(index), self._hyperslices)
           else:
             yield Attribute(attributes, self._hyperslices)
 
@@ -159,4 +159,4 @@ def simple(array, attribute, hyperslice):
   hyperslice: tuple of one-or-more slices
     Specifies a single hyperslice to read/write.
   """
-  return [[[array], [slycat.hyperchunks.grammar.LoadAttribute(attribute)], [hyperslice]]]
+  return [[[array], [slycat.hyperchunks.grammar.AttributeIndex(attribute)], [hyperslice]]]
