@@ -45,14 +45,25 @@ class BinaryOperator(object):
   def right(self):
     return self._right
 
+class Sort(object):
+  def __init__(self, expression):
+    self._expression = expression
+  @property
+  def expression(self):
+    return self._expression
+
 integer_p = Optional("-") + Word(nums)
 integer_p.setParseAction(lambda tokens: int("".join(tokens)))
 
 float_p = Optional("-") + Word(nums) + Optional("." + Word(nums))
 float_p.setParseAction(lambda tokens: float("".join(tokens)))
 
+string_p = QuotedString(quoteChar='"', escChar="\\")
+
 attribute_id_p = Word("a", nums, min=2)
 attribute_id_p.setParseAction(lambda tokens: AttributeIndex(int(tokens[0][1:])))
+
+function_argument_p = attribute_id_p | string_p | float_p | integer_p
 
 range_index_p = integer_p.copy().setParseAction(lambda tokens: [int("".join(tokens))]) | Empty().setParseAction(lambda tokens: [None])
 
@@ -75,8 +86,13 @@ logical_expression_p = infixNotation(comparison_p,
   (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
 ])
 
-function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(integer_p, delim=",")) + Suppress(")")
+function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(function_argument_p, delim=",")) + Suppress(")")
 function_call_p.setParseAction(lambda tokens: [FunctionCall(*tokens)])
+
+sort_expression_p = function_call_p
+
+sort_section_p = Literal("sort:") + sort_expression_p
+sort_section_p.setParseAction(lambda tokens: Sort(tokens[1]))
 
 attribute_expression_p = logical_expression_p | function_call_p | attribute_id_p | slice_p
 
@@ -88,7 +104,7 @@ attributes_p = Group(delimitedList(attribute_expression_p, delim="|"))
 
 arrays_p = Group(delimitedList(slice_p, delim="|"))
 
-hyperchunk_p = Group(arrays_p + Optional(Suppress("/") + attributes_p + Optional(Suppress("/") + hyperslices_p)))
+hyperchunk_p = Group(arrays_p + Optional(Suppress("/") + attributes_p + Optional(Suppress("/") + sort_section_p) +  Optional(Suppress("/") + hyperslices_p)))
 
 hyperchunks_p = delimitedList(hyperchunk_p, delim=";")
 

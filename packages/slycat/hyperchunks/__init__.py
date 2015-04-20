@@ -43,9 +43,10 @@ def arrays(hyperchunks, array_count):
           yield tuple(hyperslice)
 
   class Array(object):
-    def __init__(self, index, attributes, hyperslices):
+    def __init__(self, index, attributes, sort, hyperslices):
       self._index = index
       self._attributes = attributes
+      self._sort = sort
       self._hyperslices = hyperslices
 
     @property
@@ -75,7 +76,12 @@ def arrays(hyperchunks, array_count):
             yield Attribute(attributes, self._hyperslices)
 
   for hyperchunk in hyperchunks:
-    for arrays in hyperchunk[0]:
+    array_expression = hyperchunk[0]
+    attribute_expression = hyperchunk[1] if len(hyperchunk) > 1 else None
+    sort_expression = hyperchunk[2] if len(hyperchunk) > 3 else None
+    hyperslice_expression = hyperchunk[3] if len(hyperchunk) > 3 else hyperchunk[2] if len(hyperchunk) > 2 else None
+
+    for arrays in array_expression:
       if isinstance(arrays, (numbers.Integral, type(Ellipsis), slice)):
         if isinstance(arrays, numbers.Integral):
           if arrays < 0:
@@ -86,7 +92,7 @@ def arrays(hyperchunks, array_count):
           arrays = slice(0, array_count)
         start, stop, step = arrays.indices(array_count)
         for index in numpy.arange(start, stop, step):
-          yield Array(index, hyperchunk[1] if len(hyperchunk) > 1 else None, hyperchunk[2] if len(hyperchunk) > 2 else None)
+          yield Array(index, attribute_expression, sort_expression, hyperslice_expression)
       else:
         raise ValueError("Unexpected array: %r" % arrays)
 
@@ -107,7 +113,7 @@ def format(hyperchunks):
     if isinstance(value, (numbers.Integral, type(Ellipsis), slice)):
       return format_slice(value)
     elif isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
-      return "%s(%s)" % (value._name, ",".join([str(arg) for arg in value._args]))
+      return "%s(%s)" % (value._name, ",".join([repr(arg) for arg in value._args]))
     elif isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
       return "%s %s %s" % (value._left, value._operator, value._right)
     else:
@@ -133,7 +139,7 @@ def format(hyperchunks):
     elif len(hyperchunk) == 3:
       return format_slices(hyperchunk[0]) + "/" + format_slices_or_expressions(hyperchunk[1]) + "/" + format_hyperslices(hyperchunk[2])
     else:
-      raise ValueError()
+      raise ValueError("%r" % hyperchunk)
 
   return ";".join([format_hyperchunk(hyperchunk) for hyperchunk in hyperchunks])
 
