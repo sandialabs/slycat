@@ -119,11 +119,9 @@ $.ajax(
     filter_manager.active_filters_ready.subscribe(function(newValue) {
       if(newValue)
       {
-        console.log("active_filters are now ready! The new value is " + newValue);
-
-        filter_manager.active_filters.subscribe(function(newValue) {
-          console.log("active_filters changed! The new value is " + newValue);
-        });
+        active_filters_ready();
+        // Terminating subscription
+        this.dispose();
       }
     });
     model_loaded();
@@ -1138,6 +1136,13 @@ function load_table_statistics(columns, callback)
         table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
       callback();
     }
+  });
+}
+
+function active_filters_ready()
+{
+  filter_manager.active_filters.subscribe(function(newValue) {
+    console.log("active_filters changed! The new value is " + newValue);
   });
 }
 
