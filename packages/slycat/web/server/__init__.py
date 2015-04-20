@@ -86,10 +86,16 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
     if isinstance(expression, numbers.Number):
       stack.append(expression)
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
-      stack.append(hdf5_array.get_data(expression.index)[hyperslice])
+      stack.append(hdf5_array.get_data(expression.index)[...])
     elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
       if expression.name == "indices":
-        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice])
+        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
+      elif expression.name == "argsort":
+        evaluate(level + 1, hdf5_array, expression.args[0], hyperslice, stack)
+        sort_order = numpy.argsort(stack.pop())
+        if expression.args[1] == "desc":
+          sort_order = sort_order[::-1]
+        stack.append(sort_order)
       else:
         raise ValueError("Unknown function: %s" % expression.name)
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
@@ -125,7 +131,7 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
           for hyperslice in attribute.hyperslices():
             stack = []
             evaluate(0, hdf5_array, attribute.expression, hyperslice, stack)
-            yield stack.pop()
+            yield stack.pop()[hyperslice]
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
