@@ -82,10 +82,10 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
-            if isinstance(attribute.data, slycat.hyperchunks.grammar.AttributeIndex):
+            if isinstance(attribute.data, slycat.hyperchunks.grammar.LoadAttribute):
               cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.data.index, hyperslice))
               data = hdf5_array.get_data(attribute.data.index)[hyperslice]
-            elif isinstance(attribute.data, slycat.hyperchunks.grammar.FunctionCall):
+            elif isinstance(attribute.data, slycat.hyperchunks.grammar.CallFunction):
               cherrypy.log.error("Reading from %s/%s/%r/%s" % (name, array.index, attribute.data, hyperslice))
               if attribute.data.name == "indices":
                 data = numpy.indices(hdf5_array.shape)[attribute.data.args[0]][hyperslice]

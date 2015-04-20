@@ -57,7 +57,7 @@ def arrays(hyperchunks, array_count):
               attributes = slice(0, attribute_count)
             start, stop, step = attributes.indices(attribute_count)
             for index in numpy.arange(start, stop, step):
-              yield Attribute(slycat.hyperchunks.grammar.AttributeIndex(index), self._hyperslices)
+              yield Attribute(slycat.hyperchunks.grammar.LoadAttribute(index), self._hyperslices)
           else:
             yield Attribute(attributes, self._hyperslices)
 
@@ -106,7 +106,7 @@ def format(hyperchunks):
   def format_slice_or_expression(value):
     if isinstance(value, (numbers.Integral, type(Ellipsis), slice)):
       return format_slice(value)
-    elif isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
+    elif isinstance(value, slycat.hyperchunks.grammar.CallFunction):
       return "%s(%s)" % (value._name, ",".join([str(arg) for arg in value._args]))
     elif isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
       return "%s %s %s" % (value._left, value._operator, value._right)

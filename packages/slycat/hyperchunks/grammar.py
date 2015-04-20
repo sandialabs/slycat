@@ -1,6 +1,6 @@
 from pyparsing import *
 
-class FunctionCall(object):
+class CallFunction(object):
   def __init__(self, *tokens):
     self._name = tokens[0]
     self._args = tokens[1:]
@@ -15,7 +15,7 @@ class FunctionCall(object):
   def args(self):
     return self._args
 
-class AttributeIndex(object):
+class LoadAttribute(object):
   def __init__(self, index):
     self._index = index
   def __eq__(self, other):
@@ -43,7 +43,7 @@ float_p = Optional("-") + Word(nums) + Optional("." + Word(nums))
 float_p.setParseAction(lambda tokens: float("".join(tokens)))
 
 attribute_id_p = Word("a", nums, min=2)
-attribute_id_p.setParseAction(lambda tokens: AttributeIndex(int(tokens[0][1:])))
+attribute_id_p.setParseAction(lambda tokens: LoadAttribute(int(tokens[0][1:])))
 
 range_index_p = integer_p.copy().setParseAction(lambda tokens: [int("".join(tokens))]) | Empty().setParseAction(lambda tokens: [None])
 
@@ -67,7 +67,7 @@ logical_expression_p = infixNotation(comparison_p,
 ])
 
 function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(integer_p, delim=",")) + Suppress(")")
-function_call_p.setParseAction(lambda tokens: [FunctionCall(*tokens)])
+function_call_p.setParseAction(lambda tokens: [CallFunction(*tokens)])
 
 expression_p = logical_expression_p | function_call_p
 
