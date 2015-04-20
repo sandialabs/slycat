@@ -3,6 +3,7 @@
 # rights in this software.
 
 import cherrypy
+import numbers
 import numpy
 import slycat.hdf5
 import slycat.hyperchunks
@@ -75,6 +76,40 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
+
+  def evaluate(name, array, hdf5_array, expression, hyperslice, stack):
+    cherrypy.log.error("Evaluating expression: %s" % expression)
+    if isinstance(expression, numbers.Number):
+      stack.append(expression)
+    elif isinstance(expression, slycat.hyperchunks.grammar.LoadAttribute):
+      cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, expression.index, hyperslice))
+      stack.append(hdf5_array.get_data(expression.index)[hyperslice])
+    elif isinstance(expression, slycat.hyperchunks.grammar.CallFunction):
+      cherrypy.log.error("Calling %s/%s/%r/%s" % (name, array.index, expression, hyperslice))
+      if expression.name == "indices":
+        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice])
+      else:
+        raise ValueError("Unknown function: %s" % expression.name)
+    elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
+      evaluate(name, array, hdf5_array, expression.right, hyperslice, stack)
+      evaluate(name, array, hdf5_array, expression.left, hyperslice, stack)
+      if expression.operator == "<":
+        stack.append(stack.pop() < stack.pop())
+      elif expression.operator == ">":
+        stack.append(stack.pop() > stack.pop())
+      elif expression.operator == "<=":
+        stack.append(stack.pop() <= stack.pop())
+      elif expression.operator == ">=":
+        stack.append(stack.pop() >= stack.pop())
+      elif expression.operator == "==":
+        stack.append(stack.pop() == stack.pop())
+      elif expression.operator == "!=":
+        stack.append(stack.pop() != stack.pop())
+      else:
+        raise ValueError("Unknown operator: %s" % expression.operator)
+    else:
+      raise ValueError("Unknown expression: %s" % expression)
+
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -82,18 +117,9 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
-            if isinstance(attribute.data, slycat.hyperchunks.grammar.LoadAttribute):
-              cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.data.index, hyperslice))
-              data = hdf5_array.get_data(attribute.data.index)[hyperslice]
-            elif isinstance(attribute.data, slycat.hyperchunks.grammar.CallFunction):
-              cherrypy.log.error("Reading from %s/%s/%r/%s" % (name, array.index, attribute.data, hyperslice))
-              if attribute.data.name == "indices":
-                data = numpy.indices(hdf5_array.shape)[attribute.data.args[0]][hyperslice]
-              else:
-                raise ValueError("Unknown function: %s" % attribute.data.name)
-            else:
-              raise ValueError()
-            yield data
+            stack = []
+            evaluate(name, array, hdf5_array, attribute.data, hyperslice, stack)
+            yield stack.pop()
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]

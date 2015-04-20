@@ -35,6 +35,15 @@ class BinaryOperator(object):
     return self._left == other._left and self._operator == other._operator and self._right == other._right
   def __repr__(self):
     return "%s %s %s" % (self._left, self._operator, self._right)
+  @property
+  def left(self):
+    return self._left
+  @property
+  def operator(self):
+    return self._operator
+  @property
+  def right(self):
+    return self._right
 
 integer_p = Optional("-") + Word(nums)
 integer_p.setParseAction(lambda tokens: int("".join(tokens)))
