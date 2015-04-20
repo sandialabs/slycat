@@ -50,12 +50,16 @@ def arrays(hyperchunks, array_count):
       self._hyperslices = hyperslices
 
     @property
+    def index(self):
+      return self._index
+
+    @property
     def attribute_count(self):
       return 0 if self._attributes is None else len(self._attributes)
 
     @property
-    def index(self):
-      return self._index
+    def sort(self):
+      return self._sort
 
     def attributes(self, attribute_count):
       """Iterate over the attributes in a hyperchunk."""

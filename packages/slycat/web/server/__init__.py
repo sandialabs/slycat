@@ -81,8 +81,8 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
 
-  def evaluate(level, hdf5_array, expression, hyperslice, stack):
-    cherrypy.log.error("%sEvaluating expression: %s" % ("  " * level, expression))
+  def evaluate(level, hdf5_array, expression_type, expression, hyperslice, stack):
+    cherrypy.log.error("%sEvaluating %s expression: %s" % ("  " * level, expression_type, expression))
     if isinstance(expression, numbers.Number):
       stack.append(expression)
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
@@ -91,7 +91,7 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
       if expression.name == "indices":
         stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
       elif expression.name == "argsort":
-        evaluate(level + 1, hdf5_array, expression.args[0], hyperslice, stack)
+        evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
         sort_order = numpy.argsort(stack.pop())
         if expression.args[1] == "desc":
           sort_order = sort_order[::-1]
@@ -99,8 +99,8 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
       else:
         raise ValueError("Unknown function: %s" % expression.name)
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-      evaluate(level + 1, hdf5_array, expression.right, hyperslice, stack)
-      evaluate(level + 1, hdf5_array, expression.left, hyperslice, stack)
+      evaluate(level + 1, hdf5_array, expression_type, expression.right, hyperslice, stack)
+      evaluate(level + 1, hdf5_array, expression_type, expression.left, hyperslice, stack)
       if expression.operator == "<":
         stack.append(stack.pop() < stack.pop())
       elif expression.operator == ">":
@@ -127,11 +127,20 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
+
+        if array.sort is not None:
+          stack = []
+          evaluate(0, hdf5_array, "sort", array.sort.expression, None, stack)
+          sort_order = stack.pop()
+
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
             stack = []
-            evaluate(0, hdf5_array, attribute.expression, hyperslice, stack)
-            yield stack.pop()[hyperslice]
+            evaluate(0, hdf5_array, "attribute", attribute.expression, hyperslice, stack)
+            if array.sort is not None:
+              yield stack.pop()[sort_order][hyperslice]
+            else:
+              yield stack.pop()[hyperslice]
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
