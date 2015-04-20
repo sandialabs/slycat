@@ -107,6 +107,10 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         stack.append(stack.pop() == stack.pop())
       elif expression.operator == "!=":
         stack.append(stack.pop() != stack.pop())
+      elif expression.operator == "and":
+        stack.append(numpy.logical_and(stack.pop(), stack.pop()))
+      elif expression.operator == "or":
+        stack.append(numpy.logical_or(stack.pop(), stack.pop()))
       else:
         raise ValueError("Unknown operator: %s" % expression.operator)
     else:
