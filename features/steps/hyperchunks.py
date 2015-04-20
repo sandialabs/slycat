@@ -2,169 +2,181 @@ from behave import *
 
 import nose.tools
 import numpy
+import pyparsing
 import slycat.hyperchunks
 
+def assert_round_trip_equal(string):
+  nose.tools.assert_equal(slycat.hyperchunks.format(slycat.hyperchunks.parse(string)), string)
 
+def expansion(hyperchunks, array_count, attribute_count):
+  for array in slycat.hyperchunks.arrays(hyperchunks, array_count):
+    if array.attribute_count:
+      for attribute in array.attributes(attribute_count):
+        if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+          if attribute.hyperslice_count:
+            for hyperslice in attribute.hyperslices():
+              yield (array.index, attribute.expression.index, hyperslice)
+          else:
+            yield (array.index, attribute.expression.index)
+        else:
+          if attribute.hyperslice_count:
+            for hyperslice in attribute.hyperslices():
+              yield (array.index, attribute.expression, hyperslice)
+          else:
+            yield (array.index, attribute.expression)
+    else:
+      yield (array.index,)
 
-@when(u'a Hyperchunks object is created without parameters.')
+def assert_expansion_equal(string, array_count, attribute_count, reference):
+  hyperchunks = slycat.hyperchunks.parse(string)
+  nose.tools.assert_equal(list(expansion(hyperchunks, array_count, attribute_count)), reference)
+
+@when(u'parsing a hyperchunk expression, 0 is valid.')
 def step_impl(context):
-  context.hyperchunks = slycat.hyperchunks.Hyperchunks()
+  assert_round_trip_equal("0")
+  assert_expansion_equal("0", 5, 5, [(0,)])
 
-@then(u'the Hyperchunks object should be empty.')
+@when(u'parsing a hyperchunk expression, 0;1 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(len(context.hyperchunks), 0)
-  nose.tools.assert_equal(context.hyperchunks.format(), "")
+  assert_round_trip_equal("0;1")
+  assert_expansion_equal("0;1", 5, 5, [(0,), (1,)])
 
-
-
-@when(u'a Hyperchunk object is created without parameters, an exception must be raised.')
+@when(u'parsing a hyperchunk expression, 0/1 is valid.')
 def step_impl(context):
-  with nose.tools.assert_raises(ValueError):
-    slycat.hyperchunks.Hyperchunk()
+  assert_round_trip_equal("0/1")
+  assert_expansion_equal("0/1", 5, 5, [(0, 1)])
 
-@when(u'creating a Hyperchunk with one array')
+@when(u'parsing a hyperchunk expression, 0/1;2/3 is valid.')
 def step_impl(context):
-  context.hyperchunk = slycat.hyperchunks.Hyperchunk(numpy.index_exp[1])
+  assert_round_trip_equal("0/1;2/3")
+  assert_expansion_equal("0/1;2/3", 5, 5, [(0, 1), (2, 3)])
 
-@then(u'the Hyperchunk should contain one array')
+@when(u'parsing a hyperchunk expression, 0:5 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperchunk.format(), "1")
+  assert_round_trip_equal("0:5")
+  assert_expansion_equal("0:5", 5, 5, [(0,), (1,), (2,), (3,), (4,)])
 
-@when(u'creating a Hyperchunk with an array range')
+@when(u'parsing a hyperchunk expression, 0:5:2 is valid.')
 def step_impl(context):
-  context.hyperchunk = slycat.hyperchunks.Hyperchunk(numpy.index_exp[1:10])
+  assert_round_trip_equal("0:5:2")
+  assert_expansion_equal("0:5:2", 5, 5, [(0,), (2,), (4,)])
 
-@then(u'the Hyperchunk should contain an array range')
+@when(u'parsing a hyperchunk expression, :5:2 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperchunk.format(), "1:10")
+  assert_round_trip_equal(":5:2")
+  assert_expansion_equal(":5:2", 5, 5, [(0,), (2,), (4,)])
 
-@when(u'creating a Hyperchunk with all arrays')
+@when(u'parsing a hyperchunk expression, 0::2 is valid.')
 def step_impl(context):
-  context.hyperchunk = slycat.hyperchunks.Hyperchunk(numpy.index_exp[...])
+  assert_round_trip_equal("0::2")
+  assert_expansion_equal("0::2", 5, 5, [(0,), (2,), (4,)])
 
-@then(u'the Hyperchunk should contain all arrays')
+@when(u'parsing a hyperchunk expression, 0:5/10:15 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperchunk.format(), "...")
+  assert_round_trip_equal("0:5/10:15")
+  assert_expansion_equal("0:5/10:15", 2, 13, [(0, 10), (0, 11), (0, 12), (1, 10), (1, 11), (1, 12)])
 
-@when(u'creating a Hyperchunk with one array and one attribute')
+@when(u'parsing a hyperchunk expression, .../10:15 is valid.')
 def step_impl(context):
-  context.hyperchunk = slycat.hyperchunks.Hyperchunk(numpy.index_exp[1], numpy.index_exp[2])
+  assert_round_trip_equal(".../10:15")
+  assert_expansion_equal(".../10:15", 2, 15, [(0, 10), (0, 11), (0, 12), (0, 13), (0, 14), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14)])
 
-@then(u'the Hyperchunk should contain one array and one attribute')
+@when(u'parsing a hyperchunk expression, 0:5/... is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperchunk.format(), "1/2")
+  assert_round_trip_equal("0:5/...")
+  assert_expansion_equal("0:5/...", 5, 2, [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1), (3, 0), (3, 1), (4, 0), (4, 1)])
 
-@when(u'creating a Hyperchunk with one array and a range of attributes')
+@when(u'parsing a hyperchunk expression, 0/1/20 is valid.')
 def step_impl(context):
-  context.hyperchunk = slycat.hyperchunks.Hyperchunk(numpy.index_exp[1], numpy.index_exp[2:5])
+  assert_round_trip_equal("0/1/20")
+  assert_expansion_equal("0/1/20", 5, 5, [(0, 1, (20,))])
 
-@then(u'the Hyperchunk should contain one array and a range of attributes')
+@when(u'parsing a hyperchunk expression, 0/1/20:25 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperchunk.format(), "1/2:5")
+  assert_round_trip_equal("0/1/20:25")
+  assert_expansion_equal("0/1/20:25", 5, 5, [(0, 1, (slice(20, 25),))])
 
-@when(u'creating a Hyperchunk with one array and all attributes')
+@when(u'parsing a hyperchunk expression, 0/1/20,25 is valid.')
 def step_impl(context):
-  context.hyperchunk = slycat.hyperchunks.Hyperchunk(numpy.index_exp[1], numpy.index_exp[...])
+  assert_round_trip_equal("0/1/20,25")
+  assert_expansion_equal("0/1/20,25", 5, 5, [(0, 1, (20, 25))])
 
-@then(u'the Hyperchunk should contain one array and all attributes')
+@when(u'parsing a hyperchunk expression, 0/1/20:25,30:35 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperchunk.format(), "1/...")
+  assert_round_trip_equal("0/1/20:25,30:35")
+  assert_expansion_equal("0/1/20:25,30:35", 5, 5, [(0, 1, (slice(20, 25), slice(30, 35)))])
 
-
-
-@when(u'a Hyperslices object is created without parameters.')
+@when(u'parsing a hyperchunk expression, 0/1/20!25 is valid.')
 def step_impl(context):
-  context.hyperslices = slycat.hyperchunks.Hyperslices()
+  assert_round_trip_equal("0/1/20|25")
 
-@then(u'the Hyperslices object should be empty.')
+@when(u'parsing a hyperchunk expression, 0/1/20:25!30:35 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(len(context.hyperslices), 0)
-  nose.tools.assert_equal(context.hyperslices.format(), "")
+  assert_round_trip_equal("0/1/20:25|30:35")
+  assert_expansion_equal("0/1/20:25|30:35", 5, 5, [(0, 1, (slice(20, 25),)), (0, 1, (slice(30, 35),))])
 
-
-
-@when(u'a Hyperslice object is created without parameters, an exception must be raised.')
+@when(u'parsing a hyperchunk expression, 0!1 is valid.')
 def step_impl(context):
-  with nose.tools.assert_raises(ValueError):
-    slycat.hyperchunks.Hyperslice()
+  assert_round_trip_equal("0|1")
+  assert_expansion_equal("0|1", 5, 5, [(0,), (1,)])
 
-@when(u'creating a Hyperslice with one index')
+@when(u'parsing a hyperchunk expression, 0/1!2 is valid.')
 def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[1])
+  assert_round_trip_equal("0/1|2")
+  assert_expansion_equal("0/1|2", 5, 5, [(0, 1), (0, 2)])
 
-@then(u'the Hyperslice should contain one index')
+@when(u'parsing a hyperchunk expression, 0/indices(0) is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "1")
+  assert_round_trip_equal("0/indices(0)")
+  assert_expansion_equal("0/indices(0)", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0))])
 
-@when(u'creating a Hyperslice with a half-open range [...) of indices')
+@when(u'parsing a hyperchunk expression, 0/indices(0)/0:50 is valid.')
 def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[1:])
+  assert_round_trip_equal("0/indices(0)/0:50")
+  assert_expansion_equal("0/indices(0)/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.FunctionCall("indices", 0), (slice(0, 50),))])
 
-@then(u'the Hyperslice should contain a half-open range [...) of indices')
+@when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "1:")
+  assert_round_trip_equal("0/a1 > 2.0")
+  assert_expansion_equal("0/a1 > 2.0", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), ">", 2.0))])
 
-@when(u'creating a Hyperslice with a half-open range (...] of indices')
+@when(u'parsing a hyperchunk expression, 0/a1 > 2/0:50 is valid.')
 def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[:5])
+  assert_round_trip_equal("0/a1 > 2.0/0:50")
+  assert_expansion_equal("0/a1 > 2.0/0:50", 5, 5, [(0, slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), ">", 2.0), (slice(0, 50),))])
 
-@then(u'the Hyperslice should contain a half-open range (...] of indices')
+@when(u'parsing a hyperchunk expression, 0/a1 > 2 and a1 < 4/0:50 is valid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), ":5")
+  assert_round_trip_equal("0/a1 > 2.0 and a1 < 4.0/0:50")
+  assert_expansion_equal("0/a1 > 2.0 and a1 < 4.0/0:50", 5, 5, [(0,
+    slycat.hyperchunks.grammar.BinaryOperator(
+      slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), ">", 2.0),
+      "and",
+      slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), "<", 4.0),
+      ), (slice(0, 50),))])
 
-@when(u'creating a Hyperslice with a full-open range')
-def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[:])
 
-@then(u'the Hyperslice should contain a full-open range')
-def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), ":")
 
-@when(u'creating a Hyperslice with a closed range')
-def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[1:5])
 
-@then(u'the Hyperslice should contain a closed range')
-def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "1:5")
 
-@when(u'creating a Hyperslice with all indices')
-def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[...])
 
-@then(u'the Hyperslice should contain all indices')
-def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "...")
 
-@when(u'creating a Hyperslice with stepped half-open range [...) of indices')
-def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[1::2])
 
-@then(u'the Hyperslice should contain stepped half-open range [...) of indices')
-def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "1::2")
 
-@when(u'creating a Hyperslice with stepped half-open range (...] of indices')
-def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[:5:2])
 
-@then(u'the Hyperslice should contain stepped half-open range (...] of indices')
+@when(u'parsing a hyperchunk expression, foo is invalid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), ":5:2")
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("foo")
 
-@when(u'creating a Hyperslice with stepped full-open range of indices')
+@when(u'parsing a hyperchunk expression, 0/foo is invalid.')
 def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[::2])
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("0/foo")
 
-@then(u'the Hyperslice should contain stepped full-open range of indices')
+@when(u'parsing a hyperchunk expression, 0/1/foo is invalid.')
 def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "::2")
+  with nose.tools.assert_raises(pyparsing.ParseException):
+    slycat.hyperchunks.parse("0/1/foo")
 
-@when(u'creating a Hyperslice with stepped closed range of indices')
-def step_impl(context):
-  context.hyperslice = slycat.hyperchunks.Hyperslice(numpy.index_exp[1:5:2])
-
-@then(u'the Hyperslice should contain stepped closed range of indices')
-def step_impl(context):
-  nose.tools.assert_equal(context.hyperslice.format(), "1:5:2")
 

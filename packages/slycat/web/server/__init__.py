@@ -3,8 +3,10 @@
 # rights in this software.
 
 import cherrypy
+import numbers
 import numpy
 import slycat.hdf5
+import slycat.hyperchunks
 import slycat.web.server.hdf5
 import uuid
 
@@ -43,7 +45,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
       results = {}
       if arrays is not None:
         results["arrays"] = []
-        for array in arrays.arrays(hdf5_arrayset.array_count()):
+        for array in slycat.hyperchunks.arrays(arrays, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
           results["arrays"].append({
             "index" : array.index,
@@ -53,36 +55,77 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
             })
       if statistics is not None:
         results["statistics"] = []
-        for array in statistics.arrays(hdf5_arrayset.array_count()):
+        for array in slycat.hyperchunks.arrays(statistics, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
           for attribute in array.attributes(len(hdf5_array.attributes)):
-            statistics = hdf5_array.get_statistics(attribute.index)
+            if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+              raise ValueError("Cannot retrieve statistics for computed attributes.")
+            statistics = hdf5_array.get_statistics(attribute.expression.index)
             statistics["array"] = array.index
-            statistics["attribute"] = attribute.index
+            statistics["attribute"] = attribute.expression.index
             results["statistics"].append(statistics)
       if unique is not None:
         results["unique"] = []
-        for array in unique.arrays(hdf5_arrayset.array_count()):
+        for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
           for attribute in array.attributes(len(hdf5_array.attributes)):
+            if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+              raise ValueError("Cannot retrieve unique values for computed attributes.")
             for hyperslice in attribute.hyperslices():
-              unique = hdf5_array.get_unique(attribute.index, hyperslice)
+              unique = hdf5_array.get_unique(attribute.expression.index, hyperslice)
               unique["array"] = array.index
-              unique["attribute"] = attribute.index
+              unique["attribute"] = attribute.expression.index
               results["unique"].append(unique)
 
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
+
+  def evaluate(level, hdf5_array, expression, hyperslice, stack):
+    cherrypy.log.error("%sEvaluating expression: %s" % ("  " * level, expression))
+    if isinstance(expression, numbers.Number):
+      stack.append(expression)
+    elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
+      stack.append(hdf5_array.get_data(expression.index)[hyperslice])
+    elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
+      if expression.name == "indices":
+        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice])
+      else:
+        raise ValueError("Unknown function: %s" % expression.name)
+    elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
+      evaluate(level + 1, hdf5_array, expression.right, hyperslice, stack)
+      evaluate(level + 1, hdf5_array, expression.left, hyperslice, stack)
+      if expression.operator == "<":
+        stack.append(stack.pop() < stack.pop())
+      elif expression.operator == ">":
+        stack.append(stack.pop() > stack.pop())
+      elif expression.operator == "<=":
+        stack.append(stack.pop() <= stack.pop())
+      elif expression.operator == ">=":
+        stack.append(stack.pop() >= stack.pop())
+      elif expression.operator == "==":
+        stack.append(stack.pop() == stack.pop())
+      elif expression.operator == "!=":
+        stack.append(stack.pop() != stack.pop())
+      elif expression.operator == "and":
+        stack.append(numpy.logical_and(stack.pop(), stack.pop()))
+      elif expression.operator == "or":
+        stack.append(numpy.logical_or(stack.pop(), stack.pop()))
+      else:
+        raise ValueError("Unknown operator: %s" % expression.operator)
+    else:
+      raise ValueError("Unknown expression: %s" % expression)
+
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
-            yield hdf5_array.get_data(attribute.index)[hyperslice]
+            stack = []
+            evaluate(0, hdf5_array, attribute.expression, hyperslice, stack)
+            yield stack.pop()
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]
@@ -116,17 +159,19 @@ def put_model_arrayset_data(database, model, name, hyperchunks, data):
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in hyperchunks.arrays(hdf5_arrayset.array_count()):
+      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
-          stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+          if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+            raise ValueError("Cannot write to computed attribute.")
+          stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+            cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.expression.index, hyperslice))
 
             data_hyperslice = next(data)
             if isinstance(data_hyperslice, list):
               data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-            hdf5_array.set_data(attribute.index, hyperslice, data_hyperslice)
+            hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
 
 def put_model_file(database, model, name, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
