@@ -45,6 +45,13 @@ class BinaryOperator(object):
   def right(self):
     return self._right
 
+class Sort(object):
+  def __init__(self, expression):
+    self._expression = expression
+  @property
+  def expression(self):
+    return self._expression
+
 integer_p = Optional("-") + Word(nums)
 integer_p.setParseAction(lambda tokens: int("".join(tokens)))
 
@@ -82,6 +89,11 @@ logical_expression_p = infixNotation(comparison_p,
 function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(function_argument_p, delim=",")) + Suppress(")")
 function_call_p.setParseAction(lambda tokens: [FunctionCall(*tokens)])
 
+sort_expression_p = function_call_p
+
+sort_section_p = Literal("sort:") + sort_expression_p
+sort_section_p.setParseAction(lambda tokens: Sort(tokens[1]))
+
 attribute_expression_p = logical_expression_p | function_call_p | attribute_id_p | slice_p
 
 hyperslice_p = Group(delimitedList(slice_p, delim=","))
@@ -92,7 +104,7 @@ attributes_p = Group(delimitedList(attribute_expression_p, delim="|"))
 
 arrays_p = Group(delimitedList(slice_p, delim="|"))
 
-hyperchunk_p = Group(arrays_p + Optional(Suppress("/") + attributes_p + Optional(Suppress("/") + hyperslices_p)))
+hyperchunk_p = Group(arrays_p + Optional(Suppress("/") + attributes_p + Optional(Suppress("/") + sort_section_p) +  Optional(Suppress("/") + hyperslices_p)))
 
 hyperchunks_p = delimitedList(hyperchunk_p, delim=";")
 

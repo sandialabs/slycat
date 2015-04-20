@@ -175,6 +175,11 @@ def step_impl(context):
       slycat.hyperchunks.grammar.BinaryOperator(slycat.hyperchunks.grammar.AttributeIndex(1), "<", 4.0),
       ), (slice(0, 50),))])
 
+@when(u'parsing a hyperchunk expression, 0/.../sort: argsort(a1, "asc")/0:50 is valid.')
+def step_impl(context):
+  assert_round_trip_equal("""0/.../sort: argsort(a1, "asc")/0:50""")
+
+
 
 
 

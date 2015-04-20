@@ -133,7 +133,7 @@ def format(hyperchunks):
     elif len(hyperchunk) == 3:
       return format_slices(hyperchunk[0]) + "/" + format_slices_or_expressions(hyperchunk[1]) + "/" + format_hyperslices(hyperchunk[2])
     else:
-      raise ValueError()
+      raise ValueError("%r" % hyperchunk)
 
   return ";".join([format_hyperchunk(hyperchunk) for hyperchunk in hyperchunks])
 
