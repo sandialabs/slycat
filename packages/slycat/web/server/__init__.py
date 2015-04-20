@@ -81,22 +81,20 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
 
-  def evaluate(name, array, hdf5_array, expression, hyperslice, stack):
-    cherrypy.log.error("Evaluating expression: %s" % expression)
+  def evaluate(level, hdf5_array, expression, hyperslice, stack):
+    cherrypy.log.error("%sEvaluating expression: %s" % ("  " * level, expression))
     if isinstance(expression, numbers.Number):
       stack.append(expression)
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
-      cherrypy.log.error("Reading from %s/%s/%s/%s" % (name, array.index, expression.index, hyperslice))
       stack.append(hdf5_array.get_data(expression.index)[hyperslice])
     elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
-      cherrypy.log.error("Calling %s/%s/%r/%s" % (name, array.index, expression, hyperslice))
       if expression.name == "indices":
         stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice])
       else:
         raise ValueError("Unknown function: %s" % expression.name)
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-      evaluate(name, array, hdf5_array, expression.right, hyperslice, stack)
-      evaluate(name, array, hdf5_array, expression.left, hyperslice, stack)
+      evaluate(level + 1, hdf5_array, expression.right, hyperslice, stack)
+      evaluate(level + 1, hdf5_array, expression.left, hyperslice, stack)
       if expression.operator == "<":
         stack.append(stack.pop() < stack.pop())
       elif expression.operator == ">":
@@ -122,7 +120,7 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
             stack = []
-            evaluate(name, array, hdf5_array, attribute.expression, hyperslice, stack)
+            evaluate(0, hdf5_array, attribute.expression, hyperslice, stack)
             yield stack.pop()
 
 def get_model_parameter(database, model, name):
