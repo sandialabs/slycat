@@ -12,18 +12,18 @@ def expansion(hyperchunks, array_count, attribute_count):
   for array in slycat.hyperchunks.arrays(hyperchunks, array_count):
     if array.attribute_count:
       for attribute in array.attributes(attribute_count):
-        if isinstance(attribute.data, slycat.hyperchunks.grammar.LoadAttribute):
+        if isinstance(attribute.expression, slycat.hyperchunks.grammar.LoadAttribute):
           if attribute.hyperslice_count:
             for hyperslice in attribute.hyperslices():
-              yield (array.index, attribute.data.index, hyperslice)
+              yield (array.index, attribute.expression.index, hyperslice)
           else:
-            yield (array.index, attribute.data.index)
+            yield (array.index, attribute.expression.index)
         else:
           if attribute.hyperslice_count:
             for hyperslice in attribute.hyperslices():
-              yield (array.index, attribute.data, hyperslice)
+              yield (array.index, attribute.expression, hyperslice)
           else:
-            yield (array.index, attribute.data)
+            yield (array.index, attribute.expression)
     else:
       yield (array.index,)
 

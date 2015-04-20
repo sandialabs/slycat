@@ -636,8 +636,10 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
+          if not isinstance(attribute.expression, slycat.hyperchunks.grammar.LoadAttribute):
+            raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.index, hyperslice))
+            cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.expression.index, hyperslice))
 
             # We have to convert our hyperslice into a shape with explicit extents so we can compute
             # how many bytes to extract from the input data.
@@ -658,7 +660,7 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
                   raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
 
             # Convert data to an array ...
-            data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.index]["type"])
+            data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
             data_size = numpy.prod(data_shape)
 
             if byteorder is None:
@@ -668,7 +670,7 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
             else:
               raise NotImplementedError()
 
-            hdf5_array.set_data(attribute.index, hyperslice, hyperslice_data)
+            hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
 
 
 def delete_model(mid):

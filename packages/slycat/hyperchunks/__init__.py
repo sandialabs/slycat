@@ -8,16 +8,29 @@ import numbers
 import numpy
 import slycat.hyperchunks.grammar
 
+def parse(string):
+  """Parse a string hyperchunks representation.
+
+  Parameters
+  ----------
+  string: string representation of a hyperchunk.
+
+  Returns
+  -------
+  hyperchunks: parsed representation of a hyperchunk.
+  """
+  return slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True)
+
 def arrays(hyperchunks, array_count):
   """Iterate over the arrays in a set of hyperchunks."""
   class Attribute(object):
-    def __init__(self, data, hyperslices):
-      self._data = data
+    def __init__(self, expression, hyperslices):
+      self._expression = expression
       self._hyperslices = hyperslices
 
     @property
-    def data(self):
-      return self._data
+    def expression(self):
+      return self._expression
 
     @property
     def hyperslice_count(self):
@@ -76,19 +89,6 @@ def arrays(hyperchunks, array_count):
           yield Array(index, hyperchunk[1] if len(hyperchunk) > 1 else None, hyperchunk[2] if len(hyperchunk) > 2 else None)
       else:
         raise ValueError("Unexpected array: %r" % arrays)
-
-def parse(string):
-  """Parse a string hyperchunks representation.
-
-  Parameters
-  ----------
-  string: string representation of a hyperchunk.
-
-  Returns
-  -------
-  hyperchunks: parsed representation of a hyperchunk.
-  """
-  return slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True)
 
 def format(hyperchunks):
   """Convert hyperchunks to their string representation.
@@ -159,4 +159,4 @@ def simple(array, attribute, hyperslice):
   hyperslice: tuple of one-or-more slices
     Specifies a single hyperslice to read/write.
   """
-  return [[array, attribute, [hyperslice]]]
+  return [[[array], [slycat.hyperchunks.grammar.LoadAttribute(attribute)], [hyperslice]]]
