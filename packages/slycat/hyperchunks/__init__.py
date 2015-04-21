@@ -19,7 +19,7 @@ def parse(string):
   -------
   hyperchunks: parsed representation of a hyperchunk.
   """
-  return slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True)
+  return slycat.hyperchunks.grammar.Hyperchunks(slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True).asList())
 
 def arrays(hyperchunks, array_count):
   """Iterate over the arrays in a set of hyperchunks."""
@@ -43,10 +43,10 @@ def arrays(hyperchunks, array_count):
           yield tuple(hyperslice)
 
   class Array(object):
-    def __init__(self, index, attributes, sort, hyperslices):
+    def __init__(self, index, attributes, order, hyperslices):
       self._index = index
       self._attributes = attributes
-      self._sort = sort
+      self._order = order
       self._hyperslices = hyperslices
 
     @property
@@ -58,8 +58,8 @@ def arrays(hyperchunks, array_count):
       return 0 if self._attributes is None else len(self._attributes)
 
     @property
-    def sort(self):
-      return self._sort
+    def order(self):
+      return self._order
 
     def attributes(self, attribute_count):
       """Iterate over the attributes in a hyperchunk."""
@@ -80,12 +80,7 @@ def arrays(hyperchunks, array_count):
             yield Attribute(attributes, self._hyperslices)
 
   for hyperchunk in hyperchunks:
-    array_expression = hyperchunk[0]
-    attribute_expression = hyperchunk[1] if len(hyperchunk) > 1 else None
-    sort_expression = hyperchunk[2] if len(hyperchunk) > 3 else None
-    hyperslice_expression = hyperchunk[3] if len(hyperchunk) > 3 else hyperchunk[2] if len(hyperchunk) > 2 else None
-
-    for arrays in array_expression:
+    for arrays in hyperchunk.arrays:
       if isinstance(arrays, (numbers.Integral, type(Ellipsis), slice)):
         if isinstance(arrays, numbers.Integral):
           if arrays < 0:
@@ -96,77 +91,66 @@ def arrays(hyperchunks, array_count):
           arrays = slice(0, array_count)
         start, stop, step = arrays.indices(array_count)
         for index in numpy.arange(start, stop, step):
-          yield Array(index, attribute_expression, sort_expression, hyperslice_expression)
+          yield Array(index, hyperchunk.attributes, hyperchunk.order, hyperchunk.hyperslices)
       else:
         raise ValueError("Unexpected array: %r" % arrays)
 
-def format(hyperchunks):
+def tostring(value):
   """Convert hyperchunks to their string representation.
   """
-  def format_slice(value):
-    if isinstance(value, numbers.Integral):
-      return str(value)
-    elif isinstance(value, type(Ellipsis)):
-      return "..."
-    elif isinstance(value, slice):
-      return ("%s:%s" % ("" if value.start is None else value.start, "" if value.stop is None else value.stop)) + ("" if value.step is None else ":%s" % value.step)
-    else:
-      raise ValueError()
 
-  def format_slice_or_expression(value):
-    if isinstance(value, (numbers.Integral, type(Ellipsis), slice)):
-      return format_slice(value)
-    elif isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
-      return "%s(%s)" % (value._name, ",".join([repr(arg) for arg in value._args]))
-    elif isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
-      return "%s %s %s" % (value._left, value._operator, value._right)
-    else:
-      raise ValueError()
+  if isinstance(value, slycat.hyperchunks.grammar.Arrays):
+    return "|".join([tostring(array) for array in value])
 
-  def format_slices(values):
-    return "|".join([format_slice(value) for value in values])
+  if isinstance(value, slycat.hyperchunks.grammar.Attributes):
+    return "|".join([tostring(array) for array in value])
 
-  def format_slices_or_expressions(values):
-    return "|".join([format_slice_or_expression(value) for value in values])
+  if isinstance(value, slycat.hyperchunks.grammar.AttributeIndex):
+    return "a%s" % value.index
 
-  def format_hyperslice(values):
-    return ",".join([format_slice(value) for value in values])
+  if isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
+    return "%s %s %s" % (tostring(value.left), value.operator, tostring(value.right))
 
-  def format_hyperslices(values):
-    return "|".join([format_hyperslice(value) for value in values])
+  if isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
+    return "%s(%s)" % (value.name, ", ".join([tostring(arg) for arg in value.args]))
 
-  def format_hyperchunk(hyperchunk):
-    if len(hyperchunk) == 1:
-      return format_slices(hyperchunk[0])
-    elif len(hyperchunk) == 2:
-      return format_slices(hyperchunk[0]) + "/" + format_slices_or_expressions(hyperchunk[1])
-    elif len(hyperchunk) == 3:
-      return format_slices(hyperchunk[0]) + "/" + format_slices_or_expressions(hyperchunk[1]) + "/" + format_hyperslices(hyperchunk[2])
-    else:
-      raise ValueError("%r" % hyperchunk)
+  if isinstance(value, slycat.hyperchunks.grammar.Hyperchunk):
+    sections = []
+    sections.append(tostring(value.arrays))
+    if value.attributes is not None:
+      sections.append(tostring(value.attributes))
+    if value.order is not None:
+      sections.append("order:" + tostring(value.order))
+    if value.hyperslices is not None:
+      sections.append(tostring(value.hyperslices))
+    return "/".join(sections)
 
-  return ";".join([format_hyperchunk(hyperchunk) for hyperchunk in hyperchunks])
+  if isinstance(value, slycat.hyperchunks.grammar.Hyperchunks):
+    return ";".join([tostring(hyperchunk) for hyperchunk in value])
 
-class HypersliceBuilder(object):
-  def __getitem__(self, index):
-    if isinstance(index, tuple):
-      return index
-    else:
-      return (index,)
+  if isinstance(value, slycat.hyperchunks.grammar.Hyperslices):
+    return "|".join([tostring(array) for array in value])
 
-hyperslice = HypersliceBuilder()
+  if isinstance(value, slycat.hyperchunks.grammar.Hyperslice):
+    return ",".join([tostring(hyperslice) for hyperslice in value])
 
+  if isinstance(value, slycat.hyperchunks.grammar.List):
+    return "[%s]" % ", ".join([tostring(item) for item in value.values])
 
-def simple(array, attribute, hyperslice):
-  """Return a hyperchunks object containing a single array, single attribute, and single hyperslice.
+  if isinstance(value, int):
+    return repr(value)
 
-  Parameters
-  ----------
-  array: integer
-    Zero-based index of the array to read/write.
-  attribute: integer
-    Zero-based index of the attribute to read/write.
-  hyperslice: tuple of one-or-more slices
-    Specifies a single hyperslice to read/write.
-  """
-  return [[[array], [slycat.hyperchunks.grammar.AttributeIndex(attribute)], [hyperslice]]]
+  if isinstance(value, float):
+    return repr(value)
+
+  if isinstance(value, basestring):
+    return '"%s"' % value
+
+  if isinstance(value, type(Ellipsis)):
+    return "..."
+
+  if isinstance(value, slice):
+    return ("%s:%s" % ("" if value.start is None else value.start, "" if value.stop is None else value.stop)) + ("" if value.step is None else ":%s" % value.step)
+
+  raise ValueError("Unknown value: %s" % value)
+

@@ -5,7 +5,6 @@ def register_slycat_plugin(context):
   import numpy
   import os
   import slycat.web.server
-  import slycat.hyperchunks
 
   def finish(database, model):
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
@@ -39,8 +38,8 @@ def register_slycat_plugin(context):
     if product_type not in ["dot-product", "hadamard-product", "kronecker-product"]:
       raise cherrypy.HTTPError("400 Unknown product-type: %s." % product_type)
 
-    A = next(slycat.web.server.get_model_arrayset_data(database, model, "A", slycat.hyperchunks.parse("0/0/...")))
-    B = next(slycat.web.server.get_model_arrayset_data(database, model, "B", slycat.hyperchunks.parse("0/0/...")))
+    A = next(slycat.web.server.get_model_arrayset_data(database, model, "A", "0/0/..."))
+    B = next(slycat.web.server.get_model_arrayset_data(database, model, "B", "0/0/..."))
     if product_type == "dot-product":
       return matrix_result(numpy.dot(A, B))
     if product_type == "hadamard-product":
