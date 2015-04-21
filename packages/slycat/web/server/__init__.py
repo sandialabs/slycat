@@ -22,6 +22,13 @@ def update_model(database, model, **kwargs):
   database.save(model)
 
 def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None, unique=None):
+  if isinstance(arrays, basestring):
+    arrays = slycat.hyperchunks.parse(arrays)
+  if isinstance(statistics, basestring):
+    statistics = slycat.hyperchunks.parse(statistics)
+  if isinstance(unique, basestring):
+    unique = slycat.hyperchunks.parse(unique)
+
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
     with slycat.web.server.hdf5.lock:
@@ -44,8 +51,6 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       results = {}
       if arrays is not None:
-        if isinstance(arrays, basestring):
-          arrays = slycat.hyperchunks.parse(arrays)
         results["arrays"] = []
         for array in slycat.hyperchunks.arrays(arrays, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
@@ -56,8 +61,6 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
             "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
             })
       if statistics is not None:
-        if isinstance(statistics, basestring):
-          statistics = slycat.hyperchunks.parse(statistics)
         results["statistics"] = []
         for array in slycat.hyperchunks.arrays(statistics, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
@@ -69,8 +72,6 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
             statistics["attribute"] = attribute.expression.index
             results["statistics"].append(statistics)
       if unique is not None:
-        if isinstance(unique, basestring):
-          unique = slycat.hyperchunks.parse(unique)
         results["unique"] = []
         for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
@@ -185,12 +186,12 @@ def put_model_array(database, model, name, array_index, attributes, dimensions):
       slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def put_model_arrayset_data(database, model, name, hyperchunks, data):
-  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
-
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
   data = iter(data)
+
+  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
 
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
