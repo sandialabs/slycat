@@ -151,7 +151,6 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
                 unique["values"].append(numpy.unique(values)[hyperslice])
             results["unique"].append(unique)
 
-      cherrypy.log.error("results: %s" % results)
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
