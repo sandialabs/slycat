@@ -41,6 +41,7 @@ class List(object):
   def __init__(self, tokens):
     self.values = tokens.asList()
 
+# Define literals.
 nonzero_nums = "123456789"
 
 decimal_integer_literal_p = Optional("-") + Word(nonzero_nums, nums) | "0"
@@ -73,11 +74,18 @@ ellipsis_literal_p.setParseAction(lambda tokens: Ellipsis)
 
 slice_literal_p = range_literal_p | ellipsis_literal_p | decimal_integer_literal_p
 
+hyperslice_literal_p = delimitedList(slice_literal_p, delim=",")
+hyperslice_literal_p.setParseAction(lambda tokens: Hyperslice(tokens))
+
+hyperslices_literal_p = delimitedList(hyperslice_literal_p, delim="|")
+
+# Define indentifiers (variables).
 attribute_identifier_p = Word("a", nums, min=2)
 attribute_identifier_p.setParseAction(lambda tokens: AttributeIndex(int(tokens[0][1:])))
 
 identifier_p = attribute_identifier_p
 
+# Define attribute expressions (expressions that return attributes).
 value_comparison_operator_p = oneOf("== >= <= != < >")
 
 value_comparison_p = attribute_identifier_p + value_comparison_operator_p + number_literal_p
@@ -104,23 +112,23 @@ function_argument_p = function_call_p | attribute_identifier_p | string_literal_
 function_call_p << Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(function_argument_p, delim=",")) + Suppress(")")
 function_call_p.setParseAction(FunctionCall)
 
-order_expression_p = function_call_p
-
-order_section_p = Suppress(Literal("order:")) + order_expression_p
-order_section_p.setParseAction(lambda tokens: tokens[0])
-
 attribute_expression_p = logical_expression_p | function_call_p | attribute_identifier_p | slice_literal_p
 
-hyperslice_p = delimitedList(slice_literal_p, delim=",")
-hyperslice_p.setParseAction(lambda tokens: Hyperslice(tokens))
-
-hyperslices_p = delimitedList(hyperslice_p, delim="|")
-
-attributes_p = delimitedList(attribute_expression_p, delim="|")
-
+# Define the arrays section of a hyperchunk.
 arrays_p = delimitedList(slice_literal_p, delim="|")
 
-hyperchunk_p = arrays_p("arrays") + Optional(Suppress("/") + attributes_p("attributes") + Optional(Suppress("/") + order_section_p("order")) +  Optional(Suppress("/") + hyperslices_p("hyperslices")))
+# Define the attributes section of a hyperchunk.
+attributes_p = delimitedList(attribute_expression_p, delim="|")
+
+# Define the order section of a hyperchunk.
+order_section_p = Suppress(Literal("order:")) + function_call_p
+order_section_p.setParseAction(lambda tokens: tokens[0])
+
+# Define a hyperchunk.
+hyperchunk_p = arrays_p("arrays") + Optional(Suppress("/") + attributes_p("attributes") + Optional(Suppress("/") + order_section_p("order")) +  Optional(Suppress("/") + hyperslices_literal_p("hyperslices")))
 hyperchunk_p.setParseAction(Hyperchunk)
 
+# Define a collection of hyperchunks.
 hyperchunks_p = delimitedList(hyperchunk_p, delim=";")
+
+
