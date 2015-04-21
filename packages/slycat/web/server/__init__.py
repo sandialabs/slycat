@@ -100,14 +100,14 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
       stack.append(hdf5_array.get_data(expression.index)[...])
     elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
-      if expression.name == "indices":
+      if expression.name == "index":
         stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
-      elif expression.name == "argsort":
+      elif expression.name == "rank":
         evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
-        sort_order = numpy.argsort(stack.pop())
+        order = numpy.argsort(stack.pop())
         if expression.args[1] == "desc":
-          sort_order = sort_order[::-1]
-        stack.append(sort_order)
+          order = order[::-1]
+        stack.append(order)
       else:
         raise ValueError("Unknown function: %s" % expression.name)
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
@@ -140,17 +140,17 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
 
-        if array.sort is not None:
+        if array.order is not None:
           stack = []
-          evaluate(0, hdf5_array, "sort", array.sort, None, stack)
-          sort_order = stack.pop()
+          evaluate(0, hdf5_array, "order", array.order, None, stack)
+          order = stack.pop()
 
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
             stack = []
             evaluate(0, hdf5_array, "attribute", attribute.expression, hyperslice, stack)
-            if array.sort is not None:
-              yield stack.pop()[sort_order][hyperslice]
+            if array.order is not None:
+              yield stack.pop()[order][hyperslice]
             else:
               yield stack.pop()[hyperslice]
 

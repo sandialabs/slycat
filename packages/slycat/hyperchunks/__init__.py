@@ -43,10 +43,10 @@ def arrays(hyperchunks, array_count):
           yield tuple(hyperslice)
 
   class Array(object):
-    def __init__(self, index, attributes, sort, hyperslices):
+    def __init__(self, index, attributes, order, hyperslices):
       self._index = index
       self._attributes = attributes
-      self._sort = sort
+      self._order = order
       self._hyperslices = hyperslices
 
     @property
@@ -58,8 +58,8 @@ def arrays(hyperchunks, array_count):
       return 0 if self._attributes is None else len(self._attributes)
 
     @property
-    def sort(self):
-      return self._sort
+    def order(self):
+      return self._order
 
     def attributes(self, attribute_count):
       """Iterate over the attributes in a hyperchunk."""
@@ -91,7 +91,7 @@ def arrays(hyperchunks, array_count):
           arrays = slice(0, array_count)
         start, stop, step = arrays.indices(array_count)
         for index in numpy.arange(start, stop, step):
-          yield Array(index, hyperchunk.attributes, hyperchunk.sort, hyperchunk.hyperslices)
+          yield Array(index, hyperchunk.attributes, hyperchunk.order, hyperchunk.hyperslices)
       else:
         raise ValueError("Unexpected array: %r" % arrays)
 
@@ -107,8 +107,8 @@ def tostring(value):
     sections.append(tostring(value.arrays))
     if value.attributes is not None:
       sections.append(tostring(value.attributes))
-    if value.sort is not None:
-      sections.append("sort:" + tostring(value.sort))
+    if value.order is not None:
+      sections.append("order:" + tostring(value.order))
     if value.hyperslices is not None:
       sections.append(tostring(value.hyperslices))
     return "/".join(sections)

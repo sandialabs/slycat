@@ -16,7 +16,7 @@ class Hyperchunk(object):
   def __init__(self, tokens):
     self.arrays = Arrays(tokens["arrays"].asList())
     self.attributes = Attributes(tokens["attributes"].asList()) if "attributes" in tokens else None
-    self.sort = tokens.get("sort", None)
+    self.order = tokens.get("order", None)
     self.hyperslices = Hyperslices(tokens["hyperslices"].asList()) if "hyperslices" in tokens else None
 
 class Hyperchunks(list):
@@ -85,10 +85,10 @@ function_argument_p = attribute_id_p | string_p | float_p | integer_p
 function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(function_argument_p, delim=",")) + Suppress(")")
 function_call_p.setParseAction(FunctionCall)
 
-sort_expression_p = function_call_p
+order_expression_p = function_call_p
 
-sort_section_p = Suppress(Literal("sort:")) + sort_expression_p
-sort_section_p.setParseAction(lambda tokens: tokens[0])
+order_section_p = Suppress(Literal("order:")) + order_expression_p
+order_section_p.setParseAction(lambda tokens: tokens[0])
 
 attribute_expression_p = logical_expression_p | function_call_p | attribute_id_p | slice_p
 
@@ -101,7 +101,7 @@ attributes_p = delimitedList(attribute_expression_p, delim="|")
 
 arrays_p = delimitedList(slice_p, delim="|")
 
-hyperchunk_p = arrays_p("arrays") + Optional(Suppress("/") + attributes_p("attributes") + Optional(Suppress("/") + sort_section_p("sort")) +  Optional(Suppress("/") + hyperslices_p("hyperslices")))
+hyperchunk_p = arrays_p("arrays") + Optional(Suppress("/") + attributes_p("attributes") + Optional(Suppress("/") + order_section_p("order")) +  Optional(Suppress("/") + hyperslices_p("hyperslices")))
 hyperchunk_p.setParseAction(Hyperchunk)
 
 hyperchunks_p = delimitedList(hyperchunk_p, delim=";")
