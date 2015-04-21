@@ -501,29 +501,6 @@ $.widget("parameter_image.table",
             sort_column = "index(0)";
           sort = "/order: rank(" + sort_column + ', "' + self.sort_order + '")';
         }
-          
-
-        // $.ajax(
-        // {
-        //   type : "GET",
-        //   url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
-        //   async : false,
-        //   success : function(data)
-        //   {
-        //     self.pages[page] = [];
-        //     for(var i=0; i < data.rows.length; i++)
-        //     {
-        //       result = {};
-        //       for(var j = column_begin; j != column_end; ++j)
-        //         result[j] = data.data[j][i];
-        //       self.pages[page].push(result);
-        //     }
-        //   },
-        //   error: function(request, status, reason_phrase)
-        //   {
-        //     console.log("error", request, status, reason_phrase);
-        //   }
-        // });
 
         $.ajax(
         {

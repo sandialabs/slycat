@@ -28,6 +28,7 @@ $.widget("parameter_image.controls",
     selection : [],
     hidden_simulations : [],
     indices : [],
+    disable_hide_show : false,
   },
 
   _create: function()
@@ -544,17 +545,17 @@ $.widget("parameter_image.controls",
       .attr("label", "Scatterplot Points")
       .appendTo(this.selection_select)
       ;
-    $("<option />")
+    self.hide_option = $("<option />")
       .text("Hide")
       .attr("value", "hide")
       .appendTo(scatterplotOptgroup)
       ;
-    $("<option />")
+    self.hide_unselected_option = $("<option />")
       .text("Hide Unselected")
       .attr("value", "hide_unselected")
       .appendTo(scatterplotOptgroup)
       ;
-    $("<option />")
+    self.show_option = $("<option />")
       .text("Show")
       .attr("value", "show")
       .appendTo(scatterplotOptgroup)
@@ -630,11 +631,19 @@ $.widget("parameter_image.controls",
     var self = this,
         noneHidden = this.options.hidden_simulations.length == 0;
         titleText = 'Show All Hidden Scatterplot Points';
-    if(noneHidden) {
+    if(noneHidden || self.options.disable_hide_show) {
       titleText = 'There are currently no hidden scatterplot points to show.';
     }
-    this.show_all_button.prop("disabled", noneHidden);
+    this.show_all_button.prop("disabled", noneHidden || self.options.disable_hide_show);
     this.show_all_button.attr("title", titleText);
+  },
+
+  _set_hide_show_selection_status: function()
+  {
+    var self = this;
+    self.hide_option.prop("disabled", self.options.disable_hide_show);
+    self.hide_unselected_option.prop("disabled", self.options.disable_hide_show);
+    self.show_option.prop("disabled", self.options.disable_hide_show);
   },
 
   // Remove hidden_simulations from indices
@@ -730,6 +739,11 @@ $.widget("parameter_image.controls",
     else if(key == 'hidden_simulations')
     {
       self._set_show_all();
+    }
+    else if(key == 'disable_hide_show')
+    {
+      self._set_show_all();
+      self._set_hide_show_selection_status();
     }
   },
 });

@@ -295,6 +295,9 @@ function metadata_loaded()
     hidden_simulations = [];
     if("hidden-simulations" in bookmark)
       hidden_simulations = bookmark["hidden-simulations"];
+    manually_hidden_simulations = [];
+    if("manually-hidden-simulations" in bookmark)
+      manually_hidden_simulations = bookmark["manually-hidden-simulations"];
 
     get_model_array_attribute({
       server_root : server_root,
@@ -780,6 +783,7 @@ function setup_controls()
         }
       }
       update_widgets_when_hidden_simulations_change();
+      manually_hidden_simulations = hidden_simulations.slice();
     });
 
     // Log changes to hidden selection ...
@@ -801,6 +805,7 @@ function setup_controls()
       }
 
       update_widgets_when_hidden_simulations_change();
+      manually_hidden_simulations = hidden_simulations.slice();
     });
 
     // Log changes to hidden selection ...
@@ -813,6 +818,7 @@ function setup_controls()
         }
       }
       update_widgets_when_hidden_simulations_change();
+      manually_hidden_simulations = hidden_simulations.slice();
     });
 
     // Log changes to hidden selection ...
@@ -836,6 +842,7 @@ function setup_controls()
         hidden_simulations.pop();
       }
       update_widgets_when_hidden_simulations_change();
+      manually_hidden_simulations = hidden_simulations.slice();
     });
   }
 }
@@ -1105,7 +1112,7 @@ function hidden_simulations_changed()
     type : "POST",
     url : server_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length
   });
-  bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
+  bookmarker.updateState( { "hidden-simulations" : hidden_simulations, "manually-hidden-simulations" : manually_hidden_simulations } );
 }
 
 function update_scatterplot_x(variable)
@@ -1191,6 +1198,7 @@ function active_filters_ready()
   filter_manager.active_filters.subscribe(function(newValue) {
     console.log("active_filters changed! The new value is " + newValue);
     filters_changed(newValue);
+    $("#controls").controls("option", "disable_hide_show",  newValue.length > 0);
   });
 }
 
@@ -1198,6 +1206,7 @@ function filters_changed(newValue)
 {
   console.log("change occurred to filters. newValue is: " + newValue);
   var allFilters = filter_manager.allFilters;
+  var active_filters = filter_manager.active_filters;
   var new_filter_expression = "";
   var filter_var, selected_values;
   var new_filters = [];
@@ -1241,6 +1250,16 @@ function filters_changed(newValue)
   new_filter_expression = new_filters.join(' and ');
   console.log("Here is the new filter_expression: " + new_filter_expression);
 
+  // Added first filter but it's not doing anything, so need to clear any hidden simulations
+  if(active_filters().length == 1 && (filter_expression == null || filter_expression == ""))
+  {
+    // Clear hidden_simulations
+    while(hidden_simulations.length > 0) {
+      hidden_simulations.pop();
+    }
+    update_widgets_when_hidden_simulations_change();
+  }
+
   if(filter_expression == null || new_filter_expression != filter_expression)
   {
     filter_expression = new_filter_expression;
@@ -1267,6 +1286,14 @@ function filters_changed(newValue)
       // Clear hidden_simulations
       while(hidden_simulations.length > 0) {
         hidden_simulations.pop();
+      }
+
+      // Removed last filter, so revert to any manually hidden simulations
+      if(active_filters().length == 0)
+      {
+        for(var i = 0; i < manually_hidden_simulations.length; i++){
+          hidden_simulations.push(manually_hidden_simulations[i]);
+        }
       }
 
       update_widgets_when_hidden_simulations_change();
@@ -1321,6 +1348,22 @@ function filters_changed(newValue)
       });
     }
   }
+
+  // Removed last filter, so revert to any manually hidden simulations
+  if(active_filters().length == 0)
+  {
+    // Clear hidden_simulations
+    while(hidden_simulations.length > 0) {
+      hidden_simulations.pop();
+    }
+
+    for(var i = 0; i < manually_hidden_simulations.length; i++){
+      hidden_simulations.push(manually_hidden_simulations[i]);
+    }
+
+    update_widgets_when_hidden_simulations_change();
+  }
+
 }
 
 });
