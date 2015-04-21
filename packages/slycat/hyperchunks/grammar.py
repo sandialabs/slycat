@@ -98,9 +98,11 @@ logical_expression_p = infixNotation(comparison_p,
   (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
 ])
 
-function_argument_p = attribute_id_p | string_p | float_p | integer_p
+function_call_p = Forward()
 
-function_call_p = Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(function_argument_p, delim=",")) + Suppress(")")
+function_argument_p = function_call_p | attribute_id_p | string_p | float_p | integer_p
+
+function_call_p << Word(alphas, alphanums) + Suppress("(") + Optional(delimitedList(function_argument_p, delim=",")) + Suppress(")")
 function_call_p.setParseAction(FunctionCall)
 
 order_expression_p = function_call_p
