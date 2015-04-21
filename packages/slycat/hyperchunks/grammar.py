@@ -52,6 +52,8 @@ point_float_p = Optional("-") + Optional(int_part_p) + fraction_part_p | int_par
 float_p = point_float_p
 float_p.setParseAction(lambda tokens: float("".join(tokens)))
 
+number_p = float_p | integer_p
+
 string_p = QuotedString(quoteChar='"', escChar="\\")
 
 attribute_id_p = Word("a", nums, min=2)
@@ -69,7 +71,7 @@ slice_p = range_p | ellipsis_p | integer_p
 
 comparison_operator_p = oneOf("== >= <= != < >")
 
-comparison_p = attribute_id_p + comparison_operator_p + float_p
+comparison_p = attribute_id_p + comparison_operator_p + number_p
 comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
 
 logical_expression_p = infixNotation(comparison_p,
