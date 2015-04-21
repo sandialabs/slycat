@@ -809,7 +809,7 @@ def get_model_arrayset_metadata(mid, name, **kwargs):
   results = slycat.web.server.get_model_arrayset_metadata(database, model, name, arrays, statistics, unique)
   if "unique" in results:
     for unique in results["unique"]:
-      unique["values"] = unique["values"].tolist()
+      unique["values"] = [array.tolist() for array in unique["values"]]
 
   return results
 

@@ -136,14 +136,22 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
         for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
           for attribute in array.attributes(len(hdf5_array.attributes)):
-            if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-              raise ValueError("Cannot retrieve unique values for computed attributes.")
-            for hyperslice in attribute.hyperslices():
-              unique = hdf5_array.get_unique(attribute.expression.index, hyperslice)
-              unique["array"] = array.index
-              unique["attribute"] = attribute.expression.index
-              results["unique"].append(unique)
+            unique = {}
+            unique["array"] = array.index
+            unique["values"] = []
+            if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+              for hyperslice in attribute.hyperslices():
+                unique["attribute"] = attribute.expression.index
+                unique["values"].append(hdf5_array.get_unique(attribute.expression.index, hyperslice)["values"])
+            else:
+              stack = []
+              evaluate(0, hdf5_array, "unique", attribute.expression, None, stack)
+              values = stack.pop()
+              for hyperslice in attribute.hyperslices():
+                unique["values"].append(numpy.unique(values)[hyperslice])
+            results["unique"].append(unique)
 
+      cherrypy.log.error("results: %s" % results)
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
