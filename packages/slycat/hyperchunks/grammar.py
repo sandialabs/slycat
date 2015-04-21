@@ -56,6 +56,10 @@ number_p = float_p | integer_p
 
 string_p = QuotedString(quoteChar='"', escChar="\\")
 
+number_list_p = Suppress("[") + delimitedList(number_p, delim=",") + Suppress("]")
+
+string_list_p = Suppress("[") + delimitedList(string_p, delim=",") + Suppress("]")
+
 attribute_id_p = Word("a", nums, min=2)
 attribute_id_p.setParseAction(lambda tokens: AttributeIndex(int(tokens[0][1:])))
 
@@ -69,10 +73,15 @@ ellipsis_p.setParseAction(lambda tokens: Ellipsis)
 
 slice_p = range_p | ellipsis_p | integer_p
 
-comparison_operator_p = oneOf("== >= <= != < >")
+value_comparison_operator_p = oneOf("== >= <= != < >")
 
-comparison_p = attribute_id_p + comparison_operator_p + number_p
-comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
+value_comparison_p = attribute_id_p + value_comparison_operator_p + number_p
+value_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
+
+membership_comparison_p = attribute_id_p + Literal("in") + (number_list_p | string_list_p)
+membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
+
+comparison_p = value_comparison_p | membership_comparison_p
 
 logical_expression_p = infixNotation(comparison_p,
 [
