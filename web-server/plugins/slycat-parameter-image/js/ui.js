@@ -1201,6 +1201,7 @@ function filters_changed(newValue)
   var new_filter_expression = "";
   var filter_var, selected_values;
   var new_filters = [];
+  var filtered_all = false;
   for(var i = 0; i < allFilters().length; i++)
   {
     filter = allFilters()[i];
@@ -1209,7 +1210,11 @@ function filters_changed(newValue)
       filter_var = 'a' + filter.index();
       if(filter.type() == 'numeric')
       {
-        if( filter.invert() && (filter.high() != filter.low()) )
+        if( filter.invert() && (filter.high() == filter.low()) )
+        {
+          filtered_all = true;
+        }
+        else if( filter.invert() && (filter.high() != filter.low()) )
         {
           new_filters.push( '(' + filter_var + ' > ' + filter.high() + ' or ' + filter_var + ' < ' + filter.low() + ')' );
         }
@@ -1221,9 +1226,13 @@ function filters_changed(newValue)
       else if(filter.type() == 'category' && filter.categories().length > filter.selected().length)
       {
         selected_values = [];
+        var optional_quote = "";
+        if(filter.selected().length == 0)
+          filtered_all = true;
         for(var j = 0; j < filter.selected().length; j++)
         {
-          selected_values.push( '"' + filter.selected()[j].value() + '"' );
+          optional_quote = table_metadata["column-types"][filter.index()] == "string" ? '"' : '';
+          selected_values.push( optional_quote + filter.selected()[j].value() + optional_quote );
         }
         new_filters.push( '(' + filter_var + ' in [' + selected_values.join(', ') + '])' );
       }
@@ -1235,7 +1244,24 @@ function filters_changed(newValue)
   if(filter_expression == null || new_filter_expression != filter_expression)
   {
     filter_expression = new_filter_expression;
-    if(new_filters.length == 0)
+    if(filtered_all)
+    {
+      filtered_simulations = [];
+
+      // Clear hidden_simulations
+      while(hidden_simulations.length > 0) {
+        hidden_simulations.pop();
+      }
+
+      // Add all simulations to hidden_simulations and filtered_simulations
+      for(var i = 0; i < indices.length; i++){
+        hidden_simulations.push(indices[i]);
+        filtered_simulations.push(indices[i]);
+      }
+
+      update_widgets_when_hidden_simulations_change();
+    }
+    else if(new_filters.length == 0)
     {
       filtered_simulations = [];
       // Clear hidden_simulations
@@ -1254,7 +1280,7 @@ function filters_changed(newValue)
         async : false,
         success : function(data)
         {
-          var indices = data[0];
+          var filter_indices = data[0];
           var filter_status = data[1];
           var new_filtered_simulations = [];
 
@@ -1262,7 +1288,7 @@ function filters_changed(newValue)
           {
             if(!filter_status[i])
             {
-              new_filtered_simulations.push( indices[i] );
+              new_filtered_simulations.push( filter_indices[i] );
             }
           }
 

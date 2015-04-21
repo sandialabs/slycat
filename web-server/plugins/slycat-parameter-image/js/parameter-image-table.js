@@ -495,7 +495,13 @@ $.widget("parameter_image.table",
 
         var sort = "";
         if(self.sort_column !== null && self.sort_order !== null)
-          sort = "/order: rank(a" + self.sort_column + ', "' + self.sort_order + '")';
+        {
+          var sort_column = "a" + self.sort_column;
+          if(self.sort_column == self.metadata["column-count"]-1)
+            sort_column = "index(0)";
+          sort = "/order: rank(" + sort_column + ', "' + self.sort_order + '")';
+        }
+          
 
         // $.ajax(
         // {
