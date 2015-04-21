@@ -99,17 +99,6 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
       stack.append(expression)
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
       stack.append(hdf5_array.get_data(expression.index)[...])
-    elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
-      if expression.name == "index":
-        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
-      elif expression.name == "rank":
-        evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
-        order = numpy.argsort(stack.pop())
-        if expression.args[1] == "desc":
-          order = order[::-1]
-        stack.append(order)
-      else:
-        raise ValueError("Unknown function: %s" % expression.name)
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
       evaluate(level + 1, hdf5_array, expression_type, expression.right, hyperslice, stack)
       evaluate(level + 1, hdf5_array, expression_type, expression.left, hyperslice, stack)
@@ -129,8 +118,25 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         stack.append(numpy.logical_and(stack.pop(), stack.pop()))
       elif expression.operator == "or":
         stack.append(numpy.logical_or(stack.pop(), stack.pop()))
+      elif expression.operator == "in":
+        stack.append(numpy.in1d(stack.pop(), stack.pop()))
+      elif expression.operator == "not in":
+        stack.append(numpy.in1d(stack.pop(), stack.pop(), invert=True))
       else:
         raise ValueError("Unknown operator: %s" % expression.operator)
+    elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
+      if expression.name == "index":
+        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
+      elif expression.name == "rank":
+        evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
+        order = numpy.argsort(stack.pop())
+        if expression.args[1] == "desc":
+          order = order[::-1]
+        stack.append(order)
+      else:
+        raise ValueError("Unknown function: %s" % expression.name)
+    elif isinstance(expression, slycat.hyperchunks.grammar.List):
+      stack.append(expression.values)
     else:
       raise ValueError("Unknown expression: %s" % expression)
 
