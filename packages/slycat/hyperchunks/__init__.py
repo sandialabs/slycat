@@ -109,7 +109,7 @@ def tostring(value):
     return "a%s" % value.index
 
   if isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
-    return "%s %s %s" % (tostring(value.left), value.operator, tostring(value.right))
+    return "(" + (" %s " % value.operator).join([tostring(operand) for operand in value.operands]) + ")"
 
   if isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
     return "%s(%s)" % (value.name, ", ".join([tostring(arg) for arg in value.args]))

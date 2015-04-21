@@ -11,10 +11,9 @@ class AttributeIndex(object):
     self.index = index
 
 class BinaryOperator(object):
-  def __init__(self, left, operator, right):
-    self.left = left
+  def __init__(self, operator, operands):
     self.operator = operator
-    self.right = right
+    self.operands = operands
 
 class FunctionCall(object):
   def __init__(self, tokens):
@@ -89,20 +88,20 @@ identifier_p = attribute_identifier_p
 value_comparison_operator_p = oneOf("== >= <= != < >")
 
 value_comparison_p = attribute_identifier_p + value_comparison_operator_p + number_literal_p
-value_comparison_p.setParseAction(lambda tokens: BinaryOperator(*tokens))
+value_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens[1], tokens[0::2]))
 
 membership_comparison_operator_p = Optional("not") + Literal("in")
 membership_comparison_operator_p.setParseAction(lambda tokens: " ".join(tokens))
 
 membership_comparison_p = attribute_identifier_p + membership_comparison_operator_p + (number_list_literal_p | string_list_literal_p)
-membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(*tokens))
+membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens[1], tokens[0::2]))
 
 comparison_p = value_comparison_p | membership_comparison_p
 
 logical_expression_p = infixNotation(comparison_p,
 [
-  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
-  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
+  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0][1], tokens[0][0::2])),
+  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0][1], tokens[0][0::2])),
 ])
 
 function_call_p = Forward()

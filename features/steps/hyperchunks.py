@@ -110,27 +110,35 @@ def step_impl(context):
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/a1 > 2.0")
+  assert_round_trip_equal("0/a1 > 2", "0/(a1 > 2)")
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2/0:50 is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/a1 > 2.0/0:50")
+  assert_round_trip_equal("0/a1 > 2/0:50", "0/(a1 > 2)/0:50")
 
 @when(u'parsing a hyperchunk expression, 0/a1 > 2 and a1 < 4/0:50 is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/a1 > 2.0 and a1 < 4.0/0:50")
+  assert_round_trip_equal("0/a1 > 2.0 and a1 < 4.0/0:50", "0/((a1 > 2.0) and (a1 < 4.0))/0:50")
+
+@when(u'parsing a hyperchunk expression, 0/a1 < 2 and a2 < 3 or a3 < 4 is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/a1 < 2 and a2 < 3 or a3 < 4", "0/(((a1 < 2) and (a2 < 3)) or (a3 < 4))")
+
+@when(u'parsing a hyperchunk expression, 0/a1 < 2 and (a2 < 3 or a3 < 4) is valid.')
+def step_impl(context):
+  assert_round_trip_equal("0/a1 < 2 and (a2 < 3 or a3 < 4)", "0/((a1 < 2) and ((a2 < 3) or (a3 < 4)))")
 
 @when(u'parsing a hyperchunk expression, 0/a1 in [0, 5, 6] is valid.')
 def step_impl(context):
-  assert_round_trip_equal("0/a1 in [0, 5, 6]")
+  assert_round_trip_equal("0/a1 in [0, 5, 6]", "0/(a1 in [0, 5, 6])")
 
 @when(u'parsing a hyperchunk expression, 0/a1 in ["red", "cayenne"] is valid.')
 def step_impl(context):
-  assert_round_trip_equal("""0/a1 in ["red", "cayenne"]""")
+  assert_round_trip_equal("""0/a1 in ["red", "cayenne"]""", """0/(a1 in ["red", "cayenne"])""")
 
 @when(u'parsing a hyperchunk expression, 0/a1 not in ["red", "cayenne"] is valid.')
 def step_impl(context):
-  assert_round_trip_equal("""0/a1 not in ["red", "cayenne"]""")
+  assert_round_trip_equal("""0/a1 not in ["red", "cayenne"]""", """0/(a1 not in ["red", "cayenne"])""")
 
 @when(u'parsing a hyperchunk expression, 0/.../order: rank(a1, "asc")/0:50 is valid.')
 def step_impl(context):
@@ -140,6 +148,9 @@ def step_impl(context):
 def step_impl(context):
   assert_round_trip_equal("""0/.../order:rank(index(0), "asc")/0:50""")
 
+@when(u'parsing a hyperchunk expression, 0/index(0)!(a0 in [0, 1, 2, 3]) and (a4 <= 0.78119 and a4 >= 0.00010) and (a7 <= 0.53957 and a7 >= 0.09121)/... is valid.')
+def step_impl(context):
+  assert_round_trip_equal("""0/index(0)|(a0 in [0, 1, 2, 3]) and ((a4 <= 0.78119) and (a4 >= 0.0001)) and ((a7 <= 0.53957) and (a7 >= 0.09121))/...""", """0/index(0)|((a0 in [0, 1, 2, 3]) and ((a4 <= 0.78119) and (a4 >= 0.0001)) and ((a7 <= 0.53957) and (a7 >= 0.09121)))/...""")
 
 
 

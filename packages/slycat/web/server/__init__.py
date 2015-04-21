@@ -26,30 +26,31 @@ def evaluate(level, hdf5_array, expression_type, expression, hyperslice, stack):
   elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
     stack.append(hdf5_array.get_data(expression.index)[...])
   elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-    evaluate(level + 1, hdf5_array, expression_type, expression.right, hyperslice, stack)
-    evaluate(level + 1, hdf5_array, expression_type, expression.left, hyperslice, stack)
-    if expression.operator == "<":
-      stack.append(stack.pop() < stack.pop())
-    elif expression.operator == ">":
-      stack.append(stack.pop() > stack.pop())
-    elif expression.operator == "<=":
-      stack.append(stack.pop() <= stack.pop())
-    elif expression.operator == ">=":
-      stack.append(stack.pop() >= stack.pop())
-    elif expression.operator == "==":
-      stack.append(stack.pop() == stack.pop())
-    elif expression.operator == "!=":
-      stack.append(stack.pop() != stack.pop())
-    elif expression.operator == "and":
-      stack.append(numpy.logical_and(stack.pop(), stack.pop()))
-    elif expression.operator == "or":
-      stack.append(numpy.logical_or(stack.pop(), stack.pop()))
-    elif expression.operator == "in":
-      stack.append(numpy.in1d(stack.pop(), stack.pop()))
-    elif expression.operator == "not in":
-      stack.append(numpy.in1d(stack.pop(), stack.pop(), invert=True))
-    else:
-      raise ValueError("Unknown operator: %s" % expression.operator)
+    evaluate(level + 1, hdf5_array, expression_type, expression.operands[-1], hyperslice, stack)
+    for operand in expression.operands[:-1][::-1]:
+      evaluate(level + 1, hdf5_array, expression_type, operand, hyperslice, stack)
+      if expression.operator == "<":
+        stack.append(stack.pop() < stack.pop())
+      elif expression.operator == ">":
+        stack.append(stack.pop() > stack.pop())
+      elif expression.operator == "<=":
+        stack.append(stack.pop() <= stack.pop())
+      elif expression.operator == ">=":
+        stack.append(stack.pop() >= stack.pop())
+      elif expression.operator == "==":
+        stack.append(stack.pop() == stack.pop())
+      elif expression.operator == "!=":
+        stack.append(stack.pop() != stack.pop())
+      elif expression.operator == "and":
+        stack.append(numpy.logical_and(stack.pop(), stack.pop()))
+      elif expression.operator == "or":
+        stack.append(numpy.logical_or(stack.pop(), stack.pop()))
+      elif expression.operator == "in":
+        stack.append(numpy.in1d(stack.pop(), stack.pop()))
+      elif expression.operator == "not in":
+        stack.append(numpy.in1d(stack.pop(), stack.pop(), invert=True))
+      else:
+        raise ValueError("Unknown operator: %s" % expression.operator)
   elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
     if expression.name == "index":
       stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
