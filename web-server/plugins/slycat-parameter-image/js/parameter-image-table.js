@@ -91,9 +91,9 @@ $.widget("parameter_image.table",
           buttons :
           [
             {
-              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending",
+              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "asc" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "asc" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "asc" ? "sort-descending" : "sort-ascending") : "sort-ascending",
             },
           ]
         }
@@ -187,14 +187,14 @@ $.widget("parameter_image.table",
         button.cssClass = 'icon-sort-ascending';
         button.command = 'sort-descending';
         button.tooltip = 'Sort descending';
-        set_sort(column.id, "ascending");
+        set_sort(column.id, "asc");
       }
       else if(command == "sort-descending")
       {
         button.cssClass = 'icon-sort-descending';
         button.command = 'sort-ascending';
         button.tooltip = 'Sort ascending';
-        set_sort(column.id, "descending");
+        set_sort(column.id, "desc");
       }
       else if(command == "image-on")
       {
@@ -495,7 +495,7 @@ $.widget("parameter_image.table",
 
         var sort = "";
         if(self.sort_column !== null && self.sort_order !== null)
-          sort = "&sort=" + self.sort_column + ":" + self.sort_order;
+          sort = "/order: rank(a" + self.sort_column + ', "' + self.sort_order + '")';
 
         // $.ajax(
         // {
@@ -523,7 +523,7 @@ $.widget("parameter_image.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + column_end_no_index + "/" + row_begin + ":" + row_end,
+          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + column_end_no_index + sort + "/" + row_begin + ":" + row_end,
           async : false,
           success : function(data)
           {

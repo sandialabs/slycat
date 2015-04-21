@@ -171,7 +171,7 @@ function model_loaded()
       table_metadata["row-count"] = raw_metadata.shape[0];
 
       // This is going to be one short for now since there is no index. Perhaps just add one for now?
-      table_metadata["column-count"] = raw_metadata.attributes.length;
+      table_metadata["column-count"] = raw_metadata.attributes.length + 1;
 
       table_metadata["column-names"] = [];
       table_metadata["column-types"] = [];
@@ -421,6 +421,14 @@ function setup_table()
     if("sort-variable" in bookmark && "sort-order" in bookmark)
     {
       table_options["sort-variable"] = bookmark["sort-variable"];
+      var sort_order = bookmark["sort-order"];
+
+      // Mapping between old grammar and new one
+      if(sort_order == "ascending")
+        sort_order = "asc";
+      else if(sort_order == "descending")
+        sort_order = "desc";
+
       table_options["sort-order"] = bookmark["sort-order"];
     }
 
@@ -1211,7 +1219,7 @@ function filters_changed(newValue)
         selected_values = [];
         for(var j = 0; j < filter.selected().length; j++)
         {
-          selected_values.push( filter.selected()[j].value() );
+          selected_values.push( '"' + filter.selected()[j].value() + '"' );
         }
         new_filters.push( '(' + filter_var + ' in [' + selected_values.join(', ') + '])' );
       }
@@ -1238,7 +1246,7 @@ function filters_changed(newValue)
       $.ajax(
       {
         type : "GET",
-        url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/indices(0)|" + new_filter_expression + "/...",
+        url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/index(0)|" + new_filter_expression + "/...",
         async : false,
         success : function(data)
         {
