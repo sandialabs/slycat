@@ -99,8 +99,20 @@ def tostring(value):
   """Convert hyperchunks to their string representation.
   """
 
-  if isinstance(value, slycat.hyperchunks.grammar.Hyperchunks):
-    return ";".join([tostring(hyperchunk) for hyperchunk in value])
+  if isinstance(value, slycat.hyperchunks.grammar.Arrays):
+    return "|".join([tostring(array) for array in value])
+
+  if isinstance(value, slycat.hyperchunks.grammar.Attributes):
+    return "|".join([tostring(array) for array in value])
+
+  if isinstance(value, slycat.hyperchunks.grammar.AttributeIndex):
+    return "a%s" % value.index
+
+  if isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
+    return "%s %s %s" % (tostring(value.left), value.operator, tostring(value.right))
+
+  if isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
+    return "%s(%s)" % (value.name, ", ".join([tostring(arg) for arg in value.args]))
 
   if isinstance(value, slycat.hyperchunks.grammar.Hyperchunk):
     sections = []
@@ -113,11 +125,8 @@ def tostring(value):
       sections.append(tostring(value.hyperslices))
     return "/".join(sections)
 
-  if isinstance(value, slycat.hyperchunks.grammar.Arrays):
-    return "|".join([tostring(array) for array in value])
-
-  if isinstance(value, slycat.hyperchunks.grammar.Attributes):
-    return "|".join([tostring(array) for array in value])
+  if isinstance(value, slycat.hyperchunks.grammar.Hyperchunks):
+    return ";".join([tostring(hyperchunk) for hyperchunk in value])
 
   if isinstance(value, slycat.hyperchunks.grammar.Hyperslices):
     return "|".join([tostring(array) for array in value])
@@ -125,14 +134,8 @@ def tostring(value):
   if isinstance(value, slycat.hyperchunks.grammar.Hyperslice):
     return ",".join([tostring(hyperslice) for hyperslice in value])
 
-  if isinstance(value, slycat.hyperchunks.grammar.AttributeIndex):
-    return "a%s" % value.index
-
-  if isinstance(value, slycat.hyperchunks.grammar.FunctionCall):
-    return "%s(%s)" % (value.name, ", ".join([tostring(arg) for arg in value.args]))
-
-  if isinstance(value, slycat.hyperchunks.grammar.BinaryOperator):
-    return "%s %s %s" % (tostring(value.left), value.operator, tostring(value.right))
+  if isinstance(value, slycat.hyperchunks.grammar.List):
+    return "[%s]" % ", ".join([tostring(item) for item in value.values])
 
   if isinstance(value, int):
     return repr(value)

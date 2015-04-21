@@ -35,6 +35,7 @@ Feature: Slycat Agent
       | 0/a1 > 2 and a1 < 4/0:50              |
       | 0/a1 in [0, 5, 6]                     |
       | 0/a1 in ["red", "cayenne"]            |
+      | 0/a1 not in ["red", "cayenne"]        |
       | 0/.../order: rank(a1, "asc")/0:50     |
 
   Scenario Outline: Parsing invalid hyperchunk expressions.

@@ -6,6 +6,21 @@ class Arrays(list):
 class Attributes(list):
   pass
 
+class AttributeIndex(object):
+  def __init__(self, index):
+    self.index = index
+
+class BinaryOperator(object):
+  def __init__(self, left, operator, right):
+    self.left = left
+    self.operator = operator
+    self.right = right
+
+class FunctionCall(object):
+  def __init__(self, tokens):
+    self.name = tokens[0]
+    self.args = tokens[1:]
+
 class Hyperslice(tuple):
   pass
 
@@ -22,20 +37,9 @@ class Hyperchunk(object):
 class Hyperchunks(list):
   pass
 
-class FunctionCall(object):
+class List(object):
   def __init__(self, tokens):
-    self.name = tokens[0]
-    self.args = tokens[1:]
-
-class AttributeIndex(object):
-  def __init__(self, index):
-    self.index = index
-
-class BinaryOperator(object):
-  def __init__(self, tokens):
-    self.left = tokens[0]
-    self.operator = tokens[1]
-    self.right = tokens[2]
+    self.values = tokens.asList()
 
 digits = "0123456789"
 nonzero_digits = "123456789"
@@ -57,8 +61,10 @@ number_p = float_p | integer_p
 string_p = QuotedString(quoteChar='"', escChar="\\")
 
 number_list_p = Suppress("[") + delimitedList(number_p, delim=",") + Suppress("]")
+number_list_p.setParseAction(lambda tokens: List(tokens))
 
 string_list_p = Suppress("[") + delimitedList(string_p, delim=",") + Suppress("]")
+string_list_p.setParseAction(lambda tokens: List(tokens))
 
 attribute_id_p = Word("a", nums, min=2)
 attribute_id_p.setParseAction(lambda tokens: AttributeIndex(int(tokens[0][1:])))
@@ -76,17 +82,20 @@ slice_p = range_p | ellipsis_p | integer_p
 value_comparison_operator_p = oneOf("== >= <= != < >")
 
 value_comparison_p = attribute_id_p + value_comparison_operator_p + number_p
-value_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
+value_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens[0], tokens[1], tokens[2]))
 
-membership_comparison_p = attribute_id_p + Literal("in") + (number_list_p | string_list_p)
-membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
+membership_comparison_operator_p = Optional("not") + Literal("in")
+membership_comparison_operator_p.setParseAction(lambda tokens: " ".join(tokens))
+
+membership_comparison_p = attribute_id_p + membership_comparison_operator_p + (number_list_p | string_list_p)
+membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens[0], tokens[1], tokens[2]))
 
 comparison_p = value_comparison_p | membership_comparison_p
 
 logical_expression_p = infixNotation(comparison_p,
 [
-  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0])),
-  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0])),
+  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0][0], tokens[0][1], tokens[0][2])),
+  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0][0], tokens[0][1], tokens[0][2])),
 ])
 
 function_argument_p = attribute_id_p | string_p | float_p | integer_p

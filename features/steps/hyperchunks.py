@@ -183,6 +183,10 @@ def step_impl(context):
 def step_impl(context):
   assert_round_trip_equal("""0/a1 in ["red", "cayenne"]""")
 
+@when(u'parsing a hyperchunk expression, 0/a1 not in ["red", "cayenne"] is valid.')
+def step_impl(context):
+  assert_round_trip_equal("""0/a1 not in ["red", "cayenne"]""")
+
 @when(u'parsing a hyperchunk expression, 0/.../order: rank(a1, "asc")/0:50 is valid.')
 def step_impl(context):
   assert_round_trip_equal("""0/.../order:rank(a1, "asc")/0:50""")
