@@ -7,7 +7,6 @@ def register_slycat_plugin(context):
     import datetime
     import numpy
     import scipy.stats
-    import slycat.hyperchunks
     import slycat.web.server.database.couchdb
 
     try:
@@ -24,9 +23,9 @@ def register_slycat_plugin(context):
         raise Exception("Linear regression model requires an output column.")
 
       # Extract a column of x values and a column of y values.
-      x = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, input_column, slycat.hyperchunks.hyperslice[...])))
+      x = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % input_column))
       slycat.web.server.update_model(database, model, progress=0.25)
-      y = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", slycat.hyperchunks.simple(0, output_column, slycat.hyperchunks.hyperslice[...])))
+      y = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % output_column))
       slycat.web.server.update_model(database, model, progress=0.50)
 
       # Remove rows containing NaNs.
