@@ -82,20 +82,20 @@ slice_p = range_p | ellipsis_p | integer_p
 value_comparison_operator_p = oneOf("== >= <= != < >")
 
 value_comparison_p = attribute_id_p + value_comparison_operator_p + number_p
-value_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens[0], tokens[1], tokens[2]))
+value_comparison_p.setParseAction(lambda tokens: BinaryOperator(*tokens))
 
 membership_comparison_operator_p = Optional("not") + Literal("in")
 membership_comparison_operator_p.setParseAction(lambda tokens: " ".join(tokens))
 
 membership_comparison_p = attribute_id_p + membership_comparison_operator_p + (number_list_p | string_list_p)
-membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens[0], tokens[1], tokens[2]))
+membership_comparison_p.setParseAction(lambda tokens: BinaryOperator(*tokens))
 
 comparison_p = value_comparison_p | membership_comparison_p
 
 logical_expression_p = infixNotation(comparison_p,
 [
-  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0][0], tokens[0][1], tokens[0][2])),
-  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(tokens[0][0], tokens[0][1], tokens[0][2])),
+  (Literal("and"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
+  (Literal("or"), 2, opAssoc.LEFT, lambda tokens: BinaryOperator(*tokens[0])),
 ])
 
 function_argument_p = attribute_id_p | string_p | float_p | integer_p
