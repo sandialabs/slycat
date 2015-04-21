@@ -519,11 +519,10 @@ $.widget("parameter_image.table",
         //   }
         // });
 
-        var column_end_no_index = column_end - 1;
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + column_end_no_index + sort + "/" + row_begin + ":" + row_end,
+          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "| index(0)" + sort + "/" + row_begin + ":" + row_end,
           async : false,
           success : function(data)
           {
@@ -532,11 +531,10 @@ $.widget("parameter_image.table",
             for(var i=0; i < data[0].length; i++)
             {
               result = {};
-              for(var j = column_begin; j != column_end_no_index; ++j)
+              for(var j = column_begin; j != column_end; ++j)
               {
                 result[j] = data[j][i];
               }
-              result[column_end_no_index] = row_begin + i;
               self.pages[page].push(result);
             }
           },
@@ -587,7 +585,15 @@ $.widget("parameter_image.table",
 
       var sort = "";
       if(self.sort_column !== null && self.sort_order !== null)
-        sort = "&sort=" + self.sort_column + ":" + self.sort_order;
+      {
+        var sort_order = self.sort_order;
+        if(sort_order == "asc")
+          sort_order = "ascending";
+        else if(sort_order == "desc")
+          sort_order = "descending";
+
+        sort = "&sort=" + self.sort_column + ":" + sort_order;
+      }
 
       var row_string = "";
       for(var i = 0; i < rows.length; ++i)

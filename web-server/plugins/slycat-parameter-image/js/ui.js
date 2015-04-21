@@ -181,6 +181,10 @@ function model_loaded()
         table_metadata["column-types"].push(raw_metadata.attributes[i].type);
       }
 
+      // Adding Index column
+      table_metadata["column-names"].push("Index");
+      table_metadata["column-types"].push("int64");
+
       filter_manager.set_table_metadata(table_metadata);
       table_statistics = new Array();
       load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
