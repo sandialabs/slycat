@@ -14,6 +14,58 @@ def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
   return ((1.0 - amount) * a) + (amount * b)
 
+def evaluate(level, hdf5_array, expression_type, expression, hyperslice, stack):
+  """Evaluate a hyperchunk expression."""
+  cherrypy.log.error("%sEvaluating %s expression: %s" % ("  " * level, expression_type, slycat.hyperchunks.tostring(expression)))
+  if isinstance(expression, int):
+    stack.append(expression)
+  elif isinstance(expression, float):
+    stack.append(expression)
+  elif isinstance(expression, basestring):
+    stack.append(expression)
+  elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
+    stack.append(hdf5_array.get_data(expression.index)[...])
+  elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
+    evaluate(level + 1, hdf5_array, expression_type, expression.right, hyperslice, stack)
+    evaluate(level + 1, hdf5_array, expression_type, expression.left, hyperslice, stack)
+    if expression.operator == "<":
+      stack.append(stack.pop() < stack.pop())
+    elif expression.operator == ">":
+      stack.append(stack.pop() > stack.pop())
+    elif expression.operator == "<=":
+      stack.append(stack.pop() <= stack.pop())
+    elif expression.operator == ">=":
+      stack.append(stack.pop() >= stack.pop())
+    elif expression.operator == "==":
+      stack.append(stack.pop() == stack.pop())
+    elif expression.operator == "!=":
+      stack.append(stack.pop() != stack.pop())
+    elif expression.operator == "and":
+      stack.append(numpy.logical_and(stack.pop(), stack.pop()))
+    elif expression.operator == "or":
+      stack.append(numpy.logical_or(stack.pop(), stack.pop()))
+    elif expression.operator == "in":
+      stack.append(numpy.in1d(stack.pop(), stack.pop()))
+    elif expression.operator == "not in":
+      stack.append(numpy.in1d(stack.pop(), stack.pop(), invert=True))
+    else:
+      raise ValueError("Unknown operator: %s" % expression.operator)
+  elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
+    if expression.name == "index":
+      stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
+    elif expression.name == "rank":
+      evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
+      order = numpy.argsort(stack.pop())
+      if expression.args[1] == "desc":
+        order = order[::-1]
+      stack.append(order)
+    else:
+      raise ValueError("Unknown function: %s" % expression.name)
+  elif isinstance(expression, slycat.hyperchunks.grammar.List):
+    stack.append(expression.values)
+  else:
+    raise ValueError("Unknown expression: %s" % expression)
+
 def update_model(database, model, **kwargs):
   """Update the model, and signal any waiting threads that it's changed."""
   for name, value in kwargs.items():
@@ -65,12 +117,20 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
         for array in slycat.hyperchunks.arrays(statistics, hdf5_arrayset.array_count()):
           hdf5_array = hdf5_arrayset[array.index]
           for attribute in array.attributes(len(hdf5_array.attributes)):
-            if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-              raise ValueError("Cannot retrieve statistics for computed attributes.")
-            statistics = hdf5_array.get_statistics(attribute.expression.index)
+            statistics = {}
             statistics["array"] = array.index
-            statistics["attribute"] = attribute.expression.index
+            if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+              statistics["attribute"] = attribute.expression.index
+              statistics.update(hdf5_array.get_statistics(attribute.expression.index))
+            else:
+              stack = []
+              evaluate(0, hdf5_array, "statistics", attribute.expression, None, stack)
+              values = stack.pop()
+              statistics["min"] = values.min()
+              statistics["max"] = values.max()
+              statistics["unique"] = len(numpy.unique(values))
             results["statistics"].append(statistics)
+
       if unique is not None:
         results["unique"] = []
         for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
@@ -89,57 +149,6 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
 def get_model_arrayset_data(database, model, name, hyperchunks):
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
-
-  def evaluate(level, hdf5_array, expression_type, expression, hyperslice, stack):
-    cherrypy.log.error("%sEvaluating %s expression: %s" % ("  " * level, expression_type, slycat.hyperchunks.tostring(expression)))
-    if isinstance(expression, int):
-      stack.append(expression)
-    elif isinstance(expression, float):
-      stack.append(expression)
-    elif isinstance(expression, basestring):
-      stack.append(expression)
-    elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
-      stack.append(hdf5_array.get_data(expression.index)[...])
-    elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-      evaluate(level + 1, hdf5_array, expression_type, expression.right, hyperslice, stack)
-      evaluate(level + 1, hdf5_array, expression_type, expression.left, hyperslice, stack)
-      if expression.operator == "<":
-        stack.append(stack.pop() < stack.pop())
-      elif expression.operator == ">":
-        stack.append(stack.pop() > stack.pop())
-      elif expression.operator == "<=":
-        stack.append(stack.pop() <= stack.pop())
-      elif expression.operator == ">=":
-        stack.append(stack.pop() >= stack.pop())
-      elif expression.operator == "==":
-        stack.append(stack.pop() == stack.pop())
-      elif expression.operator == "!=":
-        stack.append(stack.pop() != stack.pop())
-      elif expression.operator == "and":
-        stack.append(numpy.logical_and(stack.pop(), stack.pop()))
-      elif expression.operator == "or":
-        stack.append(numpy.logical_or(stack.pop(), stack.pop()))
-      elif expression.operator == "in":
-        stack.append(numpy.in1d(stack.pop(), stack.pop()))
-      elif expression.operator == "not in":
-        stack.append(numpy.in1d(stack.pop(), stack.pop(), invert=True))
-      else:
-        raise ValueError("Unknown operator: %s" % expression.operator)
-    elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
-      if expression.name == "index":
-        stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
-      elif expression.name == "rank":
-        evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
-        order = numpy.argsort(stack.pop())
-        if expression.args[1] == "desc":
-          order = order[::-1]
-        stack.append(order)
-      else:
-        raise ValueError("Unknown function: %s" % expression.name)
-    elif isinstance(expression, slycat.hyperchunks.grammar.List):
-      stack.append(expression.values)
-    else:
-      raise ValueError("Unknown expression: %s" % expression)
 
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
