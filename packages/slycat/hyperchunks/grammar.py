@@ -37,11 +37,22 @@ class BinaryOperator(object):
     self.operator = tokens[1]
     self.right = tokens[2]
 
-integer_p = Optional("-") + Word(nums)
-integer_p.setParseAction(lambda tokens: int("".join(tokens)))
+digits = "0123456789"
+nonzero_digits = "123456789"
 
-float_p = Optional("-") + Word(nums) + Optional("." + Word(nums))
+decimal_integer_p = Optional("-") + Word(nonzero_digits, digits) | "0"
+decimal_integer_p.setParseAction(lambda tokens: int("".join(tokens)))
+
+integer_p = decimal_integer_p
+
+fraction_part_p = "." + Word(digits)
+int_part_p = Word(digits)
+point_float_p = Optional("-") + Optional(int_part_p) + fraction_part_p | int_part_p + "."
+
+float_p = point_float_p
 float_p.setParseAction(lambda tokens: float("".join(tokens)))
+
+number_p = float_p | integer_p
 
 string_p = QuotedString(quoteChar='"', escChar="\\")
 
@@ -60,7 +71,7 @@ slice_p = range_p | ellipsis_p | integer_p
 
 comparison_operator_p = oneOf("== >= <= != < >")
 
-comparison_p = attribute_id_p + comparison_operator_p + float_p
+comparison_p = attribute_id_p + comparison_operator_p + number_p
 comparison_p.setParseAction(lambda tokens: BinaryOperator(tokens))
 
 logical_expression_p = infixNotation(comparison_p,
