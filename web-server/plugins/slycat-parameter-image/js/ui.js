@@ -622,7 +622,7 @@ function setup_controls()
     !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
-    && indices
+    && indices 
     )
   {
     controls_ready = true;
@@ -1194,6 +1194,8 @@ function active_filters_ready()
       });
     }
   }
+
+  $("#controls").controls("option", "disable_hide_show",  filter_manager.active_filters().length > 0);
 
   filter_manager.active_filters.subscribe(function(newValue) {
     console.log("active_filters changed! The new value is " + newValue);
