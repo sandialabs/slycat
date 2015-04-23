@@ -29,6 +29,7 @@ $.widget("parameter_image.controls",
     hidden_simulations : [],
     indices : [],
     disable_hide_show : false,
+    open_images : [],
   },
 
   _create: function()
@@ -138,6 +139,13 @@ $.widget("parameter_image.controls",
     this.show_all_button = $("<button>Show All</button>")
       .click(function(){
         self.element.trigger("show-all");
+      })
+      .appendTo(this.element)
+      ;
+    
+    this.close_all_button = $("<button>Close All Pins</button>")
+      .click(function(){
+        self.element.trigger("close-all");
       })
       .appendTo(this.element)
       ;
@@ -294,6 +302,7 @@ $.widget("parameter_image.controls",
     self._set_auto_scale();
     self._set_selection_control();
     self._set_show_all();
+    self._set_close_all();
   },
 
 
@@ -638,6 +647,12 @@ $.widget("parameter_image.controls",
     this.show_all_button.attr("title", titleText);
   },
 
+  _set_close_all: function()
+  {
+    var self = this;
+    this.close_all_button.prop("disabled", self.options.open_images.length == 0);
+  },
+
   _set_hide_show_selection_status: function()
   {
     var self = this;
@@ -739,6 +754,10 @@ $.widget("parameter_image.controls",
     else if(key == 'hidden_simulations')
     {
       self._set_show_all();
+    }
+    else if(key == 'open_images')
+    {
+      self._set_close_all();
     }
     else if(key == 'disable_hide_show')
     {

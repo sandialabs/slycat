@@ -1589,6 +1589,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       ;
   },
 
+  close_all_simulations: function()
+  {
+    var self = this;
+    $(".media-layer div.image-frame")
+      .each(function(){
+        self._remove_image_and_leader_line(d3.select(this));
+      })
+      ;
+    self._sync_open_images();
+  },
+
   _schedule_hover_canvas: function(e)
   {
     var self = this;
