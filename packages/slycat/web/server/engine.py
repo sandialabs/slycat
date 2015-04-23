@@ -18,22 +18,6 @@ import slycat.web.server.cleanup
 import slycat.web.server.handlers
 import slycat.web.server.plugin
 
-class DropPrivilegesRotatingFileHandler(logging.handlers.RotatingFileHandler):
-  """Custom logfile handler that ensures newly-created logfiles have a specific user and group."""
-  def __init__(self, uid, gid, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=0):
-    self.uid = uid
-    self.gid = gid
-    logging.handlers.RotatingFileHandler.__init__(self, filename, mode, maxBytes, backupCount, encoding, delay)
-
-  def _open(self):
-    file = logging.handlers.RotatingFileHandler._open(self)
-    if self.uid is not None:
-      os.fchown(file.fileno(), self.uid, -1)
-    if self.gid is not None:
-      os.fchown(file.fileno(), -1, self.gid)
-    #print "log file:", file.name, self.uid, self.gid, os.fstat(file.fileno())
-    return file
-
 class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
   def __init__(self):
@@ -62,24 +46,15 @@ def start(root_path, config_file):
   configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
   configuration["slycat-web-server"]["root-path"] = root_path
 
-  # Allow both numeric and named uid and gid
-  uid = configuration["slycat-web-server"]["uid"]
-  if isinstance(uid, basestring):
-    uid = pwd.getpwnam(uid).pw_uid
-
-  gid = configuration["slycat-web-server"]["gid"]
-  if isinstance(gid, basestring):
-    gid = grp.getgrnam(gid).gr_gid
-
   # Configure loggers.
   if configuration["slycat-web-server"]["access-log"] != "-":
     cherrypy.log.access_log.handlers = []
     if configuration["slycat-web-server"]["access-log"] is not None:
-      cherrypy.log.access_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat-web-server"]["access-log"], "a", configuration["slycat-web-server"]["access-log-size"], configuration["slycat-web-server"]["access-log-count"]))
+      cherrypy.log.access_log.addHandler(logging.handlers.RotatingFileHandler(configuration["slycat-web-server"]["access-log"], maxBytes=configuration["slycat-web-server"]["access-log-size"], backupCount=configuration["slycat-web-server"]["access-log-count"]))
   if configuration["slycat-web-server"]["error-log"] != "-":
     cherrypy.log.error_log.handlers = []
     if configuration["slycat-web-server"]["error-log"] is not None:
-      cherrypy.log.error_log.addHandler(DropPrivilegesRotatingFileHandler(uid, gid, configuration["slycat-web-server"]["error-log"], "a", configuration["slycat-web-server"]["error-log-size"], configuration["slycat-web-server"]["error-log-count"]))
+      cherrypy.log.error_log.addHandler(logging.handlers.RotatingFileHandler(configuration["slycat-web-server"]["error-log"], maxBytes=configuration["slycat-web-server"]["error-log-size"], backupCount=configuration["slycat-web-server"]["error-log-count"]))
 
   cherrypy.log.access_log.handlers[-1].addFilter(SessionIdFilter())
 
@@ -90,18 +65,6 @@ def start(root_path, config_file):
 
   for path in sys.path:
     cherrypy.log.error("PYTHONPATH: %s" % path)
-
-  # Optionally generate a pidfile for startup scripts
-  if configuration["slycat-web-server"]["pidfile"] is not None:
-    cherrypy.process.plugins.PIDFile(cherrypy.engine, configuration["slycat-web-server"]["pidfile"]).subscribe()
-
-  # Optionally drop privileges so we can safely bind to low port numbers ...
-  if uid is not None and gid is not None and configuration["slycat-web-server"]["umask"] is not None:
-    cherrypy.process.plugins.DropPrivileges(cherrypy.engine, uid=uid, gid=gid, umask=configuration["slycat-web-server"]["umask"]).subscribe()
-
-  # Optionally daemonize our process ...
-  if configuration["slycat-web-server"]["daemon"] == True:
-    cherrypy.process.plugins.Daemonizer(cherrypy.engine, stdout=configuration["slycat-web-server"]["stdout-log"], stderr=configuration["slycat-web-server"]["stderr-log"]).subscribe()
 
   dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
