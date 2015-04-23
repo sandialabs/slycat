@@ -106,6 +106,9 @@ def register_slycat_plugin(context):
   # Register our new model type
   context.register_model("cca", finish, html)
   context.register_model_bundle("cca", "text/css", [
+    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
+    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
+    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
