@@ -295,9 +295,9 @@ class Manager(object):
       * "action": "create" - the wizard will be used to create new objects.
       * "action": "edit" - the wizard will be used to edit existing objects.
       * "action": "delete" - the wizard will be used to delete existing objects.
-      * "context": "global"
-      * "context": "project"
-      * "context": "model"
+      * "context": "global" - the wizard does not require any resources to run.
+      * "context": "project" - the wizard requires a project to run.
+      * "context": "model" - the wizard requires a model to run.
       * "model-type":[list of model types] - a model matching one of the given types is required to run the wizard.
 
     """

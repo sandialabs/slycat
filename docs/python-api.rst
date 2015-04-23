@@ -18,13 +18,12 @@ clients, typically used for custom data ingestion.
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
    slycat.web.client.rst
-   slycat.web.server.rst
-   slycat.web.server.agent.rst
    slycat.web.server.authentication.rst
    slycat.web.server.database.couchdb.rst
-   slycat.web.server.database.hdf5.rst
    slycat.web.server.engine.rst
    slycat.web.server.handlers.rst
+   slycat.web.server.hdf5.rst
    slycat.web.server.plugin.rst
-   slycat.web.server.ssh.rst
+   slycat.web.server.remote.rst
+   slycat.web.server.rst
    slycat.web.server.template.rst
