@@ -87,11 +87,6 @@ class ArgumentParser(argparse.ArgumentParser):
 
     return arguments
 
-class option_parser(ArgumentParser):
-  def __init__(self, *arguments, **keywords):
-    ArgumentParser.__init__(self, *arguments, **keywords)
-    log.warning("slycat.web.client.option_parser is deprecated, use slycat.web.client.ArgumentParser instead.")
-
 class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
