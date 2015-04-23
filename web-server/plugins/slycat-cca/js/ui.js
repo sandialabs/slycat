@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-bookmark-manager", "URI", "domReady!"], function(server_root, client, dialog, bookmark_manager, URI)
+define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-bookmark-manager", "URI", "slycat-cca-controls", "domReady!"], function(server_root, client, dialog, bookmark_manager, URI)
 {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -27,12 +27,14 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
   var r2 = null;
   var wilks = null;
   var table_metadata = null;
+  var selected_simulations = null;
 
   var generate_indices = false;
   var barplot_ready = false;
   var scatterplot_ready = false;
   var table_ready = false;
   var legend_ready = false;
+  var controls_ready = false;
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
@@ -200,6 +202,9 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     bookmarker.getState(function(state)
     {
       bookmark = state;
+
+      selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
+
       setup_colorswitcher();
       setup_v();
       setup_widgets();
@@ -225,6 +230,10 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
   $("#cca-model").layout(
   {
     applyDefaultStyles: false,
+    north:
+    {
+      size: 28,
+    },
     west:
     {
       size: $("#cca-model").width() / 2,
@@ -421,7 +430,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     }
 
     // Setup the scatterplot ...
-    if(!scatterplot_ready && bookmark && indices && x && y && v)
+    if(!scatterplot_ready && bookmark && indices && x && y && v && (selected_simulations !== null))
     {
       scatterplot_ready = true;
 
@@ -429,7 +438,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
 
       var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
       var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-      var selection = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
 
       $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
@@ -441,12 +449,13 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         width: $("#scatterplot-pane").width(),
         height: $("#scatterplot-pane").height(),
         color: $("#color-switcher").colorswitcher("get_color_scale", colormap),
-        selection: selection,
+        selection: selected_simulations,
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)
       {
-        selected_simulations_changed(selection);
+        selected_simulations = selection;
+        selected_simulations_changed(selected_simulations);
       });
 
       // Changing the color map updates the scatterplot ...
@@ -470,7 +479,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     }
 
     // Setup the table ...
-    if(!table_ready && bookmark && table_metadata)
+    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) )
     {
       table_ready = true;
 
@@ -492,6 +501,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         inputs : input_columns,
         outputs : output_columns,
         others : other_columns,
+        "row-selection" : selected_simulations,
       };
 
       var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -511,9 +521,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       {
         table_options["variable-selection"] = [table_metadata["column-count"] - 1];
       }
-
-      if(bookmark["simulation-selection"] !== undefined)
-        table_options["row-selection"] = bookmark["simulation-selection"];
 
       $("#table").table(table_options);
 
@@ -537,6 +544,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         var temp = [];
         for(var i = 0; i != selection.length; ++i)
           temp.push(selection[i]);
+        selected_simulations = temp;
         selected_simulations_changed(temp);
       });
 
@@ -581,6 +589,31 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         $("#scatterplot").scatterplot("option", "selection",  temp);
       });
     }
+
+
+
+
+    // Setup controls ...
+    if( !controls_ready && bookmark && table_metadata && (selected_simulations != null) )
+    {
+      controls_ready = true;
+
+      $("#controls").controls({
+        mid : model._id,
+        model_name: model_name,
+        aid : "data-table",
+        metadata: table_metadata,
+        selection : selected_simulations,
+      });
+
+    }
+
+
+
+
+
+
+
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////

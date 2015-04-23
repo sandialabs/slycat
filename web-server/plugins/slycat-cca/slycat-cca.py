@@ -100,6 +100,7 @@ def register_slycat_plugin(context):
     import pystache
     context = dict()
     context["_id"] = model["_id"]
+    context["name"] = model["name"];
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
@@ -122,6 +123,7 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/cca-scatterplot.js"),
     os.path.join(os.path.dirname(__file__), "js/cca-table.js"),
     os.path.join(os.path.dirname(__file__), "js/cca-legend.js"),
+    os.path.join(os.path.dirname(__file__), "js/cca-controls.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
