@@ -37,6 +37,7 @@ var colormap = null;
 var colorscale = null;
 var auto_scale = null;
 var filtered_v = null;
+var open_images = null;
 
 var table_ready = false;
 var scatterplot_ready = false;
@@ -238,6 +239,15 @@ function setup_colorswitcher()
 
 function metadata_loaded()
 {
+  if(bookmark)
+  {
+    open_images = [];
+    if("open-images-selection" in bookmark)
+    {
+      open_images = bookmark["open-images-selection"];
+    }
+  }
+  
   if(table_metadata)
   {
     other_columns = [];
@@ -535,6 +545,7 @@ function setup_scatterplot()
   // Setup the scatterplot ...
   if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
     && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
+    && (open_images !== null)
     )
   {
     scatterplot_ready = true;
@@ -544,12 +555,6 @@ function setup_scatterplot()
     var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
     $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-
-    var open_images = [];
-    if("open-images-selection" in bookmark)
-    {
-      open_images = bookmark["open-images-selection"];
-    }
 
     $("#scatterplot").scatterplot({
       indices: indices,
@@ -622,7 +627,7 @@ function setup_controls()
     !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
-    && indices 
+    && indices && (open_images !== null)
     )
   {
     controls_ready = true;
@@ -674,6 +679,7 @@ function setup_controls()
       "auto-scale" : auto_scale,
       hidden_simulations : hidden_simulations,
       indices : indices,
+      open_images : open_images,
     });
 
     // Changing the x variable updates the controls ...
@@ -844,6 +850,13 @@ function setup_controls()
       update_widgets_when_hidden_simulations_change();
       manually_hidden_simulations = hidden_simulations.slice();
     });
+
+    // Log changes to hidden selection ...
+    $("#controls").bind("close-all", function(event, selection)
+    {
+      $("#scatterplot").scatterplot("close_all_simulations");
+    });
+
   }
 }
 
@@ -1095,6 +1108,8 @@ function auto_scale_option_changed(auto_scale_value)
 
 function open_images_changed(selection)
 {
+  open_images = selection;
+  $("#controls").controls("option", "open_images", open_images);
   // Logging every open image is too slow, so just log the count instead.
   $.ajax(
   {
@@ -1198,7 +1213,6 @@ function active_filters_ready()
   $("#controls").controls("option", "disable_hide_show",  filter_manager.active_filters().length > 0);
 
   filter_manager.active_filters.subscribe(function(newValue) {
-    console.log("active_filters changed! The new value is " + newValue);
     filters_changed(newValue);
     $("#controls").controls("option", "disable_hide_show",  newValue.length > 0);
   });
@@ -1206,7 +1220,6 @@ function active_filters_ready()
 
 function filters_changed(newValue)
 {
-  console.log("change occurred to filters. newValue is: " + newValue);
   var allFilters = filter_manager.allFilters;
   var active_filters = filter_manager.active_filters;
   var new_filter_expression = "";
@@ -1250,7 +1263,6 @@ function filters_changed(newValue)
     }
   }
   new_filter_expression = new_filters.join(' and ');
-  console.log("Here is the new filter_expression: " + new_filter_expression);
 
   // Added first filter but it's not doing anything, so need to clear any hidden simulations
   if(active_filters().length == 1 && (filter_expression == null || filter_expression == ""))
@@ -1325,7 +1337,6 @@ function filters_changed(newValue)
           if( !_.isEmpty(_.xor(filtered_simulations, new_filtered_simulations)) )
           {
             filtered_simulations = new_filtered_simulations;
-            console.log("Filtered simulations changed: " + filtered_simulations);
 
             // Clear hidden_simulations
             while(hidden_simulations.length > 0) {
@@ -1340,7 +1351,7 @@ function filters_changed(newValue)
           }
           else
           {
-            console.log("Nothing changed in filtered simulations.");
+            //console.log("Nothing changed in filtered simulations.");
           }
         },
         error: function(request, status, reason_phrase)
