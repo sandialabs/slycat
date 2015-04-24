@@ -11,7 +11,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       _id: null,
       name: "Rerun " + component.original.name(),
       description: "Rerunning " + component.original.name() + ". Original description: " + component.original.description(),
-      marking: component.original.marking()
+      marking: component.original.marking(),
     });
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(false);
