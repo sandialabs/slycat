@@ -202,9 +202,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     bookmarker.getState(function(state)
     {
       bookmark = state;
-
       selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
-
       setup_colorswitcher();
       setup_v();
       setup_widgets();
@@ -455,6 +453,10 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       $("#scatterplot").bind("selection-changed", function(event, selection)
       {
         selected_simulations = selection;
+
+        // Changing the scatterplot selection updates the table row selection ...
+        $("#table").table("option", "row-selection", selected_simulations);
+
         selected_simulations_changed(selected_simulations);
       });
 
@@ -545,7 +547,11 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         for(var i = 0; i != selection.length; ++i)
           temp.push(selection[i]);
         selected_simulations = temp;
-        selected_simulations_changed(temp);
+
+        // Changing the table row selection updates the scatterplot ...
+        $("#scatterplot").scatterplot("option", "selection",  selected_simulations);
+
+        selected_simulations_changed(selected_simulations);
       });
 
       // Changing the colormap updates the table ...
@@ -572,26 +578,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         update_scatterplot_value(selection[0]);
       });
 
-      // Changing the scatterplot selection updates the table row selection ..
-      $("#scatterplot").bind("selection-changed", function(event, selection)
-      {
-        $("#table").table("option", "row-selection", selection);
-      });
-
-      // Changing the table row selection updates the scatterplot ...
-      $("#table").bind("row-selection-changed", function(event, selection)
-      {
-        // The table selection is an array buffer, so convert it to an array.
-        var temp = [];
-        for(var i = 0; i != selection.length; ++i)
-          temp.push(selection[i]);
-
-        $("#scatterplot").scatterplot("option", "selection",  temp);
-      });
     }
-
-
-
 
     // Setup controls ...
     if( !controls_ready && bookmark && table_metadata && (selected_simulations != null) )
@@ -607,12 +594,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       });
 
     }
-
-
-
-
-
-
 
   }
 
@@ -667,6 +648,9 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
 
   function selected_simulations_changed(selection)
   {
+    // Changing the selection updates controls ...
+    $("#controls").controls("option", "selection", selection);
+
     // Logging every selected item is too slow, so just log the count instead.
     client.post_event(
     {

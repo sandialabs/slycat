@@ -158,6 +158,18 @@ $.widget("cca.controls",
     return rowMajorOutput;
   },
 
+  _setOption: function(key, value)
+  {
+    var self = this;
+
+    //console.log("sparameter_image.variableswitcher._setOption()", key, value);
+    this.options[key] = value;
+
+    if(key == 'selection')
+    {
+      self._set_selection();
+    }
+  },
 
 });
 });

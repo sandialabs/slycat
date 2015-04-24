@@ -25,12 +25,22 @@ rights in this software.
   border: 0;
   margin: 0;
 }
-
+.center
+{
+  text-align: center;
+}
+#color-switcher,
+#controls
+{
+  display: inline-block;
+}
 #color-switcher
 {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+
+}
+#controls 
+{
+
 }
 
 #table
