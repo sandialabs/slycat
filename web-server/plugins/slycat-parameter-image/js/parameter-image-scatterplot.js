@@ -1457,7 +1457,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     console.log("Loading image " + image.uri + " from server");
 
     var xhr = new XMLHttpRequest();
-    var api = "/image";
+    var api = "/file";
     if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
     {
       api = "/file";
@@ -1506,7 +1506,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           success: function(sid)
           {
             var xhr = new XMLHttpRequest();
-            var api = "/image";
+            var api = "/file";
             if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
             {
               api = "/file";
