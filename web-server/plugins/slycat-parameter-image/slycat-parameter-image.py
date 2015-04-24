@@ -26,6 +26,34 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(columns)
 
+  def search_and_replace(database, model, command, **kwargs):
+    """Perform a regular-expression search-and-replace on columns in the input data."""
+    cherrypy.log.error("search_and_replace: %s" % kwargs)
+
+    try:
+      columns = [int(column) for column in kwargs["columns"]]
+    except:
+      raise cherrypy.HTTPError("400 Missing / invalid columns parameter.")
+
+    try:
+      replace = kwargs["replace"]
+    except:
+      raise cherrypy.HTTPError("400 Missing / invalid replace parameter.")
+
+    try:
+      search = re.compile(kwargs["search"])
+    except:
+      raise cherrypy.HTTPError("400 Missing / invalid search parameter.")
+
+    for attribute in columns:
+      before = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % attribute))
+      #cherrypy.log.error("before: %s %s" % (type(before), before))
+      after = numpy.array([search.sub(replace, value) for value in before])
+      #cherrypy.log.error("after: %s" % after)
+      slycat.web.server.put_model_arrayset_data(database, model, "data-table", "0/%s/..." % attribute, [after])
+
+    return json.dumps({"ok":True})
+
   def finish(database, model):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
@@ -131,10 +159,16 @@ def register_slycat_plugin(context):
   for dev in devs:
     context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
 
-  # Register a custom command for use by the wizard.
+  # Register custom commands for use by wizards.
   context.register_model_command("parameter-image", "media-columns", media_columns)
+  context.register_model_command("parameter-image", "search-and-replace", search_and_replace)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image", "New Remote Parameter Image Model", require={"action":"create", "context":"project"})
   context.register_wizard_resource("parameter-image", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
   context.register_wizard_resource("parameter-image", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
+
+  context.register_wizard("remap-parameter-image", "Remapped Parameter Image Model", require={"action":"create", "context":"model", "model-type":["parameter-image"]})
+  context.register_wizard_resource("remap-parameter-image", "ui.js", os.path.join(os.path.dirname(__file__), "js/remap-ui.js"))
+  context.register_wizard_resource("remap-parameter-image", "ui.html", os.path.join(os.path.dirname(__file__), "remap-ui.html"))
+
