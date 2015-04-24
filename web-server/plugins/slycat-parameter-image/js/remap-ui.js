@@ -48,10 +48,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           {
             mid: component.model._id(),
             sid: component.original._id(),
+            "deep-copy": true,
             success: function()
             {
               component.tab(1);
-            }
+            },
+            error: dialog.ajax_error("Error duplicating model artifacts: "),
           });
         },
         error: dialog.ajax_error("Error creating model."),
