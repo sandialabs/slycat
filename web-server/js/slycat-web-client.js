@@ -602,6 +602,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       data: JSON.stringify(
       {
         sid: params.sid,
+        "deep-copy": params["deep-copy"] || false,
       }),
       type: "PUT",
       url: server_root + "models/" + params.mid + "/inputs",
