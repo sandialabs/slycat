@@ -333,9 +333,9 @@ class Manager(object):
     if resource in self._wizard_resources[type]:
       raise Exception("Resource '%s' has already been registered with wizard '%s'." % (resource, type))
     if not os.path.isabs(path):
-      raise Exception("Resource '%s' must have an absolute path." % (resource))
+      raise Exception("Resource '%s' must have an absolute path." % (path))
     if not os.path.exists(path):
-      raise Exception("Resource '%s' does not exist." % (resource))
+      raise Exception("Resource '%s' does not exist." % (path))
     self._wizard_resources[type][resource] = path
     cherrypy.log.error("Registered wizard '%s' resource" % type)
     cherrypy.log.error("  %s" % path)
