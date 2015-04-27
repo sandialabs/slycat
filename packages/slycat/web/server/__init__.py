@@ -5,6 +5,8 @@
 import cherrypy
 import numbers
 import numpy
+import os
+import shutil
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.web.server.hdf5
@@ -237,17 +239,29 @@ def put_model_file(database, model, name, value, content_type, input=False):
   database.save(model)
   return model
 
-def put_model_inputs(database, model, source):
+def put_model_inputs(database, model, source, deep_copy=False):
   slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
   for name in source["input-artifacts"]:
     original_type = source["artifact-types"][name]
     original_value = source["artifact:%s" % name]
-    if original_type in ["json", "hdf5"]:
-      model["artifact-types"][name] = original_type
+
+    if original_type == "json":
       model["artifact:%s" % name] = original_value
-      model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    elif original_type == "hdf5":
+      if deep_copy:
+        new_value = uuid.uuid4().hex
+        os.makedirs(os.path.dirname(slycat.web.server.hdf5.path(new_value)))
+        with slycat.web.server.hdf5.lock:
+          shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
+        model["artifact:%s" % name] = new_value
+        database.save({"_id" : new_value, "type" : "hdf5"})
+      else:
+        model["artifact:%s" % name] = original_value
     else:
-      raise Exception("Cannot copy unknown input artifact type %s." & original_type)
+      raise Exception("Cannot copy unknown input artifact type %s." % original_type)
+    model["artifact-types"][name] = original_type
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+
   database.save(model)
 
 def put_model_parameter(database, model, name, value, input=False):
