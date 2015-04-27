@@ -16,56 +16,57 @@ def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
   return ((1.0 - amount) * a) + (amount * b)
 
-def evaluate(level, hdf5_array, expression_type, expression, hyperslice, stack):
+def evaluate(hdf5_array, expression, expression_type, expression_level = 0):
   """Evaluate a hyperchunk expression."""
-  cherrypy.log.error("%sEvaluating %s expression: %s" % ("  " * level, expression_type, slycat.hyperchunks.tostring(expression)))
+  cherrypy.log.error("%sEvaluating %s expression: %s" % ("  " * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))
   if isinstance(expression, int):
-    stack.append(expression)
+    return expression
   elif isinstance(expression, float):
-    stack.append(expression)
+    return expression
   elif isinstance(expression, basestring):
-    stack.append(expression)
+    return expression
   elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
-    stack.append(hdf5_array.get_data(expression.index)[...])
+    return hdf5_array.get_data(expression.index)[...]
   elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-    evaluate(level + 1, hdf5_array, expression_type, expression.operands[-1], hyperslice, stack)
-    for operand in expression.operands[:-1][::-1]:
-      evaluate(level + 1, hdf5_array, expression_type, operand, hyperslice, stack)
+    left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1)
+    for operand in expression.operands[1:]:
+      right = evaluate(hdf5_array, operand, expression_type, expression_level + 1)
       if expression.operator == "<":
-        stack.append(stack.pop() < stack.pop())
+        left = left < right
       elif expression.operator == ">":
-        stack.append(stack.pop() > stack.pop())
+        left = left > right
       elif expression.operator == "<=":
-        stack.append(stack.pop() <= stack.pop())
+        left = left <= right
       elif expression.operator == ">=":
-        stack.append(stack.pop() >= stack.pop())
+        left = left >= right
       elif expression.operator == "==":
-        stack.append(stack.pop() == stack.pop())
+        left = left == right
       elif expression.operator == "!=":
-        stack.append(stack.pop() != stack.pop())
+        left = left != right
       elif expression.operator == "and":
-        stack.append(numpy.logical_and(stack.pop(), stack.pop()))
+        left = numpy.logical_and(left, right)
       elif expression.operator == "or":
-        stack.append(numpy.logical_or(stack.pop(), stack.pop()))
+        left = numpy.logical_or(left, right)
       elif expression.operator == "in":
-        stack.append(numpy.in1d(stack.pop(), stack.pop()))
+        left = numpy.in1d(left, right)
       elif expression.operator == "not in":
-        stack.append(numpy.in1d(stack.pop(), stack.pop(), invert=True))
+        left = numpy.in1d(left, right, invert=True)
       else:
         raise ValueError("Unknown operator: %s" % expression.operator)
+    return left
   elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
     if expression.name == "index":
-      stack.append(numpy.indices(hdf5_array.shape)[expression.args[0]])
+      return numpy.indices(hdf5_array.shape)[expression.args[0]]
     elif expression.name == "rank":
-      evaluate(level + 1, hdf5_array, expression_type, expression.args[0], hyperslice, stack)
-      order = numpy.argsort(stack.pop())
+      values = evaluate(hdf5_array, expression.args[0], expression_type, expression_level + 1)
+      order = numpy.argsort(values)
       if expression.args[1] == "desc":
         order = order[::-1]
-      stack.append(order)
+      return order
     else:
       raise ValueError("Unknown function: %s" % expression.name)
   elif isinstance(expression, slycat.hyperchunks.grammar.List):
-    stack.append(expression.values)
+    return expression.values
   else:
     raise ValueError("Unknown expression: %s" % expression)
 
@@ -126,9 +127,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
               statistics["attribute"] = attribute.expression.index
               statistics.update(hdf5_array.get_statistics(attribute.expression.index))
             else:
-              stack = []
-              evaluate(0, hdf5_array, "statistics", attribute.expression, None, stack)
-              values = stack.pop()
+              values = evaluate(hdf5_array, attribute.expression, "statistics")
               statistics["min"] = values.min()
               statistics["max"] = values.max()
               statistics["unique"] = len(numpy.unique(values))
@@ -147,9 +146,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
                 unique["attribute"] = attribute.expression.index
                 unique["values"].append(hdf5_array.get_unique(attribute.expression.index, hyperslice)["values"])
             else:
-              stack = []
-              evaluate(0, hdf5_array, "unique", attribute.expression, None, stack)
-              values = stack.pop()
+              values = evaluate(hdf5_array, attribute.expression, "uniques")
               for hyperslice in attribute.hyperslices():
                 unique["values"].append(numpy.unique(values)[hyperslice])
             results["unique"].append(unique)
@@ -167,18 +164,15 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
         hdf5_array = hdf5_arrayset[array.index]
 
         if array.order is not None:
-          stack = []
-          evaluate(0, hdf5_array, "order", array.order, None, stack)
-          order = stack.pop()
+          order = evaluate(hdf5_array, array.order, "order")
 
         for attribute in array.attributes(len(hdf5_array.attributes)):
           for hyperslice in attribute.hyperslices():
-            stack = []
-            evaluate(0, hdf5_array, "attribute", attribute.expression, hyperslice, stack)
+            values = evaluate(hdf5_array, attribute.expression, "attribute")
             if array.order is not None:
-              yield stack.pop()[order][hyperslice]
+              yield values[order][hyperslice]
             else:
-              yield stack.pop()[hyperslice]
+              yield values[hyperslice]
 
 def get_model_parameter(database, model, name):
   return model["artifact:" + name]

@@ -78,7 +78,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
       {
         mid: page.mid(),
         aid: "data-table",
-        hyperchunks: [[0, page.x_column()]],
+        hyperchunks: "0/" + page.x_column() + "/...",
         success: function(data)
         {
           page.x(data[0]);
@@ -95,7 +95,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
       {
         mid: page.mid(),
         aid: "data-table",
-        hyperchunks: [[0, page.y_column()]],
+        hyperchunks: "0/" + page.y_column() + "/...",
         success: function(data)
         {
           page.y(data[0]);

@@ -206,27 +206,19 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.get_model_arrayset_metadata = function(params)
   {
-    var query = {};
+    var search = {};
     if(params.arrays)
-      query.arrays = params.arrays.join(";");
+      search.arrays = params.arrays;
     if(params.statistics)
-    {
-      query.statistics = [];
-      $.each(params.statistics, function(index, spec)
-      {
-        query.statistics.push(spec[0] + "/" + spec[1]);
-      });
-      query.statistics = query.statistics.join(";");
-    }
-    query = $.param(query);
-    if(query)
-      query = "?" + query;
+      search.statistics = params.statistics;
+    if(params.unique)
+      search.unique = params.unique;
 
     $.ajax(
     {
       dataType: "json",
       type: "GET",
-      url: server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/metadata" + query,
+      url: URI(server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/metadata").search(search).toString(),
       success: function(result)
       {
         if(params.success)
@@ -242,27 +234,11 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.get_model_arrayset_data = function(params)
   {
-    var query = {};
-    query.hyperchunks = [];
-    $.each(params.hyperchunks, function(index, hyperchunk)
-    {
-      var spec = hyperchunk[0] + "/" + hyperchunk[1] + "/";
-      if(hyperchunk.length == 2)
-        spec += "...";
-      else
-        spec += hyperchunk[2];
-      query.hyperchunks.push(spec);
-    });
-    query.hyperchunks = query.hyperchunks.join(";");
-    query = $.param(query);
-    if(query)
-      query = "?" + query;
-
     $.ajax(
     {
       dataType: "json",
       type: "GET",
-      url: server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/data" + query,
+      url: URI(server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/data").search({"hyperchunks":params.hyperchunks}).toString(),
       success: function(result)
       {
         if(params.success)

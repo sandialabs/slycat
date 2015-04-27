@@ -1164,15 +1164,11 @@ function update_scatterplot_y(variable)
 
 function load_table_statistics(columns, callback)
 {
-  var attributes = [];
-  for(var i = 0; i != columns.length; ++i)
-    attributes.push([0, columns[i]]);
-
   client.get_model_arrayset_metadata(
   {
     mid: model_id,
     aid: "data-table",
-    statistics: attributes,
+    statistics: "0/" + columns.join("|"),
     success: function(metadata)
     {
       var statistics = metadata.statistics;
