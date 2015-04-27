@@ -25,22 +25,13 @@ rights in this software.
   border: 0;
   margin: 0;
 }
+#controls-pane
+{
+  z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
+}
 .center
 {
   text-align: center;
-}
-#color-switcher,
-#controls
-{
-  display: inline-block;
-}
-#color-switcher
-{
-
-}
-#controls 
-{
-  margin-right: 10px;
 }
 
 #table

@@ -20,7 +20,11 @@ $.widget("cca.controls",
   {
   	var self = this;
 
-  	this.csv_button = $("<button>Download Data Table</button>")
+  	this.csv_button = $("\
+      <button class='btn btn-default' title='Download Data Table'> \
+      <span class='fa fa-download' aria-hidden='true'></span> \
+      </button> \
+      ")
     	.click(function(){
         if (self.options.selection.length == 0) {
     	    self._write_data_table();

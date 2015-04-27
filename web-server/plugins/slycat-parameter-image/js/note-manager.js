@@ -18,7 +18,12 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root", "jquery", "
       self.id_counter = 0;
     }
 
-    self.button = $("<button>Add Note</button>")
+    self.button = $(" <div class='bootstrap-styles' style='display: inline-block;'> \
+                        <button class='btn btn-default btn-xs' title='Add Note'> \
+                          <span class='fa fa-comment-o' aria-hidden='true'></span> \
+                        </button> \
+                      </div> \
+                    ")
                     .prependTo($('#controls'))
                     .on('click', function() {
                       self.add_note();

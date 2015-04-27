@@ -123,31 +123,41 @@ define("slycat-color-switcher", ["d3"], function(d3)
         },
       };
 
-      this.container = $("<div class='bootstrap-styles'>")
+      this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true"> \
+            Colors \
+            <span class="caret"></span> \
+          </button>')
         .appendTo(this.element)
-        .append('<span>Colors: </span>')
+        ;
+      this.list = $('<ul class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
+        .appendTo(this.element)
         ;
       $.each(this.color_maps, function(key, value)
       {
-        var button = $("<span class='btn btn-xs btn-default'>")
+        var item = $('<li role="presentation">')
           .addClass("color")
           .toggleClass("active", key == self.options.colormap)
-          .appendTo(self.container)
           .attr("data-colormap", key)
-          .html(value.label)
-          .click(function()
-          {
-            if($(this).hasClass("active"))
-              return;
+          .appendTo(self.list)
+          .append(
+            $('<a role="menuitem" tabindex="-1" href="#">')
+              .html(value.label)
+              .click(function()
+              {
+                var menu_item = $(this).parent();
+                if(menu_item.hasClass("active"))
+                  return false;
 
-            self.options.colormap = this.getAttribute("data-colormap");
-            self.container.find(".color").removeClass("active");
-            $(this).addClass("active");
+                self.options.colormap = menu_item.attr("data-colormap");
+                self.list.find(".color").removeClass("active");
+                menu_item.addClass("active");
 
-            self.element.trigger("colormap-changed", [self.options.colormap]);
-          })
+                self.element.trigger("colormap-changed", [self.options.colormap]);
+              })
+          )
           ;
       });
+
     },
 
     _setOption: function(key, value)
@@ -157,8 +167,9 @@ define("slycat-color-switcher", ["d3"], function(d3)
 
       if(key == "colormap")
       {
-        this.container.find(".color").removeClass("active");
-        this.container.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
+        this.list.find(".color").removeClass("active");
+        this.list.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
+
       }
     },
 

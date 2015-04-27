@@ -585,7 +585,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     {
       controls_ready = true;
 
-      $("#controls").controls({
+      $("#controls-pane #controls").controls({
         mid : model._id,
         model_name: model_name,
         aid : "data-table",
