@@ -134,6 +134,12 @@ define("slycat-color-switcher", ["d3"], function(d3)
         ;
       $.each(this.color_maps, function(key, value)
       {
+        var gradient_data = self.get_gradient_data(key);
+        var color_stops = [];
+        for(var i = 0; i < gradient_data.length; i++)
+        {
+          color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
+        }
         var item = $('<li role="presentation">')
           .addClass("color")
           .toggleClass("active", key == self.options.colormap)
@@ -153,6 +159,12 @@ define("slycat-color-switcher", ["d3"], function(d3)
                 menu_item.addClass("active");
 
                 self.element.trigger("colormap-changed", [self.options.colormap]);
+              })
+              .css({
+                "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + ")",
+                "background-size" : "10px 20px",
+                "background-position" : "right 5px center",
+                "background-repeat" : "no-repeat",
               })
           )
           ;
