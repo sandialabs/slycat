@@ -38,39 +38,6 @@ function get_model_array_attribute_metadata(parameters, dfd)
   });
 }
 
-// Retrieve an arrayset's metadata asynchronously, calling a callback when it's ready ...
-function get_model_arrayset_metadata(parameters)
-{
-  if(arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
-    parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
-    if(parameters.metadataSuccess !== undefined) {
-      parameters.metadataSuccess(parameters);
-    } else {
-      parameters.success(parameters);
-    }
-  } else {
-    $.ajax({
-      url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata",
-      contentType : "application/json",
-      success: function(metadata)
-      {
-        arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] = metadata;
-        parameters.metadata = metadata;
-        if(parameters.metadataSuccess !== undefined) {
-          parameters.metadataSuccess(parameters);
-        } else {
-          parameters.success(parameters);
-        }
-      },
-      error: function(request, status, reason_phrase)
-      {
-        if(parameters.error)
-          parameters.error(request, status, reason_phrase);
-      }
-    });
-  }
-}
-
 // Cast a generic arraybuffer to a typed array, with an optional offset and
 // count.  Note that offset and count are measured in elements, not bytes.
 function cast_array_buffer(buffer, type, offset, count)

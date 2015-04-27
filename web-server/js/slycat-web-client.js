@@ -206,27 +206,19 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.get_model_arrayset_metadata = function(params)
   {
-    var query = {};
+    var search = {};
     if(params.arrays)
-      query.arrays = params.arrays.join(";");
+      search.arrays = params.arrays;
     if(params.statistics)
-    {
-      query.statistics = [];
-      $.each(params.statistics, function(index, spec)
-      {
-        query.statistics.push(spec[0] + "/" + spec[1]);
-      });
-      query.statistics = query.statistics.join(";");
-    }
-    query = $.param(query);
-    if(query)
-      query = "?" + query;
+      search.statistics = params.statistics;
+    if(params.unique)
+      search.unique = params.unique;
 
     $.ajax(
     {
       dataType: "json",
       type: "GET",
-      url: server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/metadata" + query,
+      url: URI(server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/metadata").search(search).toString(),
       success: function(result)
       {
         if(params.success)
