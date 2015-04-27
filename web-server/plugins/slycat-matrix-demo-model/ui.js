@@ -30,7 +30,7 @@ define("slycat-matrix-demo-model", ["slycat-web-client", "knockout", "knockout-m
     {
       mid: page.model_id(),
       aid: aid,
-      hyperchunks: [[0, 0, "..."]], // Load array 0, attribute 0, all data
+      hyperchunks: "0/0/...", // Load array 0, attribute 0, all data
       success : function(data)
       {
         mapping.fromJS(data[0], storage);

@@ -242,27 +242,11 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.get_model_arrayset_data = function(params)
   {
-    var query = {};
-    query.hyperchunks = [];
-    $.each(params.hyperchunks, function(index, hyperchunk)
-    {
-      var spec = hyperchunk[0] + "/" + hyperchunk[1] + "/";
-      if(hyperchunk.length == 2)
-        spec += "...";
-      else
-        spec += hyperchunk[2];
-      query.hyperchunks.push(spec);
-    });
-    query.hyperchunks = query.hyperchunks.join(";");
-    query = $.param(query);
-    if(query)
-      query = "?" + query;
-
     $.ajax(
     {
       dataType: "json",
       type: "GET",
-      url: server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/data" + query,
+      url: URI(server_root + "models/" + params.mid + "/arraysets/" + params.aid + "/data").search({"hyperchunks":params.hyperchunks}).toString(),
       success: function(result)
       {
         if(params.success)
