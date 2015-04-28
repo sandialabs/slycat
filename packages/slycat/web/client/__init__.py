@@ -3,6 +3,7 @@
 # rights in this software.
 
 import argparse
+import collections
 import getpass
 import json
 import logging
@@ -12,7 +13,6 @@ import os
 import requests
 import shlex
 import slycat.darray
-import slycat.hyperslice
 import sys
 import time
 
@@ -521,42 +521,34 @@ class Connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_arrayset_data(self, mid, name, hyperchunks, force_json=False):
+  def put_model_arrayset_data(self, mid, name, hyperchunks, data, force_json=False):
     """Sends array data to the server."""
     # Sanity check arguments
-    if isinstance(hyperchunks, tuple):
-      hyperchunks = [hyperchunks]
-    hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices], data if isinstance(data, list) else [data]) for array, attribute, hyperslices, data in hyperchunks]
-
-    for array, attribute, hyperslices, data in hyperchunks:
-      if not isinstance(array, numbers.Integral) or array < 0:
-        raise ValueError("Array index must be a non-negative integer.")
-      if not isinstance(attribute, numbers.Integral) or attribute < 0:
-        raise ValueError("Attribute index must be a non-negative integer.")
-      for hyperslice in hyperslices:
-        slycat.hyperslice.validate(hyperslice)
-      for chunk in data:
-        if not isinstance(chunk, numpy.ndarray):
-          raise ValueError("Data chunk must be a numpy array.")
-      if len(hyperslices) != len(data):
-        raise ValueError("Hyperslice and data counts must match.")
+    if not isinstance(mid, basestring):
+      raise ValueError("Model id must be a string.")
+    if not isinstance(name, basestring):
+      raise ValueError("Artifact name must be a string.")
+    if not isinstance(hyperchunks, basestring):
+      raise ValueError("Hyperchunks specification must be a string.")
+    for chunk in data:
+      if not isinstance(chunk, numpy.ndarray):
+        raise ValueError("Data chunk must be a numpy array.")
 
     # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
-    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks]) and not force_json
+    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data]) and not force_json
 
     # Build-up the request
     request_data = {}
-    request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks])
+    request_data["hyperchunks"] = hyperchunks
     if use_binary:
       request_data["byteorder"] = sys.byteorder
 
     request_buffer = StringIO.StringIO()
-    for array, attribute, hyperslices, data in hyperchunks:
-      if use_binary:
-        for chunk in data:
-          request_buffer.write(chunk.tostring(order="C"))
-      else:
-        request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
+    if use_binary:
+      for chunk in data:
+        request_buffer.write(chunk.tostring(order="C"))
+    else:
+      request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
     self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
