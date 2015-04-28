@@ -229,40 +229,6 @@ class Connection(object):
     """
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def get_model_array_attribute_chunk(self, mid, name, array, attribute, ranges, type=None):
-    """Return a hyperslice from an array artifact attribute.
-
-    Uses JSON to transfer the data unless the attribute type is specified.
-
-    Parameters
-    ----------
-    mid: string, required
-      Unique model identifier.
-    name: string, required
-      Arrayset artifact name.
-    array: integer, required
-      Zero-based array index.
-    attribute: integer, required
-      Zero-based attribute index.
-    ranges: hyperslice, required.
-      Range of values to retrieve along each dimension.
-    type: numpy dtype, optional
-      Output data type.
-
-    Returns
-    -------
-    chunk: Python list, or numpy ndarray
-    """
-    ranges = _require_array_ranges(ranges)
-    if ranges is None:
-      raise Exception("An explicit chunk range is required.")
-    if type is None or type == "string":
-      return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
-    else:
-      shape = tuple([end - begin for begin, end in ranges])
-      content = self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
-      return numpy.fromstring(content, dtype=type).reshape(shape)
-
   def get_model_file(self, mid, name):
     return self.request("GET", "/models/%s/files/%s" % (mid, name))
 
