@@ -488,7 +488,26 @@ class Connection(object):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
   def put_model_arrayset_data(self, mid, name, hyperchunks, data, force_json=False):
-    """Sends array data to the server."""
+    """Write data to an arrayset artifact on the server.
+
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    name: string, required
+      Unique (to the model) arrayset artifact name.
+    hyperchunks: string, required
+      Specifies where the data will be stored, in :ref:`Hyperchunks` format.
+    data: iterable, required)
+      A collection of numpy.ndarray data chunks to be uploaded.  The number of
+      data chunks must match the number implied by the `hyperchunks` parameter.
+    force_json: bool, optional)
+      Force the client to upload data using JSON instead of the binary format.
+
+    See Also
+    --------
+    :http:put:`/models/(mid)/arraysets/(name)/data`
+    """
     # Sanity check arguments
     if not isinstance(mid, basestring):
       raise ValueError("Model id must be a string.")
