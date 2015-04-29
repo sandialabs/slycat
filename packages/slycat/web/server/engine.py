@@ -252,6 +252,8 @@ def start(root_path, config_file):
   # Expand remote host aliases.
   configuration["slycat-web-server"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat-web-server"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
+  slycat.web.server.config = configuration
+
   # Start all of our cleanup workers.
   cherrypy.engine.subscribe("start", slycat.web.server.cleanup.start, priority=80)
 

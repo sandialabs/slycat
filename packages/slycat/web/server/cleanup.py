@@ -42,7 +42,7 @@ def _login_session_cleanup_worker():
         if session.doc["created"] < cutoff:
           database.delete(session.doc)
       cherrypy.log.error("Login session cleanup worker finished.")
-      time.sleep(datetime.timedelta(minutes=60).total_seconds())
+      time.sleep(datetime.timedelta(minutes=15).total_seconds())
     except Exception as e:
       cherrypy.log.error("Login session cleanup worker waiting for couchdb.")
       time.sleep(2)
