@@ -140,6 +140,7 @@ define("slycat-color-switcher", ["d3"], function(d3)
         {
           color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
         }
+        var background_color = self.get_background(key);
         var item = $('<li role="presentation">')
           .addClass("color")
           .toggleClass("active", key == self.options.colormap)
@@ -161,10 +162,10 @@ define("slycat-color-switcher", ["d3"], function(d3)
                 self.element.trigger("colormap-changed", [self.options.colormap]);
               })
               .css({
-                "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + ")",
-                "background-size" : "10px 20px",
-                "background-position" : "right 5px center",
-                "background-repeat" : "no-repeat",
+                "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
+                "background-size" : "5px 75%, 50px auto",
+                "background-position" : "right 10px center, right 5px center",
+                "background-repeat" : "no-repeat, no-repeat",
               })
           )
           ;
