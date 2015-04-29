@@ -31,7 +31,7 @@ def register_slycat_plugin(context):
       "data": matrix.tolist(),
     })
 
-  def product(database, model, command, **kwargs):
+  def product(database, model, verb, type, command, **kwargs):
     if "product-type" not in kwargs:
       raise cherrypy.HTTPError("400 Missing product-type parameter.")
     product_type = kwargs["product-type"]
@@ -48,7 +48,7 @@ def register_slycat_plugin(context):
       return matrix_result(numpy.kron(A, B))
 
   context.register_model("matrix-demo", finish, html)
-  context.register_model_command("matrix-demo", "product", product)
+  context.register_model_command("GET", "matrix-demo", "product", product)
 
   context.register_model_bundle("matrix-demo", "text/css", [
     os.path.join(os.path.dirname(__file__), "ui.css"),

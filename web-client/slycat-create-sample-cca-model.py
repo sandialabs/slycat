@@ -75,7 +75,7 @@ connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes
 
 # Upload data into the array.
 for i in range(total_columns):
-  connection.put_model_arrayset_data(mid, "data-table", (0, i, numpy.index_exp[...], data.T[i]))
+  connection.put_model_arrayset_data(mid, "data-table", "0/%s/..." % i, [data.T[i]])
 
 # Store the remaining parameters.
 connection.put_model_parameter(mid, "input-columns", range(0, arguments.input_count))

@@ -80,7 +80,7 @@ connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes
 # Upload data into the array.
 for index, data in enumerate(columns):
   slycat.web.client.log.info("Uploading column {} of {} ({})".format(index, len(columns), column_names[index]))
-  connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], data))
+  connection.put_model_arrayset_data(mid, "data-table", "0/%s/..." % index, [data])
 
 # Store the remaining parameters.
 connection.put_model_parameter(mid, "input-columns", inputs)
