@@ -7,6 +7,7 @@ def register_slycat_plugin(context):
   import os
   import re
   import slycat.web.server
+  from urlparse import urlparse
 
   def media_columns(database, model, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video)."""
@@ -25,6 +26,50 @@ def register_slycat_plugin(context):
 
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(columns)
+
+
+  def update_tree(tree, uris, column):
+    """Updates tree with new list of URIs"""
+    for uri in uris:
+      parsed = urlparse(uri)
+      host = parsed.hostname
+
+      if host not in tree:
+        tree[host] = {}
+
+      if column not in tree[host]:
+        tree[host][column] = set()
+
+      path_arr = parsed.path.split('/')
+      path_arr.pop() # removes filename + extension
+      if path_arr[0] == "":
+        path_arr.pop(0) # removes first item if empty string
+
+      path = "/".join(path_arr)
+      tree[host][column].add(path)
+
+
+  def list_uris(database, model, command, **kwargs):
+    """Parses out all unique root URIs from the db table"""
+    cherrypy.log.error("list_uris: %s" % kwargs)
+
+    try:
+      columns = [int(column) for column in kwargs["columns"]]
+    except:
+      raise cherrypy.HTTPError("400 Missing / invalid columns parameter.")
+
+    tree = {}
+    for column in columns:
+      tmp_uris = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % column))
+      update_tree(tree, tmp_uris, column)
+
+    # sets have to be turned into arrays to be JSON serializable
+    for host in tree:
+      for column in tree[host]:
+        tree[host][column] = list(tree[host][column])
+
+    return json.dumps({"uris": tree})
+
 
   def search_and_replace(database, model, command, **kwargs):
     """Perform a regular-expression search-and-replace on columns in the input data."""
@@ -162,6 +207,7 @@ def register_slycat_plugin(context):
   # Register custom commands for use by wizards.
   context.register_model_command("parameter-image", "media-columns", media_columns)
   context.register_model_command("parameter-image", "search-and-replace", search_and_replace)
+  context.register_model_command("parameter-image", "list-uris", list_uris)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image", "New Remote Parameter Image Model", require={"action":"create", "context":"project"})
