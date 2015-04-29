@@ -15,21 +15,7 @@
       </form>
     </div>
     <div data-bind="visible:tab() == 1">
-      <form class="form-horizontal" role="form">
-        <div class="form-group">
-          <p class="col-sm-offset-2 col-sm-10 help-block">Use regular expressions to substitute new hosts/paths.</p>
-          <label for="search" class="col-sm-2 control-label">Search</label>
-          <div class="col-sm-10">
-            <input id="search" class="form-control" type="text" placeholder="ex: file://localhost" data-bind="value:search"></input>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="replace" class="col-sm-2 control-label">Replace</label>
-          <div class="col-sm-10">
-            <input id="replace" class="form-control" type="text" placeholder="ex: file://127.0.0.1" data-bind="value:replace"></input>
-          </div>
-        </div>
-      </form>
+      <div id="path-structure-container"></div>
     </div>
     <div data-bind="visible:tab() == 2">
       <slycat-model-results params="{mid: model._id}"></slycat-model-results>
