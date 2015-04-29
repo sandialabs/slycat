@@ -19,6 +19,7 @@ class Manager(object):
     self.model_commands = {}
     self.model_resources = {}
     self.models = {}
+    self.parsers = {}
     self.password_checks = {}
     self.tools = {}
     self.wizard_resources = {}
@@ -71,15 +72,14 @@ class Manager(object):
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       A unique identifier for the new directory type.
-    init : function, required
-      Function that will be called to initialize the directory.  This function will be
-      called with parameters specified by an adminstrator in the server config.ini.
-    user : function, required
-      Function that will be called to retrieve information about a user.  The function
-      will be called with the requested username, and should return a dictionary containing
-      user metadata.
+    init: callable, required
+      Called with parameters specified by an adminstrator in the server
+      config.ini to initialize the directory.
+    user: callable, required
+      Called with a username to retrieve information about a user.  Must return
+      a dictionary containing user metadata.
     """
     if type in self.directories:
       raise Exception("Directory type '%s' has already been registered." % type)
@@ -92,18 +92,18 @@ class Manager(object):
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       A unique identifier for the new marking type.
-    label : string, required
+    label: string, required
       Human-readable string used to represent the marking in the user interface.
-    badge : string, required
+    badge: string, required
       HTML representation used to display the marking as a "badge".  The HTML
       must contain everything needed to properly format the marking, including
       inline CSS styles.
-    page_before : string, optional
+    page_before: string, optional
       HTML representation used to display the marking at the top of an HTML page.
       If left unspecified, the badge representation will be used instead.
-    page_after : string, optional
+    page_after: string, optional
       HTML representation used to display the marking at the bottom of an HTML page.
       If left unspecified, the badge representation will be used instead.
 
@@ -148,12 +148,12 @@ class Manager(object):
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       Unique identifier of an already-registered model type.
-    command : string, required
+    command: string, required
       Unique-to-the model name of the request.
-    handler : callback function, required
-      Function that will be called to handle requests for the given model command.
+    handler: callable, required
+      Called to handle requests for the given model command.
     """
     if type not in self.models:
       raise Exception("Unknown model type: %s." % type)
@@ -169,11 +169,11 @@ class Manager(object):
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       Unique identifier of an already-registered model type.
-    resource : string, required
+    resource: string, required
       Server endpoint to retrieve the resource.
-    path : string, required
+    path: string, required
       Absolute filesystem path of the resource to be retrieved.
       The resource may be a single file, or a directory.
     """
@@ -206,32 +206,53 @@ class Manager(object):
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       A unique identifier for the new model type.
-    finish : callback function, required
-      Function that will be called to finish (perform computation on) a new instance of the model.
-    html : callback function, required
-      Function that will be called to generate an HTML representation of the model.
+    finish: callable, required
+      Called to finish (perform computation on) a new instance of the model.
+    html: callable, required
+      Called to generate an HTML representation of the model.
     """
     if type in self.models:
       raise Exception("Model type '%s' has already been registered." % type)
 
-    self.models[type] = {"finish":finish, "html":html}
+    self.models[type] = {"finish": finish, "html": html}
     cherrypy.log.error("Registered model '%s'." % type)
+
+  def register_parser(self, type, data_type, validate, parse):
+    """Register a new parser type.
+
+    Parameters
+    ----------
+    type: string, required
+      A unique identifier for the new parser type.
+    data_type: string, required
+      String category describing the type of data this parser produces, for example "table".
+    validate: callable, required
+      Called with a file object to determine whether it can be parsed with this parser.  Must
+      return True or False.
+    parse: callable, required
+      Called with a database, model, file object, and optional keyword
+      arguments.  Must parse the file and insert its data into the model as
+      artifacts, returning True if successful, otherwise False.
+    """
+    if type in self.parsers:
+      raise Exception("Parser type '%s' has already been registered." % type)
+    self.parsers[type] = {"data-type": data_type, "validate": validate, "parse": parse}
+    cherrypy.log.error("Registered parser '%s'." % type)
 
   def register_password_check(self, type, check):
     """Register a new password check function.
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       A unique identifier for the new check type.
-    check : function, required
-      Function that will be called to check a password.  The function will be
-      called with a realm, username, and password, plus optional keyword
-      arguments, and should return a (success, groups) tuple, where success is
-      True if authentication succeeded, and groups is a (possibly empty) list
-      of groups to which the user belongs.
+    check: callable, required
+      Called with a realm, username, and password plus optional keyword
+      arguments. Must return a (success, groups) tuple, where success is True
+      if authentication succeeded, and groups is a (possibly empty) list of
+        groups to which the user belongs.
     """
     if type in self.password_checks:
       raise Exception("Password check type '%s' has already been registered." % type)
@@ -244,13 +265,12 @@ class Manager(object):
 
     Parameters
     ----------
-    name : string, required
+    name: string, required
       A unique identifier for the new tool.
-    hook_point : string, required
+    hook_point: string, required
       CherryPy hook point where the tool will be installed.
-    callable : callable object, required
-      Object that will be called for every client request.
-      users.
+    callable: callable object, required
+      Called for every client request.
     """
     if name in self.tools:
       raise Exception("Tool '%s' has already been registered." % name)
@@ -263,11 +283,11 @@ class Manager(object):
 
     Parameters
     ----------
-    type : string, required
+    type: string, required
       Unique identifier of an already-registered wizard.
-    resource : string, required
+    resource: string, required
       Server endpoint to retrieve the resource.
-    path : string, required
+    path: string, required
       Absolute filesystem path of the resource to be retrieved.
     """
     if type not in self.wizards:
