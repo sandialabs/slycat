@@ -123,7 +123,7 @@ define("slycat-color-switcher", ["d3"], function(d3)
         },
       };
 
-      this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true"> \
+      this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true" title="Scatterplot Color Theme"> \
             Colors \
             <span class="caret"></span> \
           </button>')
