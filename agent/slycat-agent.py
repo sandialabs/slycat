@@ -302,7 +302,11 @@ def main():
         raise Exception("Missing action.")
 
       action = command["action"]
-      if action == "browse":
+      if action == "exit":
+        sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Exiting."}))
+        sys.stdout.flush()
+        break
+      elif action == "browse":
         browse(command)
       elif action == "get-file":
         get_file(command)
