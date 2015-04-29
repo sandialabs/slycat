@@ -62,9 +62,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.finish = function()
     {
-      client.get_model_command(
+      client.post_model_command(
       {
         mid: component.model._id(),
+        type: "parameter-image",
         command: "search-and-replace",
         parameters:
         {

@@ -8,7 +8,7 @@ def register_slycat_plugin(context):
   import re
   import slycat.web.server
 
-  def media_columns(database, model, command, **kwargs):
+  def media_columns(database, model, verb, type, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video)."""
     expression = re.compile("file://")
     search = numpy.vectorize(lambda x:bool(expression.search(x)))
@@ -26,7 +26,7 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(columns)
 
-  def search_and_replace(database, model, command, **kwargs):
+  def search_and_replace(database, model, verb, type, command, **kwargs):
     """Perform a regular-expression search-and-replace on columns in the input data."""
     cherrypy.log.error("search_and_replace: %s" % kwargs)
 
@@ -160,8 +160,8 @@ def register_slycat_plugin(context):
     context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
 
   # Register custom commands for use by wizards.
-  context.register_model_command("parameter-image", "media-columns", media_columns)
-  context.register_model_command("parameter-image", "search-and-replace", search_and_replace)
+  context.register_model_command("GET", "parameter-image", "media-columns", media_columns)
+  context.register_model_command("POST", "parameter-image", "search-and-replace", search_and_replace)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image", "New Remote Parameter Image Model", require={"action":"create", "context":"project"})

@@ -143,26 +143,28 @@ class Manager(object):
 
     return key
 
-  def register_model_command(self, type, command, handler):
-    """Register a custom request handler associcated with a model type.
+  def register_model_command(self, verb, type, command, handler):
+    """Register a custom request handler.
 
     Parameters
     ----------
+    verb: string, required
+      The HTTP verb for the command, "GET", "POST", or "PUT".
     type: string, required
-      Unique identifier of an already-registered model type.
+      Unique category for the command.  Typically, this would be a model, parser, or wizard type.
     command: string, required
-      Unique-to-the model name of the request.
+      Unique command name.
     handler: callable, required
-      Called to handle requests for the given model command.
+      Called with the database, model, verb, type, command, and optional keyword parameters to handle a matching client request.
     """
-    if type not in self.models:
-      raise Exception("Unknown model type: %s." % type)
-    if type not in self.model_commands:
-      self.model_commands[type] = {}
-    if command in self.model_commands[type]:
-      raise Exception("Command '%s' has already been registered with model '%s'." % (command, type))
-    self.model_commands[type][command] = {"handler":handler}
-    cherrypy.log.error("Registered model '%s' command '%s'." % (type, command))
+    if verb not in ["GET", "POST", "PUT"]:
+      raise Exception("Not an allowed HTTP verb: %s" % verb)
+    key = (verb, type, command)
+    if key in self.model_commands:
+      raise Exception("Command '%s %s %s' has already been registered." % (verb, type, command))
+
+    self.model_commands[key] = handler
+    cherrypy.log.error("Registered custom command '%s %s %s'." % (verb, type, command))
 
   def register_model_resource(self, type, resource, path):
     """Register a custom resource associated with a model type.

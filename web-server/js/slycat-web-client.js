@@ -258,7 +258,47 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     {
       dataType: "json",
       type: "GET",
-      url: URI(server_root + "models/" + params.mid + "/commands/" + params.command).search(params.parameters || {}).toString(),
+      url: URI(server_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
+  module.post_model_command = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "POST",
+      url: URI(server_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
+  module.put_model_command = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "PUT",
+      url: URI(server_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
       success: function(result)
       {
         if(params.success)
