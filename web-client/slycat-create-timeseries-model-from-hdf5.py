@@ -121,7 +121,7 @@ try:
     for attribute in range(len(attributes)):
       slycat.web.client.log.info("Storing input table attribute %s", attribute)
       data = array.get_data(attribute)[...]
-      connection.put_model_arrayset_data(mid, "inputs", (0, attribute, numpy.index_exp[...], data))
+      connection.put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
 
   # Create a mapping from unique cluster names to timeseries attributes.
   connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
@@ -306,7 +306,7 @@ try:
       slycat.web.client.log.debug("Creating array %s %s" % (attributes, dimensions))
       connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
       slycat.web.client.log.debug("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
-      connection.put_model_arrayset_data(mid, arrayset_name, [(index, 0, numpy.index_exp[...], waveform["times"]), (index, 1, numpy.index_exp[...], waveform["values"])])
+      connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:

@@ -47,6 +47,7 @@ define("slycat-matrix-demo-model", ["slycat-web-client", "knockout", "knockout-m
     client.get_model_command(
     {
       mid: page.model_id(),
+      type: "matrix-demo",
       command: "product",
       parameters: { "product-type" : product_type },
       success : function(result)

@@ -38,6 +38,7 @@ any programming language or library that supports HTTP requests.
   GET-Remote-Video.rst
   GET-User.rst
   POST-Events.rst
+  POST-Model-Command.rst
   POST-Model-Finish.rst
   POST-Project-Bookmark.rst
   POST-Project-Models.rst
@@ -48,6 +49,7 @@ any programming language or library that supports HTTP requests.
   PUT-Model-Arrayset-Array.rst
   PUT-Model-Arrayset-Data.rst
   PUT-Model-Arrayset.rst
+  PUT-Model-Command.rst
   PUT-Model-File.rst
   PUT-Model-Inputs.rst
   PUT-Model-Parameter.rst

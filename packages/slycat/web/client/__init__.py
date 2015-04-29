@@ -3,6 +3,7 @@
 # rights in this software.
 
 import argparse
+import collections
 import getpass
 import json
 import logging
@@ -12,7 +13,6 @@ import os
 import requests
 import shlex
 import slycat.darray
-import slycat.hyperslice
 import sys
 import time
 
@@ -228,40 +228,6 @@ class Connection(object):
     :http:get:`/models/(mid)`
     """
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
-
-  def get_model_array_attribute_chunk(self, mid, name, array, attribute, ranges, type=None):
-    """Return a hyperslice from an array artifact attribute.
-
-    Uses JSON to transfer the data unless the attribute type is specified.
-
-    Parameters
-    ----------
-    mid: string, required
-      Unique model identifier.
-    name: string, required
-      Arrayset artifact name.
-    array: integer, required
-      Zero-based array index.
-    attribute: integer, required
-      Zero-based attribute index.
-    ranges: hyperslice, required.
-      Range of values to retrieve along each dimension.
-    type: numpy dtype, optional
-      Output data type.
-
-    Returns
-    -------
-    chunk: Python list, or numpy ndarray
-    """
-    ranges = _require_array_ranges(ranges)
-    if ranges is None:
-      raise Exception("An explicit chunk range is required.")
-    if type is None or type == "string":
-      return self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range])), headers={"accept":"application/json"})
-    else:
-      shape = tuple([end - begin for begin, end in ranges])
-      content = self.request("GET", "/models/%s/arraysets/%s/arrays/%s/attributes/%s/chunk?ranges=%s&byteorder=%s" % (mid, name, array, attribute, ",".join([str(item) for range in ranges for item in range]), sys.byteorder), headers={"accept":"application/octet-stream"})
-      return numpy.fromstring(content, dtype=type).reshape(shape)
 
   def get_model_file(self, mid, name):
     return self.request("GET", "/models/%s/files/%s" % (mid, name))
@@ -521,42 +487,53 @@ class Connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_arrayset_data(self, mid, name, hyperchunks, force_json=False):
-    """Sends array data to the server."""
-    # Sanity check arguments
-    if isinstance(hyperchunks, tuple):
-      hyperchunks = [hyperchunks]
-    hyperchunks = [(array, attribute, hyperslices if isinstance(hyperslices, list) else [hyperslices], data if isinstance(data, list) else [data]) for array, attribute, hyperslices, data in hyperchunks]
+  def put_model_arrayset_data(self, mid, name, hyperchunks, data, force_json=False):
+    """Write data to an arrayset artifact on the server.
 
-    for array, attribute, hyperslices, data in hyperchunks:
-      if not isinstance(array, numbers.Integral) or array < 0:
-        raise ValueError("Array index must be a non-negative integer.")
-      if not isinstance(attribute, numbers.Integral) or attribute < 0:
-        raise ValueError("Attribute index must be a non-negative integer.")
-      for hyperslice in hyperslices:
-        slycat.hyperslice.validate(hyperslice)
-      for chunk in data:
-        if not isinstance(chunk, numpy.ndarray):
-          raise ValueError("Data chunk must be a numpy array.")
-      if len(hyperslices) != len(data):
-        raise ValueError("Hyperslice and data counts must match.")
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    name: string, required
+      Unique (to the model) arrayset artifact name.
+    hyperchunks: string, required
+      Specifies where the data will be stored, in :ref:`Hyperchunks` format.
+    data: iterable, required)
+      A collection of numpy.ndarray data chunks to be uploaded.  The number of
+      data chunks must match the number implied by the `hyperchunks` parameter.
+    force_json: bool, optional)
+      Force the client to upload data using JSON instead of the binary format.
+
+    See Also
+    --------
+    :http:put:`/models/(mid)/arraysets/(name)/data`
+    """
+    # Sanity check arguments
+    if not isinstance(mid, basestring):
+      raise ValueError("Model id must be a string.")
+    if not isinstance(name, basestring):
+      raise ValueError("Artifact name must be a string.")
+    if not isinstance(hyperchunks, basestring):
+      raise ValueError("Hyperchunks specification must be a string.")
+    for chunk in data:
+      if not isinstance(chunk, numpy.ndarray):
+        raise ValueError("Data chunk must be a numpy array.")
 
     # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
-    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data for array, attribute, hyperslices, data in hyperchunks]) and not force_json
+    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data]) and not force_json
 
     # Build-up the request
     request_data = {}
-    request_data["hyperchunks"] = ";".join(["%s/%s/%s" % (array, attribute, "|".join([slycat.hyperslice.format(hyperslice) for hyperslice in hyperslices])) for array, attribute, hyperslices, data in hyperchunks])
+    request_data["hyperchunks"] = hyperchunks
     if use_binary:
       request_data["byteorder"] = sys.byteorder
 
     request_buffer = StringIO.StringIO()
-    for array, attribute, hyperslices, data in hyperchunks:
-      if use_binary:
-        for chunk in data:
-          request_buffer.write(chunk.tostring(order="C"))
-      else:
-        request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
+    if use_binary:
+      for chunk in data:
+        request_buffer.write(chunk.tostring(order="C"))
+    else:
+      request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
     self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})

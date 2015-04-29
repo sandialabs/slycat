@@ -75,6 +75,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.get_model_command(
           {
             mid: component.model._id(),
+            type: "tracer-image",
             command: "media-columns",
             success: function(media_columns)
             {

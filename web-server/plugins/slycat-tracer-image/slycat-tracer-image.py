@@ -8,7 +8,7 @@ def register_slycat_plugin(context):
   import re
   import slycat.web.server
 
-  def media_columns(database, model, command, **kwargs):
+  def media_columns(database, model, verb, type, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video)."""
     expression = re.compile("file://")
     search = numpy.vectorize(lambda x:bool(expression.search(x)))
@@ -140,7 +140,7 @@ def register_slycat_plugin(context):
     context.register_model_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), "img", image))
 
   # Register a custom command for use by the wizard.
-  context.register_model_command("tracer-image", "media-columns", media_columns)
+  context.register_model_command("GET", "tracer-image", "media-columns", media_columns)
 
   # Register wizards for creating TI models.
   context.register_wizard("tracer-image", "New Remote Tracer Image Model", require={"action":"create", "context":"project"})

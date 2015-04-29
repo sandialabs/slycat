@@ -78,6 +78,32 @@ def update_model(database, model, **kwargs):
   database.save(model)
 
 def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None, unique=None):
+  """Retrieve metadata describing an arrayset artifact.
+
+  Parameters
+  ----------
+  database: database object, required
+  model: model object, required
+  name: string, required
+    Unique (to the model) arrayset artifact name.
+  arrays: string or hyperchunks parse tree, optional
+    Specifies a collection of arrays, in :ref:`Hyperchunks` format.  Metadata
+    describing the specified arrays will be returned in the results.
+  statistics: string or hyperchunks parse tree, optional
+    Specifies a collection of array attributes, in :ref:`Hyperchunks` format.
+    Statistics describing each attribute will be returned in the results.
+  unique: string or hyperchunks parse tree, optional
+    Specifies a collection of array attributes, in :ref:`Hyperchunks` format.
+    Unique values from each attribute will be returned in the results.
+
+  Returns
+  -------
+  metadata: dict
+
+  See Also
+  --------
+  :http:get:`/models/(mid)/arraysets/(name)/metadata`
+  """
   if isinstance(arrays, basestring):
     arrays = slycat.hyperchunks.parse(arrays)
   if isinstance(statistics, basestring):
@@ -154,6 +180,25 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
       return results
 
 def get_model_arrayset_data(database, model, name, hyperchunks):
+  """Read data from an arrayset artifact.
+
+  Parameters
+  ----------
+  database: database object, required
+  model: model object, required
+  name: string, required
+    Unique (to the model) arrayset artifact name.
+  hyperchunks: string or hyperchunks parse tree, required
+    Specifies the data to be retrieved, in :ref:`Hyperchunks` format.
+
+  Returns
+  -------
+  data: sequence of numpy.ndarray data chunks.
+
+  See Also
+  --------
+  :http:get:`/models/(mid)/arraysets/(name)/data`
+  """
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
@@ -199,6 +244,24 @@ def put_model_array(database, model, name, array_index, attributes, dimensions):
       slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def put_model_arrayset_data(database, model, name, hyperchunks, data):
+  """Write data to an arrayset artifact.
+
+  Parameters
+  ----------
+  database: database object, required
+  model: model object, required
+  name: string, required
+    Unique (to the model) arrayset artifact name.
+  hyperchunks: string or hyperchunks parse tree, required
+    Specifies where the data will be stored, in :ref:`Hyperchunks` format.
+  data: iterable, required)
+    A collection of numpy.ndarray data chunks to be stored.  The number of
+    data chunks must match the number implied by the `hyperchunks` parameter.
+
+  See Also
+  --------
+  :http:put:`/models/(mid)/arraysets/(name)/data`
+  """
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 

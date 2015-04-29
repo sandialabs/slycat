@@ -31,13 +31,13 @@ dimensions = [dict(name="row", end=A.shape[0]), dict(name="column", end=A.shape[
 attributes = [dict(name="value", type="int64")]
 connection.put_model_arrayset(mid, "A")
 connection.put_model_arrayset_array(mid, "A", 0, dimensions, attributes)
-connection.put_model_arrayset_data(mid, "A", (0, 0, numpy.index_exp[...], A))
+connection.put_model_arrayset_data(mid, "A", "0/0/...", [A])
 
 dimensions = [dict(name="row", end=B.shape[0]), dict(name="column", end=B.shape[1])]
 attributes = [dict(name="value", type="int64")]
 connection.put_model_arrayset(mid, "B")
 connection.put_model_arrayset_array(mid, "B", 0, dimensions, attributes)
-connection.put_model_arrayset_data(mid, "B", (0, 0, numpy.index_exp[...], B))
+connection.put_model_arrayset_data(mid, "B", "0/0/...", [B])
 
 # Let the server know that we're done creating the model.
 connection.post_model_finish(mid)

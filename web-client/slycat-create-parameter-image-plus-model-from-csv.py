@@ -330,7 +330,7 @@ if __name__ == "__main__":
 
     # Upload each column into the array.
     for index, (name, column) in enumerate(columns):
-      connection.put_model_arrayset_data(mid, "data-table", (0, index, numpy.index_exp[...], column))
+      connection.put_model_arrayset_data(mid, "data-table", "0/%s/..." % index, [column])
 
     # Store the remaining parameters.
     connection.put_model_parameter(mid, "input-columns", [index for index, (name, column) in enumerate(columns) if name in arguments.input_columns and column.dtype == "float64"])

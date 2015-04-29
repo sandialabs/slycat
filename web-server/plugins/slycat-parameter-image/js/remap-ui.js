@@ -105,6 +105,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       client.get_model_command(
       {
         mid: component.model._id(),
+        type: "parameter-image",
         command: "list-uris",
         parameters:
         {
@@ -147,10 +148,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       });
     }
 
-
     var callSearchAndReplace = function(search, replace, onSuccess) {
-      client.get_model_command({
+      client.post_model_command({
         mid: component.model._id(),
+        type: "parameter-image",
         command: "search-and-replace",
         parameters: {
           columns: component.media_columns(),

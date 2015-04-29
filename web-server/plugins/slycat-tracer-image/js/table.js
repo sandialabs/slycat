@@ -162,14 +162,11 @@ define("Table", ["slycat-server-root", "slycat-web-client"], function(server_roo
     console.debug(this);
     console.debug("inside load table statistics");
 
-    var attributes = [];
-    for(var i = 0; i != columns.length; ++i)
-      attributes.push([0, columns[i]]);
     client.get_model_arrayset_metadata(
     {
       mid: self.model.id,
       aid: "data-table",
-      statistics: attributes,
+      statistics: "0/" + columns.join("|"),
       success: function(metadata)
       {
         var statistics = metadata.statistics;
