@@ -169,16 +169,20 @@ $.widget("parameter_image.controls",
       .appendTo(scatterplot_controls)
       ;
 
-    this.csv_button = $("<button>Download Data Table</button>")
-    	.click(function(){
+    this.csv_button = $("\
+      <button class='btn btn-default' title='Download Data Table'> \
+        <span class='fa fa-download' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
         if (self.options.selection.length == 0 && self.options.hidden_simulations.length == 0) {
-    	    self._write_data_table();
-    	  } else {
+          self._write_data_table();
+        } else {
           openCSVSaveChoiceDialog();
         }
-    	})
-    	.appendTo(this.element)
-    	;
+      })
+      .appendTo(scatterplot_controls)
+      ;
 
     $('#set-value-form').dialog({
       modal: true,
