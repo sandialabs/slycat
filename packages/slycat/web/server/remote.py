@@ -68,7 +68,6 @@ def cache_object(pid, key, content_type, content):
 
 session_cache = {}
 session_cache_lock = threading.Lock()
-session_access_timeout = datetime.timedelta(minutes=15)
 
 class Session(object):
   """Encapsulates an open session connected to a remote host.
@@ -119,6 +118,21 @@ class Session(object):
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
+
+  def close(self):
+    if self._agent is not None:
+      cherrypy.log.error("Shutting-down remote agent for %s@%s from %s" % (self.username, self.hostname, self.client))
+      stdin, stdout, stderr = self._agent
+      command = {"action":"exit"}
+      stdin.write("%s\n" % json.dumps(command))
+      stdin.flush()
+      response = json.loads(stdout.readline())
+      if response["ok"]:
+        cherrypy.log.error("Shutdown remote agent for %s@%s from %s" % (self.username, self.hostname, self.client))
+      else:
+        cherrypy.log.error("Error shutting-down remote agent.")
+    self._sftp.close()
+    self._ssh.close()
 
   def browse(self, path, file_reject, file_allow, directory_reject, directory_allow):
     # Use the agent to browse.
@@ -402,7 +416,7 @@ def create_session(hostname, username, password, agent):
   sid : string
     A unique session identifier.
   """
-  _start_session_monitor()
+  _start_session_cleanup_worker()
 
   client = cherrypy.request.headers.get("x-forwarded-for")
   cherrypy.log.error("Creating remote session for %s@%s from %s" % (username, hostname, client))
@@ -511,21 +525,24 @@ def _expire_session(sid):
   if sid in session_cache:
     now = datetime.datetime.utcnow()
     session = session_cache[sid]
-    if now - session.accessed > session_access_timeout:
+    if now - session.accessed > slycat.web.server.config["slycat-web-server"]["remote-session-timeout"]:
       cherrypy.log.error("Timing-out remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
+      session_cache[sid].close()
       del session_cache[sid]
 
 def _session_monitor():
   while True:
+    cherrypy.log.error("Remote session cleanup worker running.")
     with session_cache_lock:
       for sid in list(session_cache.keys()): # We make an explicit copy of the keys because we may be modifying the dict contents
         _expire_session(sid)
-    time.sleep(5)
+    cherrypy.log.error("Remote session cleanup worker finished.")
+    time.sleep(datetime.timedelta(minutes=15).total_seconds())
 
-def _start_session_monitor():
-  if _start_session_monitor.thread is None:
-    cherrypy.log.error("Starting remote session monitor.")
-    _start_session_monitor.thread = threading.Thread(name="SSH Monitor", target=_session_monitor)
-    _start_session_monitor.thread.daemon = True
-    _start_session_monitor.thread.start()
-_start_session_monitor.thread = None
+def _start_session_cleanup_worker():
+  if _start_session_cleanup_worker.thread is None:
+    cherrypy.log.error("Starting remote session cleanup worker.")
+    _start_session_cleanup_worker.thread = threading.Thread(name="SSH Monitor", target=_session_monitor)
+    _start_session_cleanup_worker.thread.daemon = True
+    _start_session_cleanup_worker.thread.start()
+_start_session_cleanup_worker.thread = None

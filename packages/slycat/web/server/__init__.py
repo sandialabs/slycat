@@ -12,6 +12,8 @@ import slycat.hyperchunks
 import slycat.web.server.hdf5
 import uuid
 
+config = {}
+
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
   return ((1.0 - amount) * a) + (amount * b)

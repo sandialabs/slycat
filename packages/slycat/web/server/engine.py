@@ -14,6 +14,7 @@ import pwd
 import re
 import sys
 
+import slycat.web.server.cleanup
 import slycat.web.server.handlers
 import slycat.web.server.plugin
 
@@ -251,11 +252,10 @@ def start(root_path, config_file):
   # Expand remote host aliases.
   configuration["slycat-web-server"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat-web-server"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
-  # Wait for requests to cleanup deleted arrays.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_array_cleanup_worker, priority=80)
+  slycat.web.server.config = configuration
 
-  # Cleanup expired sessions.
-  cherrypy.engine.subscribe("start", slycat.web.server.handlers.start_session_cleanup_worker, priority=80)
+  # Start all of our cleanup workers.
+  cherrypy.engine.subscribe("start", slycat.web.server.cleanup.start, priority=80)
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

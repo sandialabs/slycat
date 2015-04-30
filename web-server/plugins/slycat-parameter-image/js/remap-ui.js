@@ -38,11 +38,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
 
 
-    var build_li = function(label, name) {
-      var $li = $("<li />");
+    var build_li = function(label, name, isTop) {
+      var $li = $("<li />")
+        .addClass("list-group-item");
+
+      if (!isTop) $li.css("border", "none");
+
       var $div = $("<div />");
 
-      var $label = $("<span />").text(label + ": " + name);
+      var $label = $("<span />").text(label + " " + name);
       var $replaceLabel = $("<span />").text(" - replace with: ");
       var $replace = $("<input />")
         .attr("type", "text")
@@ -64,11 +68,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     var build_column_ul = function(name, uris) {
-      var $li = $("<li />").text(name);
-      var $subUl = $("<ul />");
+      var $li = $("<li />")
+        .addClass("list-group-item")
+        .css("border", "none")
+        .text("Column(s): " + name);
+
+      var $subUl = $("<ul />").addClass("list-group");
 
       uris.forEach(function(uri) {
-        $subUl.append(build_li("Uri", uri));
+        $subUl.append(build_li("", uri));
       });
 
       $li.append($subUl);
@@ -79,13 +87,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var display_uris = function(result) {
       var uris = result.uris;
       var $container = $("#path-structure-container");
-      var $hostUl = $("<ul />");
+      var $hostUl = $("<ul />").addClass("list-group");
 
       for (var h in uris) {
         if (uris.hasOwnProperty(h)) {
           var host = uris[h];
-          var $li = build_li("Host", h);
-          var $ul = $("<ul />");
+          var $li = build_li("Host:", h, true);
+          var $ul = $("<ul />").addClass("list-group");
 
           for (var c in host) {
             if (host.hasOwnProperty(c)) {
