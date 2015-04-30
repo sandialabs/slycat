@@ -158,15 +158,15 @@ $.widget("parameter_image.controls",
       .appendTo(this.element)
       ;
 
-    this.auto_scale = $("<input id='auto-scale-option' name='auto-scale-option' value='auto-scale' type='checkbox' checked='true'>")
-      .change(function(){
-        self.element.trigger("auto-scale", this.checked);
+    this.auto_scale_button = $("\
+      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
+        <span class='fa fa-arrows-alt' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("auto-scale", !$(this).hasClass('active'));
       })
-      .appendTo(this.element)
-      ;
-
-    this.auto_scale_label = $("<label for='auto-scale-option'>Auto Scale</label>")
-      .appendTo(this.element)
+      .appendTo(scatterplot_controls)
       ;
 
     this.csv_button = $("<button>Download Data Table</button>")
@@ -536,7 +536,8 @@ $.widget("parameter_image.controls",
   _set_auto_scale: function()
   {
     var self = this;
-    this.auto_scale.prop("checked", self.options["auto-scale"]);
+    this.auto_scale_button.toggleClass("active", self.options["auto-scale"]);
+    this.auto_scale_button.attr("aria-pressed", self.options["auto-scale"]);
   },
 
   _set_selection_control: function()

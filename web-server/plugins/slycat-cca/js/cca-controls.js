@@ -22,7 +22,7 @@ $.widget("cca.controls",
 
   	this.csv_button = $("\
       <button class='btn btn-default' title='Download Data Table'> \
-      <span class='fa fa-download' aria-hidden='true'></span> \
+        <span class='fa fa-download' aria-hidden='true'></span> \
       </button> \
       ")
     	.click(function(){
