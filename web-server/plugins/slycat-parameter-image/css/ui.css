@@ -352,7 +352,7 @@ rights in this software.
   padding-bottom: 35px;
 }
 #controls-pane {
-
+  z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
 }
 .center {
   text-align: center;

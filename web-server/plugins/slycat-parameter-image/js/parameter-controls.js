@@ -69,14 +69,19 @@ $.widget("parameter_image.controls",
 
     if(this.options.image_variables != null && this.options.image_variables.length > 0)
     {
-      this.images_label = $("<label for='images-switcher'>Image Set:</label>")
-        .appendTo(this.element)
+      this.image_control = $('<div class="btn-group btn-group-xs"></div>')
+        .appendTo(scatterplot_controls)
         ;
-      this.images_select = $("<select id='images-switcher' name='images-switcher' />")
-        .change(function(){
-          self.element.trigger("images-selection-changed", this.value);
-        })
-        .appendTo(this.element)
+      this.image_button = $('\
+        <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="image-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Image Set Variable"> \
+          Image Set \
+          <span class="caret"></span> \
+        </button> \
+        ')
+        .appendTo(self.image_control)
+        ;
+      this.image_items = $('<ul id="image-switcher" class="dropdown-menu" role="menu" aria-labelledby="image-dropdown">')
+        .appendTo(self.image_control)
         ;
     }
 
@@ -468,15 +473,27 @@ $.widget("parameter_image.controls",
     var self = this;
     if(this.options.image_variables != null && this.options.image_variables.length > 0)
     {
-      this.images_select.empty();
+      this.image_items.empty();
       for(var i = 0; i < this.options.image_variables.length; i++) {
-        $("<option />")
-          .text(this.options.metadata['column-names'][this.options.image_variables[i]])
-          .attr("value", this.options.image_variables[i])
-          .attr("selected", function(){
-            return self.options["image-variable"] == self.options.image_variables[i] ? "selected" : false;
-          })
-          .appendTo(this.images_select)
+        $("<li role='presentation'>")
+          .toggleClass("active", self.options["image-variable"] == self.options.image_variables[i])
+          .attr("data-imagevariable", this.options.image_variables[i])
+          .appendTo(self.image_items)
+          .append(
+            $('<a role="menuitem" tabindex="-1" href="#">')
+              .html(this.options.metadata['column-names'][this.options.image_variables[i]])
+              .click(function()
+              {
+                var menu_item = $(this).parent();
+                if(menu_item.hasClass("active"))
+                  return false;
+
+                self.image_items.find("li").removeClass("active");
+                menu_item.addClass("active");
+
+                self.element.trigger("images-selection-changed", menu_item.attr("data-imagevariable"));
+              })
+          )
           ;
       }
     }
@@ -622,7 +639,8 @@ $.widget("parameter_image.controls",
     var self = this;
     if(self.options["image-variable"] != null && self.options.image_variables.length > 0)
     {
-      this.images_select.val(self.options["image-variable"]);
+      self.image_items.find("li").removeClass("active");
+      self.image_items.find('li[data-imagevariable="' + self.options["image-variable"] + '"]').addClass("active");
     }
   },
 
