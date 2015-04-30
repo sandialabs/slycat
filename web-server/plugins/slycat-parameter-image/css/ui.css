@@ -357,35 +357,23 @@ rights in this software.
 .center {
   text-align: center;
 }
-#color-switcher {
-  margin: 0;
-  float: none;
-  display: inline-block;
+#color-switcher ul.dropdown-menu
+{
+  background-color: #F2F2F2;
 }
-#color-switcher .label {
-  font-weight: bold;
+.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
+{
+  background-color: #E4E4E4;
 }
-#color-switcher .color {
-  background-color: #DBD9EB;
-  padding: 4px;
+.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
+{
+  background-color: #337AB7;
 }
-#color-switcher .color:hover {
-  cursor: pointer;
-}
-#color-switcher .selected:hover {
-  cursor: default;
-}
-#color-switcher .selected {
-  background-color: #7767B0 !important;
-  color: white;
-}
-#color-switcher,
 #controls
 {
-  font-size: small;
+  
 }
 #controls {
-  display: inline-block;
   margin: 2px 0;
 }
 #controls label {
@@ -396,9 +384,6 @@ rights in this software.
 #controls select:disabled
 {
   color: gray;
-}
-#controls select:disabled {
-
 }
 #controls select {
   margin-right: 10px;
