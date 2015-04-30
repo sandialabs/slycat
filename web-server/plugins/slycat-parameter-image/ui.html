@@ -34,8 +34,14 @@ rights in this software.
 <div class="parameter-image" id="parameter-image-plus-layout">
 
 	<div id="controls-pane" class="ui-layout-north">
-    <div class="center">
-      <div id="controls">
+    <div class="center bootstrap-styles" id="controls">
+
+      <div class="btn-group btn-group-xs">
+        <div id="scatterplot-controls" class="btn-group btn-group-xs"></div>
+
+      </div>
+
+      <div>
         <!-- ko if: allFilters().length > 0 -->
           <select id='filter-selector' name='filter-selector'
             data-bind="disable: availableFilters().length == 0, event: { change: activateFilter }">

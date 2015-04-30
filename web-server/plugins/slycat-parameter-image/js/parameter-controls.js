@@ -35,38 +35,36 @@ $.widget("parameter_image.controls",
   _create: function()
   {
     var self = this;
+    var scatterplot_controls = $("#scatterplot-controls", this.element);
 
-    // if(self.options.clusters.length > 0)
-    // {
-    //   this.cluster_label = $("<label for='cluster-switcher'>Cluster:</label>")
-    //     .appendTo(this.element)
-    //     ;
-    //   this.cluster_select = $("<select id='cluster-switcher' name='cluster-switcher' />")
-    //     .change(function(){
-    //       self.element.trigger("cluster-selection-changed", this.value);
-    //     })
-    //     .appendTo(this.element)
-    //     ;
-    // }
-
-    this.x_label = $("<label for='x-axis-switcher'>X Axis:</label>")
-      .appendTo(this.element)
+    this.x_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(scatterplot_controls)
       ;
-    this.x_select = $("<select id='x-axis-switcher' name='x-axis-switcher' />")
-      .change(function(){
-        self.element.trigger("x-selection-changed", this.value);
-      })
-      .appendTo(this.element)
+    this.x_button = $('\
+      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="x-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change X Axis Variable"> \
+        X Axis \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.x_control)
+      ;
+    this.x_items = $('<ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="x-axis-dropdown">')
+      .appendTo(self.x_control)
       ;
 
-    this.y_label = $("<label for='y-axis-switcher'>Y Axis:</label>")
-      .appendTo(this.element)
+    this.y_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(scatterplot_controls)
       ;
-    this.y_select = $("<select id='y-axis-switcher' name='y-axis-switcher' />")
-      .change(function(){
-        self.element.trigger("y-selection-changed", this.value);
-      })
-      .appendTo(this.element)
+    this.y_button = $('\
+      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="y-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Y Axis Variable"> \
+        Y Axis \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.y_control)
+      ;
+    this.y_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="y-axis-dropdown">')
+      .appendTo(self.y_control)
       ;
 
     if(this.options.image_variables != null && this.options.image_variables.length > 0)
@@ -407,34 +405,31 @@ $.widget("parameter_image.controls",
     return rowMajorOutput;
   },
 
-  // _set_clusters: function()
-  // {
-  //   var self = this;
-  //   this.cluster_select.empty();
-  //   for(var i = 0; i < this.options.clusters.length; i++) {
-  //     $("<option />")
-  //       .text(this.options.clusters[i])
-  //       .attr("value", i)
-  //       .attr("selected", function(){
-  //         return self.options.cluster_index == i ? "selected" : false;
-  //       })
-  //       .appendTo(this.cluster_select)
-  //       ;
-  //   }
-  // },
-
   _set_x_variables: function()
   {
     var self = this;
-    this.x_select.empty();
+
+    this.x_items.empty();
     for(var i = 0; i < this.options.x_variables.length; i++) {
-      $("<option />")
-        .text(this.options.metadata['column-names'][this.options.x_variables[i]])
-        .attr("value", this.options.x_variables[i])
-        .attr("selected", function(){
-          return self.options["x-variable"] == self.options.x_variables[i] ? "selected" : false;
-        })
-        .appendTo(this.x_select)
+      $("<li role='presentation'>")
+        .toggleClass("active", self.options["x-variable"] == self.options.x_variables[i])
+        .attr("data-xvariable", this.options.x_variables[i])
+        .appendTo(self.x_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1" href="#">')
+            .html(this.options.metadata['column-names'][this.options.x_variables[i]])
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("active"))
+                return false;
+
+              self.x_items.find("li").removeClass("active");
+              menu_item.addClass("active");
+
+              self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
+            })
+        )
         ;
     }
   },
@@ -442,15 +437,28 @@ $.widget("parameter_image.controls",
   _set_y_variables: function()
   {
     var self = this;
-    this.y_select.empty();
+
+    this.y_items.empty();
     for(var i = 0; i < this.options.y_variables.length; i++) {
-      $("<option />")
-        .text(this.options.metadata['column-names'][this.options.y_variables[i]])
-        .attr("value", this.options.y_variables[i])
-        .attr("selected", function(){
-          return self.options["y-variable"] == self.options.y_variables[i] ? "selected" : false;
-        })
-        .appendTo(this.y_select)
+      $("<li role='presentation'>")
+        .toggleClass("active", self.options["y-variable"] == self.options.y_variables[i])
+        .attr("data-yvariable", this.options.y_variables[i])
+        .appendTo(self.y_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1" href="#">')
+            .html(this.options.metadata['column-names'][this.options.y_variables[i]])
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("active"))
+                return false;
+
+              self.y_items.find("li").removeClass("active");
+              menu_item.addClass("active");
+
+              self.element.trigger("y-selection-changed", menu_item.attr("data-yvariable"));
+            })
+        )
         ;
     }
   },
@@ -595,22 +603,18 @@ $.widget("parameter_image.controls",
     self._set_selection();
   },
 
-  // _set_selected_cluster: function()
-  // {
-  //   var self = this;
-  //   this.cluster_select.val(self.options.cluster_index);
-  // },
-
   _set_selected_x: function()
   {
     var self = this;
-    this.x_select.val(self.options["x-variable"]);
+    self.x_items.find("li").removeClass("active");
+    self.x_items.find('li[data-xvariable="' + self.options["x-variable"] + '"]').addClass("active");
   },
 
   _set_selected_y: function()
   {
     var self = this;
-    this.y_select.val(self.options["y-variable"]);
+    self.y_items.find("li").removeClass("active");
+    self.y_items.find('li[data-yvariable="' + self.options["y-variable"] + '"]').addClass("active");
   },
 
   _set_selected_image: function()
@@ -711,10 +715,6 @@ $.widget("parameter_image.controls",
     //console.log("sparameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
 
-    // if(key == "cluster_index")
-    // {
-    //   self._set_selected_cluster();
-    // }
     if(key == "x-variable")
     {
       self._set_selected_x();
