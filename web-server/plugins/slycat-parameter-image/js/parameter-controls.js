@@ -85,14 +85,19 @@ $.widget("parameter_image.controls",
         ;
     }
 
-    this.color_label = $("<label for='color-variable-switcher'>Point Color:</label>")
-      .appendTo(this.element)
+    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(scatterplot_controls)
       ;
-    this.color_select = $("<select id='color-variable-switcher' name='color-variable-switcher' />")
-      .change(function(){
-        self.element.trigger("color-selection-changed", this.value);
-      })
-      .appendTo(this.element)
+    this.color_button = $('\
+      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Point Color"> \
+        Point Color \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.color_control)
+      ;
+    this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
+      .appendTo(self.color_control)
       ;
 
     // this.selection_label = $("<label for='selection-control'>Selection:</label>")
@@ -503,15 +508,27 @@ $.widget("parameter_image.controls",
   _set_color_variables: function()
   {
     var self = this;
-    this.color_select.empty();
+    this.color_items.empty();
     for(var i = 0; i < this.options.color_variables.length; i++) {
-      $("<option />")
-        .text(this.options.metadata['column-names'][this.options.color_variables[i]])
-        .attr("value", this.options.color_variables[i])
-        .attr("selected", function(){
-          return self.options["color-variable"] == self.options.color_variables[i] ? "selected" : false;
-        })
-        .appendTo(this.color_select)
+      $("<li role='presentation'>")
+        .toggleClass("active", self.options["color-variable"] == self.options.color_variables[i])
+        .attr("data-colorvariable", this.options.color_variables[i])
+        .appendTo(self.color_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1" href="#">')
+            .html(this.options.metadata['column-names'][this.options.color_variables[i]])
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("active"))
+                return false;
+
+              self.color_items.find("li").removeClass("active");
+              menu_item.addClass("active");
+
+              self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+            })
+        )
         ;
     }
   },
@@ -647,7 +664,8 @@ $.widget("parameter_image.controls",
   _set_selected_color: function()
   {
     var self = this;
-    this.color_select.val(self.options["color-variable"]);
+    self.color_items.find("li").removeClass("active");
+    self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
   },
 
   _set_selection: function()
