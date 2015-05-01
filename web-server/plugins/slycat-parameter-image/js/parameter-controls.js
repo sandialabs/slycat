@@ -100,9 +100,6 @@ $.widget("parameter_image.controls",
       .appendTo(self.color_control)
       ;
 
-    // this.selection_label = $("<label for='selection-control'>Selection:</label>")
-    //   .appendTo(this.element)
-    //   ;
     this.selection_select = $("<select id='selection-control' name='selection-control' />")
       .change(function(){
 
@@ -142,6 +139,21 @@ $.widget("parameter_image.controls",
         this.selectedIndex = 0;
       })
       .appendTo(this.element)
+      ;
+
+    this.selection_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(scatterplot_controls)
+      ;
+    this.selection_button = $('\
+      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Actions On Selected Simulations"> \
+        Selection Action \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.selection_control)
+      ;
+    this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">')
+      .appendTo(self.selection_control)
       ;
 
     this.show_all_button = $("<button>Show All</button>")
@@ -547,6 +559,175 @@ $.widget("parameter_image.controls",
   _set_selection_control: function()
   {
     var self = this;
+    this.selection_items.empty();
+    // Add options for ratings
+    for(var i = 0; i < this.options.rating_variables.length; i++)
+    {
+      $('<li role="presentation" class="dropdown-header"></li>')
+        .text(this.options.metadata['column-names'][this.options.rating_variables[i]])
+        .appendTo(self.selection_items)
+        ;
+      $("<li role='presentation'>")
+        .appendTo(self.selection_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1" href="#">')
+            .html("Set")
+            .attr("data-value", this.options.rating_variables[i])
+            .attr("data-label", "set")
+            // .click(function()
+            // {
+            //   var menu_item = $(this).parent();
+            //   if(menu_item.hasClass("active"))
+            //     return false;
+
+            //   self.color_items.find("li").removeClass("active");
+            //   menu_item.addClass("active");
+
+            //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+            // })
+        )
+        ;
+      // Disabling clear functionality for ratings since it causes problems with nulls
+      // $("<option />")
+      //   .text("Clear")
+      //   .attr("value", this.options.rating_variables[i])
+      //   .attr("label", "clear")
+      //   .appendTo(optgroup)
+      //   ;
+    }
+    // Add options for categories
+    for(var i = 0; i < this.options.category_variables.length; i++)
+    {
+      var var_label = this.options.metadata['column-names'][this.options.category_variables[i]];
+      $('<li role="presentation" class="dropdown-header"></li>')
+        .text(var_label)
+        .appendTo(self.selection_items)
+        ;
+      $("<li role='presentation'>")
+        .appendTo(self.selection_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1" href="#">')
+            .html("Set")
+            .attr("data-value", this.options.category_variables[i])
+            .attr("data-label", "set")
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              var menu_link = $(this);
+              if(menu_item.hasClass("disabled"))
+                return false;
+
+              openSetValueDialog(var_label does not work here, it just lists the last item, this.dataset.value);
+            })
+        )
+        ;
+      $("<li role='presentation'>")
+        .appendTo(self.selection_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1" href="#">')
+            .html("Clear")
+            .attr("data-value", this.options.category_variables[i])
+            .attr("data-label", "clear")
+            // .click(function()
+            // {
+            //   var menu_item = $(this).parent();
+            //   if(menu_item.hasClass("active"))
+            //     return false;
+
+            //   self.color_items.find("li").removeClass("active");
+            //   menu_item.addClass("active");
+
+            //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+            // })
+        )
+        ;
+    }
+    // Finish with global actions
+    $('<li role="presentation" class="dropdown-header"></li>')
+      .text("Scatterplot Points")
+      .appendTo(self.selection_items)
+      ;
+    self.hide_item = $("<li role='presentation'>")
+      .appendTo(self.selection_items)
+      .append(
+        $('<a role="menuitem" tabindex="-1" href="#">')
+          .html("Hide")
+          .attr("data-value", "hide")
+          // .click(function()
+          // {
+          //   var menu_item = $(this).parent();
+          //   if(menu_item.hasClass("active"))
+          //     return false;
+
+          //   self.color_items.find("li").removeClass("active");
+          //   menu_item.addClass("active");
+
+          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+          // })
+      )
+      ;
+    self.hide_unselected_item = $("<li role='presentation'>")
+      .appendTo(self.selection_items)
+      .append(
+        $('<a role="menuitem" tabindex="-1" href="#">')
+          .html("Hide Unselected")
+          .attr("data-value", "hide_unselected")
+          // .click(function()
+          // {
+          //   var menu_item = $(this).parent();
+          //   if(menu_item.hasClass("active"))
+          //     return false;
+
+          //   self.color_items.find("li").removeClass("active");
+          //   menu_item.addClass("active");
+
+          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+          // })
+      )
+      ;
+    self.show_item = $("<li role='presentation'>")
+      .appendTo(self.selection_items)
+      .append(
+        $('<a role="menuitem" tabindex="-1" href="#">')
+          .html("Show")
+          .attr("data-value", "show")
+          // .click(function()
+          // {
+          //   var menu_item = $(this).parent();
+          //   if(menu_item.hasClass("active"))
+          //     return false;
+
+          //   self.color_items.find("li").removeClass("active");
+          //   menu_item.addClass("active");
+
+          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+          // })
+      )
+      ;
+    self.pin_item = $("<li role='presentation'>")
+      .appendTo(self.selection_items)
+      .append(
+        $('<a role="menuitem" tabindex="-1" href="#">')
+          .html("Pin")
+          .attr("data-value", "pin")
+          // .click(function()
+          // {
+          //   var menu_item = $(this).parent();
+          //   if(menu_item.hasClass("active"))
+          //     return false;
+
+          //   self.color_items.find("li").removeClass("active");
+          //   menu_item.addClass("active");
+
+          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+          // })
+      )
+      ;
+
+
+
+
+
     this.selection_select.empty();
     // Start with empty option
     $("<option />")
@@ -554,7 +735,7 @@ $.widget("parameter_image.controls",
       .appendTo(this.selection_select)
       ;
 
-    // Add options for ratings and categories
+    // Add options for ratings
     for(var i = 0; i < this.options.rating_variables.length; i++)
     {
       var optgroup = $("<optgroup />")
@@ -575,7 +756,7 @@ $.widget("parameter_image.controls",
       //   .appendTo(optgroup)
       //   ;
     }
-
+    // Add options for categories
     for(var i = 0; i < this.options.category_variables.length; i++)
     {
       var optgroup = $("<optgroup />")
@@ -640,6 +821,20 @@ $.widget("parameter_image.controls",
 
     // Set state
     self._set_selection();
+
+    function openSetValueDialog(variable, variableIndex){
+      $("#set-value-form #set-value-form-variable").text(variable);
+      $("#set-value-form input").attr('value','');
+      $("#set-value-form input#variable-index").attr('value', variableIndex);
+      $("#set-value-form .dialogErrorMessage").empty();
+      $("#set-value-form").dialog("open");
+    }
+    function openClearValueDialog(variable, variableIndex){
+      $("#clear-value-form #clear-value-form-variable").text(variable);
+      $("#set-value-form input").attr('value','');
+      $("#clear-value-form input#variable-index").attr('value', variableIndex);
+      $("#clear-value-form").dialog("open");
+    }
   },
 
   _set_selected_x: function()
@@ -677,7 +872,8 @@ $.widget("parameter_image.controls",
   {
     var self = this;
     this.selection_select.prop("disabled", this.options.selection.length == 0);
-    // this.selection_label.toggleClass("disabled", this.options.selection.length == 0);
+
+    self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
   },
 
   _set_show_all: function()
