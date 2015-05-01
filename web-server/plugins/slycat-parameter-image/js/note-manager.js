@@ -18,16 +18,13 @@ define("slycat-parameter-image-note-manager", ["slycat-server-root", "jquery", "
       self.id_counter = 0;
     }
 
-    self.button = $(" <div class='bootstrap-styles' style='display: inline-block;'> \
-                        <button class='btn btn-default btn-xs' title='Add Note'> \
-                          <span class='fa fa-comment-o' aria-hidden='true'></span> \
-                        </button> \
-                      </div> \
-                    ")
-                    .prependTo($('#controls'))
-                    .on('click', function() {
-                      self.add_note();
-                    });
+    self.button = $("<button class='btn btn-default' title='Add Note'> \
+                       <span class='fa fa-comment-o' aria-hidden='true'></span> \
+                     </button>")
+                  .prependTo($('#controls #add-note'))
+                  .on('click', function() {
+                    self.add_note();
+                  });
   };
 
   NoteManager.prototype.build_note_in_dom = function(attributes) {

@@ -37,22 +37,26 @@ rights in this software.
     <div class="center bootstrap-styles" id="controls">
 
       <div class="btn-group btn-group-xs">
+        <div id="filter-controls" class="btn-group btn-group-xs">
+          <!-- ko if: allFilters().length > 0 -->
+            <button id="filter-dropdown" class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true" title="Select Variables To Filter By"
+              data-bind="css: { disabled: allFilters().length == activeFilters().length }">
+              Filter
+              <span class="caret"></span>
+            </button>
+            <ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="filter-dropdown">
+              <!-- ko foreach: availableFilters -->
+                <li role="presentation" data-bind="visible: !active()">
+                  <a role="menuitem" tabindex="-1" href="#" data-bind="text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
+                </li>
+              <!-- /ko -->
+            </ul>
+          <!-- /ko -->
+        </div>
         <div id="scatterplot-controls" class="btn-group btn-group-xs"></div>
         <div id="color-switcher" class="btn-group btn-group-xs"></div>
-
-      </div>
-
-      <div>
-        <!-- ko if: allFilters().length > 0 -->
-          <select id='filter-selector' name='filter-selector'
-            data-bind="disable: availableFilters().length == 0, event: { change: activateFilter }">
-            <option selected="selected" value="-1">Filter By:</option>
-            <!-- ko foreach: availableFilters -->
-              <option data-bind="text: name, value: index, visible: !active()"></option>
-            <!-- /ko -->
-            </optgroup>
-          </select>
-        <!-- /ko -->
+        <div id="add-note" class="btn-group btn-group-xs"></div>
+        
       </div>
       <div id="color-switcher"></div>
     </div>
