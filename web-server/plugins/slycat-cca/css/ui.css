@@ -309,6 +309,7 @@ rights in this software.
   fill: none;
   stroke: black;
 }
-
-
-
+a
+{
+  cursor: pointer;
+}
