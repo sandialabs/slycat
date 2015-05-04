@@ -221,18 +221,19 @@ class Manager(object):
     self.models[type] = {"finish": finish, "html": html}
     cherrypy.log.error("Registered model '%s'." % type)
 
-  def register_parser(self, type, data_type, validate, parse):
+  def register_parser(self, type, label, extensions, data_type, parse):
     """Register a new parser type.
 
     Parameters
     ----------
     type: string, required
       A unique identifier for the new parser type.
+    label: string, required
+      Human readable label describing the parser.
+    extensions: list, required
+      List of case-insensitive file extension strings (not including period) ingested by this parser.
     data_type: string, required
       String category describing the type of data this parser produces, for example "table".
-    validate: callable, required
-      Called with a file object to determine whether it can be parsed with this parser.  Must
-      return True or False.
     parse: callable, required
       Called with a database, model, file object, and optional keyword
       arguments.  Must parse the file and insert its data into the model as
@@ -240,7 +241,7 @@ class Manager(object):
     """
     if type in self.parsers:
       raise Exception("Parser type '%s' has already been registered." % type)
-    self.parsers[type] = {"data-type": data_type, "validate": validate, "parse": parse}
+    self.parsers[type] = {"label": label, "extensions": extensions, "data-type": data_type, "parse": parse}
     cherrypy.log.error("Registered parser '%s'." % type)
 
   def register_password_check(self, type, check):
