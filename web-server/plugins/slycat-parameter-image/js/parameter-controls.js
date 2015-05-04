@@ -3,7 +3,7 @@ Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
-define("slycat-parameter-image-controls", ["slycat-server-root"], function(server_root) {
+define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"], function(server_root, dialog) {
 $.widget("parameter_image.controls",
 {
   options:
@@ -209,33 +209,6 @@ $.widget("parameter_image.controls",
       },
     });
 
-    self.save_choice_buttons = {
-      'Save The Whole Table': function() {
-         self._write_data_table();
-        //$(this)._write_data_table();  //what's the diff with above?
-        $(this).dialog('close');
-      },
-      'Save Visible Rows': function() {
-         self._write_data_table( self._filterIndices() );
-        //$(this)._write_data_table();  //what's the diff with above?
-        $(this).dialog('close');
-      },
-      'Save Selected Rows': function() {
-        self._write_data_table( self.options.selection );
-        $(this).dialog('close');
-      },
-      'Cancel': function() {
-        $(this).dialog('close');
-      },
-    };
-
-    $('#csv-save-choice-form').dialog({
-      modal: true,
-      autoOpen: false,
-      buttons: self.save_choice_buttons,
-    });
-
-
     function openSetValueDialog(variable, variableIndex){
       $("#set-value-form #set-value-form-variable").text(variable);
       $("#set-value-form input").attr('value','');
@@ -263,20 +236,36 @@ $.widget("parameter_image.controls",
       }
 
       txt += "What would you like to do?";
-      $("#csv-save-choice-form #csv-save-choice-label").text(txt);
 
-      var buttons = $.extend({}, self.save_choice_buttons);
+      var buttons_save = [
+        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-danger",  label:"Save Entire Table"},
+        {className: "btn-danger",  label:"Save Visible Rows"},
+        {className: "btn-danger",  label:"Save Selected Rows"}
+      ];
       if(self.options.selection.length == 0)
       {
-        delete buttons["Save Selected Rows"];
+        buttons_save.splice(3, 1);
       }
       if(self.options.hidden_simulations.length == 0)
       {
-        delete buttons["Save Visible Rows"];
+        buttons_save.splice(2, 1);
       }
-      $("#csv-save-choice-form").dialog("option", "buttons", buttons);
-
-      $("#csv-save-choice-form").dialog("open");
+      dialog.dialog(
+      {
+        title: "Download Choices",
+        message: txt,
+        buttons: buttons_save,
+        callback: function(button)
+        {
+          if(button.label == "Save Entire Table")
+            self._write_data_table();
+          else if(button.label == "Save Selected Rows")
+            self._write_data_table( self.options.selection );
+          else if(button.label == "Save Visible Rows")
+            self._write_data_table( self._filterIndices() );
+        },
+      });
     }
 
     // if(self.options.clusters.length > 0)
