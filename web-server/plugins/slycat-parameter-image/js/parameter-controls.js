@@ -36,12 +36,14 @@ $.widget("parameter_image.controls",
   {
     var self = this;
     var scatterplot_controls = $("#scatterplot-controls", this.element);
+    var selection_controls = $("#selection-controls", this.element);
+    var auto_scale_control = $("#auto-scale-control", this.element);
 
     this.x_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
       ;
     this.x_button = $('\
-      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="x-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change X Axis Variable"> \
+      <button class="btn btn-default dropdown-toggle" type="button" id="x-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change X Axis Variable"> \
         X Axis \
         <span class="caret"></span> \
       </button> \
@@ -56,7 +58,7 @@ $.widget("parameter_image.controls",
       .appendTo(scatterplot_controls)
       ;
     this.y_button = $('\
-      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="y-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Y Axis Variable"> \
+      <button class="btn btn-default dropdown-toggle" type="button" id="y-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Y Axis Variable"> \
         Y Axis \
         <span class="caret"></span> \
       </button> \
@@ -67,13 +69,25 @@ $.widget("parameter_image.controls",
       .appendTo(self.y_control)
       ;
 
+    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(scatterplot_controls)
+      ;
+    this.color_button = $('\
+      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Point Color"> \
+        Point Color \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.color_control)
+      ;
+
     if(this.options.image_variables != null && this.options.image_variables.length > 0)
     {
       this.image_control = $('<div class="btn-group btn-group-xs"></div>')
         .appendTo(scatterplot_controls)
         ;
       this.image_button = $('\
-        <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="image-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Image Set Variable"> \
+        <button class="btn btn-default dropdown-toggle" type="button" id="image-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Image Set Variable"> \
           Image Set \
           <span class="caret"></span> \
         </button> \
@@ -85,26 +99,15 @@ $.widget("parameter_image.controls",
         ;
     }
 
-    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(scatterplot_controls)
-      ;
-    this.color_button = $('\
-      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Point Color"> \
-        Point Color \
-        <span class="caret"></span> \
-      </button> \
-      ')
-      .appendTo(self.color_control)
-      ;
     this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
       .appendTo(self.color_control)
       ;
 
     this.selection_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(scatterplot_controls)
+      .appendTo(selection_controls)
       ;
     this.selection_button = $('\
-      <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Actions On Selected Simulations"> \
+      <button class="btn btn-default dropdown-toggle" type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection"> \
         Selection Action \
         <span class="caret"></span> \
       </button> \
@@ -115,29 +118,18 @@ $.widget("parameter_image.controls",
       .appendTo(self.selection_control)
       ;
 
-    this.show_all_button = $("<button>Show All</button>")
+    this.show_all_button = $('<button type="button" class="btn btn-default">Show All</button>')
       .click(function(){
         self.element.trigger("show-all");
       })
-      .appendTo(this.element)
+      .appendTo(selection_controls)
       ;
     
-    this.close_all_button = $("<button>Close All Pins</button>")
+    this.close_all_button = $('<button type="button" class="btn btn-default">Close All Pins</button>')
       .click(function(){
         self.element.trigger("close-all");
       })
-      .appendTo(this.element)
-      ;
-
-    this.auto_scale_button = $("\
-      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
-        <span class='fa fa-arrows-alt' aria-hidden='true'></span> \
-      </button> \
-      ")
-      .click(function(){
-        self.element.trigger("auto-scale", !$(this).hasClass('active'));
-      })
-      .appendTo(scatterplot_controls)
+      .appendTo(selection_controls)
       ;
 
     this.csv_button = $("\
@@ -152,8 +144,21 @@ $.widget("parameter_image.controls",
           openCSVSaveChoiceDialog();
         }
       })
-      .appendTo(scatterplot_controls)
+      .appendTo(selection_controls)
       ;
+
+    this.auto_scale_button = $("\
+      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
+        <span class='fa fa-arrows-alt' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("auto-scale", !$(this).hasClass('active'));
+      })
+      .appendTo(auto_scale_control)
+      ;
+
+    
 
     $('#set-value-form').dialog({
       modal: true,
