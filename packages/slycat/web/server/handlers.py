@@ -1193,6 +1193,10 @@ def get_configuration_markings():
   return [dict(marking.items() + [("type", key)]) for key, marking in slycat.web.server.plugin.manager.markings.items() if key in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]]
 
 @cherrypy.tools.json_out(on = True)
+def get_configuration_parsers():
+  return [{"type": key, "label": parser["label"], "extensions": parser["extensions"], "data-type": parser["data-type"]} for key, parser in slycat.web.server.plugin.manager.parsers.items()]
+
+@cherrypy.tools.json_out(on = True)
 def get_configuration_remote_hosts():
   remote_hosts = []
   for hostname, remote in cherrypy.request.app.config["slycat-web-server"]["remote-hosts"].items():
