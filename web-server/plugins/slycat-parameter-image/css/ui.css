@@ -826,3 +826,7 @@ rights in this software.
   font-size: 28px;
   padding: 3.5px;
 }
+a
+{
+  cursor: pointer;
+}

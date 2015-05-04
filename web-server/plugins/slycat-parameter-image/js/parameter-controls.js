@@ -100,47 +100,6 @@ $.widget("parameter_image.controls",
       .appendTo(self.color_control)
       ;
 
-    this.selection_select = $("<select id='selection-control' name='selection-control' />")
-      .change(function(){
-
-        var selectedOption = $('option:selected', this);
-        var label = selectedOption.attr("label");
-        var text = selectedOption.text();
-        var value = this.value;
-        if(label == 'set' || label == 'clear')
-        {
-          var variableLabel = selectedOption.parent().attr('label');
-          if(label == 'set')
-          {
-            openSetValueDialog(variableLabel, value);
-          }
-          else if(label == 'clear')
-          {
-            openClearValueDialog(variableLabel, value);
-          }
-
-        }
-        else if(value == 'hide')
-        {
-          self.element.trigger("hide-selection", self.options.selection);
-        }
-        else if(value == 'hide_unselected')
-        {
-          self.element.trigger("hide-unselected", self.options.selection);
-        }
-        else if(value == 'show')
-        {
-          self.element.trigger("show-selection", self.options.selection);
-        }
-        else if(value == 'pin')
-        {
-          self.element.trigger("pin-selection", self.options.selection);
-        }
-        this.selectedIndex = 0;
-      })
-      .appendTo(this.element)
-      ;
-
     this.selection_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
       ;
@@ -442,7 +401,7 @@ $.widget("parameter_image.controls",
         .attr("data-xvariable", this.options.x_variables[i])
         .appendTo(self.x_items)
         .append(
-          $('<a role="menuitem" tabindex="-1" href="#">')
+          $('<a role="menuitem" tabindex="-1">')
             .html(this.options.metadata['column-names'][this.options.x_variables[i]])
             .click(function()
             {
@@ -471,7 +430,7 @@ $.widget("parameter_image.controls",
         .attr("data-yvariable", this.options.y_variables[i])
         .appendTo(self.y_items)
         .append(
-          $('<a role="menuitem" tabindex="-1" href="#">')
+          $('<a role="menuitem" tabindex="-1">')
             .html(this.options.metadata['column-names'][this.options.y_variables[i]])
             .click(function()
             {
@@ -501,7 +460,7 @@ $.widget("parameter_image.controls",
           .attr("data-imagevariable", this.options.image_variables[i])
           .appendTo(self.image_items)
           .append(
-            $('<a role="menuitem" tabindex="-1" href="#">')
+            $('<a role="menuitem" tabindex="-1">')
               .html(this.options.metadata['column-names'][this.options.image_variables[i]])
               .click(function()
               {
@@ -531,7 +490,7 @@ $.widget("parameter_image.controls",
         .attr("data-colorvariable", this.options.color_variables[i])
         .appendTo(self.color_items)
         .append(
-          $('<a role="menuitem" tabindex="-1" href="#">')
+          $('<a role="menuitem" tabindex="-1">')
             .html(this.options.metadata['column-names'][this.options.color_variables[i]])
             .click(function()
             {
@@ -570,29 +529,37 @@ $.widget("parameter_image.controls",
       $("<li role='presentation'>")
         .appendTo(self.selection_items)
         .append(
-          $('<a role="menuitem" tabindex="-1" href="#">')
+          $('<a role="menuitem" tabindex="-1">')
             .html("Set")
             .attr("data-value", this.options.rating_variables[i])
             .attr("data-label", "set")
-            // .click(function()
-            // {
-            //   var menu_item = $(this).parent();
-            //   if(menu_item.hasClass("active"))
-            //     return false;
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("disabled"))
+                return false;
 
-            //   self.color_items.find("li").removeClass("active");
-            //   menu_item.addClass("active");
-
-            //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-            // })
+              openSetValueDialog(this.dataset.variable, this.dataset.value);
+            })
         )
         ;
       // Disabling clear functionality for ratings since it causes problems with nulls
-      // $("<option />")
-      //   .text("Clear")
-      //   .attr("value", this.options.rating_variables[i])
-      //   .attr("label", "clear")
-      //   .appendTo(optgroup)
+      // $("<li role='presentation'>")
+      //   .appendTo(self.selection_items)
+      //   .append(
+      //     $('<a role="menuitem" tabindex="-1">')
+      //       .html("Clear")
+      //       .attr("data-value", this.options.rating_variables[i])
+      //       .attr("data-label", "clear")
+      //       .click(function()
+      //       {
+      //         var menu_item = $(this).parent();
+      //         if(menu_item.hasClass("disabled"))
+      //           return false;
+
+      //         openClearValueDialog(this.dataset.variable, this.dataset.value);
+      //       })
+      //   )
       //   ;
     }
     // Add options for categories
@@ -606,39 +573,36 @@ $.widget("parameter_image.controls",
       $("<li role='presentation'>")
         .appendTo(self.selection_items)
         .append(
-          $('<a role="menuitem" tabindex="-1" href="#">')
+          $('<a role="menuitem" tabindex="-1">')
             .html("Set")
             .attr("data-value", this.options.category_variables[i])
             .attr("data-label", "set")
+            .attr("data-variable", var_label)
             .click(function()
             {
               var menu_item = $(this).parent();
-              var menu_link = $(this);
               if(menu_item.hasClass("disabled"))
                 return false;
 
-              openSetValueDialog(var_label does not work here, it just lists the last item, this.dataset.value);
+              openSetValueDialog(this.dataset.variable, this.dataset.value);
             })
         )
         ;
       $("<li role='presentation'>")
         .appendTo(self.selection_items)
         .append(
-          $('<a role="menuitem" tabindex="-1" href="#">')
+          $('<a role="menuitem" tabindex="-1">')
             .html("Clear")
             .attr("data-value", this.options.category_variables[i])
             .attr("data-label", "clear")
-            // .click(function()
-            // {
-            //   var menu_item = $(this).parent();
-            //   if(menu_item.hasClass("active"))
-            //     return false;
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("disabled"))
+                return false;
 
-            //   self.color_items.find("li").removeClass("active");
-            //   menu_item.addClass("active");
-
-            //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-            // })
+              openClearValueDialog(this.dataset.variable, this.dataset.value);
+            })
         )
         ;
     }
@@ -650,174 +614,67 @@ $.widget("parameter_image.controls",
     self.hide_item = $("<li role='presentation'>")
       .appendTo(self.selection_items)
       .append(
-        $('<a role="menuitem" tabindex="-1" href="#">')
+        $('<a role="menuitem" tabindex="-1">')
           .html("Hide")
           .attr("data-value", "hide")
-          // .click(function()
-          // {
-          //   var menu_item = $(this).parent();
-          //   if(menu_item.hasClass("active"))
-          //     return false;
+          .click(function()
+          {
+            var menu_item = $(this).parent();
+            if(menu_item.hasClass("disabled"))
+              return false;
 
-          //   self.color_items.find("li").removeClass("active");
-          //   menu_item.addClass("active");
-
-          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-          // })
+            self.element.trigger("hide-selection", self.options.selection);
+          })
       )
       ;
     self.hide_unselected_item = $("<li role='presentation'>")
       .appendTo(self.selection_items)
       .append(
-        $('<a role="menuitem" tabindex="-1" href="#">')
+        $('<a role="menuitem" tabindex="-1">')
           .html("Hide Unselected")
           .attr("data-value", "hide_unselected")
-          // .click(function()
-          // {
-          //   var menu_item = $(this).parent();
-          //   if(menu_item.hasClass("active"))
-          //     return false;
+          .click(function()
+          {
+            var menu_item = $(this).parent();
+            if(menu_item.hasClass("disabled"))
+              return false;
 
-          //   self.color_items.find("li").removeClass("active");
-          //   menu_item.addClass("active");
-
-          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-          // })
+            self.element.trigger("hide-unselected", self.options.selection);
+          })
       )
       ;
     self.show_item = $("<li role='presentation'>")
       .appendTo(self.selection_items)
       .append(
-        $('<a role="menuitem" tabindex="-1" href="#">')
+        $('<a role="menuitem" tabindex="-1">')
           .html("Show")
           .attr("data-value", "show")
-          // .click(function()
-          // {
-          //   var menu_item = $(this).parent();
-          //   if(menu_item.hasClass("active"))
-          //     return false;
+          .click(function()
+          {
+            var menu_item = $(this).parent();
+            if(menu_item.hasClass("disabled"))
+              return false;
 
-          //   self.color_items.find("li").removeClass("active");
-          //   menu_item.addClass("active");
-
-          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-          // })
+            self.element.trigger("show-selection", self.options.selection);
+          })
       )
       ;
     self.pin_item = $("<li role='presentation'>")
       .appendTo(self.selection_items)
       .append(
-        $('<a role="menuitem" tabindex="-1" href="#">')
+        $('<a role="menuitem" tabindex="-1">')
           .html("Pin")
           .attr("data-value", "pin")
-          // .click(function()
-          // {
-          //   var menu_item = $(this).parent();
-          //   if(menu_item.hasClass("active"))
-          //     return false;
+          .click(function()
+          {
+            var menu_item = $(this).parent();
+            if(menu_item.hasClass("disabled"))
+              return false;
 
-          //   self.color_items.find("li").removeClass("active");
-          //   menu_item.addClass("active");
-
-          //   self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-          // })
+            self.element.trigger("pin-selection", self.options.selection);
+          })
       )
       ;
-
-
-
-
-
-    this.selection_select.empty();
-    // Start with empty option
-    $("<option />")
-      .text("Selection Action:")
-      .appendTo(this.selection_select)
-      ;
-
-    // Add options for ratings
-    for(var i = 0; i < this.options.rating_variables.length; i++)
-    {
-      var optgroup = $("<optgroup />")
-        .attr("label", this.options.metadata['column-names'][this.options.rating_variables[i]])
-        .appendTo(this.selection_select)
-        ;
-      $("<option />")
-        .text("Set")
-        .attr("value", this.options.rating_variables[i])
-        .attr("label", "set")
-        .appendTo(optgroup)
-        ;
-      // Disabling clear functionality for ratings since it causes problems with nulls
-      // $("<option />")
-      //   .text("Clear")
-      //   .attr("value", this.options.rating_variables[i])
-      //   .attr("label", "clear")
-      //   .appendTo(optgroup)
-      //   ;
-    }
-    // Add options for categories
-    for(var i = 0; i < this.options.category_variables.length; i++)
-    {
-      var optgroup = $("<optgroup />")
-        .attr("label", this.options.metadata['column-names'][this.options.category_variables[i]])
-        .appendTo(this.selection_select)
-        ;
-      $("<option />")
-        .text("Set")
-        .attr("value", this.options.category_variables[i])
-        .attr("label", "set")
-        .appendTo(optgroup)
-        ;
-      $("<option />")
-        .text("Clear")
-        .attr("value", this.options.category_variables[i])
-        .attr("label", "clear")
-        .appendTo(optgroup)
-        ;
-    }
-
-    // Finish with global actions
-    var scatterplotOptgroup = $("<optgroup />")
-      .attr("label", "Scatterplot Points")
-      .appendTo(this.selection_select)
-      ;
-    self.hide_option = $("<option />")
-      .text("Hide")
-      .attr("value", "hide")
-      .appendTo(scatterplotOptgroup)
-      ;
-    self.hide_unselected_option = $("<option />")
-      .text("Hide Unselected")
-      .attr("value", "hide_unselected")
-      .appendTo(scatterplotOptgroup)
-      ;
-    self.show_option = $("<option />")
-      .text("Show")
-      .attr("value", "show")
-      .appendTo(scatterplotOptgroup)
-      ;
-    $("<option />")
-      .text("Pin")
-      .attr("value", "pin")
-      .appendTo(scatterplotOptgroup)
-      ;
-
-    // var imagesOptgroup = $("<optgroup />")
-    //   .attr("label", "Images")
-    //   .appendTo(this.selection_select)
-    //   ;
-    // $("<option />")
-    //   .text("Open")
-    //   .attr("value", "open")
-    //   .appendTo(imagesOptgroup)
-    //   ;
-    // $("<option />")
-    //   .text("Close")
-    //   .attr("value", "close")
-    //   .appendTo(imagesOptgroup)
-    //   ;
-
 
     // Set state
     self._set_selection();
@@ -871,8 +728,6 @@ $.widget("parameter_image.controls",
   _set_selection: function()
   {
     var self = this;
-    this.selection_select.prop("disabled", this.options.selection.length == 0);
-
     self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
   },
 
@@ -897,9 +752,9 @@ $.widget("parameter_image.controls",
   _set_hide_show_selection_status: function()
   {
     var self = this;
-    self.hide_option.prop("disabled", self.options.disable_hide_show);
-    self.hide_unselected_option.prop("disabled", self.options.disable_hide_show);
-    self.show_option.prop("disabled", self.options.disable_hide_show);
+    self.hide_item.toggleClass("disabled", self.options.disable_hide_show);
+    self.hide_unselected_item.toggleClass("disabled", self.options.disable_hide_show);
+    self.show_item.toggleClass("disabled", self.options.disable_hide_show);
   },
 
   // Remove hidden_simulations from indices

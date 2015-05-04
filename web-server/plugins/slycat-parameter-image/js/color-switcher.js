@@ -147,7 +147,7 @@ define("slycat-color-switcher", ["d3"], function(d3)
           .attr("data-colormap", key)
           .appendTo(self.list)
           .append(
-            $('<a role="menuitem" tabindex="-1" href="#">')
+            $('<a role="menuitem" tabindex="-1">')
               .html(value.label)
               .click(function()
               {
