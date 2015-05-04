@@ -11,7 +11,7 @@ define("slycat-parser-controls", ["slycat-server-root", "slycat-parsers", "knock
     viewModel: function(params)
     {
       var component = this;
-      component.parser = params.parser;
+      component.parser = params.parser || ko.observable(null);
       component.parsers = parsers.available;
 
       // This is a tad awkward, but a default marking may-or-may-not be available yet.
