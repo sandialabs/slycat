@@ -7,6 +7,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
     component.browser = mapping.fromJS({selection: []});
+    component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
 

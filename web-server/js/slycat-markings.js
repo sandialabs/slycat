@@ -21,7 +21,7 @@ define("slycat-markings", ["slycat-web-client", "knockout", "knockout-mapping"],
       });
       mapping.fromJS(markings, module.allowed);
       if(markings.length)
-        module.preselected(markings[0].type)
+        module.preselected(markings[0].type);
     },
   });
 
