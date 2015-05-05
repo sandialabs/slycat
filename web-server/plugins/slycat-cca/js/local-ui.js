@@ -49,12 +49,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     {
       console.log("upload_table", component.browser.selection());
 
-      client.put_model_table(
+      client.post_model_files(
       {
         mid: component.model._id(),
-        file: component.browser.selection()[0],
+        files: component.browser.selection(),
         input: true,
-        name: "data-table",
+        names: ["data-table"],
+        parser: "slycat-csv-parser",
         success: function()
         {
           client.get_model_table_metadata(

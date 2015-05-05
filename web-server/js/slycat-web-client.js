@@ -454,6 +454,43 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_model_files = function(params)
+  {
+    var data = new FormData();
+    data.append("input", params.input ? true: false);
+    data.append("parser", params.parser);
+    data.append("names", params.names);
+    if(params.sids && params.paths)
+    {
+      data.append("sids", params.sids);
+      data.append("paths", params.paths);
+    }
+    else if(params.files)
+    {
+      for(var i = 0; i != params.files.length; ++i)
+        data.append("files", params.files[i]);
+    }
+
+    $.ajax(
+    {
+      contentType: false,
+      processData: false,
+      data: data,
+      type: "POST",
+      url: server_root + "models/" + params.mid + "/files",
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.post_model_finish = function(params)
   {
     $.ajax(

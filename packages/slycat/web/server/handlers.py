@@ -455,7 +455,55 @@ def post_model_finish(mid):
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
   cherrypy.response.status = "202 Finishing model."
 
+def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=None, parser=None, **kwargs):
+  cherrypy.log.error("input %s" % input)
+  cherrypy.log.error("files %s" % files)
+  cherrypy.log.error("sids %s" % sids)
+  cherrypy.log.error("paths %s" % paths)
+  cherrypy.log.error("names %s" % names)
+  cherrypy.log.error("parser %s" % parser)
+  cherrypy.log.error("kwargs %s" % kwargs)
+
+  if input is None:
+    raise cherrypy.HTTPError("400 Required input parameter is missing.")
+  input = True if input == "true" else False
+
+  if files is not None and sids is None and paths is None:
+    if not isinstance(files, list):
+      files = [files]
+    files = [file.file.read() for file in files]
+  elif files is None and sids is not None and paths is not None:
+    if len(sids) != len(paths):
+      raise cherrypy.HTTPError("400 sids and paths parameters must have the same length.")
+    files = []
+    for sid, path in zip(sids, paths):
+      with slycat.web.server.remote.get_session(sid) as session:
+        filename = "%s@%s:%s" % (session.username, session.hostname, path)
+        if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+          raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+        files.append(session.sftp.file(path).read())
+  else:
+    raise cherrypy.HTTPError("400 Must supply files parameter, or sids and paths parameters.")
+
+  if names is None:
+    names = []
+  if not isinstance(names, list):
+    names = [names]
+
+  if parser is None:
+    raise cherrypy.HTTPError("400 Required parser parameter is missing.")
+  if parser not in slycat.web.server.plugin.manager.parsers:
+    raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, names, **kwargs)
+
 def put_model_file(mid, name, input=None, file=None):
+  """Deprecated."""
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -490,6 +538,7 @@ def put_model_inputs(mid):
   slycat.web.server.put_model_inputs(database, model, source, deep_copy)
 
 def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
+  """Deprecated."""
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -1196,7 +1245,7 @@ def get_configuration_markings():
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_parsers():
-  return [{"type": key, "label": parser["label"], "extensions": parser["extensions"], "data-type": parser["data-type"]} for key, parser in slycat.web.server.plugin.manager.parsers.items()]
+  return [{"type": key, "label": parser["label"], "categories": parser["categories"]} for key, parser in slycat.web.server.plugin.manager.parsers.items()]
 
 @cherrypy.tools.json_out(on = True)
 def get_configuration_remote_hosts():
@@ -1237,13 +1286,6 @@ def get_global_resource(resource):
   if resource in slycat.web.server.resource.manager.files:
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
-
-def get_tests_remote():
-  context = {}
-  context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-  context["slycat-css-bundle"] = css_bundle()
-  context["slycat-js-bundle"] = js_bundle()
-  return slycat.web.server.template.render("slycat-test-remote.html", context)
 
 def tests_request(*arguments, **keywords):
   cherrypy.log.error("Request: %s" % cherrypy.request.request_line)
