@@ -138,7 +138,7 @@ try:
       clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
   # Store an alphabetized collection of cluster names.
-  connection.put_model_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
+  connection.post_model_files(mid, ["clusters"], [json.dumps(sorted(clusters.keys()))], parser="slycat-blob-parser", parameters={"content-type": "application/json"})
 
   # Get the minimum and maximum times for every timeseries.
   def get_time_range(directory, timeseries_index):
@@ -291,11 +291,11 @@ try:
 
     # Store the cluster.
     slycat.web.client.log.info("Storing %s" % name)
-    connection.put_model_file(mid, "cluster-%s" % name, json.dumps({
+    connection.post_model_files(mid, ["cluster-%s" % name], [json.dumps({
       "linkage":linkage.tolist(),
       "exemplars":exemplars,
       "input-indices":[waveform["input-index"] for waveform in waveforms],
-      }), "application/json")
+      })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
 
     arrayset_name = "preview-%s" % name
     connection.put_model_arrayset(mid, arrayset_name)

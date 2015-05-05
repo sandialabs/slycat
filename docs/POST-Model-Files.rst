@@ -9,7 +9,8 @@ POST Model Files
   remote files, specify the "sids" and "paths" parameters with a session id and
   remote filepath for each file to upload. In either case specify the
   boolean "input" parameter, the name of a parsing plugin in "parser", and one
-  or more artifact names using "names".
+  or more artifact names using "names".  Additional parameters will be passed
+  to the parsing plugin.
 
   :param mid: Unique model identifier.
   :type mid: string

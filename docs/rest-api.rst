@@ -51,7 +51,6 @@ any programming language or library that supports HTTP requests.
   PUT-Model-Arrayset-Data.rst
   PUT-Model-Arrayset.rst
   PUT-Model-Command.rst
-  PUT-Model-File.rst
   PUT-Model-Inputs.rst
   PUT-Model-Parameter.rst
   PUT-Model.rst

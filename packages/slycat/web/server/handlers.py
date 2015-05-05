@@ -498,26 +498,6 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=N
 
   slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, names, **kwargs)
 
-def put_model_file(mid, name, input=None, file=None):
-  """Deprecated."""
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_writer(project)
-
-  if input is None:
-    raise cherrypy.HTTPError("400 Required input parameter is missing.")
-  input = True if input == "true" else False
-
-  if file is None:
-    raise cherrypy.HTTPError("400 Required file parameter is missing.")
-
-  data = file.file.read()
-  #filename = file.filename
-  content_type = file.content_type
-
-  slycat.web.server.put_model_file(database, model, name, data, content_type, input)
-
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
   database = slycat.web.server.database.couchdb.connect()
