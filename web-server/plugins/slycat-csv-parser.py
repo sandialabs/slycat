@@ -25,8 +25,7 @@ def parse(database, model, input, files, names, **kwargs):
 
     slycat.web.server.put_model_arrayset(database, model, name, input)
     slycat.web.server.put_model_array(database, model, name, 0, attributes, dimensions)
-    for attribute_index, column in enumerate(data):
-      slycat.web.server.put_model_arrayset_data(database, model, name, "%s/%s/..." % (array_index, attribute_index), [column])
+    slycat.web.server.put_model_arrayset_data(database, model, name, "%s/.../..." % array_index, data)
 
 def register_slycat_plugin(context):
   context.register_parser("slycat-csv-parser", "Comma separated values (CSV)", ["table"], parse)

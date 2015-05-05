@@ -55,7 +55,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         files: component.browser.selection(),
         input: true,
         names: ["data-table"],
-        parser: "slycat-csv-parser",
+        parser: component.parser(),
         success: function()
         {
           client.get_model_table_metadata(

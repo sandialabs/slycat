@@ -456,14 +456,6 @@ def post_model_finish(mid):
   cherrypy.response.status = "202 Finishing model."
 
 def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=None, parser=None, **kwargs):
-  cherrypy.log.error("input %s" % input)
-  cherrypy.log.error("files %s" % files)
-  cherrypy.log.error("sids %s" % sids)
-  cherrypy.log.error("paths %s" % paths)
-  cherrypy.log.error("names %s" % names)
-  cherrypy.log.error("parser %s" % parser)
-  cherrypy.log.error("kwargs %s" % kwargs)
-
   if input is None:
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
   input = True if input == "true" else False
@@ -473,6 +465,10 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=N
       files = [files]
     files = [file.file.read() for file in files]
   elif files is None and sids is not None and paths is not None:
+    if not isinstance(sids, list):
+      sids = [sids]
+    if not isinstance(paths, list):
+      paths = [paths]
     if len(sids) != len(paths):
       raise cherrypy.HTTPError("400 sids and paths parameters must have the same length.")
     files = []
@@ -536,47 +532,6 @@ def put_model_inputs(mid):
     raise cherrypy.HTTPError("400 Cannot duplicate a model from another project.")
 
   slycat.web.server.put_model_inputs(database, model, source, deep_copy)
-
-def put_model_table(mid, name, input=None, file=None, sid=None, path=None):
-  """Deprecated."""
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_writer(project)
-
-  if input is None:
-    raise cherrypy.HTTPError("400 Required input parameter is missing.")
-  input = True if input == "true" else False
-
-  if file is not None and sid is None and path is None:
-    data = file.file.read()
-    filename = file.filename
-  elif file is None and sid is not None and path is not None:
-    with slycat.web.server.remote.get_session(sid) as session:
-      filename = "%s@%s:%s" % (session.username, session.hostname, path)
-      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-        raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
-      data = session.sftp.file(path).read()
-  else:
-    raise cherrypy.HTTPError("400 Must supply a file parameter, or sid and path parameters.")
-
-  slycat.web.server.update_model(database, model, message="Loading table %s from %s." % (name, filename))
-  try:
-    array = slycat.table.parse(data)
-  except:
-    raise cherrypy.HTTPError("400 Could not parse file %s" % filename)
-
-  storage = uuid.uuid4().hex
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.create(storage) as file:
-      database.save({"_id" : storage, "type" : "hdf5"})
-      model["artifact:%s" % name] = storage
-      model["artifact-types"][name] = "hdf5"
-      if input:
-        model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
-      database.save(model)
-      arrayset = slycat.hdf5.ArraySet(file)
-      arrayset.store_array(0, array)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_parameter(mid, name):

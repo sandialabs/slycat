@@ -9,6 +9,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
+    component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
 
     component.cancel = function()
@@ -63,13 +64,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
     component.load_table = function()
     {
-      client.put_model_table(
+      client.post_model_files(
       {
         mid: component.model._id(),
-        sid: component.remote.sid(),
-        path: component.browser.selection()[0],
+        sids: [component.remote.sid()],
+        paths: component.browser.selection(),
         input: true,
-        name: "data-table",
+        names: ["data-table"],
+        parser: component.parser(),
         success: function()
         {
           client.get_model_command(
