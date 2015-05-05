@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-parser-controls", ["slycat-server-root", "slycat-parsers", "knockout"], function(server_root, parsers, ko)
+define("slycat-parser-controls", ["slycat-server-root", "slycat-parsers", "knockout", "lodash"], function(server_root, parsers, ko, lodash)
 {
   ko.components.register("slycat-parser-controls",
   {
@@ -12,17 +12,28 @@ define("slycat-parser-controls", ["slycat-server-root", "slycat-parsers", "knock
     {
       var component = this;
       component.parser = params.parser || ko.observable(null);
-      component.parsers = parsers.available;
 
-      // This is a tad awkward, but a default marking may-or-may-not be available yet.
-      if(component.parser() === null)
+      if(params.category)
       {
-        component.parser(parsers.preselected());
-        parsers.preselected.subscribe(function()
+        component.parsers = parsers.available.filter(function(parser)
         {
-          component.parser(parsers.preselected());
+          return lodash.contains(parser.categories(), params.category);
         });
       }
+      else
+      {
+        component.parsers = parsers.available;
+      }
+
+      function assign_default_parser()
+      {
+        if(component.parser() === null && component.parsers().length)
+        {
+          component.parser(component.parsers()[0].type());
+        }
+      }
+      component.parsers.subscribe(assign_default_parser);
+      assign_default_parser();
     },
     template: { require: "text!" + server_root + "templates/slycat-parser-controls.html" }
   });

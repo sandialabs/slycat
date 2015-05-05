@@ -9,7 +9,6 @@ define("slycat-parsers", ["slycat-web-client", "knockout", "knockout-mapping"], 
   var module = {};
 
   module.available = mapping.fromJS([]);
-  module.preselected = ko.observable(null);
 
   client.get_configuration_parsers(
   {
@@ -20,8 +19,6 @@ define("slycat-parsers", ["slycat-web-client", "knockout", "knockout-mapping"], 
         return left.label == right.label ? 0 : left.label < right.label ? -1 : 1;
       });
       mapping.fromJS(parsers, module.available);
-      if(parsers.length)
-        module.preselected(parsers[0].type);
     },
   });
 
