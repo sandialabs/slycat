@@ -191,33 +191,12 @@ $.widget("parameter_image.controls",
       },
     });
 
-    $('#clear-value-form').dialog({
-      modal: true,
-      autoOpen: false,
-      buttons: {
-        'Clear': function() {
-          var variableIndex = $('input#variable-index', this).val();
-          self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : NaN});
-          $(this).dialog('close');
-        },
-        'Cancel': function() {
-          $(this).dialog('close');
-        },
-      },
-    });
-
     function openSetValueDialog(variable, variableIndex){
       $("#set-value-form #set-value-form-variable").text(variable);
       $("#set-value-form input").attr('value','');
       $("#set-value-form input#variable-index").attr('value', variableIndex);
       $("#set-value-form .dialogErrorMessage").empty();
       $("#set-value-form").dialog("open");
-    }
-    function openClearValueDialog(variable, variableIndex){
-      $("#clear-value-form #clear-value-form-variable").text(variable);
-      $("#set-value-form input").attr('value','');
-      $("#clear-value-form input#variable-index").attr('value', variableIndex);
-      $("#clear-value-form").dialog("open");
     }
     function openCSVSaveChoiceDialog(){
       var txt = "";
@@ -578,6 +557,7 @@ $.widget("parameter_image.controls",
             .html("Clear")
             .attr("data-value", this.options.category_variables[i])
             .attr("data-label", "clear")
+            .attr("data-variable", var_label)
             .click(function()
             {
               var menu_item = $(this).parent();
@@ -670,10 +650,11 @@ $.widget("parameter_image.controls",
       $("#set-value-form").dialog("open");
     }
     function openClearValueDialog(variable, variableIndex){
-      $("#clear-value-form #clear-value-form-variable").text(variable);
-      $("#set-value-form input").attr('value','');
-      $("#clear-value-form input#variable-index").attr('value', variableIndex);
-      $("#clear-value-form").dialog("open");
+      dialog.confirm({
+        title: "Clear Values",
+        message: "Clear values for " + variable + "?",
+        ok: function(){ self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : NaN}); },
+      });
     }
   },
 
