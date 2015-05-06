@@ -704,7 +704,7 @@ rights in this software.
   width: 100%;
   overflow: hidden;
 }
-.slycat-pim-filter .varName, 
+.slycat-pim-filter .varName,
 .category-filter .varName
 {
   transform: rotate(270deg);
@@ -841,4 +841,21 @@ rights in this software.
 .ui-sticky.title textarea {
   font-size: 28px;
   padding: 3.5px;
+}
+
+.remap-ui-label {
+  display: inline-block;
+  width: 60px;
+}
+
+.remap-ui-label.shorter {
+  width: 57px;
+}
+
+.remap-ui-label.faded {
+  opacity: 0.5;
+}
+
+.remap-ui-input {
+  width: 85%;
 }

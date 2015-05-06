@@ -38,89 +38,94 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
 
 
-    var build_li = function(label, name, isTop) {
-      var $li = $("<li />")
-        .addClass("list-group-item");
+    var build_panel = function($container) {
+      var $panel = $("<div />").addClass("panel panel-default");
+      var $header = $("<div />").addClass("panel-heading");
+      var $body = $("<div />").addClass("panel-body");
 
-      if (!isTop) $li.css("border", "none");
+      $panel
+        .append($header)
+        .append($body);
 
-      var $div = $("<div />");
+      $container.append($panel);
 
-      var $label = $("<span />").text(label + " " + name);
-      var $replaceLabel = $("<span />").text(" - replace with: ");
-      var $replace = $("<input />")
-        .attr("type", "text")
-        .val(name);
-
-      $div
-        .append($label)
-        .append($replaceLabel)
-        .append($replace);
-
-      $li.append($div);
-
-      searchAndReplaceArr.push({
-        search: name,
-        replace: $replace
-      });
-
-      return $li;
+      return {
+        $header: $header,
+        $body: $body
+      }
     };
 
-    var build_column_ul = function(name, uris) {
-      var $li = $("<li />")
-        .addClass("list-group-item")
-        .css("border", "none")
-        .text("Column(s): " + name);
+    var build_item = function(value) {
+      var $wrapper = $("<div />").css("padding-bottom", 5);
+      var $current = $("<div />");
+      var $replace = $("<div />");
 
-      var $subUl = $("<ul />").addClass("list-group");
+      var $currentLabel = $("<span />").addClass("remap-ui-label faded").text("Current: ");
+      var $currentValue = $("<span />").css('opacity', 0.5).text(value);
+      $current.append($currentLabel).append($currentValue);
 
-      uris.forEach(function(uri) {
-        $subUl.append(build_li("", uri));
+      var $replaceLabel = $("<span />").addClass("remap-ui-label shorter").text("New: ");
+      var $replaceValue = $("<input />")
+        .attr("type", "text")
+        .addClass("remap-ui-input")
+        .val(value);
+      $replace.append($replaceLabel).append($replaceValue);
+
+      $wrapper
+        .append($current)
+        .append($replace);
+
+      searchAndReplaceArr.push({
+        search: value,
+        $replace: $replaceValue
       });
 
-      $li.append($subUl);
+      return $wrapper;
+    };
 
-      return $li;
+    var build_column_block = function(name, uris) {
+      var $wrapper = $("<div />").css("padding-bottom", 15);
+      var $columns = $("<div />").css("margin-bottom", 3).text("Column(s): " + name);
+
+      $wrapper.append($columns);
+
+      uris.forEach(function(uri) {
+        $wrapper.append(build_item(uri));
+      });
+
+      return $wrapper;
     };
 
     var display_uris = function(result) {
       var uris = result.uris;
       var $container = $("#path-structure-container");
-      var $hostUl = $("<ul />").addClass("list-group");
 
       for (var h in uris) {
         if (uris.hasOwnProperty(h)) {
+          var panelObj = build_panel($container);
           var host = uris[h];
-          var $li = build_li("Host:", h, true);
-          var $ul = $("<ul />").addClass("list-group");
+          var $item = build_item(h);
+
+          panelObj.$header.append($item);
 
           for (var c in host) {
             if (host.hasOwnProperty(c)) {
-              $ul.append(build_column_ul(c, host[c]));
+              panelObj.$body.append(build_column_block(c, host[c]));
             }
           }
-
-          $li.append($ul);
-          $hostUl.append($li);
         }
       }
-
-      $container.append($hostUl);
     };
 
     var list_uris = function() {
-      client.get_model_command(
-      {
+      client.get_model_command({
         mid: component.model._id(),
         type: "parameter-image",
         command: "list-uris",
-        parameters:
-        {
+        parameters: {
           columns: component.media_columns()
         },
-        success: function(result)
-        {
+        success: function(result) {
           display_uris(result);
         },
         error: dialog.ajax_error("Error listing URI's.")
@@ -174,7 +179,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var processSearchAndReplace = function(pair) {
       if (typeof pair !== "undefined") {
         var s = pair.search;
-        var r = pair.replace.val();
+        var r = pair.$replace.val();
 
         if (s === r)
           processSearchAndReplace(searchAndReplaceArr.pop());
