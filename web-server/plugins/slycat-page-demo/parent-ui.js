@@ -24,6 +24,20 @@ define("slycat-page-demo-model", ["slycat-server-root", "knockout", "lodash", "d
       child.postMessage("Sample message", "*");
     });
   }
+  page.send_arraybuffer = function()
+  {
+    lodash.each(page.children(), function(child)
+    {
+      child.postMessage(new ArrayBuffer(8), "*");
+    });
+  }
+  page.send_observable = function()
+  {
+    lodash.each(page.children(), function(child)
+    {
+      child.postMessage(ko.observableArray([1, 2, 3]), "*");
+    });
+  }
 
   ko.applyBindings(page, document.getElementById("slycat-page-demo"));
 
