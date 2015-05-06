@@ -423,6 +423,20 @@ class Connection(object):
     """
     return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
 
+  def post_model_files(self, mid, names, files, parser, input=True, parameters={}):
+    """Stores a model file artifacts."""
+    data = parameters
+
+    data.update({
+      "input": json.dumps(input),
+      "names": names,
+      "parser": parser
+    })
+
+    files = [("files", ("blob", file)) for file in files]
+
+    self.request("POST", "/models/%s/files" % mid, data=data, files=files)
+
   def post_model_finish(self, mid):
     """Notify the server that a model is fully initialized.
 
@@ -546,10 +560,6 @@ class Connection(object):
   def put_model_arrayset(self, mid, name, input=True):
     """Starts a new model array set artifact, ready to receive data."""
     self.request("PUT", "/models/%s/arraysets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
-
-  def put_model_file(self, mid, name, data, content_type, input=True):
-    """Stores a model file artifact."""
-    self.request("PUT", "/models/%s/files/%s" % (mid, name), data=({"input":json.dumps(input)}), files={"file":("file", data, content_type)})
 
   def put_model_inputs(self, source, target):
     self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))

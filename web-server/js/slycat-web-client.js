@@ -104,6 +104,26 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.get_configuration_parsers = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "configuration/parsers",
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.get_configuration_support_email = function(params)
   {
     $.ajax(
@@ -434,6 +454,43 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_model_files = function(params)
+  {
+    var data = new FormData();
+    data.append("input", params.input ? true: false);
+    data.append("parser", params.parser);
+    data.append("names", params.names);
+    if(params.sids && params.paths)
+    {
+      data.append("sids", params.sids);
+      data.append("paths", params.paths);
+    }
+    else if(params.files)
+    {
+      for(var i = 0; i != params.files.length; ++i)
+        data.append("files", params.files[i]);
+    }
+
+    $.ajax(
+    {
+      contentType: false,
+      processData: false,
+      data: data,
+      type: "POST",
+      url: server_root + "models/" + params.mid + "/files",
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.post_model_finish = function(params)
   {
     $.ajax(
@@ -647,40 +704,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       }),
       type: "PUT",
       url: server_root + "models/" + params.mid + "/parameters/" + params.name,
-      success: function()
-      {
-        if(params.success)
-          params.success();
-      },
-      error: function(request, status, reason_phrase)
-      {
-        if(params.error)
-          params.error(request, status, reason_phrase);
-      },
-    });
-  }
-
-  module.put_model_table = function(params)
-  {
-    var data = new FormData();
-    data.append("input", params.input === undefined ? true: params.input ? true: false);
-    if(params.sid && params.path)
-    {
-      data.append("sid", params.sid);
-      data.append("path", params.path);
-    }
-    else if(params.file)
-    {
-      data.append("file", params.file);
-    }
-
-    $.ajax(
-    {
-      contentType: false,
-      processData: false,
-      data: data,
-      type: "PUT",
-      url: server_root + "models/" + params.mid + "/tables/" + params.name,
       success: function()
       {
         if(params.success)

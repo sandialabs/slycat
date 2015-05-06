@@ -1,4 +1,3 @@
-import csv
 import numpy
 import slycat.web.server
 import StringIO
@@ -10,7 +9,7 @@ def parse(database, model, input, files, names, **kwargs):
   array_index = int(kwargs.get("array", "0"))
 
   for file, name in zip(files, names):
-    rows = [row for row in csv.reader(StringIO.StringIO(file), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+    rows = [row.split() for row in StringIO.StringIO(file)]
     columns = zip(*rows)
 
     dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
@@ -29,5 +28,5 @@ def parse(database, model, input, files, names, **kwargs):
     slycat.web.server.put_model_arrayset_data(database, model, name, "%s/.../..." % array_index, data)
 
 def register_slycat_plugin(context):
-  context.register_parser("slycat-csv-parser", "Comma separated values (CSV)", ["table"], parse)
+  context.register_parser("slycat-dakota-parser", "Dakota tabular.dat files", ["table"], parse)
 

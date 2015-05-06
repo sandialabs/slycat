@@ -7,6 +7,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
     component.browser = mapping.fromJS({selection: []});
+    component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
 
@@ -48,12 +49,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     {
       console.log("upload_table", component.browser.selection());
 
-      client.put_model_table(
+      client.post_model_files(
       {
         mid: component.model._id(),
-        file: component.browser.selection()[0],
+        files: component.browser.selection(),
         input: true,
-        name: "data-table",
+        names: ["data-table"],
+        parser: component.parser(),
         success: function()
         {
           client.get_model_table_metadata(

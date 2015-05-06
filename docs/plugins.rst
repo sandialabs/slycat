@@ -60,8 +60,7 @@ or "Human Resources Only".
 A marking consists of the following:
 
 1) A unique string identifier called the `marking type`.
-2) A human-readable label that will become part of the user interface when prompting end-users
-  to choose the marking for a model.
+2) A human-readable label that will become part of the user interface when prompting end-users to choose the marking for a model.
 3) A block of HTML markup that provides a "badge" representation of the marking used in lists.
 4) Optional block of HTML markup that will be inserted into the user interface before marked content.
 5) Optional block of HTML markup that will be inserted into the user interface after marked content.
