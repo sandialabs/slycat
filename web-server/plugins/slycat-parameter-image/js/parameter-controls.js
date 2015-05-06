@@ -37,7 +37,6 @@ $.widget("parameter_image.controls",
     var self = this;
     var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
-    var auto_scale_control = $("#auto-scale-control", this.element);
 
     this.x_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -103,6 +102,17 @@ $.widget("parameter_image.controls",
       .appendTo(self.color_control)
       ;
 
+    this.auto_scale_button = $("\
+      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
+        <span class='fa fa-external-link' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("auto-scale", !$(this).hasClass('active'));
+      })
+      .appendTo(selection_controls)
+      ;
+
     this.selection_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(selection_controls)
       ;
@@ -146,19 +156,6 @@ $.widget("parameter_image.controls",
       })
       .appendTo(selection_controls)
       ;
-
-    this.auto_scale_button = $("\
-      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
-        <span class='fa fa-arrows-alt' aria-hidden='true'></span> \
-      </button> \
-      ")
-      .click(function(){
-        self.element.trigger("auto-scale", !$(this).hasClass('active'));
-      })
-      .appendTo(auto_scale_control)
-      ;
-
-    
 
     $('#set-value-form').dialog({
       modal: true,
