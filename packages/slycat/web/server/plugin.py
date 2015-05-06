@@ -254,7 +254,7 @@ class Manager(object):
       Called with a realm, username, and password plus optional keyword
       arguments. Must return a (success, groups) tuple, where success is True
       if authentication succeeded, and groups is a (possibly empty) list of
-        groups to which the user belongs.
+      groups to which the user belongs.
     """
     if type in self.password_checks:
       raise Exception("Password check type '%s' has already been registered." % type)

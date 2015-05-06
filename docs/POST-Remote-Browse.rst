@@ -34,7 +34,7 @@ POST Remote Browse
   :>json array sizes: Array of integer file sizes.
   :>json array types: Array of string file types, "f" for regular files, "d" for directories.
   :>json array mtimes: Array of string file modification times, in ISO-8601 format.
-  :>json array mime-types Array of string MIME types.
+  :>json array mime-types: Array of string MIME types.
 
   The regular expression parameters are matched against full file / directory
   paths.  If a file / directory matches a reject expression, it will not be

@@ -21,7 +21,7 @@ GET Projects
 
   **Sample Response**
 
-  .. sourcecode:: HTTP
+  .. sourcecode:: http
 
     HTTP/1.1 200 OK
     Date: Mon, 25 Nov 2013 20:35:59 GMT
