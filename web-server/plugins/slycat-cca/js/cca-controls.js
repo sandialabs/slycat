@@ -3,7 +3,7 @@ Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
-define("slycat-cca-controls", ["slycat-server-root"], function(server_root) {
+define("slycat-cca-controls", ["slycat-server-root", "slycat-dialog"], function(server_root, dialog) {
 $.widget("cca.controls",
 {
 
@@ -35,47 +35,34 @@ $.widget("cca.controls",
     	.appendTo(this.element)
     	;
 
-    self.save_choice_buttons = {
-      'Save The Whole Table': function() {
-         self._write_data_table();
-        //$(this)._write_data_table();  //what's the diff with above?
-        $(this).dialog('close');
-      },
-      'Save Selected Rows': function() {
-        self._write_data_table( self.options.selection );
-        $(this).dialog('close');
-      },
-      'Cancel': function() {
-        $(this).dialog('close');
-      },
-    };
-
-    $('#csv-save-choice-form').dialog({
-      modal: true,
-      autoOpen: false,
-      buttons: self.save_choice_buttons,
-    });
-
     function openCSVSaveChoiceDialog(){
       var txt = "";
+      var buttons_save = [
+        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-danger",  label:"Save Entire Table"}
+      ];
 
       if(self.options.selection.length > 0)
       {
         txt += "You have " + self.options.selection.length + " rows selected. ";
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-danger",  label:"Save Selected Rows"});
       }
 
       txt += "What would you like to do?";
-      $("#csv-save-choice-form #csv-save-choice-label").text(txt);
 
-      var buttons = $.extend({}, self.save_choice_buttons);
-      if(self.options.selection.length == 0)
+      dialog.dialog(
       {
-        delete buttons["Save Selected Rows"];
-      }
-
-      $("#csv-save-choice-form").dialog("option", "buttons", buttons);
-
-      $("#csv-save-choice-form").dialog("open");
+        title: "Download Choices",
+        message: txt,
+        buttons: buttons_save,
+        callback: function(button)
+        {
+          if(button.label == "Save Entire Table")
+            self._write_data_table();
+          else if(button.label == "Save Selected Rows")
+            self._write_data_table( self.options.selection );
+        },
+      });
     }
 
   },

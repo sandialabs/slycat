@@ -221,33 +221,25 @@ $.widget("parameter_image.controls",
     }
     function openCSVSaveChoiceDialog(){
       var txt = "";
+      var buttons_save = [
+        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-danger",  label:"Save Entire Table"}
+      ];
 
       if(self.options.selection.length > 0)
       {
         txt += "You have " + self.options.selection.length + " rows selected. ";
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-danger",  label:"Save Selected Rows"});
       }
       if(self.options.hidden_simulations.length > 0)
       {
         var visibleRows = self.options.metadata['row-count'] - self.options.hidden_simulations.length;
         txt += "You have " + visibleRows + " rows visible. ";
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-danger",  label:"Save Visible Rows"});
       }
 
       txt += "What would you like to do?";
 
-      var buttons_save = [
-        {className: "btn-default", label:"Cancel"}, 
-        {className: "btn-danger",  label:"Save Entire Table"},
-        {className: "btn-danger",  label:"Save Visible Rows"},
-        {className: "btn-danger",  label:"Save Selected Rows"}
-      ];
-      if(self.options.selection.length == 0)
-      {
-        buttons_save.splice(3, 1);
-      }
-      if(self.options.hidden_simulations.length == 0)
-      {
-        buttons_save.splice(2, 1);
-      }
       dialog.dialog(
       {
         title: "Download Choices",
