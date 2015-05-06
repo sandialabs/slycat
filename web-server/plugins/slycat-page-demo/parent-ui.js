@@ -26,5 +26,11 @@ define("slycat-page-demo-model", ["slycat-server-root", "knockout", "lodash", "d
   }
 
   ko.applyBindings(page, document.getElementById("slycat-page-demo"));
+
+  window.addEventListener("message", receive_message, false);
+  function receive_message(event)
+  {
+    console.log(event);
+  }
 });
 

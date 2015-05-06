@@ -18,6 +18,7 @@ rights in this software.
       function receive_message(event)
       {
         console.log(event);
+        event.source.postMessage("Acknowledged", "*");
       }
     </script>
   </body>
