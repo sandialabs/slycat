@@ -17,7 +17,6 @@ import Queue
 import re
 import slycat.hdf5
 import slycat.hyperchunks
-import slycat.table
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cleanup
