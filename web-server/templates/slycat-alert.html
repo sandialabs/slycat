@@ -7,6 +7,11 @@
         </div>
         <div class="modal-body">
           <p data-bind="text:message"></p>
+          <input type="text" class="form-control"
+            data-bind="visible:input, value:value, attr:{placeholder:placeholder}">
+          <div class="alert alert-danger" role="alert"
+            data-bind="visible:alert, text:alert"
+          ></div>
         </div>
         <div class="modal-footer" data-bind="foreach:buttons">
           <button type="button" class="btn" data-bind="css: className, click:$parent.close, text:label"></button>

@@ -157,47 +157,6 @@ $.widget("parameter_image.controls",
       .appendTo(selection_controls)
       ;
 
-    $('#set-value-form').dialog({
-      modal: true,
-      autoOpen: false,
-      buttons: {
-        'Apply': function() {
-          //$('#mainForm input#target').val( $(this).find('#widgetName').val() );
-          var variableIndex = $('input#variable-index', this).val();
-          var value = $('input#value', this).val().trim();
-          var numeric = self.options.metadata["column-types"][variableIndex] != "string";
-          var valueValid = value.length > 0;
-          if( valueValid && numeric && isNaN(Number(value)) ) {
-            valueValid = false;
-          }
-          if(valueValid) {
-            self.element.trigger("set-value", {
-              selection : self.options.selection,
-              variable : variableIndex,
-              value : numeric ? value : '"' + value + '"',
-            });
-            $(this).dialog('close');
-          } else {
-            var message = "Please enter a value.";
-            if(numeric)
-              message = "Please enter a numeric value.";
-            $('.dialogErrorMessage', this).text(message);
-          }
-
-        },
-        'Cancel': function() {
-          $(this).dialog('close');
-        },
-      },
-    });
-
-    function openSetValueDialog(variable, variableIndex){
-      $("#set-value-form #set-value-form-variable").text(variable);
-      $("#set-value-form input").attr('value','');
-      $("#set-value-form input#variable-index").attr('value', variableIndex);
-      $("#set-value-form .dialogErrorMessage").empty();
-      $("#set-value-form").dialog("open");
-    }
     function openCSVSaveChoiceDialog(){
       var txt = "";
       var buttons_save = [
@@ -484,6 +443,7 @@ $.widget("parameter_image.controls",
     // Add options for ratings
     for(var i = 0; i < this.options.rating_variables.length; i++)
     {
+      var var_label = this.options.metadata['column-names'][this.options.rating_variables[i]];
       $('<li role="presentation" class="dropdown-header"></li>')
         .text(this.options.metadata['column-names'][this.options.rating_variables[i]])
         .appendTo(self.selection_items)
@@ -495,6 +455,7 @@ $.widget("parameter_image.controls",
             .html("Set")
             .attr("data-value", this.options.rating_variables[i])
             .attr("data-label", "set")
+            .attr("data-variable", var_label)
             .click(function()
             {
               var menu_item = $(this).parent();
@@ -642,12 +603,41 @@ $.widget("parameter_image.controls",
     // Set state
     self._set_selection();
 
-    function openSetValueDialog(variable, variableIndex){
-      $("#set-value-form #set-value-form-variable").text(variable);
-      $("#set-value-form input").attr('value','');
-      $("#set-value-form input#variable-index").attr('value', variableIndex);
-      $("#set-value-form .dialogErrorMessage").empty();
-      $("#set-value-form").dialog("open");
+    function openSetValueDialog(variable, variableIndex, value, alert){
+      dialog.prompt({
+        title: "Set Values",
+        message: "Set values for " + variable + ":",
+        value: value,
+        alert: alert,
+        buttons: [
+          {className: "btn-default", label:"Cancel"}, 
+          {className: "btn-danger",  label:"Apply"}
+        ],
+        callback: function(button, value)
+        {
+          if(button.label == "Apply")
+          {
+            var value = value().trim();
+            var numeric = self.options.metadata["column-types"][variableIndex] != "string";
+            var valueValid = value.length > 0;
+            if( valueValid && numeric && isNaN(Number(value)) ) {
+              valueValid = false;
+            }
+            if(valueValid) {
+              self.element.trigger("set-value", {
+                selection : self.options.selection,
+                variable : variableIndex,
+                value : numeric ? value : '"' + value + '"',
+              });
+            } else {
+              var alert = "Please enter a value.";
+              if(numeric)
+                alert = "Please enter a numeric value.";
+              openSetValueDialog(variable, variableIndex, value, alert);
+            }
+          }
+        },
+      });
     }
     function openClearValueDialog(variable, variableIndex){
       dialog.confirm({
