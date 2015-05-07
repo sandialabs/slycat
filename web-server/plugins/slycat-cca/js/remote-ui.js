@@ -100,7 +100,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               component.tab(3);
             }
           });
-        }
+        },
+        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
       });
     }
     component.finish = function()
