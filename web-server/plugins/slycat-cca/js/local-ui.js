@@ -47,8 +47,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
     component.upload_table = function()
     {
-      console.log("upload_table", component.browser.selection());
-
       client.post_model_files(
       {
         mid: component.model._id(),
@@ -71,7 +69,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               component.tab(2);
             }
           });
-        }
+        },
+        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
       });
     }
     component.finish = function()

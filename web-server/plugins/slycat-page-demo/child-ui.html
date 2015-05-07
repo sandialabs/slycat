@@ -10,21 +10,24 @@ rights in this software.
   <body>
     <div id="slycat-page-demo-child" class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;-webkit-align-items:center;align-items:center;">
       <div style="font-size: 18px; width: 600px">
-        <p>Child page.</p>
+        <p>This is a child page.</p>
       </div>
     </div>
     <script>
-      window.addEventListener("message", receive_message, false);
-      function receive_message(event)
+      window.addEventListener("message", function(event)
       {
         console.log(event);
-        event.source.postMessage("Acknowledged", "*");
-
         if(event.data === "close")
         {
           window.close();
         }
-      }
+      });
+
+      window.addEventListener("unload", function(event)
+      {
+        window.opener.postMessage("closing", "*");
+      });
     </script>
   </body>
 </html>
+

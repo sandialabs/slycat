@@ -495,7 +495,10 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=N
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, names, **kwargs)
+  try:
+    slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, names, **kwargs)
+  except Exception as e:
+    raise cherrypy.HTTPError("400 %s" % e.message)
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
