@@ -25,12 +25,25 @@ rights in this software.
   border: 0;
   margin: 0;
 }
-
-#color-switcher
+#controls-pane
 {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
+}
+.center
+{
+  text-align: center;
+}
+#color-switcher ul.dropdown-menu
+{
+  background-color: #F2F2F2;
+}
+.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
+{
+  background-color: #E4E4E4;
+}
+.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
+{
+  background-color: #337AB7;
 }
 
 #table
@@ -296,6 +309,7 @@ rights in this software.
   fill: none;
   stroke: black;
 }
-
-
-
+a
+{
+  cursor: pointer;
+}

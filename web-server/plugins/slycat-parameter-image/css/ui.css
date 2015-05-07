@@ -352,40 +352,28 @@ rights in this software.
   padding-bottom: 35px;
 }
 #controls-pane {
-
+  z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
 }
 .center {
   text-align: center;
 }
-#color-switcher {
-  margin: 0;
-  float: none;
-  display: inline-block;
+#color-switcher ul.dropdown-menu
+{
+  background-color: #F2F2F2;
 }
-#color-switcher .label {
-  font-weight: bold;
+.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
+{
+  background-color: #E4E4E4;
 }
-#color-switcher .color {
-  background-color: #DBD9EB;
-  padding: 4px;
+.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
+{
+  background-color: #337AB7;
 }
-#color-switcher .color:hover {
-  cursor: pointer;
-}
-#color-switcher .selected:hover {
-  cursor: default;
-}
-#color-switcher .selected {
-  background-color: #7767B0 !important;
-  color: white;
-}
-#color-switcher,
 #controls
 {
-  font-size: small;
+  
 }
 #controls {
-  display: inline-block;
   margin: 2px 0;
 }
 #controls label {
@@ -397,14 +385,10 @@ rights in this software.
 {
   color: gray;
 }
-#controls select:disabled {
-
-}
 #controls select {
   margin-right: 10px;
   padding: 2px 4px;
 }
-#controls button,
 #controls label[for="auto-scale-option"]
 {
   margin-right: 10px;
@@ -843,6 +827,10 @@ rights in this software.
   padding: 3.5px;
 }
 
+a {
+  cursor: pointer;
+}
+
 .remap-ui-label {
   display: inline-block;
   width: 60px;
@@ -858,4 +846,14 @@ rights in this software.
 
 .remap-ui-input {
   width: 85%;
+}
+.bootstrap-styles .dropdown-header {
+    display: block;
+    padding: 3px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.42857;
+    color: #333;
+    white-space: nowrap;
+    margin-left: -7px;
 }

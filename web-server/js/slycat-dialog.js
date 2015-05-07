@@ -14,16 +14,33 @@ define("slycat-dialog", ["slycat-server-root", "slycat-web-client", "knockout", 
       }
       component.title = ko.observable(params.title || "Alert");
       component.message = ko.observable(params.message || "");
+      component.input = ko.observable(params.input || false);
+      component.placeholder = ko.observable(params.placeholder || "");
+      component.value = ko.observable(params.value || "");
+      component.alert = ko.observable(params.alert || "");
       component.buttons = params.buttons || [{className: "btn-default", label:"OK"}];
       component.container = $($.parseHTML(template)).appendTo($("body"));
       component.container.children().on("hidden.bs.modal", function()
       {
         component.container.remove();
         if(params.callback)
-          params.callback(component.result);
+          params.callback(component.result, component.value);
       });
       ko.applyBindings(component, component.container.get(0));
       component.container.children().modal("show");
+    });
+  }
+
+  module.prompt = function(params)
+  {
+    module.dialog({
+      title: params.title || "Prompt",
+      message: params.message || "",
+      input: true,
+      value: params.value || "",
+      alert: params.alert || "",
+      buttons: params.buttons || [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
+      callback: params.callback,
     });
   }
 
@@ -33,7 +50,7 @@ define("slycat-dialog", ["slycat-server-root", "slycat-web-client", "knockout", 
     {
       title: params.title || "Confirm",
       message: params.message || "",
-      buttons: [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
+      buttons: [{className: "btn-default", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
       callback: function(button)
       {
         if(button.label == "OK")

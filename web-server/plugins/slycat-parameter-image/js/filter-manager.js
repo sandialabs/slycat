@@ -193,7 +193,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           if (vm.activeFilters().length === 0) {
             self.layout.open("west");
           }
-          var activateFilter = event.target.value;
+          var activateFilter = event.target.dataset.value;
           var filter, targetFilter, filterType, categories;
           for(var i = vm.allFilters().length-1; i >= 0; i--)
           {
@@ -222,7 +222,6 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
               targetFilter.active(true);
             }
           }
-          event.target.selectedIndex = 0;
           $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
