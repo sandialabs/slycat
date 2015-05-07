@@ -12,7 +12,7 @@ define("slycat-page-demo-model", ["slycat-server-root", "slycat-bookmark-manager
   page.children = ko.observableArray();
   page.add_child = function()
   {
-    page.children.push(window.open(server_root + "resources/models/page-demo/child-ui.html"));
+    page.children.push(window.open(URI().search({"page-type":"page-demo-child"})));
     page.bookmark.updateState({children: page.children().length});
   }
   page.send_message = function()
@@ -66,7 +66,7 @@ define("slycat-page-demo-model", ["slycat-server-root", "slycat-bookmark-manager
         {
           for(var i = 0; i != state.children; ++i)
           {
-            var child = window.open(server_root + "resources/models/page-demo/child-ui.html");
+            var child = window.open(URI().search({"page-type":"page-demo-child"}));
             if(child)
             {
               page.children.push(child);

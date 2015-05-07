@@ -7,14 +7,21 @@ def register_slycat_plugin(context):
     """Called to finish the model.  This function must return quickly, so actual work should be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-  def model_html(database, model):
+  def parent_html(database, model):
     return open(os.path.join(os.path.dirname(__file__), "parent-ui.html"), "r").read()
 
-  context.register_model("page-demo", finish_model, model_html)
+  def child_html(database, model):
+    return open(os.path.join(os.path.dirname(__file__), "child-ui.html"), "r").read()
+
+  context.register_model("page-demo", finish_model, parent_html)
   context.register_model_bundle("page-demo", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "parent-ui.js"),
     ])
-  context.register_model_resource("page-demo", "child-ui.html", os.path.join(os.path.dirname(__file__), "child-ui.html"))
+
+  context.register_page("page-demo-child", child_html)
+  context.register_page_bundle("page-demo-child", "text/javascript", [
+    os.path.join(os.path.dirname(__file__), "child-ui.js"),
+    ])
 
   # Register a wizard for creating instances of the page-demo model.
   context.register_wizard("page-demo", "New Page Demo Model", require={"action":"create", "context":"project"})

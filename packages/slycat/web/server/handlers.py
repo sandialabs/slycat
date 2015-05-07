@@ -360,8 +360,10 @@ def get_model(mid, **kwargs):
 
   elif accept == "text/html":
     mtype = model.get("model-type", None)
+    ptype = kwargs.get("page-type", None)
 
-    # New code for rendering plugin models:
+    cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
+
     marking = slycat.web.server.plugin.manager.markings[model["marking"]]
 
     context = {}
@@ -374,7 +376,15 @@ def get_model(mid, **kwargs):
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-model-type"] = mtype
 
-    if mtype in slycat.web.server.plugin.manager.models.keys():
+    if ptype is not None:
+      template = "slycat-model-page.html"
+      context["slycat-page-type"] = ptype
+      context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
+      if ptype in slycat.web.server.plugin.manager.page_bundles:
+        context["slycat-page-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/css"]
+        context["slycat-page-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/javascript"]
+    elif mtype in slycat.web.server.plugin.manager.models.keys():
+      template = "slycat-model.html"
       context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[mtype]["html"](database, model)
       if mtype in slycat.web.server.plugin.manager.model_bundles:
         context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
@@ -385,7 +395,7 @@ def get_model(mid, **kwargs):
         <p>No plugin available for this model.</p>
       </div>"""
 
-    return slycat.web.server.template.render("slycat-model.html", context)
+    return slycat.web.server.template.render(template, context)
 
 def model_command(mid, type, command, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -408,6 +418,19 @@ def get_model_resource(mtype, resource):
     for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[mtype].items():
       if model_resource == resource:
         return cherrypy.lib.static.serve_file(model_path)
+
+  raise cherrypy.HTTPError("404")
+
+def get_page_resource(ptype, resource):
+  if ptype in slycat.web.server.plugin.manager.page_bundles:
+    if resource in slycat.web.server.plugin.manager.page_bundles[ptype]:
+      content_type, content = slycat.web.server.plugin.manager.page_bundles[ptype][resource]
+      cherrypy.response.headers["content-type"] = content_type
+      return content
+  if ptype in slycat.web.server.plugin.manager.page_resources:
+    for page_resource, page_path in slycat.web.server.plugin.manager.page_resources[ptype].items():
+      if page_resource == resource:
+        return cherrypy.lib.static.serve_file(page_path)
 
   raise cherrypy.HTTPError("404")
 
