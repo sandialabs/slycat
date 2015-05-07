@@ -28,5 +28,5 @@ def parse(database, model, input, files, names, **kwargs):
     slycat.web.server.put_model_arrayset_data(database, model, name, "%s/.../..." % array_index, data)
 
 def register_slycat_plugin(context):
-  context.register_parser("slycat-dakota-parser", "Dakota tabular.dat files", ["table"], parse)
+  context.register_parser("slycat-dakota-parser", "Dakota tabular", ["table"], parse)
 
