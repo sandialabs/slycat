@@ -66,8 +66,16 @@ define("slycat-page-demo-model", ["slycat-server-root", "slycat-bookmark-manager
         {
           for(var i = 0; i != state.children; ++i)
           {
-            page.children.push(window.open(server_root + "resources/models/page-demo/child-ui.html"));
-            window.setTimeout(function () { window.focus() }, 10000);
+            var child = window.open(server_root + "resources/models/page-demo/child-ui.html");
+            if(child)
+            {
+              page.children.push(child);
+            }
+            else
+            {
+              window.alert("Looks like you have a popup blocker.");
+              break;
+            }
           }
         }
         else
