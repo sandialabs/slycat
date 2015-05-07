@@ -19,6 +19,11 @@ rights in this software.
       {
         console.log(event);
         event.source.postMessage("Acknowledged", "*");
+
+        if(event.data === "close")
+        {
+          window.close();
+        }
       }
     </script>
   </body>
