@@ -39,13 +39,13 @@ $.widget("cca.controls",
       var txt = "";
       var buttons_save = [
         {className: "btn-default", label:"Cancel"}, 
-        {className: "btn-danger",  label:"Save Entire Table"}
+        {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
 
       if(self.options.selection.length > 0)
       {
         txt += "You have " + self.options.selection.length + " rows selected. ";
-        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-danger",  label:"Save Selected Rows"});
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary",  label:"Save Selected", icon_class:"fa fa-check"});
       }
 
       txt += "What would you like to do?";

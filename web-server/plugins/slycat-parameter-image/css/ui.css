@@ -847,3 +847,13 @@ a {
 .remap-ui-input {
   width: 85%;
 }
+.bootstrap-styles .dropdown-header {
+    display: block;
+    padding: 3px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.42857;
+    color: #333;
+    white-space: nowrap;
+    margin-left: -7px;
+}

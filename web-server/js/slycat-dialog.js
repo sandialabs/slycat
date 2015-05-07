@@ -50,7 +50,7 @@ define("slycat-dialog", ["slycat-server-root", "slycat-web-client", "knockout", 
     {
       title: params.title || "Confirm",
       message: params.message || "",
-      buttons: [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
+      buttons: [{className: "btn-default", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
       callback: function(button)
       {
         if(button.label == "OK")

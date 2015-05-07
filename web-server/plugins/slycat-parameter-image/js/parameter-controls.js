@@ -161,19 +161,19 @@ $.widget("parameter_image.controls",
       var txt = "";
       var buttons_save = [
         {className: "btn-default", label:"Cancel"}, 
-        {className: "btn-danger",  label:"Save Entire Table"}
+        {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
 
       if(self.options.selection.length > 0)
       {
         txt += "You have " + self.options.selection.length + " rows selected. ";
-        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-danger",  label:"Save Selected Rows"});
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
       }
       if(self.options.hidden_simulations.length > 0)
       {
         var visibleRows = self.options.metadata['row-count'] - self.options.hidden_simulations.length;
         txt += "You have " + visibleRows + " rows visible. ";
-        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-danger",  label:"Save Visible Rows"});
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Visible", icon_class:"fa fa-eye"});
       }
 
       txt += "What would you like to do?";
@@ -611,7 +611,7 @@ $.widget("parameter_image.controls",
         alert: alert,
         buttons: [
           {className: "btn-default", label:"Cancel"}, 
-          {className: "btn-danger",  label:"Apply"}
+          {className: "btn-primary",  label:"Apply"}
         ],
         callback: function(button, value)
         {
