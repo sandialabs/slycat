@@ -38,6 +38,20 @@ define("slycat-page-demo-model", ["slycat-server-root", "knockout", "lodash", "d
       child.postMessage(ko.observableArray([1, 2, 3]), "*");
     });
   }
+  page.close_children = function()
+  {
+    lodash.each(page.children(), function(child)
+    {
+      child.close();
+    });
+  }
+  page.ask_close_children = function()
+  {
+    lodash.each(page.children(), function(child)
+    {
+      child.postMessage("close", "*");
+    });
+  }
 
   ko.applyBindings(page, document.getElementById("slycat-page-demo"));
 
