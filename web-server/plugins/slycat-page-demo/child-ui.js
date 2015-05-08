@@ -15,11 +15,21 @@ define("slycat-page-demo-child-page", ["knockout", "URI"], function(ko, URI)
   window.addEventListener("message", function(event)
   {
     console.log(event);
+
+    if(event.origin !== URI().scheme() + "://" + URI().host() || event.source !== window.opener)
+      return;
+
+    if("bid" in event.data)
+    {
+      window.history.replaceState(null, null, URI().setQuery("bid", event.data.bid));
+    }
   });
 
   window.addEventListener("unload", function(event)
   {
-    window.opener.postMessage("closing", "*");
+    window.opener.postMessage("closing", URI().scheme() + "://" + URI().host());
   });
+
+  window.opener.postMessage("open", URI().scheme() + "://" + URI().host());
 });
 
