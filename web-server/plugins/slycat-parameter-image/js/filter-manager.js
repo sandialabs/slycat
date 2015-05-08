@@ -273,6 +273,56 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
               category.selected(false);
           });
         };
+        vm.maxChanged = function(filter, event) {
+          console.log("max has changed.");
+        };
+        vm.maxKeyPress = function(filter, event) {
+          console.log("max has keypress. event.which is: " + event.which);
+          // Want to capture enter key on keypress and prevent it from adding new lines.
+          // Instead, it needs to start validation and saving on new value.
+          if(event.which == 13)
+          {
+            // Enter key was pressed, so we need to validate
+            // validate
+            console.log("enter key was pressed.");
+
+            return false;
+          }
+          // Detecting escape key does not seem to work with keypress event, at least not in Firefox.
+          // Instead, we catch escape key with the keyup event.
+          // else if(event.which == 27)
+          // {
+          //   // escape key was pressed, so we need to validate
+          //   // validate
+          //   console.log("escape key was pressed");
+          //   return false;
+          // }
+          else
+            return true;
+        };
+        vm.maxKeyUp = function(filter, event) {
+          console.log("max has keyup. event.which is: " + event.which);
+          // Detecting escape key here on keyup because it doesn't work reliably on keypress.
+          if(event.which == 27)
+          {
+            // escape key was pressed, so we need to validate
+            // validate
+            console.log("escape key was pressed.");
+            return false;
+          }
+          else
+            return true;
+        };
+        vm.maxFocus = function(filter, event) {
+          console.log("max has focus.");
+        };
+        vm.maxBlur = function(filter, event) {
+          console.log("max lost focus.");
+        };
+
+
+
+
       };
 
       ko.applyBindings(

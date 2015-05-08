@@ -83,8 +83,19 @@ rights in this software.
               <div class="varName" data-bind="text: name">[variable name]</div>
             </div>
             <div class="minMaxHighLow">
-              <div class="max" data-bind="text: max().toPrecision(3).length > max().toExponential(2).length ? max().toExponential(2) : max().toPrecision(3)">[max]</div>
-              <div class="min" data-bind="text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), style: { top: $parent.sliderHeight() + 20 + 'px' }">[min]</div>
+              <div class="max" contentEditable="true"
+                data-bind="
+                  text: max().toPrecision(3).length > max().toExponential(2).length ? max().toExponential(2) : max().toPrecision(3),
+                  event: { 
+                    input: $parent.maxChanged, 
+                    keypress: $parent.maxKeyPress,
+                    keyup: $parent.maxKeyUp,
+                    focus: $parent.maxFocus,
+                    blur: $parent.maxBlur,
+                  }
+                  ">[max]</div>
+              <div class="min" contentEditable="true"
+                data-bind="text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), style: { top: $parent.sliderHeight() + 20 + 'px' }">[min]</div>
               <div class="high"
                    data-bind="
                               text: high().toPrecision(3).length > high().toExponential(2).length ? high().toExponential(2) : high().toPrecision(3),
