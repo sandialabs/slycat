@@ -4,15 +4,17 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-page-demo-child-page", [], function()
+define("slycat-page-demo-child-page", ["knockout", "URI"], function(ko, URI)
 {
+  if(!window.opener && URI().hasQuery("role", "child") === true)
+  {
+    window.close();
+    return;
+  }
+
   window.addEventListener("message", function(event)
   {
     console.log(event);
-    if(event.data === "close")
-    {
-      window.close();
-    }
   });
 
   window.addEventListener("unload", function(event)

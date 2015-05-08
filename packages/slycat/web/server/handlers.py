@@ -360,7 +360,7 @@ def get_model(mid, **kwargs):
 
   elif accept == "text/html":
     mtype = model.get("model-type", None)
-    ptype = kwargs.get("page-type", None)
+    ptype = kwargs.get("ptype", None)
 
     cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
 
