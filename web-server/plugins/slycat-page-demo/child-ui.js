@@ -6,10 +6,17 @@ rights in this software.
 
 define("slycat-page-demo-child-page", ["knockout", "URI"], function(ko, URI)
 {
-  if(!window.opener && URI().hasQuery("role", "child") === true)
+  // If this page is an orphan, close it.
+  if(URI().hasQuery("role", "child") === true)
   {
     window.close();
     return;
+  }
+
+  // This must be a new child, mark it as a child.
+  if(URI().hasQuery("role", "new-child") === true)
+  {
+    window.history.replaceState(null, null, URI().setQuery("role", "child"));
   }
 
   window.addEventListener("message", function(event)
@@ -19,6 +26,7 @@ define("slycat-page-demo-child-page", ["knockout", "URI"], function(ko, URI)
     if(event.origin !== URI().scheme() + "://" + URI().host() || event.source !== window.opener)
       return;
 
+    // Synchronize with our parent's bid
     if("bid" in event.data)
     {
       window.history.replaceState(null, null, URI().setQuery("bid", event.data.bid));
@@ -27,9 +35,11 @@ define("slycat-page-demo-child-page", ["knockout", "URI"], function(ko, URI)
 
   window.addEventListener("unload", function(event)
   {
+    // Notify our parent that we're closing.
     window.opener.postMessage("closing", URI().scheme() + "://" + URI().host());
   });
 
+  // Notify our parent that we're open.
   window.opener.postMessage("open", URI().scheme() + "://" + URI().host());
 });
 

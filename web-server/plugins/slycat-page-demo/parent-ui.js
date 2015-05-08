@@ -11,7 +11,7 @@ define("slycat-page-demo-model", ["slycat-server-root", "slycat-bookmark-manager
   page.children = ko.observableArray();
   page.add_child = function()
   {
-    page.children.push(window.open(URI().addSearch({"ptype":"page-demo-child","role":"child"})));
+    page.children.push(window.open(URI().addSearch({"ptype":"page-demo-child","role":"new-child"})));
   }
   page.send_message = function()
   {
@@ -105,7 +105,7 @@ define("slycat-page-demo-model", ["slycat-server-root", "slycat-bookmark-manager
         {
           for(var i = 0; i != state.children; ++i)
           {
-            var child = window.open(URI().addSearch({"ptype":"page-demo-child", "role":"child"}));
+            var child = window.open(URI().addSearch({"ptype":"page-demo-child", "role":"new-child"}));
             if(child)
             {
               page.children.push(child);

@@ -17,6 +17,7 @@ import Queue
 import re
 import slycat.hdf5
 import slycat.hyperchunks
+import slycat.uri
 import slycat.web.server
 import slycat.web.server.authentication
 import slycat.web.server.cleanup
@@ -361,8 +362,14 @@ def get_model(mid, **kwargs):
   elif accept == "text/html":
     mtype = model.get("model-type", None)
     ptype = kwargs.get("ptype", None)
+    role = kwargs.get("role", None)
 
-    cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
+    cherrypy.log.error("mtype: %s ptype: %s role: %s" % (mtype, ptype, role))
+
+    # If the user is trying to open a child page, redirect the request to open the parent instead.
+    if role == "child":
+      uri = slycat.uri.URI(cherrypy.url(qs=cherrypy.request.query_string)).removeQuery(["ptype", "role"])
+      raise cherrypy.HTTPRedirect(str(uri))
 
     marking = slycat.web.server.plugin.manager.markings[model["marking"]]
 
@@ -381,7 +388,7 @@ def get_model(mid, **kwargs):
       context["slycat-page-type"] = ptype
       context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
       if ptype in slycat.web.server.plugin.manager.page_bundles:
-        context["slycat-page-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/css"]
+        context["slycat-page-css-bundles"] =[{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/css"]
         context["slycat-page-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/javascript"]
     elif mtype in slycat.web.server.plugin.manager.models.keys():
       template = "slycat-model.html"
