@@ -163,7 +163,7 @@ define("slycat-color-switcher", ["d3"], function(d3)
               })
               .css({
                 "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
-                "background-size" : "5px 75%, 50px auto",
+                "background-size" : "5px 75%, 50px 100%",
                 "background-position" : "right 10px center, right 5px center",
                 "background-repeat" : "no-repeat, no-repeat",
               })

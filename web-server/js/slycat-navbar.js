@@ -173,7 +173,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       }
       var project_wizard_filter = function(wizard)
       {
-        return wizard.require.context() === "project" && component.project_id();
+        return wizard.require.context() === "project" && component.project_id() && !component.model_id();
       }
       var model_wizard_filter = function(wizard)
       {
