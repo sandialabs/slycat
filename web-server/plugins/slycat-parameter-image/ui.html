@@ -92,7 +92,10 @@ rights in this software.
                     keyup: $parent.maxKeyUp,
                     focus: $parent.maxFocus,
                     blur: $parent.maxBlur,
-                  }
+                    mouseover: $parent.maxMouseOver,
+                    mouseout: $parent.maxMouseOut
+                  },
+                  css: { edited: max() != max_stats() }
                   ">[max]</div>
               <div class="min" contentEditable="true"
                 data-bind="text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), style: { top: $parent.sliderHeight() + 20 + 'px' }">[min]</div>

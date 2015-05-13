@@ -672,6 +672,13 @@ rights in this software.
   position: absolute;
   left: 44px;
 }
+.slycat-pim-filter .max.editing,
+.slycat-pim-filter .min.editing,
+.slycat-pim-filter .max.edited,
+.slycat-pim-filter .min.edited
+{
+  background-color: #F0AD4E;
+}
 .slycat-pim-filter .max
 {
 

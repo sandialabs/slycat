@@ -94,6 +94,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         buildComputedFilters(self.allFilters);
 
         _.each(numericFilters(), function (filter) {
+          filter.max.extend({ notify: 'always' });
+          filter.min.extend({ notify: 'always' });
           filter.rateLimitedHigh = ko.pureComputed( filter.high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
           filter.rateLimitedLow = ko.pureComputed( filter.low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
         });
@@ -132,8 +134,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             name: ko.observable( self.table_metadata["column-names"][i] ),
             type: ko.observable('numeric'),
             index: ko.observable( i ),
-            max: ko.observable( self.table_statistics[i]["max"] ),
-            min: ko.observable( self.table_statistics[i]["min"] ),
+            max_stats: ko.observable( self.table_statistics[i]["max"] ),
+            min_stats: ko.observable( self.table_statistics[i]["min"] ),
+            max: ko.observable( self.table_statistics[i]["max"] ).extend({ notify: 'always' }),
+            min: ko.observable( self.table_statistics[i]["min"] ).extend({ notify: 'always' }),
             high: high,
             low: low,
             invert: ko.observable(false),
@@ -285,6 +289,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             // Enter key was pressed, so we need to validate
             // validate
             console.log("enter key was pressed.");
+            event.target.blur();
 
             return false;
           }
@@ -308,16 +313,37 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             // escape key was pressed, so we need to validate
             // validate
             console.log("escape key was pressed.");
+            event.target.blur();
             return false;
           }
           else
             return true;
         };
         vm.maxFocus = function(filter, event) {
+          $(event.target).toggleClass("editing", true);
+          event.target.textContent = this.max();
           console.log("max has focus.");
         };
         vm.maxBlur = function(filter, event) {
+          $(event.target).toggleClass("editing", false);
+          this.max( Number(event.target.textContent) );
           console.log("max lost focus.");
+        };
+        vm.maxMouseOver = function(filter, event) {
+          if( !$(event.target).is(":focus") )
+          {
+            $(event.target).toggleClass("editing", true);
+            console.log("max mouse in and did stuff.");
+          }
+          console.log("max mouse in.");
+        };
+        vm.maxMouseOut = function(filter, event) {
+          if( !$(event.target).hasClass("editing") )
+          {
+            $(event.target).toggleClass("editing", false);
+            console.log("max mouse out and did stuff.");
+          }
+          console.log("max mouse out.");
         };
 
 
