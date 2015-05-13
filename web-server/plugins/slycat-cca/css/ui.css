@@ -313,3 +313,14 @@ a
 {
   cursor: pointer;
 }
+.bootstrap-styles .btn-default:hover
+{
+    background-color: white;
+}
+.bootstrap-styles .btn-default:active, 
+.bootstrap-styles .btn-default.active,
+.bootstrap-styles .open > .btn-default.dropdown-toggle,
+.bootstrap-styles .open > .btn-default.dropdown-toggle:hover
+{
+    background-color: #E6E6E6;
+}

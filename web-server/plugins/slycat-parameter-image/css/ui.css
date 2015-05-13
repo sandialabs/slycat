@@ -857,14 +857,14 @@ a {
     white-space: nowrap;
     margin-left: -7px;
 }
-.bootstrap-styles .btn-default:hover, 
-.bootstrap-styles .btn-default:focus, 
-.bootstrap-styles .btn-default.focus
+.bootstrap-styles .btn-default:hover
 {
     background-color: white;
 }
 .bootstrap-styles .btn-default:active, 
-.bootstrap-styles .btn-default.active
+.bootstrap-styles .btn-default.active,
+.bootstrap-styles .open > .btn-default.dropdown-toggle,
+.bootstrap-styles .open > .btn-default.dropdown-toggle:hover
 {
     background-color: #E6E6E6;
 }
