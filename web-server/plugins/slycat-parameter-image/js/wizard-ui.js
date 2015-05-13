@@ -5,7 +5,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
@@ -19,7 +19,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
-    }
+    };
+
     component.create_model = function()
     {
       client.post_project_models(
@@ -37,7 +38,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         },
         error: dialog.ajax_error("Error creating model."),
       });
-    }
+    };
+
     component.connect = function()
     {
       component.remote.enable(false);
@@ -61,7 +63,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           component.remote.focus("password");
         }
       });
-    }
+    };
+
     component.load_table = function()
     {
       client.post_model_files(
@@ -89,7 +92,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                 {
                   var attributes = [];
                   for(var i = 0; i != metadata["column-names"].length; ++i)
-                    attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1})
+                    attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1});
                   mapping.fromJS(attributes, component.attributes);
                   component.tab(3);
                 }
@@ -99,7 +102,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         },
         error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
       });
-    }
+    };
 
     component.set_input = function(attribute)
     {
@@ -108,7 +111,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       attribute.rating(false);
       attribute.image(false);
       return true;
-    }
+    };
 
     component.set_output = function(attribute)
     {
@@ -117,7 +120,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       attribute.rating(false);
       attribute.image(false);
       return true;
-    }
+    };
 
     component.set_category = function(attribute)
     {
@@ -126,7 +129,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       attribute.rating(false);
       attribute.image(false);
       return true;
-    }
+    };
 
     component.set_rating = function(attribute)
     {
@@ -135,7 +138,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       attribute.category(false);
       attribute.image(false);
       return true;
-    }
+    };
 
     component.set_image = function(attribute)
     {
@@ -144,7 +147,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       attribute.category(false);
       attribute.rating(false);
       return true;
-    }
+    };
 
     component.finish = function()
     {
@@ -225,7 +228,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           });
         }
       });
-    }
+    };
 
     return component;
   }
