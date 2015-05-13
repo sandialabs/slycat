@@ -262,7 +262,7 @@ def register_slycat_plugin(context):
   context.register_model_command("GET", "parameter-image", "list-uris", list_uris)
 
   # Register custom wizards for creating PI models.
-  context.register_wizard("parameter-image", "New Remote Parameter Space Model", require={"action":"create", "context":"project"})
+  context.register_wizard("parameter-image", "New Parameter Space Model", require={"action":"create", "context":"project"})
   context.register_wizard_resource("parameter-image", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
   context.register_wizard_resource("parameter-image", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
 

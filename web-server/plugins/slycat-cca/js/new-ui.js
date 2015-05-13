@@ -55,6 +55,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       }
     };
 
+    var upload_success = function() {
+      client.get_model_table_metadata({
+        mid: component.model._id(),
+        name: "data-table",
+        success: function(metadata) {
+          var attributes = [];
+          for(var i = 0; i != metadata["column-names"].length; ++i)
+            attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:metadata["column-types"][i] != "string", output:false});
+          mapping.fromJS(attributes, component.attributes);
+          component.tab(5);
+        }
+      });
+    };
+
     component.upload_table = function() {
       client.post_model_files({
         mid: component.model._id(),
@@ -62,19 +76,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         input: true,
         names: ["data-table"],
         parser: component.parser(),
-        success: function() {
-          client.get_model_table_metadata({
-            mid: component.model._id(),
-            name: "data-table",
-            success: function(metadata) {
-              var attributes = [];
-              for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:metadata["column-types"][i] != "string", output:false});
-              mapping.fromJS(attributes, component.attributes);
-              component.tab(5);
-            }
-          });
-        },
+        success: upload_success,
         error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
       });
     };
@@ -108,19 +110,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         input: true,
         names: ["data-table"],
         parser: component.parser(),
-        success: function() {
-          client.get_model_table_metadata({
-            mid: component.model._id(),
-            name: "data-table",
-            success: function(metadata) {
-              var attributes = [];
-              for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:metadata["column-types"][i] != "string", output:false});
-              mapping.fromJS(attributes, component.attributes);
-              component.tab(5);
-            }
-          });
-        },
+        success: upload_success,
         error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
       });
     };
@@ -173,5 +163,5 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
   return {
     viewModel: constructor,
     template: { require: "text!" + server_root + "resources/wizards/new-cca/ui.html"},
-    };
+  };
 });
