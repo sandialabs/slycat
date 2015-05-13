@@ -313,3 +313,14 @@ a
 {
   cursor: pointer;
 }
+.bootstrap-styles .btn-default:hover, 
+.bootstrap-styles .btn-default:focus, 
+.bootstrap-styles .btn-default.focus
+{
+    background-color: white;
+}
+.bootstrap-styles .btn-default:active, 
+.bootstrap-styles .btn-default.active
+{
+    background-color: #E6E6E6;
+}
