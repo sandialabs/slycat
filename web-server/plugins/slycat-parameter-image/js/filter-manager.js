@@ -326,7 +326,13 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         };
         vm.maxBlur = function(filter, event) {
           $(event.target).toggleClass("editing", false);
-          this.max( Number(event.target.textContent) );
+          var newValue = Number(event.target.textContent);
+          if(this.high() > newValue)
+          {
+            this.high( newValue );
+          }
+          this.max( newValue );
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           console.log("max lost focus.");
         };
         vm.maxMouseOver = function(filter, event) {

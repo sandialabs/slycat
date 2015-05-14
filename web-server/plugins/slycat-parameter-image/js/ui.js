@@ -1238,7 +1238,7 @@ function filters_changed(newValue)
         {
           new_filters.push( '(' + filter_var + ' > ' + filter.high() + ' or ' + filter_var + ' < ' + filter.low() + ')' );
         }
-        else if( !filter.invert() && ( filter.high() != filter.max() || filter.low() != filter.min() ) )
+        else if( !filter.invert() && ( filter.high() < filter.max_stats() || filter.low() > filter.min_stats() ) )
         {
           new_filters.push( '(' + filter_var + ' <= ' + filter.high() + ' and ' + filter_var + ' >= ' + filter.low() + ')' );
         }
