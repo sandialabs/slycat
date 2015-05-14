@@ -611,22 +611,19 @@ rights in this software.
 .category-filter.auto-width {
   width: auto;
 }
-.slycat-pim-filter .close-button:hover,
-.category-filter .close-button:hover,
-.slycat-pim-filter .invert-button:hover,
-.category-filter .invert-button:hover,
-.category-filter .select-all-button:hover,
-.category-filter .select-none-button:hover,
-.category-filter .auto-width-button:hover
+.slycat-pim-filter .button
 {
   cursor: pointer;
-}
-.slycat-pim-filter .close-button,
-.category-filter .close-button
-{
   position: absolute;
+}
+.slycat-pim-filter .close-button
+{
   top: 4px;
   left: 6px;
+}
+.slycat-pim-filter .reset-button
+{
+  position: static;
 }
 .category-filter .auto-width-button {
   top: 5px;
@@ -634,10 +631,9 @@ rights in this software.
   font-size: 12px;
 }
 .slycat-pim-filter .invert-button,
-.category-filter .invert-button,
-.category-filter .select-all-button,
-.category-filter .select-none-button,
-.category-filter .auto-width-button
+.slycat-pim-filter .select-all-button,
+.slycat-pim-filter .select-none-button,
+.slycat-pim-filter .auto-width-button
 {
   position: absolute;
 }
@@ -672,16 +668,22 @@ rights in this software.
   position: absolute;
   left: 44px;
 }
-.slycat-pim-filter .max.editing,
-.slycat-pim-filter .min.editing,
-.slycat-pim-filter .max.edited,
-.slycat-pim-filter .min.edited
+.slycat-pim-filter .max .editing,
+.slycat-pim-filter .min .editing,
+.slycat-pim-filter .max .edited,
+.slycat-pim-filter .min .edited,
+.slycat-pim-filter .max .hover,
+.slycat-pim-filter .min .hover
 {
   background-color: #F0AD4E;
 }
-.slycat-pim-filter .max
+.slycat-pim-filter .minMax
 {
-
+  z-index: 20;
+}
+.slycat-pim-filter .min-max-field
+{
+  display: inline-block;
 }
 .slycat-pim-filter .min
 {

@@ -330,20 +330,21 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           console.log("max lost focus.");
         };
         vm.maxMouseOver = function(filter, event) {
-          if( !$(event.target).is(":focus") )
-          {
-            $(event.target).toggleClass("editing", true);
-            console.log("max mouse in and did stuff.");
-          }
-          console.log("max mouse in.");
+          $(event.target).toggleClass("hover", true);
+          console.log("max mouse over.");
         };
         vm.maxMouseOut = function(filter, event) {
-          if( !$(event.target).hasClass("editing") )
-          {
-            $(event.target).toggleClass("editing", false);
-            console.log("max mouse out and did stuff.");
-          }
+          $(event.target).toggleClass("hover", false);
           console.log("max mouse out.");
+        };
+        vm.maxReset = function(filter, event) {
+          if(this.high() > this.max_stats())
+          {
+            this.high( this.max_stats() );
+          }
+          this.max(this.max_stats());
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+          console.log("max reset.");
         };
 
 
