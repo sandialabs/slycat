@@ -11,7 +11,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
-    component.ps_type = ko.observable("local"); // local is selected by default...
+    component.ps_type = ko.observable("remote"); // remote is selected by default...
 
     component.cancel = function() {
       if(component.remote.sid())
