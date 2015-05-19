@@ -105,9 +105,6 @@ def require_boolean_parameter(name):
     raise cherrypy.HTTPError("400 Parameter %s must be true or false." % name)
   return value
 
-def get_home():
-  raise cherrypy.HTTPRedirect(cherrypy.request.app.config["slycat-web-server"]["home-url"])
-
 def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
