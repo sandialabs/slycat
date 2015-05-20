@@ -1188,6 +1188,12 @@ function active_filters_ready()
     filter = allFilters()[i];
     if(filter.type() == 'numeric')
     {
+      filter.max.subscribe(function(newValue){
+        filters_changed(newValue);
+      });
+      filter.min.subscribe(function(newValue){
+        filters_changed(newValue);
+      });
       filter.rateLimitedHigh.subscribe(function(newValue){
         filters_changed(newValue);
       });
@@ -1218,10 +1224,9 @@ function filters_changed(newValue)
 {
   var allFilters = filter_manager.allFilters;
   var active_filters = filter_manager.active_filters;
-  var new_filter_expression = "";
   var filter_var, selected_values;
   var new_filters = [];
-  var filtered_all = false;
+
   for(var i = 0; i < allFilters().length; i++)
   {
     filter = allFilters()[i];
@@ -1230,149 +1235,95 @@ function filters_changed(newValue)
       filter_var = 'a' + filter.index();
       if(filter.type() == 'numeric')
       {
-        if( filter.invert() && (filter.high() == filter.low()) )
+        if( filter.invert() )
         {
-          filtered_all = true;
+          new_filters.push( '(' + filter_var + ' >= ' + filter.high() + ' and ' + filter_var + ' <= ' + filter.max() + ' or ' + filter_var + ' <= ' + filter.low() + ' and ' + filter_var + ' >= ' + filter.min() + ')' );
         }
-        else if( filter.invert() && (filter.high() != filter.low()) )
-        {
-          new_filters.push( '(' + filter_var + ' > ' + filter.high() + ' or ' + filter_var + ' < ' + filter.low() + ')' );
-        }
-        else if( !filter.invert() && ( filter.high() < filter.max_stats() || filter.low() > filter.min_stats() ) )
+        else if( !filter.invert() )
         {
           new_filters.push( '(' + filter_var + ' <= ' + filter.high() + ' and ' + filter_var + ' >= ' + filter.low() + ')' );
         }
       }
-      else if(filter.type() == 'category' && filter.categories().length > filter.selected().length)
+      else if(filter.type() == 'category')
       {
         selected_values = [];
         var optional_quote = "";
         if(filter.selected().length == 0)
-          filtered_all = true;
-        for(var j = 0; j < filter.selected().length; j++)
         {
-          optional_quote = table_metadata["column-types"][filter.index()] == "string" ? '"' : '';
-          selected_values.push( optional_quote + filter.selected()[j].value() + optional_quote );
+          selected_values.push( "" );
+        }
+        else
+        {
+          for(var j = 0; j < filter.selected().length; j++)
+          {
+            optional_quote = table_metadata["column-types"][filter.index()] == "string" ? '"' : '';
+            selected_values.push( optional_quote + filter.selected()[j].value() + optional_quote );
+          }
         }
         new_filters.push( '(' + filter_var + ' in [' + selected_values.join(', ') + '])' );
       }
     }
   }
-  new_filter_expression = new_filters.join(' and ');
+  filter_expression = new_filters.join(' and ');
 
-  // Added first filter but it's not doing anything, so need to clear any hidden simulations
-  if(active_filters().length == 1 && (filter_expression == null || filter_expression == ""))
+  // We have one or more filters
+  if( !(filter_expression == null || filter_expression == "") )
   {
-    // Clear hidden_simulations
-    while(hidden_simulations.length > 0) {
-      hidden_simulations.pop();
-    }
-    update_widgets_when_hidden_simulations_change();
-  }
-
-  if(filter_expression == null || new_filter_expression != filter_expression)
-  {
-    filter_expression = new_filter_expression;
-    if(filtered_all)
+    $.ajax(
     {
-      filtered_simulations = [];
-
-      // Clear hidden_simulations
-      while(hidden_simulations.length > 0) {
-        hidden_simulations.pop();
-      }
-
-      // Add all simulations to hidden_simulations and filtered_simulations
-      for(var i = 0; i < indices.length; i++){
-        hidden_simulations.push(indices[i]);
-        filtered_simulations.push(indices[i]);
-      }
-
-      update_widgets_when_hidden_simulations_change();
-    }
-    else if(new_filters.length == 0)
-    {
-      filtered_simulations = [];
-      // Clear hidden_simulations
-      while(hidden_simulations.length > 0) {
-        hidden_simulations.pop();
-      }
-
-      // Removed last filter, so revert to any manually hidden simulations
-      if(active_filters().length == 0)
+      type : "GET",
+      url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/index(0)|" + filter_expression + "/...",
+      async : false,
+      success : function(data)
       {
-        for(var i = 0; i < manually_hidden_simulations.length; i++){
-          hidden_simulations.push(manually_hidden_simulations[i]);
-        }
-      }
+        var filter_indices = data[0];
+        var filter_status = data[1];
+        var new_filtered_simulations = [];
 
-      update_widgets_when_hidden_simulations_change();
-    }
-    else
-    {
-      $.ajax(
+        for(var i=0; i < filter_status.length; i++)
+        {
+          if(!filter_status[i])
+          {
+            new_filtered_simulations.push( filter_indices[i] );
+          }
+        }
+
+        new_filtered_simulations.sort();
+
+        filtered_simulations = new_filtered_simulations;
+
+        // Clear hidden_simulations
+        while(hidden_simulations.length > 0) {
+          hidden_simulations.pop();
+        }
+
+        for(var i=0; i<filtered_simulations.length; i++){
+          hidden_simulations.push(filtered_simulations[i]);
+        }
+
+        update_widgets_when_hidden_simulations_change();
+      },
+      error: function(request, status, reason_phrase)
       {
-        type : "GET",
-        url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/index(0)|" + new_filter_expression + "/...",
-        async : false,
-        success : function(data)
-        {
-          var filter_indices = data[0];
-          var filter_status = data[1];
-          var new_filtered_simulations = [];
-
-          for(var i=0; i < filter_status.length; i++)
-          {
-            if(!filter_status[i])
-            {
-              new_filtered_simulations.push( filter_indices[i] );
-            }
-          }
-
-          new_filtered_simulations.sort();
-          if( !_.isEmpty(_.xor(filtered_simulations, new_filtered_simulations)) )
-          {
-            filtered_simulations = new_filtered_simulations;
-
-            // Clear hidden_simulations
-            while(hidden_simulations.length > 0) {
-              hidden_simulations.pop();
-            }
-
-            for(var i=0; i<filtered_simulations.length; i++){
-              hidden_simulations.push(filtered_simulations[i]);
-            }
-
-            update_widgets_when_hidden_simulations_change();
-          }
-          else
-          {
-            //console.log("Nothing changed in filtered simulations.");
-          }
-        },
-        error: function(request, status, reason_phrase)
-        {
-          console.log("error", request, status, reason_phrase);
-        }
-      });
-    }
+        console.log("error", request, status, reason_phrase);
+      }
+    });
   }
-
-  // Removed last filter, so revert to any manually hidden simulations
-  if(active_filters().length == 0)
+  // We have no more filters, so revert to any manually hidden simulations
+  else
   {
     // Clear hidden_simulations
     while(hidden_simulations.length > 0) {
       hidden_simulations.pop();
     }
 
+    // Revert to manually hidden simulations
     for(var i = 0; i < manually_hidden_simulations.length; i++){
       hidden_simulations.push(manually_hidden_simulations[i]);
     }
 
     update_widgets_when_hidden_simulations_change();
   }
-
 }
 
 });
