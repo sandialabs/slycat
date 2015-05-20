@@ -1250,7 +1250,7 @@ function filters_changed(newValue)
         var optional_quote = "";
         if(filter.selected().length == 0)
         {
-          selected_values.push( "" );
+          selected_values.push( '""' );
         }
         else
         {
