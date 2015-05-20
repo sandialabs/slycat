@@ -1,13 +1,13 @@
 <div class="modal-header">
-  <h3 class="modal-title">Remote Parameter Space Model</h3>
+  <h3 class="modal-title">New CCA Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
     <li data-bind="css:{active:tab() == 0}"><a>Create Model</a></li>
     <li data-bind="css:{active:tab() == 1}"><a>Select Type</a></li>
-    <li data-bind="css:{active:tab() == 2}" class="ps-tab-local" style="display: none;"><a>Upload Table</a></li>
-    <li data-bind="css:{active:tab() == 3}" class="ps-tab-remote" style="display: none;"><a>Choose Host</a></li>
-    <li data-bind="css:{active:tab() == 4}" class="ps-tab-remote" style="display: none;"><a>Select Table</a></li>
+    <li data-bind="css:{active:tab() == 2}" class="cca-tab-local" style="display: none;"><a>Upload Table</a></li>
+    <li data-bind="css:{active:tab() == 3}" class="cca-tab-remote" style="display: none;"><a>Choose Host</a></li>
+    <li data-bind="css:{active:tab() == 4}" class="cca-tab-remote" style="display: none;"><a>Select Table</a></li>
     <li data-bind="css:{active:tab() == 5}"><a>Select Columns</a></li>
     <li data-bind="css:{active:tab() == 6}"><a>Results</a></li>
   </ul>
@@ -22,13 +22,13 @@
     <div data-bind="visible:tab() == 1">
       <div class="radio" style="margin-left: 15px;">
         <label>
-          <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: ps_type">
+          <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: cca_type">
           Local
         </label>
       </div>
       <div class="radio" style="margin-left: 15px;">
         <label>
-          <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: ps_type">
+          <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: cca_type">
           Remote
         </label>
       </div>
@@ -54,20 +54,28 @@
       <table style="width:100%">
         <thead>
           <tr>
-            <tr><th>Variable</th><th>Input</th><th>Output</th><th>Rating</th><th>Category</th><th>Image</th></tr>
+            <tr><th>Variable</th><th>Input</th><th>Output</th></tr>
           </tr>
         </thead>
         <tbody data-bind="foreach:attributes">
           <tr>
             <td data-bind="text:name"></td>
-            <td><input type="checkbox" data-bind="click: $parent.set_input, checked: input"/></td>
-            <td><input type="checkbox" data-bind="click: $parent.set_output, checked: output"/></td>
-            <td data-bind="if:type()!='string'"><input type="checkbox" data-bind="click: $parent.set_rating, checked: rating"/></td>
-            <td><input type="checkbox" data-bind="click: $parent.set_category, checked: category"/></td>
-            <td data-bind="if:type()=='string'"><input type="checkbox" data-bind="click: $parent.set_image, checked: image"/></td>
+            <td><input type="checkbox" value="input" data-bind="enable: type() != 'string' && !constant(), click: $parent.set_input, checked: input"/></td>
+            <td><input type="checkbox" value="output" data-bind="enable: type() != 'string' && !constant(), click: $parent.set_output, checked: output"/></td>
           </tr>
         </tbody>
       </table>
+      <form class="form-horizontal" role="form">
+        <div class="form-group">
+          <div class="col-sm-offset-6 col-sm-6">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" data-bind="checked: scale_inputs"/>Scale inputs to unit variance
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
 
     <div data-bind="visible:tab() == 6">
@@ -76,7 +84,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible:tab() != 4,click:cancel" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-default pull-left" data-bind="visible:tab() != 6,click:cancel" data-dismiss="modal">Cancel</button>
   <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Next</button>
   <button class="btn btn-default" data-bind="visible:tab() == 1,click:select_type">Next</button>
   <button class="btn btn-default" data-bind="visible:tab() == 2,click:upload_table">Next</button>

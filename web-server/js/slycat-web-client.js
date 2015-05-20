@@ -354,6 +354,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.get_model_table_metadata = function(params)
   {
+    console.log("slycat-web-client.get_model_table_metadata() is deprecated, use get_model_arrayset_metadata() instead.");
+
     var url = server_root + "models/" + params.mid + "/tables/" + params.name + "/arrays/" + (params.aid || "0") + "/metadata";
     if(params.index)
       url += "?index=" + params.index;

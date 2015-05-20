@@ -187,9 +187,9 @@ $.widget("parameter_image.controls",
         {
           if(button.label == "Save Entire Table")
             self._write_data_table();
-          else if(button.label == "Save Selected Rows")
+          else if(button.label == "Save Selected")
             self._write_data_table( self.options.selection );
-          else if(button.label == "Save Visible Rows")
+          else if(button.label == "Save Visible")
             self._write_data_table( self._filterIndices() );
         },
       });

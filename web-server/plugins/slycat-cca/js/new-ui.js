@@ -1,22 +1,28 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "slycat-remote-browser"], function(server_root, client, dialog, ko, mapping)
-{
-  function constructor(params)
-  {
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping"], function(server_root, client, dialog, ko, mapping) {
+  function constructor(params) {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
-    component.ps_type = ko.observable("remote"); // remote is selected by default...
+    component.scale_inputs = ko.observable(true);
+    component.cca_type = ko.observable("local"); // local is selected by default...
+
+    component.set_input = function(attribute) {
+      attribute.output(false);
+      return true;
+    };
+
+    component.set_output = function(attribute) {
+      attribute.input(false);
+      return true;
+    };
 
     component.cancel = function() {
-      if(component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
-
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
     };
@@ -24,49 +30,49 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
-        type: "parameter-image",
+        type: "cca",
         name: component.model.name(),
         description: component.model.description(),
         marking: component.model.marking(),
         success: function(mid) {
           component.model._id(mid);
           component.tab(1);
-          component.remote.focus(true);
         },
-        error: dialog.ajax_error("Error creating model."),
+        error: dialog.ajax_error("Error creating model.")
       });
     };
 
     component.select_type = function() {
-      var type = component.ps_type();
+      var type = component.cca_type();
 
       if (type === "local") {
-        $(".ps-tab-local").css("display", "block");
+        $(".cca-tab-local").css("display", "block");
         component.tab(2);
       } else if (type === "remote") {
         $(".modal-dialog").addClass("modal-lg");
-        $(".ps-tab-remote").css("display", "block");
+        $(".cca-tab-remote").css("display", "block");
         component.tab(3);
       }
     };
 
     var upload_success = function() {
-      client.get_model_command({
+      client.get_model_arrayset_metadata({
         mid: component.model._id(),
-        type: "parameter-image",
-        command: "media-columns",
-        success: function(media_columns) {
-          client.get_model_table_metadata({
-            mid: component.model._id(),
-            name: "data-table",
-            success: function(metadata) {
-              var attributes = [];
-              for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1});
-              mapping.fromJS(attributes, component.attributes);
-              component.tab(5);
-            }
-          });
+        aid: "data-table",
+        arrays: "0",
+        statistics: "0/...",
+        success: function(metadata) {
+          console.log(metadata);
+          var attributes = [];
+          for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
+          {
+            var name = metadata.arrays[0].attributes[i].name;
+            var type = metadata.arrays[0].attributes[i].type;
+            var constant = metadata.statistics[i].unique == 1;
+            attributes.push({name:name, type:type, constant:constant, input:type != "string" && !constant, output:false});
+          }
+          mapping.fromJS(attributes, component.attributes);
+          component.tab(5);
         }
       });
     };
@@ -108,7 +114,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       client.post_model_files({
         mid: component.model._id(),
         sids: [component.remote.sid()],
-        paths: component.browser.selection(),
+        paths: [component.browser.selection()],
         input: true,
         names: ["data-table"],
         parser: component.parser(),
@@ -117,63 +123,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       });
     };
 
-    component.set_input = function(attribute) {
-      attribute.output(false);
-      attribute.category(false);
-      attribute.rating(false);
-      attribute.image(false);
-      return true;
-    };
-
-    component.set_output = function(attribute) {
-      attribute.input(false);
-      attribute.category(false);
-      attribute.rating(false);
-      attribute.image(false);
-      return true;
-    };
-
-    component.set_category = function(attribute) {
-      attribute.input(false);
-      attribute.output(false);
-      attribute.rating(false);
-      attribute.image(false);
-      return true;
-    };
-
-    component.set_rating = function(attribute) {
-      attribute.input(false);
-      attribute.output(false);
-      attribute.category(false);
-      attribute.image(false);
-      return true;
-    };
-
-    component.set_image = function(attribute) {
-      attribute.input(false);
-      attribute.output(false);
-      attribute.category(false);
-      attribute.rating(false);
-      return true;
-    };
-
     component.finish = function() {
       var input_columns = [];
       var output_columns = [];
-      var rating_columns = [];
-      var category_columns = [];
-      var image_columns = [];
       for(var i = 0; i != component.attributes().length; ++i) {
         if(component.attributes()[i].input())
           input_columns.push(i);
         if(component.attributes()[i].output())
           output_columns.push(i);
-        if(component.attributes()[i].category())
-          category_columns.push(i);
-        if(component.attributes()[i].rating())
-          rating_columns.push(i);
-        if(component.attributes()[i].image())
-          image_columns.push(i);
       }
 
       client.put_model_parameter({
@@ -190,30 +147,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             success: function() {
               client.put_model_parameter({
                 mid: component.model._id(),
-                name: "rating-columns",
-                value: rating_columns,
+                name: "scale-inputs",
+                value: component.scale_inputs(),
                 input: true,
                 success: function() {
-                  client.put_model_parameter({
+                  client.post_model_finish({
                     mid: component.model._id(),
-                    name: "category-columns",
-                    value: category_columns,
-                    input: true,
                     success: function() {
-                      client.put_model_parameter({
-                        mid: component.model._id(),
-                        name: "image-columns",
-                        value: image_columns,
-                        input: true,
-                        success: function() {
-                          client.post_model_finish({
-                            mid: component.model._id(),
-                            success: function() {
-                              component.tab(6);
-                            }
-                          });
-                        }
-                      });
+                      component.tab(6);
                     }
                   });
                 }
@@ -229,6 +170,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/parameter-image/ui.html" },
+    template: { require: "text!" + server_root + "resources/wizards/new-cca/ui.html"},
   };
 });
