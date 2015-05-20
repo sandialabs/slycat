@@ -4,7 +4,7 @@ import slycat.web.server
 import StringIO
 
 def parse_file(file):
-  rows = [row for row in csv.reader(StringIO.StringIO(file), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+  rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
   if len(rows) < 2:
     raise Exception("File must contain at least two rows.")
 

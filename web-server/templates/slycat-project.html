@@ -27,7 +27,7 @@ rights in this software.
               <span class="label label-default" data-bind="text:$data['model-type']() + ' model'"></span>
               <strong data-bind="text:name"></strong>
               <div class="pull-right" style="display: inline-block" data-bind="html:$parent.badge($data.marking())"></div>
-              <span class="label label-danger" data-bind="visible:result() == 'failed',popover:{placement:'right', trigger:'hover', content:message}">Failed</span>
+              <span class="label label-danger" data-bind="visible:$data.result && $data.result() == 'failed',popover:{placement:'right', trigger:'hover', content:message}">Failed</span>
               <p>
                 <small>
                   <span data-bind="text:description"></span>

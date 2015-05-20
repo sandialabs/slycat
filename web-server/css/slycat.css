@@ -89,6 +89,11 @@ slycat-navbar .alert pre
   overflow: auto;
 }
 
+#slycat-wizard .modal-content {
+  resize: both;
+  overflow: auto;
+}
+
 #slycat-wizard .steps
 {
     display: inline-block;
