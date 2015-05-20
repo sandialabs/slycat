@@ -60,8 +60,8 @@
         <tbody data-bind="foreach:attributes">
           <tr>
             <td data-bind="text:name"></td>
-            <td data-bind="if:type() != 'string'"><input type="checkbox" value="input" data-bind="click: $parent.set_input, checked: input"/></td>
-            <td data-bind="if:type() != 'string'"><input type="checkbox" value="output" data-bind="click: $parent.set_output, checked: output"/></td>
+            <td><input type="checkbox" value="input" data-bind="enable: type() != 'string' && !constant(), click: $parent.set_input, checked: input"/></td>
+            <td><input type="checkbox" value="output" data-bind="enable: type() != 'string' && !constant(), click: $parent.set_output, checked: output"/></td>
           </tr>
         </tbody>
       </table>
