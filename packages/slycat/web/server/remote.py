@@ -48,7 +48,7 @@ def cache_object(pid, key, content_type, content):
   cherrypy.log.error("cache_object %s %s %s" % (pid, key, content_type))
   database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
-  slycat.web.server.authentication.require_project_writer(project)
+  slycat.web.server.authentication.require_project_reader(project)
 
   lookup = pid + "-" + key
   for cache_object in database.scan("slycat/project-key-cache-objects", startkey=lookup, endkey=lookup):
