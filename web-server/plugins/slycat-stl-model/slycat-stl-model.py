@@ -13,6 +13,7 @@ def register_slycat_plugin(context):
   context.register_model("stl", finish_model, model_html)
   context.register_model_bundle('stl', 'text/javascript', [
     os.path.join(os.path.dirname(__file__), 'js/three.min.js'),
+    os.path.join(os.path.dirname(__file__), 'js/TrackballControls.js'),
     os.path.join(os.path.dirname(__file__), 'ui.js')
   ])
 

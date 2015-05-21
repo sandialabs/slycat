@@ -27,6 +27,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.finish = function() {
+      var nameArr = component.browser.selection()[0].name.split('.');
+      var extension = nameArr[nameArr.length - 1].toLowerCase();
+
+      if (extension !== 'stl') {
+        dialog.dialog({
+          title: 'Error',
+          message: 'Only files with an .stl extension are valid'
+        });
+        return;
+      }
+
       client.post_model_files({
         mid: component.model._id(),
         files: component.browser.selection(),
