@@ -277,11 +277,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
               category.selected(false);
           });
         };
-        vm.maxChanged = function(filter, event) {
-          console.log("max has changed.");
-        };
-        vm.maxKeyPress = function(filter, event) {
-          console.log("max has keypress. event.which is: " + event.which);
+        vm.maxMinKeyPress = function(filter, event) {
+          console.log("maxMin has keypress. event.which is: " + event.which);
           // Want to capture enter key on keypress and prevent it from adding new lines.
           // Instead, it needs to start validation and saving on new value.
           if(event.which == 13)
@@ -305,8 +302,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           else
             return true;
         };
-        vm.maxKeyUp = function(filter, event) {
-          console.log("max has keyup. event.which is: " + event.which);
+        vm.maxMinKeyUp = function(filter, event) {
+          console.log("maxMin has keyup. event.which is: " + event.which);
           // Detecting escape key here on keyup because it doesn't work reliably on keypress.
           if(event.which == 27)
           {
@@ -319,21 +316,38 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           else
             return true;
         };
-        vm.maxFocus = function(filter, event) {
+        vm.maxMinFocus = function(filter, event) {
+          var textContent = "";
+          if( $(event.target).hasClass("max-field") )
+            textContent = this.max();
+          else
+            textContent = this.min();
           $(event.target).toggleClass("editing", true);
-          event.target.textContent = this.max();
-          console.log("max has focus.");
+          event.target.textContent = textContent;
+          console.log("maxMin has focus.");
         };
-        vm.maxBlur = function(filter, event) {
+        vm.maxMinBlur = function(filter, event) {
           $(event.target).toggleClass("editing", false);
           var newValue = Number(event.target.textContent);
-          if(this.high() > newValue)
+          if( $(event.target).hasClass("max-field") )
           {
-            this.high( newValue );
+            if(this.high() > newValue)
+            {
+              this.high( newValue );
+            }
+            this.max( newValue );
           }
-          this.max( newValue );
+          else
+          {
+            if(this.low() < newValue)
+            {
+              this.low( newValue );
+            }
+            this.min( newValue );
+          }
+          
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
-          console.log("max lost focus.");
+          console.log("maxMin lost focus.");
         };
         vm.maxMouseOver = function(filter, event) {
           $(event.target).toggleClass("hover", true);

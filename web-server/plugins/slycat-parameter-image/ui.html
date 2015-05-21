@@ -83,17 +83,17 @@ rights in this software.
               <div class="varName" data-bind="text: name">[variable name]</div>
             </div>
             <div class="minMaxHighLow">
+
               <div class="max minMax">
                 <div class="min-max-field max-field" contentEditable="true"
                   title="Click to edit filter max"
                   data-bind="
                     text: max().toPrecision(3).length > max().toExponential(2).length ? max().toExponential(2) : max().toPrecision(3),
                     event: { 
-                      input: $parent.maxChanged, 
-                      keypress: $parent.maxKeyPress,
-                      keyup: $parent.maxKeyUp,
-                      focus: $parent.maxFocus,
-                      blur: $parent.maxBlur,
+                      keypress: $parent.maxMinKeyPress,
+                      keyup: $parent.maxMinKeyUp,
+                      focus: $parent.maxMinFocus,
+                      blur: $parent.maxMinBlur,
                       mouseover: $parent.maxMouseOver,
                       mouseout: $parent.maxMouseOut
                     },
@@ -104,13 +104,37 @@ rights in this software.
                 <i class="fa fa-undo reset-button button"
                   title="Reset filter max to original value"
                   data-bind="
-                  event: { click: $parent.maxReset },
-                  visible: max() != max_stats()
+                    event: { click: $parent.maxMinReset },
+                    visible: max() != max_stats()
                   "
                 ></i>
               </div>
-              <div class="min minMax" contentEditable="true"
-                data-bind="text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), style: { top: $parent.sliderHeight() + 20 + 'px' }">[min]</div>
+
+              <div class="min minMax" data-bind="style: { top: $parent.sliderHeight() + 20 + 'px' }">
+                <div class="min-max-field min-field" contentEditable="true"
+                  data-bind="
+                    text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), 
+                    event: {
+                      keypress: $parent.maxMinKeyPress,
+                      keyup: $parent.maxMinKeyUp,
+                      focus: $parent.maxMinFocus,
+                      blur: $parent.maxMinBlur,
+                      mouseover: $parent.maxMouseOver,
+                      mouseout: $parent.maxMouseOut
+                    },
+                    css: { edited: min() != min_stats() }
+                  ">
+                  [min]
+                </div>
+                <i class="fa fa-undo reset-button button"
+                  title="Reset filter min to original value"
+                  data-bind="
+                    event: { click: $parent.maxMinReset },
+                    visible: min() != min_stats()
+                  "
+                ></i>
+              </div>
+
               <div class="high"
                    data-bind="
                               text: high().toPrecision(3).length > high().toExponential(2).length ? high().toExponential(2) : high().toPrecision(3),
