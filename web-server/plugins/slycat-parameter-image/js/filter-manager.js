@@ -280,11 +280,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
         vm.maxMinKeyPress = function(filter, event) {
           // console.log("maxMin has keypress. event.which is: " + event.which);
           // Want to capture enter key on keypress and prevent it from adding new lines.
-          // Instead, it needs to start validation and saving on new value.
+          // Instead, it needs to start validation and saving of new value.
           if(event.which == 13)
           {
             // Enter key was pressed, so we need to validate
-            // validate
             // console.log("enter key was pressed.");
             event.target.blur();
 
@@ -295,7 +294,6 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           // else if(event.which == 27)
           // {
           //   // escape key was pressed, so we need to validate
-          //   // validate
           //   console.log("escape key was pressed");
           //   return false;
           // }
@@ -308,7 +306,6 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           if(event.which == 27)
           {
             // escape key was pressed, so we need to validate
-            // validate
             // console.log("escape key was pressed.");
             event.target.blur();
             return false;
