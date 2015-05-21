@@ -34,7 +34,12 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         names: ["geometry"],
         parser: 'slycat-blob-parser',
         success: function() {
-          component.tab(2);
+          client.post_model_finish({
+            mid: component.model._id(),
+            success: function() {
+              component.tab(2);
+            }
+          });
         },
         error: dialog.ajax_error('There was a problem uploading the file: ')
       });

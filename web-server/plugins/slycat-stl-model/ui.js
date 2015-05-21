@@ -8,25 +8,63 @@ define('slycat-stl-model', ['slycat-web-client', 'knockout', 'knockout-mapping',
   var height = container.offsetHeight;
 
   var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
+  var camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
 
-  var renderer = new THREE.WebGLRenderer();
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(width, height);
   document.getElementById('slycat-stl').appendChild(renderer.domElement);
 
-  var geometry = new THREE.BoxGeometry(1, 1, 1);
-  var material = new THREE.MeshBasicMaterial({ color: 0x337AB7 });
-  var cube = new THREE.Mesh(geometry, material);
+  var skyboxGeometry = new THREE.BoxGeometry(100, 100, 100);
+  var skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0xF2F2F2, side: THREE.BackSide });
+  var skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+  scene.add(skybox);
+
+  var light = new THREE.PointLight(0xFFFFFF);
+  light.position.set(0, 3, 3);
+  scene.add(light);
+
+  var cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+  var cubeMaterial = new THREE.MeshLambertMaterial({ color: 0x337AB7 });
+  var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  cube.rotation.y = Math.PI * 45 / 180;
   scene.add(cube);
 
-  camera.position.z = 5;
+  camera.position.y = 2;
+  camera.position.z = 6;
+  camera.lookAt(cube.position);
 
 
-  var render = function () {
-    requestAnimationFrame(render);
+  var clock = new THREE.Clock();
+  var animationId = null;
+
+  var renderFixed = function () {
     renderer.render(scene, camera);
+    animationId = requestAnimationFrame(renderFixed);
   };
 
-  render();
+  var renderRotate = function() {
+    renderer.render(scene, camera);
+    cube.rotation.y -= clock.getDelta();
+    animationId = requestAnimationFrame(renderRotate);
+  };
+
+  renderFixed();
+
+
+  $('#slycat-stl-rotate').on('click', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    cancelAnimationFrame(animationId);
+    renderRotate();
+  });
+
+  $('#slycat-stl-fixed').on('click', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    cancelAnimationFrame(animationId);
+    renderFixed();
+  });
 });
