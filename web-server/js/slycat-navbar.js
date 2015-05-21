@@ -366,8 +366,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
   <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
     <div class="modal-dialog"> \
       <div class="modal-content zoom-sensitive"> \
-        <div data-bind="if: wizard"> \
-          <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" class="zoom-sensitive"> \
+        <div data-bind="if: wizard" style="height: 100%"> \
+          <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" class="zoom-sensitive" style="height: 100%"> \
           </div> \
         </div> \
       </div> \
