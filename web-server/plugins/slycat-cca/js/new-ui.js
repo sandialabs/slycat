@@ -56,13 +56,21 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     var upload_success = function() {
-      client.get_model_table_metadata({
+      client.get_model_arrayset_metadata({
         mid: component.model._id(),
-        name: "data-table",
+        aid: "data-table",
+        arrays: "0",
+        statistics: "0/...",
         success: function(metadata) {
+          console.log(metadata);
           var attributes = [];
-          for(var i = 0; i != metadata["column-names"].length; ++i)
-            attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:metadata["column-types"][i] != "string", output:false});
+          for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
+          {
+            var name = metadata.arrays[0].attributes[i].name;
+            var type = metadata.arrays[0].attributes[i].type;
+            var constant = metadata.statistics[i].unique == 1;
+            attributes.push({name:name, type:type, constant:constant, input:type != "string" && !constant, output:false});
+          }
           mapping.fromJS(attributes, component.attributes);
           component.tab(5);
         }

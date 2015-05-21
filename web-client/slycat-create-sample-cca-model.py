@@ -19,6 +19,8 @@ import slycat.web.client
 
 parser = slycat.web.client.ArgumentParser()
 parser.add_argument("--column-prefix", default="a", help="Column prefix.  Default: %(default)s")
+parser.add_argument("--constant-input-count", type=int, default=0, help="Number of input columns to make constant.  Default: %(default)s")
+parser.add_argument("--constant-output-count", type=int, default=0, help="Number of output columns to make constant.  Default: %(default)s")
 parser.add_argument("--duplicate-input-count", type=int, default=0, help="Number of input columns to duplicate.  Default: %(default)s")
 parser.add_argument("--duplicate-output-count", type=int, default=0, help="Number of output columns to duplicate.  Default: %(default)s")
 parser.add_argument("--input-count", type=int, default=3, help="Input column count.  Default: %(default)s")
@@ -35,6 +37,10 @@ if arguments.input_count < 1:
   raise Exception("Input count must be greater-than zero.")
 if arguments.output_count < 1:
   raise Exception("Output count must be greater-than zero.")
+if arguments.constant_input_count > arguments.input_count:
+  raise Exception("Constant input count must be less than input count.")
+if arguments.constant_output_count > arguments.output_count:
+  raise Exception("Constant output count must be less than output count.")
 if arguments.duplicate_input_count >= arguments.input_count:
   raise Exception("Duplicate input count must be less than input count.")
 if arguments.duplicate_output_count >= arguments.output_count:
@@ -42,15 +48,21 @@ if arguments.duplicate_output_count >= arguments.output_count:
 
 total_columns = arguments.input_count + arguments.output_count + arguments.unused_count
 
-# Create some random data using a gaussian distribution ...
+# Create some random data using a gaussian distribution.
 numpy.random.seed(arguments.seed)
 data = numpy.random.normal(size=(arguments.row_count, total_columns))
 
-# Force a somewhat-linear relationship between the inputs and outputs ...
+# Force a somewhat-linear relationship between the inputs and outputs.
 for i in range(arguments.input_count, arguments.input_count + min(arguments.input_count, arguments.output_count)):
   data[:, i] = data[:, 0] ** i
 
-# Optionally duplicate some columns to create rank-deficient data ...
+# Optionally make some columns constant.
+for i in range(arguments.constant_input_count):
+  data[:,i] = data[0,i]
+for i in range(arguments.input_count, arguments.input_count + arguments.constant_output_count):
+  data[:,i] = data[0,i]
+
+# Optionally duplicate some columns to create rank-deficient data.
 for i in range(1, 1 + arguments.duplicate_input_count):
   data[:,i] = data[:,0]
 for i in range(1 + arguments.input_count, 1 + arguments.input_count + arguments.duplicate_output_count):
