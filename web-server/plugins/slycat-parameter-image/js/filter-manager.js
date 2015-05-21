@@ -332,7 +332,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           {
             // console.log("validation failed");
             dialog.dialog({
-              title: "Oops, Please Correct Your Entry",
+              title: isNaN(newValue) ? "Oops, Please Enter A Number" : "Oops, Number Outside Of Data Range",
               message: "Please enter a number between " + filter.min_stats() + " and " + filter.max_stats() + ".",
               buttons: [
                 {className: "btn-primary",  label:"OK"}

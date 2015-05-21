@@ -35,7 +35,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
       self.style = ko.pureComputed(function()
       {
         var result = {};
-        result["height"] = self.length() + "px";
+        result["height"] = (self.length() + 10) + "px";
         return result;
       });
 
