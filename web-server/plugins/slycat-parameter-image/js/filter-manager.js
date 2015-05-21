@@ -1,4 +1,4 @@
-define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "jquery"], function(server_root, _,  ko, mapping, $) {
+define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-dialog", "lodash", "knockout", "knockout-mapping", "jquery"], function(server_root, dialog, _,  ko, mapping, $) {
 
   function FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns) {
     var self = this;
@@ -278,14 +278,14 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           });
         };
         vm.maxMinKeyPress = function(filter, event) {
-          console.log("maxMin has keypress. event.which is: " + event.which);
+          // console.log("maxMin has keypress. event.which is: " + event.which);
           // Want to capture enter key on keypress and prevent it from adding new lines.
           // Instead, it needs to start validation and saving on new value.
           if(event.which == 13)
           {
             // Enter key was pressed, so we need to validate
             // validate
-            console.log("enter key was pressed.");
+            // console.log("enter key was pressed.");
             event.target.blur();
 
             return false;
@@ -303,13 +303,13 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             return true;
         };
         vm.maxMinKeyUp = function(filter, event) {
-          console.log("maxMin has keyup. event.which is: " + event.which);
+          // console.log("maxMin has keyup. event.which is: " + event.which);
           // Detecting escape key here on keyup because it doesn't work reliably on keypress.
           if(event.which == 27)
           {
             // escape key was pressed, so we need to validate
             // validate
-            console.log("escape key was pressed.");
+            // console.log("escape key was pressed.");
             event.target.blur();
             return false;
           }
@@ -324,38 +324,57 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             textContent = this.min();
           $(event.target).toggleClass("editing", true);
           event.target.textContent = textContent;
-          console.log("maxMin has focus.");
+          // console.log("maxMin has focus.");
         };
         vm.maxMinBlur = function(filter, event) {
-          $(event.target).toggleClass("editing", false);
           var newValue = Number(event.target.textContent);
-          if( $(event.target).hasClass("max-field") )
+          if ( isNaN(newValue) || newValue < filter.min_stats() || newValue > filter.max_stats() )
           {
-            if(this.high() > newValue)
-            {
-              this.high( newValue );
-            }
-            this.max( newValue );
+            // console.log("validation failed");
+            dialog.dialog({
+              title: "Oops, Please Correct Your Entry",
+              message: "Please enter a number between " + filter.min_stats() + " and " + filter.max_stats() + ".",
+              buttons: [
+                {className: "btn-primary",  label:"OK"}
+              ],
+              callback: function(button)
+              {
+                if(button.label == "OK")
+                  $(event.target).focus();
+              },
+            });
           }
           else
           {
-            if(this.low() < newValue)
+            $(event.target).toggleClass("editing", false);
+            if( $(event.target).hasClass("max-field") )
             {
-              this.low( newValue );
+              if(this.high() > newValue)
+              {
+                this.high( newValue );
+              }
+              this.max( newValue );
             }
-            this.min( newValue );
+            else
+            {
+              if(this.low() < newValue)
+              {
+                this.low( newValue );
+              }
+              this.min( newValue );
+            }
+            self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           }
-          
-          self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
-          console.log("maxMin lost focus.");
+            
+          // console.log("maxMin lost focus.");
         };
         vm.maxMinMouseOver = function(filter, event) {
           $(event.target).toggleClass("hover", true);
-          console.log("maxMin mouse over.");
+          // console.log("maxMin mouse over.");
         };
         vm.maxMinMouseOut = function(filter, event) {
           $(event.target).toggleClass("hover", false);
-          console.log("maxMin mouse out.");
+          // console.log("maxMin mouse out.");
         };
         vm.maxMinReset = function(filter, event) {
           if( $(event.target).hasClass("max-reset") )
@@ -376,11 +395,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           }
             
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
-          console.log("maxMin reset.");
+          // console.log("maxMin reset.");
         };
-
-
-
 
       };
 
