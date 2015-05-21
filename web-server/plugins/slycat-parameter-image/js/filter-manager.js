@@ -349,22 +349,34 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           console.log("maxMin lost focus.");
         };
-        vm.maxMouseOver = function(filter, event) {
+        vm.maxMinMouseOver = function(filter, event) {
           $(event.target).toggleClass("hover", true);
-          console.log("max mouse over.");
+          console.log("maxMin mouse over.");
         };
-        vm.maxMouseOut = function(filter, event) {
+        vm.maxMinMouseOut = function(filter, event) {
           $(event.target).toggleClass("hover", false);
-          console.log("max mouse out.");
+          console.log("maxMin mouse out.");
         };
-        vm.maxReset = function(filter, event) {
-          if(this.high() > this.max_stats())
+        vm.maxMinReset = function(filter, event) {
+          if( $(event.target).hasClass("max-reset") )
           {
-            this.high( this.max_stats() );
+            if(this.high() > this.max_stats())
+            {
+              this.high( this.max_stats() );
+            }
+            this.max(this.max_stats());
           }
-          this.max(this.max_stats());
+          else
+          {
+            if(this.low() < this.min_stats())
+            {
+              this.low( this.min_stats() );
+            }
+            this.min(this.min_stats());
+          }
+            
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
-          console.log("max reset.");
+          console.log("maxMin reset.");
         };
 
 

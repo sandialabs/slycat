@@ -94,14 +94,14 @@ rights in this software.
                       keyup: $parent.maxMinKeyUp,
                       focus: $parent.maxMinFocus,
                       blur: $parent.maxMinBlur,
-                      mouseover: $parent.maxMouseOver,
-                      mouseout: $parent.maxMouseOut
+                      mouseover: $parent.maxMinMouseOver,
+                      mouseout: $parent.maxMinMouseOut
                     },
                     css: { edited: max() != max_stats() }
                     ">
                   [max]
                 </div>
-                <i class="fa fa-undo reset-button button"
+                <i class="fa fa-undo reset-button button max-reset"
                   title="Reset filter max to original value"
                   data-bind="
                     event: { click: $parent.maxMinReset },
@@ -112,6 +112,7 @@ rights in this software.
 
               <div class="min minMax" data-bind="style: { top: $parent.sliderHeight() + 20 + 'px' }">
                 <div class="min-max-field min-field" contentEditable="true"
+                  title="Click to edit filter min"
                   data-bind="
                     text: min().toPrecision(3).length > min().toExponential(2).length ? min().toExponential(2) : min().toPrecision(3), 
                     event: {
@@ -119,14 +120,14 @@ rights in this software.
                       keyup: $parent.maxMinKeyUp,
                       focus: $parent.maxMinFocus,
                       blur: $parent.maxMinBlur,
-                      mouseover: $parent.maxMouseOver,
-                      mouseout: $parent.maxMouseOut
+                      mouseover: $parent.maxMinMouseOver,
+                      mouseout: $parent.maxMinMouseOut
                     },
                     css: { edited: min() != min_stats() }
                   ">
                   [min]
                 </div>
-                <i class="fa fa-undo reset-button button"
+                <i class="fa fa-undo reset-button button min-reset"
                   title="Reset filter min to original value"
                   data-bind="
                     event: { click: $parent.maxMinReset },
