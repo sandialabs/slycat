@@ -224,6 +224,21 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.get_model_file = function(params) {
+    $.ajax({
+      type: 'GET',
+      url: server_root + 'models/' + params.mid + '/files/' + params.aid,
+      success: function(content) {
+        if (params.success)
+          params.success(content);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.get_model_arrayset_metadata = function(params)
   {
     var search = {};
