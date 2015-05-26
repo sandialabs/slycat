@@ -1523,7 +1523,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               if(this.status == 404 || this.status == 500)
               {
                 self.remotes.delete_remote(uri.hostname());
-                self._open_session(images);
+                self._open_images(images);
                 return;
               }
               // If we get 400, it means that the session is good and we're
