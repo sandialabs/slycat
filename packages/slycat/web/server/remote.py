@@ -426,6 +426,13 @@ def create_session(hostname, username, password, agent):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
+
+    # Detect problematic startup scripts.
+    stdin, stdout, stderr = ssh.exec_command("/bin/true")
+    if stdout.read():
+      raise cherrypy.HTTPError("500 Slycat can't connect because you have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. Startup scripts should only write to stderr, never stdout - see sshd(8).")
+
+    # Start sftp.
     sftp = ssh.open_sftp()
 
     # Optionally start an agent.
