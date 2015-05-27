@@ -79,15 +79,15 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
-def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=None, unique=None):
+def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
   """Retrieve metadata describing an arrayset artifact.
 
   Parameters
   ----------
   database: database object, required
   model: model object, required
-  name: string, required
-    Unique (to the model) arrayset artifact name.
+  aid: string, required
+    Unique (to the model) arrayset artifact id.
   arrays: string or hyperchunks parse tree, optional
     Specifies a collection of arrays, in :ref:`Hyperchunks` format.  Metadata
     describing the specified arrays will be returned in the results.
@@ -104,7 +104,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
 
   See Also
   --------
-  :http:get:`/models/(mid)/arraysets/(name)/metadata`
+  :http:get:`/models/(mid)/arraysets/(aid)/metadata`
   """
   if isinstance(arrays, basestring):
     arrays = slycat.hyperchunks.parse(arrays)
@@ -116,7 +116,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
     with slycat.web.server.hdf5.lock:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file: 
+      with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file: 
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
         results = []
         for array in sorted(hdf5_arrayset.keys()):
@@ -131,7 +131,7 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
         return results
 
   with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
+    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       results = {}
       if arrays is not None:
@@ -181,15 +181,15 @@ def get_model_arrayset_metadata(database, model, name, arrays=None, statistics=N
 
       return results
 
-def get_model_arrayset_data(database, model, name, hyperchunks):
+def get_model_arrayset_data(database, model, aid, hyperchunks):
   """Read data from an arrayset artifact.
 
   Parameters
   ----------
   database: database object, required
   model: model object, required
-  name: string, required
-    Unique (to the model) arrayset artifact name.
+  aid: string, required
+    Unique (to the model) arrayset artifact id.
   hyperchunks: string or hyperchunks parse tree, required
     Specifies the data to be retrieved, in :ref:`Hyperchunks` format.
 
@@ -199,13 +199,13 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
 
   See Also
   --------
-  :http:get:`/models/(mid)/arraysets/(name)/data`
+  :http:get:`/models/(mid)/arraysets/(aid)/data`
   """
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
   with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r") as file:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
@@ -221,39 +221,39 @@ def get_model_arrayset_data(database, model, name, hyperchunks):
             else:
               yield values[hyperslice]
 
-def get_model_parameter(database, model, name):
-  return model["artifact:" + name]
+def get_model_parameter(database, model, aid):
+  return model["artifact:" + aid]
 
-def put_model_arrayset(database, model, name, input=False):
+def put_model_arrayset(database, model, aid, input=False):
   """Start a new model array set artifact."""
-  slycat.web.server.update_model(database, model, message="Starting array set %s." % (name))
+  slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
   storage = uuid.uuid4().hex
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.create(storage) as file:
       arrayset = slycat.hdf5.start_arrayset(file)
       database.save({"_id" : storage, "type" : "hdf5"})
-      model["artifact:%s" % name] = storage
-      model["artifact-types"][name] = "hdf5"
+      model["artifact:%s" % aid] = storage
+      model["artifact-types"][aid] = "hdf5"
       if input:
-        model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+        model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
       database.save(model)
 
-def put_model_array(database, model, name, array_index, attributes, dimensions):
-  slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (name, array_index))
-  storage = model["artifact:%s" % name]
+def put_model_array(database, model, aid, array_index, attributes, dimensions):
+  slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
+  storage = model["artifact:%s" % aid]
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(storage, "r+") as file:
       slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
-def put_model_arrayset_data(database, model, name, hyperchunks, data):
+def put_model_arrayset_data(database, model, aid, hyperchunks, data):
   """Write data to an arrayset artifact.
 
   Parameters
   ----------
   database: database object, required
   model: model object, required
-  name: string, required
-    Unique (to the model) arrayset artifact name.
+  aid: string, required
+    Unique (to the model) arrayset artifact id.
   hyperchunks: string or hyperchunks parse tree, required
     Specifies where the data will be stored, in :ref:`Hyperchunks` format.
   data: iterable, required)
@@ -262,17 +262,17 @@ def put_model_arrayset_data(database, model, name, hyperchunks, data):
 
   See Also
   --------
-  :http:put:`/models/(mid)/arraysets/(name)/data`
+  :http:put:`/models/(mid)/arraysets/(aid)/data`
   """
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
   data = iter(data)
 
-  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
+  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
 
   with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
@@ -281,52 +281,52 @@ def put_model_arrayset_data(database, model, name, hyperchunks, data):
             raise ValueError("Cannot write to computed attribute.")
           stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing to %s/%s/%s/%s" % (name, array.index, attribute.expression.index, hyperslice))
+            cherrypy.log.error("Writing to %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
 
             data_hyperslice = next(data)
             if isinstance(data_hyperslice, list):
               data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
             hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
 
-def put_model_file(database, model, name, value, content_type, input=False):
+def put_model_file(database, model, aid, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
   model = database[model["_id"]] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
-  model["artifact:%s" % name] = fid
-  model["artifact-types"][name] = "file"
+  model["artifact:%s" % aid] = fid
+  model["artifact-types"][aid] = "file"
   if input:
-    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
   database.save(model)
   return model
 
 def put_model_inputs(database, model, source, deep_copy=False):
   slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
-  for name in source["input-artifacts"]:
-    original_type = source["artifact-types"][name]
-    original_value = source["artifact:%s" % name]
+  for aid in source["input-artifacts"]:
+    original_type = source["artifact-types"][aid]
+    original_value = source["artifact:%s" % aid]
 
     if original_type == "json":
-      model["artifact:%s" % name] = original_value
+      model["artifact:%s" % aid] = original_value
     elif original_type == "hdf5":
       if deep_copy:
         new_value = uuid.uuid4().hex
         os.makedirs(os.path.dirname(slycat.web.server.hdf5.path(new_value)))
         with slycat.web.server.hdf5.lock:
           shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
-        model["artifact:%s" % name] = new_value
+        model["artifact:%s" % aid] = new_value
         database.save({"_id" : new_value, "type" : "hdf5"})
       else:
-        model["artifact:%s" % name] = original_value
+        model["artifact:%s" % aid] = original_value
     else:
       raise Exception("Cannot copy unknown input artifact type %s." % original_type)
-    model["artifact-types"][name] = original_type
-    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    model["artifact-types"][aid] = original_type
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
 
   database.save(model)
 
-def put_model_parameter(database, model, name, value, input=False):
-  model["artifact:%s" % name] = value
-  model["artifact-types"][name] = "json"
+def put_model_parameter(database, model, aid, value, input=False):
+  model["artifact:%s" % aid] = value
+  model["artifact-types"][aid] = "json"
   if input:
-    model["input-artifacts"] = list(set(model["input-artifacts"] + [name]))
+    model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
   database.save(model)
 
