@@ -1,16 +1,16 @@
 PUT Model Arrayset Array
 ========================
 
-.. http:put:: /models/(mid)/arraysets/(name)/arrays/(array)
+.. http:put:: /models/(mid)/arraysets/(aid)/arrays/(array)
 
-  Adds an array to an arrayset, ready to upload data.  The named array set must
-  already have been initialized with :http:put:`/models/(mid)/arraysets/(name)`.
+  Adds an array to an arrayset, ready to upload data.  The arrayset must
+  already have been initialized with :http:put:`/models/(mid)/arraysets/(aid)`.
 
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Unique arrayset name.
-  :type name: string
+  :param aid: Unique artifact id.
+  :type aid: string
 
   :param array: Unique array index.
   :type array: int
@@ -57,6 +57,6 @@ PUT Model Arrayset Array
 See Also
 --------
 
-- :http:put:`/models/(mid)/arraysets/(name)`
-- :http:put:`/models/(mid)/arraysets/(name)/data`
+- :http:put:`/models/(mid)/arraysets/(aid)`
+- :http:put:`/models/(mid)/arraysets/(aid)/data`
 

@@ -1,7 +1,7 @@
 GET Model Arrayset Metadata
 ===========================
 
-.. http:get:: /models/(mid)/arraysets/(name)/metadata
+.. http:get:: /models/(mid)/arraysets/(aid)/metadata
 
   Used to retrieve metadata and statistics for an arrayset artifact - a
   collection of dense, multidimensional darray objects.  A darray is a dense,
@@ -32,8 +32,8 @@ GET Model Arrayset Metadata
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Arrayset artifact name.
-  :type name: string
+  :param aid: Arrayset artifact id.
+  :type aid: string
 
   :query arrays: Optional, retrieve array metadata for a set of arrays specified in :ref:`hyperchunks` format.  Note that only the array part of the hyperchunk is used in this case - attributes and hyperslices, if provided, are ignored.
   :query statistics: Optional, retrive statistics for a set of array attributes specified in :ref:`hyperchunks` format.  Note that only the array and attribute parts of the hyperchunk is used in this case - hyperslices, if provided, are ignored.
@@ -161,6 +161,6 @@ See Also
 --------
 
 - :ref:`hyperchunks`
-- :http:get:`/models/(mid)/arraysets/(name)/data`
-- :http:put:`/models/(mid)/arraysets/(name)/data`
+- :http:get:`/models/(mid)/arraysets/(aid)/data`
+- :http:put:`/models/(mid)/arraysets/(aid)/data`
 

@@ -1,7 +1,7 @@
 PUT Model Parameter
 ===================
 
-.. http:put:: /models/(mid)/parameters/(name)
+.. http:put:: /models/(mid)/parameters/(aid)
 
   Stores a model parameter (name / value pair) artifact. The value is a
   JSON expression and may be arbitrarily complex.
@@ -9,8 +9,8 @@ PUT Model Parameter
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Unique parameter name.
-  :type name: string
+  :param aid: Unique artifact id (parameter name).
+  :type aid: string
 
   :requestheader Content-Type: application/json
 
@@ -48,6 +48,6 @@ PUT Model Parameter
 See Also
 --------
 
--  :http:get:`/models/(mid)/parameters/(name)`
+-  :http:get:`/models/(mid)/parameters/(aid)`
 
 
