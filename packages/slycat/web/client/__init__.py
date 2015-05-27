@@ -229,10 +229,10 @@ class Connection(object):
     """
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def get_model_file(self, mid, name):
-    return self.request("GET", "/models/%s/files/%s" % (mid, name))
+  def get_model_file(self, mid, aid):
+    return self.request("GET", "/models/%s/files/%s" % (mid, aid))
 
-  def get_model_parameter(self, mid, name):
+  def get_model_parameter(self, mid, aid):
     """Retrieve a model parameter artifact.
 
     Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
@@ -243,8 +243,8 @@ class Connection(object):
     ----------
     mid: string, required
       Unique model identifier.
-    name: string, required
-      Unique (within the model) artifact name.
+    aid: string, required
+      Unique (within the model) artifact id.
 
     Returns
     -------
@@ -252,25 +252,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/parameters/(name)`
+    :http:put:`/models/(mid)/parameters/(aid)`
     """
-    return self.request("GET", "/models/%s/parameters/%s" % (mid, name), headers={"accept":"application/json"})
-
-  def get_model_table_chunk(self, mid, name, array, rows, columns):
-    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
-
-  def get_model_table_metadata(self, mid, name, array):
-    """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_model_table_sorted_indices(self, mid, name, array, rows, index=None, sort=None):
-    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/sorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
-    return numpy.fromstring(content, dtype="int32")
-
-  def get_model_table_unsorted_indices(self, mid, name, array, rows, index=None, sort=None):
-    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/unsorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
-    return numpy.fromstring(content, dtype="int32")
+    return self.request("GET", "/models/%s/parameters/%s" % (mid, aid), headers={"accept":"application/json"})
 
   def get_project_models(self, pid):
     """Returns every model in a project."""
@@ -423,13 +407,13 @@ class Connection(object):
     """
     return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
 
-  def post_model_files(self, mid, names, files, parser, input=True, parameters={}):
+  def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
     """Stores a model file artifacts."""
     data = parameters
 
     data.update({
       "input": json.dumps(input),
-      "names": names,
+      "aids": aids,
       "parser": parser
     })
 
@@ -501,15 +485,15 @@ class Connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_arrayset_data(self, mid, name, hyperchunks, data, force_json=False):
+  def put_model_arrayset_data(self, mid, aid, hyperchunks, data, force_json=False):
     """Write data to an arrayset artifact on the server.
 
     Parameters
     ----------
     mid: string, required
       Unique model identifier.
-    name: string, required
-      Unique (to the model) arrayset artifact name.
+    aid: string, required
+      Unique (to the model) arrayset artifact id.
     hyperchunks: string, required
       Specifies where the data will be stored, in :ref:`Hyperchunks` format.
     data: iterable, required)
@@ -520,13 +504,13 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/arraysets/(name)/data`
+    :http:put:`/models/(mid)/arraysets/(aid)/data`
     """
     # Sanity check arguments
     if not isinstance(mid, basestring):
       raise ValueError("Model id must be a string.")
-    if not isinstance(name, basestring):
-      raise ValueError("Artifact name must be a string.")
+    if not isinstance(aid, basestring):
+      raise ValueError("Artifact id must be a string.")
     if not isinstance(hyperchunks, basestring):
       raise ValueError("Hyperchunks specification must be a string.")
     for chunk in data:
@@ -550,21 +534,21 @@ class Connection(object):
       request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
-    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
+    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, aid), data=request_data, files={"data":request_buffer.getvalue()})
 
-  def put_model_arrayset_array(self, mid, name, array, dimensions, attributes):
+  def put_model_arrayset_array(self, mid, aid, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
     stub = slycat.darray.Stub(dimensions, attributes)
-    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
+    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
-  def put_model_arrayset(self, mid, name, input=True):
+  def put_model_arrayset(self, mid, aid, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/arraysets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+    self.request("PUT", "/models/%s/arraysets/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_inputs(self, source, target):
     self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
-  def put_model_parameter(self, mid, name, value, input=True):
+  def put_model_parameter(self, mid, aid, value, input=True):
     """Store a model parameter artifact.
 
     Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
@@ -572,15 +556,15 @@ class Connection(object):
     arraysets or files).
 
     To get the value of a parameter artifact, use :func:`get_model` and read the value
-    directly from the model record.  An artifact named `foo` will be accessible in the
+    directly from the model record.  An artifact id `foo` will be accessible in the
     record as `model["artifact:foo"]`.
 
     Parameters
     ----------
     mid: string, required
       Unique model identifier.
-    name: string, required
-      Unique (within the model) artifact name.
+    aid: string, required
+      Unique (within the model) artifact id.
     value: object, required
       An arbitrary collection of JSON-compatible data.
     input: boolean, optional
@@ -588,9 +572,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/parameters/(name)`
+    :http:put:`/models/(mid)/parameters/(aid)`
     """
-    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+    self.request("PUT", "/models/%s/parameters/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
     """Modifies a project."""
