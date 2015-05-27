@@ -24,7 +24,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     client.get_model_parameter(
     {
       mid: component.original._id(),
-      name: "image-columns",
+      aid: "image-columns",
       success: function(value)
       {
         mapping.fromJS(value, component.media_columns);

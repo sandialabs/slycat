@@ -58,7 +58,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         success: function(media_columns) {
           client.get_model_table_metadata({
             mid: component.model._id(),
-            name: "data-table",
+            aid: "data-table",
             success: function(metadata) {
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
@@ -76,7 +76,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         mid: component.model._id(),
         files: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
         success: upload_success,
         error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
@@ -178,31 +178,31 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
       client.put_model_parameter({
         mid: component.model._id(),
-        name: "input-columns",
+        aid: "input-columns",
         value: input_columns,
         input: true,
         success: function() {
           client.put_model_parameter({
             mid: component.model._id(),
-            name: "output-columns",
+            aid: "output-columns",
             value: output_columns,
             input: true,
             success: function() {
               client.put_model_parameter({
                 mid: component.model._id(),
-                name: "rating-columns",
+                aid: "rating-columns",
                 value: rating_columns,
                 input: true,
                 success: function() {
                   client.put_model_parameter({
                     mid: component.model._id(),
-                    name: "category-columns",
+                    aid: "category-columns",
                     value: category_columns,
                     input: true,
                     success: function() {
                       client.put_model_parameter({
                         mid: component.model._id(),
-                        name: "image-columns",
+                        aid: "image-columns",
                         value: image_columns,
                         input: true,
                         success: function() {

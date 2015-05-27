@@ -29,7 +29,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
       client.get_model_parameter(
       {
         mid: page.mid(),
-        name: "x-column",
+        aid: "x-column",
         success: function(value)
         {
           page.x_column(value);
@@ -45,7 +45,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
       client.get_model_parameter(
       {
         mid: page.mid(),
-        name: "y-column",
+        aid: "y-column",
         success: function(value)
         {
           page.y_column(value);
@@ -61,7 +61,7 @@ define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", 
       client.get_model_parameter(
       {
         mid: page.mid(),
-        name: "regression",
+        aid: "regression",
         success: function(value)
         {
           mapping.fromJS(value, page.regression);

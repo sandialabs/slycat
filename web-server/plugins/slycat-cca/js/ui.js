@@ -184,8 +184,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     client.get_model_table_metadata(
     {
       mid: model._id,
-      name: "data-table",
-      aid: 0,
+      aid: "data-table",
       index: "Index",
       success: function(metadata)
       {

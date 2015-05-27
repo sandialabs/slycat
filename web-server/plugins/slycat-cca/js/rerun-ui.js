@@ -19,7 +19,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     client.get_model_table_metadata(
     {
       mid: component.original._id(),
-      name: "data-table",
+      aid: "data-table",
       success: function(metadata)
       {
         var attributes = [];
@@ -30,7 +30,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         client.get_model_parameter(
         {
           mid: component.original._id(),
-          name: "input-columns",
+          aid: "input-columns",
           success: function(value)
           {
             for(var i = 0; i != value.length; ++i)
@@ -41,7 +41,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         client.get_model_parameter(
         {
           mid: component.original._id(),
-          name: "output-columns",
+          aid: "output-columns",
           success: function(value)
           {
             for(var i = 0; i != value.length; ++i)
@@ -54,7 +54,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     client.get_model_parameter(
     {
       mid: component.original._id(),
-      name: "scale-inputs",
+      aid: "scale-inputs",
       success: function(value)
       {
         component.scale_inputs(value);
@@ -119,7 +119,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       client.put_model_parameter(
       {
         mid: component.model._id(),
-        name: "input-columns",
+        aid: "input-columns",
         value: input_columns,
         input: true,
         success: function()
@@ -127,7 +127,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "output-columns",
+            aid: "output-columns",
             value: output_columns,
             input: true,
             success: function()
@@ -135,7 +135,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               client.put_model_parameter(
               {
                 mid: component.model._id(),
-                name: "scale-inputs",
+                aid: "scale-inputs",
                 value: component.scale_inputs(),
                 input: true,
                 success: function()

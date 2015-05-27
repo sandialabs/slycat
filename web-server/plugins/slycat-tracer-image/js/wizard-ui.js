@@ -70,7 +70,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         sids: [component.remote.sid()],
         paths: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
         success: function()
         {
@@ -84,7 +84,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               client.get_model_table_metadata(
               {
                 mid: component.model._id(),
-                name: "data-table",
+                aid: "data-table",
                 success: function(metadata)
                 {
                   var attributes = [];
@@ -170,7 +170,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       client.put_model_parameter(
       {
         mid: component.model._id(),
-        name: "input-columns",
+        aid: "input-columns",
         value: input_columns,
         input: true,
         success: function()
@@ -178,7 +178,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "output-columns",
+            aid: "output-columns",
             value: output_columns,
             input: true,
             success: function()
@@ -186,7 +186,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               client.put_model_parameter(
               {
                 mid: component.model._id(),
-                name: "rating-columns",
+                aid: "rating-columns",
                 value: rating_columns,
                 input: true,
                 success: function()
@@ -194,7 +194,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   client.put_model_parameter(
                   {
                     mid: component.model._id(),
-                    name: "category-columns",
+                    aid: "category-columns",
                     value: category_columns,
                     input: true,
                     success: function()
@@ -202,7 +202,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                       client.put_model_parameter(
                       {
                         mid: component.model._id(),
-                        name: "image-columns",
+                        aid: "image-columns",
                         value: image_columns,
                         input: true,
                         success: function()

@@ -42,7 +42,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         mid: component.model._id(),
         files: component.browser.selection(),
         input: true,
-        names: ["geometry"],
+        aids: ["geometry"],
         parser: 'slycat-blob-parser',
         success: function() {
           client.post_model_finish({

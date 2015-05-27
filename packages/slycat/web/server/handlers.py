@@ -451,7 +451,7 @@ def post_model_finish(mid):
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
   cherrypy.response.status = "202 Finishing model."
 
-def post_model_files(mid, input=None, files=None, sids=None, paths=None, ids=None, parser=None, **kwargs):
+def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=None, parser=None, **kwargs):
   if input is None:
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
   input = True if input == "true" else False
@@ -477,10 +477,10 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, ids=Non
   else:
     raise cherrypy.HTTPError("400 Must supply files parameter, or sids and paths parameters.")
 
-  if ids is None:
-    ids = []
-  if not isinstance(ids, list):
-    ids = [ids]
+  if aids is None:
+    aids = []
+  if not isinstance(aids, list):
+    aids = [aids]
 
   if parser is None:
     raise cherrypy.HTTPError("400 Required parser parameter is missing.")
@@ -493,7 +493,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, ids=Non
   slycat.web.server.authentication.require_project_writer(project)
 
   try:
-    slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, ids, **kwargs)
+    slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
   except Exception as e:
     raise cherrypy.HTTPError("400 %s" % e.message)
 

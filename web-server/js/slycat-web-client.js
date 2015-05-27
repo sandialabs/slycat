@@ -353,7 +353,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     {
       dataType: "json",
       type: "GET",
-      url: server_root + "models/" + params.mid + "/parameters/" + params.name,
+      url: server_root + "models/" + params.mid + "/parameters/" + params.aid,
       success: function(result)
       {
         if(params.success)
@@ -371,7 +371,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   {
     console.log("slycat-web-client.get_model_table_metadata() is deprecated, use get_model_arrayset_metadata() instead.");
 
-    var url = server_root + "models/" + params.mid + "/tables/" + params.name + "/arrays/" + (params.aid || "0") + "/metadata";
+    var url = server_root + "models/" + params.mid + "/tables/" + params.aid + "/arrays/" + (params.array || "0") + "/metadata";
     if(params.index)
       url += "?index=" + params.index;
 
@@ -476,7 +476,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     var data = new FormData();
     data.append("input", params.input ? true: false);
     data.append("parser", params.parser);
-    data.append("names", params.names);
+    data.append("aids", params.aids);
     if(params.sids && params.paths)
     {
       data.append("sids", params.sids);
@@ -720,7 +720,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         input: params.input === undefined ? true: params.input ? true: false,
       }),
       type: "PUT",
-      url: server_root + "models/" + params.mid + "/parameters/" + params.name,
+      url: server_root + "models/" + params.mid + "/parameters/" + params.aid,
       success: function()
       {
         if(params.success)

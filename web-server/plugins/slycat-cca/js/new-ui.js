@@ -82,7 +82,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         mid: component.model._id(),
         files: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
         success: upload_success,
         error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
@@ -135,19 +135,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
       client.put_model_parameter({
         mid: component.model._id(),
-        name: "input-columns",
+        aid: "input-columns",
         value: input_columns,
         input: true,
         success: function() {
           client.put_model_parameter({
             mid: component.model._id(),
-            name: "output-columns",
+            aid: "output-columns",
             value: output_columns,
             input: true,
             success: function() {
               client.put_model_parameter({
                 mid: component.model._id(),
-                name: "scale-inputs",
+                aid: "scale-inputs",
                 value: component.scale_inputs(),
                 input: true,
                 success: function() {

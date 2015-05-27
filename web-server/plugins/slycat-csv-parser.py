@@ -24,17 +24,17 @@ def parse_file(file):
 
   return attributes, dimensions, data
 
-def parse(database, model, input, files, names, **kwargs):
-  if len(files) != len(names):
-    raise Exception("Number of files and artifact names must match.")
+def parse(database, model, input, files, aids, **kwargs):
+  if len(files) != len(aids):
+    raise Exception("Number of files and artifact ids must match.")
 
   parsed = [parse_file(file) for file in files]
 
   array_index = int(kwargs.get("array", "0"))
-  for (attributes, dimensions, data), name in zip(parsed, names):
-    slycat.web.server.put_model_arrayset(database, model, name, input)
-    slycat.web.server.put_model_array(database, model, name, 0, attributes, dimensions)
-    slycat.web.server.put_model_arrayset_data(database, model, name, "%s/.../..." % array_index, data)
+  for (attributes, dimensions, data), aid in zip(parsed, aids):
+    slycat.web.server.put_model_arrayset(database, model, aid, input)
+    slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
+    slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, data)
 
 def register_slycat_plugin(context):
   context.register_parser("slycat-csv-parser", "Comma separated values (CSV)", ["table"], parse)

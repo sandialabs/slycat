@@ -29,7 +29,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "name",
+            aid: "name",
             value: component.recipient(),
             input: true,
             success: function()
