@@ -89,6 +89,7 @@ define('slycat-stl-model', ['slycat-web-client', 'knockout', 'knockout-mapping',
 
   $('.slycat-stl-btn-reset').on('click', function() {
     controls.reset();
+    mesh.rotation.y = 0;
     return false;
   });
 
