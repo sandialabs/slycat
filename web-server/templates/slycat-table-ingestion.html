@@ -4,15 +4,37 @@
       <tr>
         <th></th>
         <!-- ko foreach: properties -->
-        <th data-bind="text: name"></th>
+        	<!-- ko if: type == 'bool' -->
+        		<th class="bool" data-bind="text: name"></th>
+        	<!-- /ko -->
+        	<!-- ko if: type == 'select' -->
+        		<!-- ko foreach: values -->
+        			<th class="select" data-bind="text: $data"></th>
+        		<!-- /ko -->
+        	<!-- /ko -->
         <!-- /ko -->
       </tr>
     </thead>
-    <tbody data-bind="foreach: variables">
+    <tbody data-bind="foreach: { data: variables, as: 'variable' }">
       <tr>
         <td data-bind="text: name"></td>
         <!-- ko foreach: $parent.properties -->
-        <td data-bind="text: type"></td>
+        	<!-- ko if: type == 'bool' -->
+	        	<td class="bool">
+	        		<input type="checkbox"
+	        			data-bind="attr: { name: variable.name()+name, value: 'true' }"
+	        		/>
+	        	</td>
+        	<!-- /ko -->
+        	<!-- ko if: type == 'select' -->
+        		<!-- ko foreach: values -->
+        			<td class="select">
+        				<input type="radio"
+        					data-bind="attr: { name: variable.name()+$parent.name, value: $data }"
+        				/>
+        			</td>
+        		<!-- /ko -->
+        	<!-- /ko -->
         <!-- /ko -->
       </tr>
     </tbody>

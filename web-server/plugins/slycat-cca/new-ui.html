@@ -52,8 +52,8 @@
 
     <div data-bind="visible:tab() == 5">
       <slycat-table-ingestion params="
-        variables: [{name: 'first', type: 'int'},{name: 'second', type: 'str'}],
-        properties: [{name: 'editable', type: 'bool'},{name: 'categorical', type: 'select'}]
+        variables: attributes,
+        properties: [{name: 'input-output', type: 'select', values: ['Input','Output','Neither']}, {name: 'Categorical', type: 'bool'}, {name: 'Editable', type: 'bool'}]
       "></slycat-table-ingestion>
 
       <table style="width:100%">
