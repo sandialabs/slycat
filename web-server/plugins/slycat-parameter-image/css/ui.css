@@ -888,3 +888,8 @@ a {
 {
     background-color: #E6E6E6;
 }
+#controls-pane .bootstrap-styles .dropdown-menu
+{
+  max-height: 500px;
+  overflow-y: auto;
+}
