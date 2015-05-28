@@ -14,6 +14,10 @@ def build_slycat_dev():
   build_slycat_demo()
   build_image("slycat-dev")
 
+def build_slycat_test():
+  build_slycat_demo()
+  build_image("slycat-test")
+
 def push_slycat_demo():
   build_slycat_demo()
   push_image("slycat-demo")
@@ -22,11 +26,17 @@ def push_slycat_dev():
   build_slycat_dev()
   push_image("slycat-dev")
 
+def build_slycat_test():
+  build_slycat_test()
+  push_image("slycat-test")
+
 targets = {
   "slycat-demo": build_slycat_demo,
   "slycat-dev": build_slycat_dev,
+  "slycat-test": build_slycat_test,
   "push-slycat-demo": push_slycat_demo,
   "push-slycat-dev": push_slycat_dev,
+  "push-slycat-test": push_slycat_test,
 }
 
 parser = argparse.ArgumentParser()
