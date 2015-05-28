@@ -10,7 +10,9 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
   {
   	viewModel: function(params)
     {
-      var table = this;
+      var component = this;
+      component.variables = params.variables;
+      component.properties = params.properties;
     },
     template: { require: "text!" + server_root + "templates/slycat-table-ingestion.html" }
   });

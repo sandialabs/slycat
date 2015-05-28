@@ -88,7 +88,8 @@ def js_bundle():
         "js/slycat-projects-main.js",
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
-        "js/slycat-resizing-modals.js"
+        "js/slycat-resizing-modals.js",
+        "js/slycat-table-ingestion.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()

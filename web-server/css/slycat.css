@@ -374,3 +374,10 @@ slycat-navbar .alert pre
   max-height: 90%;
   overflow: auto;
 }
+
+/* slycat-table-ingestion component */
+
+.slycat-table-ingestion table 
+{
+  width: 100%;
+}
