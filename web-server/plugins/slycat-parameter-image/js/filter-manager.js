@@ -98,6 +98,15 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           filter.min.extend({ notify: 'always' });
           filter.rateLimitedHigh = ko.pureComputed( filter.high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
           filter.rateLimitedLow = ko.pureComputed( filter.low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+          // Add max_stats and min_stats if they do not exists because bookmark is old
+          if( !('max_stats' in filter) )
+          {
+            filter.max_stats = ko.observable( self.table_statistics[ filter.index() ]["max"] );
+          }
+          if( !('min_stats' in filter) )
+          {
+            filter.min_stats = ko.observable( self.table_statistics[ filter.index() ]["min"] );
+          }
         });
 
         _.each(categoryFilters(), function (filter) {
