@@ -36,13 +36,20 @@ define('slycat-stl-model', ['slycat-web-client', 'knockout', 'knockout-mapping',
   lightTwo.position.set(0, -3, -3);
   scene.add(lightTwo);
 
-  var cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-  var cubeMaterial = new THREE.MeshLambertMaterial({ color: 0x337AB7 });
-  var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  cube.rotation.y = Math.PI * 45 / 180;
-  scene.add(cube);
+  var mesh = null;
 
-  camera.lookAt(cube.position);
+  new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
+    var material = new THREE.MeshLambertMaterial({ color: 0x337AB7 });
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 0, 0);
+
+    console.log(mesh);
+
+    scene.add(mesh);
+    camera.lookAt(mesh.position);
+  });
+
 
   var renderer = new THREE.WebGLRenderer({ antialias: true });
   /** Sets the background color for the scene */
@@ -70,17 +77,23 @@ define('slycat-stl-model', ['slycat-web-client', 'knockout', 'knockout-mapping',
   var renderRotate = function() {
     controls.update();
     renderer.render(scene, camera);
-    cube.rotation.y -= 0.01;
+
+    if (mesh)
+      mesh.rotation.y -= 0.01;
+
     animationId = requestAnimationFrame(renderRotate);
   };
 
   renderFixed();
 
 
-  $('#slycat-stl-rotate').on('click', function(e) {
-    e.stopPropagation();
-    e.preventDefault();
+  $('.slycat-stl-btn-reset').on('click', function() {
+    controls.reset();
+    mesh.rotation.y = 0;
+    return false;
+  });
 
+  $('.slycat-stl-btn-rotate').on('click', function() {
     cancelAnimationFrame(animationId);
 
     if ($(this).text() === 'Rotate') {
@@ -90,5 +103,7 @@ define('slycat-stl-model', ['slycat-web-client', 'knockout', 'knockout-mapping',
       renderFixed();
       $(this).text('Rotate');
     }
+
+    return false;
   });
 });
