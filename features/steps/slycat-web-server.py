@@ -1,7 +1,6 @@
 from __future__ import division
 from behave import *
 from parse import *
-from ghost import Ghost
 
 import cStringIO as StringIO
 import nose.tools
@@ -14,7 +13,12 @@ import tempfile
 import time
 import re
 
-ghost = Ghost()
+try:
+  from ghost import Ghost
+  ghost = Ghost()
+except:
+  pass
+
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 @given(u'the slycat servers are running')
