@@ -26,7 +26,7 @@ def push_slycat_dev():
   build_slycat_dev()
   push_image("slycat-dev")
 
-def build_slycat_test():
+def push_slycat_test():
   build_slycat_test()
   push_image("slycat-test")
 
