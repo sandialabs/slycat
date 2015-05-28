@@ -381,3 +381,15 @@ slycat-navbar .alert pre
 {
   width: 100%;
 }
+.slycat-table-ingestion thead th,
+.slycat-table-ingestion td
+{
+  text-align: center;
+}
+.slycat-table-ingestion tbody th
+{
+  padding-left: 5px;
+}
+.slycat-table-ingestion tbody tr:nth-child(odd) {
+  background-color: #F2F2F2;
+}
