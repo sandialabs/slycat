@@ -394,6 +394,45 @@ class Connection(object):
     """
     return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
 
+  def get_configuration_parsers(self):
+    """Retrieve parser plugin information from the server.
+
+    Returns
+    -------
+    parsers: server parser plugin information.
+
+    See Also
+    --------
+    :http:get:`/configuration/parsers`
+    """
+    return self.request("GET", "/configuration/parsers", headers={"accept":"application/json"})
+
+  def get_configuration_remote_hosts(self):
+    """Retrieve remote host information from the server.
+
+    Returns
+    -------
+    parsers: server remote host information.
+
+    See Also
+    --------
+    :http:get:`/configuration/remote-hosts`
+    """
+    return self.request("GET", "/configuration/remote-hosts", headers={"accept":"application/json"})
+
+  def get_configuration_support_email(self):
+    """Retrieve support email information from the server.
+
+    Returns
+    -------
+    parsers: server support email information.
+
+    See Also
+    --------
+    :http:get:`/configuration/support-email`
+    """
+    return self.request("GET", "/configuration/support-email", headers={"accept":"application/json"})
+
   def get_configuration_version(self):
     """Retrieve version information from the server.
 
@@ -406,6 +445,19 @@ class Connection(object):
     :http:get:`/configuration/version`
     """
     return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
+
+  def get_configuration_wizards(self):
+    """Retrieve wizard plugin information from the server.
+
+    Returns
+    -------
+    version: server wizard plugin information.
+
+    See Also
+    --------
+    :http:get:`/configuration/wizards`
+    """
+    return self.request("GET", "/configuration/wizards", headers={"accept":"application/json"})
 
   def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
     """Stores a model file artifacts."""
