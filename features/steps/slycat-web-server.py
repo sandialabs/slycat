@@ -13,13 +13,9 @@ import tempfile
 import time
 import re
 
-try:
-  from ghost import Ghost
-  ghost = Ghost()
-except:
-  pass
-
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
+ghost = None
 
 @given(u'the slycat servers are running')
 def step_impl(context):
@@ -38,6 +34,9 @@ def step_impl(context):
     for key in expected:
       if key.search(next_line):
         expected[key] = True
+  global ghost
+  from ghost import Ghost
+  ghost = Ghost()
 
 @given(u'I am on the front page')
 def step_impl(context):
