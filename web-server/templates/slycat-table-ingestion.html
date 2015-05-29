@@ -4,14 +4,14 @@
       <tr>
         <th></th>
         <!-- ko foreach: properties -->
-        	<!-- ko if: type == 'bool' -->
-        		<th class="bool" data-bind="text: name"></th>
-        	<!-- /ko -->
-        	<!-- ko if: type == 'select' -->
-        		<!-- ko foreach: values -->
-        			<th class="select" data-bind="text: $data"></th>
-        		<!-- /ko -->
-        	<!-- /ko -->
+          <!-- ko if: type == 'bool' -->
+            <th class="bool" data-bind="text: name"></th>
+          <!-- /ko -->
+          <!-- ko if: type == 'select' -->
+            <!-- ko foreach: values -->
+              <th class="select" data-bind="text: $data"></th>
+            <!-- /ko -->
+          <!-- /ko -->
         <!-- /ko -->
       </tr>
     </thead>
@@ -19,22 +19,26 @@
       <tr>
         <th data-bind="text: name"></th>
         <!-- ko foreach: $parent.properties -->
-        	<!-- ko if: type == 'bool' -->
-	        	<td class="bool">
-	        		<input type="checkbox"
-	        			data-bind="attr: { name: variable.name()+name, value: 'true' }"
-	        		/>
-	        	</td>
-        	<!-- /ko -->
-        	<!-- ko if: type == 'select' -->
-        		<!-- ko foreach: values -->
-        			<td class="select">
-        				<input type="radio"
-        					data-bind="attr: { name: variable.name()+$parent.name, value: $data }"
-        				/>
-        			</td>
-        		<!-- /ko -->
-        	<!-- /ko -->
+          <!-- ko if: type == 'bool' -->
+            <td class="bool">
+              <input type="checkbox"
+                data-bind="attr: { name: variable.name()+name, value: 'true' }"
+              />
+            </td>
+          <!-- /ko -->
+          <!-- ko if: type == 'select' -->
+            <!-- ko foreach: values -->
+              <td class="select">
+                <input type="radio"
+                  data-bind="attr: { 
+                    name: variable.name()+$parent.name, 
+                    value: $data,
+                    checked: $data == 'Input' ? variable.input() : ( $data == 'Output' ? variable.output() : !( variable.input() || variable.output() ) )
+                  }"
+                />
+              </td>
+            <!-- /ko -->
+          <!-- /ko -->
         <!-- /ko -->
       </tr>
     </tbody>
