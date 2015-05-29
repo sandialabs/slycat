@@ -23,7 +23,7 @@ before_install:
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
 
 install:
-  - pip install behave coverage coveralls mock numpy Pillow pyparsing
+  - pip install behave cherrypy==3.2.6 coverage coveralls mock numpy Pillow pyparsing>=2.0.3
 script:
   - coverage run --source slycat -m behave -i hyperchunks
   - coverage report
