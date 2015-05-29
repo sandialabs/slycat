@@ -55,7 +55,7 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
         camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
         camera.position.x = gbb.max.x;
         camera.position.y = gbb.max.y;
-        camera.position.z = gbb.max.z + (gbs.radius*6);
+        camera.position.z = gbb.max.z + (gbs.radius*4);
 
         mouse = new THREE.Vector2();
         controls = new THREE.TrackballControls(camera);
