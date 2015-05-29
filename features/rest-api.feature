@@ -50,3 +50,10 @@ Feature: REST API
     Given a running Slycat server.
     When a client creates a new project.
     Then the project should be created.
+
+  Scenario: PUT Project
+    Given a running Slycat server.
+    And a default project.
+    When a client modifies the project.
+    Then the project should be modified.
+

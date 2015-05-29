@@ -151,3 +151,17 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
   context.connection.delete_project(context.pid)
 
+@when(u'a client modifies the project.')
+def step_impl(context):
+  context.connection.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.server_user}], "writers":[{"user":"foo"}], "readers":[{"user":"baz"}]}})
+
+@then(u'the project should be modified.')
+def step_impl(context):
+  context.project = require_valid_project(context.connection.get_project(context.pid))
+  nose.tools.assert_equal(context.project["name"], "MyProject")
+  nose.tools.assert_equal(context.project["description"], "My description.")
+  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
+  nose.tools.assert_equal(context.project["acl"]["writers"], [{"user":"foo"}])
+  nose.tools.assert_equal(context.project["acl"]["readers"], [{"user":"baz"}])
+  context.connection.delete_project(context.pid)
+
