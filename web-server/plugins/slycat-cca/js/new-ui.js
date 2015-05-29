@@ -134,9 +134,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var input_columns = [];
       var output_columns = [];
       for(var i = 0; i != component.attributes().length; ++i) {
-        if(component.attributes()[i].input())
+        if(component.attributes()[i].classification() == 'Input')
           input_columns.push(i);
-        if(component.attributes()[i].output())
+        if(component.attributes()[i].classification() == 'Output')
           output_columns.push(i);
       }
 
