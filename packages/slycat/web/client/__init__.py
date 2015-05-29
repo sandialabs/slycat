@@ -363,13 +363,13 @@ class Connection(object):
     """
     return self.request("GET", "/remotes/%s/image%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
 
-  def get_user(self, uid):
+  def get_user(self, uid=None):
     """Retrieve directory information about an existing user.
 
     Parameters
     ----------
-    uid: string, required
-      Unique user identifier.
+    uid: string, optional
+      Unique user identifier.  If unspecified, returns information about the user making the call.
 
     Returns
     -------
@@ -379,7 +379,7 @@ class Connection(object):
     --------
     :http:get:`/users/(uid)`
     """
-    return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
+    return self.request("GET", "/users/%s" % ("-" if uid is None else uid), headers={"accept":"application/json"})
 
   def get_configuration_markings(self):
     """Retrieve marking information from the server.
