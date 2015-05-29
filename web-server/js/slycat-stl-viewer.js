@@ -65,6 +65,8 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
       scene.add(lightTwo);
 
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
+        console.log(geometry);
+
         var material = new THREE.MeshLambertMaterial({ color: 0x337AB7 });
 
         mesh = new THREE.Mesh(geometry, material);
@@ -93,12 +95,12 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
       renderFixed(animation, renderer, scene, camera, controls);
 
 
-      $('.slycat-stl-btn-reset').on('click', function() {
+      $('#' + cid + ' .slycat-stl-btn-reset').on('click', function() {
         onReset(controls, mesh);
         return false;
       });
 
-      $('.slycat-stl-btn-rotate').on('click', function() {
+      $('#' + cid + ' .slycat-stl-btn-rotate').on('click', function() {
         onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
         return false;
       });
