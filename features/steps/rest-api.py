@@ -81,3 +81,27 @@ def step_impl(context):
     nose.tools.assert_in("require", item)
     nose.tools.assert_in("type", item)
 
+@when(u'a client requests information about the current user.')
+def step_impl(context):
+  context.response = context.connection.get_user()
+
+@then(u'the server should return information about the current user.')
+def step_impl(context):
+  nose.tools.assert_is_instance(context.response, dict)
+  nose.tools.assert_in("email", context.response)
+  nose.tools.assert_in("name", context.response)
+  nose.tools.assert_in("uid", context.response)
+  nose.tools.assert_equal(context.response["uid"], context.server_user)
+
+@when(u'a client requests information about another user.')
+def step_impl(context):
+  context.response = context.connection.get_user("foobar")
+
+@then(u'the server should return information about the other user.')
+def step_impl(context):
+  nose.tools.assert_is_instance(context.response, dict)
+  nose.tools.assert_in("email", context.response)
+  nose.tools.assert_in("name", context.response)
+  nose.tools.assert_in("uid", context.response)
+  nose.tools.assert_equal(context.response["uid"], "foobar")
+

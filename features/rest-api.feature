@@ -1,4 +1,5 @@
 Feature: REST API
+
   Scenario: GET Configuration Markings
     Given a running Slycat server.
     When a client requests the set of available markings.
@@ -23,3 +24,13 @@ Feature: REST API
     Given a running Slycat server.
     When a client requests available server wizards.
     Then the server should return a list of available wizards.
+
+  Scenario: GET User (Current)
+    Given a running Slycat server.
+    When a client requests information about the current user.
+    Then the server should return information about the current user.
+  Scenario: GET User
+    Given a running Slycat server.
+    When a client requests information about another user.
+    Then the server should return information about the other user.
+
