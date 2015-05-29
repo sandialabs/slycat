@@ -6,6 +6,13 @@ Feature: REST API
     When a client deletes the project.
     Then the project should no longer exist.
 
+  Scenario: GET Bookmark
+    Given a running Slycat server.
+    And a default project.
+    And a sample bookmark.
+    When a client retrieves the project bookmark.
+    Then the project bookmark should be retrieved.
+
   Scenario: GET Configuration Markings
     Given a running Slycat server.
     When a client requests the set of available markings.
@@ -52,6 +59,12 @@ Feature: REST API
     Given a running Slycat server.
     When a client requests information about another user.
     Then the server should return information about the other user.
+
+  Scenario: POST Project Bookmarks
+    Given a running Slycat server.
+    And a default project.
+    When a client saves a project bookmark.
+    Then the project bookmark should be saved.
 
   Scenario: POST Projects
     Given a running Slycat server.

@@ -34,6 +34,18 @@ def step_impl(context):
     context.connection.get_project(context.pid)
     nose.tools.assert_equal(raised.exception.code, 404)
 
+@given(u'a sample bookmark.')
+def step_impl(context):
+  context.bid = context.connection.post_project_bookmarks(context.pid, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+
+@when(u'a client retrieves the project bookmark.')
+def step_impl(context):
+  context.bookmark = context.connection.get_bookmark(context.bid)
+
+@then(u'the project bookmark should be retrieved.')
+def step_impl(context):
+  nose.tools.assert_equal(context.bookmark, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+
 @when(u'a client requests the set of available markings.')
 def step_impl(context):
   context.markings = context.connection.get_configuration_markings()
@@ -153,6 +165,15 @@ def step_impl(context):
   for field in ["email", "name", "uid"]:
     nose.tools.assert_in(field, context.user)
   nose.tools.assert_equal(context.user["uid"], "foobar")
+
+@when(u'a client saves a project bookmark.')
+def step_impl(context):
+  context.bid = context.connection.post_project_bookmarks(context.pid, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+
+@then(u'the project bookmark should be saved.')
+def step_impl(context):
+  context.bookmark = context.connection.get_bookmark(context.bid)
+  nose.tools.assert_equal(context.bookmark, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
 
 @when(u'a client creates a new project.')
 def step_impl(context):
