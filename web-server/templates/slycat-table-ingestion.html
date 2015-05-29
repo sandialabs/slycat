@@ -30,11 +30,13 @@
             <!-- ko foreach: values -->
               <td class="select">
                 <input type="radio"
-                  data-bind="attr: { 
-                    name: variable.name()+$parent.name, 
-                    value: $data,
-                    checked: $data == 'Input' ? variable.input() : ( $data == 'Output' ? variable.output() : !( variable.input() || variable.output() ) )
-                  }"
+                  data-bind="
+                    attr: { 
+                      name: variable.name()+$parent.name, 
+                      value: $data
+                    },
+                    checked: variable.classification
+                  "
                 />
               </td>
             <!-- /ko -->

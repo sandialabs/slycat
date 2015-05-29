@@ -90,10 +90,10 @@ def js_bundle():
         "js/slycat-model-main.js",
         "js/slycat-resizing-modals.js",
         "js/slycat-table-ingestion.js"
-        "js/three.min.js",
-        "js/TrackballControls.js",
-        "js/STLLoader.js",
-        "js/slycat-stl-viewer.js"
+        # "js/three.min.js",
+        # "js/TrackballControls.js",
+        # "js/STLLoader.js",
+        # "js/slycat-stl-viewer.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()

@@ -69,7 +69,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             var name = metadata.arrays[0].attributes[i].name;
             var type = metadata.arrays[0].attributes[i].type;
             var constant = metadata.statistics[i].unique == 1;
-            attributes.push({name:name, type:type, constant:constant, input:type != "string" && !constant, output:false});
+            attributes.push({
+              name:name, 
+              type:type, 
+              constant:constant, 
+              input:type != "string" && !constant, 
+              output:false,
+              classification: ko.observable( type != "string" && !constant ? 'Input' : 'Neither' )
+            });
           }
           mapping.fromJS(attributes, component.attributes);
           component.tab(5);
