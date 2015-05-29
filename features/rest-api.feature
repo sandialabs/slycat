@@ -50,6 +50,13 @@ Feature: REST API
     When a client requests available server wizards.
     Then the server should return a list of available wizards.
 
+  Scenario: GET Model
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    When a client retrieves the model.
+    Then the server should return the model.
+
   Scenario: GET Project
     Given a running Slycat server.
     And a default project.

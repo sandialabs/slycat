@@ -136,6 +136,27 @@ def step_impl(context):
     for field in ["label", "require", "type"]:
       nose.tools.assert_in(field, item)
 
+@when(u'a client retrieves the model.')
+def step_impl(context):
+  context.model = require_valid_model(context.connection.get_model(context.mid))
+
+@then(u'the server should return the model.')
+def step_impl(context):
+  nose.tools.assert_equal(context.model["creator"], context.server_user)
+  nose.tools.assert_equal(context.model["description"], "Description.")
+  nose.tools.assert_equal(context.model["marking"], "")
+  nose.tools.assert_equal(context.model["name"], "Test")
+  nose.tools.assert_equal(context.model["model-type"], "generic")
+  nose.tools.assert_equal(context.model["artifact-types"], {})
+  nose.tools.assert_equal(context.model["input-artifacts"], [])
+  nose.tools.assert_equal(context.model["project"], context.pid)
+  nose.tools.assert_equal(context.model["started"], None)
+  nose.tools.assert_equal(context.model["finished"], None)
+  nose.tools.assert_equal(context.model["state"], "waiting")
+  nose.tools.assert_equal(context.model["result"], None)
+  nose.tools.assert_equal(context.model["progress"], None)
+  nose.tools.assert_equal(context.model["message"], None)
+
 @when(u'a client retrieves the project.')
 def step_impl(context):
   context.project = require_valid_project(context.connection.get_project(context.pid))
@@ -147,7 +168,6 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
   nose.tools.assert_equal(context.project["acl"]["writers"], [])
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
-  context.connection.delete_project(context.pid)
 
 @given(u'another default project.')
 def step_impl(context):
@@ -163,8 +183,6 @@ def step_impl(context):
   nose.tools.assert_in("projects", context.projects)
   for project in context.projects["projects"]:
     require_valid_project(project)
-  context.connection.delete_project(context.pid2)
-  context.connection.delete_project(context.pid)
 
 @when(u'a client requests information about the current user.')
 def step_impl(context):
@@ -218,7 +236,6 @@ def step_impl(context):
   nose.tools.assert_equal(context.model["result"], None)
   nose.tools.assert_equal(context.model["progress"], None)
   nose.tools.assert_equal(context.model["message"], None)
-  context.connection.delete_model(context.mid)
 
 @when(u'a client creates a new project.')
 def step_impl(context):
@@ -233,7 +250,6 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["creator"], context.server_user)
   nose.tools.assert_equal(context.project["description"], "Description.")
   nose.tools.assert_equal(context.project["name"], "Test")
-  context.connection.delete_project(context.pid)
 
 @when(u'a client modifies the project.')
 def step_impl(context):
@@ -247,5 +263,4 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
   nose.tools.assert_equal(context.project["acl"]["writers"], [{"user":"foo"}])
   nose.tools.assert_equal(context.project["acl"]["readers"], [{"user":"baz"}])
-  context.connection.delete_project(context.pid)
 
