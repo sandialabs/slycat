@@ -1,5 +1,12 @@
 Feature: REST API
 
+  Scenario: DELETE Model
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    When a client deletes the model.
+    Then the model should no longer exist.
+
   Scenario: DELETE Project
     Given a running Slycat server.
     And a default project.
@@ -17,22 +24,27 @@ Feature: REST API
     Given a running Slycat server.
     When a client requests the set of available markings.
     Then the server should return a list of markings.
+
   Scenario: GET Configuration Parsers
     Given a running Slycat server.
     When a client requests the set of available parsers.
     Then the server should return a list of parsers.
+
   Scenario: GET Configuration Remote Hosts
     Given a running Slycat server.
     When a client requests the set of configured remote hosts.
     Then the server should return a list of remote hosts.
+
   Scenario: GET Configuration Support Email
     Given a running Slycat server.
     When a client requests the server support email.
     Then the server should return its support email.
+
   Scenario: GET Configuration Version
     Given a running Slycat server.
     When a client requests the server version.
     Then the server should return its version.
+
   Scenario: GET Configuration Wizard
     Given a running Slycat server.
     When a client requests available server wizards.
@@ -55,6 +67,7 @@ Feature: REST API
     Given a running Slycat server.
     When a client requests information about the current user.
     Then the server should return information about the current user.
+
   Scenario: GET User
     Given a running Slycat server.
     When a client requests information about another user.

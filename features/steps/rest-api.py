@@ -32,6 +32,20 @@ def step_impl(context):
 def step_impl(context):
   context.pid = context.connection.post_projects("Test", "Description.")
 
+@given(u'a default model.')
+def step_impl(context):
+  context.mid = context.connection.post_project_models(context.pid, "generic", "Test", description="Description.")
+
+@when(u'a client deletes the model.')
+def step_impl(context):
+  context.connection.delete_model(context.mid)
+
+@then(u'the model should no longer exist.')
+def step_impl(context):
+  with nose.tools.assert_raises(Exception) as raised:
+    context.connection.get_model(context.mid)
+    nose.tools.assert_equal(raised.exception.code, 404)
+
 @when(u'a client deletes the project.')
 def step_impl(context):
   context.connection.delete_project(context.pid)
