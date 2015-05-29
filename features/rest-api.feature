@@ -1,5 +1,11 @@
 Feature: REST API
 
+  Scenario: DELETE Project
+    Given a running Slycat server.
+    And a default project.
+    When a client deletes the project.
+    Then the project should no longer exist.
+
   Scenario: GET Configuration Markings
     Given a running Slycat server.
     When a client requests the set of available markings.
@@ -25,6 +31,12 @@ Feature: REST API
     When a client requests available server wizards.
     Then the server should return a list of available wizards.
 
+  Scenario: GET Project
+    Given a running Slycat server.
+    And a default project.
+    When a client retrieves the project.
+    Then the server should return the project.
+
   Scenario: GET User (Current)
     Given a running Slycat server.
     When a client requests information about the current user.
@@ -34,3 +46,7 @@ Feature: REST API
     When a client requests information about another user.
     Then the server should return information about the other user.
 
+  Scenario: POST Projects
+    Given a running Slycat server.
+    When a client creates a new project.
+    Then the project should be created.
