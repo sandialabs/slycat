@@ -37,6 +37,13 @@ Feature: REST API
     When a client retrieves the project.
     Then the server should return the project.
 
+  Scenario: GET Projects
+    Given a running Slycat server.
+    And a default project.
+    And another default project.
+    When a client retrieves all projects.
+    Then the server should return all projects.
+
   Scenario: GET User (Current)
     Given a running Slycat server.
     When a client requests information about the current user.

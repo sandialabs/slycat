@@ -115,6 +115,23 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
   context.connection.delete_project(context.pid)
 
+@given(u'another default project.')
+def step_impl(context):
+  context.pid2 = context.connection.post_projects("Test", "Description")
+
+@when(u'a client retrieves all projects.')
+def step_impl(context):
+  context.projects = context.connection.get_projects()
+
+@then(u'the server should return all projects.')
+def step_impl(context):
+  nose.tools.assert_is_instance(context.projects, dict)
+  nose.tools.assert_in("projects", context.projects)
+  for project in context.projects["projects"]:
+    require_valid_project(project)
+  context.connection.delete_project(context.pid2)
+  context.connection.delete_project(context.pid)
+
 @when(u'a client requests information about the current user.')
 def step_impl(context):
   context.user = context.connection.get_user()
