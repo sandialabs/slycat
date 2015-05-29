@@ -8,12 +8,20 @@ def require_valid_project(project):
   nose.tools.assert_is_instance(project, dict)
   for field in ["description", "creator", "_rev", "created", "acl", "_id", "type", "name"]:
     nose.tools.assert_in(field, project)
+  nose.tools.assert_equal(project["type"], "project")
   nose.tools.assert_is_instance(project["acl"], dict)
   for field in ["administrators", "writers", "readers"]:
     nose.tools.assert_in(field, project["acl"])
     for item in project["acl"][field]:
       nose.tools.assert_is_instance(item, dict)
   return project
+
+def require_valid_model(model):
+  nose.tools.assert_is_instance(model, dict)
+  for field in ["marking", "description", "creator", "artifact-types", "input-artifacts", "_rev", "created", "model-type", "project", "started", "finished", "state", "result", "progress", "message", "_id", "type", "name"]:
+    nose.tools.assert_in(field, model)
+  nose.tools.assert_equal(model["type"], "model")
+  return model
 
 @given(u'a running Slycat server.')
 def step_impl(context):
@@ -22,7 +30,7 @@ def step_impl(context):
 
 @given(u'a default project.')
 def step_impl(context):
-  context.pid = context.connection.post_projects("Test", "Description")
+  context.pid = context.connection.post_projects("Test", "Description.")
 
 @when(u'a client deletes the project.')
 def step_impl(context):
@@ -121,7 +129,7 @@ def step_impl(context):
 @then(u'the server should return the project.')
 def step_impl(context):
   nose.tools.assert_equal(context.project["name"], "Test")
-  nose.tools.assert_equal(context.project["description"], "Description")
+  nose.tools.assert_equal(context.project["description"], "Description.")
   nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
   nose.tools.assert_equal(context.project["acl"]["writers"], [])
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
@@ -129,7 +137,7 @@ def step_impl(context):
 
 @given(u'another default project.')
 def step_impl(context):
-  context.pid2 = context.connection.post_projects("Test", "Description")
+  context.pid2 = context.connection.post_projects("Test2", "Description2.")
 
 @when(u'a client retrieves all projects.')
 def step_impl(context):
@@ -175,18 +183,42 @@ def step_impl(context):
   context.bookmark = context.connection.get_bookmark(context.bid)
   nose.tools.assert_equal(context.bookmark, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
 
+@when(u'a client creates a new model.')
+def step_impl(context):
+  context.mid = context.connection.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'the model should be created.')
+def step_impl(context):
+  context.model = require_valid_model(context.connection.get_model(context.mid))
+  nose.tools.assert_equal(context.model["creator"], context.server_user)
+  nose.tools.assert_equal(context.model["description"], "Description.")
+  nose.tools.assert_equal(context.model["marking"], "")
+  nose.tools.assert_equal(context.model["name"], "Test")
+  nose.tools.assert_equal(context.model["model-type"], "generic")
+  nose.tools.assert_equal(context.model["artifact-types"], {})
+  nose.tools.assert_equal(context.model["input-artifacts"], [])
+  nose.tools.assert_equal(context.model["project"], context.pid)
+  nose.tools.assert_equal(context.model["started"], None)
+  nose.tools.assert_equal(context.model["finished"], None)
+  nose.tools.assert_equal(context.model["state"], "waiting")
+  nose.tools.assert_equal(context.model["result"], None)
+  nose.tools.assert_equal(context.model["progress"], None)
+  nose.tools.assert_equal(context.model["message"], None)
+  context.connection.delete_model(context.mid)
+
 @when(u'a client creates a new project.')
 def step_impl(context):
-  context.pid = context.connection.post_projects("Test", "Description")
+  context.pid = context.connection.post_projects("Test", "Description.")
 
 @then(u'the project should be created.')
 def step_impl(context):
   context.project = require_valid_project(context.connection.get_project(context.pid))
-  nose.tools.assert_equal(context.project["name"], "Test")
-  nose.tools.assert_equal(context.project["description"], "Description")
   nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
-  nose.tools.assert_equal(context.project["acl"]["writers"], [])
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
+  nose.tools.assert_equal(context.project["acl"]["writers"], [])
+  nose.tools.assert_equal(context.project["creator"], context.server_user)
+  nose.tools.assert_equal(context.project["description"], "Description.")
+  nose.tools.assert_equal(context.project["name"], "Test")
   context.connection.delete_project(context.pid)
 
 @when(u'a client modifies the project.')
