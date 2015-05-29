@@ -25,7 +25,7 @@ before_install:
 install:
   - pip install behave cherrypy==3.2.6 coverage coveralls mock numpy Pillow pyparsing>=2.0.3
 script:
-  - coverage run --source slycat -m behave -i (agent|hyperchunks)
+  - coverage run --source slycat -m behave -i "(agent|hyperchunks)"
   - coverage report
 after_script:
   - coveralls
