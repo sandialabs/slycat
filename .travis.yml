@@ -7,6 +7,7 @@ before_install:
   - sudo apt-get update -qq
 #  - sudo apt-get install -y python-gtk2 wget
   - env | sort
+  - ls -l
 #  - cd $VIRTUAL_ENV
 #  - mkdir -p lib/python2.7/dist-packages/
 #  - ln -s /usr/lib/python2.7/dist-packages/glib/ lib/python2.7/dist-packages/
@@ -19,6 +20,7 @@ before_install:
   - mkdir ffmpeg
   - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
   - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
 
 install:
   - pip install behave coverage coveralls mock numpy Pillow pyparsing
