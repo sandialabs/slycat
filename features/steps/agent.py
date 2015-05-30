@@ -13,11 +13,10 @@ import time
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 data_dir = os.path.join(root_dir, "features/data/agent")
 slycat_agent = os.path.join(root_dir, "agent", "slycat-agent.py")
-ffmpeg = "/usr/bin/ffmpeg"
 
 @given(u'a running Slycat agent')
 def step_impl(context):
-  context.agent = subprocess.Popen([sys.executable, slycat_agent, "--ffmpeg=%s" % ffmpeg], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  context.agent = subprocess.Popen([sys.executable, slycat_agent, "--ffmpeg=%s" % context.local_ffmpeg], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"ok": True, "message": "Ready."})
 
 @when("an unparsable command is received")
