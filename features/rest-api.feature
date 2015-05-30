@@ -72,6 +72,16 @@ Feature: REST API
     When a client retrieves the project models.
     Then the server should return the project models.
 
+  Scenario: GET Project References
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    And a sample bookmark.
+    And a saved bookmark.
+    And a saved template.
+    When a client retrieves the project references.
+    Then the server should return the project references.
+
   Scenario: GET Project
     Given a running Slycat server.
     And a default project.

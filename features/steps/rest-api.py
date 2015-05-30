@@ -5,6 +5,38 @@ import datetime
 import nose.tools
 import slycat.web.client
 
+def require_list(sequence, length=None, item_test=None):
+  nose.tools.assert_is_instance(sequence, list)
+  if length is not None:
+    nose.tools.assert_equal(len(sequence), length)
+  if item_test is not None:
+    for item in sequence:
+      item_test(item)
+
+def require_valid_marking(marking):
+  nose.tools.assert_is_instance(marking, dict)
+  for field in ["badge", "label", "page-before", "page-after", "type"]:
+    nose.tools.assert_in(field, marking)
+  return marking
+
+def require_valid_parser(parser):
+  nose.tools.assert_is_instance(parser, dict)
+  for field in ["categories", "label", "type"]:
+    nose.tools.assert_in(field, parser)
+  return parser
+
+def require_valid_remote_host(remote_host):
+  nose.tools.assert_is_instance(remote_host, dict)
+  for field in ["agent", "hostname"]:
+    nose.tools.assert_in(field, remote_host)
+  return remote_host
+
+def require_valid_wizard(wizard):
+  nose.tools.assert_is_instance(wizard, dict)
+  for field in ["label", "require", "type"]:
+    nose.tools.assert_in(field, wizard)
+  return wizard
+
 def require_valid_timestamp(timestamp):
   return datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
 
@@ -38,7 +70,7 @@ def require_valid_model(model):
   nose.tools.assert_is_instance(model["artifact-types"], dict)
   for atype in model["artifact-types"].values():
     nose.tools.assert_in(atype, ["json"])
-  nose.tools.assert_is_instance(model["input-artifacts"], list)
+  require_list(model["input-artifacts"])
   for aid in model["input-artifacts"]:
     nose.tools.assert_in(aid, model["artifact-types"])
   return model
@@ -104,11 +136,7 @@ def step_impl(context):
 
 @then(u'the server should return a list of markings.')
 def step_impl(context):
-  nose.tools.assert_is_instance(context.markings, list)
-  for item in context.markings:
-    nose.tools.assert_is_instance(item, dict)
-    for field in ["badge", "label", "page-before", "page-after", "type"]:
-      nose.tools.assert_in(field, item)
+  require_list(context.markings, item_test=require_valid_marking)
 
 @when(u'a client requests the set of available parsers.')
 def step_impl(context):
@@ -116,11 +144,7 @@ def step_impl(context):
 
 @then(u'the server should return a list of parsers.')
 def step_impl(context):
-  nose.tools.assert_is_instance(context.parsers, list)
-  for item in context.parsers:
-    nose.tools.assert_is_instance(item, dict)
-    for field in ["categories", "label", "type"]:
-      nose.tools.assert_in(field, item)
+  require_list(context.parsers, item_test=require_valid_parser)
 
 @when(u'a client requests the set of configured remote hosts.')
 def step_impl(context):
@@ -128,11 +152,7 @@ def step_impl(context):
 
 @then(u'the server should return a list of remote hosts.')
 def step_impl(context):
-  nose.tools.assert_is_instance(context.remote_hosts, list)
-  for item in context.remote_hosts:
-    nose.tools.assert_is_instance(item, dict)
-    for field in ["agent", "hostname"]:
-      nose.tools.assert_in(field, item)
+  require_list(context.remote_hosts, item_test=require_valid_remote_host)
 
 @when(u'a client requests the server support email.')
 def step_impl(context):
@@ -160,11 +180,7 @@ def step_impl(context):
 
 @then(u'the server should return a list of available wizards.')
 def step_impl(context):
-  nose.tools.assert_is_instance(context.wizards, list)
-  for item in context.wizards:
-    nose.tools.assert_is_instance(item, dict)
-    for field in ["label", "require", "type"]:
-      nose.tools.assert_in(field, item)
+  require_list(context.wizards, item_test=require_valid_wizard)
 
 @when(u'a client retrieves the model.')
 def step_impl(context):
@@ -193,9 +209,23 @@ def step_impl(context):
 
 @then(u'the server should return the project models.')
 def step_impl(context):
-  nose.tools.assert_is_instance(context.project_models, list)
-  for model in context.project_models:
-    require_valid_model(model)
+  require_list(context.project_models, length=2, item_test=require_valid_model)
+
+@given(u'a saved bookmark.')
+def step_impl(context):
+  context.saved_bookmark_rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@given(u'a saved template.')
+def step_impl(context):
+  context.template_rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@when(u'a client retrieves the project references.')
+def step_impl(context):
+  context.references = context.connection.get_project_references(context.pid)
+
+@then(u'the server should return the project references.')
+def step_impl(context):
+  require_list(context.references, length=2, item_test=require_valid_reference)
 
 @when(u'a client retrieves the project.')
 def step_impl(context):
@@ -258,9 +288,7 @@ def step_impl(context):
 @then(u'the saved bookmark should be created.')
 def step_impl(context):
   context.references = context.connection.get_project_references(context.pid)
-  nose.tools.assert_is_instance(context.references, list)
-  for reference in context.references:
-    require_valid_reference(reference)
+  require_list(context.references, length=1, item_test=require_valid_reference)
   nose.tools.assert_equal(context.references[0]["bid"], context.bid)
   nose.tools.assert_equal(context.references[0]["creator"], context.server_user)
   nose.tools.assert_equal(context.references[0]["mid"], context.mid)
@@ -275,9 +303,7 @@ def step_impl(context):
 @then(u'the template should be created.')
 def step_impl(context):
   context.references = context.connection.get_project_references(context.pid)
-  nose.tools.assert_is_instance(context.references, list)
-  for reference in context.references:
-    require_valid_reference(reference)
+  require_list(context.references, length=1, item_test=require_valid_reference)
   nose.tools.assert_equal(context.references[0]["bid"], context.bid)
   nose.tools.assert_equal(context.references[0]["creator"], context.server_user)
   nose.tools.assert_equal(context.references[0]["mid"], None)
