@@ -209,6 +209,84 @@ class Connection(object):
     """
     return self.request("GET", "/bookmarks/%s" % (bid))
 
+  def get_configuration_markings(self):
+    """Retrieve marking information from the server.
+
+    Returns
+    -------
+    markings: server marking information.
+
+    See Also
+    --------
+    :http:get:`/configuration/markings`
+    """
+    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
+
+  def get_configuration_parsers(self):
+    """Retrieve parser plugin information from the server.
+
+    Returns
+    -------
+    parsers: server parser plugin information.
+
+    See Also
+    --------
+    :http:get:`/configuration/parsers`
+    """
+    return self.request("GET", "/configuration/parsers", headers={"accept":"application/json"})
+
+  def get_configuration_remote_hosts(self):
+    """Retrieve remote host information from the server.
+
+    Returns
+    -------
+    parsers: server remote host information.
+
+    See Also
+    --------
+    :http:get:`/configuration/remote-hosts`
+    """
+    return self.request("GET", "/configuration/remote-hosts", headers={"accept":"application/json"})
+
+  def get_configuration_support_email(self):
+    """Retrieve support email information from the server.
+
+    Returns
+    -------
+    parsers: server support email information.
+
+    See Also
+    --------
+    :http:get:`/configuration/support-email`
+    """
+    return self.request("GET", "/configuration/support-email", headers={"accept":"application/json"})
+
+  def get_configuration_version(self):
+    """Retrieve version information from the server.
+
+    Returns
+    -------
+    version: server version information.
+
+    See Also
+    --------
+    :http:get:`/configuration/version`
+    """
+    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
+
+  def get_configuration_wizards(self):
+    """Retrieve wizard plugin information from the server.
+
+    Returns
+    -------
+    version: server wizard plugin information.
+
+    See Also
+    --------
+    :http:get:`/configuration/wizards`
+    """
+    return self.request("GET", "/configuration/wizards", headers={"accept":"application/json"})
+
   def get_model(self, mid):
     """Retrieve an existing model.
 
@@ -259,6 +337,10 @@ class Connection(object):
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
+
+  def get_project_references(self, pid):
+    """Returns every reference in a project."""
+    return self.request("GET", "/projects/%s/references" % pid, headers={"accept":"application/json"})
 
   def get_project(self, pid):
     """Retrieve an existing project.
@@ -381,84 +463,6 @@ class Connection(object):
     """
     return self.request("GET", "/users/%s" % ("-" if uid is None else uid), headers={"accept":"application/json"})
 
-  def get_configuration_markings(self):
-    """Retrieve marking information from the server.
-
-    Returns
-    -------
-    markings: server marking information.
-
-    See Also
-    --------
-    :http:get:`/configuration/markings`
-    """
-    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
-
-  def get_configuration_parsers(self):
-    """Retrieve parser plugin information from the server.
-
-    Returns
-    -------
-    parsers: server parser plugin information.
-
-    See Also
-    --------
-    :http:get:`/configuration/parsers`
-    """
-    return self.request("GET", "/configuration/parsers", headers={"accept":"application/json"})
-
-  def get_configuration_remote_hosts(self):
-    """Retrieve remote host information from the server.
-
-    Returns
-    -------
-    parsers: server remote host information.
-
-    See Also
-    --------
-    :http:get:`/configuration/remote-hosts`
-    """
-    return self.request("GET", "/configuration/remote-hosts", headers={"accept":"application/json"})
-
-  def get_configuration_support_email(self):
-    """Retrieve support email information from the server.
-
-    Returns
-    -------
-    parsers: server support email information.
-
-    See Also
-    --------
-    :http:get:`/configuration/support-email`
-    """
-    return self.request("GET", "/configuration/support-email", headers={"accept":"application/json"})
-
-  def get_configuration_version(self):
-    """Retrieve version information from the server.
-
-    Returns
-    -------
-    version: server version information.
-
-    See Also
-    --------
-    :http:get:`/configuration/version`
-    """
-    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
-
-  def get_configuration_wizards(self):
-    """Retrieve wizard plugin information from the server.
-
-    Returns
-    -------
-    version: server wizard plugin information.
-
-    See Also
-    --------
-    :http:get:`/configuration/wizards`
-    """
-    return self.request("GET", "/configuration/wizards", headers={"accept":"application/json"})
-
   def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
     """Stores a model file artifacts."""
     data = parameters
@@ -511,9 +515,36 @@ class Connection(object):
     """
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
-  def post_project_models(self, pid, type, name, marking="", description=""):
+  def post_project_models(self, pid, mtype, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
-    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
+    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
+
+  def post_project_references(self, pid, name, mtype=None, mid=None, bid=None):
+    """Store a project reference.
+
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+    name: string, required
+      Reference name.
+    mtype: string, optional
+      Optional model type.
+    mid: string, optional
+      Optional model identifier.
+    bid: string, optional
+      Optional bookmark identifier.
+
+    Returns
+    -------
+    rid: string
+      Unique reference identifier.
+
+    See Also
+    --------
+    :http:post:`/projects/(pid)/references`
+    """
+    return self.request("POST", "/projects/%s/references" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
 
   def post_projects(self, name, description=""):
     """Creates a new project, returning the project ID."""
