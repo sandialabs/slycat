@@ -1,6 +1,7 @@
 from behave import *
 
 import cherrypy
+import datetime
 import nose.tools
 import slycat.web.client
 
@@ -250,6 +251,22 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["creator"], context.server_user)
   nose.tools.assert_equal(context.project["description"], "Description.")
   nose.tools.assert_equal(context.project["name"], "Test")
+
+@when(u'a client modifies the model.')
+def step_impl(context):
+  context.connection.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
+
+@then(u'the model should be modified.')
+def step_impl(context):
+  context.model = require_valid_model(context.connection.get_model(context.mid))
+  nose.tools.assert_equal(context.model["name"], "MyModel")
+  nose.tools.assert_equal(context.model["description"], "My description.")
+  nose.tools.assert_equal(context.model["state"], "finished")
+  nose.tools.assert_equal(context.model["result"], "succeeded")
+  nose.tools.assert_equal(context.model["progress"], 1.0)
+  nose.tools.assert_equal(context.model["message"], "Done!")
+  datetime.datetime.strptime(context.model["started"], "%Y-%m-%dT%H:%M:%S.%f")
+  datetime.datetime.strptime(context.model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
 
 @when(u'a client modifies the project.')
 def step_impl(context):

@@ -97,6 +97,13 @@ Feature: REST API
     When a client creates a new project.
     Then the project should be created.
 
+  Scenario: PUT Model
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    When a client modifies the model.
+    Then the model should be modified.
+
   Scenario: PUT Project
     Given a running Slycat server.
     And a default project.
