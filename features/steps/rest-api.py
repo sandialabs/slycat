@@ -268,6 +268,14 @@ def step_impl(context):
   datetime.datetime.strptime(context.model["started"], "%Y-%m-%dT%H:%M:%S.%f")
   datetime.datetime.strptime(context.model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
 
+@when(u'a client stores a model parameter artifact.')
+def step_impl(context):
+  context.connection.put_model_parameter(context.mid, "foo", {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
+
+@then(u'the model parameter artifact should be stored.')
+def step_impl(context):
+  nose.tools.assert_equal(context.connection.get_model_parameter(context.mid, "foo"), {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
+
 @when(u'a client modifies the project.')
 def step_impl(context):
   context.connection.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.server_user}], "writers":[{"user":"foo"}], "readers":[{"user":"baz"}]}})

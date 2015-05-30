@@ -104,6 +104,13 @@ Feature: REST API
     When a client modifies the model.
     Then the model should be modified.
 
+  Scenario: PUT Model Parameter
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    When a client stores a model parameter artifact.
+    Then the model parameter artifact should be stored.
+
   Scenario: PUT Project
     Given a running Slycat server.
     And a default project.
