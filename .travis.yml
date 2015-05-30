@@ -16,8 +16,8 @@ before_install:
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
 install:
 #  - pip install behave "cherrypy==3.2.6" coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" requests scipy tornado-couchdb
-  - pip install Cython
-  - pip install behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
+  - pip install --no-use-wheel Cython
+  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
 script:
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
