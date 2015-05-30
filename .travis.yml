@@ -8,13 +8,6 @@ before_install:
 #  - sudo apt-get install -y python-gtk2 wget
   - env | sort
   - ls -l
-#  - cd $VIRTUAL_ENV
-#  - mkdir -p lib/python2.7/dist-packages/
-#  - ln -s /usr/lib/python2.7/dist-packages/glib/ lib/python2.7/dist-packages/
-#  - ln -s /usr/lib/python2.7/dist-packages/gobject/ lib/python2.7/dist-packages/
-#  - ln -s /usr/lib/python2.7/dist-packages/gtk-2.0* lib/python2.7/dist-packages/
-#  - ln -s /usr/lib/python2.7/dist-packages/pygtk.pth lib/python2.7/dist-packages/
-#  - ln -s /usr/lib/python2.7/dist-packages/cairo lib/python2.7/dist-packages/
   - cd $TRAVIS_BUILD_DIR
   - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
   - mkdir ffmpeg
@@ -23,9 +16,9 @@ before_install:
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
 
 install:
-  - pip install behave cherrypy==3.2.6 coverage coveralls mock numpy Pillow pyparsing>=2.0.3
+  - pip install behave cherrypy==3.2.6 coverage coveralls ldap mock numpy paramiko Pillow pyparsing>=2.0.3 requests scipy tornado-couchdb
 script:
-  - coverage run --source slycat -m behave -i "(agent|hyperchunks)"
+  - coverage run --source slycat -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
 after_script:
   - coveralls
