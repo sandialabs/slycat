@@ -5,11 +5,15 @@ import datetime
 import nose.tools
 import slycat.web.client
 
+def require_valid_timestamp(timestamp):
+  return datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
+
 def require_valid_project(project):
   nose.tools.assert_is_instance(project, dict)
-  for field in ["description", "creator", "_rev", "created", "acl", "_id", "type", "name"]:
+  for field in [ "acl", "created", "creator", "description", "_id", "name", "_rev", "type", ]:
     nose.tools.assert_in(field, project)
   nose.tools.assert_equal(project["type"], "project")
+  require_valid_timestamp(project["created"])
   nose.tools.assert_is_instance(project["acl"], dict)
   for field in ["administrators", "writers", "readers"]:
     nose.tools.assert_in(field, project["acl"])
@@ -17,12 +21,29 @@ def require_valid_project(project):
       nose.tools.assert_is_instance(item, dict)
   return project
 
+def require_valid_reference(reference):
+  nose.tools.assert_is_instance(reference, dict)
+  for field in [ "bid", "created", "creator", "_id", "mid", "model-type", "name", "project", "_rev", "type", ]:
+    nose.tools.assert_in(field, reference)
+  nose.tools.assert_equal(reference["type"], "reference")
+  require_valid_timestamp(reference["created"])
+  return reference
+
 def require_valid_model(model):
   nose.tools.assert_is_instance(model, dict)
-  for field in ["marking", "description", "creator", "artifact-types", "input-artifacts", "_rev", "created", "model-type", "project", "started", "finished", "state", "result", "progress", "message", "_id", "type", "name"]:
+  for field in [ "artifact-types", "created", "creator", "description", "finished", "_id", "input-artifacts", "marking", "message", "model-type", "name", "progress", "project", "result", "_rev", "started", "state", "type", ]:
     nose.tools.assert_in(field, model)
   nose.tools.assert_equal(model["type"], "model")
+  require_valid_timestamp(model["created"])
+  nose.tools.assert_is_instance(model["artifact-types"], dict)
+  for atype in model["artifact-types"].values():
+    nose.tools.assert_in(atype, ["json"])
+  nose.tools.assert_is_instance(model["input-artifacts"], list)
+  for aid in model["input-artifacts"]:
+    nose.tools.assert_in(aid, model["artifact-types"])
   return model
+
+sample_bookmark = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
 
 @given(u'a running Slycat server.')
 def step_impl(context):
@@ -67,7 +88,7 @@ def step_impl(context):
 
 @given(u'a sample bookmark.')
 def step_impl(context):
-  context.bid = context.connection.post_project_bookmarks(context.pid, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+  context.bid = context.connection.post_project_bookmarks(context.pid, sample_bookmark)
 
 @when(u'a client retrieves the project bookmark.')
 def step_impl(context):
@@ -75,7 +96,7 @@ def step_impl(context):
 
 @then(u'the project bookmark should be retrieved.')
 def step_impl(context):
-  nose.tools.assert_equal(context.bookmark, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+  nose.tools.assert_equal(context.bookmark, sample_bookmark)
 
 @when(u'a client requests the set of available markings.')
 def step_impl(context):
@@ -223,12 +244,46 @@ def step_impl(context):
 
 @when(u'a client saves a project bookmark.')
 def step_impl(context):
-  context.bid = context.connection.post_project_bookmarks(context.pid, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+  context.bid = context.connection.post_project_bookmarks(context.pid, sample_bookmark)
 
 @then(u'the project bookmark should be saved.')
 def step_impl(context):
   context.bookmark = context.connection.get_bookmark(context.bid)
-  nose.tools.assert_equal(context.bookmark, {"foo":"bar", "baz":5, "blah":[1, 2, 3]})
+  nose.tools.assert_equal(context.bookmark, sample_bookmark)
+
+@when(u'a client creates a saved bookmark.')
+def step_impl(context):
+  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'the saved bookmark should be created.')
+def step_impl(context):
+  context.references = context.connection.get_project_references(context.pid)
+  nose.tools.assert_is_instance(context.references, list)
+  for reference in context.references:
+    require_valid_reference(reference)
+  nose.tools.assert_equal(context.references[0]["bid"], context.bid)
+  nose.tools.assert_equal(context.references[0]["creator"], context.server_user)
+  nose.tools.assert_equal(context.references[0]["mid"], context.mid)
+  nose.tools.assert_equal(context.references[0]["model-type"], "generic")
+  nose.tools.assert_equal(context.references[0]["name"], "Test")
+  nose.tools.assert_equal(context.references[0]["project"], context.pid)
+
+@when(u'a client creates a template.')
+def step_impl(context):
+  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'the template should be created.')
+def step_impl(context):
+  context.references = context.connection.get_project_references(context.pid)
+  nose.tools.assert_is_instance(context.references, list)
+  for reference in context.references:
+    require_valid_reference(reference)
+  nose.tools.assert_equal(context.references[0]["bid"], context.bid)
+  nose.tools.assert_equal(context.references[0]["creator"], context.server_user)
+  nose.tools.assert_equal(context.references[0]["mid"], None)
+  nose.tools.assert_equal(context.references[0]["model-type"], "generic")
+  nose.tools.assert_equal(context.references[0]["name"], "Test")
+  nose.tools.assert_equal(context.references[0]["project"], context.pid)
 
 @when(u'a client creates a new model.')
 def step_impl(context):
@@ -279,12 +334,13 @@ def step_impl(context):
   nose.tools.assert_equal(context.model["result"], "succeeded")
   nose.tools.assert_equal(context.model["progress"], 1.0)
   nose.tools.assert_equal(context.model["message"], "Done!")
-  datetime.datetime.strptime(context.model["started"], "%Y-%m-%dT%H:%M:%S.%f")
-  datetime.datetime.strptime(context.model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
+  require_valid_timestamp(context.model["started"])
+  require_valid_timestamp(context.model["finished"])
 
 @when(u'a client stores a model parameter artifact.')
 def step_impl(context):
   context.connection.put_model_parameter(context.mid, "foo", {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
+  require_valid_model(context.connection.get_model(context.mid))
 
 @then(u'the client can retrieve the model parameter artifact.')
 def step_impl(context):

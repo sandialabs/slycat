@@ -101,6 +101,21 @@ Feature: REST API
     When a client saves a project bookmark.
     Then the project bookmark should be saved.
 
+  Scenario: POST Project References (Saved Bookmark)
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    And a sample bookmark.
+    When a client creates a saved bookmark.
+    Then the saved bookmark should be created.
+
+  Scenario: POST Project References (Template)
+    Given a running Slycat server.
+    And a default project.
+    And a sample bookmark.
+    When a client creates a template.
+    Then the template should be created.
+
   Scenario: POST Project Models
     Given a running Slycat server.
     And a default project.
