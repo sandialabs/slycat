@@ -310,15 +310,15 @@ if __name__ == "__main__":
     connection.put_model_parameter(mid, "cluster-measure", arguments.cluster_measure)
 
     # Store an alphabetized collection of cluster names.
-    connection.put_model_file(mid, "clusters", json.dumps(sorted(clusters.keys())), "application/json")
+    connection.post_model_files(mid, aids=["clusters"], files=[json.dumps(sorted(clusters.keys()))], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
 
     # Store each cluster.
     for key in clusters.keys():
-      connection.put_model_file(mid, "cluster-%s" % key, json.dumps({
+      connection.post_model_files(mid, aids=["cluster-%s" % key], files=[json.dumps({
         "linkage" : cluster_linkages[key].tolist(),
         "exemplars" : cluster_exemplars[key],
         "input-indices" : [row_index for row_index, column_index in clusters[key]],
-        }), "application/json")
+        })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
 
     # Upload our observations as "data-table".
     connection.put_model_arrayset(mid, "data-table")
