@@ -33,9 +33,17 @@ def step_impl(context):
 def step_impl(context):
   context.pid = context.connection.post_projects("Test", "Description.")
 
+@given(u'a second default project.')
+def step_impl(context):
+  context.pid2 = context.connection.post_projects("Test2", "Description2.")
+
 @given(u'a default model.')
 def step_impl(context):
   context.mid = context.connection.post_project_models(context.pid, "generic", "Test", description="Description.")
+
+@given(u'a second default model.')
+def step_impl(context):
+  context.mid2 = context.connection.post_project_models(context.pid, "generic", "Test2", description="Description2.")
 
 @when(u'a client deletes the model.')
 def step_impl(context):
@@ -158,6 +166,16 @@ def step_impl(context):
   nose.tools.assert_equal(context.model["progress"], None)
   nose.tools.assert_equal(context.model["message"], None)
 
+@when(u'a client retrieves the project models.')
+def step_impl(context):
+  context.project_models = context.connection.get_project_models(context.pid)
+
+@then(u'the server should return the project models.')
+def step_impl(context):
+  nose.tools.assert_is_instance(context.project_models, list)
+  for model in context.project_models:
+    require_valid_model(model)
+
 @when(u'a client retrieves the project.')
 def step_impl(context):
   context.project = require_valid_project(context.connection.get_project(context.pid))
@@ -169,10 +187,6 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
   nose.tools.assert_equal(context.project["acl"]["writers"], [])
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
-
-@given(u'another default project.')
-def step_impl(context):
-  context.pid2 = context.connection.post_projects("Test2", "Description2.")
 
 @when(u'a client retrieves all projects.')
 def step_impl(context):

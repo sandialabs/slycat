@@ -64,6 +64,14 @@ Feature: REST API
     When a client stores a model parameter artifact.
     Then the client can retrieve the model parameter artifact.
 
+  Scenario: GET Project Models
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    And a second default model.
+    When a client retrieves the project models.
+    Then the server should return the project models.
+
   Scenario: GET Project
     Given a running Slycat server.
     And a default project.
@@ -73,7 +81,7 @@ Feature: REST API
   Scenario: GET Projects
     Given a running Slycat server.
     And a default project.
-    And another default project.
+    And a second default project.
     When a client retrieves all projects.
     Then the server should return all projects.
 
