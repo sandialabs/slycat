@@ -272,7 +272,7 @@ def step_impl(context):
 def step_impl(context):
   context.connection.put_model_parameter(context.mid, "foo", {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
 
-@then(u'the model parameter artifact should be stored.')
+@then(u'the client can retrieve the model parameter artifact.')
 def step_impl(context):
   nose.tools.assert_equal(context.connection.get_model_parameter(context.mid, "foo"), {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
 
