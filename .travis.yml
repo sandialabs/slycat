@@ -5,7 +5,7 @@ services:
   - couchdb
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y gcc gfortran g++ python2.7-dev libldap2-dev libsasl2-dev liblapack-dev haproxy
+  - sudo apt-get install -y gcc gfortran g++ python2.7-dev libldap2-dev libsasl2-dev liblapack-dev haproxy ssh
   - env | sort
   - ls -l
   - cd $TRAVIS_BUILD_DIR
@@ -19,6 +19,8 @@ install:
   - pip install behave "cherrypy==3.2.6" coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" requests tornado-couchdb
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
 script:
+  - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/docker/slycat-demo/config.ini &
+  - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py --config $TRAVIS_BUILD_DIR/docker/slycat-demo/config.ini &
   - coverage run --source slycat -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
 after_script:
