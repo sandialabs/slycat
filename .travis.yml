@@ -17,7 +17,7 @@ before_install:
 install:
 #  - pip install behave "cherrypy==3.2.6" coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" requests scipy tornado-couchdb
   - pip install Cython
-  - pip install behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" requests tornado-couchdb h5py
+  - pip install behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
 script:
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/docker/slycat-demo/config.ini &
