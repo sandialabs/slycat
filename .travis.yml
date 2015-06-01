@@ -1,0 +1,27 @@
+language: python
+python:
+  - "2.7"
+before_install:
+  - sudo apt-get update -qq
+#  - sudo apt-get install -y python-gtk2 wget
+  - env | sort
+#  - cd $VIRTUAL_ENV
+#  - mkdir -p lib/python2.7/dist-packages/
+#  - ln -s /usr/lib/python2.7/dist-packages/glib/ lib/python2.7/dist-packages/
+#  - ln -s /usr/lib/python2.7/dist-packages/gobject/ lib/python2.7/dist-packages/
+#  - ln -s /usr/lib/python2.7/dist-packages/gtk-2.0* lib/python2.7/dist-packages/
+#  - ln -s /usr/lib/python2.7/dist-packages/pygtk.pth lib/python2.7/dist-packages/
+#  - ln -s /usr/lib/python2.7/dist-packages/cairo lib/python2.7/dist-packages/
+  - cd $TRAVIS_BUILD_DIR
+  - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
+  - mkdir ffmpeg
+  - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
+  - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
+
+install:
+  - pip install behave coverage coveralls mock numpy
+script:
+  - coverage run --source slycat -m behave -i hyperchunks
+  - coverage report
+after_script:
+  - coveralls
