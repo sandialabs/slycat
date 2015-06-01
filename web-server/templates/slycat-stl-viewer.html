@@ -1,6 +1,60 @@
 <div class="bootstrap-styles" style="padding: 10px 0 5px 10px">
   <button class="btn btn-warning slycat-stl-btn-reset">Reset</button>
-  <button class="btn btn-default slycat-stl-btn-rotate">Rotate</button>
+  <button class="btn btn-default slycat-stl-btn-rotate" style="width: 70px;">Rotate</button>
+  <button class="btn btn-default slycat-stl-btn-settings" data-toggle="modal" data-target="#slycat-stl-modal">Settings</button>
+
+  <div class="modal fade" id="slycat-stl-modal" tabindex="-1" role="dialog" aria-labelledby="slycat-stl-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="slycat-stl-modal-label">STL Viewer Settings</h4>
+        </div>
+
+        <div class="modal-body">
+          <form class="form-horizontal">
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Background:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="slycat-stl-modal-background-color" placeholder="Material color i.e. 0x000000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Ambient light:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="slycat-stl-modal-ambient-light-color" placeholder="Material color i.e. 0x000000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Material color:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="slycat-stl-modal-material-color" placeholder="Material color i.e. 0x000000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Light 1 color:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="slycat-stl-modal-light-one-color" placeholder="Material color i.e. 0x000000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Light 2 color:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="slycat-stl-modal-light-two-color" placeholder="Material color i.e. 0x000000">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="slycat-stl-modal-btn-apply">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="slycat-stl-viewer" class="bootstrap-styles"></div>

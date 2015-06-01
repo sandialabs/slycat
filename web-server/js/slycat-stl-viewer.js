@@ -27,11 +27,18 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
       var width = viewer.offsetWidth;
       var height = viewer.offsetHeight;
 
+      var settings = null;
+      var defaultMaterialColor = '#337AB7';
+      var defaultLightColor = '#FFFFFF';
+      var defaultAmbientLightColor = '#F2F2F2';
+      var defaultBackgroundColor = '#F2F2F2';
+
       var renderer = null;
       var camera = null;
       var mouse = null;
       var controls = null;
       var scene = null;
+      var ambient = null;
       var mesh = null;
       var material = null;
       var animation = { id: null };
@@ -58,7 +65,7 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
         camera.position.z = gbb.max.z + (gbs.radius*4);
 
         mouse = new THREE.Vector2();
-        controls = new THREE.TrackballControls(camera);
+        controls = new THREE.TrackballControls(camera, viewer);
         controls.rotateSpeed = 2;
         controls.zoomSpeed = 1.5;
         controls.panSpeed = 1;
@@ -69,17 +76,20 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
 
 
         scene = new THREE.Scene();
-        scene.add(new THREE.AmbientLight(0xF2F2F2));
+        ambient = new THREE.AmbientLight(defaultAmbientLightColor);
+        scene.add(ambient);
 
-        lightOne = new THREE.PointLight(0xFFFFFF);
+        /** light 1 is to the right and front of the object */
+        lightOne = new THREE.PointLight(defaultLightColor);
         lightOne.position.set(gbb.max.x + (gbs.radius*6), gbb.max.y + (gbs.radius*6), gbb.max.z + (gbs.radius*6));
         scene.add(lightOne);
 
-        lightTwo = new THREE.PointLight(0xFFFFFF);
+        /** light 2 is to the left and back of the object */
+        lightTwo = new THREE.PointLight(defaultLightColor);
         lightTwo.position.set(gbb.max.x - (gbs.radius*6), gbb.max.y - (gbs.radius*6), gbb.max.z - (gbs.radius*6));
         scene.add(lightTwo);
 
-        material = new THREE.MeshLambertMaterial({ color: 0x337AB7 });
+        material = new THREE.MeshLambertMaterial({ color: defaultMaterialColor });
 
         mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(gbs.center.x, gbs.center.y, gbs.center.z);
@@ -89,7 +99,7 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         /** Sets the background color for the scene */
-        renderer.setClearColor(0xF2F2F2);
+        renderer.setClearColor(defaultBackgroundColor);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height);
         document.getElementById(vid).appendChild(renderer.domElement);
@@ -98,6 +108,24 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
 
         /** renders the STL file... */
         renderFixed(animation, renderer, scene, camera, controls);
+
+        /** initializes the settings popup */
+        settings = new GeometrySettings({
+          /** rendered settings */
+          renderer: renderer,
+          backgroundColor: defaultBackgroundColor,
+          /** ambien light settings */
+          ambientLight: ambient,
+          ambientLightColor: defaultAmbientLightColor,
+          /** geometry settings */
+          mesh: mesh,
+          materialColor: defaultMaterialColor,
+          /** lighting settings */
+          lightOne: lightOne,
+          lightOneColor: defaultLightColor,
+          lightTwo: lightTwo,
+          lightTwoColor: defaultLightColor
+        });
       });
 
 
@@ -109,6 +137,10 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
       $('#' + cid + ' .slycat-stl-btn-rotate').on('click', function() {
         onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
         return false;
+      });
+
+      $('#slycat-stl-modal').on('shown.bs.modal', function() {
+        settings.load();
       });
     },
 
