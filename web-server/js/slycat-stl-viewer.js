@@ -16,6 +16,8 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
   ko.components.register('slycat-stl-viewer', {
     viewModel: function(params) {
 
+      if (!Detector.webgl) Detector.addGetWebGLMessage();
+
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
       var cid = params.cid;
