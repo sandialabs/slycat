@@ -118,6 +118,16 @@ def step_impl(context):
     context.connection.get_project(context.pid)
     nose.tools.assert_equal(raised.exception.code, 404)
 
+@when(u'a client deletes the saved bookmark.')
+def step_impl(context):
+  context.connection.delete_reference(context.rid)
+
+@then(u'the saved bookmark should no longer exist.')
+def step_impl(context):
+  context.references = context.connection.get_project_references(context.pid)
+  for reference in context.references:
+    nose.tools.assert_not_equal(reference["_id"], context.rid)
+
 @given(u'a sample bookmark.')
 def step_impl(context):
   context.bid = context.connection.post_project_bookmarks(context.pid, sample_bookmark)
@@ -213,11 +223,11 @@ def step_impl(context):
 
 @given(u'a saved bookmark.')
 def step_impl(context):
-  context.saved_bookmark_rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
 
 @given(u'a saved template.')
 def step_impl(context):
-  context.template_rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
 
 @when(u'a client retrieves the project references.')
 def step_impl(context):

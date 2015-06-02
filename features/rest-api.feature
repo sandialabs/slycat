@@ -13,6 +13,15 @@ Feature: REST API
     When a client deletes the project.
     Then the project should no longer exist.
 
+  Scenario: DELETE Reference
+    Given a running Slycat server.
+    And a default project.
+    And a default model.
+    And a sample bookmark.
+    And a saved bookmark.
+    When a client deletes the saved bookmark.
+    Then the saved bookmark should no longer exist.
+
   Scenario: GET Bookmark
     Given a running Slycat server.
     And a default project.
