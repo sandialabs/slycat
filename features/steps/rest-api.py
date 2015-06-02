@@ -3,7 +3,9 @@ from behave import *
 import cherrypy
 import datetime
 import nose.tools
+import PIL.Image
 import slycat.web.client
+import StringIO
 
 def require_list(sequence, length=None, item_test=None):
   nose.tools.assert_is_instance(sequence, list)
@@ -191,6 +193,15 @@ def step_impl(context):
 @then(u'the server should return a list of available wizards.')
 def step_impl(context):
   require_list(context.wizards, item_test=require_valid_wizard)
+
+@when(u'a client requests a global resource.')
+def step_impl(context):
+  context.resource = context.connection.get_global_resource("slycat-logo-navbar.png")
+
+@then(u'the server should return the global resource.')
+def step_impl(context):
+  image = PIL.Image.open(StringIO.StringIO(context.resource))
+  nose.tools.assert_equal(image.size, (662, 146))
 
 @when(u'a client retrieves the model.')
 def step_impl(context):

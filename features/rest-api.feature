@@ -59,6 +59,11 @@ Feature: REST API
     When a client requests available server wizards.
     Then the server should return a list of available wizards.
 
+  Scenario: GET Global Resource
+    Given a running Slycat server.
+    When a client requests a global resource.
+    Then the server should return the global resource.
+
   Scenario: GET Model
     Given a running Slycat server.
     And a default project.
