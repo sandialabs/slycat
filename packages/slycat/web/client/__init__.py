@@ -301,6 +301,9 @@ class Connection(object):
     """
     return self.request("GET", "/configuration/wizards", headers={"accept":"application/json"})
 
+  def get_global_resource(self, resource):
+    return self.request("GET", "/resources/global/%s" % resource)
+
   def get_model(self, mid):
     """Retrieve an existing model.
 
