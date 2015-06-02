@@ -175,6 +175,20 @@ class Connection(object):
     """
     self.request("DELETE", "/projects/%s/cache/%s" % (pid, key))
 
+  def delete_reference(self, rid):
+    """Delete an existing reference.
+
+    Parameters
+    ----------
+    rid: string, required
+      The unique reference identifier.
+
+    See Also
+    --------
+    :http:delete:`/references/(rid)`
+    """
+    self.request("DELETE", "/references/%s" % (rid))
+
   def delete_remote(self, sid):
     """Delete an existing remote session.
 
