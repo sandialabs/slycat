@@ -78,6 +78,16 @@ Feature: REST API
     When a client stores a model parameter artifact.
     Then the client can retrieve the model parameter artifact.
 
+  Scenario: GET Model Resource
+    Given a running Slycat server.
+    When a client requests a model resource.
+    Then the server should return the model resource.
+
+  Scenario: GET Wizard Resource
+    Given a running Slycat server.
+    When a client requests a wizard resource.
+    Then the server should return the wizard resource.
+
   Scenario: GET Project Models
     Given a running Slycat server.
     And a default project.

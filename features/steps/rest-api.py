@@ -6,6 +6,7 @@ import nose.tools
 import PIL.Image
 import slycat.web.client
 import StringIO
+import xml.etree.ElementTree as xml
 
 def require_list(sequence, length=None, item_test=None):
   nose.tools.assert_is_instance(sequence, list)
@@ -223,6 +224,24 @@ def step_impl(context):
   nose.tools.assert_equal(context.model["result"], None)
   nose.tools.assert_equal(context.model["progress"], None)
   nose.tools.assert_equal(context.model["message"], None)
+
+@when(u'a client requests a model resource.')
+def step_impl(context):
+  context.resource = context.connection.get_model_resource("cca", "images/sort-asc-gray.png")
+
+@then(u'the server should return the model resource.')
+def step_impl(context):
+  image = PIL.Image.open(StringIO.StringIO(context.resource))
+  nose.tools.assert_equal(image.size, (9, 5))
+
+@when(u'a client requests a wizard resource.')
+def step_impl(context):
+  context.resource = context.connection.get_wizard_resource("slycat-create-project", "ui.html")
+
+@then(u'the server should return the wizard resource.')
+def step_impl(context):
+  if not context.resource.startswith("<div"):
+    raise Exception("Unexpected resource content.")
 
 @when(u'a client retrieves the project models.')
 def step_impl(context):
