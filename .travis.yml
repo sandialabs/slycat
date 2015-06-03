@@ -28,7 +28,7 @@ before_install:
   # Put the server key and certificate where the reverse proxy can find them.
   - cat web-server.key web-server.cert > ssl.pem
   # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
-  - sudo cp root-ca.cert /usr/local/share/ca-certificates
+  - sudo cp root-ca.cert /usr/local/share/ca-certificates/slycat.crt
   - sudo update-ca-certificates
 
 install:
