@@ -30,6 +30,7 @@ before_install:
   # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
   - sudo cp root-ca.cert /usr/local/share/ca-certificates/slycat.crt
   - sudo update-ca-certificates
+  - export REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert
 
 install:
   - pip install --no-use-wheel Cython
