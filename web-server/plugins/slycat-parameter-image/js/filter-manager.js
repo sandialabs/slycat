@@ -338,11 +338,11 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           if( $(event.target).hasClass("max-field") )
           {
             max_limit = filter.max_stats();
-            min_limit = filter.low();
+            min_limit = filter.min();
           }
           else
           {
-            max_limit = filter.high();
+            max_limit = filter.max();
             min_limit = filter.min_stats();
           }
           if ( isNaN(newValue) || newValue > max_limit || newValue < min_limit )
@@ -366,19 +366,27 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
             $(event.target).toggleClass("editing", false);
             if( $(event.target).hasClass("max-field") )
             {
+              if(this.low() > newValue)
+              {
+                this.low(newValue);
+              }
               if(this.high() > newValue)
               {
-                this.high( newValue );
+                this.high(newValue);
               }
-              this.max( newValue );
+              this.max(newValue);
             }
             else
             {
+              if(this.high() < newValue)
+              {
+                this.high(newValue);
+              }
               if(this.low() < newValue)
               {
-                this.low( newValue );
+                this.low(newValue);
               }
-              this.min( newValue );
+              this.min(newValue);
             }
             self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           }
