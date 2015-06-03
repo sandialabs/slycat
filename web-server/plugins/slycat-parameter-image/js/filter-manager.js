@@ -334,12 +334,23 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
         };
         vm.maxMinBlur = function(filter, event) {
           var newValue = Number(event.target.textContent);
-          if ( isNaN(newValue) || newValue < filter.min_stats() || newValue > filter.max_stats() )
+          var max_limit, min_limit;
+          if( $(event.target).hasClass("max-field") )
+          {
+            max_limit = filter.max_stats();
+            min_limit = filter.low();
+          }
+          else
+          {
+            max_limit = filter.high();
+            min_limit = filter.min_stats();
+          }
+          if ( isNaN(newValue) || newValue > max_limit || newValue < min_limit )
           {
             // console.log("validation failed");
             dialog.dialog({
               title: isNaN(newValue) ? "Oops, Please Enter A Number" : "Oops, Number Outside Of Data Range",
-              message: "Please enter a number between " + filter.min_stats() + " and " + filter.max_stats() + ".",
+              message: "Please enter a number between " + min_limit + " and " + max_limit + ".",
               buttons: [
                 {className: "btn-primary",  label:"OK"}
               ],
