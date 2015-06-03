@@ -26,8 +26,7 @@ before_install:
   - openssl req -new -key web-server.key -out web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
   - openssl x509 -req -in web-server.csr -CA root-ca.cert -CAkey root-ca.key -CAcreateserial -out web-server.cert -days 365
   # Put the server key and certificate where the reverse proxy can find them.
-  - sudo mkdir /etc/slycat
-  - sudo cat web-server.key web-server.cert > /etc/slycat/ssl.pem
+  - sudo cat web-server.key web-server.cert > ssl.pem
   # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
   - sudo cp /root-ca.cert /usr/local/share/ca-certificates
   - sudo update-ca-certificates
@@ -37,7 +36,7 @@ install:
   - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
 script:
-  - sudo haproxy -f $TRAVIS_BUILD_DIR/docker/slycat-demo/proxy-server-config.conf -db &
+  - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
   - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py &
   - coverage run --source slycat -m behave -i "(agent|hyperchunks|rest-api)"
