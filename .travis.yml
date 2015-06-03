@@ -18,6 +18,20 @@ before_install:
   - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
   - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
+  # Generate a private certificate authority.
+  - openssl genrsa -out root-ca.key 2048
+  - openssl req -x509 -new -nodes -key root-ca.key -days 365 -out root-ca.cert -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=Slycat"
+  # Generate a self-signed certificate.
+  - openssl genrsa -out web-server.key 2048
+  - openssl req -new -key web-server.key -out web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
+  - openssl x509 -req -in web-server.csr -CA root-ca.cert -CAkey root-ca.key -CAcreateserial -out web-server.cert -days 365
+  # Put the server key and certificate where the reverse proxy can find them.
+  - sudo mkdir /etc/slycat
+  - sudo cat web-server.key web-server.cert > /etc/slycat/ssl.pem
+  # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
+  - sudo cp /root-ca.cert /usr/local/share/ca-certificates
+  - sudo update-ca-certificates
+
 install:
   - pip install --no-use-wheel Cython
   - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
