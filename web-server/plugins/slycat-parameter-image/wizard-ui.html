@@ -53,7 +53,11 @@
     <div data-bind="visible:tab() == 5">
       <slycat-table-ingestion params="
         variables: attributes,
-        properties: [{name: 'classification', type: 'select', values: ['Input','Output','Neither']}, {name: 'Categorical', type: 'bool'}, {name: 'Editable', type: 'bool'}]
+        properties: [
+          {name: 'Classification', type: 'select', values: ['Input','Output','Neither']}, 
+          {name: 'Categorical', type: 'bool'}, 
+          {name: 'Editable', type: 'bool'}
+        ]
       "></slycat-table-ingestion>
       <table style="width:100%">
         <thead>

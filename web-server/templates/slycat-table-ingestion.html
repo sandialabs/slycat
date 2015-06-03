@@ -22,7 +22,13 @@
           <!-- ko if: type == 'bool' -->
             <td class="bool">
               <input type="checkbox"
-                data-bind="attr: { name: variable.name()+name, value: 'true' }"
+                data-bind="
+                  attr: { 
+                    name: variable.name()+name, 
+                    value: 'true' 
+                  },
+                  checked: variable[name]
+                  "
               />
             </td>
           <!-- /ko -->
@@ -35,7 +41,7 @@
                       name: variable.name()+$parent.name, 
                       value: $data
                     },
-                    checked: variable.classification
+                    checked: variable[$parent.name]
                   "
                 />
               </td>

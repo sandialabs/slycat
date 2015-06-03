@@ -62,7 +62,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             success: function(metadata) {
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1});
+                attributes.push({
+                  name:metadata["column-names"][i], 
+                  type:metadata["column-types"][i], 
+                  input:false,
+                  output:false,
+                  category:false,
+                  rating:false,
+                  image:media_columns.indexOf(i) !== -1,
+                  Classification: ko.observable('Neither'),
+                  Categorical: ko.observable(false),
+                  Editable: ko.observable(false),
+                });
               mapping.fromJS(attributes, component.attributes);
               component.tab(5);
             }
@@ -164,10 +175,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var category_columns = [];
       var image_columns = [];
       for(var i = 0; i != component.attributes().length; ++i) {
-        if(component.attributes()[i].input())
+        if(component.attributes()[i].Classification() == 'Input')
           input_columns.push(i);
-        if(component.attributes()[i].output())
+        if(component.attributes()[i].Classification() == 'Output')
           output_columns.push(i);
+        // if(component.attributes()[i].input())
+        //   input_columns.push(i);
+        // if(component.attributes()[i].output())
+        //   output_columns.push(i);
         if(component.attributes()[i].category())
           category_columns.push(i);
         if(component.attributes()[i].rating())
