@@ -7,7 +7,7 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes"], function(server_root, d3, URI, remotes)
+define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash"], function(server_root, d3, URI, remotes, _)
 {
   $.widget("parameter_image.scatterplot",
   {
@@ -1029,6 +1029,131 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   _open_images: function(images)
   {
     var self = this;
+    within_svg = function(e, options) {
+      return 0 <= e.y && e.y <= options.height && 0 <= e.x && e.x <= options.width;
+    }
+    var clear_hover_timer = function(widget) {
+      if (widget.close_hover_timer) {
+        window.clearTimeout(widget.close_hover_timer);
+        return widget.close_hover_timer = null;
+      }
+    }
+    var handlers = {
+      stop_event: function() {
+        return false;
+      },
+      drag: (function() {
+        var theElement, transx, transy;
+        if (within_svg(d3.event, self.options)) {
+          theElement = d3.select(this);
+          transx = Number(theElement.attr("data-transx")) + d3.event.dx;
+          transy = Number(theElement.attr("data-transy")) + d3.event.dy;
+          theElement.attr("data-transx", transx).attr("data-transy", transy).style({
+            left: transx + "px",
+            top: transy + "px"
+          });
+          self._adjust_leader_line(theElement);
+        }
+      }),
+      drag_start: (function() {
+        var frame, sourceEventTarget;
+        self.state = "moving";
+        sourceEventTarget = d3.select(d3.event.sourceEvent.target);
+        if (sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image")) {
+          frame = d3.select(this);
+          if (frame.classed("hover-image")) {
+            self.opening_image = null;
+            clear_hover_timer(self);
+            frame.classed("hover-image", false).classed("open-image", true);
+            image.image_class = "open-image";
+          }
+        }
+        d3.event.sourceEvent.stopPropagation();
+      }),
+      drag_end: function() {
+        self.state = "";
+        self._sync_open_images();
+      },
+      close: (function() {
+        var frame = d3.select(d3.event.target.parentNode);
+        self._remove_image_and_leader_line(frame);
+        self._sync_open_images();
+        return false;
+      }),
+      frame_mousedown: function(){
+        var target = d3.select(d3.event.target);
+        // Verify that click is on image, not something else like the close button
+        if(target.classed("image"))
+        {
+          // Move this image to the top of the Z order ...
+          $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
+        }
+        else if(target.classed("image-frame"))
+        {
+          // Move this image to the top of the Z order ...
+          target.detach().appendTo(self.media_layer.node());
+        }
+      },
+      hover: (function() {
+        clear_hover_timer(self);
+        return self.close_hover_timer = window.setTimeout((function() {
+          return self._hover_timeout(image.index, 0);
+        }), 1000);
+      }),
+      resize: (function() {
+        var frame, min, target_width, x, y;
+        x = d3.event.x;
+        y = d3.event.y;
+        min = 50;
+        if (0 <= y && y <= self.options.height && 0 <= x && x <= self.options.width && x > min && y > min) {
+          frame = d3.select(this.parentNode);
+          target_width = self._scale_width(frame.attr("data-ratio"), x, y);
+          frame.style({
+            width: target_width + "px"
+          });
+          self._adjust_leader_line(frame);
+        }
+      }),
+      resize_start: (function() {
+        var frame;
+        self.state = "resizing";
+        frame = d3.select(this.parentNode);
+        d3.selectAll([frame, d3.select("#scatterplot").node()]).classed("", true);
+        if (frame.classed("hover-image")) {
+          self.opening_image = null;
+          clear_hover_timer(self);
+          frame.classed("hover-image", false).classed("open-image", true);
+          image.image_class = "open-image";
+        }
+        d3.event.sourceEvent.stopPropagation();
+      }),
+      resize_end: (function() {
+        d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
+        self.state = "";
+        self._sync_open_images();
+        d3.event.sourceEvent.stopPropagation();
+      }),
+      pin: (function() {
+        var frame, imageHeight, imageWidth, target_width, theImage, x, y;
+        self.opening_image = null;
+        clear_hover_timer(self);
+        frame = d3.select(d3.event.target.parentNode);
+        theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
+        imageWidth = self.options.pinned_width;
+        imageHeight = self.options.pinned_height;
+        target_width = self._scale_width(frame.attr("data-ratio"), imageWidth, imageHeight);
+        x = self._getDefaultXPosition(image.index, imageWidth);
+        y = self._getDefaultYPosition(image.index, imageHeight);
+        frame.attr("data-transx", x).attr("data-transy", y).style({
+          left: x + "px",
+          top: y + "px",
+          width: target_width + "px"
+        });
+        self._adjust_leader_line(frame);
+        self._sync_open_images();
+        return false;
+      })
+  }
 
     // If the list of images is empty, we're done.
     if(images.length == 0)
@@ -1089,96 +1214,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr("data-uri", image.uri)
         .call(
           d3.behavior.drag()
-            .on('drag', function(){
-              // console.log("frame html drag");
-              // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
-                var theElement = d3.select(this);
-                var transx = Number(theElement.attr("data-transx"));
-                var transy = Number(theElement.attr("data-transy"));
-                transx += d3.event.dx;
-                transy += d3.event.dy;
-                theElement.attr("data-transx", transx);
-                theElement.attr("data-transy", transy);
-                theElement.style({
-                  "left": transx + "px", 
-                  "top": transy + "px",
-                })
-
-                // Adjust leader line
-                self._adjust_leader_line(theElement);
-              }
-            })
-            .on("dragstart", function() {
-              // console.log("frame html dragstart");
-              self.state = "moving";
-              // Verify source event target
-              var sourceEventTarget = d3.select(d3.event.sourceEvent.target);
-              if(sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image"))
-              {
-                d3.event.sourceEvent.stopPropagation(); // silence other listeners
-                // Reset tracking of hover image if we are starting to drag a hover image
-                var frame = d3.select(this);
-                if(frame.classed("hover-image"))
-                {
-                  self.opening_image = null;
-                  if(self.close_hover_timer)
-                  {
-                    window.clearTimeout(self.close_hover_timer);
-                    self.close_hover_timer = null;
-                  }
-                  frame.classed("hover-image", false).classed("open-image", true);
-                  image.image_class = "open-image";
-                }
-              }
-            })
-            .on("dragend", function() {
-              // console.log("frame html dragend");
-              self.state = "";
-              self._sync_open_images();
-            })
+            .on('drag', handlers["drag"])
+            .on("dragstart", handlers["drag_start"])
+            .on("dragend", handlers["drag_end"])
         )
-        .on("mousedown", function(){
-          // console.log("frame html mousedown");
-          //d3.event.stopPropagation();
-          // Verify that click is on image, not something else like the close button
-          if(d3.event.target.classList.contains("image"))
-          {
-            // Move this image to the top of the Z order ...
-            $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
-          }
-          else if(d3.event.target.classList.contains("image-frame"))
-          {
-            // Move this image to the top of the Z order ...
-            $(d3.event.target).detach().appendTo(self.media_layer.node());
-          }
-        })
-        .on("mouseup", function(){
-          // console.log("frame html mouseup");
-          //d3.event.stopPropagation();
-        })
-        ;
+        .on("mousedown", handlers["frame_mousedown"]);
 
       // Create a close button ...
       var close_button_html = frame_html.append("span")
         .attr("class", "close-button frame-icon")
-        .on("mousedown", function(){
-          //console.log("close button mousedown");
-          d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("mouseup", function(){
-          //console.log("close button mouseup");
-          d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("click", function()
-        {
-          //console.log("close button click");
-          d3.event.stopPropagation(); // silence other listeners
-          var frame = d3.select(d3.event.target.parentNode);
-          self._remove_image_and_leader_line(frame);
-          self._sync_open_images();
-        })
-        ;
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"])
+        .on("click", handlers["close"]);
 
       // Create the leader line ...
       if("target_x" in image && "target_y" in image)
@@ -1204,9 +1251,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
 
       // Schedule timeout for hover
-      self.element.one("mousemove", function(){
-        self.close_hover_timer = window.setTimeout(function() {self._hover_timeout(image.index, 0);}, 1000);
-      });
+      self.element.one("mousemove", handlers["hover"]);
     }
 
     // If the image is already in the cache, display it.
@@ -1287,14 +1332,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .style({
             "display": "none",
           })
-          .on("mousedown", function(){
-            //console.log("video mousedown");
-            d3.event.stopPropagation(); // silence other listeners
-          })
-          .on("mouseup", function(){
-            //console.log("video mouseup");
-            d3.event.stopPropagation(); // silence other listeners
-          })
+          .on("mousedown", handlers["stop_event"])
+          .on("mouseup", handlers["stop_event"])
           .on("loadedmetadata", function(){
             // debugger;
             // console.log("video loaded metadata");
@@ -1332,113 +1371,19 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr("class", "resize-handle frame-icon")
         .call(
           d3.behavior.drag()
-            .on('drag', function(){
-              // console.log("resize html drag");
-              // Make sure mouse is inside svg element
-              if( 0 <= d3.event.y && d3.event.y <= self.options.height && 0 <= d3.event.x && d3.event.x <= self.options.width ){
-                var frame = d3.select(this.parentNode);
-                var x = d3.event.x;
-                var y = d3.event.y;
-                var min = 50;
-                if(x > min && y > min)
-                {
-                  var target_width = self._scale_width( frame.attr("data-ratio"), x, y );
-                  frame.style({
-                    "width": target_width + "px",
-                  });
-                  // Adjust leader line
-                  self._adjust_leader_line(frame);
-                }
-              }
-            })
-            .on("dragstart", function() {
-              // console.log("resize html dragstart");
-              self.state = "resizing";
-              d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", true);
-              d3.event.sourceEvent.stopPropagation(); // silence other listeners
-              // Reset tracking of hover image if we are starting to drag a hover image
-              var frame = d3.select(this.parentNode);
-              if(frame.classed("hover-image"))
-              {
-                self.opening_image = null;
-                if(self.close_hover_timer)
-                {
-                  window.clearTimeout(self.close_hover_timer);
-                  self.close_hover_timer = null;
-                }
-                frame.classed("hover-image", false).classed("open-image", true);
-                image.image_class = "open-image";
-              }
-            })
-            .on("dragend", function() {
-              // console.log("resize html dragend");
-              d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
-              self.state = "";
-              self._sync_open_images();
-            })
+            .on('drag', handlers["resize"])
+            .on('dragstart', handlers["resize_start"])
+            .on('dragend', handlers["resize_end"])
         )
-        .on("mousedown", function(){
-          //console.log("resize mousedown");
-          //d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("mouseup", function(){
-          //console.log("resize mouseup");
-          //d3.event.stopPropagation(); // silence other listeners
-        })
-        ;
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"]);
 
       // Create a pin button ...
       var pin_button_html = frame_html.append("span")
         .attr('class', 'pin-button frame-icon')
-        .on("mousedown", function(){
-          // console.log("html pin button mousedown");
-          d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("mouseup", function(){
-          // console.log("html pin button mouseup");
-          d3.event.stopPropagation(); // silence other listeners
-        })
-        .on("click", function()
-        {
-          d3.event.stopPropagation(); // silence other listeners
-          // Reset tracking of hover image
-          self.opening_image = null;
-          if(self.close_hover_timer)
-          {
-            window.clearTimeout(self.close_hover_timer);
-            self.close_hover_timer = null;
-          }
-
-          var frame = d3.select(d3.event.target.parentNode);
-          var theImage = frame.select(".resize");
-          frame.classed("hover-image", false)
-            .classed("open-image", true)
-            ;
-
-          // Adjust image position
-          var imageWidth = self.options.pinned_width;
-          var imageHeight = self.options.pinned_height;
-          var target_width = self._scale_width(frame.attr("data-ratio"), self.options.pinned_width, self.options.pinned_height);
-
-          var x = self._getDefaultXPosition(image.index, imageWidth);
-          var y = self._getDefaultYPosition(image.index, imageHeight);
-
-          frame
-            .attr("data-transx", x)
-            .attr("data-transy", y)
-            .style({
-              "left": x + "px", 
-              "top": y + "px",
-              "width": target_width + "px",
-            })
-            ;
-
-          // Adjust leader line
-          self._adjust_leader_line(frame);
-
-          self._sync_open_images();
-        })
-        ;
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"])
+        .on("click", handlers["pin"]);
 
       if(!image.no_sync)
         self._sync_open_images();

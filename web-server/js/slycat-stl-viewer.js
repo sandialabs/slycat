@@ -16,6 +16,8 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
   ko.components.register('slycat-stl-viewer', {
     viewModel: function(params) {
 
+      if (!Detector.webgl) Detector.addGetWebGLMessage();
+
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
       var cid = params.cid;
@@ -27,72 +29,106 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
       var width = viewer.offsetWidth;
       var height = viewer.offsetHeight;
 
+      var settings = null;
+      var defaultMaterialColor = '#337AB7';
+      var defaultLightColor = '#FFFFFF';
+      var defaultAmbientLightColor = '#F2F2F2';
+      var defaultBackgroundColor = '#F2F2F2';
+
+      var renderer = null;
+      var camera = null;
+      var mouse = null;
+      var controls = null;
+      var scene = null;
+      var ambient = null;
       var mesh = null;
+      var material = null;
       var animation = { id: null };
-
-      /**
-       * THREE.PerspectiveCamera(
-       *     field of view,
-       *     aspect ratio,
-       *     near clippling pane,
-       *     far clipping pane )
-       */
-      var camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
-      camera.position.y = 2;
-      camera.position.z = 6;
-
-
-      var mouse = new THREE.Vector2();
-      var controls = new THREE.TrackballControls(camera);
-      controls.rotateSpeed = 2;
-      controls.zoomSpeed = 1.5;
-      controls.panSpeed = 1;
-      controls.noZoom = false;
-      controls.noPan = false;
-      controls.staticMoving = true;
-      controls.dynamicDampingFactor = 0.3;
-
-
-      var scene = new THREE.Scene();
-      scene.add(new THREE.AmbientLight(0xF2F2F2));
-
-      var lightOne = new THREE.PointLight(0xFFFFFF);
-      lightOne.position.set(0, 3, 3);
-      scene.add(lightOne);
-
-      var lightTwo = new THREE.PointLight(0xFFFFFF);
-      lightTwo.position.set(0, -3, -3);
-      scene.add(lightTwo);
+      var lightOne = null;
+      var lightTwo = null;
 
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
-        console.log(geometry);
 
-        var material = new THREE.MeshLambertMaterial({ color: 0x337AB7 });
+        geometry.computeBoundingSphere();
+        geometry.computeBoundingBox();
+        var gbs = geometry.boundingSphere;
+        var gbb = geometry.boundingBox;
+
+        /**
+         * THREE.PerspectiveCamera(
+         *     field of view,
+         *     aspect ratio,
+         *     near clippling pane,
+         *     far clipping pane )
+         */
+        camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
+        camera.position.x = gbb.max.x;
+        camera.position.y = gbb.max.y;
+        camera.position.z = gbb.max.z + (gbs.radius*4);
+
+        mouse = new THREE.Vector2();
+        controls = new THREE.TrackballControls(camera, viewer);
+        controls.rotateSpeed = 2;
+        controls.zoomSpeed = 1.5;
+        controls.panSpeed = 1;
+        controls.noZoom = false;
+        controls.noPan = false;
+        controls.staticMoving = true;
+        controls.dynamicDampingFactor = 0.3;
+
+
+        scene = new THREE.Scene();
+        ambient = new THREE.AmbientLight(defaultAmbientLightColor);
+        scene.add(ambient);
+
+        /** light 1 is to the right and front of the object */
+        lightOne = new THREE.PointLight(defaultLightColor);
+        lightOne.position.set(gbb.max.x + (gbs.radius*6), gbb.max.y + (gbs.radius*6), gbb.max.z + (gbs.radius*6));
+        scene.add(lightOne);
+
+        /** light 2 is to the left and back of the object */
+        lightTwo = new THREE.PointLight(defaultLightColor);
+        lightTwo.position.set(gbb.max.x - (gbs.radius*6), gbb.max.y - (gbs.radius*6), gbb.max.z - (gbs.radius*6));
+        scene.add(lightTwo);
+
+        material = new THREE.MeshLambertMaterial({ color: defaultMaterialColor });
 
         mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(0, 0, 0);
+        mesh.position.set(gbs.center.x, gbs.center.y, gbs.center.z);
 
         scene.add(mesh);
         camera.lookAt(mesh.position);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        /** Sets the background color for the scene */
+        renderer.setClearColor(defaultBackgroundColor);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(width, height);
+        document.getElementById(vid).appendChild(renderer.domElement);
+
+        renderer.domElement.addEventListener('mousemove', function(e) { onMouseMove(mouse, e); });
+
+        /** renders the STL file... */
+        renderFixed(animation, renderer, scene, camera, controls);
+
+        /** initializes the settings popup */
+        settings = new GeometrySettings({
+          /** rendered settings */
+          renderer: renderer,
+          backgroundColor: defaultBackgroundColor,
+          /** ambien light settings */
+          ambientLight: ambient,
+          ambientLightColor: defaultAmbientLightColor,
+          /** geometry settings */
+          mesh: mesh,
+          materialColor: defaultMaterialColor,
+          /** lighting settings */
+          lightOne: lightOne,
+          lightOneColor: defaultLightColor,
+          lightTwo: lightTwo,
+          lightTwoColor: defaultLightColor
+        });
       });
-
-
-      var renderer = new THREE.WebGLRenderer({ antialias: true });
-      /** Sets the background color for the scene */
-      renderer.setClearColor(0xF2F2F2);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(width, height);
-      document.getElementById(vid).appendChild(renderer.domElement);
-
-      var onMouseMove = function(e) {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-      };
-
-      renderer.domElement.addEventListener('mousemove', onMouseMove);
-
-      /** renders the STL file... */
-      renderFixed(animation, renderer, scene, camera, controls);
 
 
       $('#' + cid + ' .slycat-stl-btn-reset').on('click', function() {
@@ -104,11 +140,24 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
         onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
         return false;
       });
+
+      $('#slycat-stl-modal').on('shown.bs.modal', function() {
+        settings.load();
+      });
     },
 
     template: { require: 'text!' + server_root + 'templates/slycat-stl-viewer.html' }
   });
 
+
+  /**
+   * Function executed on mouse events for the renderer.
+   * @param  {} e event
+   */
+  var onMouseMove = function(mouse, e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  };
 
   /**
    * Generates and assigns a unique ID to the STL viewer based off its

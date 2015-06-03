@@ -93,6 +93,8 @@ def js_bundle():
         "js/three.min.js",
         "js/TrackballControls.js",
         "js/STLLoader.js",
+        "js/Detector.js",
+        "js/GeometrySettings.js",
         "js/slycat-stl-viewer.js"
       ])
   return js_bundle._bundle
@@ -430,12 +432,18 @@ def put_model(mid):
 
   save_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished", "marking"]:
-      if value != model.get(key):
-        model[key] = value
-        save_model = True
-    else:
+    if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished", "marking"]:
       raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
+
+    if key in ["started", "finished"]:
+      try:
+        datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+      except:
+        raise cherrypy.HTTPError("400 Timestamp fields must use ISO-8601.")
+
+    if value != model.get(key):
+      model[key] = value
+      save_model = True
 
   if save_model:
     database.save(model)
