@@ -330,6 +330,41 @@ class Connection(object):
     """
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
+  def get_model_arrayset_metadata(self, mid, aid, arrays=None, statistics=None, unique=None):
+    """Retrieve metadata describing an existing model arrayset artifact.
+
+    Parameters
+    ----------
+    mid: string, required
+      The unique model identifier.
+    aid: string, required
+      The unique artifact identifier.
+    arrays: string, optional
+      A set of arrays, specified using HQL.
+    statistics: string, optional
+      A set of attributes, specified using HQL.
+    unique: string, optional
+      A set of attributes, specified using HQL.
+
+    Returns
+    -------
+    metadata: object
+      The arrayset metadata, which is an arbitrary collection of
+      JSON-compatible data.
+
+    See Also
+    --------
+    :http:get:`/models/(mid)/arraysets/(aid)/metadata`
+    """
+    params = dict()
+    if arrays is not None:
+      params["arrays"] = arrays
+    if statistics is not None:
+      params["statistics"] = statistics
+    if unique is not None:
+      params["unique"] = unique
+    return self.request("GET", "/models/%s/arraysets/%s/metadata" % (mid, aid), params=params, headers={"accept":"application/json"})
+
   def get_model_file(self, mid, aid):
     return self.request("GET", "/models/%s/files/%s" % (mid, aid))
 
