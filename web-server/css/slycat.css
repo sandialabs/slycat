@@ -386,6 +386,14 @@ slycat-navbar .alert pre
 {
   text-align: center;
 }
+.slycat-table-ingestion td.property-start
+{
+  border-left: 1px solid #DDD;
+}
+.slycat-table-ingestion td.property-end
+{
+  border-right: 1px solid #DDD;
+}
 .slycat-table-ingestion tbody th
 {
   padding-left: 5px;

@@ -5,11 +5,18 @@
         <th></th>
         <!-- ko foreach: properties -->
           <!-- ko if: type == 'bool' -->
-            <th class="bool" data-bind="text: name"></th>
+            <th class="bool property-start property-end" data-bind="text: name"></th>
           <!-- /ko -->
           <!-- ko if: type == 'select' -->
             <!-- ko foreach: values -->
-              <th class="select" data-bind="text: $data"></th>
+              <th class="select" 
+              data-bind="
+                text: $data,
+                css: {
+                  'property-start': $index() == 0,
+                  'property-end': $index() == ($parent.values.length - 1)
+                }
+              "></th>
             <!-- /ko -->
           <!-- /ko -->
         <!-- /ko -->
@@ -20,7 +27,7 @@
         <th data-bind="text: name"></th>
         <!-- ko foreach: $parent.properties -->
           <!-- ko if: type == 'bool' -->
-            <td class="bool">
+            <td class="bool property-start property-end">
               <input type="checkbox"
                 data-bind="
                   attr: { 
@@ -34,7 +41,13 @@
           <!-- /ko -->
           <!-- ko if: type == 'select' -->
             <!-- ko foreach: values -->
-              <td class="select">
+              <td class="select"
+                data-bind="css: {
+                    'property-start': $index() == 0,
+                    'property-end': $index() == ($parent.values.length - 1)
+                  }
+                "
+              >
                 <input type="radio"
                   data-bind="
                     attr: { 
