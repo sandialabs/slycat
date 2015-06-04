@@ -140,9 +140,15 @@ Feature: REST API
 
   Scenario: GET Projects
     Given a running Slycat server.
-    And a default project.
-    And a second default project.
-    Then Any authenticated user can retrieve the list of all projects.
+    And a project with one writer and one reader.
+    And a project with one writer and no readers.
+    And a project without any writers or readers.
+    Then server administrators can retrieve a list with all three projects.
+    And project administrators can retrieve a list with all three projects.
+    And project writers can retrieve a list with two projects.
+    And project readers can retrieve a list with one project.
+    And project outsiders can retrieve a list containing none of the projects.
+    And unauthenticated clients cannot retrieve the list of projects.
 
   Scenario: GET User (Current)
     Given a running Slycat server.

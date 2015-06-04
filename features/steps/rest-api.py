@@ -15,7 +15,7 @@ def require_valid_image(image, width=None, height=None):
   if height is not None:
     nose.tools.assert_equal(image.size[1], height)
   return image
-  
+
 def require_valid_support_email(support_email):
   nose.tools.assert_is_instance(support_email, dict)
   for field in ["address", "subject"]:
@@ -28,13 +28,19 @@ def require_valid_version(version):
     nose.tools.assert_in(field, version)
   return version
 
-def require_list(sequence, length=None, item_test=None):
+def require_list(sequence, length=None, item_test=None, includes=None, excludes=None):
   nose.tools.assert_is_instance(sequence, list)
   if length is not None:
     nose.tools.assert_equal(len(sequence), length)
   if item_test is not None:
     for item in sequence:
       item_test(item)
+  if includes is not None:
+    for id in includes:
+      nose.tools.assert_in(id, [item["_id"] for item in sequence])
+  if excludes is not None:
+    for item in sequence:
+      nose.tools.assert_not_in(item["_id"], excludes)
 
 def require_valid_browse(browse):
   nose.tools.assert_items_equal(browse.keys(), ['mtimes', 'sizes', 'names', 'mime-types', 'path', 'types'])
@@ -135,9 +141,20 @@ def step_impl(context):
   context.pid = context.project_admin.post_projects("Test", "Description.")
   context.project_admin.put_project(context.pid, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[{"user":context.project_reader_user}]}})
 
-@given(u'a second default project.')
+@given(u'a project with one writer and one reader.')
 def step_impl(context):
-  context.pid2 = context.project_admin.post_projects("Test2", "Description2.")
+  context.pid2 = context.project_admin.post_projects("Test1", "")
+  context.project_admin.put_project(context.pid2, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[{"user":context.project_reader_user}]}})
+
+@given(u'a project with one writer and no readers.')
+def step_impl(context):
+  context.pid3 = context.project_admin.post_projects("Test2", "")
+  context.project_admin.put_project(context.pid3, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[]}})
+
+@given(u'a project without any writers or readers.')
+def step_impl(context):
+  context.pid4 = context.project_admin.post_projects("Test2", "")
+  context.project_admin.put_project(context.pid4, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[], "readers":[]}})
 
 @given(u'a generic model.')
 def step_impl(context):
@@ -450,13 +467,28 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_project(context.pid)
 
-@then(u'Any authenticated user can retrieve the list of all projects.')
+@then(u'server administrators can retrieve a list with all three projects.')
 def step_impl(context):
-  require_list(context.server_admin.get_projects()["projects"], item_test=require_valid_project)
-  require_list(context.project_admin.get_projects()["projects"], item_test=require_valid_project)
-  require_list(context.project_writer.get_projects()["projects"], item_test=require_valid_project)
-  require_list(context.project_reader.get_projects()["projects"], item_test=require_valid_project)
-  require_list(context.project_outsider.get_projects()["projects"], item_test=require_valid_project)
+  require_list(context.server_admin.get_projects()["projects"], item_test=require_valid_project, includes=[context.pid2, context.pid3, context.pid4], excludes=[])
+
+@then(u'project administrators can retrieve a list with all three projects.')
+def step_impl(context):
+  require_list(context.project_admin.get_projects()["projects"], item_test=require_valid_project, includes=[context.pid2, context.pid3, context.pid4], excludes=[])
+
+@then(u'project writers can retrieve a list with two projects.')
+def step_impl(context):
+  require_list(context.project_writer.get_projects()["projects"], item_test=require_valid_project, includes=[context.pid2, context.pid3], excludes=[context.pid4])
+
+@then(u'project readers can retrieve a list with one project.')
+def step_impl(context):
+  require_list(context.project_reader.get_projects()["projects"], item_test=require_valid_project, includes=[context.pid2], excludes=[context.pid3, context.pid4])
+
+@then(u'project outsiders can retrieve a list containing none of the projects.')
+def step_impl(context):
+  require_list(context.project_outsider.get_projects()["projects"], item_test=require_valid_project, includes=[], excludes=[context.pid2, context.pid3, context.pid4])
+
+@then(u'unauthenticated clients cannot retrieve the list of projects.')
+def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_projects()
 
