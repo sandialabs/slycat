@@ -28,6 +28,16 @@ def after_scenario(context, scenario):
         context.project_admin.delete_remote(context.sid)
       except:
         pass
+    if "pid4" in context:
+      try:
+        context.project_admin.delete_project(context.pid4)
+      except:
+        pass
+    if "pid3" in context:
+      try:
+        context.project_admin.delete_project(context.pid3)
+      except:
+        pass
     if "pid2" in context:
       try:
         context.project_admin.delete_project(context.pid2)
