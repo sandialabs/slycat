@@ -167,7 +167,7 @@ def step_impl(context):
 
 @then(u'the model no longer exists.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"):
     context.server_admin.get_model(context.mid)
 
 @then(u'project administrators can delete the model.')
@@ -180,7 +180,7 @@ def step_impl(context):
 
 @then(u'project readers cannot delete the model.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_reader.delete_model(context.mid)
 
 @then(u'the model still exists.')
@@ -189,12 +189,12 @@ def step_impl(context):
 
 @then(u'project outsiders cannot delete the model.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_outsider.delete_model(context.mid)
 
 @then(u'unauthenticated users cannot delete the model.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.delete_model(context.mid)
 
 @then(u'server administrators can delete the project.')
@@ -203,7 +203,7 @@ def step_impl(context):
 
 @then(u'the project no longer exists.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"):
     context.server_admin.get_project(context.pid)
 
 @then(u'project administrators can delete the project.')
@@ -212,12 +212,12 @@ def step_impl(context):
 
 @then(u'project writers cannot delete the project.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_writer.delete_project(context.pid)
 
 @then(u'project readers cannot delete the project.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_reader.delete_project(context.pid)
 
 @then(u'the project still exists.')
@@ -226,12 +226,12 @@ def step_impl(context):
 
 @then(u'project outsiders cannot delete the project.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_reader.delete_project(context.pid)
 
 @then(u'unauthenticated users cannot delete the project.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.delete_project(context.pid)
 
 @when(u'a client deletes the saved bookmark.')
@@ -354,12 +354,12 @@ def step_impl(context):
 
 @then(u'project outsiders cannot retrieve the model.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_outsider.get_model(context.mid)
 
 @then(u'unauthenticated clients cannot retrieve the model.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_model(context.mid)
 
 @then(u'any authenticated user can request a model resource.')
@@ -424,12 +424,12 @@ def step_impl(context):
 
 @then(u'project outsiders cannot retrieve the project.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_outsider.get_project(context.pid)
 
 @then(u'unauthenticated clients cannot retrieve the project.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_project(context.pid)
 
 @when(u'a client retrieves all projects.')
@@ -465,14 +465,35 @@ def step_impl(context):
     nose.tools.assert_in(field, context.user)
   nose.tools.assert_equal(context.user["uid"], "foobar")
 
-@when(u'a client saves a project bookmark.')
+@then(u'server administrators can save a bookmark.')
 def step_impl(context):
-  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
+  bid = context.server_admin.post_project_bookmarks(context.pid, sample_bookmark)
+  nose.tools.assert_equal(context.server_admin.get_bookmark(bid), sample_bookmark)
 
-@then(u'the project bookmark should be saved.')
+@then(u'project administrators can save a bookmark.')
 def step_impl(context):
-  context.bookmark = context.project_admin.get_bookmark(context.bid)
-  nose.tools.assert_equal(context.bookmark, sample_bookmark)
+  bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
+  nose.tools.assert_equal(context.project_admin.get_bookmark(bid), sample_bookmark)
+
+@then(u'project writers can save a bookmark.')
+def step_impl(context):
+  bid = context.project_writer.post_project_bookmarks(context.pid, sample_bookmark)
+  nose.tools.assert_equal(context.project_writer.get_bookmark(bid), sample_bookmark)
+
+@then(u'project readers can save a bookmark.')
+def step_impl(context):
+  bid = context.project_reader.post_project_bookmarks(context.pid, sample_bookmark)
+  nose.tools.assert_equal(context.project_reader.get_bookmark(bid), sample_bookmark)
+
+@then(u'project outsiders cannot save a bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_bookmarks(context.pid, sample_bookmark)
+
+@then(u'unauthenticated users cannot save a bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_bookmarks(context.pid, sample_bookmark)
 
 @when(u'a client creates a saved bookmark.')
 def step_impl(context):

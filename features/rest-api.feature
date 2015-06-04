@@ -154,8 +154,13 @@ Feature: REST API
   Scenario: POST Project Bookmarks
     Given a running Slycat server.
     And a default project.
-    When a client saves a project bookmark.
-    Then the project bookmark should be saved.
+    Then server administrators can save a bookmark.
+    And project administrators can save a bookmark.
+    And project writers can save a bookmark.
+    # Note that project readers *can* save bookmarks ... this is intentional!
+    And project readers can save a bookmark.
+    And project outsiders cannot save a bookmark.
+    And unauthenticated users cannot save a bookmark.
 
   Scenario: POST Project References (Saved Bookmark)
     Given a running Slycat server.
