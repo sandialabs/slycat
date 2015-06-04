@@ -8,6 +8,14 @@ import slycat.web.client
 import StringIO
 import xml.etree.ElementTree as xml
 
+def require_valid_image(image, width=None, height=None):
+  image = PIL.Image.open(StringIO.StringIO(image))
+  if width is not None:
+    nose.tools.assert_equal(image.size[0], width)
+  if height is not None:
+    nose.tools.assert_equal(image.size[1], height)
+  return image
+  
 def require_valid_support_email(support_email):
   nose.tools.assert_is_instance(support_email, dict)
   for field in ["address", "subject"]:
@@ -318,15 +326,15 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_configuration_wizards()
 
-@when(u'a client requests a global resource.')
+@then(u'any authenticated user can request a global resource.')
 def step_impl(context):
-  context.resource = context.project_admin.get_global_resource("slycat-logo-navbar.png")
-
-@then(u'the server should return the global resource.')
-def step_impl(context):
-  image = PIL.Image.open(StringIO.StringIO(context.resource))
-  nose.tools.assert_equal(image.size, (662, 146))
-
+  require_valid_image(context.server_admin.get_global_resource("slycat-logo-navbar.png"), width=662, height=146)
+  require_valid_image(context.project_admin.get_global_resource("slycat-logo-navbar.png"), width=662, height=146)
+  require_valid_image(context.project_writer.get_global_resource("slycat-logo-navbar.png"), width=662, height=146)
+  require_valid_image(context.project_reader.get_global_resource("slycat-logo-navbar.png"), width=662, height=146)
+  require_valid_image(context.project_outsider.get_global_resource("slycat-logo-navbar.png"), width=662, height=146)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_global_resource("slycat-logo-navbar.png")
 
 @then(u'server administrators can retrieve the model.')
 def step_impl(context):
@@ -354,23 +362,25 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
     context.unauthenticated_user.get_model(context.mid)
 
-@when(u'a client requests a model resource.')
+@then(u'any authenticated user can request a model resource.')
 def step_impl(context):
-  context.resource = context.project_admin.get_model_resource("cca", "images/sort-asc-gray.png")
+  require_valid_image(context.server_admin.get_model_resource("cca", "images/sort-asc-gray.png"), width=9, height=5)
+  require_valid_image(context.project_admin.get_model_resource("cca", "images/sort-asc-gray.png"), width=9, height=5)
+  require_valid_image(context.project_writer.get_model_resource("cca", "images/sort-asc-gray.png"), width=9, height=5)
+  require_valid_image(context.project_reader.get_model_resource("cca", "images/sort-asc-gray.png"), width=9, height=5)
+  require_valid_image(context.project_outsider.get_model_resource("cca", "images/sort-asc-gray.png"), width=9, height=5)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_model_resource("cca", "images/sort-asc-gray.png")
 
-@then(u'the server should return the model resource.')
+@then(u'any authenticated user can request a wizard resource.')
 def step_impl(context):
-  image = PIL.Image.open(StringIO.StringIO(context.resource))
-  nose.tools.assert_equal(image.size, (9, 5))
-
-@when(u'a client requests a wizard resource.')
-def step_impl(context):
-  context.resource = context.project_admin.get_wizard_resource("slycat-create-project", "ui.html")
-
-@then(u'the server should return the wizard resource.')
-def step_impl(context):
-  if not context.resource.startswith("<div"):
-    raise Exception("Unexpected resource content.")
+  nose.tools.assert_regexp_matches(context.server_admin.get_wizard_resource("slycat-create-project", "ui.html"), "^<div")
+  nose.tools.assert_regexp_matches(context.project_admin.get_wizard_resource("slycat-create-project", "ui.html"), "^<div")
+  nose.tools.assert_regexp_matches(context.project_writer.get_wizard_resource("slycat-create-project", "ui.html"), "^<div")
+  nose.tools.assert_regexp_matches(context.project_reader.get_wizard_resource("slycat-create-project", "ui.html"), "^<div")
+  nose.tools.assert_regexp_matches(context.project_outsider.get_wizard_resource("slycat-create-project", "ui.html"), "^<div")
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_wizard_resource("slycat-create-project", "ui.html")
 
 @when(u'a client retrieves the project models.')
 def step_impl(context):
