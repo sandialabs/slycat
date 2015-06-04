@@ -115,8 +115,12 @@ Feature: REST API
   Scenario: GET Project
     Given a running Slycat server.
     And a default project.
-    When a client retrieves the project.
-    Then the server should return the project.
+    Then server administrators can retrieve the project.
+    And project administrators can retrieve the project.
+    And project writers can retrieve the project.
+    And project readers can retrieve the project.
+    And project outsiders cannot retrieve the project.
+    And unauthenticated clients cannot retrieve the project.
 
   Scenario: GET Projects
     Given a running Slycat server.

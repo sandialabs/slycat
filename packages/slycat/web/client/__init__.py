@@ -11,6 +11,7 @@ import numbers
 import numpy
 import os
 import requests
+import requests.exceptions as exceptions
 import shlex
 import slycat.darray
 import sys

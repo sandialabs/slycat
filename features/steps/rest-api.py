@@ -51,7 +51,7 @@ def require_valid_wizard(wizard):
 def require_valid_timestamp(timestamp):
   return datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
 
-def require_valid_project(project):
+def require_valid_project(project, name=None, description=None, creator=None):
   nose.tools.assert_is_instance(project, dict)
   for field in [ "acl", "created", "creator", "description", "_id", "name", "_rev", "type", ]:
     nose.tools.assert_in(field, project)
@@ -62,6 +62,12 @@ def require_valid_project(project):
     nose.tools.assert_in(field, project["acl"])
     for item in project["acl"][field]:
       nose.tools.assert_is_instance(item, dict)
+  if name is not None:
+    nose.tools.assert_equal(project["name"], name)
+  if description is not None:
+    nose.tools.assert_equal(project["description"], description)
+  if creator is not None:
+    nose.tools.assert_equal(project["creator"], creator)
   return project
 
 def require_valid_reference(reference):
@@ -95,11 +101,13 @@ def step_impl(context):
   context.project_writer = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_writer_user, context.project_writer_password))
   context.project_reader = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_reader_user, context.project_reader_password))
   context.project_outsider = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_outsider_user, context.project_outsider_password))
+  context.unauthenticated = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy})
   context.server_admin.get_configuration_version()
 
 @given(u'a default project.')
 def step_impl(context):
   context.pid = context.project_admin.post_projects("Test", "Description.")
+  context.project_admin.put_project(context.pid, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[{"user":context.project_reader_user}]}})
 
 @given(u'a second default project.')
 def step_impl(context):
@@ -293,17 +301,31 @@ def step_impl(context):
 def step_impl(context):
   require_list(context.references, length=2, item_test=require_valid_reference)
 
-@when(u'a client retrieves the project.')
+@then(u'server administrators can retrieve the project.')
 def step_impl(context):
-  context.project = require_valid_project(context.project_admin.get_project(context.pid))
+  project = require_valid_project(context.server_admin.get_project(context.pid), name="Test", description="Description.", creator=context.project_admin_user)
 
-@then(u'the server should return the project.')
+@then(u'project administrators can retrieve the project.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project["name"], "Test")
-  nose.tools.assert_equal(context.project["description"], "Description.")
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
-  nose.tools.assert_equal(context.project["acl"]["writers"], [])
-  nose.tools.assert_equal(context.project["acl"]["readers"], [])
+  project = require_valid_project(context.project_admin.get_project(context.pid), name="Test", description="Description.", creator=context.project_admin_user)
+
+@then(u'project writers can retrieve the project.')
+def step_impl(context):
+  project = require_valid_project(context.project_writer.get_project(context.pid), name="Test", description="Description.", creator=context.project_admin_user)
+
+@then(u'project readers can retrieve the project.')
+def step_impl(context):
+  project = require_valid_project(context.project_reader.get_project(context.pid), name="Test", description="Description.", creator=context.project_admin_user)
+
+@then(u'project outsiders cannot retrieve the project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_outsider.get_project(context.pid)
+
+@then(u'unauthenticated clients cannot retrieve the project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+    context.unauthenticated.get_project(context.pid)
 
 @when(u'a client retrieves all projects.')
 def step_impl(context):
