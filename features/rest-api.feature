@@ -49,8 +49,12 @@ Feature: REST API
     Given a running Slycat server.
     And a default project.
     And a sample bookmark.
-    When a client retrieves the project bookmark.
-    Then the project bookmark should be retrieved.
+    Then server administrators can retrieve a bookmark.
+    And project administrators can retrieve a bookmark.
+    And project writers can retrieve a bookmark.
+    And project readers can retrieve a bookmark.
+    And project outsiders cannot retrieve a bookmark.
+    And unauthenticated users cannot retrieve a bookmark.
 
   Scenario: GET Configuration Markings
     Given a running Slycat server.

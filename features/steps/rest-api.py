@@ -258,13 +258,31 @@ def step_impl(context):
 def step_impl(context):
   context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
 
-@when(u'a client retrieves the project bookmark.')
+@then(u'server administrators can retrieve a bookmark.')
 def step_impl(context):
-  context.bookmark = context.project_admin.get_bookmark(context.bid)
+  nose.tools.assert_equal(context.server_admin.get_bookmark(context.bid), sample_bookmark)
 
-@then(u'the project bookmark should be retrieved.')
+@then(u'project administrators can retrieve a bookmark.')
 def step_impl(context):
-  nose.tools.assert_equal(context.bookmark, sample_bookmark)
+  nose.tools.assert_equal(context.project_admin.get_bookmark(context.bid), sample_bookmark)
+
+@then(u'project writers can retrieve a bookmark.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_writer.get_bookmark(context.bid), sample_bookmark)
+
+@then(u'project readers can retrieve a bookmark.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_reader.get_bookmark(context.bid), sample_bookmark)
+
+@then(u'project outsiders cannot retrieve a bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    nose.tools.assert_equal(context.project_outsider.get_bookmark(context.bid), sample_bookmark)
+
+@then(u'unauthenticated users cannot retrieve a bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    nose.tools.assert_equal(context.unauthenticated_user.get_bookmark(context.bid), sample_bookmark)
 
 @then(u'Any authenticated user can request the set of available markings.')
 def step_impl(context):
