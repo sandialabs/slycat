@@ -167,6 +167,7 @@ Feature: REST API
     And a generic model.
     When a client adds a new arrayset to the model.
     Then the model should contain the new arrayset.
+    And the new arrayset should be empty.
 
   Scenario: PUT Model
     Given a running Slycat server.

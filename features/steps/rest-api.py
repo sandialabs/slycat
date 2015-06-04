@@ -398,6 +398,10 @@ def step_impl(context):
   nose.tools.assert_equal(model["artifact-types"]["arrayset"], "hdf5")
   nose.tools.assert_in("artifact:arrayset", model)
 
+@then(u'the new arrayset should be empty.')
+def step_impl(context):
+  nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
+
 @when(u'a client modifies the model.')
 def step_impl(context):
   context.connection.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
