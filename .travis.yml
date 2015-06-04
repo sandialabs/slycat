@@ -1,16 +1,19 @@
 language: python
+
 python:
   - "2.7"
+
 services:
   - couchdb
+
 before_install:
+  - env | sort
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties gcc gfortran g++ python2.7-dev libldap2-dev libsasl2-dev liblapack-dev ssh libhdf5-serial-dev
   - sudo add-apt-repository -y ppa:vbernat/haproxy-1.5
   - sudo apt-get update -qq
   - sudo apt-get install haproxy
   - sudo useradd -m slycat
-  - env | sort
   - ls -l
   - cd $TRAVIS_BUILD_DIR
   - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
@@ -31,16 +34,19 @@ before_install:
   - sudo cp root-ca.cert /usr/local/share/ca-certificates/slycat.crt
   - sudo update-ca-certificates
   - export REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert
+  - env | sort
 
 install:
   - pip install --no-use-wheel Cython
   - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
-script:
   - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
   - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py &
+
+script:
   - coverage run --source slycat -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
+
 after_script:
   - coveralls
