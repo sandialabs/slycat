@@ -43,13 +43,11 @@ var GeometrySettings = (function() {
 
   GeometrySettings.prototype.load = function() {
     var that = this;
-    var $bc = $('#slycat-stl-modal-background-color');
-    var $alc = $('#slycat-stl-modal-ambient-light-color');
-    var $mc = $('#slycat-stl-modal-material-color');
-    var $l1c = $('#slycat-stl-modal-light-one-color');
-    var $l2c = $('#slycat-stl-modal-light-two-color');
-
-    console.log(that.geometry);
+    var $bc = $('#slycat-3d-modal-background-color');
+    var $alc = $('#slycat-3d-modal-ambient-light-color');
+    var $mc = $('#slycat-3d-modal-material-color');
+    var $l1c = $('#slycat-3d-modal-light-one-color');
+    var $l2c = $('#slycat-3d-modal-light-two-color');
 
     $bc.val(formatColorStringAs0x(this.geometry.backgroundColor));
     $alc.val(formatColorStringAs0x(this.geometry.ambientLightColor));
@@ -58,7 +56,7 @@ var GeometrySettings = (function() {
     $l2c.val(formatColorStringAs0x(this.geometry.lightTwoColor));
 
     /** Updates the onclick even for the Apply button */
-    $('#slycat-stl-modal-btn-apply').off('click').on('click', function() {
+    $('#slycat-3d-modal-btn-apply').off('click').on('click', function() {
       that.setBackgroundColor($bc.val());
       that.geometry.renderer.setClearColor(formatColorStringAsHexStr($bc.val()));
       that.setAmbientLightColor($alc.val());

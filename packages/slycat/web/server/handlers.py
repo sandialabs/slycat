@@ -95,7 +95,7 @@ def js_bundle():
         "js/STLLoader.js",
         "js/Detector.js",
         "js/GeometrySettings.js",
-        "js/slycat-stl-viewer.js"
+        "js/slycat-3d-viewer.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()

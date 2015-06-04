@@ -1,4 +1,4 @@
-define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
+define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
 
   /**
    * A Knockout component to render STL files in slycat, using the Three.js
@@ -13,7 +13,7 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
    * @param {String} aid Artifact ID.
    * @param {String} cid Container ID. This is the CSS ID of the container for the STL viewer.
    */
-  ko.components.register('slycat-stl-viewer', {
+  ko.components.register('slycat-3d-viewer', {
     viewModel: function(params) {
 
       if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -131,22 +131,22 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
       });
 
 
-      $('#' + cid + ' .slycat-stl-btn-reset').on('click', function() {
+      $('#' + cid + ' .slycat-3d-btn-reset').on('click', function() {
         onReset(controls, mesh);
         return false;
       });
 
-      $('#' + cid + ' .slycat-stl-btn-rotate').on('click', function() {
+      $('#' + cid + ' .slycat-3d-btn-rotate').on('click', function() {
         onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
         return false;
       });
 
-      $('#slycat-stl-modal').on('shown.bs.modal', function() {
+      $('#slycat-3d-modal').on('shown.bs.modal', function() {
         settings.load();
       });
     },
 
-    template: { require: 'text!' + server_root + 'templates/slycat-stl-viewer.html' }
+    template: { require: 'text!' + server_root + 'templates/slycat-3d-viewer.html' }
   });
 
 
@@ -168,8 +168,8 @@ define('slycat-stl-viewer', ['slycat-server-root', 'knockout', 'URI'], function(
    * @return {String}     new viewer ID
    */
   var generateViewerId = function(cid) {
-    var vid = 'slycat-stl-viewer-' + cid;
-    $('#' + cid + ' .slycat-stl-viewer').attr('id', vid);
+    var vid = 'slycat-3d-viewer-' + cid;
+    $('#' + cid + ' .slycat-3d-viewer').attr('id', vid);
 
     return vid;
   };
