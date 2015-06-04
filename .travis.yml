@@ -32,7 +32,8 @@ before_install:
   - cat $TRAVIS_BUILD_DIR/web-server.key $TRAVIS_BUILD_DIR/web-server.cert > $TRAVIS_BUILD_DIR/ssl.pem
   # We're going to use conda to install our Python interpreter and dependencies.
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - sh miniconda.sh -b
+  - chmod +x miniconda.ch
+  - ./miniconda.sh -b
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda update --yes conda
   # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
