@@ -222,6 +222,9 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
               yield values[hyperslice]
 
 def get_model_parameter(database, model, aid):
+  key = "artifact:%s" % aid
+  if key not in model:
+    raise KeyError("Unknown artifact: %s" % aid)
   return model["artifact:" + aid]
 
 def put_model_arrayset(database, model, aid, input=False):

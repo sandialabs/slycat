@@ -1104,7 +1104,10 @@ def get_model_parameter(mid, aid):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
 
-  return slycat.web.server.get_model_parameter(database, model, aid)
+  try:
+    return slycat.web.server.get_model_parameter(database, model, aid)
+  except KeyError as e:
+    raise cherrypy.HTTPError("404 Unknown artifact: %s" % aid)
 
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
