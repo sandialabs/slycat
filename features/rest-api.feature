@@ -152,13 +152,11 @@ Feature: REST API
 
   Scenario: GET User (Current)
     Given a running Slycat server.
-    When a client requests information about the current user.
-    Then the server should return information about the current user.
+    Then any authenticated user can retrieve information about themselves.
 
   Scenario: GET User
     Given a running Slycat server.
-    When a client requests information about another user.
-    Then the server should return information about the other user.
+    Then any authenticated user can retrieve information about another user.
 
   Scenario: POST Project Bookmarks
     Given a running Slycat server.

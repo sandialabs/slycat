@@ -8,6 +8,14 @@ import slycat.web.client
 import StringIO
 import xml.etree.ElementTree as xml
 
+def require_valid_user(user, uid=None):
+  nose.tools.assert_is_instance(user, dict)
+  for field in ["email", "name", "uid"]:
+    nose.tools.assert_in(field, user)
+  if uid is not None:
+    nose.tools.assert_equal(user["uid"], uid)
+  return user
+
 def require_valid_image(image, width=None, height=None):
   image = PIL.Image.open(StringIO.StringIO(image))
   if width is not None:
@@ -492,27 +500,25 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_projects()
 
-@when(u'a client requests information about the current user.')
+@then(u'any authenticated user can retrieve information about themselves.')
 def step_impl(context):
-  context.user = context.project_admin.get_user()
+  require_valid_user(context.server_admin.get_user(), uid=context.server_admin_user)
+  require_valid_user(context.project_admin.get_user(), uid=context.project_admin_user)
+  require_valid_user(context.project_writer.get_user(), uid=context.project_writer_user)
+  require_valid_user(context.project_reader.get_user(), uid=context.project_reader_user)
+  require_valid_user(context.project_outsider.get_user(), uid=context.project_outsider_user)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_user()
 
-@then(u'the server should return information about the current user.')
+@then(u'any authenticated user can retrieve information about another user.')
 def step_impl(context):
-  nose.tools.assert_is_instance(context.user, dict)
-  for field in ["email", "name", "uid"]:
-    nose.tools.assert_in(field, context.user)
-  nose.tools.assert_equal(context.user["uid"], context.project_admin_user)
-
-@when(u'a client requests information about another user.')
-def step_impl(context):
-  context.user = context.project_admin.get_user("foobar")
-
-@then(u'the server should return information about the other user.')
-def step_impl(context):
-  nose.tools.assert_is_instance(context.user, dict)
-  for field in ["email", "name", "uid"]:
-    nose.tools.assert_in(field, context.user)
-  nose.tools.assert_equal(context.user["uid"], "foobar")
+  require_valid_user(context.server_admin.get_user("foobar"), uid="foobar")
+  require_valid_user(context.project_admin.get_user("foobar"), uid="foobar")
+  require_valid_user(context.project_writer.get_user("foobar"), uid="foobar")
+  require_valid_user(context.project_reader.get_user("foobar"), uid="foobar")
+  require_valid_user(context.project_outsider.get_user("foobar"), uid="foobar")
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_user("foobar")
 
 @then(u'server administrators can save a bookmark.')
 def step_impl(context):
