@@ -33,14 +33,12 @@ before_install:
 
 install:
   - pip install --no-use-wheel Cython
-  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
+  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes scipy
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
   - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
   - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py &
-  # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
-  #- sudo cp root-ca.cert /usr/local/share/ca-certificates/slycat.crt
-  #- sudo update-ca-certificates
+  # Add our private CA to the system-wide list of certificate authorities, so test clients can trust the web-server.
   - export REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert
   - env | sort
 
