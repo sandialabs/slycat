@@ -1,16 +1,19 @@
 language: python
+
 python:
   - "2.7"
+
 services:
   - couchdb
+
 before_install:
+  - env | sort
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties gcc gfortran g++ python2.7-dev libldap2-dev libsasl2-dev liblapack-dev ssh libhdf5-serial-dev
   - sudo add-apt-repository -y ppa:vbernat/haproxy-1.5
   - sudo apt-get update -qq
   - sudo apt-get install haproxy
   - sudo useradd -m slycat
-  - env | sort
   - ls -l
   - cd $TRAVIS_BUILD_DIR
   - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
@@ -19,28 +22,31 @@ before_install:
   - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
   # Generate a private certificate authority.
-  - openssl genrsa -out root-ca.key 2048
-  - openssl req -x509 -new -nodes -key root-ca.key -days 365 -out root-ca.cert -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=Slycat"
+  - openssl genrsa -out $TRAVIS_BUILD_DIR/root-ca.key 2048
+  - openssl req -x509 -new -nodes -key $TRAVIS_BUILD_DIR/root-ca.key -days 365 -out $TRAVIS_BUILD_DIR/root-ca.cert -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=Slycat"
   # Generate a self-signed certificate.
-  - openssl genrsa -out web-server.key 2048
-  - openssl req -new -key web-server.key -out web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
-  - openssl x509 -req -in web-server.csr -CA root-ca.cert -CAkey root-ca.key -CAcreateserial -out web-server.cert -days 365
+  - openssl genrsa -out $TRAVIS_BUILD_DIR/web-server.key 2048
+  - openssl req -new -key $TRAVIS_BUILD_DIR/web-server.key -out $TRAVIS_BUILD_DIR/web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
+  - openssl x509 -req -in $TRAVIS_BUILD_DIR/web-server.csr -CA $TRAVIS_BUILD_DIR/root-ca.cert -CAkey $TRAVIS_BUILD_DIR/root-ca.key -CAcreateserial -out $TRAVIS_BUILD_DIR/web-server.cert -days 365
   # Put the server key and certificate where the reverse proxy can find them.
-  - sudo mkdir /etc/slycat
-  - sudo cat web-server.key web-server.cert > /etc/slycat/ssl.pem
-  # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
-  - sudo cp /root-ca.cert /usr/local/share/ca-certificates
-  - sudo update-ca-certificates
+  - cat $TRAVIS_BUILD_DIR/web-server.key $TRAVIS_BUILD_DIR/web-server.cert > $TRAVIS_BUILD_DIR/ssl.pem
 
 install:
   - pip install --no-use-wheel Cython
   - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
-script:
-  - sudo haproxy -f $TRAVIS_BUILD_DIR/docker/slycat-demo/proxy-server-config.conf -db &
+  - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
   - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py &
+  # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
+  #- sudo cp root-ca.cert /usr/local/share/ca-certificates/slycat.crt
+  #- sudo update-ca-certificates
+  - export REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert
+  - env | sort
+
+script:
   - coverage run --source slycat -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
+
 after_script:
   - coveralls
