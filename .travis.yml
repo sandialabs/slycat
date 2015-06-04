@@ -47,12 +47,10 @@ install:
   - sudo haproxy -f $TRAVIS_BUILD_DIR/travis-ci/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
   - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
-  # Add our private CA to the system-wide list of certificate authorities, so test clients can trust the web-server.
-  - export REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert
   - env | sort
 
 script:
-  - coverage run --source packages/slycat -m behave -i "(agent|hyperchunks|rest-api)"
+  - REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert coverage run --source packages/slycat -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
 
 after_script:
