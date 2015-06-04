@@ -244,6 +244,10 @@ Feature: REST API
   Scenario: PUT Project
     Given a running Slycat server.
     And a default project.
-    When a client modifies the project.
-    Then the project should be modified.
+    Then server administrators can modify the project acl, name, and description.
+    And project administrators can modify the project acl, name, and description.
+    And project writers can modify the project name and description only.
+    And project readers cannot modify the project.
+    And project outsiders cannot modify the project.
+    And unauthenticated users cannot modify the project.
 
