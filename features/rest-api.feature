@@ -1,11 +1,19 @@
 Feature: REST API
-
-  Scenario: DELETE Model
+  Scenario Outline: DELETE Model
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client deletes the model.
-    Then the model should no longer exist.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                      | result                     |
+      | server administrators can delete the model    | the model no longer exists |
+      | project administrators can delete the model   | the model no longer exists |
+      | project writers can delete the model          | the model no longer exists |
+      | project readers cannot delete the model       | the model still exists     |
+      | project outsiders cannot delete the model     | the model still exists     |
+      | unauthenticated users cannot delete the model | the model still exists     |
 
   Scenario Outline: DELETE Project
     Given a running Slycat server.

@@ -107,7 +107,7 @@ def step_impl(context):
   context.project_writer = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_writer_user, context.project_writer_password))
   context.project_reader = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_reader_user, context.project_reader_password))
   context.project_outsider = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_outsider_user, context.project_outsider_password))
-  context.unauthenticated = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy})
+  context.unauthenticated_user = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy})
   context.server_admin.get_configuration_version()
 
 @given(u'a default project.')
@@ -140,6 +140,42 @@ def step_impl(context):
   with nose.tools.assert_raises(Exception) as raised:
     context.project_admin.get_model(context.mid)
     nose.tools.assert_equal(raised.exception.code, 404)
+
+@then(u'server administrators can delete the model.')
+def step_impl(context):
+  context.server_admin.delete_model(context.mid)
+
+@then(u'the model no longer exists.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404") as raised:
+    context.server_admin.get_model(context.mid)
+
+@then(u'project administrators can delete the model.')
+def step_impl(context):
+  context.project_admin.delete_model(context.mid)
+
+@then(u'project writers can delete the model.')
+def step_impl(context):
+  context.project_writer.delete_model(context.mid)
+
+@then(u'project readers cannot delete the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_reader.delete_model(context.mid)
+
+@then(u'the model still exists.')
+def step_impl(context):
+  require_valid_model(context.server_admin.get_model(context.mid))
+
+@then(u'project outsiders cannot delete the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_outsider.delete_model(context.mid)
+
+@then(u'unauthenticated users cannot delete the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+    context.unauthenticated_user.delete_model(context.mid)
 
 @then(u'server administrators can delete the project.')
 def step_impl(context):
@@ -176,7 +212,7 @@ def step_impl(context):
 @then(u'unauthenticated users cannot delete the project.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
-    context.unauthenticated.delete_project(context.pid)
+    context.unauthenticated_user.delete_project(context.pid)
 
 @when(u'a client deletes the saved bookmark.')
 def step_impl(context):
@@ -296,7 +332,7 @@ def step_impl(context):
 @then(u'unauthenticated clients cannot retrieve the model.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
-    context.unauthenticated.get_model(context.mid)
+    context.unauthenticated_user.get_model(context.mid)
 
 @when(u'a client requests a model resource.')
 def step_impl(context):
@@ -364,7 +400,7 @@ def step_impl(context):
 @then(u'unauthenticated clients cannot retrieve the project.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
-    context.unauthenticated.get_project(context.pid)
+    context.unauthenticated_user.get_project(context.pid)
 
 @when(u'a client retrieves all projects.')
 def step_impl(context):
