@@ -22,11 +22,11 @@ Feature: REST API
     When a client deletes the saved bookmark.
     Then the saved bookmark should no longer exist.
 
-  Scenario: DELETE Remote
-    Given a running Slycat server.
-    And a remote session.
-    When a client deletes the remote session.
-    Then the remote session should no longer exist.
+#  Scenario: DELETE Remote
+#    Given a running Slycat server.
+#    And a remote session.
+#    When a client deletes the remote session.
+#    Then the remote session should no longer exist.
 
   Scenario: GET Bookmark
     Given a running Slycat server.
@@ -167,10 +167,10 @@ Feature: REST API
     When a client creates a new project.
     Then the project should be created.
 
-  Scenario: POST Remotes
-    Given a running Slycat server.
-    When a client creates a new remote session.
-    Then the remote session should be created.
+#  Scenario: POST Remotes
+#    Given a running Slycat server.
+#    When a client creates a new remote session.
+#    Then the remote session should be created.
 
   Scenario: PUT Model Arrayset
     Given a running Slycat server.
