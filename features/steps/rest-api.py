@@ -663,6 +663,44 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_user("foobar")
 
+@then(u'server administrators can finish the model.')
+def step_impl(context):
+  context.server_admin.post_model_finish(context.mid)
+
+@then(u'and the model will be finished.')
+def step_impl(context):
+  context.server_admin.join_model(context.mid)
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["state"], "finished")
+
+@then(u'project administrators can finish the model.')
+def step_impl(context):
+  context.project_admin.post_model_finish(context.mid)
+
+@then(u'project writers can finish the model.')
+def step_impl(context):
+  context.project_writer.post_model_finish(context.mid)
+
+@then(u'project readers cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_model_finish(context.mid)
+
+@then(u'and the model will remain unfinished.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["state"], "waiting")
+
+@then(u'project outsiders cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_model_finish(context.mid)
+
+@then(u'unauthenticated users cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_model_finish(context.mid)
+
 @then(u'server administrators can save a bookmark.')
 def step_impl(context):
   bid = context.server_admin.post_project_bookmarks(context.pid, sample_bookmark)

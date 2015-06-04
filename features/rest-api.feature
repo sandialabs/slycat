@@ -180,6 +180,22 @@ Feature: REST API
     Given a running Slycat server.
     Then any authenticated user can retrieve information about another user.
 
+  Scenario Outline: POST Model Finish
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                         | result |
+      | server administrators can finish the model       | and the model will be finished |
+      | project administrators can finish the model      | and the model will be finished |
+      | project writers can finish the model             | and the model will be finished |
+      | project readers cannot finish the model          | and the model will remain unfinished |
+      | project outsiders cannot finish the model        | and the model will remain unfinished |
+      | unauthenticated users cannot finish the model    | and the model will remain unfinished |
+
   Scenario: POST Project Bookmarks
     Given a running Slycat server.
     And a default project.
