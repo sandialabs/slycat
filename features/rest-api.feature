@@ -231,11 +231,10 @@ Feature: REST API
       | project outsiders cannot create a new model     | the project doesn't contain a new model |
       | unauthenticated users cannot create a new model | the project doesn't contain a new model |
 
-
   Scenario: POST Projects
     Given a running Slycat server.
-    When a client creates a new project.
-    Then the project should be created.
+    Then any authenticated user can create a new project.
+    And unauthenticated users cannot create a new project.
 
 #  Scenario: POST Remotes
 #    Given a running Slycat server.

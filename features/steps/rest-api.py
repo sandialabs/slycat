@@ -771,19 +771,17 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@when(u'a client creates a new project.')
+@then(u'any authenticated user can create a new project.')
 def step_impl(context):
-  context.pid = context.project_admin.post_projects("Test", "Description.")
+  for user in [context.server_admin, context.project_admin, context.project_writer, context.project_reader, context.project_outsider]:
+    context.pid = user.post_projects("Test", "Description.")
+    require_valid_project(user.get_project(context.pid))
+    user.delete_project(context.pid)
 
-@then(u'the project should be created.')
+@then(u'unauthenticated users cannot create a new project.')
 def step_impl(context):
-  context.project = require_valid_project(context.project_admin.get_project(context.pid))
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
-  nose.tools.assert_equal(context.project["acl"]["readers"], [])
-  nose.tools.assert_equal(context.project["acl"]["writers"], [])
-  nose.tools.assert_equal(context.project["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.project["description"], "Description.")
-  nose.tools.assert_equal(context.project["name"], "Test")
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_projects("Test", "Description.")
 
 @when(u'a client creates a new remote session.')
 def step_impl(context):
