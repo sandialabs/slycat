@@ -45,7 +45,6 @@ def css_bundle():
       ])
       slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
       slycat.web.server.resource.manager.add_directory("fonts/font-awesome", "fonts/font-awesome")
-      slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
   return css_bundle._bundle
 css_bundle._lock = threading.Lock()
 css_bundle._bundle = None
@@ -1224,6 +1223,10 @@ def get_configuration_wizards():
 
 @cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
 def get_global_resource(resource):
+  if not get_global_resource._ready:
+    with get_global_resource._lock:
+      slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
+      get_global_resource._ready = True
   if resource in slycat.web.server.resource.manager.bundles:
     content_type, content = slycat.web.server.resource.manager.bundles[resource]
     cherrypy.response.headers["content-type"] = content_type
@@ -1231,6 +1234,8 @@ def get_global_resource(resource):
   if resource in slycat.web.server.resource.manager.files:
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
+get_global_resource._lock = threading.Lock()
+get_global_resource._ready = False
 
 def tests_request(*arguments, **keywords):
   cherrypy.log.error("Request: %s" % cherrypy.request.request_line)
