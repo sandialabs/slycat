@@ -173,6 +173,14 @@ def step_impl(context):
 def step_impl(context):
   context.mid2 = context.project_admin.post_project_models(context.pid, "generic", "Test2", description="Description2.")
 
+@given(u'a sample bookmark.')
+def step_impl(context):
+  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
+
+@given(u'a saved bookmark.')
+def step_impl(context):
+  context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
 @given(u'a remote session.')
 def step_impl(context):
   context.sid = context.project_admin.post_remotes(context.remote_host, context.remote_user, context.remote_password)
@@ -304,10 +312,6 @@ def step_impl(context):
   with nose.tools.assert_raises(Exception) as raised:
     context.project_admin.post_remote_browse(context.sid, "/")
     nose.tools.assert_equal(raised.exception.code, 404)
-
-@given(u'a sample bookmark.')
-def step_impl(context):
-  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
 
 @then(u'server administrators can retrieve a bookmark.')
 def step_impl(context):
@@ -508,29 +512,75 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_project_models(context.pid)
 
-@given(u'a saved bookmark.')
+@then(u'server administrators can create a saved bookmark.')
+def step_impl(context):
+  context.rid = context.server_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'project administrators can create a saved bookmark.')
 def step_impl(context):
   context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
 
-@given(u'a saved template.')
+@then(u'project writers can create a saved bookmark.')
+def step_impl(context):
+  context.rid = context.project_writer.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'project readers cannot create a saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'project outsiders cannot create a saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'unauthenticated users cannot create a saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'server administrators can create a bookmark template.')
+def step_impl(context):
+  context.rid = context.server_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'project administrators can create a bookmark template.')
 def step_impl(context):
   context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
 
+@then(u'project writers can create a bookmark template.')
+def step_impl(context):
+  context.rid = context.project_writer.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'project readers cannot create a bookmark template.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'project outsiders cannot create a bookmark template.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'unauthenticated users cannot create a bookmark template.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
 @then(u'server administrators can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.server_admin.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.server_admin.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project administrators can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.project_admin.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.project_admin.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project writers can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.project_writer.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.project_writer.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project readers can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.project_reader.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.project_reader.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project outsiders cannot retrieve the list of project references.')
 def step_impl(context):

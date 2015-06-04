@@ -143,7 +143,6 @@ Feature: REST API
     And a generic model.
     And a sample bookmark.
     And a saved bookmark.
-    And a saved template.
     Then server administrators can retrieve the list of project references.
     And project administrators can retrieve the list of project references.
     And project writers can retrieve the list of project references.
@@ -192,20 +191,30 @@ Feature: REST API
     And project outsiders cannot save a bookmark.
     And unauthenticated users cannot save a bookmark.
 
-  Scenario: POST Project References (Saved Bookmark)
+  Scenario Outline: POST Project References
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And a sample bookmark.
-    When a client creates a saved bookmark.
-    Then the saved bookmark should be created.
+    Then <scenario>.
 
-  Scenario: POST Project References (Template)
-    Given a running Slycat server.
-    And a default project.
-    And a sample bookmark.
-    When a client creates a template.
-    Then the template should be created.
+    Examples: Saved Bookmarks
+      | scenario                                                |
+      | server administrators can create a saved bookmark       |
+      | project administrators can create a saved bookmark      |
+      | project writers can create a saved bookmark             |
+      | project readers cannot create a saved bookmark          |
+      | project outsiders cannot create a saved bookmark        |
+      | unauthenticated users cannot create a saved bookmark    |
+
+    Examples: Bookmark Templates
+      | scenario                                                |
+      | server administrators can create a bookmark template    |
+      | project administrators can create a bookmark template   |
+      | project writers can create a bookmark template          |
+      | project readers cannot create a bookmark template       |
+      | project outsiders cannot create a bookmark template     |
+      | unauthenticated users cannot create a bookmark template |
 
   Scenario: POST Project Models
     Given a running Slycat server.
