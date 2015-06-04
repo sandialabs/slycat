@@ -74,8 +74,12 @@ Feature: REST API
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client retrieves the model.
-    Then the server should return the model.
+    Then server administrators can retrieve the model.
+    And project administrators can retrieve the model.
+    And project writers can retrieve the model.
+    And project readers can retrieve the model.
+    And project outsiders cannot retrieve the model.
+    And unauthenticated clients cannot retrieve the model.
 
   Scenario: GET Model Parameter
     Given a running Slycat server.

@@ -78,7 +78,7 @@ def require_valid_reference(reference):
   require_valid_timestamp(reference["created"])
   return reference
 
-def require_valid_model(model):
+def require_valid_model(model, name=None, mtype=None, creator=None):
   nose.tools.assert_is_instance(model, dict)
   for field in [ "artifact-types", "created", "creator", "description", "finished", "_id", "input-artifacts", "marking", "message", "model-type", "name", "progress", "project", "result", "_rev", "started", "state", "type", ]:
     nose.tools.assert_in(field, model)
@@ -90,6 +90,12 @@ def require_valid_model(model):
   require_list(model["input-artifacts"])
   for aid in model["input-artifacts"]:
     nose.tools.assert_in(aid, model["artifact-types"])
+  if name is not None:
+    nose.tools.assert_equal(model["name"], name)
+  if mtype is not None:
+    nose.tools.assert_equal(model["model-type"], mtype)
+  if creator is not None:
+    nose.tools.assert_equal(model["creator"], creator)
   return model
 
 sample_bookmark = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
@@ -238,26 +244,32 @@ def step_impl(context):
   image = PIL.Image.open(StringIO.StringIO(context.resource))
   nose.tools.assert_equal(image.size, (662, 146))
 
-@when(u'a client retrieves the model.')
-def step_impl(context):
-  context.model = require_valid_model(context.project_admin.get_model(context.mid))
 
-@then(u'the server should return the model.')
+@then(u'server administrators can retrieve the model.')
 def step_impl(context):
-  nose.tools.assert_equal(context.model["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.model["description"], "Description.")
-  nose.tools.assert_equal(context.model["marking"], "")
-  nose.tools.assert_equal(context.model["name"], "Test")
-  nose.tools.assert_equal(context.model["model-type"], "generic")
-  nose.tools.assert_equal(context.model["artifact-types"], {})
-  nose.tools.assert_equal(context.model["input-artifacts"], [])
-  nose.tools.assert_equal(context.model["project"], context.pid)
-  nose.tools.assert_equal(context.model["started"], None)
-  nose.tools.assert_equal(context.model["finished"], None)
-  nose.tools.assert_equal(context.model["state"], "waiting")
-  nose.tools.assert_equal(context.model["result"], None)
-  nose.tools.assert_equal(context.model["progress"], None)
-  nose.tools.assert_equal(context.model["message"], None)
+  require_valid_model(context.server_admin.get_model(context.mid), name="Test", mtype="generic", creator=context.project_admin_user)
+
+@then(u'project administrators can retrieve the model.')
+def step_impl(context):
+  require_valid_model(context.project_admin.get_model(context.mid), name="Test", mtype="generic", creator=context.project_admin_user)
+
+@then(u'project writers can retrieve the model.')
+def step_impl(context):
+  require_valid_model(context.project_writer.get_model(context.mid), name="Test", mtype="generic", creator=context.project_admin_user)
+
+@then(u'project readers can retrieve the model.')
+def step_impl(context):
+  require_valid_model(context.project_reader.get_model(context.mid), name="Test", mtype="generic", creator=context.project_admin_user)
+
+@then(u'project outsiders cannot retrieve the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_outsider.get_model(context.mid)
+
+@then(u'unauthenticated clients cannot retrieve the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+    context.unauthenticated.get_model(context.mid)
 
 @when(u'a client requests a model resource.')
 def step_impl(context):
