@@ -16,7 +16,7 @@
       </tr>
     </thead>
     <tbody data-bind="foreach: { data: variables, as: 'variable' }">
-      <tr>
+      <tr data-bind="visible: !hidden()">
         <th data-bind="text: name"></th>
         <!-- ko foreach: $parent.properties -->
           <!-- ko if: type == 'bool' -->
