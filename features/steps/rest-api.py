@@ -402,6 +402,14 @@ def step_impl(context):
 def step_impl(context):
   nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
 
+@when(u'the client adds an array to the arrayset.')
+def step_impl(context):
+  context.connection.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
+
+@then(u'the arrayset should contain the new array.')
+def step_impl(context):
+  nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': [{u'attributes': [{u'name': u'string', u'type': u'string'}], u'dimensions': [{u'begin': 0, u'end': 10, u'name': u'row', u'type': u'int64'}], u'index': 0, u'shape': [10]}]})
+
 @given(u'the model has a parameter.')
 def step_impl(context):
   context.connection.put_model_parameter(context.mid, "pi", 3.14159)

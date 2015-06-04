@@ -169,6 +169,14 @@ Feature: REST API
     Then the model should contain the new arrayset.
     And the new arrayset should be empty.
 
+  Scenario: PUT Model Arrayset Array
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    And the model has an arrayset.
+    When the client adds an array to the arrayset.
+    Then the arrayset should contain the new array.
+
   Scenario: PUT Model Inputs
     Given a running Slycat server.
     And a default project.
