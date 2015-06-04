@@ -242,12 +242,20 @@ Feature: REST API
     When a client modifies the model.
     Then the model should be modified.
 
-  Scenario: PUT Model Parameter
+  Scenario Outline: PUT Model Parameter
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client stores a model parameter artifact.
-    Then the client can retrieve the model parameter artifact.
+    Then <scenario>.
+
+    Examples:
+      | scenario                                             |
+      | server administrators can store a model parameter    |
+      | project administrators can store a model parameter   |
+      | project writers can store a model parameter          |
+      | project readers cannot store a model parameter       |
+      | project outsiders cannot store a model parameter     |
+      | unauthenticated users cannot store a model parameter |
 
   Scenario: PUT Project
     Given a running Slycat server.

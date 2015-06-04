@@ -8,6 +8,9 @@ import slycat.web.client
 import StringIO
 import xml.etree.ElementTree as xml
 
+sample_bookmark = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
+sample_model_parameter = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
+
 def require_valid_user(user, uid=None):
   nose.tools.assert_is_instance(user, dict)
   for field in ["email", "name", "uid"]:
@@ -131,8 +134,6 @@ def require_valid_model(model, name=None, mtype=None, creator=None):
   if creator is not None:
     nose.tools.assert_equal(model["creator"], creator)
   return model
-
-sample_bookmark = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
 
 @given(u'a running Slycat server.')
 def step_impl(context):
@@ -723,14 +724,38 @@ def step_impl(context):
   require_valid_timestamp(context.model["started"])
   require_valid_timestamp(context.model["finished"])
 
-@when(u'a client stores a model parameter artifact.')
+@then(u'server administrators can store a model parameter.')
 def step_impl(context):
-  context.project_admin.put_model_parameter(context.mid, "foo", {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
-  require_valid_model(context.project_admin.get_model(context.mid))
+  context.server_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+  nose.tools.assert_equal(context.server_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
 
-@then(u'the client can retrieve the model parameter artifact.')
+@then(u'project administrators can store a model parameter.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "foo"), {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
+  context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+
+@then(u'project writers can store a model parameter.')
+def step_impl(context):
+  context.project_writer.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+  nose.tools.assert_equal(context.project_writer.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+
+@then(u'project readers cannot store a model parameter.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+  nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
+
+@then(u'project outsiders cannot store a model parameter.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+  nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
+
+@then(u'unauthenticated users cannot store a model parameter.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+  nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
 
 @when(u'a client modifies the project.')
 def step_impl(context):
