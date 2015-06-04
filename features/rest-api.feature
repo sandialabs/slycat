@@ -180,6 +180,11 @@ Feature: REST API
     Given a running Slycat server.
     Then any authenticated user can retrieve information about another user.
 
+  Scenario: POST Events
+    Given a running Slycat server.
+    Then authenticated users can log events.
+    And unauthenticated users cannot log events.
+
   Scenario Outline: POST Model Finish
     Given a running Slycat server.
     And a default project.

@@ -663,6 +663,19 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_user("foobar")
 
+@then(u'authenticated users can log events.')
+def step_impl(context):
+  context.server_admin.post_events("test")
+  context.project_admin.post_events("test")
+  context.project_writer.post_events("test")
+  context.project_reader.post_events("test")
+  context.project_outsider.post_events("test")
+
+@then(u'unauthenticated users cannot log events.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_events("test")
+
 @then(u'server administrators can finish the model.')
 def step_impl(context):
   context.server_admin.post_model_finish(context.mid)
