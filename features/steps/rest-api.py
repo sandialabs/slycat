@@ -402,6 +402,26 @@ def step_impl(context):
 def step_impl(context):
   nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
 
+@given(u'the model has a parameter.')
+def step_impl(context):
+  context.connection.put_model_parameter(context.mid, "pi", 3.14159)
+
+@given(u'the model has an arrayset.')
+def step_impl(context):
+  context.connection.put_model_arrayset(context.mid, "arrayset")
+
+#@given(u'the model has a file.')
+#def step_impl(context):
+#    raise NotImplementedError(u'STEP: Given the model has a file.')
+
+@when(u'the client copies the artifacts to the second model.')
+def step_impl(context):
+  context.connection.put_model_inputs(context.mid, context.mid2)
+
+@then(u'the model should contain the same set of artifacts.')
+def step_impl(context):
+  raise NotImplementedError(u'STEP: Then the model should contain the same set of artifacts.')
+
 @when(u'a client modifies the model.')
 def step_impl(context):
   context.connection.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
