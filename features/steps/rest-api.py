@@ -450,16 +450,15 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_project(context.pid)
 
-@when(u'a client retrieves all projects.')
+@then(u'Any authenticated user can retrieve the list of all projects.')
 def step_impl(context):
-  context.projects = context.project_admin.get_projects()
-
-@then(u'the server should return all projects.')
-def step_impl(context):
-  nose.tools.assert_is_instance(context.projects, dict)
-  nose.tools.assert_in("projects", context.projects)
-  for project in context.projects["projects"]:
-    require_valid_project(project)
+  require_list(context.server_admin.get_projects()["projects"], item_test=require_valid_project)
+  require_list(context.project_admin.get_projects()["projects"], item_test=require_valid_project)
+  require_list(context.project_writer.get_projects()["projects"], item_test=require_valid_project)
+  require_list(context.project_reader.get_projects()["projects"], item_test=require_valid_project)
+  require_list(context.project_outsider.get_projects()["projects"], item_test=require_valid_project)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_projects()
 
 @when(u'a client requests information about the current user.')
 def step_impl(context):

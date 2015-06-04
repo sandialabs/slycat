@@ -142,8 +142,7 @@ Feature: REST API
     Given a running Slycat server.
     And a default project.
     And a second default project.
-    When a client retrieves all projects.
-    Then the server should return all projects.
+    Then Any authenticated user can retrieve the list of all projects.
 
   Scenario: GET User (Current)
     Given a running Slycat server.
