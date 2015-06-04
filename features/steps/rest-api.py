@@ -16,6 +16,14 @@ def require_list(sequence, length=None, item_test=None):
     for item in sequence:
       item_test(item)
 
+def require_valid_browse(browse):
+  nose.tools.assert_items_equal(browse.keys(), ['mtimes', 'sizes', 'names', 'mime-types', 'path', 'types'])
+  nose.tools.assert_equal(len(browse["mtimes"]), len(browse["sizes"]))
+  nose.tools.assert_equal(len(browse["mtimes"]), len(browse["names"]))
+  nose.tools.assert_equal(len(browse["mtimes"]), len(browse["mime-types"]))
+  nose.tools.assert_equal(len(browse["mtimes"]), len(browse["types"]))
+  return browse
+
 def require_valid_marking(marking):
   nose.tools.assert_is_instance(marking, dict)
   for field in ["badge", "label", "page-before", "page-after", "type"]:
@@ -101,6 +109,10 @@ def step_impl(context):
 def step_impl(context):
   context.mid2 = context.connection.post_project_models(context.pid, "generic", "Test2", description="Description2.")
 
+@given(u'a remote session.')
+def step_impl(context):
+  context.sid = context.connection.post_remotes(context.remote_host, context.remote_user, context.remote_password)
+
 @when(u'a client deletes the model.')
 def step_impl(context):
   context.connection.delete_model(context.mid)
@@ -130,6 +142,16 @@ def step_impl(context):
   context.references = context.connection.get_project_references(context.pid)
   for reference in context.references:
     nose.tools.assert_not_equal(reference["_id"], context.rid)
+
+@when(u'a client deletes the remote session.')
+def step_impl(context):
+  context.connection.delete_remote(context.sid)
+
+@then(u'the remote session should no longer exist.')
+def step_impl(context):
+  with nose.tools.assert_raises(Exception) as raised:
+    context.connection.post_remote_browse(context.sid, "/")
+    nose.tools.assert_equal(raised.exception.code, 404)
 
 @given(u'a sample bookmark.')
 def step_impl(context):
@@ -386,6 +408,14 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["creator"], context.server_user)
   nose.tools.assert_equal(context.project["description"], "Description.")
   nose.tools.assert_equal(context.project["name"], "Test")
+
+@when(u'a client creates a new remote session.')
+def step_impl(context):
+  context.sid = context.connection.post_remotes(context.remote_host, context.remote_user, context.remote_password)
+
+@then(u'the remote session should be created.')
+def step_impl(context):
+  require_valid_browse(context.connection.post_remote_browse(context.sid, "/"))
 
 @when(u'a client adds a new arrayset to the model.')
 def step_impl(context):
