@@ -129,8 +129,12 @@ Feature: REST API
     And a sample bookmark.
     And a saved bookmark.
     And a saved template.
-    When a client retrieves the project references.
-    Then the server should return the project references.
+    Then server administrators can retrieve the list of project references.
+    And project administrators can retrieve the list of project references.
+    And project writers can retrieve the list of project references.
+    And project readers can retrieve the list of project references.
+    And project outsiders cannot retrieve the list of project references.
+    And unauthenticated clients cannot retrieve the list of project references.
 
   Scenario: GET Project
     Given a running Slycat server.

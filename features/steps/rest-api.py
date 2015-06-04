@@ -459,13 +459,31 @@ def step_impl(context):
 def step_impl(context):
   context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
 
-@when(u'a client retrieves the project references.')
+@then(u'server administrators can retrieve the list of project references.')
 def step_impl(context):
-  context.references = context.project_admin.get_project_references(context.pid)
+  require_list(context.server_admin.get_project_references(context.pid), length=2, item_test=require_valid_reference)
 
-@then(u'the server should return the project references.')
+@then(u'project administrators can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.references, length=2, item_test=require_valid_reference)
+  require_list(context.project_admin.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+
+@then(u'project writers can retrieve the list of project references.')
+def step_impl(context):
+  require_list(context.project_writer.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+
+@then(u'project readers can retrieve the list of project references.')
+def step_impl(context):
+  require_list(context.project_reader.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+
+@then(u'project outsiders cannot retrieve the list of project references.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.get_project_references(context.pid)
+
+@then(u'unauthenticated clients cannot retrieve the list of project references.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_project_references(context.pid)
 
 @then(u'server administrators can retrieve the project.')
 def step_impl(context):
