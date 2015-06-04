@@ -72,7 +72,7 @@ def require_valid_model(model):
   require_valid_timestamp(model["created"])
   nose.tools.assert_is_instance(model["artifact-types"], dict)
   for atype in model["artifact-types"].values():
-    nose.tools.assert_in(atype, ["json"])
+    nose.tools.assert_in(atype, ["hdf5", "json"])
   require_list(model["input-artifacts"])
   for aid in model["input-artifacts"]:
     nose.tools.assert_in(aid, model["artifact-types"])
@@ -93,11 +93,11 @@ def step_impl(context):
 def step_impl(context):
   context.pid2 = context.connection.post_projects("Test2", "Description2.")
 
-@given(u'a default model.')
+@given(u'a generic model.')
 def step_impl(context):
   context.mid = context.connection.post_project_models(context.pid, "generic", "Test", description="Description.")
 
-@given(u'a second default model.')
+@given(u'a second generic model.')
 def step_impl(context):
   context.mid2 = context.connection.post_project_models(context.pid, "generic", "Test2", description="Description2.")
 
@@ -386,6 +386,17 @@ def step_impl(context):
   nose.tools.assert_equal(context.project["creator"], context.server_user)
   nose.tools.assert_equal(context.project["description"], "Description.")
   nose.tools.assert_equal(context.project["name"], "Test")
+
+@when(u'a client adds a new arrayset to the model.')
+def step_impl(context):
+  context.connection.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'the model should contain the new arrayset.')
+def step_impl(context):
+  model = require_valid_model(context.connection.get_model(context.mid))
+  nose.tools.assert_in("arrayset", model["artifact-types"])
+  nose.tools.assert_equal(model["artifact-types"]["arrayset"], "hdf5")
+  nose.tools.assert_in("artifact:arrayset", model)
 
 @when(u'a client modifies the model.')
 def step_impl(context):

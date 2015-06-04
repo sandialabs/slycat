@@ -3,7 +3,7 @@ Feature: REST API
   Scenario: DELETE Model
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     When a client deletes the model.
     Then the model should no longer exist.
 
@@ -16,7 +16,7 @@ Feature: REST API
   Scenario: DELETE Reference
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     And a sample bookmark.
     And a saved bookmark.
     When a client deletes the saved bookmark.
@@ -67,14 +67,14 @@ Feature: REST API
   Scenario: GET Model
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     When a client retrieves the model.
     Then the server should return the model.
 
   Scenario: GET Model Parameter
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     When a client stores a model parameter artifact.
     Then the client can retrieve the model parameter artifact.
 
@@ -91,15 +91,15 @@ Feature: REST API
   Scenario: GET Project Models
     Given a running Slycat server.
     And a default project.
-    And a default model.
-    And a second default model.
+    And a generic model.
+    And a second generic model.
     When a client retrieves the project models.
     Then the server should return the project models.
 
   Scenario: GET Project References
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     And a sample bookmark.
     And a saved bookmark.
     And a saved template.
@@ -138,7 +138,7 @@ Feature: REST API
   Scenario: POST Project References (Saved Bookmark)
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     And a sample bookmark.
     When a client creates a saved bookmark.
     Then the saved bookmark should be created.
@@ -161,17 +161,24 @@ Feature: REST API
     When a client creates a new project.
     Then the project should be created.
 
+  Scenario: PUT Model Arrayset
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    When a client adds a new arrayset to the model.
+    Then the model should contain the new arrayset.
+
   Scenario: PUT Model
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     When a client modifies the model.
     Then the model should be modified.
 
   Scenario: PUT Model Parameter
     Given a running Slycat server.
     And a default project.
-    And a default model.
+    And a generic model.
     When a client stores a model parameter artifact.
     Then the client can retrieve the model parameter artifact.
 
