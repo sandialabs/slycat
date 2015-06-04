@@ -185,6 +185,22 @@ Feature: REST API
     Then authenticated users can log events.
     And unauthenticated users cannot log events.
 
+  Scenario Outline: POST Model Files
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                   | result |
+      | server administrators can upload a file    | the model will contain a new file artifact |
+      | project administrators can upload a file   | the model will contain a new file artifact |
+      | project writers can upload a file          | the model will contain a new file artifact |
+      | project readers cannot upload a file       | the model will not contain a new file artifact |
+      | project outsiders cannot upload a file     | the model will not contain a new file artifact |
+      | unauthenticated users cannot upload a file | the model will not contain a new file artifact |
+
   Scenario Outline: POST Model Finish
     Given a running Slycat server.
     And a default project.
@@ -194,12 +210,12 @@ Feature: REST API
 
     Examples:
       | scenario                                         | result |
-      | server administrators can finish the model       | and the model will be finished |
-      | project administrators can finish the model      | and the model will be finished |
-      | project writers can finish the model             | and the model will be finished |
-      | project readers cannot finish the model          | and the model will remain unfinished |
-      | project outsiders cannot finish the model        | and the model will remain unfinished |
-      | unauthenticated users cannot finish the model    | and the model will remain unfinished |
+      | server administrators can finish the model       | the model will be finished |
+      | project administrators can finish the model      | the model will be finished |
+      | project writers can finish the model             | the model will be finished |
+      | project readers cannot finish the model          | the model will remain unfinished |
+      | project outsiders cannot finish the model        | the model will remain unfinished |
+      | unauthenticated users cannot finish the model    | the model will remain unfinished |
 
   Scenario: POST Project Bookmarks
     Given a running Slycat server.
