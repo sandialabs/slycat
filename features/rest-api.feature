@@ -7,11 +7,20 @@ Feature: REST API
     When a client deletes the model.
     Then the model should no longer exist.
 
-  Scenario: DELETE Project
+  Scenario Outline: DELETE Project
     Given a running Slycat server.
     And a default project.
-    When a client deletes the project.
-    Then the project should no longer exist.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                        | result                       |
+      | server administrators can delete the project    | the project no longer exists |
+      | project administrators can delete the project   | the project no longer exists |
+      | project writers cannot delete the project       | the project still exists     |
+      | project readers cannot delete the project       | the project still exists     |
+      | project outsiders cannot delete the project     | the project still exists     |
+      | unauthenticated users cannot delete the project | the project still exists     |
 
   Scenario: DELETE Reference
     Given a running Slycat server.

@@ -141,15 +141,42 @@ def step_impl(context):
     context.project_admin.get_model(context.mid)
     nose.tools.assert_equal(raised.exception.code, 404)
 
-@when(u'a client deletes the project.')
+@then(u'server administrators can delete the project.')
+def step_impl(context):
+  context.server_admin.delete_project(context.pid)
+
+@then(u'the project no longer exists.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404") as raised:
+    context.server_admin.get_project(context.pid)
+
+@then(u'project administrators can delete the project.')
 def step_impl(context):
   context.project_admin.delete_project(context.pid)
 
-@then(u'the project should no longer exist.')
+@then(u'project writers cannot delete the project.')
 def step_impl(context):
-  with nose.tools.assert_raises(Exception) as raised:
-    context.project_admin.get_project(context.pid)
-    nose.tools.assert_equal(raised.exception.code, 404)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_writer.delete_project(context.pid)
+
+@then(u'project readers cannot delete the project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_reader.delete_project(context.pid)
+
+@then(u'the project still exists.')
+def step_impl(context):
+  require_valid_project(context.server_admin.get_project(context.pid))
+
+@then(u'project outsiders cannot delete the project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403") as raised:
+    context.project_reader.delete_project(context.pid)
+
+@then(u'unauthenticated users cannot delete the project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401") as raised:
+    context.unauthenticated.delete_project(context.pid)
 
 @when(u'a client deletes the saved bookmark.')
 def step_impl(context):
