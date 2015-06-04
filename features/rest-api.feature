@@ -169,6 +169,17 @@ Feature: REST API
     Then the model should contain the new arrayset.
     And the new arrayset should be empty.
 
+  Scenario: PUT Model Inputs
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    And the model has a parameter.
+    And the model has an arrayset.
+    And the model has a file.
+    And a second generic model.
+    When the client copies the artifacts to the second model.
+    Then the model should contain the same set of artifacts.
+
   Scenario: PUT Model
     Given a running Slycat server.
     And a default project.
