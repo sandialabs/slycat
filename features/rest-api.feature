@@ -93,6 +93,19 @@ Feature: REST API
     Given a running Slycat server.
     Then any authenticated user can request a global resource.
 
+  Scenario: GET Model File
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    And the model has a file artifact.
+    Then server administrators can retrieve the model file artifact.
+    And project administrators can retrieve the model file artifact.
+    And project writers can retrieve the model file artifact.
+    And project readers can retrieve the model file artifact.
+    And project outsiders cannot retrieve the model file artifact.
+    And unauthenticated clients cannot retrieve the model file artifact.
+    And retrieving a nonexistent file artifact returns 404.
+
   Scenario: GET Model
     Given a running Slycat server.
     And a default project.
