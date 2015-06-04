@@ -9,7 +9,7 @@ services:
 before_install:
   - env | sort
   - sudo apt-get update -qq
-  - sudo apt-get install -y python-software-properties gcc gfortran g++ python2.7-dev libldap2-dev libsasl2-dev liblapack-dev ssh libhdf5-serial-dev python-scipy
+  - sudo apt-get install -y python-software-properties gcc gfortran g++ python2.7-dev libldap2-dev libsasl2-dev liblapack-dev libatlas-dev ssh libhdf5-serial-dev
   - sudo add-apt-repository -y ppa:vbernat/haproxy-1.5
   - sudo apt-get update -qq
   - sudo apt-get install haproxy
@@ -33,7 +33,7 @@ before_install:
 
 install:
   - pip install --no-use-wheel Cython
-  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
+  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes scipy
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
   - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
