@@ -75,7 +75,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               constant:constant, 
               input:type != "string" && !constant, 
               output:false,
-              Classification: type != "string" && !constant ? 'Input' : 'Neither'
+              Classification: type != "string" && !constant ? 'Input' : 'Neither',
+              hidden: false
             });
           }
           mapping.fromJS(attributes, component.attributes);
