@@ -90,76 +90,80 @@ sample_bookmark = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
 
 @given(u'a running Slycat server.')
 def step_impl(context):
-  context.connection = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.server_user, context.server_password))
-  context.connection.get_configuration_version()
+  context.server_admin = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.server_admin_user, context.server_admin_password))
+  context.project_admin = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_admin_user, context.project_admin_password))
+  context.project_writer = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_writer_user, context.project_writer_password))
+  context.project_reader = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_reader_user, context.project_reader_password))
+  context.project_outsider = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_outsider_user, context.project_outsider_password))
+  context.server_admin.get_configuration_version()
 
 @given(u'a default project.')
 def step_impl(context):
-  context.pid = context.connection.post_projects("Test", "Description.")
+  context.pid = context.project_admin.post_projects("Test", "Description.")
 
 @given(u'a second default project.')
 def step_impl(context):
-  context.pid2 = context.connection.post_projects("Test2", "Description2.")
+  context.pid2 = context.project_admin.post_projects("Test2", "Description2.")
 
 @given(u'a generic model.')
 def step_impl(context):
-  context.mid = context.connection.post_project_models(context.pid, "generic", "Test", description="Description.")
+  context.mid = context.project_admin.post_project_models(context.pid, "generic", "Test", description="Description.")
 
 @given(u'a second generic model.')
 def step_impl(context):
-  context.mid2 = context.connection.post_project_models(context.pid, "generic", "Test2", description="Description2.")
+  context.mid2 = context.project_admin.post_project_models(context.pid, "generic", "Test2", description="Description2.")
 
 @given(u'a remote session.')
 def step_impl(context):
-  context.sid = context.connection.post_remotes(context.remote_host, context.remote_user, context.remote_password)
+  context.sid = context.project_admin.post_remotes(context.remote_host, context.remote_user, context.remote_password)
 
 @when(u'a client deletes the model.')
 def step_impl(context):
-  context.connection.delete_model(context.mid)
+  context.project_admin.delete_model(context.mid)
 
 @then(u'the model should no longer exist.')
 def step_impl(context):
   with nose.tools.assert_raises(Exception) as raised:
-    context.connection.get_model(context.mid)
+    context.project_admin.get_model(context.mid)
     nose.tools.assert_equal(raised.exception.code, 404)
 
 @when(u'a client deletes the project.')
 def step_impl(context):
-  context.connection.delete_project(context.pid)
+  context.project_admin.delete_project(context.pid)
 
 @then(u'the project should no longer exist.')
 def step_impl(context):
   with nose.tools.assert_raises(Exception) as raised:
-    context.connection.get_project(context.pid)
+    context.project_admin.get_project(context.pid)
     nose.tools.assert_equal(raised.exception.code, 404)
 
 @when(u'a client deletes the saved bookmark.')
 def step_impl(context):
-  context.connection.delete_reference(context.rid)
+  context.project_admin.delete_reference(context.rid)
 
 @then(u'the saved bookmark should no longer exist.')
 def step_impl(context):
-  context.references = context.connection.get_project_references(context.pid)
+  context.references = context.project_admin.get_project_references(context.pid)
   for reference in context.references:
     nose.tools.assert_not_equal(reference["_id"], context.rid)
 
 @when(u'a client deletes the remote session.')
 def step_impl(context):
-  context.connection.delete_remote(context.sid)
+  context.project_admin.delete_remote(context.sid)
 
 @then(u'the remote session should no longer exist.')
 def step_impl(context):
   with nose.tools.assert_raises(Exception) as raised:
-    context.connection.post_remote_browse(context.sid, "/")
+    context.project_admin.post_remote_browse(context.sid, "/")
     nose.tools.assert_equal(raised.exception.code, 404)
 
 @given(u'a sample bookmark.')
 def step_impl(context):
-  context.bid = context.connection.post_project_bookmarks(context.pid, sample_bookmark)
+  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
 
 @when(u'a client retrieves the project bookmark.')
 def step_impl(context):
-  context.bookmark = context.connection.get_bookmark(context.bid)
+  context.bookmark = context.project_admin.get_bookmark(context.bid)
 
 @then(u'the project bookmark should be retrieved.')
 def step_impl(context):
@@ -167,7 +171,7 @@ def step_impl(context):
 
 @when(u'a client requests the set of available markings.')
 def step_impl(context):
-  context.markings = context.connection.get_configuration_markings()
+  context.markings = context.project_admin.get_configuration_markings()
 
 @then(u'the server should return a list of markings.')
 def step_impl(context):
@@ -175,7 +179,7 @@ def step_impl(context):
 
 @when(u'a client requests the set of available parsers.')
 def step_impl(context):
-  context.parsers = context.connection.get_configuration_parsers()
+  context.parsers = context.project_admin.get_configuration_parsers()
 
 @then(u'the server should return a list of parsers.')
 def step_impl(context):
@@ -183,7 +187,7 @@ def step_impl(context):
 
 @when(u'a client requests the set of configured remote hosts.')
 def step_impl(context):
-  context.remote_hosts = context.connection.get_configuration_remote_hosts()
+  context.remote_hosts = context.project_admin.get_configuration_remote_hosts()
 
 @then(u'the server should return a list of remote hosts.')
 def step_impl(context):
@@ -191,7 +195,7 @@ def step_impl(context):
 
 @when(u'a client requests the server support email.')
 def step_impl(context):
-  context.support_email = context.connection.get_configuration_support_email()
+  context.support_email = context.project_admin.get_configuration_support_email()
 
 @then(u'the server should return its support email.')
 def step_impl(context):
@@ -201,7 +205,7 @@ def step_impl(context):
 
 @when(u'a client requests the server version.')
 def step_impl(context):
-  context.version = context.connection.get_configuration_version()
+  context.version = context.project_admin.get_configuration_version()
 
 @then(u'the server should return its version.')
 def step_impl(context):
@@ -211,7 +215,7 @@ def step_impl(context):
 
 @when(u'a client requests available server wizards.')
 def step_impl(context):
-  context.wizards = context.connection.get_configuration_wizards()
+  context.wizards = context.project_admin.get_configuration_wizards()
 
 @then(u'the server should return a list of available wizards.')
 def step_impl(context):
@@ -219,7 +223,7 @@ def step_impl(context):
 
 @when(u'a client requests a global resource.')
 def step_impl(context):
-  context.resource = context.connection.get_global_resource("slycat-logo-navbar.png")
+  context.resource = context.project_admin.get_global_resource("slycat-logo-navbar.png")
 
 @then(u'the server should return the global resource.')
 def step_impl(context):
@@ -228,11 +232,11 @@ def step_impl(context):
 
 @when(u'a client retrieves the model.')
 def step_impl(context):
-  context.model = require_valid_model(context.connection.get_model(context.mid))
+  context.model = require_valid_model(context.project_admin.get_model(context.mid))
 
 @then(u'the server should return the model.')
 def step_impl(context):
-  nose.tools.assert_equal(context.model["creator"], context.server_user)
+  nose.tools.assert_equal(context.model["creator"], context.project_admin_user)
   nose.tools.assert_equal(context.model["description"], "Description.")
   nose.tools.assert_equal(context.model["marking"], "")
   nose.tools.assert_equal(context.model["name"], "Test")
@@ -249,7 +253,7 @@ def step_impl(context):
 
 @when(u'a client requests a model resource.')
 def step_impl(context):
-  context.resource = context.connection.get_model_resource("cca", "images/sort-asc-gray.png")
+  context.resource = context.project_admin.get_model_resource("cca", "images/sort-asc-gray.png")
 
 @then(u'the server should return the model resource.')
 def step_impl(context):
@@ -258,7 +262,7 @@ def step_impl(context):
 
 @when(u'a client requests a wizard resource.')
 def step_impl(context):
-  context.resource = context.connection.get_wizard_resource("slycat-create-project", "ui.html")
+  context.resource = context.project_admin.get_wizard_resource("slycat-create-project", "ui.html")
 
 @then(u'the server should return the wizard resource.')
 def step_impl(context):
@@ -267,7 +271,7 @@ def step_impl(context):
 
 @when(u'a client retrieves the project models.')
 def step_impl(context):
-  context.project_models = context.connection.get_project_models(context.pid)
+  context.project_models = context.project_admin.get_project_models(context.pid)
 
 @then(u'the server should return the project models.')
 def step_impl(context):
@@ -275,15 +279,15 @@ def step_impl(context):
 
 @given(u'a saved bookmark.')
 def step_impl(context):
-  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+  context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
 
 @given(u'a saved template.')
 def step_impl(context):
-  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+  context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
 
 @when(u'a client retrieves the project references.')
 def step_impl(context):
-  context.references = context.connection.get_project_references(context.pid)
+  context.references = context.project_admin.get_project_references(context.pid)
 
 @then(u'the server should return the project references.')
 def step_impl(context):
@@ -291,19 +295,19 @@ def step_impl(context):
 
 @when(u'a client retrieves the project.')
 def step_impl(context):
-  context.project = require_valid_project(context.connection.get_project(context.pid))
+  context.project = require_valid_project(context.project_admin.get_project(context.pid))
 
 @then(u'the server should return the project.')
 def step_impl(context):
   nose.tools.assert_equal(context.project["name"], "Test")
   nose.tools.assert_equal(context.project["description"], "Description.")
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
+  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
   nose.tools.assert_equal(context.project["acl"]["writers"], [])
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
 
 @when(u'a client retrieves all projects.')
 def step_impl(context):
-  context.projects = context.connection.get_projects()
+  context.projects = context.project_admin.get_projects()
 
 @then(u'the server should return all projects.')
 def step_impl(context):
@@ -314,18 +318,18 @@ def step_impl(context):
 
 @when(u'a client requests information about the current user.')
 def step_impl(context):
-  context.user = context.connection.get_user()
+  context.user = context.project_admin.get_user()
 
 @then(u'the server should return information about the current user.')
 def step_impl(context):
   nose.tools.assert_is_instance(context.user, dict)
   for field in ["email", "name", "uid"]:
     nose.tools.assert_in(field, context.user)
-  nose.tools.assert_equal(context.user["uid"], context.server_user)
+  nose.tools.assert_equal(context.user["uid"], context.project_admin_user)
 
 @when(u'a client requests information about another user.')
 def step_impl(context):
-  context.user = context.connection.get_user("foobar")
+  context.user = context.project_admin.get_user("foobar")
 
 @then(u'the server should return information about the other user.')
 def step_impl(context):
@@ -336,23 +340,23 @@ def step_impl(context):
 
 @when(u'a client saves a project bookmark.')
 def step_impl(context):
-  context.bid = context.connection.post_project_bookmarks(context.pid, sample_bookmark)
+  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
 
 @then(u'the project bookmark should be saved.')
 def step_impl(context):
-  context.bookmark = context.connection.get_bookmark(context.bid)
+  context.bookmark = context.project_admin.get_bookmark(context.bid)
   nose.tools.assert_equal(context.bookmark, sample_bookmark)
 
 @when(u'a client creates a saved bookmark.')
 def step_impl(context):
-  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+  context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
 
 @then(u'the saved bookmark should be created.')
 def step_impl(context):
-  context.references = context.connection.get_project_references(context.pid)
+  context.references = context.project_admin.get_project_references(context.pid)
   require_list(context.references, length=1, item_test=require_valid_reference)
   nose.tools.assert_equal(context.references[0]["bid"], context.bid)
-  nose.tools.assert_equal(context.references[0]["creator"], context.server_user)
+  nose.tools.assert_equal(context.references[0]["creator"], context.project_admin_user)
   nose.tools.assert_equal(context.references[0]["mid"], context.mid)
   nose.tools.assert_equal(context.references[0]["model-type"], "generic")
   nose.tools.assert_equal(context.references[0]["name"], "Test")
@@ -360,14 +364,14 @@ def step_impl(context):
 
 @when(u'a client creates a template.')
 def step_impl(context):
-  context.rid = context.connection.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+  context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
 
 @then(u'the template should be created.')
 def step_impl(context):
-  context.references = context.connection.get_project_references(context.pid)
+  context.references = context.project_admin.get_project_references(context.pid)
   require_list(context.references, length=1, item_test=require_valid_reference)
   nose.tools.assert_equal(context.references[0]["bid"], context.bid)
-  nose.tools.assert_equal(context.references[0]["creator"], context.server_user)
+  nose.tools.assert_equal(context.references[0]["creator"], context.project_admin_user)
   nose.tools.assert_equal(context.references[0]["mid"], None)
   nose.tools.assert_equal(context.references[0]["model-type"], "generic")
   nose.tools.assert_equal(context.references[0]["name"], "Test")
@@ -375,12 +379,12 @@ def step_impl(context):
 
 @when(u'a client creates a new model.')
 def step_impl(context):
-  context.mid = context.connection.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+  context.mid = context.project_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
 @then(u'the model should be created.')
 def step_impl(context):
-  context.model = require_valid_model(context.connection.get_model(context.mid))
-  nose.tools.assert_equal(context.model["creator"], context.server_user)
+  context.model = require_valid_model(context.project_admin.get_model(context.mid))
+  nose.tools.assert_equal(context.model["creator"], context.project_admin_user)
   nose.tools.assert_equal(context.model["description"], "Description.")
   nose.tools.assert_equal(context.model["marking"], "")
   nose.tools.assert_equal(context.model["name"], "Test")
@@ -397,80 +401,80 @@ def step_impl(context):
 
 @when(u'a client creates a new project.')
 def step_impl(context):
-  context.pid = context.connection.post_projects("Test", "Description.")
+  context.pid = context.project_admin.post_projects("Test", "Description.")
 
 @then(u'the project should be created.')
 def step_impl(context):
-  context.project = require_valid_project(context.connection.get_project(context.pid))
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
+  context.project = require_valid_project(context.project_admin.get_project(context.pid))
+  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
   nose.tools.assert_equal(context.project["acl"]["readers"], [])
   nose.tools.assert_equal(context.project["acl"]["writers"], [])
-  nose.tools.assert_equal(context.project["creator"], context.server_user)
+  nose.tools.assert_equal(context.project["creator"], context.project_admin_user)
   nose.tools.assert_equal(context.project["description"], "Description.")
   nose.tools.assert_equal(context.project["name"], "Test")
 
 @when(u'a client creates a new remote session.')
 def step_impl(context):
-  context.sid = context.connection.post_remotes(context.remote_host, context.remote_user, context.remote_password)
+  context.sid = context.project_admin.post_remotes(context.remote_host, context.remote_user, context.remote_password)
 
 @then(u'the remote session should be created.')
 def step_impl(context):
-  require_valid_browse(context.connection.post_remote_browse(context.sid, "/"))
+  require_valid_browse(context.project_admin.post_remote_browse(context.sid, "/"))
 
 @when(u'a client adds a new arrayset to the model.')
 def step_impl(context):
-  context.connection.put_model_arrayset(context.mid, "arrayset")
+  context.project_admin.put_model_arrayset(context.mid, "arrayset")
 
 @then(u'the model should contain the new arrayset.')
 def step_impl(context):
-  model = require_valid_model(context.connection.get_model(context.mid))
+  model = require_valid_model(context.project_admin.get_model(context.mid))
   nose.tools.assert_in("arrayset", model["artifact-types"])
   nose.tools.assert_equal(model["artifact-types"]["arrayset"], "hdf5")
   nose.tools.assert_in("artifact:arrayset", model)
 
 @then(u'the new arrayset should be empty.')
 def step_impl(context):
-  nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
+  nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
 
 @when(u'the client adds an array to the arrayset.')
 def step_impl(context):
-  context.connection.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
+  context.project_admin.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
 
 @then(u'the arrayset should contain the new array.')
 def step_impl(context):
-  nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': [{u'attributes': [{u'name': u'string', u'type': u'string'}], u'dimensions': [{u'begin': 0, u'end': 10, u'name': u'row', u'type': u'int64'}], u'index': 0, u'shape': [10]}]})
+  nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': [{u'attributes': [{u'name': u'string', u'type': u'string'}], u'dimensions': [{u'begin': 0, u'end': 10, u'name': u'row', u'type': u'int64'}], u'index': 0, u'shape': [10]}]})
 
 @given(u'the model has a parameter.')
 def step_impl(context):
-  context.connection.put_model_parameter(context.mid, "pi", 3.14159)
+  context.project_admin.put_model_parameter(context.mid, "pi", 3.14159)
 
 @given(u'the model has an arrayset.')
 def step_impl(context):
-  context.connection.put_model_arrayset(context.mid, "arrayset")
+  context.project_admin.put_model_arrayset(context.mid, "arrayset")
 
 @given(u'the model has a file.')
 def step_impl(context):
-  context.connection.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+  context.project_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
 
 @when(u'the client copies the artifacts to the second model.')
 def step_impl(context):
-  context.connection.put_model_inputs(context.mid, context.mid2)
+  context.project_admin.put_model_inputs(context.mid, context.mid2)
 
 @then(u'the model should contain the same set of artifacts.')
 def step_impl(context):
-  model = require_valid_model(context.connection.get_model(context.mid2))
+  model = require_valid_model(context.project_admin.get_model(context.mid2))
   nose.tools.assert_equal(model["artifact-types"], {"pi":"json", "arrayset":"hdf5", "file":"file"})
   nose.tools.assert_items_equal(model["input-artifacts"], ["arrayset", "pi", "file"])
-  nose.tools.assert_equal(context.connection.get_model_parameter(context.mid2, "pi"), 3.14159)
-  nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "pi"), 3.14159)
+  nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
 
 @when(u'a client modifies the model.')
 def step_impl(context):
-  context.connection.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
+  context.project_admin.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
 
 @then(u'the model should be modified.')
 def step_impl(context):
-  context.model = require_valid_model(context.connection.get_model(context.mid))
+  context.model = require_valid_model(context.project_admin.get_model(context.mid))
   nose.tools.assert_equal(context.model["name"], "MyModel")
   nose.tools.assert_equal(context.model["description"], "My description.")
   nose.tools.assert_equal(context.model["state"], "finished")
@@ -482,23 +486,23 @@ def step_impl(context):
 
 @when(u'a client stores a model parameter artifact.')
 def step_impl(context):
-  context.connection.put_model_parameter(context.mid, "foo", {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
-  require_valid_model(context.connection.get_model(context.mid))
+  context.project_admin.put_model_parameter(context.mid, "foo", {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
+  require_valid_model(context.project_admin.get_model(context.mid))
 
 @then(u'the client can retrieve the model parameter artifact.')
 def step_impl(context):
-  nose.tools.assert_equal(context.connection.get_model_parameter(context.mid, "foo"), {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "foo"), {"bar":"baz", "blah":5, "biff":[1, 2, 3]})
 
 @when(u'a client modifies the project.')
 def step_impl(context):
-  context.connection.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.server_user}], "writers":[{"user":"foo"}], "readers":[{"user":"baz"}]}})
+  context.project_admin.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":"foo"}], "readers":[{"user":"baz"}]}})
 
 @then(u'the project should be modified.')
 def step_impl(context):
-  context.project = require_valid_project(context.connection.get_project(context.pid))
+  context.project = require_valid_project(context.project_admin.get_project(context.pid))
   nose.tools.assert_equal(context.project["name"], "MyProject")
   nose.tools.assert_equal(context.project["description"], "My description.")
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.server_user}])
+  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
   nose.tools.assert_equal(context.project["acl"]["writers"], [{"user":"foo"}])
   nose.tools.assert_equal(context.project["acl"]["readers"], [{"user":"baz"}])
 
