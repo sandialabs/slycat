@@ -50,7 +50,7 @@ install:
   - env | sort
 
 script:
-  - REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert coverage run --source packages/slycat --omit="packages/slycat/web/server/*" -m behave -i "(agent|hyperchunks|rest-api)"
+  - REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert coverage run --source agent,packages/slycat --omit="packages/slycat/web/server/*" -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
 
 after_script:
