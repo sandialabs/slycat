@@ -99,8 +99,14 @@ Feature: REST API
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client stores a model parameter artifact.
-    Then the client can retrieve the model parameter artifact.
+    And the model has a parameter artifact.
+    Then server administrators can retrieve the model parameter artifact.
+    And project administrators can retrieve the model parameter artifact.
+    And project writers can retrieve the model parameter artifact.
+    And project readers can retrieve the model parameter artifact.
+    And project outsiders cannot retrieve the model parameter artifact.
+    And unauthenticated clients cannot retrieve the model parameter artifact.
+    And retrieving a nonexistent parameter returns 404.
 
   Scenario: GET Model Resource
     Given a running Slycat server.
@@ -228,7 +234,7 @@ Feature: REST API
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    And the model has a parameter.
+    And the model has a parameter artifact.
     And the model has an arrayset.
     And the model has a file.
     And a second generic model.

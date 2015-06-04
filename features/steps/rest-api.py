@@ -406,6 +406,37 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_model(context.mid)
 
+@then(u'server administrators can retrieve the model parameter artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.server_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+
+@then(u'project administrators can retrieve the model parameter artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+
+@then(u'project writers can retrieve the model parameter artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_writer.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+
+@then(u'project readers can retrieve the model parameter artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_reader.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+
+@then(u'project outsiders cannot retrieve the model parameter artifact.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.get_model_parameter(context.mid, "parameter")
+
+@then(u'unauthenticated clients cannot retrieve the model parameter artifact.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_model_parameter(context.mid, "parameter")
+
+@then(u'retrieving a nonexistent parameter returns 404.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"):
+    context.server_admin.get_model_parameter(context.mid, "nonexistent-parameter")
+
 @then(u'any authenticated user can request a model resource.')
 def step_impl(context):
   require_valid_image(context.server_admin.get_model_resource("cca", "images/sort-asc-gray.png"), width=9, height=5)
@@ -684,9 +715,9 @@ def step_impl(context):
 def step_impl(context):
   nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': [{u'attributes': [{u'name': u'string', u'type': u'string'}], u'dimensions': [{u'begin': 0, u'end': 10, u'name': u'row', u'type': u'int64'}], u'index': 0, u'shape': [10]}]})
 
-@given(u'the model has a parameter.')
+@given(u'the model has a parameter artifact.')
 def step_impl(context):
-  context.project_admin.put_model_parameter(context.mid, "pi", 3.14159)
+  context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
 
 @given(u'the model has an arrayset.')
 def step_impl(context):
@@ -703,9 +734,9 @@ def step_impl(context):
 @then(u'the model should contain the same set of artifacts.')
 def step_impl(context):
   model = require_valid_model(context.project_admin.get_model(context.mid2))
-  nose.tools.assert_equal(model["artifact-types"], {"pi":"json", "arrayset":"hdf5", "file":"file"})
-  nose.tools.assert_items_equal(model["input-artifacts"], ["arrayset", "pi", "file"])
-  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "pi"), 3.14159)
+  nose.tools.assert_equal(model["artifact-types"], {"parameter":"json", "arrayset":"hdf5", "file":"file"})
+  nose.tools.assert_items_equal(model["input-artifacts"], ["arrayset", "parameter", "file"])
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "parameter"), sample_model_parameter)
   nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
 
 @when(u'a client modifies the model.')
