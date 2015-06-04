@@ -260,15 +260,40 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.delete_project(context.pid)
 
-@when(u'a client deletes the saved bookmark.')
+@then(u'server administrators can delete the saved bookmark.')
+def step_impl(context):
+  context.server_admin.delete_reference(context.rid)
+
+@then(u'the saved bookmark no longer exists.')
+def step_impl(context):
+  nose.tools.assert_not_in(context.rid, [reference["_id"] for reference in context.server_admin.get_project_references(context.pid)])
+
+@then(u'project administrators can delete the saved bookmark.')
 def step_impl(context):
   context.project_admin.delete_reference(context.rid)
 
-@then(u'the saved bookmark should no longer exist.')
+@then(u'project writers can delete the saved bookmark.')
 def step_impl(context):
-  context.references = context.project_admin.get_project_references(context.pid)
-  for reference in context.references:
-    nose.tools.assert_not_equal(reference["_id"], context.rid)
+  context.project_writer.delete_reference(context.rid)
+
+@then(u'project readers cannot delete the saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.delete_reference(context.rid)
+
+@then(u'the saved bookmark still exists.')
+def step_impl(context):
+  nose.tools.assert_in(context.rid, [reference["_id"] for reference in context.server_admin.get_project_references(context.pid)])
+
+@then(u'project outsiders cannot delete the saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.delete_reference(context.rid)
+
+@then(u'unauthenticated users cannot delete the saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.delete_reference(context.rid)
 
 @when(u'a client deletes the remote session.')
 def step_impl(context):

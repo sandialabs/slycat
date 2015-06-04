@@ -30,14 +30,23 @@ Feature: REST API
       | project outsiders cannot delete the project     | the project still exists     |
       | unauthenticated users cannot delete the project | the project still exists     |
 
-  Scenario: DELETE Reference
+  Scenario Outline: DELETE Reference
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And a sample bookmark.
     And a saved bookmark.
-    When a client deletes the saved bookmark.
-    Then the saved bookmark should no longer exist.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                               | result                              |
+      | server administrators can delete the saved bookmark    | the saved bookmark no longer exists |
+      | project administrators can delete the saved bookmark   | the saved bookmark no longer exists |
+      | project writers can delete the saved bookmark          | the saved bookmark no longer exists |
+      | project readers cannot delete the saved bookmark       | the saved bookmark still exists     |
+      | project outsiders cannot delete the saved bookmark     | the saved bookmark still exists     |
+      | unauthenticated users cannot delete the saved bookmark | the saved bookmark still exists     |
 
 #  Scenario: DELETE Remote
 #    Given a running Slycat server.
