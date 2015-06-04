@@ -51,20 +51,10 @@
     </div>
 
     <div data-bind="visible:tab() == 5">
-      <table style="width:100%">
-        <thead>
-          <tr>
-            <tr><th>Variable</th><th>Input</th><th>Output</th></tr>
-          </tr>
-        </thead>
-        <tbody data-bind="foreach:attributes">
-          <tr>
-            <td data-bind="text:name"></td>
-            <td><input type="checkbox" value="input" data-bind="enable: type() != 'string' && !constant(), click: $parent.set_input, checked: input"/></td>
-            <td><input type="checkbox" value="output" data-bind="enable: type() != 'string' && !constant(), click: $parent.set_output, checked: output"/></td>
-          </tr>
-        </tbody>
-      </table>
+      <slycat-table-ingestion params="
+        variables: attributes,
+        properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
+      "></slycat-table-ingestion>
       <form class="form-horizontal" role="form">
         <div class="form-group">
           <div class="col-sm-offset-6 col-sm-6">

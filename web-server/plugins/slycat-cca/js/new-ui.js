@@ -69,7 +69,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             var name = metadata.arrays[0].attributes[i].name;
             var type = metadata.arrays[0].attributes[i].type;
             var constant = metadata.statistics[i].unique == 1;
-            attributes.push({name:name, type:type, constant:constant, input:type != "string" && !constant, output:false});
+            attributes.push({
+              name:name, 
+              type:type, 
+              constant:constant, 
+              input:type != "string" && !constant, 
+              output:false,
+              Classification: type != "string" && !constant ? 'Input' : 'Neither',
+              hidden: false
+            });
           }
           mapping.fromJS(attributes, component.attributes);
           component.tab(5);
@@ -127,9 +135,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var input_columns = [];
       var output_columns = [];
       for(var i = 0; i != component.attributes().length; ++i) {
-        if(component.attributes()[i].input())
+        if(component.attributes()[i].Classification() == 'Input')
           input_columns.push(i);
-        if(component.attributes()[i].output())
+        if(component.attributes()[i].Classification() == 'Output')
           output_columns.push(i);
       }
 

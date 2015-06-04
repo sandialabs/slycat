@@ -88,6 +88,7 @@ def js_bundle():
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
         "js/slycat-resizing-modals.js",
+        "js/slycat-table-ingestion.js",
         "js/three.min.js",
         "js/TrackballControls.js",
         "js/STLLoader.js",

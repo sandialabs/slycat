@@ -374,3 +374,30 @@ slycat-navbar .alert pre
   max-height: 90%;
   overflow: auto;
 }
+
+/* slycat-table-ingestion component */
+
+.slycat-table-ingestion table 
+{
+  width: 100%;
+}
+.slycat-table-ingestion thead th,
+.slycat-table-ingestion td
+{
+  text-align: center;
+}
+.slycat-table-ingestion td.property-start
+{
+  border-left: 1px solid #DDD;
+}
+.slycat-table-ingestion td.property-end
+{
+  border-right: 1px solid #DDD;
+}
+.slycat-table-ingestion tbody th
+{
+  padding-left: 5px;
+}
+.slycat-table-ingestion tbody tr:nth-child(odd) {
+  background-color: #F2F2F2;
+}
