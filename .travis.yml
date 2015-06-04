@@ -52,7 +52,7 @@ install:
   - env | sort
 
 script:
-  - coverage run --source slycat -m behave -i "(agent|hyperchunks|rest-api)"
+  - coverage run --source packages/slycat -m behave -i "(agent|hyperchunks|rest-api)"
   - coverage report
 
 after_script:
