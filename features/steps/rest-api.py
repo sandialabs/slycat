@@ -425,13 +425,31 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_wizard_resource("slycat-create-project", "ui.html")
 
-@when(u'a client retrieves the project models.')
+@then(u'server administrators can retrieve the list of project models.')
 def step_impl(context):
-  context.project_models = context.project_admin.get_project_models(context.pid)
+  require_list(context.server_admin.get_project_models(context.pid), length=2, item_test=require_valid_model)
 
-@then(u'the server should return the project models.')
+@then(u'project administrators can retrieve the list of project models.')
 def step_impl(context):
-  require_list(context.project_models, length=2, item_test=require_valid_model)
+  require_list(context.project_admin.get_project_models(context.pid), length=2, item_test=require_valid_model)
+
+@then(u'project writers can retrieve the list of project models.')
+def step_impl(context):
+  require_list(context.project_writer.get_project_models(context.pid), length=2, item_test=require_valid_model)
+
+@then(u'project readers can retrieve the list of project models.')
+def step_impl(context):
+  require_list(context.project_reader.get_project_models(context.pid), length=2, item_test=require_valid_model)
+
+@then(u'project outsiders cannot retrieve the list of project models.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.get_project_models(context.pid)
+
+@then(u'unauthenticated clients cannot retrieve the list of project models.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_project_models(context.pid)
 
 @given(u'a saved bookmark.')
 def step_impl(context):

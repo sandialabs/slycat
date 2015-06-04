@@ -115,8 +115,12 @@ Feature: REST API
     And a default project.
     And a generic model.
     And a second generic model.
-    When a client retrieves the project models.
-    Then the server should return the project models.
+    Then server administrators can retrieve the list of project models.
+    And project administrators can retrieve the list of project models.
+    And project writers can retrieve the list of project models.
+    And project readers can retrieve the list of project models.
+    And project outsiders cannot retrieve the list of project models.
+    And unauthenticated clients cannot retrieve the list of project models.
 
   Scenario: GET Project References
     Given a running Slycat server.
