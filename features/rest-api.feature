@@ -216,11 +216,21 @@ Feature: REST API
       | project outsiders cannot create a bookmark template     |
       | unauthenticated users cannot create a bookmark template |
 
-  Scenario: POST Project Models
+  Scenario Outline: POST Project Models
     Given a running Slycat server.
     And a default project.
-    When a client creates a new model.
-    Then the model should be created.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                        | result                                  |
+      | server administrators can create a new model    | the project contains a new model        |
+      | project administrators can create a new model   | the project contains a new model        |
+      | project writers can create a new model          | the project contains a new model        |
+      | project readers cannot create a new model       | the project doesn't contain a new model |
+      | project outsiders cannot create a new model     | the project doesn't contain a new model |
+      | unauthenticated users cannot create a new model | the project doesn't contain a new model |
+
 
   Scenario: POST Projects
     Given a running Slycat server.

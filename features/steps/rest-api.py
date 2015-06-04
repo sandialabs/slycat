@@ -723,27 +723,53 @@ def step_impl(context):
   nose.tools.assert_equal(context.references[0]["name"], "Test")
   nose.tools.assert_equal(context.references[0]["project"], context.pid)
 
-@when(u'a client creates a new model.')
+@then(u'server administrators can create a new model.')
+def step_impl(context):
+  context.mid = context.server_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'the project contains a new model.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["description"], "Description.")
+  nose.tools.assert_equal(model["marking"], "")
+  nose.tools.assert_equal(model["name"], "Test")
+  nose.tools.assert_equal(model["model-type"], "generic")
+  nose.tools.assert_equal(model["artifact-types"], {})
+  nose.tools.assert_equal(model["input-artifacts"], [])
+  nose.tools.assert_equal(model["project"], context.pid)
+  nose.tools.assert_equal(model["started"], None)
+  nose.tools.assert_equal(model["finished"], None)
+  nose.tools.assert_equal(model["state"], "waiting")
+  nose.tools.assert_equal(model["result"], None)
+  nose.tools.assert_equal(model["progress"], None)
+  nose.tools.assert_equal(model["message"], None)
+
+@then(u'project administrators can create a new model.')
 def step_impl(context):
   context.mid = context.project_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@then(u'the model should be created.')
+@then(u'project writers can create a new model.')
 def step_impl(context):
-  context.model = require_valid_model(context.project_admin.get_model(context.mid))
-  nose.tools.assert_equal(context.model["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.model["description"], "Description.")
-  nose.tools.assert_equal(context.model["marking"], "")
-  nose.tools.assert_equal(context.model["name"], "Test")
-  nose.tools.assert_equal(context.model["model-type"], "generic")
-  nose.tools.assert_equal(context.model["artifact-types"], {})
-  nose.tools.assert_equal(context.model["input-artifacts"], [])
-  nose.tools.assert_equal(context.model["project"], context.pid)
-  nose.tools.assert_equal(context.model["started"], None)
-  nose.tools.assert_equal(context.model["finished"], None)
-  nose.tools.assert_equal(context.model["state"], "waiting")
-  nose.tools.assert_equal(context.model["result"], None)
-  nose.tools.assert_equal(context.model["progress"], None)
-  nose.tools.assert_equal(context.model["message"], None)
+  context.mid = context.project_writer.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'project readers cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'the project doesn\'t contain a new model.')
+def step_impl(context):
+  require_list(context.server_admin.get_project_models(context.pid), length=0)
+
+@then(u'project outsiders cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'unauthenticated users cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
 @when(u'a client creates a new project.')
 def step_impl(context):
