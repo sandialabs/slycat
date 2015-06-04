@@ -72,7 +72,7 @@ def require_valid_model(model):
   require_valid_timestamp(model["created"])
   nose.tools.assert_is_instance(model["artifact-types"], dict)
   for atype in model["artifact-types"].values():
-    nose.tools.assert_in(atype, ["hdf5", "json"])
+    nose.tools.assert_in(atype, ["file", "hdf5", "json"])
   require_list(model["input-artifacts"])
   for aid in model["input-artifacts"]:
     nose.tools.assert_in(aid, model["artifact-types"])
@@ -410,9 +410,9 @@ def step_impl(context):
 def step_impl(context):
   context.connection.put_model_arrayset(context.mid, "arrayset")
 
-#@given(u'the model has a file.')
-#def step_impl(context):
-#    raise NotImplementedError(u'STEP: Given the model has a file.')
+@given(u'the model has a file.')
+def step_impl(context):
+  context.connection.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
 
 @when(u'the client copies the artifacts to the second model.')
 def step_impl(context):
@@ -420,7 +420,11 @@ def step_impl(context):
 
 @then(u'the model should contain the same set of artifacts.')
 def step_impl(context):
-  raise NotImplementedError(u'STEP: Then the model should contain the same set of artifacts.')
+  model = require_valid_model(context.connection.get_model(context.mid2))
+  nose.tools.assert_equal(model["artifact-types"], {"pi":"json", "arrayset":"hdf5", "file":"file"})
+  nose.tools.assert_items_equal(model["input-artifacts"], ["arrayset", "pi", "file"])
+  nose.tools.assert_equal(context.connection.get_model_parameter(context.mid2, "pi"), 3.14159)
+  nose.tools.assert_equal(context.connection.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
 
 @when(u'a client modifies the model.')
 def step_impl(context):
