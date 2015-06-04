@@ -8,6 +8,18 @@ import slycat.web.client
 import StringIO
 import xml.etree.ElementTree as xml
 
+def require_valid_support_email(support_email):
+  nose.tools.assert_is_instance(support_email, dict)
+  for field in ["address", "subject"]:
+    nose.tools.assert_in(field, support_email)
+  return support_email
+
+def require_valid_version(version):
+  nose.tools.assert_is_instance(version, dict)
+  for field in ["commit", "version"]:
+    nose.tools.assert_in(field, version)
+  return version
+
 def require_list(sequence, length=None, item_test=None):
   nose.tools.assert_is_instance(sequence, list)
   if length is not None:
@@ -246,57 +258,65 @@ def step_impl(context):
 def step_impl(context):
   nose.tools.assert_equal(context.bookmark, sample_bookmark)
 
-@when(u'a client requests the set of available markings.')
+@then(u'Any authenticated user can request the set of available markings.')
 def step_impl(context):
-  context.markings = context.project_admin.get_configuration_markings()
+  require_list(context.server_admin.get_configuration_markings(), item_test=require_valid_marking)
+  require_list(context.project_admin.get_configuration_markings(), item_test=require_valid_marking)
+  require_list(context.project_writer.get_configuration_markings(), item_test=require_valid_marking)
+  require_list(context.project_reader.get_configuration_markings(), item_test=require_valid_marking)
+  require_list(context.project_outsider.get_configuration_markings(), item_test=require_valid_marking)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_configuration_markings()
 
-@then(u'the server should return a list of markings.')
+@then(u'Any authenticated user can request the set of available parsers.')
 def step_impl(context):
-  require_list(context.markings, item_test=require_valid_marking)
+  require_list(context.server_admin.get_configuration_parsers(), item_test=require_valid_parser)
+  require_list(context.project_admin.get_configuration_parsers(), item_test=require_valid_parser)
+  require_list(context.project_writer.get_configuration_parsers(), item_test=require_valid_parser)
+  require_list(context.project_reader.get_configuration_parsers(), item_test=require_valid_parser)
+  require_list(context.project_outsider.get_configuration_parsers(), item_test=require_valid_parser)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_configuration_parsers()
 
-@when(u'a client requests the set of available parsers.')
+@then(u'Any authenticated user can request the set of remote hosts.')
 def step_impl(context):
-  context.parsers = context.project_admin.get_configuration_parsers()
+  require_list(context.server_admin.get_configuration_remote_hosts(), item_test=require_valid_remote_host)
+  require_list(context.project_admin.get_configuration_remote_hosts(), item_test=require_valid_remote_host)
+  require_list(context.project_writer.get_configuration_remote_hosts(), item_test=require_valid_remote_host)
+  require_list(context.project_reader.get_configuration_remote_hosts(), item_test=require_valid_remote_host)
+  require_list(context.project_outsider.get_configuration_remote_hosts(), item_test=require_valid_remote_host)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_configuration_remote_hosts()
 
-@then(u'the server should return a list of parsers.')
+@then(u'Any authenticated user can request the support email.')
 def step_impl(context):
-  require_list(context.parsers, item_test=require_valid_parser)
+  require_valid_support_email(context.server_admin.get_configuration_support_email())
+  require_valid_support_email(context.project_admin.get_configuration_support_email())
+  require_valid_support_email(context.project_writer.get_configuration_support_email())
+  require_valid_support_email(context.project_reader.get_configuration_support_email())
+  require_valid_support_email(context.project_outsider.get_configuration_support_email())
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_configuration_support_email()
 
-@when(u'a client requests the set of configured remote hosts.')
+@then(u'Any authenticated user can request the server version.')
 def step_impl(context):
-  context.remote_hosts = context.project_admin.get_configuration_remote_hosts()
+  require_valid_version(context.server_admin.get_configuration_version())
+  require_valid_version(context.project_admin.get_configuration_version())
+  require_valid_version(context.project_writer.get_configuration_version())
+  require_valid_version(context.project_reader.get_configuration_version())
+  require_valid_version(context.project_outsider.get_configuration_version())
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_configuration_version()
 
-@then(u'the server should return a list of remote hosts.')
+@then(u'Any authenticated user can request the set of available wizards.')
 def step_impl(context):
-  require_list(context.remote_hosts, item_test=require_valid_remote_host)
-
-@when(u'a client requests the server support email.')
-def step_impl(context):
-  context.support_email = context.project_admin.get_configuration_support_email()
-
-@then(u'the server should return its support email.')
-def step_impl(context):
-  nose.tools.assert_is_instance(context.support_email, dict)
-  for field in ["address", "subject"]:
-    nose.tools.assert_in(field, context.support_email)
-
-@when(u'a client requests the server version.')
-def step_impl(context):
-  context.version = context.project_admin.get_configuration_version()
-
-@then(u'the server should return its version.')
-def step_impl(context):
-  nose.tools.assert_is_instance(context.version, dict)
-  for field in ["commit", "version"]:
-    nose.tools.assert_in(field, context.version)
-
-@when(u'a client requests available server wizards.')
-def step_impl(context):
-  context.wizards = context.project_admin.get_configuration_wizards()
-
-@then(u'the server should return a list of available wizards.')
-def step_impl(context):
-  require_list(context.wizards, item_test=require_valid_wizard)
+  require_list(context.server_admin.get_configuration_wizards(), item_test=require_valid_wizard)
+  require_list(context.project_admin.get_configuration_wizards(), item_test=require_valid_wizard)
+  require_list(context.project_writer.get_configuration_wizards(), item_test=require_valid_wizard)
+  require_list(context.project_reader.get_configuration_wizards(), item_test=require_valid_wizard)
+  require_list(context.project_outsider.get_configuration_wizards(), item_test=require_valid_wizard)
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_configuration_wizards()
 
 @when(u'a client requests a global resource.')
 def step_impl(context):

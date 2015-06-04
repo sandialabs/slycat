@@ -52,35 +52,35 @@ Feature: REST API
     When a client retrieves the project bookmark.
     Then the project bookmark should be retrieved.
 
+  @wip
   Scenario: GET Configuration Markings
     Given a running Slycat server.
-    When a client requests the set of available markings.
-    Then the server should return a list of markings.
+    Then Any authenticated user can request the set of available markings.
 
+  @wip
   Scenario: GET Configuration Parsers
     Given a running Slycat server.
-    When a client requests the set of available parsers.
-    Then the server should return a list of parsers.
+    Then Any authenticated user can request the set of available parsers.
 
+  @wip
   Scenario: GET Configuration Remote Hosts
     Given a running Slycat server.
-    When a client requests the set of configured remote hosts.
-    Then the server should return a list of remote hosts.
+    Then Any authenticated user can request the set of remote hosts.
 
+  @wip
   Scenario: GET Configuration Support Email
     Given a running Slycat server.
-    When a client requests the server support email.
-    Then the server should return its support email.
+    Then Any authenticated user can request the support email.
 
+  @wip
   Scenario: GET Configuration Version
     Given a running Slycat server.
-    When a client requests the server version.
-    Then the server should return its version.
+    Then Any authenticated user can request the server version.
 
+  @wip
   Scenario: GET Configuration Wizard
     Given a running Slycat server.
-    When a client requests available server wizards.
-    Then the server should return a list of available wizards.
+    Then Any authenticated user can request the set of available wizards.
 
   Scenario: GET Global Resource
     Given a running Slycat server.
