@@ -33,7 +33,8 @@ before_install:
 
 install:
   - pip install --no-use-wheel Cython
-  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes scipy
+  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coverage coveralls python-ldap mock nose numpy paramiko Pillow "pyparsing>=2.0.3" pystache requests tornado-couchdb h5py routes
+  - travis_wait pip install --no-use-wheel scipy
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
   - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
