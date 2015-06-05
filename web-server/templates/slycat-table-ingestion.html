@@ -23,8 +23,17 @@
       </tr>
     </thead>
     <tbody data-bind="foreach: { data: variables, as: 'variable' }">
-      <tr data-bind="visible: !hidden()">
-        <th data-bind="text: name"></th>
+      <tr data-bind="
+        visible: !hidden(),
+        css: {
+          'selected': selected(),
+          'lastSelected': lastSelected()
+        }
+      ">
+        <th data-bind="
+          text: name,
+          click: $parent.select,
+        "></th>
         <!-- ko foreach: $parent.properties -->
           <!-- ko if: type == 'bool' -->
             <td class="bool property-start property-end">

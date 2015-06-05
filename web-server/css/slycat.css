@@ -397,7 +397,22 @@ slycat-navbar .alert pre
 .slycat-table-ingestion tbody th
 {
   padding-left: 5px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: cell;
 }
 .slycat-table-ingestion tbody tr:nth-child(odd) {
   background-color: #F2F2F2;
+}
+.slycat-table-ingestion tbody tr.selected
+{
+  background-color: #337AB7;
+}
+.slycat-table-ingestion tbody tr.selected th
+{
+  color: white;
 }
