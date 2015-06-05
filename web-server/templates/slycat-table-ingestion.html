@@ -5,18 +5,27 @@
         <th></th>
         <!-- ko foreach: properties -->
           <!-- ko if: type == 'bool' -->
-            <th class="bool property-start property-end" data-bind="text: name"></th>
+            <th class="bool property-start property-end">
+              <span data-bind="text: name"></span>
+              <i class="fa fa-toggle-on select-all-button button active" title="Select all" data-bind="
+                css: { 'active': true }
+              "></i>
+            </th>
           <!-- /ko -->
           <!-- ko if: type == 'select' -->
             <!-- ko foreach: values -->
               <th class="select" 
               data-bind="
-                text: $data,
                 css: {
                   'property-start': $index() == 0,
                   'property-end': $index() == ($parent.values.length - 1)
                 }
-              "></th>
+              ">
+                <span data-bind="text: $data"></span>
+                <i class="fa fa-toggle-on select-all-button button active" title="Select all" data-bind="
+                  css: { 'active': true }
+                "></i>
+              </th>
             <!-- /ko -->
           <!-- /ko -->
         <!-- /ko -->

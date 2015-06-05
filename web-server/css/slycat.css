@@ -381,6 +381,11 @@ slycat-navbar .alert pre
 {
   width: 100%;
 }
+.slycat-table-ingestion thead th i
+{
+  display: block;
+  cursor: pointer;
+}
 .slycat-table-ingestion thead th,
 .slycat-table-ingestion td
 {
