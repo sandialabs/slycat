@@ -272,13 +272,17 @@ Feature: REST API
       | project outsiders cannot store a model parameter     |
       | unauthenticated users cannot store a model parameter |
 
-  Scenario: PUT Project
+  Scenario Outline: PUT Project
     Given a running Slycat server.
     And a default project.
-    Then server administrators can modify the project acl, name, and description.
-    And project administrators can modify the project acl, name, and description.
-    And project writers can modify the project name and description only.
-    And project readers cannot modify the project.
-    And project outsiders cannot modify the project.
-    And unauthenticated users cannot modify the project.
+    Then <scenario>.
+
+    Examples:
+    | scenario                                                                    |
+    | server administrators can modify the project acl, name, and description     |
+    | project administrators can modify the project acl, name, and description    |
+    | project writers can modify the project name and description only            |
+    | project readers cannot modify the project                                   |
+    | project outsiders cannot modify the project                                 |
+    | unauthenticated users cannot modify the project                             |
 

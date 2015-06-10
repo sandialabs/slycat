@@ -813,55 +813,52 @@ def step_impl(context):
     context.unauthenticated_user.put_model_parameter(context.mid, "parameter", sample_model_parameter)
   nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
 
-@when(u'a client modifies the project.')
-def step_impl(context):
-  context.project_admin.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":"foo"}], "readers":[{"user":"baz"}]}})
-
-@then(u'the project should be modified.')
-def step_impl(context):
-  context.project = require_valid_project(context.project_admin.get_project(context.pid))
-  nose.tools.assert_equal(context.project["name"], "MyProject")
-  nose.tools.assert_equal(context.project["description"], "My description.")
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
-  nose.tools.assert_equal(context.project["acl"]["writers"], [{"user":"foo"}])
-  nose.tools.assert_equal(context.project["acl"]["readers"], [{"user":"baz"}])
-
 @then(u'server administrators can modify the project acl, name, and description.')
 def step_impl(context):
-  context.server_admin.put_project(context.pid, {"name":"ServerAdmin", "description":"ServerAdmin description.", "acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[{"user":context.project_reader_user}]}})
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "ServerAdmin")
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["description"], "ServerAdmin description.")
+  context.server_admin.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":"foo"}], "readers":[{"user":"bar"}]}})
+  project = require_valid_project(context.server_admin.get_project(context.pid))
+  nose.tools.assert_equal(project["name"], "MyProject")
+  nose.tools.assert_equal(project["description"], "My description.")
+  nose.tools.assert_equal(project["acl"]["administrators"], [{"user":context.project_admin_user}])
+  nose.tools.assert_equal(project["acl"]["writers"], [{"user":"foo"}])
+  nose.tools.assert_equal(project["acl"]["readers"], [{"user":"bar"}])
 
 @then(u'project administrators can modify the project acl, name, and description.')
 def step_impl(context):
-  context.project_admin.put_project(context.pid, {"name":"ProjectAdmin", "description":"ProjectAdmin description.", "acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[{"user":context.project_reader_user}]}})
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "ProjectAdmin")
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["description"], "ProjectAdmin description.")
+  context.project_admin.put_project(context.pid, {"name":"MyProject", "description":"My description.", "acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":"foo"}], "readers":[{"user":"bar"}]}})
+  project = require_valid_project(context.server_admin.get_project(context.pid))
+  nose.tools.assert_equal(project["name"], "MyProject")
+  nose.tools.assert_equal(project["description"], "My description.")
+  nose.tools.assert_equal(project["acl"]["administrators"], [{"user":context.project_admin_user}])
+  nose.tools.assert_equal(project["acl"]["writers"], [{"user":"foo"}])
+  nose.tools.assert_equal(project["acl"]["readers"], [{"user":"bar"}])
 
 @then(u'project writers can modify the project name and description only.')
 def step_impl(context):
-  context.project_writer.put_project(context.pid, {"name":"ProjectWriter", "description":"ProjectWriter description."})
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "ProjectWriter")
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["description"], "ProjectWriter description.")
+  context.project_writer.put_project(context.pid, {"name":"MyProject", "description":"My description."})
+  project = require_valid_project(context.server_admin.get_project(context.pid))
+  nose.tools.assert_equal(project["name"], "MyProject")
+  nose.tools.assert_equal(project["description"], "My description.")
+
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
-    context.project_writer.put_project(context.pid, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":context.project_writer_user}], "readers":[{"user":context.project_reader_user}]}})
+    context.project_writer.put_project(context.pid, {"acl":{"administrators":[{"user":context.project_admin_user}], "writers":[{"user":"foo"}], "readers":[{"user":"bar"}]}})
 
 @then(u'project readers cannot modify the project.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
-    context.project_reader.put_project(context.pid, {"Name":"ProjectReader"})
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "ProjectWriter")
+    context.project_reader.put_project(context.pid, {"Name":"MyProject"})
+  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "Test")
 
 @then(u'project outsiders cannot modify the project.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
-    context.project_outsider.put_project(context.pid, {"Name":"ProjectOutsider"})
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "ProjectWriter")
+    context.project_outsider.put_project(context.pid, {"Name":"MyProject"})
+  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "Test")
 
 @then(u'unauthenticated users cannot modify the project.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
-    context.unauthenticated_user.put_project(context.pid, {"Name":"UnauthenticatedUser"})
-  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "ProjectWriter")
+    context.unauthenticated_user.put_project(context.pid, {"Name":"MyProject"})
+  nose.tools.assert_equal(context.server_admin.get_project(context.pid)["name"], "Test")
 
 
