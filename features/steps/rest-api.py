@@ -663,11 +663,64 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_user("foobar")
 
+@then(u'authenticated users can log events.')
+def step_impl(context):
+  context.server_admin.post_events("test")
+  context.project_admin.post_events("test")
+  context.project_writer.post_events("test")
+  context.project_reader.post_events("test")
+  context.project_outsider.post_events("test")
+
+@then(u'unauthenticated users cannot log events.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_events("test")
+
+@then(u'server administrators can upload a file.')
+def step_impl(context):
+  context.server_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'the model will contain a new file artifact.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_in("file", model["artifact-types"])
+  nose.tools.assert_in("file", model["input-artifacts"])
+  nose.tools.assert_equal(model["artifact-types"]["file"], "file")
+
+@then(u'project administrators can upload a file.')
+def step_impl(context):
+  context.project_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'project writers can upload a file.')
+def step_impl(context):
+  context.project_writer.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'project readers cannot upload a file.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'the model will not contain a new file artifact.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_not_in("file", model["artifact-types"])
+  nose.tools.assert_not_in("file", model["input-artifacts"])
+
+@then(u'project outsiders cannot upload a file.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'unauthenticated users cannot upload a file.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
 @then(u'server administrators can finish the model.')
 def step_impl(context):
   context.server_admin.post_model_finish(context.mid)
 
-@then(u'and the model will be finished.')
+@then(u'the model will be finished.')
 def step_impl(context):
   context.server_admin.join_model(context.mid)
   model = require_valid_model(context.server_admin.get_model(context.mid))
@@ -686,7 +739,7 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
     context.project_reader.post_model_finish(context.mid)
 
-@then(u'and the model will remain unfinished.')
+@then(u'the model will remain unfinished.')
 def step_impl(context):
   model = require_valid_model(context.server_admin.get_model(context.mid))
   nose.tools.assert_equal(model["state"], "waiting")
