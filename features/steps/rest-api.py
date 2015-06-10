@@ -717,20 +717,43 @@ def step_impl(context):
 def step_impl(context):
   require_valid_browse(context.project_admin.post_remote_browse(context.sid, "/"))
 
-@when(u'a client adds a new arrayset to the model.')
+@then(u'server administrators can add arrayset artifacts to the model.')
+def step_impl(context):
+  context.server_admin.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'the model contains an empty arrayset artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.server_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
+
+@then(u'project administrators can add arrayset artifacts to the model.')
 def step_impl(context):
   context.project_admin.put_model_arrayset(context.mid, "arrayset")
 
-@then(u'the model should contain the new arrayset.')
+@then(u'project writers can add arrayset artifacts to the model.')
 def step_impl(context):
-  model = require_valid_model(context.project_admin.get_model(context.mid))
-  nose.tools.assert_in("arrayset", model["artifact-types"])
-  nose.tools.assert_equal(model["artifact-types"]["arrayset"], "hdf5")
-  nose.tools.assert_in("artifact:arrayset", model)
+  context.project_writer.put_model_arrayset(context.mid, "arrayset")
 
-@then(u'the new arrayset should be empty.')
+@then(u'project readers cannot add arrayset artifacts to the model.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'the model doesn\'t contain an arrayset artifact.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_not_in("arrayset", model["artifact-types"])
+  nose.tools.assert_not_in("arrayset", model["input-artifacts"])
+  nose.tools.assert_not_in("artifact:arrayset", model)
+
+@then(u'project outsiders cannot add arrayset artifacts to the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'unauthenticated users cannot add arrayset artifacts to the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.put_model_arrayset(context.mid, "arrayset")
 
 @when(u'the client adds an array to the arrayset.')
 def step_impl(context):

@@ -223,13 +223,21 @@ Feature: REST API
 #    When a client creates a new remote session.
 #    Then the remote session should be created.
 
-  Scenario: PUT Model Arrayset
+  Scenario Outline: PUT Model Arrayset
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client adds a new arrayset to the model.
-    Then the model should contain the new arrayset.
-    And the new arrayset should be empty.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                                         | result                                         |
+      | server administrators can add arrayset artifacts to the model    | the model contains an empty arrayset artifact  |
+      | project administrators can add arrayset artifacts to the model   | the model contains an empty arrayset artifact  |
+      | project writers can add arrayset artifacts to the model          | the model contains an empty arrayset artifact  |
+      | project readers cannot add arrayset artifacts to the model       | the model doesn't contain an arrayset artifact |
+      | project outsiders cannot add arrayset artifacts to the model     | the model doesn't contain an arrayset artifact |
+      | unauthenticated users cannot add arrayset artifacts to the model | the model doesn't contain an arrayset artifact |
 
   Scenario: PUT Model Arrayset Array
     Given a running Slycat server.
