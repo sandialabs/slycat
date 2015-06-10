@@ -7,8 +7,9 @@
           <!-- ko if: type == 'bool' -->
             <th class="bool property-start property-end">
               <span data-bind="text: name"></span>
-              <i class="fa fa-toggle-on select-all-button button active" title="Select all" data-bind="
-                css: { 'active': true }
+              <i class="fa fa-toggle-on select-all-button button" title="Select all" data-bind="
+                css: { 'disabled': ! $parent.selected() },
+                click: $parent.selected() ? $parent.selectAll : console.log('nothing selected')
               "></i>
             </th>
           <!-- /ko -->
@@ -22,8 +23,9 @@
                 }
               ">
                 <span data-bind="text: $data"></span>
-                <i class="fa fa-toggle-on select-all-button button active" title="Select all" data-bind="
-                  css: { 'active': true }
+                <i class="fa fa-toggle-on select-all-button button" title="Select all" data-bind="
+                  css: { 'disabled': ! $parents[1].selected() },
+                  click: $parents[1].selected() ? $parents[1].selectAll : console.log('nothing selected')
                 "></i>
               </th>
             <!-- /ko -->
@@ -41,7 +43,7 @@
       ">
         <th data-bind="
           text: name,
-          click: $parent.select,
+          click: $parent.select
         "></th>
         <!-- ko foreach: $parent.properties -->
           <!-- ko if: type == 'bool' -->

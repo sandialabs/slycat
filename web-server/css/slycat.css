@@ -381,10 +381,15 @@ slycat-navbar .alert pre
 {
   width: 100%;
 }
-.slycat-table-ingestion thead th i
+.slycat-table-ingestion thead th .select-all-button
 {
   display: block;
   cursor: pointer;
+}
+.slycat-table-ingestion thead th .select-all-button.disabled
+{
+  color: #CCCCCC;
+  cursor: default;
 }
 .slycat-table-ingestion thead th,
 .slycat-table-ingestion td

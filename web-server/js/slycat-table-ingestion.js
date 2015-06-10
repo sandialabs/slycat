@@ -14,6 +14,17 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       component.variables = params.variables;
       component.properties = params.properties;
 
+      component.selected = ko.pureComputed(function(){
+        for(var i = 0; i < component.variables().length; i++)
+        {
+          if( component.variables()[i].selected() )
+          {
+            return true;
+          }
+        }
+        return false;
+      });
+
       component.select = function(variable, event) {
         if(event.shiftKey)
         {
@@ -58,6 +69,16 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
           }
           variable.selected(true);
           variable.lastSelected(true);
+        }
+      };
+      component.selectAll = function(property, event) {
+        console.log("selectAll");
+        for(var i = 0; i < component.variables().length; i++)
+        {
+          if( component.variables()[i].selected() )
+          {
+            component.variables()[i][property.name](true);
+          }
         }
       };
     },
