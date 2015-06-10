@@ -143,7 +143,6 @@ Feature: REST API
     And a generic model.
     And a sample bookmark.
     And a saved bookmark.
-    And a saved template.
     Then server administrators can retrieve the list of project references.
     And project administrators can retrieve the list of project references.
     And project writers can retrieve the list of project references.
@@ -181,6 +180,22 @@ Feature: REST API
     Given a running Slycat server.
     Then any authenticated user can retrieve information about another user.
 
+  Scenario Outline: POST Model Finish
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                         | result |
+      | server administrators can finish the model       | and the model will be finished |
+      | project administrators can finish the model      | and the model will be finished |
+      | project writers can finish the model             | and the model will be finished |
+      | project readers cannot finish the model          | and the model will remain unfinished |
+      | project outsiders cannot finish the model        | and the model will remain unfinished |
+      | unauthenticated users cannot finish the model    | and the model will remain unfinished |
+
   Scenario: POST Project Bookmarks
     Given a running Slycat server.
     And a default project.
@@ -192,52 +207,88 @@ Feature: REST API
     And project outsiders cannot save a bookmark.
     And unauthenticated users cannot save a bookmark.
 
-  Scenario: POST Project References (Saved Bookmark)
+  Scenario Outline: POST Project References
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And a sample bookmark.
-    When a client creates a saved bookmark.
-    Then the saved bookmark should be created.
+    Then <scenario>.
 
-  Scenario: POST Project References (Template)
+    Examples: Saved Bookmarks
+      | scenario                                                |
+      | server administrators can create a saved bookmark       |
+      | project administrators can create a saved bookmark      |
+      | project writers can create a saved bookmark             |
+      | project readers cannot create a saved bookmark          |
+      | project outsiders cannot create a saved bookmark        |
+      | unauthenticated users cannot create a saved bookmark    |
+
+    Examples: Bookmark Templates
+      | scenario                                                |
+      | server administrators can create a bookmark template    |
+      | project administrators can create a bookmark template   |
+      | project writers can create a bookmark template          |
+      | project readers cannot create a bookmark template       |
+      | project outsiders cannot create a bookmark template     |
+      | unauthenticated users cannot create a bookmark template |
+
+  Scenario Outline: POST Project Models
     Given a running Slycat server.
     And a default project.
-    And a sample bookmark.
-    When a client creates a template.
-    Then the template should be created.
+    Then <scenario>.
+    And <result>.
 
-  Scenario: POST Project Models
-    Given a running Slycat server.
-    And a default project.
-    When a client creates a new model.
-    Then the model should be created.
+    Examples:
+      | scenario                                        | result                                  |
+      | server administrators can create a new model    | the project contains a new model        |
+      | project administrators can create a new model   | the project contains a new model        |
+      | project writers can create a new model          | the project contains a new model        |
+      | project readers cannot create a new model       | the project doesn't contain a new model |
+      | project outsiders cannot create a new model     | the project doesn't contain a new model |
+      | unauthenticated users cannot create a new model | the project doesn't contain a new model |
 
   Scenario: POST Projects
     Given a running Slycat server.
-    When a client creates a new project.
-    Then the project should be created.
+    Then any authenticated user can create a new project.
+    And unauthenticated users cannot create a new project.
 
 #  Scenario: POST Remotes
 #    Given a running Slycat server.
 #    When a client creates a new remote session.
 #    Then the remote session should be created.
 
-  Scenario: PUT Model Arrayset
+  Scenario Outline: PUT Model Arrayset
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client adds a new arrayset to the model.
-    Then the model should contain the new arrayset.
-    And the new arrayset should be empty.
+    Then <scenario>.
+    And <result>.
 
-  Scenario: PUT Model Arrayset Array
+    Examples:
+      | scenario                                                         | result                                         |
+      | server administrators can add arrayset artifacts to the model    | the model contains an empty arrayset artifact  |
+      | project administrators can add arrayset artifacts to the model   | the model contains an empty arrayset artifact  |
+      | project writers can add arrayset artifacts to the model          | the model contains an empty arrayset artifact  |
+      | project readers cannot add arrayset artifacts to the model       | the model doesn't contain an arrayset artifact |
+      | project outsiders cannot add arrayset artifacts to the model     | the model doesn't contain an arrayset artifact |
+      | unauthenticated users cannot add arrayset artifacts to the model | the model doesn't contain an arrayset artifact |
+
+  Scenario Outline: PUT Model Arrayset Array
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And the model has an arrayset artifact.
-    When the client adds an array to the arrayset.
-    Then the arrayset should contain the new array.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                                      | result                                            |
+      | server administrators can add arrays to arrayset artifacts    | the arrayset artifact contains a new array        |
+      | project administrators can add arrays to arrayset artifacts   | the arrayset artifact contains a new array        |
+      | project writers can add arrays to arrayset artifacts          | the arrayset artifact contains a new array        |
+      | project readers cannot add arrays to arrayset artifacts       | the arrayset artifact doesn't contain a new array |
+      | project outsiders cannot add arrays to arrayset artifacts     | the arrayset artifact doesn't contain a new array |
+      | unauthenticated users cannot add arrays to arrayset artifacts | the arrayset artifact doesn't contain a new array |
 
   Scenario Outline: PUT Model Inputs
     Given a running Slycat server.

@@ -173,6 +173,14 @@ def step_impl(context):
 def step_impl(context):
   context.mid2 = context.project_admin.post_project_models(context.pid, "generic", "Test2", description="Description2.")
 
+@given(u'a sample bookmark.')
+def step_impl(context):
+  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
+
+@given(u'a saved bookmark.')
+def step_impl(context):
+  context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
 @given(u'a remote session.')
 def step_impl(context):
   context.sid = context.project_admin.post_remotes(context.remote_host, context.remote_user, context.remote_password)
@@ -304,10 +312,6 @@ def step_impl(context):
   with nose.tools.assert_raises(Exception) as raised:
     context.project_admin.post_remote_browse(context.sid, "/")
     nose.tools.assert_equal(raised.exception.code, 404)
-
-@given(u'a sample bookmark.')
-def step_impl(context):
-  context.bid = context.project_admin.post_project_bookmarks(context.pid, sample_bookmark)
 
 @then(u'server administrators can retrieve a bookmark.')
 def step_impl(context):
@@ -508,29 +512,75 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_project_models(context.pid)
 
-@given(u'a saved bookmark.')
+@then(u'server administrators can create a saved bookmark.')
+def step_impl(context):
+  context.rid = context.server_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'project administrators can create a saved bookmark.')
 def step_impl(context):
   context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
 
-@given(u'a saved template.')
+@then(u'project writers can create a saved bookmark.')
+def step_impl(context):
+  context.rid = context.project_writer.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'project readers cannot create a saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'project outsiders cannot create a saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'unauthenticated users cannot create a saved bookmark.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_references(context.pid, "Test", mtype="generic", mid=context.mid, bid=context.bid)
+
+@then(u'server administrators can create a bookmark template.')
+def step_impl(context):
+  context.rid = context.server_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'project administrators can create a bookmark template.')
 def step_impl(context):
   context.rid = context.project_admin.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
 
+@then(u'project writers can create a bookmark template.')
+def step_impl(context):
+  context.rid = context.project_writer.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'project readers cannot create a bookmark template.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'project outsiders cannot create a bookmark template.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
+@then(u'unauthenticated users cannot create a bookmark template.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_references(context.pid, "Test", mtype="generic", bid=context.bid)
+
 @then(u'server administrators can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.server_admin.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.server_admin.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project administrators can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.project_admin.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.project_admin.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project writers can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.project_writer.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.project_writer.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project readers can retrieve the list of project references.')
 def step_impl(context):
-  require_list(context.project_reader.get_project_references(context.pid), length=2, item_test=require_valid_reference)
+  require_list(context.project_reader.get_project_references(context.pid), length=1, item_test=require_valid_reference)
 
 @then(u'project outsiders cannot retrieve the list of project references.')
 def step_impl(context):
@@ -613,6 +663,44 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_user("foobar")
 
+@then(u'server administrators can finish the model.')
+def step_impl(context):
+  context.server_admin.post_model_finish(context.mid)
+
+@then(u'and the model will be finished.')
+def step_impl(context):
+  context.server_admin.join_model(context.mid)
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["state"], "finished")
+
+@then(u'project administrators can finish the model.')
+def step_impl(context):
+  context.project_admin.post_model_finish(context.mid)
+
+@then(u'project writers can finish the model.')
+def step_impl(context):
+  context.project_writer.post_model_finish(context.mid)
+
+@then(u'project readers cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_model_finish(context.mid)
+
+@then(u'and the model will remain unfinished.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["state"], "waiting")
+
+@then(u'project outsiders cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_model_finish(context.mid)
+
+@then(u'unauthenticated users cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_model_finish(context.mid)
+
 @then(u'server administrators can save a bookmark.')
 def step_impl(context):
   bid = context.server_admin.post_project_bookmarks(context.pid, sample_bookmark)
@@ -673,41 +761,65 @@ def step_impl(context):
   nose.tools.assert_equal(context.references[0]["name"], "Test")
   nose.tools.assert_equal(context.references[0]["project"], context.pid)
 
-@when(u'a client creates a new model.')
+@then(u'server administrators can create a new model.')
+def step_impl(context):
+  context.mid = context.server_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'the project contains a new model.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["description"], "Description.")
+  nose.tools.assert_equal(model["marking"], "")
+  nose.tools.assert_equal(model["name"], "Test")
+  nose.tools.assert_equal(model["model-type"], "generic")
+  nose.tools.assert_equal(model["artifact-types"], {})
+  nose.tools.assert_equal(model["input-artifacts"], [])
+  nose.tools.assert_equal(model["project"], context.pid)
+  nose.tools.assert_equal(model["started"], None)
+  nose.tools.assert_equal(model["finished"], None)
+  nose.tools.assert_equal(model["state"], "waiting")
+  nose.tools.assert_equal(model["result"], None)
+  nose.tools.assert_equal(model["progress"], None)
+  nose.tools.assert_equal(model["message"], None)
+
+@then(u'project administrators can create a new model.')
 def step_impl(context):
   context.mid = context.project_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@then(u'the model should be created.')
+@then(u'project writers can create a new model.')
 def step_impl(context):
-  context.model = require_valid_model(context.project_admin.get_model(context.mid))
-  nose.tools.assert_equal(context.model["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.model["description"], "Description.")
-  nose.tools.assert_equal(context.model["marking"], "")
-  nose.tools.assert_equal(context.model["name"], "Test")
-  nose.tools.assert_equal(context.model["model-type"], "generic")
-  nose.tools.assert_equal(context.model["artifact-types"], {})
-  nose.tools.assert_equal(context.model["input-artifacts"], [])
-  nose.tools.assert_equal(context.model["project"], context.pid)
-  nose.tools.assert_equal(context.model["started"], None)
-  nose.tools.assert_equal(context.model["finished"], None)
-  nose.tools.assert_equal(context.model["state"], "waiting")
-  nose.tools.assert_equal(context.model["result"], None)
-  nose.tools.assert_equal(context.model["progress"], None)
-  nose.tools.assert_equal(context.model["message"], None)
+  context.mid = context.project_writer.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@when(u'a client creates a new project.')
+@then(u'project readers cannot create a new model.')
 def step_impl(context):
-  context.pid = context.project_admin.post_projects("Test", "Description.")
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@then(u'the project should be created.')
+@then(u'the project doesn\'t contain a new model.')
 def step_impl(context):
-  context.project = require_valid_project(context.project_admin.get_project(context.pid))
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
-  nose.tools.assert_equal(context.project["acl"]["readers"], [])
-  nose.tools.assert_equal(context.project["acl"]["writers"], [])
-  nose.tools.assert_equal(context.project["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.project["description"], "Description.")
-  nose.tools.assert_equal(context.project["name"], "Test")
+  require_list(context.server_admin.get_project_models(context.pid), length=0)
+
+@then(u'project outsiders cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'unauthenticated users cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'any authenticated user can create a new project.')
+def step_impl(context):
+  for user in [context.server_admin, context.project_admin, context.project_writer, context.project_reader, context.project_outsider]:
+    context.pid = user.post_projects("Test", "Description.")
+    require_valid_project(user.get_project(context.pid))
+    user.delete_project(context.pid)
+
+@then(u'unauthenticated users cannot create a new project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_projects("Test", "Description.")
 
 @when(u'a client creates a new remote session.')
 def step_impl(context):
@@ -717,28 +829,78 @@ def step_impl(context):
 def step_impl(context):
   require_valid_browse(context.project_admin.post_remote_browse(context.sid, "/"))
 
-@when(u'a client adds a new arrayset to the model.')
+@then(u'server administrators can add arrayset artifacts to the model.')
+def step_impl(context):
+  context.server_admin.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'the model contains an empty arrayset artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.server_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
+
+@then(u'project administrators can add arrayset artifacts to the model.')
 def step_impl(context):
   context.project_admin.put_model_arrayset(context.mid, "arrayset")
 
-@then(u'the model should contain the new arrayset.')
+@then(u'project writers can add arrayset artifacts to the model.')
 def step_impl(context):
-  model = require_valid_model(context.project_admin.get_model(context.mid))
-  nose.tools.assert_in("arrayset", model["artifact-types"])
-  nose.tools.assert_equal(model["artifact-types"]["arrayset"], "hdf5")
-  nose.tools.assert_in("artifact:arrayset", model)
+  context.project_writer.put_model_arrayset(context.mid, "arrayset")
 
-@then(u'the new arrayset should be empty.')
+@then(u'project readers cannot add arrayset artifacts to the model.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {"arrays":[]})
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.put_model_arrayset(context.mid, "arrayset")
 
-@when(u'the client adds an array to the arrayset.')
+@then(u'the model doesn\'t contain an arrayset artifact.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_not_in("arrayset", model["artifact-types"])
+  nose.tools.assert_not_in("arrayset", model["input-artifacts"])
+  nose.tools.assert_not_in("artifact:arrayset", model)
+
+@then(u'project outsiders cannot add arrayset artifacts to the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'unauthenticated users cannot add arrayset artifacts to the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.put_model_arrayset(context.mid, "arrayset")
+
+@then(u'server administrators can add arrays to arrayset artifacts.')
+def step_impl(context):
+  context.server_admin.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
+
+@then(u'the arrayset artifact contains a new array.')
+def step_impl(context):
+  nose.tools.assert_equal(context.server_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': [{u'attributes': [{u'name': u'string', u'type': u'string'}], u'dimensions': [{u'begin': 0, u'end': 10, u'name': u'row', u'type': u'int64'}], u'index': 0, u'shape': [10]}]})
+
+@then(u'project administrators can add arrays to arrayset artifacts.')
 def step_impl(context):
   context.project_admin.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
 
-@then(u'the arrayset should contain the new array.')
+@then(u'project writers can add arrays to arrayset artifacts.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': [{u'attributes': [{u'name': u'string', u'type': u'string'}], u'dimensions': [{u'begin': 0, u'end': 10, u'name': u'row', u'type': u'int64'}], u'index': 0, u'shape': [10]}]})
+  context.project_writer.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
+
+@then(u'project readers cannot add arrays to arrayset artifacts.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
+
+@then(u'the arrayset artifact doesn\'t contain a new array.')
+def step_impl(context):
+  nose.tools.assert_equal(context.server_admin.get_model_arrayset_metadata(context.mid, "arrayset", arrays="..."), {u'arrays': []})
+
+@then(u'project outsiders cannot add arrays to arrayset artifacts.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
+
+@then(u'unauthenticated users cannot add arrays to arrayset artifacts.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
 
 @given(u'the model has a parameter artifact.')
 def step_impl(context):
