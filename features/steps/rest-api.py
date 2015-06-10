@@ -744,25 +744,54 @@ def step_impl(context):
 def step_impl(context):
   context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
 
-@given(u'the model has an arrayset.')
+@given(u'the model has an arrayset artifact.')
 def step_impl(context):
   context.project_admin.put_model_arrayset(context.mid, "arrayset")
 
-@given(u'the model has a file.')
+@given(u'the model has a file artifact.')
 def step_impl(context):
   context.project_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
 
-@when(u'the client copies the artifacts to the second model.')
+@then(u'server administrators can copy artifacts to the second model.')
 def step_impl(context):
-  context.project_admin.put_model_inputs(context.mid, context.mid2)
+  context.server_admin.put_model_inputs(context.mid, context.mid2)
 
-@then(u'the model should contain the same set of artifacts.')
+@then(u'the model contains the copied artifacts.')
 def step_impl(context):
   model = require_valid_model(context.project_admin.get_model(context.mid2))
   nose.tools.assert_equal(model["artifact-types"], {"parameter":"json", "arrayset":"hdf5", "file":"file"})
   nose.tools.assert_items_equal(model["input-artifacts"], ["arrayset", "parameter", "file"])
   nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "parameter"), sample_model_parameter)
   nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
+
+@then(u'project administrators can copy artifacts to the second model.')
+def step_impl(context):
+  context.project_admin.put_model_inputs(context.mid, context.mid2)
+
+@then(u'project writers can copy artifacts to the second model.')
+def step_impl(context):
+  context.project_writer.put_model_inputs(context.mid, context.mid2)
+
+@then(u'project readers cannot copy artifacts to the second model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.put_model_inputs(context.mid, context.mid2)
+
+@then(u'the model doesn\'t contain the copied artifacts.')
+def step_impl(context):
+  model = require_valid_model(context.project_admin.get_model(context.mid2))
+  nose.tools.assert_equal(model["artifact-types"], {})
+  nose.tools.assert_items_equal(model["input-artifacts"], [])
+
+@then(u'project outsiders cannot copy artifacts to the second model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.put_model_inputs(context.mid, context.mid2)
+
+@then(u'unauthenticated users cannot copy artifacts to the second model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.put_model_inputs(context.mid, context.mid2)
 
 @then(u'server administrators can modify the model.')
 def step_impl(context):

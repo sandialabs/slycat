@@ -235,20 +235,29 @@ Feature: REST API
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    And the model has an arrayset.
+    And the model has an arrayset artifact.
     When the client adds an array to the arrayset.
     Then the arrayset should contain the new array.
 
-  Scenario: PUT Model Inputs
+  Scenario Outline: PUT Model Inputs
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And the model has a parameter artifact.
-    And the model has an arrayset.
-    And the model has a file.
+    And the model has an arrayset artifact.
+    And the model has a file artifact.
     And a second generic model.
-    When the client copies the artifacts to the second model.
-    Then the model should contain the same set of artifacts.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                                        | result                                         |
+      | server administrators can copy artifacts to the second model    | the model contains the copied artifacts        |
+      | project administrators can copy artifacts to the second model   | the model contains the copied artifacts        |
+      | project writers can copy artifacts to the second model          | the model contains the copied artifacts        |
+      | project readers cannot copy artifacts to the second model       | the model doesn't contain the copied artifacts |
+      | project outsiders cannot copy artifacts to the second model     | the model doesn't contain the copied artifacts |
+      | unauthenticated users cannot copy artifacts to the second model | the model doesn't contain the copied artifacts |
 
   Scenario Outline: PUT Model
     Given a running Slycat server.
