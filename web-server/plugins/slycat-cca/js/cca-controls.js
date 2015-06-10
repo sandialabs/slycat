@@ -155,11 +155,6 @@ $.widget("cca.controls",
 
     //console.log("sparameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
-
-    if(key == 'selection')
-    {
-      self._set_selection();
-    }
   },
 
 });
