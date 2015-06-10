@@ -239,13 +239,22 @@ Feature: REST API
       | project outsiders cannot add arrayset artifacts to the model     | the model doesn't contain an arrayset artifact |
       | unauthenticated users cannot add arrayset artifacts to the model | the model doesn't contain an arrayset artifact |
 
-  Scenario: PUT Model Arrayset Array
+  Scenario Outline: PUT Model Arrayset Array
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And the model has an arrayset artifact.
-    When the client adds an array to the arrayset.
-    Then the arrayset should contain the new array.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                                      | result                                            |
+      | server administrators can add arrays to arrayset artifacts    | the arrayset artifact contains a new array        |
+      | project administrators can add arrays to arrayset artifacts   | the arrayset artifact contains a new array        |
+      | project writers can add arrays to arrayset artifacts          | the arrayset artifact contains a new array        |
+      | project readers cannot add arrays to arrayset artifacts       | the arrayset artifact doesn't contain a new array |
+      | project outsiders cannot add arrays to arrayset artifacts     | the arrayset artifact doesn't contain a new array |
+      | unauthenticated users cannot add arrays to arrayset artifacts | the arrayset artifact doesn't contain a new array |
 
   Scenario Outline: PUT Model Inputs
     Given a running Slycat server.
