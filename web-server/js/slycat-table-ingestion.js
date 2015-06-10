@@ -71,13 +71,38 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
           variable.lastSelected(true);
         }
       };
-      component.selectAll = function(property, event) {
-        console.log("selectAll");
+      // For checkbox properties, check or uncheck all
+      component.checkAll = function(property, event) {
+        var state = false;
+        for(var i = 0; i < component.variables().length; i++)
+        {
+          // Only check selected variables
+          if( component.variables()[i].selected() )
+          {
+            // As soon as we find the first variable with the current property not checked, 
+            // we change target state for all checkboxes to true and break out.
+            if( ! component.variables()[i][property.name]() )
+            {
+              state = true;
+              break;
+            }
+          }
+        }
         for(var i = 0; i < component.variables().length; i++)
         {
           if( component.variables()[i].selected() )
           {
-            component.variables()[i][property.name](true);
+            component.variables()[i][property.name](state);
+          }
+        }
+      };
+      // For radio button properties, select all
+      component.selectAll = function(property, value) {
+        for(var i = 0; i < component.variables().length; i++)
+        {
+          if( component.variables()[i].selected() )
+          {
+            component.variables()[i][property.name](value);
           }
         }
       };

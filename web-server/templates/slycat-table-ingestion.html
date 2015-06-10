@@ -9,7 +9,7 @@
               <span data-bind="text: name"></span>
               <i class="fa fa-toggle-on select-all-button button" title="Select all" data-bind="
                 css: { 'disabled': ! $parent.selected() },
-                click: $parent.selected() ? $parent.selectAll : console.log('nothing selected')
+                click: $parent.selected() ? $parent.checkAll : void(0)
               "></i>
             </th>
           <!-- /ko -->
@@ -25,7 +25,7 @@
                 <span data-bind="text: $data"></span>
                 <i class="fa fa-toggle-on select-all-button button" title="Select all" data-bind="
                   css: { 'disabled': ! $parents[1].selected() },
-                  click: $parents[1].selected() ? $parents[1].selectAll : console.log('nothing selected')
+                  click: $parents[1].selected() ? $parents[1].selectAll($parent, $data) : void(0)
                 "></i>
               </th>
             <!-- /ko -->
