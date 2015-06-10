@@ -7,7 +7,8 @@
           <!-- ko if: type == 'bool' -->
             <th class="bool property-start property-end">
               <span data-bind="text: name"></span>
-              <i class="fa fa-toggle-on select-all-button button" title="Select all" data-bind="
+              <i class="fa fa-toggle-on select-all-button button" data-bind="
+                attr: { title: $parent.selected() ? 'Toggle selected rows' : 'No rows selected' },
                 css: { 'disabled': ! $parent.selected() },
                 click: $parent.selected() ? $parent.checkAll : void(0)
               "></i>
@@ -23,7 +24,8 @@
                 }
               ">
                 <span data-bind="text: $data"></span>
-                <i class="fa fa-toggle-on select-all-button button" title="Select all" data-bind="
+                <i class="fa fa-toggle-on select-all-button button" data-bind="
+                  attr: { title: $parents[1].selected() ? 'Set selected rows' : 'No rows selected' },
                   css: { 'disabled': ! $parents[1].selected() },
                   click: $parents[1].selected() ? $parents[1].selectAll($parent, $data) : void(0)
                 "></i>

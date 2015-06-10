@@ -413,7 +413,7 @@ slycat-navbar .alert pre
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  cursor: cell;
+  cursor: pointer;
 }
 .slycat-table-ingestion tbody tr:nth-child(odd) {
   background-color: #F2F2F2;
