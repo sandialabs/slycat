@@ -222,6 +222,9 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
               yield values[hyperslice]
 
 def get_model_parameter(database, model, aid):
+  key = "artifact:%s" % aid
+  if key not in model:
+    raise KeyError("Unknown artifact: %s" % aid)
   return model["artifact:" + aid]
 
 def put_model_arrayset(database, model, aid, input=False):
@@ -316,11 +319,18 @@ def put_model_inputs(database, model, source, deep_copy=False):
         database.save({"_id" : new_value, "type" : "hdf5"})
       else:
         model["artifact:%s" % aid] = original_value
+    elif original_type == "file":
+      original_content = database.get_attachment(source["_id"], original_value)
+      original_content_type = source["_attachments"][original_value]["content_type"]
+
+      database.put_attachment(model, original_content, filename=original_value, content_type=original_content_type)
+      model["artifact:%s" % aid] = original_value
     else:
       raise Exception("Cannot copy unknown input artifact type %s." % original_type)
     model["artifact-types"][aid] = original_type
     model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
 
+  model["_rev"] = database[model["_id"]]["_rev"] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
   database.save(model)
 
 def put_model_parameter(database, model, aid, value, input=False):

@@ -1,100 +1,141 @@
 Feature: REST API
-
-  Scenario: DELETE Model
+  Scenario Outline: DELETE Model
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client deletes the model.
-    Then the model should no longer exist.
+    Then <scenario>.
+    And <result>.
 
-  Scenario: DELETE Project
+    Examples:
+      | scenario                                      | result                     |
+      | server administrators can delete the model    | the model no longer exists |
+      | project administrators can delete the model   | the model no longer exists |
+      | project writers can delete the model          | the model no longer exists |
+      | project readers cannot delete the model       | the model still exists     |
+      | project outsiders cannot delete the model     | the model still exists     |
+      | unauthenticated users cannot delete the model | the model still exists     |
+
+  Scenario Outline: DELETE Project
     Given a running Slycat server.
     And a default project.
-    When a client deletes the project.
-    Then the project should no longer exist.
+    Then <scenario>.
+    And <result>.
 
-  Scenario: DELETE Reference
+    Examples:
+      | scenario                                        | result                       |
+      | server administrators can delete the project    | the project no longer exists |
+      | project administrators can delete the project   | the project no longer exists |
+      | project writers cannot delete the project       | the project still exists     |
+      | project readers cannot delete the project       | the project still exists     |
+      | project outsiders cannot delete the project     | the project still exists     |
+      | unauthenticated users cannot delete the project | the project still exists     |
+
+  Scenario Outline: DELETE Reference
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And a sample bookmark.
     And a saved bookmark.
-    When a client deletes the saved bookmark.
-    Then the saved bookmark should no longer exist.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                               | result                              |
+      | server administrators can delete the saved bookmark    | the saved bookmark no longer exists |
+      | project administrators can delete the saved bookmark   | the saved bookmark no longer exists |
+      | project writers can delete the saved bookmark          | the saved bookmark no longer exists |
+      | project readers cannot delete the saved bookmark       | the saved bookmark still exists     |
+      | project outsiders cannot delete the saved bookmark     | the saved bookmark still exists     |
+      | unauthenticated users cannot delete the saved bookmark | the saved bookmark still exists     |
+
+#  Scenario: DELETE Remote
+#    Given a running Slycat server.
+#    And a remote session.
+#    When a client deletes the remote session.
+#    Then the remote session should no longer exist.
 
   Scenario: GET Bookmark
     Given a running Slycat server.
     And a default project.
     And a sample bookmark.
-    When a client retrieves the project bookmark.
-    Then the project bookmark should be retrieved.
+    Then server administrators can retrieve a bookmark.
+    And project administrators can retrieve a bookmark.
+    And project writers can retrieve a bookmark.
+    And project readers can retrieve a bookmark.
+    And project outsiders cannot retrieve a bookmark.
+    And unauthenticated users cannot retrieve a bookmark.
 
   Scenario: GET Configuration Markings
     Given a running Slycat server.
-    When a client requests the set of available markings.
-    Then the server should return a list of markings.
+    Then Any authenticated user can request the set of available markings.
 
   Scenario: GET Configuration Parsers
     Given a running Slycat server.
-    When a client requests the set of available parsers.
-    Then the server should return a list of parsers.
+    Then Any authenticated user can request the set of available parsers.
 
   Scenario: GET Configuration Remote Hosts
     Given a running Slycat server.
-    When a client requests the set of configured remote hosts.
-    Then the server should return a list of remote hosts.
+    Then Any authenticated user can request the set of remote hosts.
 
   Scenario: GET Configuration Support Email
     Given a running Slycat server.
-    When a client requests the server support email.
-    Then the server should return its support email.
+    Then Any authenticated user can request the support email.
 
   Scenario: GET Configuration Version
     Given a running Slycat server.
-    When a client requests the server version.
-    Then the server should return its version.
+    Then Any authenticated user can request the server version.
 
   Scenario: GET Configuration Wizard
     Given a running Slycat server.
-    When a client requests available server wizards.
-    Then the server should return a list of available wizards.
+    Then Any authenticated user can request the set of available wizards.
 
   Scenario: GET Global Resource
     Given a running Slycat server.
-    When a client requests a global resource.
-    Then the server should return the global resource.
+    Then any authenticated user can request a global resource.
 
   Scenario: GET Model
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client retrieves the model.
-    Then the server should return the model.
+    Then server administrators can retrieve the model.
+    And project administrators can retrieve the model.
+    And project writers can retrieve the model.
+    And project readers can retrieve the model.
+    And project outsiders cannot retrieve the model.
+    And unauthenticated clients cannot retrieve the model.
 
   Scenario: GET Model Parameter
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client stores a model parameter artifact.
-    Then the client can retrieve the model parameter artifact.
+    And the model has a parameter artifact.
+    Then server administrators can retrieve the model parameter artifact.
+    And project administrators can retrieve the model parameter artifact.
+    And project writers can retrieve the model parameter artifact.
+    And project readers can retrieve the model parameter artifact.
+    And project outsiders cannot retrieve the model parameter artifact.
+    And unauthenticated clients cannot retrieve the model parameter artifact.
+    And retrieving a nonexistent parameter returns 404.
 
   Scenario: GET Model Resource
     Given a running Slycat server.
-    When a client requests a model resource.
-    Then the server should return the model resource.
+    Then any authenticated user can request a model resource.
 
   Scenario: GET Wizard Resource
     Given a running Slycat server.
-    When a client requests a wizard resource.
-    Then the server should return the wizard resource.
+    Then any authenticated user can request a wizard resource.
 
   Scenario: GET Project Models
     Given a running Slycat server.
     And a default project.
     And a generic model.
     And a second generic model.
-    When a client retrieves the project models.
-    Then the server should return the project models.
+    Then server administrators can retrieve the list of project models.
+    And project administrators can retrieve the list of project models.
+    And project writers can retrieve the list of project models.
+    And project readers can retrieve the list of project models.
+    And project outsiders cannot retrieve the list of project models.
+    And unauthenticated clients cannot retrieve the list of project models.
 
   Scenario: GET Project References
     Given a running Slycat server.
@@ -103,37 +144,53 @@ Feature: REST API
     And a sample bookmark.
     And a saved bookmark.
     And a saved template.
-    When a client retrieves the project references.
-    Then the server should return the project references.
+    Then server administrators can retrieve the list of project references.
+    And project administrators can retrieve the list of project references.
+    And project writers can retrieve the list of project references.
+    And project readers can retrieve the list of project references.
+    And project outsiders cannot retrieve the list of project references.
+    And unauthenticated clients cannot retrieve the list of project references.
 
   Scenario: GET Project
     Given a running Slycat server.
     And a default project.
-    When a client retrieves the project.
-    Then the server should return the project.
+    Then server administrators can retrieve the project.
+    And project administrators can retrieve the project.
+    And project writers can retrieve the project.
+    And project readers can retrieve the project.
+    And project outsiders cannot retrieve the project.
+    And unauthenticated clients cannot retrieve the project.
 
   Scenario: GET Projects
     Given a running Slycat server.
-    And a default project.
-    And a second default project.
-    When a client retrieves all projects.
-    Then the server should return all projects.
+    And a project with one writer and one reader.
+    And a project with one writer and no readers.
+    And a project without any writers or readers.
+    Then server administrators can retrieve a list with all three projects.
+    And project administrators can retrieve a list with all three projects.
+    And project writers can retrieve a list with two projects.
+    And project readers can retrieve a list with one project.
+    And project outsiders can retrieve a list containing none of the projects.
+    And unauthenticated clients cannot retrieve the list of projects.
 
   Scenario: GET User (Current)
     Given a running Slycat server.
-    When a client requests information about the current user.
-    Then the server should return information about the current user.
+    Then any authenticated user can retrieve information about themselves.
 
   Scenario: GET User
     Given a running Slycat server.
-    When a client requests information about another user.
-    Then the server should return information about the other user.
+    Then any authenticated user can retrieve information about another user.
 
   Scenario: POST Project Bookmarks
     Given a running Slycat server.
     And a default project.
-    When a client saves a project bookmark.
-    Then the project bookmark should be saved.
+    Then server administrators can save a bookmark.
+    And project administrators can save a bookmark.
+    And project writers can save a bookmark.
+    # Note that project readers *can* save bookmarks ... this is intentional!
+    And project readers can save a bookmark.
+    And project outsiders cannot save a bookmark.
+    And unauthenticated users cannot save a bookmark.
 
   Scenario: POST Project References (Saved Bookmark)
     Given a running Slycat server.
@@ -161,30 +218,90 @@ Feature: REST API
     When a client creates a new project.
     Then the project should be created.
 
+#  Scenario: POST Remotes
+#    Given a running Slycat server.
+#    When a client creates a new remote session.
+#    Then the remote session should be created.
+
   Scenario: PUT Model Arrayset
     Given a running Slycat server.
     And a default project.
     And a generic model.
     When a client adds a new arrayset to the model.
     Then the model should contain the new arrayset.
+    And the new arrayset should be empty.
 
-  Scenario: PUT Model
+  Scenario: PUT Model Arrayset Array
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client modifies the model.
-    Then the model should be modified.
+    And the model has an arrayset artifact.
+    When the client adds an array to the arrayset.
+    Then the arrayset should contain the new array.
 
-  Scenario: PUT Model Parameter
+  Scenario Outline: PUT Model Inputs
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client stores a model parameter artifact.
-    Then the client can retrieve the model parameter artifact.
+    And the model has a parameter artifact.
+    And the model has an arrayset artifact.
+    And the model has a file artifact.
+    And a second generic model.
+    Then <scenario>.
+    And <result>.
 
-  Scenario: PUT Project
+    Examples:
+      | scenario                                                        | result                                         |
+      | server administrators can copy artifacts to the second model    | the model contains the copied artifacts        |
+      | project administrators can copy artifacts to the second model   | the model contains the copied artifacts        |
+      | project writers can copy artifacts to the second model          | the model contains the copied artifacts        |
+      | project readers cannot copy artifacts to the second model       | the model doesn't contain the copied artifacts |
+      | project outsiders cannot copy artifacts to the second model     | the model doesn't contain the copied artifacts |
+      | unauthenticated users cannot copy artifacts to the second model | the model doesn't contain the copied artifacts |
+
+  Scenario Outline: PUT Model
     Given a running Slycat server.
     And a default project.
-    When a client modifies the project.
-    Then the project should be modified.
+    And a generic model.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                      | result                 |
+      | server administrators can modify the model    | the model is changed   |
+      | project administrators can modify the model   | the model is changed   |
+      | project writers can modify the model          | the model is changed   |
+      | project readers cannot modify the model       | the model is unchanged |
+      | project outsiders cannot modify the model     | the model is unchanged |
+      | unauthenticated users cannot modify the model | the model is unchanged |
+
+
+  Scenario Outline: PUT Model Parameter
+    Given a running Slycat server.
+    And a default project.
+    And a generic model.
+    Then <scenario>.
+
+    Examples:
+      | scenario                                             |
+      | server administrators can store a model parameter    |
+      | project administrators can store a model parameter   |
+      | project writers can store a model parameter          |
+      | project readers cannot store a model parameter       |
+      | project outsiders cannot store a model parameter     |
+      | unauthenticated users cannot store a model parameter |
+
+  Scenario Outline: PUT Project
+    Given a running Slycat server.
+    And a default project.
+    Then <scenario>.
+
+    Examples:
+    | scenario                                                                    |
+    | server administrators can modify the project acl, name, and description     |
+    | project administrators can modify the project acl, name, and description    |
+    | project writers can modify the project name and description only            |
+    | project readers cannot modify the project                                   |
+    | project outsiders cannot modify the project                                 |
+    | unauthenticated users cannot modify the project                             |
 

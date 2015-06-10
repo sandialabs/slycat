@@ -28,25 +28,25 @@ before_install:
   - openssl genrsa -out $TRAVIS_BUILD_DIR/web-server.key 2048
   - openssl req -new -key $TRAVIS_BUILD_DIR/web-server.key -out $TRAVIS_BUILD_DIR/web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
   - openssl x509 -req -in $TRAVIS_BUILD_DIR/web-server.csr -CA $TRAVIS_BUILD_DIR/root-ca.cert -CAkey $TRAVIS_BUILD_DIR/root-ca.key -CAcreateserial -out $TRAVIS_BUILD_DIR/web-server.cert -days 365
-  # Put the server key and certificate where the reverse proxy can find them.
+  # Put the server key and certificate where haproxy can find them.
   - cat $TRAVIS_BUILD_DIR/web-server.key $TRAVIS_BUILD_DIR/web-server.cert > $TRAVIS_BUILD_DIR/ssl.pem
+  # Create a directory to store HDF5 files.
+  - mkdir $TRAVIS_BUILD_DIR/data-store
   # We're going to use conda to install our Python interpreter and dependencies.
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - sh miniconda.sh -b
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda update --yes conda
-  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-#  - sudo rm -rf /dev/shm
-#  - sudo ln -s /run/shm /dev/shm
 
 install:
   - conda create --yes -n slycat coverage h5py mock nose paramiko Pillow pip pyparsing requests scipy
   - source activate slycat
   - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coveralls python-ldap pystache routes tornado-couchdb
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
-  - sudo haproxy -f $TRAVIS_BUILD_DIR/proxy-server-config.conf -db &
-  - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py &
-  - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py &
+  - sudo haproxy -f $TRAVIS_BUILD_DIR/travis-ci/proxy-server-config.conf -db &
+  - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
+  - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
   # Add our private CA to the system-wide list of certificate authorities, so test clients can trust the web-server.
   - export REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert
   - env | sort
@@ -57,3 +57,4 @@ script:
 
 after_script:
   - coveralls
+
