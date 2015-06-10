@@ -485,51 +485,6 @@ $.widget("parameter_image.controls",
       //   )
       //   ;
     }
-    // Add options for categories
-    for(var i = 0; i < this.options.category_variables.length; i++)
-    {
-      var var_label = this.options.metadata['column-names'][this.options.category_variables[i]];
-      $('<li role="presentation" class="dropdown-header"></li>')
-        .text(var_label)
-        .appendTo(self.selection_items)
-        ;
-      $("<li role='presentation'>")
-        .appendTo(self.selection_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html("Set")
-            .attr("data-value", this.options.category_variables[i])
-            .attr("data-label", "set")
-            .attr("data-variable", var_label)
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("disabled"))
-                return false;
-
-              openSetValueDialog(this.dataset.variable, this.dataset.value);
-            })
-        )
-        ;
-      $("<li role='presentation'>")
-        .appendTo(self.selection_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html("Clear")
-            .attr("data-value", this.options.category_variables[i])
-            .attr("data-label", "clear")
-            .attr("data-variable", var_label)
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("disabled"))
-                return false;
-
-              openClearValueDialog(this.dataset.variable, this.dataset.value);
-            })
-        )
-        ;
-    }
     // Finish with global actions
     $('<li role="presentation" class="dropdown-header"></li>')
       .text("Scatterplot Points")

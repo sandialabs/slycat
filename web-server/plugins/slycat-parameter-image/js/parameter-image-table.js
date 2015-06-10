@@ -135,10 +135,6 @@ $.widget("parameter_image.table",
       self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter));
     for(var i in self.options.outputs)
       self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter));
-    for(var i in self.options.ratings)
-      self.columns.push(make_column(self.options.ratings[i], "headerRating", "rowRating", editable_cell_formatter));
-    for(var i in self.options.categories)
-      self.columns.push(make_column(self.options.categories[i], "headerCategory", "rowCategory", editable_cell_formatter));
     for(var i in self.options.others)
       self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter));
 

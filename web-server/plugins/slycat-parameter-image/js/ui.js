@@ -253,9 +253,10 @@ function metadata_loaded()
     other_columns = [];
     for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
     {
-      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1
-        && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
+      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1)
+      {
         other_columns.push(i);
+      }
     }
     filter_manager.set_other_columns(other_columns);
   }
@@ -278,16 +279,21 @@ function metadata_loaded()
   if(table_metadata && bookmark)
   {
     // Choose some columns for the X and Y axes.
-    var numeric_variables = [];
+    var x_y_variables = [];
+
+    // First add inputs and outputs to possible columns
+    x_y_variables.push.apply(x_y_variables, input_columns);
+    x_y_variables.push.apply(x_y_variables, output_columns);
+
     for(var i = 0; i < table_metadata["column-count"]-1; i++)
     {
-      // Only use non-string columns that are not used for ratings or categories
-      if(table_metadata["column-types"][i] != 'string' && rating_columns.indexOf(i) == -1 && category_columns.indexOf(i) == -1)
-        numeric_variables.push(i);
+      // Only use non-string columns
+      if(table_metadata["column-types"][i] != 'string')
+        x_y_variables.push(i);
     }
 
-    x_index = numeric_variables[0];
-    y_index = numeric_variables[1 % numeric_variables.length];
+    x_index = x_y_variables[0];
+    y_index = x_y_variables[1 % x_y_variables.length];
     if("x-selection" in bookmark)
       x_index = Number(bookmark["x-selection"]);
     if("y-selection" in bookmark)
