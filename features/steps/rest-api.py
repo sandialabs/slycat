@@ -9,7 +9,8 @@ import StringIO
 import xml.etree.ElementTree as xml
 
 sample_bookmark = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
-sample_model_parameter = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
+sample_model_parameter_artifact = {"foo":"bar", "baz":5, "blah":[1, 2, 3]}
+sample_model_file_artifact = "Hello, World!"
 
 def require_valid_user(user, uid=None):
   nose.tools.assert_is_instance(user, dict)
@@ -168,6 +169,18 @@ def step_impl(context):
 @given(u'a generic model.')
 def step_impl(context):
   context.mid = context.project_admin.post_project_models(context.pid, "generic", "Test", description="Description.")
+
+@given(u'the model has a parameter artifact.')
+def step_impl(context):
+  context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
+
+@given(u'the model has an arrayset artifact.')
+def step_impl(context):
+  context.project_admin.put_model_arrayset(context.mid, "arrayset")
+
+@given(u'the model has a file artifact.')
+def step_impl(context):
+  context.project_admin.post_model_files(context.mid, ["file"], [sample_model_file_artifact], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
 
 @given(u'a second generic model.')
 def step_impl(context):
@@ -409,6 +422,37 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_global_resource("slycat-logo-navbar.png")
 
+@then(u'server administrators can retrieve the model file artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.server_admin.get_model_file(context.mid, "file"), sample_model_file_artifact)
+
+@then(u'project administrators can retrieve the model file artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_admin.get_model_file(context.mid, "file"), sample_model_file_artifact)
+
+@then(u'project writers can retrieve the model file artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_writer.get_model_file(context.mid, "file"), sample_model_file_artifact)
+
+@then(u'project readers can retrieve the model file artifact.')
+def step_impl(context):
+  nose.tools.assert_equal(context.project_reader.get_model_file(context.mid, "file"), sample_model_file_artifact)
+
+@then(u'project outsiders cannot retrieve the model file artifact.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.get_model_file(context.mid, "file")
+
+@then(u'unauthenticated clients cannot retrieve the model file artifact.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.get_model_file(context.mid, "file")
+
+@then(u'retrieving a nonexistent file artifact returns 404.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"):
+    context.server_admin.get_model_file(context.mid, "nonexistent-artifact")
+
 @then(u'server administrators can retrieve the model.')
 def step_impl(context):
   require_valid_model(context.server_admin.get_model(context.mid), name="Test", mtype="generic", creator=context.project_admin_user)
@@ -437,19 +481,19 @@ def step_impl(context):
 
 @then(u'server administrators can retrieve the model parameter artifact.')
 def step_impl(context):
-  nose.tools.assert_equal(context.server_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  nose.tools.assert_equal(context.server_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project administrators can retrieve the model parameter artifact.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project writers can retrieve the model parameter artifact.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_writer.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  nose.tools.assert_equal(context.project_writer.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project readers can retrieve the model parameter artifact.')
 def step_impl(context):
-  nose.tools.assert_equal(context.project_reader.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  nose.tools.assert_equal(context.project_reader.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project outsiders cannot retrieve the model parameter artifact.')
 def step_impl(context):
@@ -464,7 +508,7 @@ def step_impl(context):
 @then(u'retrieving a nonexistent parameter returns 404.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"):
-    context.server_admin.get_model_parameter(context.mid, "nonexistent-parameter")
+    context.server_admin.get_model_parameter(context.mid, "nonexistent-artifact")
 
 @then(u'any authenticated user can request a model resource.')
 def step_impl(context):
@@ -955,18 +999,6 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.put_model_arrayset_array(context.mid, "arrayset", 0, [{"name":"row", "end":10}], [{"name":"string", "type":"string"}])
 
-@given(u'the model has a parameter artifact.')
-def step_impl(context):
-  context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
-
-@given(u'the model has an arrayset artifact.')
-def step_impl(context):
-  context.project_admin.put_model_arrayset(context.mid, "arrayset")
-
-@given(u'the model has a file artifact.')
-def step_impl(context):
-  context.project_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
-
 @then(u'server administrators can copy artifacts to the second model.')
 def step_impl(context):
   context.server_admin.put_model_inputs(context.mid, context.mid2)
@@ -976,7 +1008,7 @@ def step_impl(context):
   model = require_valid_model(context.project_admin.get_model(context.mid2))
   nose.tools.assert_equal(model["artifact-types"], {"parameter":"json", "arrayset":"hdf5", "file":"file"})
   nose.tools.assert_items_equal(model["input-artifacts"], ["arrayset", "parameter", "file"])
-  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "parameter"), sample_model_parameter)
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "parameter"), sample_model_parameter_artifact)
   nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
 
 @then(u'project administrators can copy artifacts to the second model.')
@@ -1061,35 +1093,35 @@ def step_impl(context):
 
 @then(u'server administrators can store a model parameter.')
 def step_impl(context):
-  context.server_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
-  nose.tools.assert_equal(context.server_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  context.server_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
+  nose.tools.assert_equal(context.server_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project administrators can store a model parameter.')
 def step_impl(context):
-  context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter)
-  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  context.project_admin.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
+  nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project writers can store a model parameter.')
 def step_impl(context):
-  context.project_writer.put_model_parameter(context.mid, "parameter", sample_model_parameter)
-  nose.tools.assert_equal(context.project_writer.get_model_parameter(context.mid, "parameter"), sample_model_parameter)
+  context.project_writer.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
+  nose.tools.assert_equal(context.project_writer.get_model_parameter(context.mid, "parameter"), sample_model_parameter_artifact)
 
 @then(u'project readers cannot store a model parameter.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
-    context.project_reader.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+    context.project_reader.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
   nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
 
 @then(u'project outsiders cannot store a model parameter.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
-    context.project_outsider.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+    context.project_outsider.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
   nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
 
 @then(u'unauthenticated users cannot store a model parameter.')
 def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
-    context.unauthenticated_user.put_model_parameter(context.mid, "parameter", sample_model_parameter)
+    context.unauthenticated_user.put_model_parameter(context.mid, "parameter", sample_model_parameter_artifact)
   nose.tools.assert_not_in("parameter", context.server_admin.get_model(context.mid)["artifact-types"])
 
 @then(u'server administrators can modify the project acl, name, and description.')
