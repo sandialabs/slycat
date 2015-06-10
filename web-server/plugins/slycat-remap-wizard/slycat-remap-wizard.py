@@ -34,15 +34,22 @@ def register_slycat_plugin(context):
       parsed = urlparse(uri)
       host = parsed.hostname
 
+      if not host:
+        host = ""
+
       if host not in forest:
         forest[host] = {}
 
       path_arr = parsed.path.split('/')
       path_arr.pop() # removes filename + extension
-      if path_arr[0] == "":
+      if len(path_arr) > 0 and path_arr[0] == "":
         path_arr.pop(0) # removes first item if empty string
 
-      root = path_arr.pop(0)
+      if len(path_arr) > 0:
+        root = path_arr.pop(0)
+      else:
+        root = ""
+
       if root not in forest[host]:
         root_obj = dict()
         set_tree_node(root_obj, column)
