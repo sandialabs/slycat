@@ -522,6 +522,9 @@ class Connection(object):
     """
     return self.request("GET", "/users/%s" % ("-" if uid is None else uid), headers={"accept":"application/json"})
 
+  def post_events(self, path, parameters={}):
+    self.request("POST", "/events/%s" % path, params=parameters)
+
   def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
     """Stores a model file artifacts."""
     data = parameters

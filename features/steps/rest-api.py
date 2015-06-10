@@ -663,6 +663,97 @@ def step_impl(context):
   with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
     context.unauthenticated_user.get_user("foobar")
 
+@then(u'authenticated users can log events.')
+def step_impl(context):
+  context.server_admin.post_events("test")
+  context.project_admin.post_events("test")
+  context.project_writer.post_events("test")
+  context.project_reader.post_events("test")
+  context.project_outsider.post_events("test")
+
+@then(u'unauthenticated users cannot log events.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_events("test")
+
+@then(u'server administrators can upload a file.')
+def step_impl(context):
+  context.server_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'the model will contain a new file artifact.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_in("file", model["artifact-types"])
+  nose.tools.assert_in("file", model["input-artifacts"])
+  nose.tools.assert_equal(model["artifact-types"]["file"], "file")
+
+@then(u'project administrators can upload a file.')
+def step_impl(context):
+  context.project_admin.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'project writers can upload a file.')
+def step_impl(context):
+  context.project_writer.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'project readers cannot upload a file.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'the model will not contain a new file artifact.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_not_in("file", model["artifact-types"])
+  nose.tools.assert_not_in("file", model["input-artifacts"])
+
+@then(u'project outsiders cannot upload a file.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'unauthenticated users cannot upload a file.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_model_files(context.mid, ["file"], ["Hello, world!"], parser="slycat-blob-parser", parameters={"content-type":"text/plain"})
+
+@then(u'server administrators can finish the model.')
+def step_impl(context):
+  context.server_admin.post_model_finish(context.mid)
+
+@then(u'the model will be finished.')
+def step_impl(context):
+  context.server_admin.join_model(context.mid)
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["state"], "finished")
+
+@then(u'project administrators can finish the model.')
+def step_impl(context):
+  context.project_admin.post_model_finish(context.mid)
+
+@then(u'project writers can finish the model.')
+def step_impl(context):
+  context.project_writer.post_model_finish(context.mid)
+
+@then(u'project readers cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_model_finish(context.mid)
+
+@then(u'the model will remain unfinished.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["state"], "waiting")
+
+@then(u'project outsiders cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_model_finish(context.mid)
+
+@then(u'unauthenticated users cannot finish the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_model_finish(context.mid)
+
 @then(u'server administrators can save a bookmark.')
 def step_impl(context):
   bid = context.server_admin.post_project_bookmarks(context.pid, sample_bookmark)
@@ -723,41 +814,65 @@ def step_impl(context):
   nose.tools.assert_equal(context.references[0]["name"], "Test")
   nose.tools.assert_equal(context.references[0]["project"], context.pid)
 
-@when(u'a client creates a new model.')
+@then(u'server administrators can create a new model.')
+def step_impl(context):
+  context.mid = context.server_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'the project contains a new model.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["description"], "Description.")
+  nose.tools.assert_equal(model["marking"], "")
+  nose.tools.assert_equal(model["name"], "Test")
+  nose.tools.assert_equal(model["model-type"], "generic")
+  nose.tools.assert_equal(model["artifact-types"], {})
+  nose.tools.assert_equal(model["input-artifacts"], [])
+  nose.tools.assert_equal(model["project"], context.pid)
+  nose.tools.assert_equal(model["started"], None)
+  nose.tools.assert_equal(model["finished"], None)
+  nose.tools.assert_equal(model["state"], "waiting")
+  nose.tools.assert_equal(model["result"], None)
+  nose.tools.assert_equal(model["progress"], None)
+  nose.tools.assert_equal(model["message"], None)
+
+@then(u'project administrators can create a new model.')
 def step_impl(context):
   context.mid = context.project_admin.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@then(u'the model should be created.')
+@then(u'project writers can create a new model.')
 def step_impl(context):
-  context.model = require_valid_model(context.project_admin.get_model(context.mid))
-  nose.tools.assert_equal(context.model["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.model["description"], "Description.")
-  nose.tools.assert_equal(context.model["marking"], "")
-  nose.tools.assert_equal(context.model["name"], "Test")
-  nose.tools.assert_equal(context.model["model-type"], "generic")
-  nose.tools.assert_equal(context.model["artifact-types"], {})
-  nose.tools.assert_equal(context.model["input-artifacts"], [])
-  nose.tools.assert_equal(context.model["project"], context.pid)
-  nose.tools.assert_equal(context.model["started"], None)
-  nose.tools.assert_equal(context.model["finished"], None)
-  nose.tools.assert_equal(context.model["state"], "waiting")
-  nose.tools.assert_equal(context.model["result"], None)
-  nose.tools.assert_equal(context.model["progress"], None)
-  nose.tools.assert_equal(context.model["message"], None)
+  context.mid = context.project_writer.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@when(u'a client creates a new project.')
+@then(u'project readers cannot create a new model.')
 def step_impl(context):
-  context.pid = context.project_admin.post_projects("Test", "Description.")
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
 
-@then(u'the project should be created.')
+@then(u'the project doesn\'t contain a new model.')
 def step_impl(context):
-  context.project = require_valid_project(context.project_admin.get_project(context.pid))
-  nose.tools.assert_equal(context.project["acl"]["administrators"], [{"user":context.project_admin_user}])
-  nose.tools.assert_equal(context.project["acl"]["readers"], [])
-  nose.tools.assert_equal(context.project["acl"]["writers"], [])
-  nose.tools.assert_equal(context.project["creator"], context.project_admin_user)
-  nose.tools.assert_equal(context.project["description"], "Description.")
-  nose.tools.assert_equal(context.project["name"], "Test")
+  require_list(context.server_admin.get_project_models(context.pid), length=0)
+
+@then(u'project outsiders cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'unauthenticated users cannot create a new model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_project_models(context.pid, "generic", "Test", marking="", description="Description.")
+
+@then(u'any authenticated user can create a new project.')
+def step_impl(context):
+  for user in [context.server_admin, context.project_admin, context.project_writer, context.project_reader, context.project_outsider]:
+    context.pid = user.post_projects("Test", "Description.")
+    require_valid_project(user.get_project(context.pid))
+    user.delete_project(context.pid)
+
+@then(u'unauthenticated users cannot create a new project.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.post_projects("Test", "Description.")
 
 @when(u'a client creates a new remote session.')
 def step_impl(context):
