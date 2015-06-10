@@ -250,12 +250,22 @@ Feature: REST API
     When the client copies the artifacts to the second model.
     Then the model should contain the same set of artifacts.
 
-  Scenario: PUT Model
+  Scenario Outline: PUT Model
     Given a running Slycat server.
     And a default project.
     And a generic model.
-    When a client modifies the model.
-    Then the model should be modified.
+    Then <scenario>.
+    And <result>.
+
+    Examples:
+      | scenario                                      | result                 |
+      | server administrators can modify the model    | the model is changed   |
+      | project administrators can modify the model   | the model is changed   |
+      | project writers can modify the model          | the model is changed   |
+      | project readers cannot modify the model       | the model is unchanged |
+      | project outsiders cannot modify the model     | the model is unchanged |
+      | unauthenticated users cannot modify the model | the model is unchanged |
+
 
   Scenario Outline: PUT Model Parameter
     Given a running Slycat server.

@@ -764,21 +764,56 @@ def step_impl(context):
   nose.tools.assert_equal(context.project_admin.get_model_parameter(context.mid2, "parameter"), sample_model_parameter)
   nose.tools.assert_equal(context.project_admin.get_model_arrayset_metadata(context.mid2, "arrayset", arrays="..."), {"arrays":[]})
 
-@when(u'a client modifies the model.')
+@then(u'server administrators can modify the model.')
+def step_impl(context):
+  context.server_admin.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
+
+@then(u'the model is changed.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["name"], "MyModel")
+  nose.tools.assert_equal(model["description"], "My description.")
+  nose.tools.assert_equal(model["state"], "finished")
+  nose.tools.assert_equal(model["result"], "succeeded")
+  nose.tools.assert_equal(model["progress"], 1.0)
+  nose.tools.assert_equal(model["message"], "Done!")
+  require_valid_timestamp(model["started"])
+  require_valid_timestamp(model["finished"])
+
+@then(u'project administrators can modify the model.')
 def step_impl(context):
   context.project_admin.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
 
-@then(u'the model should be modified.')
+@then(u'project writers can modify the model.')
 def step_impl(context):
-  context.model = require_valid_model(context.project_admin.get_model(context.mid))
-  nose.tools.assert_equal(context.model["name"], "MyModel")
-  nose.tools.assert_equal(context.model["description"], "My description.")
-  nose.tools.assert_equal(context.model["state"], "finished")
-  nose.tools.assert_equal(context.model["result"], "succeeded")
-  nose.tools.assert_equal(context.model["progress"], 1.0)
-  nose.tools.assert_equal(context.model["message"], "Done!")
-  require_valid_timestamp(context.model["started"])
-  require_valid_timestamp(context.model["finished"])
+  context.project_writer.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
+
+@then(u'project readers cannot modify the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_reader.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
+
+@then(u'the model is unchanged.')
+def step_impl(context):
+  model = require_valid_model(context.server_admin.get_model(context.mid))
+  nose.tools.assert_equal(model["name"], "Test")
+  nose.tools.assert_equal(model["description"], "Description.")
+  nose.tools.assert_equal(model["state"], "waiting")
+  nose.tools.assert_equal(model["result"], None)
+  nose.tools.assert_equal(model["progress"], None)
+  nose.tools.assert_equal(model["message"], None)
+  nose.tools.assert_equal(model["started"], None)
+  nose.tools.assert_equal(model["finished"], None)
+
+@then(u'project outsiders cannot modify the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^403"):
+    context.project_outsider.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
+
+@then(u'unauthenticated users cannot modify the model.')
+def step_impl(context):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^401"):
+    context.unauthenticated_user.put_model(context.mid, {"name":"MyModel", "description":"My description.", "state":"finished", "result":"succeeded", "progress":1.0, "message":"Done!", "started":datetime.datetime.utcnow().isoformat(), "finished":datetime.datetime.utcnow().isoformat()})
 
 @then(u'server administrators can store a model parameter.')
 def step_impl(context):
