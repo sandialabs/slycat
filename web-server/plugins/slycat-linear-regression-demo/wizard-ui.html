@@ -42,8 +42,9 @@
 </div>
 <div class="modal-footer">
   <button class="btn btn-default pull-left" data-bind="visible:tab() != 3,click:cancel" data-dismiss="modal">Cancel</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Next</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 1,click:upload_table">Next</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Continue</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 1,click:upload_table">Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 2,click:finish">Finish</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 3" data-dismiss="modal">Close</button>
+  <button class="btn btn-default pull-left" data-bind="visible:tab() == 3" data-dismiss="modal">Close</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 3,click:go_to_model">Go To Model</button>
 </div>

@@ -12,6 +12,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.ps_type = ko.observable("remote"); // remote is selected by default...
+    component.server_root = server_root;
 
     component.cancel = function() {
       if(component.remote.sid())
@@ -169,6 +170,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       attribute.category(false);
       attribute.rating(false);
       return true;
+    };
+
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
     };
 
     component.finish = function() {

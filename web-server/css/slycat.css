@@ -159,6 +159,20 @@ slycat-navbar .alert pre
 {
   padding: 6px 0;
 }
+.bootstrap-styles #slycat-wizard .nav > li > a
+{
+  color: #333333;
+}
+.bootstrap-styles #slycat-wizard .nav > li > a:hover
+{
+  background-color: transparent;
+}
+.bootstrap-styles #slycat-wizard .nav-pills > li.active > a, 
+.bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover
+{
+  color: white;
+  background-color: #337AB7;
+}
 
 .slycat-content
 {
