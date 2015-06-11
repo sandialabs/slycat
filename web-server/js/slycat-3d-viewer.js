@@ -16,7 +16,10 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   ko.components.register('slycat-3d-viewer', {
     viewModel: function(params) {
 
-      if (!Detector.webgl) Detector.addGetWebGLMessage();
+      if (!Detector.webgl) {
+        Detector.addGetWebGLMessage({ parent: document.getElementsByClassName('slycat-3d-viewer')[0] });
+        return;
+      }
 
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
