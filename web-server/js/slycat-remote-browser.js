@@ -29,23 +29,29 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
 
       component.files = component.raw_files.map(function(file)
       {
-        var icon = "";
-        if(file.mime_type() in component.icon_map)
+        var icon = "<span class='fa fa-file-o'></span>";
+        if(_.startsWith(file.mime_type(), "application/x-directory"))
         {
-          icon = component.icon_map[file.mime_type()];
+          icon = "<span class='fa fa-folder'></span>";
         }
-        else if(_.startsWith(file.mime_type(), "text/"))
-        {
-          icon = "<span class='fa fa-file-text-o'></span>";
-        }
-        else if(_.startsWith(file.mime_type(), "image/"))
-        {
-          icon = "<span class='fa fa-file-image-o'></span>";
-        }
-        else if(_.startsWith(file.mime_type(), "video/"))
-        {
-          icon = "<span class='fa fa-file-video-o'></span>";
-        }
+        // Disabling file specific icons per https://github.com/sandialabs/slycat/issues/454
+        // var icon = "";
+        // if(file.mime_type() in component.icon_map)
+        // {
+        //   icon = component.icon_map[file.mime_type()];
+        // }
+        // else if(_.startsWith(file.mime_type(), "text/"))
+        // {
+        //   icon = "<span class='fa fa-file-text-o'></span>";
+        // }
+        // else if(_.startsWith(file.mime_type(), "image/"))
+        // {
+        //   icon = "<span class='fa fa-file-image-o'></span>";
+        // }
+        // else if(_.startsWith(file.mime_type(), "video/"))
+        // {
+        //   icon = "<span class='fa fa-file-video-o'></span>";
+        // }
 
         return {
           type: file.type,
