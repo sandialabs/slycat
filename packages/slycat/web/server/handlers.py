@@ -92,7 +92,6 @@ def js_bundle():
         "js/three.min.js",
         "js/TrackballControls.js",
         "js/STLLoader.js",
-        "js/Detector.js",
         "js/GeometrySettings.js",
         "js/slycat-3d-viewer.js"
       ])

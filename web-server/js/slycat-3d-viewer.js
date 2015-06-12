@@ -16,9 +16,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   ko.components.register('slycat-3d-viewer', {
     viewModel: function(params) {
 
-      if (!Detector.webgl) {
-        Detector.addGetWebGLMessage({ parent: document.getElementsByClassName('slycat-3d-viewer')[0] });
-        return;
+      if (!isWebGL()) {
+        return displayNoWebGLSupport($('.slycat-3d-viewer'));
       }
 
       var mid = params.mid || URI(window.location).segment(-1);
@@ -259,6 +258,46 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   var onReset = function(controls, mesh) {
     controls.reset();
     mesh.rotation.y = 0;
+  };
+
+  /**
+   * Returns whether or not the instance is supporting WebGL.
+   * @return {Boolean}
+   */
+  var isWebGL = function() {
+    var canvas = !! window.CanvasRenderingContext2D;
+
+    return (
+
+      function() {
+        try {
+          var c = document.createElement('canvas');
+          return !! (window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+        } catch (e) {
+          return false;
+        }
+      }
+
+    )();
+  };
+
+  /**
+   * Appends an error message to the user for the lack of WebGL support.
+   * @param  {jQuery} $div Container <div /> for the message
+   * @return {}            undefined
+   */
+  var displayNoWebGLSupport = function($div) {
+    var $msg = $('<div />')
+      .css('width', 400)
+      .css('margin', '5em auto 0px')
+      .css('padding', '1.5em')
+      .css('background', 'white')
+      .css('text-align', 'center')
+      .text('Your browser and/or graphics card does not seem to support WebGL.');
+
+    $div.append($msg);
+
+    return void 0;
   };
 
 });
