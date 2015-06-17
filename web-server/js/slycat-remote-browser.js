@@ -145,6 +145,11 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
         });
       }
 
+      component.browse_path = function(formElement)
+      {
+        component.browse(component.path());
+      }
+
       component.sid.subscribe(function(new_sid)
       {
         if(new_sid)
