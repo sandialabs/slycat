@@ -127,7 +127,7 @@ if __name__ == "__main__":
   parser.add_argument("--cluster-columns", default=None, nargs="*", help="Cluster column names.  Default: all image columns.")
   parser.add_argument("--cluster-measure", default="jaccard", choices=["identity", "jaccard", "euclidean-rgb", "csv"], help="Hierarchical clustering measure.  Default: %(default)s")
   parser.add_argument("--cluster-linkage", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
-  parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-distance=csv")
+  parser.add_argument("--distance-matrix", default=None, help="Optional CSV distance matrix.  Only used with --cluster-measure=csv")
   parser.add_argument("--dry-run", default=False, action="store_true", help="Don't actually create a model on the server.")
   parser.add_argument("--image-columns", default=None, nargs="*", help="Image column names.")
   parser.add_argument("--input-columns", default=[], nargs="*", help="Input column names.")
@@ -140,7 +140,7 @@ if __name__ == "__main__":
   arguments = parser.parse_args()
 
   if arguments.cluster_measure == "csv" and arguments.distance_matrix is None:
-    raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-distance=csv")
+    raise Exception("You must specify a CSV distance matrix with --distance-matrix when --cluster-measure=csv")
 
   if arguments.cluster_measure not in measures:
     raise Exception("Unsupported distance measure: %s" % arguments.cluster_measure)
@@ -192,7 +192,7 @@ if __name__ == "__main__":
   # If we're using an external CSV distance matrix, there can only be one cluster column.
 
   if arguments.cluster_measure == "csv" and len(arguments.cluster_columns) != 1:
-    raise Exception("Only one column can be clustered with --cluster-distance=csv ... currently selected columns: %s" % arguments.cluster_columns)
+    raise Exception("Only one column can be clustered with --cluster-measure=csv ... currently selected columns: %s" % arguments.cluster_columns)
 
   ###########################################################################################
   # Setup a connection to the Slycat Web Server, and test it before we do a lot of work.
