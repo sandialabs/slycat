@@ -83,12 +83,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           }
           mapping.fromJS(attributes, component.attributes);
           component.tab(5);
-          $('.remote-browser-continue').toggleClass("disabled", false);
+          $('.browser-continue').toggleClass("disabled", false);
         }
       });
     };
 
     component.upload_table = function() {
+      $('.local-browser-continue').toggleClass("disabled", true);
       client.post_model_files({
         mid: component.model._id(),
         files: component.browser.selection(),
@@ -96,7 +97,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         aids: ["data-table"],
         parser: component.parser(),
         success: upload_success,
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.local-browser-continue').toggleClass("disabled", false);
+        },
       });
     };
 

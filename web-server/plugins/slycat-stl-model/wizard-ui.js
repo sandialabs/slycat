@@ -22,7 +22,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
           component.model._id(mid);
           component.tab(1);
         },
-        error: dialog.ajax_error('Error creating model.')
+        error: dialog.ajax_error('Error creating model.'),
       });
     };
     
@@ -31,6 +31,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.finish = function() {
+      $('.local-browser-continue').toggleClass("disabled", true);
       var nameArr = component.browser.selection()[0].name.split('.');
       var extension = nameArr[nameArr.length - 1].toLowerCase();
 
@@ -39,6 +40,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
           title: 'Error',
           message: 'Only files with an .stl extension are valid'
         });
+        $('.local-browser-continue').toggleClass("disabled", false);
         return;
       }
 
@@ -53,10 +55,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
             mid: component.model._id(),
             success: function() {
               component.tab(2);
+              $('.local-browser-continue').toggleClass("disabled", false);
             }
           });
         },
-        error: dialog.ajax_error('There was a problem uploading the file: ')
+        error: function(){
+          dialog.ajax_error('There was a problem uploading the file: ')();
+          $('.local-browser-continue').toggleClass("disabled", false);
+        },
       });
     };
 

@@ -36,6 +36,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
     component.upload_table = function()
     {
+      $('.local-browser-continue').toggleClass("disabled", true);
       client.post_model_files(
       {
         mid: component.model._id(),
@@ -66,10 +67,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               }
               mapping.fromJS(attributes, component.attributes);
               component.tab(2);
+              $('.local-browser-continue').toggleClass("disabled", false);
             }
           });
         },
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.local-browser-continue').toggleClass("disabled", false);
+        },
       });
     }
     component.go_to_model = function() {
