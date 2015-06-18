@@ -213,6 +213,8 @@ slycat-navbar .alert pre
 
   overflow-x: auto;
   overflow-y: auto;
+
+  border: 1px solid #e5e5e5;
 }
 
 .slycat-remote-browser table
@@ -221,6 +223,13 @@ slycat-navbar .alert pre
   -moz-user-select: none;
   -webkit-user-select: none;
   min-width: 100%;
+}
+
+.slycat-remote-browser tr.selected,
+.slycat-remote-browser tr.selected:hover
+{
+  background-color: #337AB7 !important;
+  color: white;
 }
 
 .slycat-remote-browser td:first-child

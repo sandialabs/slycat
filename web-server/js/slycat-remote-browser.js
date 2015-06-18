@@ -60,6 +60,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
           mtime: file.mtime,
           mime_type: file.mime_type,
           icon: icon,
+          selected: ko.observable(false)
         };
       });
 
@@ -89,6 +90,15 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         var selection = [path_join(component.path(), file.name())];
         component.selection(selection);
+        if(file.type() == "f")
+        {
+          // Clear current selection
+          for(var i=0; i < component.files().length; i++)
+          {
+            component.files()[i].selected(false);
+          }
+          file.selected(true);
+        }
       }
 
       component.open = function(file)
