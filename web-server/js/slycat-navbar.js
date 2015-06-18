@@ -86,6 +86,21 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
         return alerts;
       });
 
+      // Reload model when it closes
+      var modelSubscription = component.model.subscribe(function(newValue) {
+        if(component.model().length == 1)
+        {
+          // Terminating subscription
+          modelSubscription.dispose();
+          var stateSubscription = component.model()[0].state.subscribe(function(newValue) {
+            if(newValue == 'closed')
+            {
+              document.location.reload();
+            }
+          });
+        }
+      });
+
       // If the current model is finished, close it.
       component.close_model = function(model)
       {
