@@ -138,6 +138,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             for(var i = 0; i != results.names.length; ++i)
               files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mime_type:results["mime-types"][i]});
             mapping.fromJS(files, component.raw_files);
+            $('.slycat-remote-browser-files').scrollTop(0);
           },
           error : function(results)
           {
