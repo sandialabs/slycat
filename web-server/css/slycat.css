@@ -173,6 +173,14 @@ slycat-navbar .alert pre
   color: white;
   background-color: #337AB7;
 }
+.bootstrap-styles #slycat-wizard .modal-footer button i
+{
+  display: none;
+}
+.bootstrap-styles #slycat-wizard .modal-footer button.disabled i
+{
+  display: inline-block;
+}
 
 .slycat-content
 {

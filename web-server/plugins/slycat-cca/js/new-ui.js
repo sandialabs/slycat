@@ -83,6 +83,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           }
           mapping.fromJS(attributes, component.attributes);
           component.tab(5);
+          $('.remote-browser-continue').toggleClass("disabled", false);
         }
       });
     };
@@ -121,6 +122,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.load_table = function() {
+      $('.remote-browser-continue').toggleClass("disabled", true);
       client.post_model_files({
         mid: component.model._id(),
         sids: [component.remote.sid()],
@@ -129,7 +131,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         aids: ["data-table"],
         parser: component.parser(),
         success: upload_success,
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.remote-browser-continue').toggleClass("disabled", false);
+        },
       });
     };
     
