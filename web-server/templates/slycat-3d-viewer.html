@@ -10,27 +10,165 @@
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
-          <h4 class="modal-title" id="slycat-3d-modal-label">STL Viewer Settings</h4>
+          <h4 class="modal-title" id="slycat-3d-modal-label">STL Model Settings</h4>
         </div>
 
         <div class="modal-body">
+          <ul class="nav nav-tabs" role="tablist" style="margin-bottom: 25px;">
+            <li role="presentation" class="active"><a href="#stl-settings-scene" aria-controls="stl-settings-scene" role="tab" data-toggle="tab">Scene</a></li>
+            <li role="presentation"><a href="#stl-settings-geometry" aria-controls="stl-settings-geometry" role="tab" data-toggle="tab">Geometry</a></li>
+            <li role="presentation"><a href="#stl-settings-lights" aria-controls="stl-settings-lights" role="tab" data-toggle="tab">Lights</a></li>
+            <li role="presentation"><a href="#stl-settings-controls" aria-controls="stl-settings-controls" role="tab" data-toggle="tab">Controls</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="stl-settings-scene" style="height: 90px;">
+              <form class="form-horizontal">
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Background:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: backgroundColor" placeholder="Background color i.e. #000000" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Ambient light:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: ambientLightColor" placeholder="Ambient light color i.e. #000000">
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="stl-settings-geometry" style="height: 165px;">
+              <form class="form-horizontal">
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Material:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: materialColor" placeholder="Material color i.e. #000000" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Wireframe:</label>
+                  <div class="col-sm-8">
+                    <input type="checkbox" data-bind="checked: wireframe" style="margin: 12px 0px 10px 0px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Transparency:</label>
+                  <div class="col-sm-8">
+                    <input type="checkbox" data-bind="checked: transparency" style="margin: 12px 0px 18px 0px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Opacity:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: opacity" placeholder="Value is between 0 and 1">
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="stl-settings-lights" style="height: 350px;">
+              <form class="form-horizontal">
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 1:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightOneColor" placeholder="Light 1 color i.e. #000000" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 1 X:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightOneX" placeholder="Light 1 x-position" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 1 Y:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightOneY" placeholder="Light 1 y-position" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 1 Z:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightOneZ" placeholder="Light 1 z-position" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 2:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightTwoColor" placeholder="Light 2 color i.e. #000000" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 2 X:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightTwoX" placeholder="Light 2 x-position" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group" style="margin-bottom: 10px;">
+                  <label class="col-sm-3 control-label">Light 2 Y:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightTwoY" placeholder="Light 2 y-position" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Light 2 Z:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: lightTwoZ" placeholder="Light 2 z-position" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="stl-settings-controls" style="height: 187px">
+              <form class="form-horizontal">
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Rotation:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: controlsRotationSpeed" placeholder="Rotation speed" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Zooming:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: controlsZoomingSpeed" placeholder="Zooming speed" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Panning:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: controlsPanningSpeed" placeholder="Panning speed" style="margin-bottom: 10px;">
+                  </div>
+                </div>
+                <div class"form-group">
+                  <label class="col-sm-3 control-label">Dynamic damping factor:</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" data-bind="value: controlsDynamicDampingFactor" placeholder="Dynamic damping factor" style="margin-top: 9px;">
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!--
           <form class="form-horizontal">
             <div class="form-group">
               <label class="col-sm-3 control-label">Background:</label>
               <div class="col-sm-8">
-                <input type="text" class="form-control" id="slycat-3d-modal-background-color" placeholder="Material color i.e. 0x000000">
+                <input type="text" class="form-control" data-bind="value: backgroundColor" placeholder="Material color i.e. 0x000000">
               </div>
             </div>
             <div class="form-group">
               <label class="col-sm-3 control-label">Ambient light:</label>
               <div class="col-sm-8">
-                <input type="text" class="form-control" id="slycat-3d-modal-ambient-light-color" placeholder="Material color i.e. 0x000000">
+                <input type="text" class="form-control" data-bind="value: ambientLightColor" placeholder="Ambient color i.e. 0x000000">
               </div>
             </div>
             <div class="form-group">
               <label class="col-sm-3 control-label">Material color:</label>
               <div class="col-sm-8">
-                <input type="text" class="form-control" id="slycat-3d-modal-material-color" placeholder="Material color i.e. 0x000000">
+                <input type="text" class="form-control" placeholder="Material color i.e. 0x000000">
               </div>
             </div>
             <div class="form-group">
@@ -46,6 +184,7 @@
               </div>
             </div>
           </form>
+          -->
         </div>
 
         <div class="modal-footer">

@@ -20,6 +20,35 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
         return displayNoWebGLSupport($('.slycat-3d-viewer'));
       }
 
+      /**
+       * section defines set of observables and default values for the 3D
+       * viewer settings.
+       */
+      var vm = this;
+      vm.ambientLightColor = ko.observable('#F2F2F2');
+      vm.backgroundColor = ko.observable('#F2F2F2');
+
+      vm.lightOneColor = ko.observable('#FFFFFF');
+      vm.lightOneX = ko.observable(0);
+      vm.lightOneY = ko.observable(0);
+      vm.lightOneZ = ko.observable(0);
+
+      vm.lightTwoColor = ko.observable('#FFFFFF');
+      vm.lightTwoX = ko.observable(0);
+      vm.lightTwoY = ko.observable(0);
+      vm.lightTwoZ = ko.observable(0);
+
+      vm.materialColor = ko.observable('#337AB7');
+      vm.wireframe = ko.observable(false);
+      vm.transparency = ko.observable(false);
+      vm.opacity = ko.observable(1);
+
+      vm.controlsRotationSpeed = ko.observable(2);
+      vm.controlsZoomingSpeed = ko.observable(1.5);
+      vm.controlsPanningSpeed = ko.observable(1);
+      vm.controlsDynamicDampingFactor = ko.observable(0.3);
+      /** */
+
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
       var cid = params.cid;
@@ -32,11 +61,6 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var height = viewer.offsetHeight;
 
       var settings = null;
-      var defaultMaterialColor = '#337AB7';
-      var defaultLightColor = '#FFFFFF';
-      var defaultAmbientLightColor = '#F2F2F2';
-      var defaultBackgroundColor = '#F2F2F2';
-
       var renderer = null;
       var camera = null;
       var mouse = null;
@@ -70,30 +94,36 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
         mouse = new THREE.Vector2();
         controls = new THREE.TrackballControls(camera, viewer);
-        controls.rotateSpeed = 2;
-        controls.zoomSpeed = 1.5;
-        controls.panSpeed = 1;
+        controls.rotateSpeed = vm.controlsRotationSpeed();
+        controls.zoomSpeed = vm.controlsZoomingSpeed();
+        controls.panSpeed = vm.controlsPanningSpeed();
         controls.noZoom = false;
         controls.noPan = false;
         controls.staticMoving = true;
-        controls.dynamicDampingFactor = 0.3;
+        controls.dynamicDampingFactor = vm.controlsDynamicDampingFactor();
 
 
         scene = new THREE.Scene();
-        ambient = new THREE.AmbientLight(defaultAmbientLightColor);
+        ambient = new THREE.AmbientLight(vm.ambientLightColor());
         scene.add(ambient);
 
         /** light 1 is to the right and front of the object */
-        lightOne = new THREE.PointLight(defaultLightColor);
-        lightOne.position.set(gbb.max.x + (gbs.radius*6), gbb.max.y + (gbs.radius*6), gbb.max.z + (gbs.radius*6));
+        lightOne = new THREE.PointLight(vm.lightOneColor());
+        vm.lightOneX(gbb.max.x + (gbs.radius*6));
+        vm.lightOneY(gbb.max.y + (gbs.radius*6));
+        vm.lightOneZ(gbb.max.z + (gbs.radius*6));
+        lightOne.position.set(vm.lightOneX(), vm.lightOneY(), vm.lightOneZ());
         scene.add(lightOne);
 
         /** light 2 is to the left and back of the object */
-        lightTwo = new THREE.PointLight(defaultLightColor);
-        lightTwo.position.set(gbb.max.x - (gbs.radius*6), gbb.max.y - (gbs.radius*6), gbb.max.z - (gbs.radius*6));
+        lightTwo = new THREE.PointLight(vm.lightTwoColor());
+        vm.lightTwoX(gbb.max.x - (gbs.radius*6));
+        vm.lightTwoY(gbb.max.y - (gbs.radius*6));
+        vm.lightTwoZ(gbb.max.z - (gbs.radius*6));
+        lightTwo.position.set(vm.lightTwoX(), vm.lightTwoY(), vm.lightTwoZ());
         scene.add(lightTwo);
 
-        material = new THREE.MeshLambertMaterial({ color: defaultMaterialColor });
+        material = new THREE.MeshLambertMaterial({ color: vm.materialColor() });
 
         mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(gbs.center.x, gbs.center.y, gbs.center.z);
@@ -103,7 +133,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         /** Sets the background color for the scene */
-        renderer.setClearColor(defaultBackgroundColor);
+        renderer.setClearColor(vm.backgroundColor());
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height);
         document.getElementById(vid).appendChild(renderer.domElement);
@@ -115,21 +145,13 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
         /** initializes the settings popup */
         settings = new GeometrySettings({
-          /** rendered settings */
           renderer: renderer,
-          backgroundColor: defaultBackgroundColor,
-          /** ambien light settings */
           ambientLight: ambient,
-          ambientLightColor: defaultAmbientLightColor,
-          /** geometry settings */
           mesh: mesh,
-          materialColor: defaultMaterialColor,
-          /** lighting settings */
           lightOne: lightOne,
-          lightOneColor: defaultLightColor,
           lightTwo: lightTwo,
-          lightTwoColor: defaultLightColor
-        });
+          controls: controls
+        }, vm);
       });
 
 
