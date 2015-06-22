@@ -168,6 +168,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       $('#slycat-3d-modal').on('shown.bs.modal', function() {
         settings.load();
       });
+
+
+      $(window).on('resize', function() {
+        camera.aspect = viewer.offsetWidth / viewer.offsetHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(viewer.offsetWidth, viewer.offsetHeight);
+      });
     },
 
     template: { require: 'text!' + server_root + 'templates/slycat-3d-viewer.html' }
