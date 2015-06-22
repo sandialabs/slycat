@@ -75,6 +75,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
 
+        console.log(geometry);
+
+        geometry.center();
         geometry.computeBoundingSphere();
         geometry.computeBoundingBox();
         var gbs = geometry.boundingSphere;
@@ -87,7 +90,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
          *     near clippling pane,
          *     far clipping pane )
          */
-        camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
+        camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 10000);
         camera.position.x = gbb.max.x;
         camera.position.y = gbb.max.y;
         camera.position.z = gbb.max.z + (gbs.radius*4);
@@ -250,8 +253,13 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       controls.update();
       renderer.render(scene, camera);
 
-      if (mesh)
-        mesh.rotation.y -= 0.01;
+      var x = $('#slycat-3d-x-check').is(':checked');
+      var y = $('#slycat-3d-y-check').is(':checked');
+      var z = $('#slycat-3d-z-check').is(':checked');
+
+      if (mesh && x) mesh.rotation.x -= 0.01;
+      if (mesh && y) mesh.rotation.y -= 0.01;
+      if (mesh && z) mesh.rotation.z -= 0.01;
 
       animation.id = requestAnimationFrame(rr);
     };
@@ -287,7 +295,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    */
   var onReset = function(controls, mesh) {
     controls.reset();
+    mesh.rotation.x = 0;
     mesh.rotation.y = 0;
+    mesh.rotation.z = 0;
   };
 
   /**
