@@ -45,6 +45,23 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
         };
       });
 
+      component.relation = ko.pureComputed(function(){
+        if(component.project()[0])
+        {
+          var users = component.project()[0].acl;
+          var get_name = function(x){ return x.user() };
+          var roles = {
+            administrator: users.administrators().map(get_name),
+            writer: users.writers().map(get_name),
+            reader: users.readers().map(get_name)
+          };
+          for(var k in roles)
+            if(roles[k].indexOf(component.user.uid()) != -1)
+              return k;
+        }
+        return "none";
+      });
+
       // Keep track of the current model, if any.
       component.models = changes_feed.models();
 
@@ -170,18 +187,24 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
         }
       });
 
-      var create_wizards = component.wizards.filter(function(wizard)
+      var filter_by_action = function(action, callback)
       {
-        return wizard.require.action() === "create";
-      });
-      var edit_wizards = component.wizards.filter(function(wizard)
+        var extra_filters = callback || function(){ return true; };
+        return function(wizard)
+        {
+          return wizard.require.action() === action && extra_filters(wizard);
+        };
+      };
+
+      var create_wizards = component.wizards.filter(filter_by_action("create"));
+      var edit_wizards = component.wizards.filter(filter_by_action("edit", function(wizard)
       {
-        return wizard.require.action() === "edit";
-      });
-      var delete_wizards = component.wizards.filter(function(wizard)
-      {
-        return wizard.require.action() === "delete";
-      });
+        return component.relation() === "administrator" ||
+          (component.relation() === "writer" && wizard.require.context() === "model");
+      }));
+      var info_wizards = component.wizards.filter(filter_by_action("info"));
+      var delete_wizards = component.wizards.filter(filter_by_action("delete"));
+
       var global_wizard_filter = function(wizard)
       {
         return wizard.require.context() === "global";
@@ -202,6 +225,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.global_edit_wizards = edit_wizards.filter(global_wizard_filter);
       component.project_edit_wizards = edit_wizards.filter(project_wizard_filter);
       component.model_edit_wizards = edit_wizards.filter(model_wizard_filter);
+      component.project_info_wizards = info_wizards.filter(project_wizard_filter);
       component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
       component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
@@ -261,152 +285,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
         window.open("http://slycat.readthedocs.org");
       }
 
-
     },
-    template: ' \
-<div class="bootstrap-styles zooming-modals"> \
-  <nav class="navbar navbar-default"> \
-    <div class="container"> \
-      <div class="navbar-header"> \
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-navbar-content"> \
-          <span class="sr-only">Toggle navigation</span> \
-          <span class="icon-bar"></span> \
-          <span class="icon-bar"></span> \
-          <span class="icon-bar"></span> \
-        </button> \
-        <a class="navbar-brand" data-bind="attr:{href:server_root + \'projects\'}">Slycat</a> \
-      </div> \
-      <div class="collapse navbar-collapse" id="slycat-navbar-content"> \
-        <ol class="breadcrumb navbar-left"> \
-          <li data-bind="visible: true"><a data-bind="attr:{href:server_root + \'projects\'}">Projects</a></li> \
-          <!-- ko foreach: project --> \
-            <li><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:popover()},attr:{href:$parent.server_root + \'projects/\' + _id()}"></a></li> \
-          <!-- /ko --> \
-          <!-- ko foreach: model --> \
-            <li class="slycat-unclickable"><a data-bind="text:name,popover:{trigger:\'hover\',html:true,content:$parent.model_popover()}"></a></li> \
-          <!-- /ko --> \
-        </ol> \
-        <ul class="nav navbar-nav navbar-left"> \
-          <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length"> \
-            <button type="button" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button> \
-            <ul class="dropdown-menu"> \
-              <!-- ko foreach: model_create_wizards --> \
-                <li class="slycat-clickable"><a class="" data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible: model_create_wizards().length && project_create_wizards().length"></li> \
-              <!-- ko foreach: project_create_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible: project_create_wizards().length && global_create_wizards().length"></li> \
-              <!-- ko foreach: global_create_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-            </ul> \
-          </li> \
-          <li class="dropdown" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length"> \
-            <button type="button" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button> \
-            <ul class="dropdown-menu"> \
-              <!-- ko foreach: model_edit_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"></li> \
-              <!-- ko foreach: project_edit_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"></li> \
-              <!-- ko foreach: global_edit_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-            </ul> \
-          </li> \
-          <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length"> \
-            <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button> \
-            <ul class="dropdown-menu"> \
-              <!-- ko foreach: model_delete_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"></li> \
-              <!-- ko foreach: project_delete_wizards --> \
-                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"></li> \
-              <!-- ko foreach: global_delete_wizards --> \
-                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li> \
-              <!-- /ko --> \
-            </ul> \
-          </li> \
-          <li class="dropdown" data-bind="visible:open_models().length"> \
-            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a> \
-            <ul class="dropdown-menu"> \
-              <!-- ko foreach: finished_models --> \
-                <li> \
-                  <a data-bind="attr:{href:$parent.server_root + \'models/\' + $data._id()},popover:{trigger:\'hover\',content:$data.message()}"> \
-                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{\'btn-success\':$data.result && $data.result()===\'succeeded\',\'btn-danger\':$data.result && $data.result()!==\'succeeded\'}"><span class="fa fa-check"></span></button> \
-                    <span data-bind="text:name"></span> \
-                  </a> \
-                </li> \
-              <!-- /ko --> \
-              <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li> \
-              <!-- ko foreach: running_models --> \
-                <li> \
-                  <a data-bind="attr:{href:$parent.server_root + \'models/\' + $data._id()}"> \
-                    <span data-bind="text:name"></span> \
-                  </a> \
-                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}"> \
-                </li> \
-              <!-- /ko --> \
-            </ul> \
-          </li> \
-        </ul> \
-        <ul class="nav navbar-nav navbar-right"> \
-          <li class="navbar-text slycat-clickable"><span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:\'hover\',content:\'Username: \' + user.uid()}"></span></li> \
-          <li class="dropdown"> \
-            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">Help <span class="caret"></span></a> \
-            <ul class="dropdown-menu"> \
-              <li class="slycat-clickable"><a data-bind="click:about"><span class="fa fa-fw"></span> About Slycat</a></li> \
-              <li class="slycat-clickable"><a data-bind="click:support_request"><span class="fa fa-fw fa-envelope-o"></span> Support Request</a></li> \
-              <li class="slycat-clickable"><a data-bind="click:open_documentation"><span class="fa fa-fw fa-book"></span> Documentation</a></li> \
-            </ul> \
-          </li> \
-        </ul> \
-      </div> \
-    </div> \
-  </nav> \
-  <!-- ko foreach: model_alerts --> \
-    <div class="alert slycat-navbar-alert" data-bind="css:{\'alert-danger\':$data.type === \'danger\',\'alert-info\':$data.type === \'info\',\'alert-success\':$data.type === \'success\'}"> \
-      <p data-bind="text:message"></p> \
-      <pre data-bind="visible:detail,text:detail,css:{\'bg-danger\':$data.type === \'danger\',\'bg-info\':$data.type === \'info\',\'bg-success\':$data.type === \'success\'}"></pre> \
-    </div> \
-  <!-- /ko --> \
-  <div class="modal fade" id="slycat-wizard" data-backdrop="static"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content zoom-sensitive"> \
-        <div data-bind="if: wizard" style="height: 100%"> \
-          <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" class="zoom-sensitive" style="height: 100%"> \
-          </div> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
-  <div class="modal fade" id="slycat-about"> \
-    <div class="modal-dialog"> \
-      <div class="modal-content"> \
-        <div class="modal-body"> \
-          <div class="jumbotron"> \
-            <img data-bind="attr:{src:server_root + \'css/slycat-brand.png\'}"/> \
-            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p> \
-          </div> \
-          <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p> \
-          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p> \
-        </div> \
-        <div class="modal-footer"> \
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
-        </div> \
-      </div> \
-    </div> \
-  </div> \
-</div> \
-'
+    template: { require: "text!" + server_root + "templates/slycat-navbar.html" }
 
   });
 });

@@ -333,7 +333,7 @@ class Manager(object):
       raise Exception("Wizard '%s' has already been registered." % (type))
     if "action" not in require:
       raise Exception("Wizard '%s' must specify an action." % (type))
-    if require["action"] not in ["create", "edit", "delete"]:
+    if require["action"] not in ["create", "edit", "info", "delete"]:
       raise Exception("Wizard '%s' unknown action: %s." % (type, require["action"]))
     if "context" not in require:
       raise Exception("Wizard '%s' must specify a context." % (type))
