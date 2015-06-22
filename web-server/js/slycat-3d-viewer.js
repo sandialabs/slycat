@@ -75,8 +75,6 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
 
-        console.log(geometry);
-
         geometry.center();
         geometry.computeBoundingSphere();
         geometry.computeBoundingBox();
