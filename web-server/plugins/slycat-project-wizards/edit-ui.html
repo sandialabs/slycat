@@ -43,7 +43,8 @@
           <div class="col-sm-12">
           <!-- ko foreach: modified.acl.administrators -->
             <div class="btn-group" role="group">
-              <button class="btn btn-xs btn-danger" data-bind="click:$parent.remove_project_member">
+              <button class="btn btn-xs btn-danger"
+                  data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as an administrator'}">
                 <span class="fa fa-trash-o"></span>
               </button>
               <div class="btn btn-xs btn-danger" style="pointer-events: none;">
@@ -53,7 +54,8 @@
           <!-- /ko -->
           <!-- ko foreach: modified.acl.writers -->
             <div style="margin: 5px;" class="btn-group" role="group">
-              <button class="btn btn-xs btn-warning" data-bind="click:$parent.remove_project_member">
+              <button class="btn btn-xs btn-warning" title="Remove this user"
+                  data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a writer'}">
                 <span class="fa fa-trash-o"></span>
               </button>
               <div class="btn btn-xs btn-warning" style="pointer-events: none;">
@@ -63,7 +65,8 @@
           <!-- /ko -->
           <!-- ko foreach: modified.acl.readers -->
             <div style="margin: 5px;" class="btn-group" role="group">
-              <button class="btn btn-xs btn-primary" data-bind="click:$parent.remove_project_member">
+              <button class="btn btn-xs btn-primary"
+                  data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a reader'}">
                 <span class="fa fa-trash-o"></span>
               </button>
               <div class="btn btn-xs btn-primary" style="pointer-events: none;">
