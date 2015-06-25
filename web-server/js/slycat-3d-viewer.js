@@ -80,9 +80,10 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
       fps = new Stats();
       ms = new Stats();
-      initStats(vid, fps, ms);
 
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
+
+        initStats(geometry);
 
         geometry.center();
         geometry.computeBoundingSphere();
@@ -359,8 +360,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
   /**
    * Initializes the statistics displays.
+   * @param  {Object} geometry THREE.Geometry or THREE.BufferGeometry object
    */
-  var initStats = function() {
+  var initStats = function(geometry) {
     fps.setMode(0);
     ms.setMode(1);
 
@@ -371,6 +373,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     ms.domElement.style.position = 'absolute';
     ms.domElement.style.right = '0px';
     ms.domElement.style.top = '98px';
+
+    var nf = 0;
+    if (geometry.type === 'BufferGeometry')
+      nf = geometry.attributes.normal.array.length / 3;
+    else if (geometry.type === 'Geometry')
+      nf = geometry.faces.length;
+
+    $('#slycat-3d-face3-number').text(nf);
 
     toggleStats(false);
 
@@ -384,8 +394,11 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    */
   var toggleStats = function(toggle) {
     var d = toggle ? 'block' : 'none';
+    var id = toggle ? 'inline-block' : 'none';
+
     fps.domElement.style.display = d;
     ms.domElement.style.display = d;
+    $('.slycat-3d-stats').css('display', id);
   };
 
 });
