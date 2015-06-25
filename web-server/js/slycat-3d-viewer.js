@@ -1,5 +1,10 @@
 define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
 
+  /** globals */
+  var vid;
+  var fps;
+  var ms;
+
   /**
    * A Knockout component to render STL files in slycat, using the Three.js
    * library.
@@ -53,7 +58,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var aid = params.aid;
       var cid = params.cid;
 
-      var vid = generateViewerId(cid);
+      vid = generateViewerId(cid);
       adjustViewerHeight(vid);
 
       var viewer = document.getElementById(vid);
@@ -72,6 +77,10 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var animation = { id: null };
       var lightOne = null;
       var lightTwo = null;
+
+      fps = new Stats();
+      ms = new Stats();
+      initStats(vid, fps, ms);
 
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
 
@@ -170,6 +179,10 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
         settings.load();
       });
 
+      $('#slycat-3d-stats-check').on('change', function() {
+        toggleStats($(this).is(':checked'));
+      });
+
 
       $(window).on('resize', function() {
         camera.aspect = viewer.offsetWidth / viewer.offsetHeight;
@@ -232,6 +245,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       controls.update();
       renderer.render(scene, camera);
       animation.id = requestAnimationFrame(rf);
+
+      fps.update();
+      ms.update();
     };
 
     rf();
@@ -260,6 +276,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       if (mesh && z) mesh.rotation.z -= 0.01;
 
       animation.id = requestAnimationFrame(rr);
+
+      fps.update();
+      ms.update();
     };
 
     rr();
@@ -336,6 +355,37 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     $div.append($msg);
 
     return void 0;
+  };
+
+  /**
+   * Initializes the statistics displays.
+   */
+  var initStats = function() {
+    fps.setMode(0);
+    ms.setMode(1);
+
+    fps.domElement.style.position = 'absolute';
+    fps.domElement.style.right = '83px';
+    fps.domElement.style.top = '98px';
+
+    ms.domElement.style.position = 'absolute';
+    ms.domElement.style.right = '0px';
+    ms.domElement.style.top = '98px';
+
+    toggleStats(false);
+
+    document.getElementById(vid).appendChild(fps.domElement);
+    document.getElementById(vid).appendChild(ms.domElement);
+  };
+
+  /**
+   * Toggles the display state for the statistics displays.
+   * @param  {Boolean} toggle
+   */
+  var toggleStats = function(toggle) {
+    var d = toggle ? 'block' : 'none';
+    fps.domElement.style.display = d;
+    ms.domElement.style.display = d;
   };
 
 });
