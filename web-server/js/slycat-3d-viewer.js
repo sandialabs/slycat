@@ -13,6 +13,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    *   three.min.js
    *   TackballControls.js
    *   STLLoader.js
+   *   stats.min.js
    *
    * @param {String} mid Model ID. This is an optional parameter.
    * @param {String} aid Artifact ID.

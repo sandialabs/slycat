@@ -2,11 +2,11 @@ var GeometrySettings = (function() {
   'use strict';
 
   var formatColorStringAs0x = function(cs) {
-    return cs.startsWith('#') ? '0x' + cs.slice(1, cs.length) : cs;
+    return cs.charAt(0) === '#' ? '0x' + cs.slice(1, cs.length) : cs;
   };
 
   var formatColorStringAsHexStr = function(cs) {
-    return cs.startsWith('0') ? '#' + cs.slice(2, cs.length) : cs;
+    return cs.charAt(0) === '0' ? '#' + cs.slice(2, cs.length) : cs;
   };
 
   /**
