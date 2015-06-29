@@ -377,7 +377,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
     var nf = 0;
     if (geometry.type === 'BufferGeometry')
-      nf = geometry.attributes.normal.array.length / 3;
+      nf = geometry.attributes.normal.array.length / (3 * 3);
     else if (geometry.type === 'Geometry')
       nf = geometry.faces.length;
 
