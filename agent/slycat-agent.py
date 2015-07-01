@@ -262,11 +262,12 @@ def get_video(command, arguments):
 def main():
   # Parse and sanity-check command-line arguments.
   parser = argparse.ArgumentParser()
-  parser.add_argument("--fail", default=False, action="store_true", help="Fail immediately on startup.  Obviously, this is for testing.")
+  parser.add_argument("--fail-startup", default=False, action="store_true", help="Fail immediately on startup.  Obviously, this is for testing.")
+  parser.add_argument("--fail-exit", default=False, action="store_true", help="Fail during exit.  Obviously, this is for testing.")
   parser.add_argument("--ffmpeg", default=None, help="Absolute path to an ffmpeg executable.")
   arguments = parser.parse_args()
 
-  if arguments.fail:
+  if arguments.fail_startup:
     exit(-1)
 
   try:
@@ -303,9 +304,8 @@ def main():
 
       action = command["action"]
       if action == "exit":
-        sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Exiting."}))
-        sys.stdout.flush()
-        break
+        if not arguments.fail_exit:
+          break
       elif action == "browse":
         browse(command)
       elif action == "get-file":
