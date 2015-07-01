@@ -65,7 +65,6 @@ with open(arguments.data_file, "w") as file:
     file.write(",".join([str(column[row]) for column in columns]) + "\n")
 
 # Generate random images ...
-font = PIL.ImageFont.truetype("/usr/share/fonts/dejavu/DejaVuSerif-BoldItalic.ttf", 200)
 os.mkdir(arguments.image_directory)
 for index in numpy.arange(arguments.row_count * arguments.image_count):
   image = PIL.Image.new("RGB", (arguments.image_width, arguments.image_height), "white")
