@@ -124,18 +124,18 @@ def step_impl(context):
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
   nose.tools.assert_not_in("table", listing["names"])
-  nose.tools.assert_not_in("timeseries", listing["names"])
+  nose.tools.assert_not_in("timer", listing["names"])
 
 @when(u'browsing a directory with directory reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "directory-allow":"timeseries$", "path":os.path.join(root_dir, "packages/slycat")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "directory-allow":"timer$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories, with the allowed directories')
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
   nose.tools.assert_not_in("table", listing["names"])
-  nose.tools.assert_in("timeseries", listing["names"])
+  nose.tools.assert_in("timer", listing["names"])
 
 @given(u'a sample csv file')
 def step_impl(context):
