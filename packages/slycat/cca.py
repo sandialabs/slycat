@@ -84,6 +84,10 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
 
+  # We validate this here, to avoid computing the rank twice.
+  if X.shape[0] < Xrank or X.shape[0] < Yrank:
+    raise ValueError("Number of rows must be >= rank(X), and >= rank(Y).")
+
   L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)
 
   d = min(Xrank, Yrank)
