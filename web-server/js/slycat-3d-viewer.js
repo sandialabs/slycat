@@ -1,7 +1,7 @@
 define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
 
   /** globals */
-  var vid;
+  var viewer;
   var fps;
   var ms;
 
@@ -57,12 +57,12 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
-      var cid = params.cid;
+      var container = params.container;
+      var $container = $(container);
 
-      vid = generateViewerId(cid);
-      adjustViewerHeight(vid);
+      viewer = container.children[1];
+      adjustViewerHeight(viewer);
 
-      var viewer = document.getElementById(vid);
       var width = viewer.offsetWidth;
       var height = viewer.offsetHeight;
 
@@ -148,7 +148,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
         renderer.setClearColor(vm.backgroundColor());
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height);
-        document.getElementById(vid).appendChild(renderer.domElement);
+        viewer.appendChild(renderer.domElement);
 
         renderer.domElement.addEventListener('mousemove', function(e) { onMouseMove(mouse, e); });
 
@@ -167,12 +167,12 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       });
 
 
-      $('#' + cid + ' .slycat-3d-btn-reset').on('click', function() {
+      $('.slycat-3d-btn-reset', $container).on('click', function() {
         onReset(controls, mesh);
         return false;
       });
 
-      $('#' + cid + ' .slycat-3d-btn-rotate').on('click', function() {
+      $('.slycat-3d-btn-rotate', $container).on('click', function() {
         onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
         return false;
       });
@@ -212,12 +212,12 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * container, mainly to prevent issues if viewing multiple models on the same
    * page.
    *
-   * @param  {String} cid container ID
-   * @return {String}     new viewer ID
+   * @param  {String} container
+   * @return {String}           new viewer ID
    */
-  var generateViewerId = function(cid) {
-    var vid = 'slycat-3d-viewer-' + cid;
-    $('#' + cid + ' .slycat-3d-viewer').attr('id', vid);
+  var generateViewerId = function(container) {
+    var vid = 'slycat-3d-viewer-' + container;
+    $('.slycat-3d-viewer').attr('id', vid);
 
     return vid;
   };
@@ -226,12 +226,13 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * This function is a hack because there are some issues with the heights and
    * the WebGL canvas not being rendered correctly.
    *
-   * @param  {String} vid viewer ID
+   * @param  {String} viewer
    */
-  var adjustViewerHeight = function(vid) {
-    var $stlDiv = $('#' + vid);
-    var $stlParent = $stlDiv.parent();
-    $stlDiv.css('height', $stlParent.height() - 48);
+  var adjustViewerHeight = function(viewer) {
+    var $stlDiv = $(viewer);
+    var $stlContent = $($stlDiv.parent()).parent();
+
+    $stlDiv.css('height', $stlContent.height() - 48);
   };
 
   /**
@@ -385,8 +386,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
     toggleStats(false);
 
-    document.getElementById(vid).appendChild(fps.domElement);
-    document.getElementById(vid).appendChild(ms.domElement);
+    viewer.appendChild(fps.domElement);
+    viewer.appendChild(ms.domElement);
   };
 
   /**
