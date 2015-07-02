@@ -23,6 +23,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.cancel = function() {
+      if(component.remote.sid())
+        client.delete_remote({ sid: component.remote.sid() });
+
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
     };
