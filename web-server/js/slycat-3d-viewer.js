@@ -208,21 +208,6 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   };
 
   /**
-   * Generates and assigns a unique ID to the STL viewer based off its
-   * container, mainly to prevent issues if viewing multiple models on the same
-   * page.
-   *
-   * @param  {String} container
-   * @return {String}           new viewer ID
-   */
-  var generateViewerId = function(container) {
-    var vid = 'slycat-3d-viewer-' + container;
-    $('.slycat-3d-viewer').attr('id', vid);
-
-    return vid;
-  };
-
-  /**
    * This function is a hack because there are some issues with the heights and
    * the WebGL canvas not being rendered correctly.
    *
