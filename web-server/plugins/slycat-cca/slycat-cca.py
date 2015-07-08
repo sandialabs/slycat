@@ -29,15 +29,13 @@ def register_slycat_plugin(context):
       # Transform the input data table to a form usable with our cca() function ...
       row_count = metadata[0]["shape"][0]
       indices = numpy.arange(row_count, dtype="int32")
-      X = numpy.empty((row_count, len(input_columns)))
-      for j, input_column in enumerate(input_columns):
-        slycat.web.server.update_model(database, model, progress=slycat.web.server.mix(0.0, 0.25, float(j) / float(len(input_columns))))
-        X[:,j] = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % input_column))
+      input_attributes = "|".join([str(column) for column in input_columns])
+      X = numpy.column_stack(list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % input_attributes)))
+      slycat.web.server.update_model(database, model, progress=0.25)
 
-      Y = numpy.empty((row_count, len(output_columns)))
-      for j, output_column in enumerate(output_columns):
-        slycat.web.server.update_model(database, model, progress=slycat.web.server.mix(0.25, 0.50, float(j) / float(len(output_columns))))
-        Y[:,j] = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % output_column))
+      output_attributes = "|".join([str(column) for column in output_columns])
+      Y = numpy.column_stack(list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % output_attributes)))
+      slycat.web.server.update_model(database, model, progress=0.50)
 
       # Remove rows containing NaNs ...
       good = numpy.invert(numpy.any(numpy.isnan(numpy.hstack((X, Y))), axis=1))

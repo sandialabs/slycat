@@ -47,10 +47,10 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
     raise ValueError("X and Y must have two dimensions.")
   if X.shape[0] != Y.shape[0]:
     raise ValueError("X and Y must contain the same number of rows.")
-  if X.shape[0] <= X.shape[1] + Y.shape[1]:
-    raise ValueError("Number of rows must be greater-than the number of columns.")
+  if X.shape[0] < X.shape[1] or X.shape[0] < Y.shape[1]:
+    raise ValueError("Number of rows must be >= the number of columns in X, and >= the number of columns in Y.")
   if X.shape[1] < 1 or Y.shape[1] < 1:
-    raise ValueError("X and Y must contain one-or-more columns.")
+    raise ValueError("X and Y must each contain at least one column.")
   for column in numpy.column_stack((X, Y)).T:
     if column.min() == column.max():
       raise ValueError("Columns in X and Y cannot be constant.")
@@ -83,6 +83,10 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
 
   Xrank = numpy.sum(numpy.abs(numpy.diag(R1)) > 10**(numpy.log10(numpy.abs(R1[0,0])) - significant_digits) * max(n, p1))
   Yrank = numpy.sum(numpy.abs(numpy.diag(R2)) > 10**(numpy.log10(numpy.abs(R2[0,0])) - significant_digits) * max(n, p2))
+
+  # We validate this here, to avoid computing the rank twice.
+  if X.shape[0] < Xrank or X.shape[0] < Yrank:
+    raise ValueError("Number of rows must be >= rank(X), and >= rank(Y).")
 
   L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)
 

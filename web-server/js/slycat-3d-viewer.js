@@ -1,5 +1,10 @@
 define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
 
+  /** globals */
+  var viewer;
+  var fps;
+  var ms;
+
   /**
    * A Knockout component to render STL files in slycat, using the Three.js
    * library.
@@ -8,6 +13,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    *   three.min.js
    *   TackballControls.js
    *   STLLoader.js
+   *   stats.min.js
    *
    * @param {String} mid Model ID. This is an optional parameter.
    * @param {String} aid Artifact ID.
@@ -51,12 +57,12 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
-      var cid = params.cid;
+      var container = params.container;
+      var $container = $(container);
 
-      var vid = generateViewerId(cid);
-      adjustViewerHeight(vid);
+      viewer = container.children[1];
+      adjustViewerHeight(viewer);
 
-      var viewer = document.getElementById(vid);
       var width = viewer.offsetWidth;
       var height = viewer.offsetHeight;
 
@@ -73,7 +79,12 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var lightOne = null;
       var lightTwo = null;
 
+      fps = new Stats();
+      ms = new Stats();
+
       new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
+
+        initStats(geometry);
 
         geometry.center();
         geometry.computeBoundingSphere();
@@ -137,7 +148,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
         renderer.setClearColor(vm.backgroundColor());
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height);
-        document.getElementById(vid).appendChild(renderer.domElement);
+        viewer.appendChild(renderer.domElement);
 
         renderer.domElement.addEventListener('mousemove', function(e) { onMouseMove(mouse, e); });
 
@@ -156,18 +167,22 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       });
 
 
-      $('#' + cid + ' .slycat-3d-btn-reset').on('click', function() {
+      $('.slycat-3d-btn-reset', $container).on('click', function() {
         onReset(controls, mesh);
         return false;
       });
 
-      $('#' + cid + ' .slycat-3d-btn-rotate').on('click', function() {
+      $('.slycat-3d-btn-rotate', $container).on('click', function() {
         onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
         return false;
       });
 
       $('#slycat-3d-modal').on('shown.bs.modal', function() {
         settings.load();
+      });
+
+      $('#slycat-3d-stats-check').on('change', function() {
+        toggleStats($(this).is(':checked'));
       });
 
 
@@ -193,30 +208,16 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   };
 
   /**
-   * Generates and assigns a unique ID to the STL viewer based off its
-   * container, mainly to prevent issues if viewing multiple models on the same
-   * page.
-   *
-   * @param  {String} cid container ID
-   * @return {String}     new viewer ID
-   */
-  var generateViewerId = function(cid) {
-    var vid = 'slycat-3d-viewer-' + cid;
-    $('#' + cid + ' .slycat-3d-viewer').attr('id', vid);
-
-    return vid;
-  };
-
-  /**
    * This function is a hack because there are some issues with the heights and
    * the WebGL canvas not being rendered correctly.
    *
-   * @param  {String} vid viewer ID
+   * @param  {String} viewer
    */
-  var adjustViewerHeight = function(vid) {
-    var $stlDiv = $('#' + vid);
-    var $stlParent = $stlDiv.parent();
-    $stlDiv.css('height', $stlParent.height() - 48);
+  var adjustViewerHeight = function(viewer) {
+    var $stlDiv = $(viewer);
+    var $stlContent = $($stlDiv.parent()).parent();
+
+    $stlDiv.css('height', $stlContent.height() - 48);
   };
 
   /**
@@ -232,6 +233,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       controls.update();
       renderer.render(scene, camera);
       animation.id = requestAnimationFrame(rf);
+
+      fps.update();
+      ms.update();
     };
 
     rf();
@@ -260,6 +264,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       if (mesh && z) mesh.rotation.z -= 0.01;
 
       animation.id = requestAnimationFrame(rr);
+
+      fps.update();
+      ms.update();
     };
 
     rr();
@@ -336,6 +343,49 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     $div.append($msg);
 
     return void 0;
+  };
+
+  /**
+   * Initializes the statistics displays.
+   * @param  {Object} geometry THREE.Geometry or THREE.BufferGeometry object
+   */
+  var initStats = function(geometry) {
+    fps.setMode(0);
+    ms.setMode(1);
+
+    fps.domElement.style.position = 'absolute';
+    fps.domElement.style.right = '83px';
+    fps.domElement.style.top = '98px';
+
+    ms.domElement.style.position = 'absolute';
+    ms.domElement.style.right = '0px';
+    ms.domElement.style.top = '98px';
+
+    var nf = 0;
+    if (geometry.type === 'BufferGeometry')
+      nf = geometry.attributes.normal.array.length / (3 * 3);
+    else if (geometry.type === 'Geometry')
+      nf = geometry.faces.length;
+
+    $('#slycat-3d-face3-number').text(nf);
+
+    toggleStats(false);
+
+    viewer.appendChild(fps.domElement);
+    viewer.appendChild(ms.domElement);
+  };
+
+  /**
+   * Toggles the display state for the statistics displays.
+   * @param  {Boolean} toggle
+   */
+  var toggleStats = function(toggle) {
+    var d = toggle ? 'block' : 'none';
+    var id = toggle ? 'inline-block' : 'none';
+
+    fps.domElement.style.display = d;
+    ms.domElement.style.display = d;
+    $('.slycat-3d-stats').css('display', id);
   };
 
 });

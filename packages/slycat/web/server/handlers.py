@@ -502,6 +502,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
   try:
     slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
   except Exception as e:
+    cherrypy.log.error("Exception parsing posted files: %s" % e)
     raise cherrypy.HTTPError("400 %s" % e.message)
 
 @cherrypy.tools.json_in(on = True)

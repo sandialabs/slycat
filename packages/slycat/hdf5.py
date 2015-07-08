@@ -11,6 +11,7 @@ class DArray(slycat.darray.Prototype):
     self._metadata = self._storage.get("metadata", None)
     if self._metadata is None:
       self._metadata = self._storage.attrs
+    self._attributes = None
 
   @property
   def ndim(self):
@@ -63,7 +64,9 @@ class DArray(slycat.darray.Prototype):
     -------
     attributes: list of dicts
     """
-    return [dict(name=name, type=type) for name, type in zip(self._metadata["attribute-names"], self._metadata["attribute-types"])]
+    if self._attributes is None:
+      self._attributes = [dict(name=name, type=type) for name, type in zip(self._metadata["attribute-names"], self._metadata["attribute-types"])]
+    return self._attributes
 
   def _update_cache(self, attribute_index):
     attribute_key = "attribute/%s" % attribute_index
