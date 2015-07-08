@@ -219,6 +219,12 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
           return false;
         return wizard.require.context() === "model" && component.model_id();
       }
+      var bookmark_wizard_filter = function(wizard)
+      {
+        if("model-type" in wizard.require && component.model().length && wizard.require["model-type"].indexOf(component.model()[0]["model-type"]()) == -1)
+          return false;
+        return wizard.require.context() === "model" && component.model_id() && wizard.type() === "slycat-create-saved-bookmark";
+      }
       component.global_create_wizards = create_wizards.filter(global_wizard_filter);
       component.project_create_wizards = create_wizards.filter(project_wizard_filter);
       component.model_create_wizards = create_wizards.filter(model_wizard_filter);
@@ -226,6 +232,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.project_edit_wizards = edit_wizards.filter(project_wizard_filter);
       component.model_edit_wizards = edit_wizards.filter(model_wizard_filter);
       component.project_info_wizards = info_wizards.filter(project_wizard_filter);
+      component.model_bookmark_wizards = create_wizards.filter(bookmark_wizard_filter);
       component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
       component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
@@ -284,6 +291,43 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         window.open("http://slycat.readthedocs.org");
       }
+
+      var references = mapping.fromJS([]);
+
+      component.saved_bookmarks = references.filter(function(reference)
+      {
+        return reference.bid() && reference.mid();
+      }).map(function(reference)
+      {
+        var model = ko.utils.arrayFirst(component.models(), function(model)
+        {
+          return model._id() == reference.mid();
+        });
+
+        return {
+          _id: reference._id,
+          name: reference.name,
+          model_name: model ? model.name() : "",
+          model_type: reference["model-type"] ? reference["model-type"]() : "",
+          created: reference.created,
+          creator: reference.creator,
+          uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
+        };
+      });
+
+      component.update_references = function()
+      {
+        client.get_project_references(
+        {
+          pid: component.project_id(),
+          success: function(result)
+          {
+            mapping.fromJS(result, references);
+          }
+        });
+      }
+
+      component.update_references();
 
     },
     template: { require: "text!" + server_root + "templates/slycat-navbar.html" }
