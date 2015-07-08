@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, dialog, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
@@ -314,6 +314,30 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
           uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
         };
       });
+
+      component.delete_saved_bookmark = function(reference)
+      {
+        dialog.dialog(
+        {
+          title: "Delete Saved Bookmark?",
+          message: "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
+          buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+          callback: function(button)
+          {
+            if(button.label != "OK")
+              return;
+            client.delete_reference(
+            {
+              rid: reference._id(),
+              success: function()
+              {
+                component.update_references();
+              },
+              error: dialog.ajax_error("Couldn't delete bookmark."),
+            });
+          },
+        });
+      }
 
       component.update_references = function()
       {
