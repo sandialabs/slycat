@@ -241,6 +241,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.show_wizard.subscribe(function(value)
       {
         $("#slycat-wizard").modal(value ? "show" : "hide");
+        // Updating references when wizard is hidden because a new bookmark may have been created.
+        if( value == false )
+        {
+          component.update_references();
+        }
       });
 
       // Get information about the current user.
@@ -296,7 +301,10 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
 
       component.saved_bookmarks = references.filter(function(reference)
       {
-        return reference.bid() && reference.mid();
+        if(component.model_id() === undefined)
+          return reference.bid() && reference.mid();
+        else
+          return reference.bid() && reference.mid() && reference.mid() == component.model_id();
       }).map(function(reference)
       {
         var model = ko.utils.arrayFirst(component.models(), function(model)

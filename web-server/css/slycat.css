@@ -61,6 +61,14 @@ body
   margin-left: 0;
   margin-right: 15px;
 }
+.nav-bookmarks .bookmark-link {
+  position: relative;
+  padding-right: 50px !important;
+}
+.nav-bookmarks .bookmark-delete {
+  position: absolute;
+  right: 20px;
+}
 
 .bootstrap-styles .modal .jumbotron
 {
