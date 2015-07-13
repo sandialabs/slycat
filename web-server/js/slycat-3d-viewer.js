@@ -2,6 +2,13 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
   /** globals */
   var viewer;
+  var container;
+  var camera;
+  var renderer;
+
+  /** flag whether the viewer is loaded as its own model or within a <div /> */
+  var isModel;
+
   var fps;
   var ms;
 
@@ -17,7 +24,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    *
    * @param {String} mid Model ID. This is an optional parameter.
    * @param {String} aid Artifact ID.
-   * @param {String} cid Container ID. This is the CSS ID of the container for the STL viewer.
+   * @param {Stringcid Container ID. This is the CSS ID of the container for the STL viewer.
    */
   ko.components.register('slycat-3d-viewer', {
     viewModel: function(params) {
@@ -32,7 +39,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
        */
       var vm = this;
       vm.ambientLightColor = ko.observable('#F2F2F2');
-      vm.backgroundColor = ko.observable('#F2F2F2');
+      vm.backgroundColor = ko.observable(params.backgroundColor || '#F2F2F2');
 
       vm.lightOneColor = ko.observable('#FFFFFF');
       vm.lightOneX = ko.observable(0);
@@ -57,7 +64,11 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
       var mid = params.mid || URI(window.location).segment(-1);
       var aid = params.aid;
-      var container = params.container;
+      var uri = params.uri;
+      var loadUri = uri ? uri : mid + '/files/' + aid;
+      isModel = params.aid ? true : false;
+
+      container = params.container;
       var $container = $(container);
 
       viewer = container.children[1];
@@ -67,8 +78,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var height = viewer.offsetHeight;
 
       var settings = null;
-      var renderer = null;
-      var camera = null;
+      renderer = null;
+      camera = null;
       var mouse = null;
       var controls = null;
       var scene = null;
@@ -82,7 +93,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       fps = new Stats();
       ms = new Stats();
 
-      new THREE.STLLoader().load(mid + '/files/' + aid, function(geometry) {
+      new THREE.STLLoader().load(loadUri, function(geometry) {
+        var l = document.getElementsByClassName('loading-image')[0];
+        if (l) l.parentNode.removeChild(l);
 
         initStats(geometry);
 
@@ -186,17 +199,44 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       });
 
 
-      $(window).on('resize', function() {
-        camera.aspect = viewer.offsetWidth / viewer.offsetHeight;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(viewer.offsetWidth, viewer.offsetHeight);
-      });
+      $(window).on('resize', function() { resizeViewer(); });
     },
 
     template: { require: 'text!' + server_root + 'templates/slycat-3d-viewer.html' }
   });
 
+
+  /**
+   * The function resizes the viewer (WebGL/canvas) according to the parent
+   * container, its header and the stats displays. The function should be
+   * called upon during resize events.
+   */
+  var resizeViewer = function() {
+    var headerHeight = 0;
+    var statsHeight = 0;
+    var borders = 0;
+    var w;
+    var h;
+
+    if (isModel) {
+      w = $(viewer).outerWidth();
+      h = $(viewer).outerHeight();
+    } else {
+      headerHeight = $(container.firstChild).outerHeight();
+      statsHeight = $('#stats', $(container)).is(':visible') ? $('#stats', $(container)).height() : 0;
+      borders = 2;
+      w = parseInt(container.parentNode.style.width, 10);
+      h = parseInt(container.parentNode.style.height, 10);
+    }
+
+    if (camera) {
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    if (renderer)
+      renderer.setSize(w - borders, h - headerHeight - statsHeight);
+  };
 
   /**
    * Function executed on mouse events for the renderer.
@@ -353,13 +393,17 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     fps.setMode(0);
     ms.setMode(1);
 
-    fps.domElement.style.position = 'absolute';
-    fps.domElement.style.right = '83px';
-    fps.domElement.style.top = '98px';
+    fps.domElement.style.position = 'relative';
+    fps.domElement.style.top = '0px';
+    fps.domElement.style.display = 'inline-block';
+    fps.domElement.style.marginRight = '5px';
+    fps.domElement.style.float = 'right';
 
-    ms.domElement.style.position = 'absolute';
-    ms.domElement.style.right = '0px';
-    ms.domElement.style.top = '98px';
+    ms.domElement.style.position = 'relative';
+    ms.domElement.style.top = '0px';
+    ms.domElement.style.display = 'inline-block';
+    ms.domElement.style.marginRight = '5px';
+    ms.domElement.style.float = 'right';
 
     var nf = 0;
     if (geometry.type === 'BufferGeometry')
@@ -371,8 +415,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
     toggleStats(false);
 
-    viewer.appendChild(fps.domElement);
     viewer.appendChild(ms.domElement);
+    viewer.appendChild(fps.domElement);
   };
 
   /**
@@ -386,6 +430,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     fps.domElement.style.display = d;
     ms.domElement.style.display = d;
     $('.slycat-3d-stats').css('display', id);
+
+    resizeViewer();
   };
 
 });

@@ -7,7 +7,7 @@ rights in this software.
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash"], function(server_root, d3, URI, remotes, _)
+define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash", "knockout"], function(server_root, d3, URI, remotes, _, ko)
 {
   $.widget("parameter_image.scatterplot",
   {
@@ -49,6 +49,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       canvas_selected_square_border_size : 2,
       pinned_width : 200,
       pinned_height : 200,
+      pinned_stl_width: 600,
+      pinned_stl_height: 600,
       hover_time : 250,
       image_cache : {},
       video_file_extensions : [
@@ -1006,6 +1008,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   _sync_open_images: function()
   {
     var self = this;
+    var isStl = false;
 
     // Get the scatterplot width so we can convert absolute to relative coordinates.
     var width = Number(self.svg.attr("width"));
@@ -1029,15 +1032,39 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   _open_images: function(images)
   {
     var self = this;
+
     within_svg = function(e, options) {
       return 0 <= e.y && e.y <= options.height && 0 <= e.x && e.x <= options.width;
     }
+
     var clear_hover_timer = function(widget) {
       if (widget.close_hover_timer) {
         window.clearTimeout(widget.close_hover_timer);
         return widget.close_hover_timer = null;
       }
     }
+
+    var  add_resize_handle = function(fh) {
+      fh.append("span")
+        .attr("class", "resize-handle frame-icon")
+        .call(
+          d3.behavior.drag()
+            .on('drag', handlers["resize"])
+            .on('dragstart', handlers["resize_start"])
+            .on('dragend', handlers["resize_end"])
+        )
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"]);
+    };
+
+    var add_pin_button = function(fh) {
+      fh.append("span")
+        .attr('class', 'pin-button frame-icon')
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"])
+        .on("click", handlers["pin"]);
+    };
+
     var handlers = {
       stop_event: function() {
         return false;
@@ -1107,12 +1134,16 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         min = 50;
         if (0 <= y && y <= self.options.height && 0 <= x && x <= self.options.width && x > min && y > min) {
           frame = d3.select(this.parentNode);
-          target_width = self._scale_width(frame.attr("data-ratio"), x, y);
+          var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
+          target_width = self._scale_width(ratio, x, y);
           frame.style({
-            width: target_width + "px"
+            width: target_width + "px",
+            height: y + "px"
           });
           self._adjust_leader_line(frame);
         }
+
+        $(window).trigger('resize');
       }),
       resize_start: (function() {
         var frame;
@@ -1139,21 +1170,29 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         clear_hover_timer(self);
         frame = d3.select(d3.event.target.parentNode);
         theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
-        imageWidth = self.options.pinned_width;
-        imageHeight = self.options.pinned_height;
-        target_width = self._scale_width(frame.attr("data-ratio"), imageWidth, imageHeight);
+        imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
+        imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
+        var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
+        target_width = self._scale_width(ratio, imageWidth, imageHeight);
         x = self._getDefaultXPosition(image.index, imageWidth);
         y = self._getDefaultYPosition(image.index, imageHeight);
+
         frame.attr("data-transx", x).attr("data-transy", y).style({
           left: x + "px",
           top: y + "px",
-          width: target_width + "px"
+          width: target_width + "px",
         });
+
+        if (isStl)
+          frame.style('height', imageHeight + 'px');
+
         self._adjust_leader_line(frame);
         self._sync_open_images();
+
+        $(window).trigger('resize');
         return false;
       })
-  }
+    }
 
     // If the list of images is empty, we're done.
     if(images.length == 0)
@@ -1173,15 +1212,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     // If image is hover and we are no longer loading this image, we're done.
-    if( image.image_class == "hover-image" &&
-        self.opening_image != image.index
-      )
-    {
+    if( image.image_class == "hover-image" && self.opening_image != image.index) {
       return;
     }
-    // Create scaffolding and status indicator if we already don't have one
-    if( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ){
 
+    // Create scaffolding and status indicator if we already don't have one
+    if( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ) {
       // Define a default size for every image.
       if(!image.width)
         image.width = self.options.pinned_width;
@@ -1203,7 +1239,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr("data-transx", image.x)
         .attr("data-transy", image.y)
         .style({
-          "left": image.x + "px", 
+          "left": image.x + "px",
           "top": image.y + "px",
           "width": image.width + "px",
           "height": image.height + "px",
@@ -1247,8 +1283,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Create the loading image ...
       var loading_image = frame_html.append("img")
         .attr("class", "loading-image")
-        .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
-        ;
+        .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif");
 
       // Schedule timeout for hover
       self.element.one("mousemove", handlers["hover"]);
@@ -1285,8 +1320,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
 
-      if(blob.type.indexOf('image/') == 0)
-      {
+      if(blob.type.indexOf('image/') == 0) {
         // Create the html image ...
         var htmlImage = frame_html.append("img")
           .attr("class", "image resize")
@@ -1315,14 +1349,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             htmlImage
               .style({
                 "display": "block",
-              })
-              ;
+              });
             self._adjust_leader_line(frame_html);
-          })
-          ;
-      }
-      else if(blob.type.indexOf('video/') == 0)
-      {
+          });
+      } else if(blob.type.indexOf('video/') == 0) {
         // Create the video ...
         var video = frame_html
           .append("video")
@@ -1353,11 +1383,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             video
               .style({
                 "display": "block",
-              })
-              ;
+              });
             self._adjust_leader_line(frame_html);
-          })
-          ;
+          });
       }
 
       // Remove loading indicator image
@@ -1367,27 +1395,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._adjust_leader_line(frame_html);
 
       // Create a resize handle
-      var resize_handle_html = frame_html.append("span")
-        .attr("class", "resize-handle frame-icon")
-        .call(
-          d3.behavior.drag()
-            .on('drag', handlers["resize"])
-            .on('dragstart', handlers["resize_start"])
-            .on('dragend', handlers["resize_end"])
-        )
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"]);
+      add_resize_handle(frame_html);
 
       // Create a pin button ...
-      var pin_button_html = frame_html.append("span")
-        .attr('class', 'pin-button frame-icon')
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
-        .on("click", handlers["pin"]);
+      add_pin_button(frame_html);
 
       if(!image.no_sync)
         self._sync_open_images();
       self._open_images(images.slice(1));
+
       return;
     }
 
@@ -1396,6 +1412,28 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
 
+    var fileUriArr = image.uri.split('/');
+    var isStl = fileUriArr[fileUriArr.length - 1].indexOf('.stl') !== -1 ? true : false;
+
+    if (isStl) {
+      var container = frame_html[0][0];
+      var viewer = document.createElement('slycat-3d-viewer');
+
+      var ps = document.createAttribute('params')
+      ps.value = "backgroundColor: '#FFFFFF', uri: '" + server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()) + "', container: $element";
+      var s = document.createAttribute('style');
+      s.value = 'width: 100%; height: 100%;';
+      viewer.setAttributeNode(ps);
+      viewer.setAttributeNode(s);
+
+      container.appendChild(viewer);
+      ko.applyBindings({}, container);
+
+      add_resize_handle(frame_html);
+      add_pin_button(frame_html);
+
+      return;
+    }
 
     console.log("Attempting to load image from server-side cache");
     // Retrieve the image.

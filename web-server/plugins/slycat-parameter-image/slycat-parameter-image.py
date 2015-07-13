@@ -67,6 +67,11 @@ def register_slycat_plugin(context):
     "filter-manager.js",
     "category-select.js",
     "stickies.core.js",
+    "three.min.js",
+    "STLLoader.js",
+    "stats.min.js",
+    "TrackballControls.js",
+    "GeometrySettings.js"
     # "parameter-controls.js",
     # "parameter-image-table.js",
     # "parameter-image-scatterplot.js",
