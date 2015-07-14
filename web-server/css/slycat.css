@@ -61,6 +61,12 @@ body
   margin-left: 0;
   margin-right: 15px;
 }
+.nav-bookmarks .bookmark-new {
+  font-weight: bold !important;
+}
+.nav-bookmarks .bookmark-new .fa {
+  
+}
 .nav-bookmarks .bookmark-link {
   position: relative;
   padding-right: 50px !important;
