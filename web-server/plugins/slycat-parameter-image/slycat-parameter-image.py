@@ -62,7 +62,6 @@ def register_slycat_plugin(context):
     "slick.slycateditors.js",
     "chunker.js",
     "color-switcher.js",
-    "bookmark-display.js",
     "note-manager.js",
     "filter-manager.js",
     "category-select.js",
