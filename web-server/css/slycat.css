@@ -61,6 +61,10 @@ body
   margin-left: 0;
   margin-right: 15px;
 }
+.nav-bookmarks ul.dropdown-menu {
+  max-height: 500px;
+  overflow-y: auto;
+}
 .nav-bookmarks .bookmark-new {
   font-weight: bold !important;
 }
@@ -69,7 +73,7 @@ body
 }
 .nav-bookmarks .bookmark-link {
   position: relative;
-  padding-right: 50px !important;
+  padding-right: 65px !important;
 }
 .nav-bookmarks .bookmark-delete {
   position: absolute;
