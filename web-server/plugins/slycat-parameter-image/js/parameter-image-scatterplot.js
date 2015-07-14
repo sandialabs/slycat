@@ -9,6 +9,11 @@ rights in this software.
 
 define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash", "knockout"], function(server_root, d3, URI, remotes, _, ko)
 {
+  var nodrag = d3.behavior.drag();
+  nodrag.on("dragstart", function() {
+    d3.event.sourceEvent.stopPropagation();
+  });
+
   $.widget("parameter_image.scatterplot",
   {
     options:
@@ -167,7 +172,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     self.element.mousedown(function(e)
     {
-      //console.log("#scatterplot mousedown");
       e.preventDefault();
       output = e
       self.start_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
@@ -229,7 +233,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       if(self.state == "resizing" || self.state == "moving")
         return;
 
-      //console.log("#scatterplot mouseup");
       if(!e.ctrlKey && !e.metaKey)
       {
         self.options.selection = [];
@@ -1110,15 +1113,16 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       frame_mousedown: function(){
         var target = d3.select(d3.event.target);
         // Verify that click is on image, not something else like the close button
-        if(target.classed("image"))
-        {
+        if (target.classed("image")) {
           // Move this image to the top of the Z order ...
           $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
-        }
-        else if(target.classed("image-frame"))
-        {
+        } else if (target.classed("image-frame")) {
           // Move this image to the top of the Z order ...
           target.detach().appendTo(self.media_layer.node());
+        } else if (target.classed('slycat-3d-btn-settings')) {
+          d3.select('#slycat-3d-modal')
+            .on('.drag', null)
+            .call(nodrag);
         }
       },
       hover: (function() {
@@ -1172,6 +1176,16 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
         imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
         imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
+
+        var $svg = $('#scatterplot svg');
+        var svgw = $svg.height();
+        var svgh = $svg.width();
+
+        if (imageWidth >= svgw || imageHeight >= svgh) {
+          imageWidth = Math.min(svgw, svgh) - 20;
+          imageHeight = imageWidth;
+        }
+
         var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
         target_width = self._scale_width(ratio, imageWidth, imageHeight);
         x = self._getDefaultXPosition(image.index, imageWidth);
