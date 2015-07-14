@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, dialog, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
@@ -217,7 +217,13 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         if("model-type" in wizard.require && component.model().length && wizard.require["model-type"].indexOf(component.model()[0]["model-type"]()) == -1)
           return false;
-        return wizard.require.context() === "model" && component.model_id();
+        return wizard.require.context() === "model" && component.model_id() && wizard.type() !== "slycat-create-saved-bookmark";
+      }
+      var bookmark_wizard_filter = function(wizard)
+      {
+        if("model-type" in wizard.require && component.model().length && wizard.require["model-type"].indexOf(component.model()[0]["model-type"]()) == -1)
+          return false;
+        return wizard.require.context() === "model" && component.model_id() && wizard.type() === "slycat-create-saved-bookmark";
       }
       component.global_create_wizards = create_wizards.filter(global_wizard_filter);
       component.project_create_wizards = create_wizards.filter(project_wizard_filter);
@@ -226,6 +232,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.project_edit_wizards = edit_wizards.filter(project_wizard_filter);
       component.model_edit_wizards = edit_wizards.filter(model_wizard_filter);
       component.project_info_wizards = info_wizards.filter(project_wizard_filter);
+      component.model_bookmark_wizards = create_wizards.filter(bookmark_wizard_filter);
       component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);
       component.model_delete_wizards = delete_wizards.filter(model_wizard_filter);
@@ -234,6 +241,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.show_wizard.subscribe(function(value)
       {
         $("#slycat-wizard").modal(value ? "show" : "hide");
+        // Updating references when wizard is hidden because a new bookmark may have been created.
+        if( value == false )
+        {
+          component.update_references();
+        }
       });
 
       // Get information about the current user.
@@ -284,6 +296,70 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         window.open("http://slycat.readthedocs.org");
       }
+
+      var references = mapping.fromJS([]);
+
+      component.saved_bookmarks = references.filter(function(reference)
+      {
+        if(component.model_id() === undefined)
+          return reference.bid() && reference.mid();
+        else
+          return reference.bid() && reference.mid() && reference.mid() == component.model_id();
+      }).map(function(reference)
+      {
+        var model = ko.utils.arrayFirst(component.models(), function(model)
+        {
+          return model._id() == reference.mid();
+        });
+
+        return {
+          _id: reference._id,
+          name: reference.name,
+          model_name: model ? model.name() : "",
+          model_type: reference["model-type"] ? reference["model-type"]() : "",
+          created: reference.created,
+          creator: reference.creator,
+          uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
+        };
+      });
+
+      component.delete_saved_bookmark = function(reference)
+      {
+        dialog.dialog(
+        {
+          title: "Delete Saved Bookmark?",
+          message: "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
+          buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+          callback: function(button)
+          {
+            if(button.label != "OK")
+              return;
+            client.delete_reference(
+            {
+              rid: reference._id(),
+              success: function()
+              {
+                component.update_references();
+              },
+              error: dialog.ajax_error("Couldn't delete bookmark."),
+            });
+          },
+        });
+      }
+
+      component.update_references = function()
+      {
+        client.get_project_references(
+        {
+          pid: component.project_id(),
+          success: function(result)
+          {
+            mapping.fromJS(result, references);
+          }
+        });
+      }
+
+      component.update_references();
 
     },
     template: { require: "text!" + server_root + "templates/slycat-navbar.html" }

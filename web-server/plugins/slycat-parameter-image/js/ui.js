@@ -1,4 +1,4 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-bookmark-display", "slycat-dialog", "slycat-parameter-image-note-manager", "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, _, ko, mapping, client, bookmark_manager, bookmark_builder, dialog, NoteManager, FilterManager, d3, URI)
+define("slycat-parameter-image-model", ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "slycat-parameter-image-note-manager", "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI)
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -266,7 +266,6 @@ function metadata_loaded()
   if(!indices && table_metadata)
   {
     var count = table_metadata["row-count"];
-    var saved_bookmarks = bookmark_builder.attach("#bookmarks");
     indices = new Int32Array(count);
     for(var i = 0; i != count; ++i)
       indices[i] = i;
