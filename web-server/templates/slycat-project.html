@@ -42,29 +42,6 @@ rights in this software.
         </div>
       </div>
 
-      <div class="container" data-bind="visible: saved_bookmarks().length">
-        <h3>Saved Bookmarks</h3>
-        <div class="panel panel-default">
-          <div class="list-group" data-bind="foreach: saved_bookmarks">
-            <a class="list-group-item" data-bind="attr: {href:uri}">
-              <span class="label label-default" data-bind="visible:model_type, text:model_type + ' model'"></span>
-              <strong><span data-bind="text:model_name"></span> - <span data-bind="text:name"></span></strong>
-                <small>
-                  <em>
-                    Created <span data-bind="text:created"></span>
-                    by <span data-bind="text:creator"></span>
-                  </em>
-                </small>
-              <span class="pull-right">
-<!--
-                <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="fa fa-pencil"></span></button> -->
-                <button type="button" class="btn btn-xs btn-danger" data-bind="click: $parent.delete_saved_bookmark"><span class="fa fa-trash-o"></span></button>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-
       <div class="container" data-bind="visible: templates().length">
         <h3>Templates</h3>
         <div class="panel panel-default">

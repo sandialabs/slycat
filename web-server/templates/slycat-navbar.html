@@ -77,7 +77,7 @@
                     <span data-bind="text: label"></span></a>
                 </li>
               <!-- /ko -->
-              <li role="separator" class="divider" data-bind="visible: model_bookmark_wizards().length"></li>
+              <li role="separator" class="divider" data-bind="visible: model_bookmark_wizards().length && saved_bookmarks().length"></li>
               <!-- ko foreach: saved_bookmarks -->
                 <li class="slycat-clickable">
                   <a class="bookmark-link" data-bind="attr: {href:uri}">
