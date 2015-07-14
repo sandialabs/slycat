@@ -217,7 +217,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         if("model-type" in wizard.require && component.model().length && wizard.require["model-type"].indexOf(component.model()[0]["model-type"]()) == -1)
           return false;
-        return wizard.require.context() === "model" && component.model_id();
+        return wizard.require.context() === "model" && component.model_id() && wizard.type() !== "slycat-create-saved-bookmark";
       }
       var bookmark_wizard_filter = function(wizard)
       {
