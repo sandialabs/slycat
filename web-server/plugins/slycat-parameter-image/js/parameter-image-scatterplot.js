@@ -1028,6 +1028,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         height : frame.outerHeight(),
         });
     });
+
     self.element.trigger("open-images-changed", [open_images]);
   },
 
@@ -1162,8 +1163,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var frame, sourceEventTarget;
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
-        if (sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image")) {
+
+        if (sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image") || sourceEventTarget.classed("bootstrap-styles")) {
           frame = d3.select(this);
+
           if (frame.classed("hover-image")) {
             self.opening_image = null;
             clear_hover_timer(self);
@@ -1171,6 +1174,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             image.image_class = "open-image";
           }
         }
+
         d3.event.sourceEvent.stopPropagation();
       }),
       drag_end: function() {
@@ -1227,12 +1231,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self.state = "resizing";
         frame = d3.select(this.parentNode);
         d3.selectAll([frame, d3.select("#scatterplot").node()]).classed("", true);
+
         if (frame.classed("hover-image")) {
           self.opening_image = null;
           clear_hover_timer(self);
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
         }
+
         d3.event.sourceEvent.stopPropagation();
       }),
       resize_end: (function() {
@@ -1246,7 +1252,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self.opening_image = null;
         clear_hover_timer(self);
         frame = d3.select(d3.event.target.parentNode);
-        theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
+
+        if (frame.select('.resize').size())
+          theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
+        else
+          theImage = frame.classed("hover-image", false).classed("open-image", true);
+
         imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
         imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
 

@@ -247,7 +247,7 @@ function metadata_loaded()
       open_images = bookmark["open-images-selection"];
     }
   }
-  
+
   if(table_metadata)
   {
     other_columns = [];
@@ -411,7 +411,7 @@ function setup_table()
 {
   if( !table_ready && table_metadata && colorscale
     && bookmark && (x_index != null) && (y_index != null) && (images_index !== null)
-    && (selected_simulations != null) && (hidden_simulations != null) 
+    && (selected_simulations != null) && (hidden_simulations != null)
     && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null)
   {
     table_ready = true;
@@ -628,7 +628,7 @@ function setup_scatterplot()
 
 function setup_controls()
 {
-  if( 
+  if(
     !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
