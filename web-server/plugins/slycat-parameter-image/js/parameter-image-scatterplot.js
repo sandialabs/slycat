@@ -192,7 +192,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         {
           self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
           output = e;
-
           var width = self.element.width();
           var height = self.element.height();
 
@@ -1068,6 +1067,80 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .on("click", handlers["pin"]);
     };
 
+    var build_frame_html = function(img) {
+      // Define a default size for every image.
+      if(!img.width)
+        img.width = self.options.pinned_width;
+      if(!img.height)
+        img.height = self.options.pinned_height;
+
+      // Define a default position for every image.
+      if(img.x === undefined)
+      {
+        img.x = self._getDefaultXPosition(img.index, img.width);
+      }
+      if(img.y === undefined)
+      {
+        img.y = self._getDefaultYPosition(img.index, img.height);
+      }
+
+      var frame_html = self.media_layer.append("div")
+        .attr("data-uri", img.uri)
+        .attr("data-transx", img.x)
+        .attr("data-transy", img.y)
+        .style({
+          "left": img.x + "px",
+          "top": img.y + "px",
+          "width": img.width + "px",
+          "height": img.height + "px",
+          "z-index": 1,
+        })
+        .attr("class", img.image_class + " image-frame scaffolding html")
+        .attr("data-index", img.index)
+        .attr("data-uri", img.uri)
+        .call(
+          d3.behavior.drag()
+            .on('drag', handlers["drag"])
+            .on("dragstart", handlers["drag_start"])
+            .on("dragend", handlers["drag_end"])
+        )
+        .on("mousedown", handlers["frame_mousedown"]);
+
+      // Create a close button ...
+      var close_button_html = frame_html.append("span")
+        .attr("class", "close-button frame-icon")
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"])
+        .on("click", handlers["close"]);
+
+      // Create the leader line ...
+      if("target_x" in img && "target_y" in img)
+      {
+        self.line_layer.append("line")
+          .attr("data-uri", img.uri)
+          .attr("class", "leader")
+          .attr("x1", img.x + (img.width / 2))
+          .attr("y1", img.y + (img.height / 2))
+          .attr("x2", img.target_x)
+          .attr("y2", img.target_y)
+          .attr("data-targetx", img.target_x)
+          .attr("data-targety", img.target_y)
+          .style("stroke", "black")
+          .style("stroke-width", 1.0)
+          ;
+      }
+
+      // Create the loading image ...
+      var loading_image = frame_html.append("img")
+        .attr("class", "loading-image")
+        .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif");
+
+      // Schedule timeout for hover
+      self.element.one("mousemove", handlers["hover"]);
+
+      return frame_html;
+    };
+
     var handlers = {
       stop_event: function() {
         return false;
@@ -1232,75 +1305,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     // Create scaffolding and status indicator if we already don't have one
     if( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ) {
-      // Define a default size for every image.
-      if(!image.width)
-        image.width = self.options.pinned_width;
-      if(!image.height)
-        image.height = self.options.pinned_height;
-
-      // Define a default position for every image.
-      if(image.x === undefined)
-      {
-        image.x = self._getDefaultXPosition(image.index, image.width);
-      }
-      if(image.y === undefined)
-      {
-        image.y = self._getDefaultYPosition(image.index, image.height);
-      }
-
-      var frame_html = self.media_layer.append("div")
-        .attr("data-uri", image.uri)
-        .attr("data-transx", image.x)
-        .attr("data-transy", image.y)
-        .style({
-          "left": image.x + "px",
-          "top": image.y + "px",
-          "width": image.width + "px",
-          "height": image.height + "px",
-          "z-index": 1,
-        })
-        .attr("class", image.image_class + " image-frame scaffolding html")
-        .attr("data-index", image.index)
-        .attr("data-uri", image.uri)
-        .call(
-          d3.behavior.drag()
-            .on('drag', handlers["drag"])
-            .on("dragstart", handlers["drag_start"])
-            .on("dragend", handlers["drag_end"])
-        )
-        .on("mousedown", handlers["frame_mousedown"]);
-
-      // Create a close button ...
-      var close_button_html = frame_html.append("span")
-        .attr("class", "close-button frame-icon")
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
-        .on("click", handlers["close"]);
-
-      // Create the leader line ...
-      if("target_x" in image && "target_y" in image)
-      {
-        self.line_layer.append("line")
-          .attr("data-uri", image.uri)
-          .attr("class", "leader")
-          .attr("x1", image.x + (image.width / 2))
-          .attr("y1", image.y + (image.height / 2))
-          .attr("x2", image.target_x)
-          .attr("y2", image.target_y)
-          .attr("data-targetx", image.target_x)
-          .attr("data-targety", image.target_y)
-          .style("stroke", "black")
-          .style("stroke-width", 1.0)
-          ;
-      }
-
-      // Create the loading image ...
-      var loading_image = frame_html.append("img")
-        .attr("class", "loading-image")
-        .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif");
-
-      // Schedule timeout for hover
-      self.element.one("mousemove", handlers["hover"]);
+      var frame_html = build_frame_html(image);
     }
 
     // If the image is already in the cache, display it.
@@ -1430,6 +1435,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var isStl = fileUriArr[fileUriArr.length - 1].indexOf('.stl') !== -1 ? true : false;
 
     if (isStl) {
+      if (!frame_html) {
+        var frame_html = build_frame_html(image);
+      }
+
       var container = frame_html[0][0];
       var viewer = document.createElement('slycat-3d-viewer');
 

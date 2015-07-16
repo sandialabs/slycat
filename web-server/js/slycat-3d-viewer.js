@@ -190,11 +190,11 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
         return false;
       });
 
-      $('#slycat-3d-modal').on('shown.bs.modal', function() {
+      $('#slycat-3d-modal', $container).on('shown.bs.modal', function() {
         settings.load();
       });
 
-      $('#slycat-3d-stats-check').on('change', function() {
+      $('#slycat-3d-stats-check', $container).on('change', function() {
         toggleStats($(this).is(':checked'));
       });
 
@@ -295,9 +295,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       controls.update();
       renderer.render(scene, camera);
 
-      var x = $('#slycat-3d-x-check').is(':checked');
-      var y = $('#slycat-3d-y-check').is(':checked');
-      var z = $('#slycat-3d-z-check').is(':checked');
+      var x = $('#slycat-3d-x-check', $(container)).is(':checked');
+      var y = $('#slycat-3d-y-check', $(container)).is(':checked');
+      var z = $('#slycat-3d-z-check', $(container)).is(':checked');
 
       if (mesh && x) mesh.rotation.x -= 0.01;
       if (mesh && y) mesh.rotation.y -= 0.01;
@@ -411,7 +411,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     else if (geometry.type === 'Geometry')
       nf = geometry.faces.length;
 
-    $('#slycat-3d-face3-number').text(nf);
+    $('#slycat-3d-face3-number', $(container)).text(nf);
 
     toggleStats(false);
 
@@ -429,7 +429,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
     fps.domElement.style.display = d;
     ms.domElement.style.display = d;
-    $('.slycat-3d-stats').css('display', id);
+    $('.slycat-3d-stats', $(container)).css('display', id);
 
     resizeViewer();
   };
