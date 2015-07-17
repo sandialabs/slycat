@@ -198,6 +198,12 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * The function resizes the viewer (WebGL/canvas) according to the parent
    * container, its header and the stats displays. The function should be
    * called upon during resize events.
+   *
+   * @param {Object} container
+   * @param {Object} viewer
+   * @param {Object} renderer
+   * @param {Object} camera
+   * @param {Boolean} isModel
    */
   var resizeViewer = function(container, viewer, renderer, camera, isModel) {
     var headerHeight = 0;
@@ -228,6 +234,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
   /**
    * Function executed on mouse events for the renderer.
+   * @param {Object} mouse
    * @param  {} e event
    */
   var onMouseMove = function(mouse, e) {
@@ -255,6 +262,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * @param  {Object} scene     reference to the scene
    * @param  {Object} camera    reference to the camera
    * @param  {Object} controls  reference to the controls
+   * @param  {Object} fps
+   * @param  {Object} ms
    */
   var renderFixed = function (animation, renderer, scene, camera, controls, fps, ms) {
     var rf = function() {
@@ -272,11 +281,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   /**
    * Renders the geometry on a rotation animation around the y axis
    * @param  {Object} animation animation object with an 'id' attribute
+   * @param  {Object} container
    * @param  {Object} renderer  reference to the rendered
    * @param  {Object} scene     reference to the scene
    * @param  {Object} camera    reference to the camera
    * @param  {Object} mesh      reference to the mesh (i.e. geometry)
    * @param  {Object} controls  reference to the controls
+   * @param  {Object} fps
+   * @param  {Object} ms
    */
   var renderRotate = function(animation, container, renderer, scene, camera, mesh, controls, fps, ms) {
     var rr = function() {
@@ -303,6 +315,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
   /**
    * Function executed on click on the Rotate/Fixed button.
    * @param  {Object} animation animation object with an 'id' attribute
+   * @param  {Object} container
    * @param  {Object} renderer  reference to the rendered
    * @param  {Object} scene     reference to the scene
    * @param  {Object} camera    reference to the camera
@@ -375,7 +388,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
   /**
    * Initializes the statistics displays.
-   * @param  {Object} geometry THREE.Geometry or THREE.BufferGeometry object
+   * @param {Object} container
+   * @param {Object} viewer
+   * @param {Object} renderer
+   * @param {Object} camera
+   * @param {Object} geometry THREE.Geometry or THREE.BufferGeometry object
+   * @param {Object} fps
+   * @param {Object} ms
+   * @param {Boolean} isModel
    */
   var initStats = function(container, viewer, renderer, camera, geometry, fps, ms, isModel) {
     fps.setMode(0);
@@ -409,7 +429,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
   /**
    * Toggles the display state for the statistics displays.
-   * @param  {Boolean} toggle
+   * @param {Object} container
+   * @param {Object} viewer
+   * @param {Object} renderer
+   * @param {Object} camera
+   * @param {Object} fps
+   * @param {Object} ms
+   * @param {Boolean} toggle
+   * @param {Boolean} isModel
    */
   var toggleStats = function(container, viewer, renderer, camera, fps, ms, toggle, isModel) {
     var d = toggle ? 'block' : 'none';
