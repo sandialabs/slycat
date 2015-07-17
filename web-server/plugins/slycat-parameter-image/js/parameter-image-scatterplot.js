@@ -173,7 +173,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.element.mousedown(function(e)
     {
       e.preventDefault();
-      output = e
+      output = e;
       self.start_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
       s_d = self.start_drag;
       self.end_drag = null;
@@ -437,7 +437,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var self = this;
     if(typeof value == "number" && !isNaN(value))
       return true;
-    if(typeof value == "string" && value.trim() != "")
+    if(typeof value == "string" && value.trim() !== "")
       return true;
     return false;
   },
@@ -638,8 +638,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var xoffset = 0;
     var legend_width = 150;
 
-    if(self.updates["update_width"])
-    {
+    if (self.updates.update_width) {
       self.element.attr("width", self.options.width);
       self.svg.attr("width", self.options.width);
       self.media_layer.style({"width": self.options.width + "px"});
@@ -663,8 +662,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
-    if(self.updates["update_height"])
-    {
+    if (self.updates.update_height) {
       self.element.attr("height", self.options.height);
       self.svg.attr("height", self.options.height);
       self.media_layer.style({"height": self.options.height + "px"});
@@ -687,8 +685,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
-    if(self.updates["update_x"])
-    {
+    if (self.updates.update_x) {
       var total_width = self.options.width;
       var total_height = self.options.height;
       var width = Math.min(self.options.width, self.options.height);
@@ -710,8 +707,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
-    if(self.updates["update_y"])
-    {
+    if (self.updates.update_y) {
       var total_width = self.options.width;
       var total_height = self.options.height;
       var width = Math.min(self.options.width, self.options.height);
@@ -732,16 +728,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
-    if(self.updates["update_indices"])
-    {
+    if (self.updates.update_indices) {
       self.inverse_indices = {};
       var count = self.options.indices.length;
       for(var i = 0; i != count; ++i)
         self.inverse_indices[self.options.indices[i]] = i;
     }
 
-    if(self.updates["update_x_label"])
-    {
+    if (self.updates.update_x_label) {
       var x = self.svg.attr("width") / 2;
       var y = 40;
 
@@ -756,8 +750,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
-    if(self.updates["update_y_label"])
-    {
+    if (self.updates.update_y_label) {
       self.y_axis_layer.selectAll(".label").remove();
 
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
@@ -775,8 +768,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
-    if(self.updates["render_data"])
-    {
+    if (self.updates.render_data) {
       var x = self.options.x,
           y = self.options.y,
           v = self.options.v,
@@ -824,8 +816,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
     }
 
-    if(self.updates["render_selection"])
-    {
+    if (self.updates.render_selection) {
       var x = self.options.x,
           y = self.options.y,
           v = self.options.v,

@@ -1,17 +1,5 @@
 define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
 
-  /** globals */
-  var viewer;
-  var container;
-  var camera;
-  var renderer;
-
-  /** flag whether the viewer is loaded as its own model or within a <div /> */
-  var isModel;
-
-  var fps;
-  var ms;
-
   /**
    * A Knockout component to render STL files in slycat, using the Three.js
    * library.
@@ -66,20 +54,20 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var aid = params.aid;
       var uri = params.uri;
       var loadUri = uri ? uri : mid + '/files/' + aid;
-      isModel = params.aid ? true : false;
+      var isModel = params.aid ? true : false;
 
-      container = params.container;
+      var container = params.container;
       var $container = $(container);
 
-      viewer = container.children[1];
+      var viewer = container.children[1];
       adjustViewerHeight(viewer);
 
       var width = viewer.offsetWidth;
       var height = viewer.offsetHeight;
 
       var settings = null;
-      renderer = null;
-      camera = null;
+      var renderer = null;
+      var camera = null;
       var mouse = null;
       var controls = null;
       var scene = null;
@@ -90,14 +78,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var lightOne = null;
       var lightTwo = null;
 
-      fps = new Stats();
-      ms = new Stats();
+      var fps = new Stats();
+      var ms = new Stats();
 
       new THREE.STLLoader().load(loadUri, function(geometry) {
         var l = document.getElementsByClassName('loading-image')[0];
         if (l) l.parentNode.removeChild(l);
 
-        initStats(geometry);
+        initStats(container, viewer, renderer, camera, geometry, fps, ms, isModel);
 
         geometry.center();
         geometry.computeBoundingSphere();
@@ -166,7 +154,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
         renderer.domElement.addEventListener('mousemove', function(e) { onMouseMove(mouse, e); });
 
         /** renders the STL file... */
-        renderFixed(animation, renderer, scene, camera, controls);
+        renderFixed(animation, renderer, scene, camera, controls, fps, ms);
 
         /** initializes the settings popup */
         settings = new GeometrySettings({
@@ -186,7 +174,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       });
 
       $('.slycat-3d-btn-rotate', $container).on('click', function() {
-        onRotation.bind(this)(animation, renderer, scene, camera, mesh, controls);
+        onRotation.bind(this)(animation, container, renderer, scene, camera, mesh, controls, fps, ms);
         return false;
       });
 
@@ -195,11 +183,11 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       });
 
       $('#slycat-3d-stats-check', $container).on('change', function() {
-        toggleStats($(this).is(':checked'));
+        toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'));
       });
 
 
-      $(window).on('resize', function() { resizeViewer(); });
+      $(window).on('resize', function() { resizeViewer(container, viewer, renderer, camera, isModel); });
     },
 
     template: { require: 'text!' + server_root + 'templates/slycat-3d-viewer.html' }
@@ -211,7 +199,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * container, its header and the stats displays. The function should be
    * called upon during resize events.
    */
-  var resizeViewer = function() {
+  var resizeViewer = function(container, viewer, renderer, camera, isModel) {
     var headerHeight = 0;
     var statsHeight = 0;
     var borders = 0;
@@ -268,7 +256,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * @param  {Object} camera    reference to the camera
    * @param  {Object} controls  reference to the controls
    */
-  var renderFixed = function (animation, renderer, scene, camera, controls) {
+  var renderFixed = function (animation, renderer, scene, camera, controls, fps, ms) {
     var rf = function() {
       controls.update();
       renderer.render(scene, camera);
@@ -290,7 +278,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * @param  {Object} mesh      reference to the mesh (i.e. geometry)
    * @param  {Object} controls  reference to the controls
    */
-  var renderRotate = function(animation, renderer, scene, camera, mesh, controls) {
+  var renderRotate = function(animation, container, renderer, scene, camera, mesh, controls, fps, ms) {
     var rr = function() {
       controls.update();
       renderer.render(scene, camera);
@@ -321,14 +309,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * @param  {Object} mesh      reference to the mesh (i.e. geometry)
    * @param  {Object} controls  reference to the controls
    */
-  var onRotation = function(animation, renderer, scene, camera, mesh, controls) {
+  var onRotation = function(animation, container, renderer, scene, camera, mesh, controls, fps, ms) {
     cancelAnimationFrame(animation.id);
 
     if ($(this).text() === 'Rotate') {
-      renderRotate(animation, renderer, scene, camera, mesh, controls);
+      renderRotate(animation, container, renderer, scene, camera, mesh, controls, fps, ms);
       $(this).text('Fixed');
     } else {
-      renderFixed(animation, renderer, scene, camera, controls);
+      renderFixed(animation, renderer, scene, camera, controls, fps, ms);
       $(this).text('Rotate');
     }
   };
@@ -389,7 +377,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * Initializes the statistics displays.
    * @param  {Object} geometry THREE.Geometry or THREE.BufferGeometry object
    */
-  var initStats = function(geometry) {
+  var initStats = function(container, viewer, renderer, camera, geometry, fps, ms, isModel) {
     fps.setMode(0);
     ms.setMode(1);
 
@@ -413,7 +401,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
     $('#slycat-3d-face3-number', $(container)).text(nf);
 
-    toggleStats(false);
+    toggleStats(container, viewer, renderer, camera, fps, ms, false, isModel);
 
     viewer.appendChild(ms.domElement);
     viewer.appendChild(fps.domElement);
@@ -423,15 +411,16 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
    * Toggles the display state for the statistics displays.
    * @param  {Boolean} toggle
    */
-  var toggleStats = function(toggle) {
+  var toggleStats = function(container, viewer, renderer, camera, fps, ms, toggle, isModel) {
     var d = toggle ? 'block' : 'none';
     var id = toggle ? 'inline-block' : 'none';
 
     fps.domElement.style.display = d;
     ms.domElement.style.display = d;
+
     $('.slycat-3d-stats', $(container)).css('display', id);
 
-    resizeViewer();
+    resizeViewer(container, viewer, renderer, camera, isModel);
   };
 
 });
