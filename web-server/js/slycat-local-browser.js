@@ -12,6 +12,7 @@ define("slycat-local-browser", ["slycat-server-root", "slycat-web-client", "knoc
     {
       var component = this;
       component.selection = params.selection;
+      component.disabled = params.disabled === undefined ? false : params.disabled;
       component.selection_changed = function(model, event)
       {
         component.selection(event.target.files);

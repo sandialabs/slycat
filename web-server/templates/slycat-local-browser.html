@@ -1,6 +1,9 @@
 <div class="form-group">
-  <label for="slycat-local-browser-file" class="col-sm-2 control-label">File</label>
+  <label for="slycat-local-browser-file" class="col-sm-2 control-label"
+  	data-bind="css: {'disabled' : disabled}">
+  	File
+  </label>
   <div class="col-sm-10">
-    <input type="file" class="" id="slycat-local-browser-file" placeholder="file" data-bind="event:{change: selection_changed}">
+    <input type="file" class="" id="slycat-local-browser-file" placeholder="file" data-bind="event:{change: selection_changed}, attr: {'disabled' : disabled}">
   </div>
 </div>
