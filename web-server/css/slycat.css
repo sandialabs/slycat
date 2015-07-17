@@ -494,3 +494,8 @@ slycat-navbar .alert pre
 {
   margin-top: 60px;
 }
+#slycat-wizard .parameter-image-plus-model-wizard label.disabled,
+#slycat-wizard .parameter-image-plus-model-wizard #slycat-local-browser-file:disabled
+{
+  color: gray;
+}

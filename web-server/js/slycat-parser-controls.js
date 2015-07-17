@@ -12,6 +12,7 @@ define("slycat-parser-controls", ["slycat-server-root", "slycat-parsers", "knock
     {
       var component = this;
       component.parser = params.parser || ko.observable(null);
+      component.disabled = params.disabled === undefined ? false : params.disabled;
 
       if(params.category)
       {
