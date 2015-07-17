@@ -479,3 +479,18 @@ slycat-navbar .alert pre
 {
   color: white;
 }
+
+/* New PIP model wizard */
+#slycat-wizard .parameter-image-plus-model-wizard .local-browser,
+#slycat-wizard .parameter-image-plus-model-wizard .remote-controls
+{
+  margin-left: 60px;
+}
+#slycat-wizard .parameter-image-plus-model-wizard .radio label
+{
+  font-weight: bold;
+}
+#slycat-wizard .parameter-image-plus-model-wizard .radio.remote
+{
+  margin-top: 60px;
+}

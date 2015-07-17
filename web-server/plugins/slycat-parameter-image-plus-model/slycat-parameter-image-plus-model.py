@@ -8,6 +8,24 @@ def register_slycat_plugin(context):
   import threading
   import traceback
 
+  def media_columns(database, model, verb, type, command, **kwargs):
+    """Identify columns in the input data that contain media URIs (image or video)."""
+    expression = re.compile("file://")
+    search = numpy.vectorize(lambda x:bool(expression.search(x)))
+
+    columns = []
+    metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", "0")["arrays"][0]
+    for index, attribute in enumerate(metadata["attributes"]):
+      if attribute["type"] != "string":
+        continue
+      column = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index))
+      if not numpy.any(search(column)):
+        continue
+      columns.append(index)
+
+    cherrypy.response.headers["content-type"] = "application/json"
+    return json.dumps(columns)
+
   def compute(mid):
     """Called in a thread to perform work on the model."""
     try:
@@ -50,7 +68,6 @@ def register_slycat_plugin(context):
     "jquery-ui-1.10.4.custom.min.js",
     "jquery.layout-latest.min.js",
     "d3.min.js",
-    #"jquery.mousewheel.js",
     "jquery.scrollintoview.min.js",
     "jquery.event.drag-2.2.js",
     "slick.core.js",
@@ -125,3 +142,11 @@ def register_slycat_plugin(context):
   ]
   for dev in devs:
     context.register_model_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Register custom commands for use by wizards.
+  context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)
+
+  # Register custom wizards for creating PI models.
+  context.register_wizard("parameter-image-plus", "New Parameter Image Plus Model", require={"action":"create", "context":"project"})
+  context.register_wizard_resource("parameter-image-plus", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
+  context.register_wizard_resource("parameter-image-plus", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
