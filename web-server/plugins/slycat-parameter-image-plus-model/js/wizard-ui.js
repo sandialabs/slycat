@@ -5,7 +5,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.ps_type = ko.observable("remote"); // local is selected by default...
+    component.ps_type = ko.observable("local"); // local is selected by default...
     component.matrix_type = ko.observable("local"); // local is selected by default...
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Plus Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null});
@@ -45,12 +45,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var type = component.ps_type();
 
       if (type === "local") {
-        $(".ps-tab-local").css("display", "block");
-        component.tab(3);
+        component.upload_table();
       } else if (type === "remote") {
         $(".modal-dialog").addClass("modal-lg");
         $(".ps-tab-remote-data").css("display", "block");
-        component.tab(2);
+        component.connect();
       }
     };
 
@@ -82,7 +81,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   lastSelected: false
                 });
               mapping.fromJS(attributes, component.attributes);
-              component.tab(5);
+              component.tab(3);
               $('.browser-continue').toggleClass("disabled", false);
             }
           });
@@ -107,7 +106,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.connect = function() {
-      component.remote.enable(false);
+      //component.remote.enable(false);
       component.remote.status_type("info");
       component.remote.status("Connecting ...");
       client.post_remotes({
@@ -116,7 +115,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         password: component.remote.password(),
         success: function(sid) {
           component.remote.sid(sid);
-          component.tab(4);
+          component.tab(2);
         },
         error: function(request, status, reason_phrase) {
           component.remote.enable(true);
