@@ -55,6 +55,16 @@ class VideoSession(threading.Thread):
       self.exception = e
     self.finished = True
 
+def launch(command):
+  output = {
+    "ok": True,
+    "command": command["command"],
+    "output": "[slycat-agent.py] output"
+  }
+
+  sys.stdout.write("%s\n" % json.dumps(output))
+  sys.stdout.flush()
+
 # Handle the 'browse' command.
 def browse(command):
   if "path" not in command:
@@ -318,6 +328,8 @@ def main():
         video_status(command, arguments)
       elif action == "get-video":
         get_video(command, arguments)
+      elif action == "launch":
+        launch(command)
       else:
         raise Exception("Unknown command.")
     except Exception as e:

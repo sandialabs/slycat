@@ -1142,6 +1142,12 @@ def delete_remote(sid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
+def post_remote_launch(sid, command):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.launch(command)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
 def post_remote_browse(sid, path):
   file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
   file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None

@@ -636,6 +636,23 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_remote_launch = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({}),
+      type: 'POST',
+      url: server_root + 'remotes/' + params.sid + "/launch/" + params.command,
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.post_remote_browse = function(params)
   {
     $.ajax(

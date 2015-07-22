@@ -122,6 +122,7 @@ def start(root_path, config_file):
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
+  dispatcher.connect("post-remote-launch", "/remotes/:sid/launch/:command", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
 
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
