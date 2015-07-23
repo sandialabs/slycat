@@ -56,13 +56,16 @@ class VideoSession(threading.Thread):
     self.finished = True
 
 def launch(command):
-  output = {
+  results = {
     "ok": True,
     "command": command["command"],
-    "output": "[slycat-agent.py] output"
   }
 
-  sys.stdout.write("%s\n" % json.dumps(output))
+  print "[slycat-agent.py] %s" % command["command"]
+  p = subprocess.Popen(command["command"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  results["output"], errors = p.communicate();
+
+  sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
 # Handle the 'browse' command.
