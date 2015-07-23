@@ -5,6 +5,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
+    component.cluster_linkage = ko.observable("average"); // average is selected by default...
     component.ps_type = ko.observable("local"); // local is selected by default...
     component.matrix_type = ko.observable("local"); // local is selected by default...
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Plus Model", description: "", marking: null});
@@ -34,8 +35,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         marking: component.model.marking(),
         success: function(mid) {
           component.model._id(mid);
-          component.tab(1);
-          component.remote.focus(true);
+          client.put_model_parameter({
+            mid: component.model._id(),
+            aid: "cluster-linkage",
+            value: component.cluster_linkage(),
+            input: true,
+            success: function() {
+              component.tab(1);
+              component.remote.focus(true);
+            }
+          });
         },
         error: dialog.ajax_error("Error creating model."),
       });
