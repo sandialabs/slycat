@@ -70,7 +70,6 @@ def register_slycat_plugin(context):
     "STLLoader.js",
     "stats.min.js",
     "TrackballControls.js",
-    "GeometrySettings.js"
     # "parameter-controls.js",
     # "parameter-image-table.js",
     # "parameter-image-scatterplot.js",

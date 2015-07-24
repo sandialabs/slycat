@@ -1,4 +1,5 @@
-define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(server_root, ko, URI) {
+define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping','URI'], function(server_root, ko, mapping, URI) {
+  var static_index = 0;
 
   /**
    * A Knockout component to render STL files in slycat, using the Three.js
@@ -26,6 +27,18 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
        * viewer settings.
        */
       var vm = this;
+      vm.settings_modal_id = ko.observable('slycat-3d-modal-' + static_index);
+      vm.settings_scene_href = ko.observable('#stl-settings-scene-' + static_index);
+      vm.settings_scene_id = ko.observable('stl-settings-scene-' + static_index);
+      vm.settings_geometry_href = ko.observable('#stl-settings-geometry-' + static_index);
+      vm.settings_geometry_id = ko.observable('stl-settings-geometry-' + static_index);
+      vm.settings_lights_href = ko.observable('#stl-settings-lights-' + static_index);
+      vm.settings_lights_id = ko.observable('stl-settings-lights-' + static_index);
+      vm.settings_controls_href = ko.observable('#stl-settings-controls-' + static_index);
+      vm.settings_controls_id = ko.observable('stl-settings-controls-' + static_index++);
+
+      vm.settings = ko.observable(false);
+
       vm.ambientLightColor = ko.observable('#F2F2F2');
       vm.backgroundColor = ko.observable(params.backgroundColor || '#F2F2F2');
 
@@ -65,7 +78,6 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       var width = viewer.offsetWidth;
       var height = viewer.offsetHeight;
 
-      var settings = null;
       var renderer = null;
       var camera = null;
       var mouse = null;
@@ -155,17 +167,36 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
 
         /** renders the STL file... */
         renderFixed(animation, renderer, scene, camera, controls, fps, ms);
-
-        /** initializes the settings popup */
-        settings = new GeometrySettings({
-          renderer: renderer,
-          ambientLight: ambient,
-          mesh: mesh,
-          lightOne: lightOne,
-          lightTwo: lightTwo,
-          controls: controls
-        }, vm);
       });
+
+
+      vm.show_settings = ko.observable(false).extend({ notify: 'always' });
+      vm.show_settings.subscribe(function(value) {
+        $('#' + vm.settings_modal_id()).modal(value ? 'show' : 'hide');
+      });
+
+      vm.run_settings = function(item) {
+        vm.settings(false);
+        vm.settings(true);
+        vm.show_settings(true);
+      };
+
+      vm.apply_settings = function() {
+        renderer.setClearColor(vm.backgroundColor());
+        ambient.color.setHex(formatColorStringAs0x(vm.ambientLightColor()));
+        mesh.material.color.setHex(formatColorStringAs0x(vm.materialColor()));
+        mesh.material.wireframe = vm.wireframe();
+        mesh.material.transparent = vm.transparency();
+        mesh.material.opacity = vm.opacity();
+        lightOne.color.setHex(formatColorStringAs0x(vm.lightOneColor()));
+        lightOne.position.set(vm.lightOneX(), vm.lightOneY(), vm.lightOneZ());
+        lightTwo.color.setHex(formatColorStringAs0x(vm.lightTwoColor()));
+        lightTwo.position.set(vm.lightTwoX(), vm.lightTwoY(), vm.lightTwoZ());
+        controls.zoomSpeed = vm.controlsZoomingSpeed();
+        controls.rotateSpeed = vm.controlsRotationSpeed();
+        controls.panSpeed = vm.controlsPanningSpeed();
+        controls.dynamicDampingFactor = vm.controlsDynamicDampingFactor();
+      };
 
 
       $('.slycat-3d-btn-reset', $container).on('click', function() {
@@ -176,10 +207,6 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
       $('.slycat-3d-btn-rotate', $container).on('click', function() {
         onRotation.bind(this)(animation, container, renderer, scene, camera, mesh, controls, fps, ms);
         return false;
-      });
-
-      $('#slycat-3d-modal', $container).on('shown.bs.modal', function() {
-        settings.load();
       });
 
       $('#slycat-3d-stats-check', $container).on('change', function() {
@@ -193,6 +220,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'URI'], function(s
     template: { require: 'text!' + server_root + 'templates/slycat-3d-viewer.html' }
   });
 
+
+  var formatColorStringAs0x = function(cs) {
+    return cs.charAt(0) === '#' ? '0x' + cs.slice(1, cs.length) : cs;
+  };
+
+  var formatColorStringAsHexStr = function(cs) {
+    return cs.charAt(0) === '0' ? '#' + cs.slice(2, cs.length) : cs;
+  };
 
   /**
    * The function resizes the viewer (WebGL/canvas) according to the parent
