@@ -131,6 +131,8 @@ class Session(object):
     self._ssh.close()
 
   def launch(self, command):
+    command = command.split(' ')
+
     # launch via the agent...
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
@@ -138,6 +140,7 @@ class Session(object):
 
       stdin.write("%s\n" % json.dumps(payload))
       stdin.flush()
+
       response = json.loads(stdout.readline())
       if not response["ok"]:
         cherrypy.response.headers["x-slycat-message"] = response["message"]
