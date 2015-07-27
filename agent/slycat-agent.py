@@ -58,7 +58,7 @@ class VideoSession(threading.Thread):
 def launch(command):
   results = {
     "ok": True,
-    "command": ''.join(command["command"]),
+    "command": ' '.join(command["command"]),
   }
 
   p = subprocess.Popen(command["command"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
