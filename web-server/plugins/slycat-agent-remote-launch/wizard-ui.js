@@ -9,6 +9,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.remote.focus.extend({ notify: 'always' });
     component.server_root = server_root;
     component.command = ko.observable('');
+    component.output = ko.observable('');
 
     component.cancel = function() {
       if (component.remote.sid())
@@ -59,11 +60,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
      * This is the method to execute the remote command from the user.
      */
     component.go_to_output = function() {
+      if (!component.command().length) {
+        component.output('A valid command needs to be entered...');
+        return void 0;
+      }
+
       client.post_remote_launch({
         sid: component.remote.sid(),
         command: component.command(),
         success: function(results) {
           console.log(results);
+          component.output(results.output);
         }
       });
 

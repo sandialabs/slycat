@@ -24,9 +24,6 @@
     </div>
 
     <div data-bind="visible:tab() == 2">
-      <!-- <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_table"></slycat-remote-browser>
-      <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls> -->
-
       <form class="form-horizontal">
         <div class="form-group">
           <label for="slycat-agent-remote-launch-command" class="col-sm-2 control-label">Command</label>
@@ -35,6 +32,7 @@
           </div>
         </div>
       </form>
+      <div data-bind="text: output"></div>
     </div>
 
     <div data-bind="visible:tab() == 3">
