@@ -22,7 +22,7 @@
         </ol>
         <ul class="nav navbar-nav navbar-left">
           <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
-            <button type="button" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
+            <button type="button" id="slycat-create-wizards" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
             <ul class="dropdown-menu">
               <!-- ko foreach: model_create_wizards -->
                 <li class="slycat-clickable"><a class="" data-bind="text: label, click:$parent.run_wizard"></a></li>
