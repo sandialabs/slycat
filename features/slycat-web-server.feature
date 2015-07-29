@@ -13,7 +13,6 @@ Feature: Slycat Web Server
 
   Scenario: Edit a project
     Given I have a project
-    And I am on the front page
     When I open the first project
     And I open the Edit menu
     And I choose Edit Project
