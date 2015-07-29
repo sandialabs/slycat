@@ -22,6 +22,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         return attribute.image();
       });
     });
+    component.image_attributes.subscribe(function(newValue){
+      if(this.target().length > 0)
+      {
+        component.cluster_column( this.target()[0].name() );
+      }
+    });
     component.server_root = server_root;
 
     component.cancel = function() {
@@ -110,7 +116,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                 });
               }
               // find the first image column and set its name to component.cluster_column
-
+              component.cluster_column
 
               mapping.fromJS(attributes, component.attributes);
               component.tab(3);

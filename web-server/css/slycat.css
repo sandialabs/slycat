@@ -499,3 +499,7 @@ slycat-navbar .alert pre
 {
   color: gray;
 }
+#slycat-wizard .parameter-image-plus-model-wizard .cluster-column
+{
+  margin-top: 30px;
+}

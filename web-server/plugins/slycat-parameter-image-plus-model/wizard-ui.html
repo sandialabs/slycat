@@ -117,12 +117,17 @@
           {name: 'Editable', type: 'bool'}
         ]
       "></slycat-table-ingestion>
-      <div class="cluster-column">
-        <select class="form-control">
-          <!-- ko foreach: image_attributes -->
-            <option data-bind="text:name"></option>
-          <!-- /ko -->
-        </select>
+      <div class=" form-horizontal" data-bind="visible: image_attributes().length > 0">
+        <div class="cluster-column form-group">
+          <label class="col-sm-3 control-label">Cluster Column</label>
+          <div class="col-sm-9">
+            <select class="form-control" 
+              data-bind="options: image_attributes,
+                         optionsText: 'name',
+                         optionsValue: 'name',
+                         value: cluster_column"></select>
+          </div>
+        </div>
       </div>
     </div>
 
