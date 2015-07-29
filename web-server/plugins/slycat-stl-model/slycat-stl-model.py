@@ -19,7 +19,6 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), 'js/three.min.js'),
     os.path.join(os.path.dirname(__file__), 'js/TrackballControls.js'),
     os.path.join(os.path.dirname(__file__), 'js/STLLoader.js'),
-    os.path.join(os.path.dirname(__file__), 'js/GeometrySettings.js'),
     os.path.join(os.path.dirname(__file__), 'js/stats.min.js'),
     os.path.join(os.path.dirname(__file__), 'ui.js')
   ])
