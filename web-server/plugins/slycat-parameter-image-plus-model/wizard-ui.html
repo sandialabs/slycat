@@ -117,6 +117,13 @@
           {name: 'Editable', type: 'bool'}
         ]
       "></slycat-table-ingestion>
+      <div class="cluster-column">
+        <select class="form-control">
+          <!-- ko foreach: image_attributes -->
+            <option data-bind="text:name"></option>
+          <!-- /ko -->
+        </select>
+      </div>
     </div>
 
     <div data-bind="visible:tab() == 6">

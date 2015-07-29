@@ -6,6 +6,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.cluster_linkage = ko.observable("average"); // average is selected by default...
+    component.cluster_column = ko.observable(false);
     component.ps_type = ko.observable("local"); // local is selected by default...
     component.matrix_type = ko.observable("local"); // local is selected by default...
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Plus Model", description: "", marking: null});
@@ -16,6 +17,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
+    component.image_attributes = ko.computed(function(){
+      return ko.utils.arrayFilter(component.attributes(), function(attribute) {
+        return attribute.image();
+      });
+    });
     component.server_root = server_root;
 
     component.cancel = function() {
@@ -29,7 +35,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
-        type: "parameter-image",
+        type: "parameter-image-plus",
         name: component.model.name(),
         description: component.model.description(),
         marking: component.model.marking(),
@@ -77,7 +83,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var upload_success = function() {
       client.get_model_command({
         mid: component.model._id(),
-        type: "parameter-image",
+        type: "parameter-image-plus",
         command: "media-columns",
         success: function(media_columns) {
           client.get_model_table_metadata({
@@ -86,6 +92,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             success: function(metadata) {
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
+              {
                 attributes.push({
                   name:metadata["column-names"][i], 
                   type:metadata["column-types"][i], 
@@ -101,6 +108,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   selected: false,
                   lastSelected: false
                 });
+              }
+              // find the first image column and set its name to component.cluster_column
+
+
               mapping.fromJS(attributes, component.attributes);
               component.tab(3);
               $('.browser-continue').toggleClass("disabled", false);

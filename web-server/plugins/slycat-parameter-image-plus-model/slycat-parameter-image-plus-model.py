@@ -2,7 +2,10 @@ def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
   import cherrypy
   import datetime
+  import json
+  import numpy
   import os
+  import re
   import slycat.web.server.database.couchdb
   import slycat.web.server
   import threading
@@ -28,6 +31,7 @@ def register_slycat_plugin(context):
 
   def compute(mid):
     """Called in a thread to perform work on the model."""
+    import pudb; pu.db
     try:
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
