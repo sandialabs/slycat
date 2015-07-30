@@ -26,7 +26,7 @@ class Driver():
   d = DesiredCapabilities.FIREFOX
   d['loggingPrefs'] = { 'browser':'ALL' }
 
-  display = Display(visible=True,size=(800,600))
+  display = Display(size=(800,600))
   display.start()
 
   driver = webdriver.Firefox(capabilities=d)
@@ -45,19 +45,19 @@ class Driver():
 
 @given(u'the slycat servers are running')
 def step_impl(context):
-#  supervisord = subprocess.Popen(["supervisord", "-c", "/etc/supervisord.conf"], stdout=subprocess.PIPE)
-#  values = {'success': ['sshd', 'couchdb', 'web-server', 'proxy-server', 'feed-server'], 'exited': ['couchdb-setup']}
-#  expected = {}
-#  for key in values:
-#    for value in values[key]:
-#      expected[re.compile(" ".join(["INFO", key + ":", value]))] = False
-#  x = 0
-#  while (not reduce(operator.and_, expected.values())) and x < 100:
-#    x += 1
-#    next_line = supervisord.stdout.readline()
-#    for key in expected:
-#      if key.search(next_line):
-#        expected[key] = True
+  supervisord = subprocess.Popen(["supervisord", "-c", "/etc/supervisord.conf"], stdout=subprocess.PIPE)
+  values = {'success': ['sshd', 'couchdb', 'web-server', 'proxy-server', 'feed-server'], 'exited': ['couchdb-setup']}
+  expected = {}
+  for key in values:
+    for value in values[key]:
+      expected[re.compile(" ".join(["INFO", key + ":", value]))] = False
+  x = 0
+  while (not reduce(operator.and_, expected.values())) and x < 100:
+    x += 1
+    next_line = supervisord.stdout.readline()
+    for key in expected:
+      if key.search(next_line):
+        expected[key] = True
   context.browser = Driver()
 
 
@@ -69,10 +69,8 @@ def s(context):
 
 @given(u'I am on the front page')
 def step_impl(context):
-  webdriver.Firefox().set_window_size
-
   context.browser.driver.set_window_size(800,600)
-  context.browser.driver.get("https://slycat:slycat@localhost:8443/projects")
+  context.browser.driver.get("https://slycat:slycat@localhost/projects")
   context.browser.driver.find_element(By.ID, "slycat-navbar-content")
 
 @given(u'I have a project')
@@ -81,14 +79,15 @@ def step_impl(context):
     given I am on the front page
   ''')
   try:
-    context.browser.wait_until_visible((By.CSS_SELECTOR, "//strong[contains(.,project)]"))
+    context.browser.wait_until_visible((By.XPATH, "//span[contains(.,'project')]"))
   except:
     context.execute_steps(u'''when I create a project''')
     return
 
 @when(u'I open the first project')
 def step_impl(context):
-  context.browser.driver.find_element(By.CSS_SELECTOR, "//a[contains(@class,'list-group-item')] > strong[contains(.,project)]").click()
+  context.browser.driver.find_element(By.CLASS_NAME, "list-group-item").click()
+  context.pid = context.browser.driver.current_url.split("/").pop()
 
 @when(u'I create a project')
 def step_impl(context):
@@ -96,30 +95,80 @@ def step_impl(context):
     when I open the new project wizard
     and I enter a project name and description
     and I click Finish
+    given I am on the front page
   ''')
 
 @when(u'I open the new project wizard')
 def step_impl(context):
   context.browser.wait_until_visible((By.ID, 'slycat-create-wizards')).click()
   context.browser.find_by_text("a", "New Project").click()
+  context.browser.wait_until_visible((By.ID,'slycat-wizard'))
+
+@when(u'I open the edit project wizard')
+def step_impl(context):
+  context.browser.wait_until_visible((By.ID, 'slycat-edit-wizards')).click()
+  context.browser.find_by_text("a", "Edit Project").click()
+  context.browser.wait_until_visible((By.ID,'slycat-wizard'))
+
+@when(u'I open the project info form')
+def step_impl(context):
+  context.browser.wait_until_visible((By.ID, 'slycat-info-wizards')).click()
+  context.browser.find_by_text("a", "Project Details").click()
+  context.browser.wait_until_visible((By.ID,'slycat-wizard'))
+
+@when(u'I choose Delete Project')
+def step_impl(context):
+  context.pid = context.browser.driver.current_url.split("/").pop()
+  context.browser.wait_until_visible((By.ID, 'slycat-delete-wizards')).click()
+  context.browser.find_by_text("a", "Delete Project").click()
 
 @when(u'I enter a project name and description')
 def step_impl(context):
-  wizard = context.browser.wait_until_visible((By.ID,'slycat-wizard'))
-  context.browser.driver.find_element_by_id("slycat-create-project-name").send_keys("Test Project")
-  context.browser.driver.find_element_by_id("slycat-create-project-description").send_keys('This is a project create for a behave test')
   context.project_name = "Test Project"
+  context.project_description = "This is a project created for a behave test"
+  context.browser.driver.find_element_by_id("slycat-create-project-name").send_keys(context.project_name)
+  context.browser.driver.find_element_by_id("slycat-create-project-description").send_keys(context.project_description)
+
+@when(u'I enter new values in the edit form')
+def step_impl(context):
+  context.project_name = "Edited Test Project"
+  context.project_description = "This project has been edited by a behave test"
+  project_name_field = context.browser.driver.find_element_by_id("slycat-edit-project-name")
+  project_description_field = context.browser.driver.find_element_by_id("slycat-edit-project-description")
+  project_name_field.clear()
+  project_name_field.send_keys(context.project_name)
+  project_description_field.clear()
+  project_description_field.send_keys(context.project_description)
 
 @when(u'I click Finish')
 def step_impl(context):
   context.browser.find_by_text("li", "Finish").click()
   context.browser.wait_until_visible((By.ID, "slycat-project"))
 
+@when(u'I click Save Changes')
+def step_impl(context):
+  context.browser.find_by_text("button", "Save Changes").click()
+
+@when(u'I confirm by clicking Delete Project')
+def step_impl(context):
+  context.browser.find_by_text("button", "Delete Project").click()
+
 @when(u'I open the project page')
 def step_impl(context):
   return
 
-@then(u'I should be on the new project page')
+@then(u'I should be on the project page')
 def step_impl(context):
   nose.tools.assert_true(re.compile("https://.*/projects/[^/]*$").match(context.browser.driver.current_url))
   context.browser.find_by_text("a", context.project_name)
+
+@then(u'I should see my values on the project')
+def step_impl(context):
+  context.execute_steps(u'''when I open the project info form''')
+  selector = "//p[contains(.,'" + context.project_description + "')]"
+  context.browser.driver.find_element(By.XPATH, selector)
+
+@then(u'I should not see a project on the front page')
+def step_impl(context):
+  context.execute_steps(u'''given I am on the front page''')
+  context.browser.driver.find_element(By.XPATH, "//a[contains(@href,'" + context.pid + "')]")

@@ -38,7 +38,7 @@
             </ul>
           </li>
           <li class="dropdown" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length">
-            <button type="button" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button>
+            <button type="button" id="slycat-edit-wizards" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button>
             <ul class="dropdown-menu">
               <!-- ko foreach: model_edit_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
@@ -54,7 +54,7 @@
             </ul>
           </li>
           <li class="dropdown" data-bind="visible: project_info_wizards().length" data-toggle="dropdown">
-            <button type="button" class="btn btn-xs btn-info navbar-btn dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
+            <button type="button" id="slycat-info-wizards" class="btn btn-xs btn-info navbar-btn dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
             <ul class="dropdown-menu">
               <!-- ko foreach: project_info_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click: $parent.run_wizard"></a></li>
@@ -107,7 +107,7 @@
             </ul>
           </li>
           <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length">
-            <button type="button" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button>
+            <button type="button" id="slycat-delete-wizards" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button>
             <ul class="dropdown-menu">
               <!-- ko foreach: model_delete_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
