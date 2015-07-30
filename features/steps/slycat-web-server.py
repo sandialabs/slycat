@@ -16,6 +16,7 @@ import re
 from pyvirtualdisplay import Display
 
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -43,21 +44,8 @@ class Driver():
     for entry in driver.get_log('browser'):
       print(entry)
 
-@given(u'the slycat servers are running')
+@given(u'a browser is open')
 def step_impl(context):
-  supervisord = subprocess.Popen(["supervisord", "-c", "/etc/supervisord.conf"], stdout=subprocess.PIPE)
-  values = {'success': ['sshd', 'couchdb', 'web-server', 'proxy-server', 'feed-server'], 'exited': ['couchdb-setup']}
-  expected = {}
-  for key in values:
-    for value in values[key]:
-      expected[re.compile(" ".join(["INFO", key + ":", value]))] = False
-  x = 0
-  while (not reduce(operator.and_, expected.values())) and x < 100:
-    x += 1
-    next_line = supervisord.stdout.readline()
-    for key in expected:
-      if key.search(next_line):
-        expected[key] = True
   context.browser = Driver()
 
 
@@ -171,4 +159,5 @@ def step_impl(context):
 @then(u'I should not see a project on the front page')
 def step_impl(context):
   context.execute_steps(u'''given I am on the front page''')
-  context.browser.driver.find_element(By.XPATH, "//a[contains(@href,'" + context.pid + "')]")
+  with nose.tools.assert_raises(NoSuchElementException):
+    context.browser.driver.find_element(By.XPATH, "//a[contains(@href,'" + context.pid + "')]")
