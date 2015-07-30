@@ -301,6 +301,16 @@ def put_model_file(database, model, aid, value, content_type, input=False):
   database.save(model)
   return model
 
+def get_model_file(database, model, aid):
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type != "file":
+    raise cherrypy.HTTPError("400 %s is not a file artifact." % aid)
+  fid = artifact
+  return database.get_attachment(model, fid)
+
 def put_model_inputs(database, model, source, deep_copy=False):
   slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
   for aid in source["input-artifacts"]:

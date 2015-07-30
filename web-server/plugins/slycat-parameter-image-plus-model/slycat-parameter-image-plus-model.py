@@ -2,6 +2,7 @@ def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
   import cherrypy
   import datetime
+  import collections
   import json
   import numpy
   import os
@@ -10,6 +11,57 @@ def register_slycat_plugin(context):
   import slycat.web.server
   import threading
   import traceback
+
+  class ImageCache(object):
+    def __init__(self):
+      self._reset()
+
+    def _reset(self):
+      self._storage = {}
+
+    def reset(self):
+      #slycat.web.client.log.info("Resetting image cache.")
+      self._reset()
+
+    def image(self, path, process=lambda x,y:x):
+      if path not in self._storage:
+        #slycat.web.client.log.info("Loading %s." % path)
+        import PIL.Image
+        try:
+          self._storage[path] = process(numpy.asarray(PIL.Image.open(path)), path)
+        except Exception as e:
+          #slycat.web.client.log.error(str(e))
+          self._storage[path] = None
+      return self._storage[path]
+
+  image_cache = ImageCache()
+
+  def csv_distance(left_index, left_path, right_index, right_path):
+    return csv_distance.matrix[left_index, right_index]
+  csv_distance.matrix = None
+
+  # Map measure names to functions
+  measures = {
+    # "identity" : identity_distance,
+    # "jaccard" : jaccard_distance,
+    # "euclidean-rgb" : euclidean_rgb_distance,
+    "csv" : csv_distance,
+    }
+
+  def compute_distance(left, right, storage, cluster_name, measure_name, measure):
+    distance = numpy.empty(len(left))
+    for index in range(len(left)):
+      i = left[index]
+      j = right[index]
+      row_i, column_i = storage[i]
+      uri_i = columns[column_i][1][row_i]
+      path_i = urlparse.urlparse(uri_i).path
+      row_j, column_j = storage[j]
+      uri_j = columns[column_j][1][row_j]
+      path_j = urlparse.urlparse(uri_j).path
+      distance[index] = measure(i, path_i, j, path_j)
+      #slycat.web.client.log.info("Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index]))
+    return distance
 
   def media_columns(database, model, verb, type, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video)."""
@@ -31,12 +83,107 @@ def register_slycat_plugin(context):
 
   def compute(mid):
     """Called in a thread to perform work on the model."""
-    import pudb; pu.db
     try:
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
 
       # Do useful work here
+      try:
+        clusters = slycat.web.server.get_model_file(database, model, "clusters")
+        print "we have a clusters file, so no work needs to be done on the server"
+      except:
+        import pudb; pu.db
+        cluster_columns = slycat.web.server.get_model_parameter(database, model, "cluster-columns")
+        metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
+        column_infos = metadata[0]['attributes']
+        column_data = list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", ".../.../..."))
+        columns = []
+        for column_index, column_info in enumerate(column_infos):
+          columns.append((column_info['name'], column_data[column_index]))
+
+        distance_matrix_data = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix", ".../.../..."))
+
+        # Create a mapping from unique cluster names to column rows.
+        clusters = collections.defaultdict(list)
+        for column_index, (name, column) in enumerate(columns):
+          if name not in [cluster_columns]:
+            continue
+          for row_index, row in enumerate(column):
+            if row:
+              clusters[name].append((row_index, column_index))
+
+        # Compute a hierarchical clustering for each cluster column.
+        cluster_linkages = {}
+        cluster_exemplars = {}
+
+        for index, (name, storage) in enumerate(sorted(clusters.items())):
+          image_cache.reset()
+          progress_begin = float(index) / float(len(clusters))
+          progress_end = float(index + 1) / float(len(clusters))
+
+          # Compute a distance matrix comparing every image to every other ...
+          observation_count = len(storage)
+          left, right = numpy.triu_indices(observation_count, k=1)
+          distance = compute_distance(left, right, storage, name, arguments.cluster_measure, measures[arguments.cluster_measure])
+
+          # Use the distance matrix to cluster observations ...
+          #slycat.web.client.log.info("Clustering %s" % name)
+          #distance = scipy.spatial.distance.squareform(distance_matrix)
+          linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_linkage))
+          cluster_linkages[name] = linkage
+
+          # Identify exemplar waveforms for each cluster ...
+          distance_matrix = scipy.spatial.distance.squareform(distance)
+
+          summed_distances = numpy.zeros(shape=(observation_count))
+          exemplars = dict()
+          cluster_membership = []
+
+          for i in range(observation_count):
+            exemplars[i] = i
+            cluster_membership.append(set([i]))
+
+          #slycat.web.client.log.info("Identifying examplars for %s" % (name))
+          for i in range(len(linkage)):
+            cluster_id = i + observation_count
+            (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
+            cluster1 = int(f_cluster1)
+            cluster2 = int(f_cluster2)
+            # Housekeeping: assemble the membership of the new cluster
+            cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
+            # We need to update the distance from each member of the new
+            # cluster to all the other members of the cluster.  That means
+            # that for all the members of cluster1, we need to add in the
+            # distances to members of cluster2, and for all members of
+            # cluster2, we need to add in the distances to members of
+            # cluster1.
+            for cluster1_member in cluster_membership[cluster1]:
+              for cluster2_member in cluster_membership[cluster2]:
+                summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
+
+            for cluster2_member in cluster_membership[int(cluster2)]:
+              for cluster1_member in cluster_membership[cluster1]:
+                summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
+
+            min_summed_distance = None
+            max_summed_distance = None
+
+            exemplar_id = 0
+            for member in cluster_membership[cluster_id]:
+              if min_summed_distance is None or summed_distances[member] < min_summed_distance:
+                min_summed_distance = summed_distances[member]
+                exemplar_id = member
+
+              if max_summed_distance is None or summed_distances[member] > min_summed_distance:
+                max_summed_distance = summed_distances[member]
+
+            exemplars[cluster_id] = exemplar_id
+          cluster_exemplars[name] = exemplars
+
+
+        print "we have no clusters file, now we need to create it on the server!!!"
+        # import pudb; pu.db
+        # import pdb; pdb.set_trace()
 
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 

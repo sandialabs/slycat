@@ -382,10 +382,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                             value: component.cluster_column(),
                             input: true,
                             success: function() {
-                              client.post_model_finish({
+                              client.put_model_parameter({
                                 mid: component.model._id(),
+                                aid: "cluster-measure",
+                                value: 'csv',
+                                input: true,
                                 success: function() {
-                                  component.tab(6);
+                                  client.post_model_finish({
+                                    mid: component.model._id(),
+                                    success: function() {
+                                      component.tab(6);
+                                    }
+                                  });
                                 }
                               });
                             }

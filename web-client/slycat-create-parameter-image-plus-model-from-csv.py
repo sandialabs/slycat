@@ -204,6 +204,8 @@ if __name__ == "__main__":
   ###########################################################################################
   # Create a mapping from unique cluster names to column rows.
 
+  
+  import pudb; pu.db
   clusters = collections.defaultdict(list)
   for column_index, (name, column) in enumerate(columns):
     if name not in arguments.cluster_columns:

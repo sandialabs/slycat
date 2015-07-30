@@ -29,8 +29,6 @@ def register_slycat_plugin(context):
 
   def finish(database, model):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
-    print "finished slycat-parameter-image"
-    import pdb; pdb.set_trace()
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def html(database, model):
