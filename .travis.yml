@@ -14,6 +14,7 @@ before_install:
   - sudo add-apt-repository -y ppa:vbernat/haproxy-1.5
   - sudo apt-get update -qq
   - sudo apt-get install haproxy
+  - sudo apt-get install xvfb firefox
   # Install ffmpeg for our agent testing.
   - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
   - mkdir ffmpeg
@@ -42,7 +43,7 @@ before_install:
 install:
   - conda create --yes -n slycat coverage h5py mock nose paramiko Pillow pip pyparsing requests scipy
   - source activate slycat
-  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coveralls python-ldap pystache routes tornado-couchdb
+  - pip install --no-use-wheel behave "cherrypy==3.2.6" couchdb coveralls python-ldap pystache routes tornado-couchdb selenium pyvirtualdisplay
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
   - sudo haproxy -f $TRAVIS_BUILD_DIR/travis-ci/proxy-server-config.conf -db &
   - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
@@ -50,7 +51,7 @@ install:
   - env | sort
 
 script:
-  - REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert coverage run --source agent,packages/slycat --omit="packages/slycat/web/server/*" -m behave -i "(agent|hyperchunks|rest-api)"
+  - REQUESTS_CA_BUNDLE=$TRAVIS_BUILD_DIR/root-ca.cert coverage run --source agent,packages/slycat --omit="packages/slycat/web/server/*" -m behave -i "(agent|hyperchunks|rest-api|slycat-web-server)"
   - coverage report
 
 after_script:

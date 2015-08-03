@@ -217,6 +217,9 @@ def start(root_path, config_file):
   # Start all of our cleanup workers.
   cherrypy.engine.subscribe("start", slycat.web.server.cleanup.start, priority=80)
 
+  # sets a custom 404 page
+  cherrypy.config.update({ 'error_page.404': os.path.join(root_path, "templates/slycat-404.html") })
+
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)
 
