@@ -48,20 +48,13 @@ class Driver():
 def step_impl(context):
   context.browser = Driver()
 
-
-counter = 0
-def s(context):
-  global counter
-  context.browser.driver.save_screenshot("/home/slycat/src/slycat/" + str(counter) + ".png")
-  counter += 1
-
 @given(u'I am on the front page')
 def step_impl(context):
   context.browser.driver.set_window_size(800,600)
   context.browser.driver.get("https://slycat:slycat@localhost/projects")
   context.browser.driver.find_element(By.ID, "slycat-navbar-content")
 
-@given(u'I have a project')
+@given(u'a project')
 def step_impl(context):
   context.execute_steps(u'''
     given I am on the front page
@@ -72,6 +65,7 @@ def step_impl(context):
     context.execute_steps(u'''when I create a project''')
     return
 
+@given(u'the first project is open')
 @when(u'I open the first project')
 def step_impl(context):
   context.browser.driver.find_element(By.CLASS_NAME, "list-group-item").click()
