@@ -127,6 +127,10 @@ def step_impl(context):
   context.browser.find_by_text("li", "Finish").click()
   context.browser.wait_until_visible((By.ID, "slycat-project"))
 
+@when(u'I press Enter in the project name')
+def step_impl(context):
+  context.browser.driver.find_element_by_id("slycat-create-project-name").send_keys(Keys.ENTER)
+
 @when(u'I click Save Changes')
 def step_impl(context):
   context.browser.find_by_text("button", "Save Changes").click()
