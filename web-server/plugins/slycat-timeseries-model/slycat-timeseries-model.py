@@ -8,7 +8,7 @@ def register_slycat_plugin(context):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-  def html(database, model):
+  def page_html(database, model):
     """Add the HTML representation of the model to the context object."""
     import json
     import pystache
@@ -24,15 +24,18 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
-  context.register_model("timeseries", finish, html)
-  context.register_model_bundle("timeseries", "text/css", [
+  context.register_model("timeseries", finish)
+
+  context.register_page("timeseries", page_html)
+
+  context.register_page_bundle("timeseries", "text/css", [
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
     os.path.join(os.path.dirname(__file__), "css/ui.css"),
     ])
-  context.register_model_bundle("timeseries", "text/javascript", [
+  context.register_page_bundle("timeseries", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.knob.js"),
@@ -53,7 +56,7 @@ def register_slycat_plugin(context):
     #For development and debugging, loading some js dynamically inside model.
     #os.path.join(os.path.dirname(__file__), "js/ui.js"),
     ])
-  context.register_model_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
+  context.register_page_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
 
   devs = [
     # "js/parameter-image-dendrogram.js",
@@ -61,4 +64,4 @@ def register_slycat_plugin(context):
     "js/ui.js",
   ]
   for dev in devs:
-    context.register_model_resource("timeseries", dev, os.path.join(os.path.dirname(__file__), dev))
+    context.register_page_resource("timeseries", dev, os.path.join(os.path.dirname(__file__), dev))

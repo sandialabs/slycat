@@ -16,7 +16,7 @@ rights in this software.
     "js/ui.js",
   ].forEach(function(src) {
     var script = document.createElement('script');
-    script.src = server_root + "resources/models/parameter-image/" + src;
+    script.src = server_root + "resources/pages/parameter-image/" + src;
     script.async = false;
     document.head.appendChild(script);
   });
@@ -24,7 +24,7 @@ rights in this software.
     // "css/ui.css",
   ].forEach(function(src) {
     var link = document.createElement('link');
-    link.href = server_root + "resources/models/parameter-image/" + src;
+    link.href = server_root + "resources/pages/parameter-image/" + src;
     link.rel = 'stylesheet';
     link.type = 'text/css';
     document.head.appendChild(link);

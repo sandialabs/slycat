@@ -17,6 +17,7 @@ clients, typically used for custom data ingestion.
    slycat.table.rst
    slycat.timeseries.rst
    slycat.timeseries.segmentation.rst
+   slycat.uri.rst
    slycat.web.client.rst
    slycat.web.server.rst
    slycat.web.server.authentication.rst
