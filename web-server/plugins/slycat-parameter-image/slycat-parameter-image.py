@@ -31,7 +31,7 @@ def register_slycat_plugin(context):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-  def html(database, model):
+  def page_html(database, model):
     """Add the HTML representation of the model to the context object."""
     import json
     import pystache
@@ -44,7 +44,9 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
-  context.register_model("parameter-image", finish, html)
+  context.register_model("parameter-image", finish)
+
+  context.register_page("parameter-image", page_html)
 
     # Register JS
   javascripts = [
@@ -76,7 +78,7 @@ def register_slycat_plugin(context):
     # "ui.js",
     #For development and debugging, comment out js here and load it dynamically inside model.
   ]
-  context.register_model_bundle("parameter-image", "text/javascript", [
+  context.register_page_bundle("parameter-image", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
     ])
 
@@ -95,7 +97,7 @@ def register_slycat_plugin(context):
     "slycat-additions.css",
     #For development and debugging, comment out css here and load it dynamically inside model.
   ]
-  context.register_model_bundle("parameter-image", "text/css", [
+  context.register_page_bundle("parameter-image", "text/css", [
     os.path.join(os.path.dirname(__file__), "css", css) for css in stylesheets
     ])
 
@@ -122,7 +124,7 @@ def register_slycat_plugin(context):
     'ui-bg_glass_75_e6e6e6_1x400.png',
   ]
   for image in images:
-    context.register_model_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
+    context.register_page_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
 
   devs = [
     "js/parameter-controls.js",
@@ -133,7 +135,7 @@ def register_slycat_plugin(context):
     "slycat-category-select.html",
   ]
   for dev in devs:
-    context.register_model_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
+    context.register_page_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image", "media-columns", media_columns)

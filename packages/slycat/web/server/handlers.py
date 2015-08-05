@@ -360,14 +360,7 @@ def get_model(mid, **kwargs):
   elif accept == "text/html":
     mtype = model.get("model-type", None)
     ptype = kwargs.get("ptype", None)
-    role = kwargs.get("role", None)
-
-    cherrypy.log.error("mtype: %s ptype: %s role: %s" % (mtype, ptype, role))
-
-    # If the user is trying to open a child page, redirect the request to open the parent instead.
-    if role == "child":
-      uri = slycat.uri.URI(cherrypy.url(qs=cherrypy.request.query_string)).removeQuery(["ptype", "role"])
-      raise cherrypy.HTTPRedirect(str(uri))
+    cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
 
     marking = slycat.web.server.plugin.manager.markings[model["marking"]]
 
@@ -381,26 +374,31 @@ def get_model(mid, **kwargs):
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-model-type"] = mtype
 
-    if ptype is not None:
-      template = "slycat-model-page.html"
-      context["slycat-page-type"] = ptype
-      context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
-      if ptype in slycat.web.server.plugin.manager.page_bundles:
-        context["slycat-page-css-bundles"] =[{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/css"]
-        context["slycat-page-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/javascript"]
-    elif mtype in slycat.web.server.plugin.manager.models.keys():
-      template = "slycat-model.html"
-      context["slycat-plugin-html"] = slycat.web.server.plugin.manager.models[mtype]["html"](database, model)
-      if mtype in slycat.web.server.plugin.manager.model_bundles:
-        context["slycat-plugin-css-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/css"]
-        context["slycat-plugin-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.model_bundles[mtype].items() if content_type == "text/javascript"]
-    else:
-      context["slycat-plugin-html"] = """
+    if mtype not in slycat.web.server.plugin.manager.models.keys():
+      context["slycat-page-html"] = """
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
         <p>No plugin available for this model.</p>
       </div>"""
+      return slycat.web.server.template.render("slycat-model-page.html", context)
 
-    return slycat.web.server.template.render(template, context)
+    if ptype is None:
+      ptype = slycat.web.server.plugin.manager.models[mtype]["ptype"]
+
+    if ptype not in slycat.web.server.plugin.manager.pages:
+      context["slycat-page-html"] = """
+      <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
+        <p>No plugin available for this page type.</p>
+      </div>"""
+      return slycat.web.server.template.render("slycat-model-page.html", context)
+
+
+    context["slycat-page-type"] = ptype
+    context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
+    if ptype in slycat.web.server.plugin.manager.page_bundles:
+      context["slycat-page-css-bundles"] =[{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/css"]
+      context["slycat-page-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/javascript"]
+
+    return slycat.web.server.template.render("slycat-model-page.html", context)
 
 def model_command(mid, type, command, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
@@ -412,19 +410,6 @@ def model_command(mid, type, command, **kwargs):
   if key in slycat.web.server.plugin.manager.model_commands:
     return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type, command, **kwargs)
   raise cherrypy.HTTPError("400 Unknown command: %s" % command)
-
-def get_model_resource(mtype, resource):
-  if mtype in slycat.web.server.plugin.manager.model_bundles:
-    if resource in slycat.web.server.plugin.manager.model_bundles[mtype]:
-      content_type, content = slycat.web.server.plugin.manager.model_bundles[mtype][resource]
-      cherrypy.response.headers["content-type"] = content_type
-      return content
-  if mtype in slycat.web.server.plugin.manager.model_resources:
-    for model_resource, model_path in slycat.web.server.plugin.manager.model_resources[mtype].items():
-      if model_resource == resource:
-        return cherrypy.lib.static.serve_file(model_path)
-
-  raise cherrypy.HTTPError("404")
 
 def get_page_resource(ptype, resource):
   if ptype in slycat.web.server.plugin.manager.page_bundles:
