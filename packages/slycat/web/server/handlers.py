@@ -506,6 +506,34 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
     raise cherrypy.HTTPError("400 %s" % e.message)
 
 @cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_uploads():
+  mid = require_parameter("mid")
+  input = require_boolean_parameter("input")
+  parser = require_parameter("parser")
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  uid = uuid.uuid4().hex
+
+  cherrypy.response.headers["location"] = "%s/uploads/%s" % (cherrypy.request.base, uid)
+  cherrypy.response.status = "201 Upload started."
+  return {"id" : uid}
+
+def put_upload(uid):
+  pass
+
+@cherrypy.tools.json_in(on = True)
+def post_upload(uid):
+  pass
+
+def delete_upload(uid):
+  pass
+
+@cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)

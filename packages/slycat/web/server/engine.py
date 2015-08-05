@@ -123,6 +123,11 @@ def start(root_path, config_file):
   dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
 
+  dispatcher.connect("post-uploads", "/uploads", slycat.web.server.handlers.post_uploads, conditions={"method" : ["POST"]})
+  dispatcher.connect("put-upload", "/uploads/:uid", slycat.web.server.handlers.put_upload, conditions={"method" : ["PUT"]})
+  dispatcher.connect("post-upload", "/uploads/:uid", slycat.web.server.handlers.post_upload, conditions={"method" : ["POST"]})
+  dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
+
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
       if isinstance(value, dict):
