@@ -12,8 +12,16 @@ Feature: Slycat Web Server
     And I open the project page
     Then I should be on the project page
 
+  Scenario: Create a project by pressing enter
+    Given I am on the front page
+    When I open the new project wizard
+    And I enter a project name and description
+    And I press Enter in the project name
+    And I open the project page
+    Then I should be on the project page
+
   Scenario: Edit a project
-    Given I have a project
+    Given a project
     When I open the first project
     And I open the edit project wizard
     And I enter new values in the edit form
@@ -23,7 +31,7 @@ Feature: Slycat Web Server
 
 
   Scenario: Delete a project
-    Given I have a project
+    Given a project
     And I am on the front page
     When I open the first project
     And I choose Delete Project

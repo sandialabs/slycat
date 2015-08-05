@@ -84,6 +84,7 @@ class RawFeed(object):
   def _run(self):
     last_seq = 0
     last_logged_seq = 0
+    timeout = 1000
     while True:
       try:
         server = couchdb.client.Server(url = self._url)
@@ -92,7 +93,7 @@ class RawFeed(object):
 
         # Keep the cache up-to-date.
         while True:
-          for change in database.changes(filter=self._filter, feed="continuous", include_docs=True, since=last_seq, timeout=60000):
+          for change in database.changes(filter=self._filter, feed="continuous", include_docs=True, since=last_seq, timeout=timeout):
             with self._lock:
               if "last_seq" in change:
                 last_seq = change["last_seq"]
@@ -110,6 +111,7 @@ class RawFeed(object):
                 elif change["doc"]["type"] == "model":
                   mid, model = change["id"], change["doc"]
                   self._update_model(mid, model)
+          timout=60000
           if last_seq != last_logged_seq:
             last_logged_seq = last_seq
             log.error("Caching %s projects, %s models, sequence %s." % (len(self._projects), len(self._models), last_seq))
@@ -174,8 +176,11 @@ class RawFeed(object):
           client.projects.add(pid)
           client.write_message(json.dumps(dict(id=pid, doc=project)))
       for mid, model in self._models.items():
-        if is_project_reader(self._projects[model["project"]], client.user):
-          client.write_message(json.dumps(dict(id=mid, doc=model)))
+        if model["project"] in self._projects:
+          if is_project_reader(self._projects[model["project"]], client.user):
+            client.write_message(json.dumps(dict(id=mid, doc=model)))
+        else:
+          log.error("Model %s belongs to project %s, but the latter isn't in the cache.  This should never happen." % (mid, model["project"]))
 
   def remove_client(self, client):
     with self._lock:
