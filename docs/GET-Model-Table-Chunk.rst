@@ -1,7 +1,9 @@
 GET Model Table Chunk
 =====================
 
-.. http:get:: /models/(mid)/tables/(name)/arrays/(array)/chunk
+.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/chunk
+
+  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/data` instead.
 
   Used to retrieve a chunk (subset of rows and columns) from a 1D arrayset
   array artifact. Data is returned as a JSON array-of-arrays containing
@@ -20,8 +22,8 @@ GET Model Table Chunk
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Arrayset artifact name.
-  :type name: string
+  :param aid: Arrayset artifact name.
+  :type aid: string
 
   :param array: Array index.
   :type array: int
@@ -74,7 +76,7 @@ GET Model Table Chunk
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/metadata`
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/sorted-indices`
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/unsorted-indices`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/metadata`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
 

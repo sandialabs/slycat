@@ -1,15 +1,15 @@
 PUT Model Arrayset
 ==================
 
-.. http:put:: /models/(mid)/arraysets/(name)
+.. http:put:: /models/(mid)/arraysets/(aid)
 
   Initialize an arrayset, a collection of zero-to-many arrays.
 
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Unique arrayset name.
-  :type name: string
+  :param aid: Unique artifact id.
+  :type aid: string
 
   :requestheader Content-Type: application/json
 
@@ -43,6 +43,6 @@ PUT Model Arrayset
 See Also
 --------
 
-- :http:put:`/models/(mid)/arraysets/(name)/arrays/(array)`
-- :http:put:`/models/(mid)/arraysets/(name)/data`
+- :http:put:`/models/(mid)/arraysets/(aid)/arrays/(array)`
+- :http:put:`/models/(mid)/arraysets/(aid)/data`
 

@@ -18,6 +18,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
         mid: bookmark_manager.current_mid(),
         bid: bookmark_manager.current_bid(),
         error: dialog.ajax_error("Error creating saved bookmark."),
+        success: function(){
+          component.show_wizard(false);
+        }
       });
     }
 

@@ -1,7 +1,9 @@
 GET Model Table Sorted Indices
 ==============================
 
-.. http:get:: /models/(mid)/tables/(name)/arrays/(array)/sorted-indices
+.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/sorted-indices
+
+  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/data` instead.
 
   Given a collection of row indices and a specific sort order, return the
   corresponding sorted row indices.
@@ -9,8 +11,8 @@ GET Model Table Sorted Indices
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Arrayset artifact name.
-  :type name: string
+  :param aid: Arrayset artifact id.
+  :type aid: string
 
   :param array: Array index.
   :type array: int
@@ -25,6 +27,6 @@ GET Model Table Sorted Indices
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/chunk`
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/metadata`
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/unsorted-indices`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/chunk`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/metadata`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`

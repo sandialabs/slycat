@@ -37,52 +37,6 @@ define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slyca
 
     var references = mapping.fromJS([]);
 
-    page.saved_bookmarks = references.filter(function(reference)
-    {
-      return reference.bid() && reference.mid();
-    }).map(function(reference)
-    {
-      var model = ko.utils.arrayFirst(page.models(), function(model)
-      {
-        return model._id() == reference.mid();
-      });
-
-      return {
-        _id: reference._id,
-        name: reference.name,
-        model_name: model ? model.name() : "",
-        model_type: reference["model-type"] ? reference["model-type"]() : "",
-        created: reference.created,
-        creator: reference.creator,
-        uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
-      };
-    });
-    page.edit_saved_bookmark = function(reference)
-    {
-    }
-    page.delete_saved_bookmark = function(reference)
-    {
-      dialog.dialog(
-      {
-        title: "Delete Saved Bookmark?",
-        message: "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
-        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
-        callback: function(button)
-        {
-          if(button.label != "OK")
-            return;
-          client.delete_reference(
-          {
-            rid: reference._id(),
-            success: function()
-            {
-              page.update_references();
-            },
-            error: dialog.ajax_error("Couldn't delete template."),
-          });
-        },
-      });
-    }
     page.templates = references.filter(function(reference)
     {
       return reference.bid() && !reference.mid();

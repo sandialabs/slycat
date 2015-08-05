@@ -12,6 +12,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       name: "Remapped " + component.original.name(),
       description: component.original.description(),
       marking: component.original.marking(),
+      type: component.original['model-type']()
     });
     component.media_columns = mapping.fromJS([]);
     component.search = ko.observable("");
@@ -20,11 +21,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     /** contains all the seach and replace pairs to be fed to the backend for update... */
     var searchAndReplaceArr = [];
 
-
     client.get_model_parameter(
     {
       mid: component.original._id(),
-      name: "image-columns",
+      aid: "image-columns",
       success: function(value)
       {
         mapping.fromJS(value, component.media_columns);
@@ -35,7 +35,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     {
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
-    }
+    };
 
 
     var build_panel = function($container) {
@@ -52,7 +52,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       return {
         $header: $header,
         $body: $body
-      }
+      };
     };
 
     var build_item = function(value) {
@@ -120,7 +120,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var list_uris = function() {
       client.get_model_command({
         mid: component.model._id(),
-        type: "parameter-image",
+        type: "remap-wizard",
         command: "list-uris",
         parameters: {
           columns: component.media_columns()
@@ -129,7 +129,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           display_uris(result);
         },
         error: dialog.ajax_error("Error listing URI's.")
-      })
+      });
     };
 
     component.create_model = function()
@@ -137,7 +137,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       client.post_project_models(
       {
         pid: component.project._id(),
-        type: "parameter-image",
+        type: component.model.type(),
         name: component.model.name(),
         description: component.model.description(),
         marking: component.model.marking(),
@@ -159,12 +159,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         },
         error: dialog.ajax_error("Error creating model."),
       });
-    }
+    };
 
     var callSearchAndReplace = function(search, replace, onSuccess) {
       client.post_model_command({
         mid: component.model._id(),
-        type: "parameter-image",
+        type: "remap-wizard",
         command: "search-and-replace",
         parameters: {
           columns: component.media_columns(),
@@ -197,16 +197,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         });
       }
     };
+    
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
+    };
 
     component.finish = function() {
       processSearchAndReplace(searchAndReplaceArr.pop());
-    }
+    };
 
     return component;
   }
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/remap-parameter-image/ui.html" },
+    template: { require: "text!" + server_root + "resources/wizards/remap-wizard/ui.html" },
   };
 });

@@ -12,6 +12,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.ps_type = ko.observable("remote"); // remote is selected by default...
+    component.server_root = server_root;
 
     component.cancel = function() {
       if(component.remote.sid())
@@ -58,13 +59,28 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         success: function(media_columns) {
           client.get_model_table_metadata({
             mid: component.model._id(),
-            name: "data-table",
+            aid: "data-table",
             success: function(metadata) {
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
-                attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1});
+                attributes.push({
+                  name:metadata["column-names"][i], 
+                  type:metadata["column-types"][i], 
+                  input:false,
+                  output:false,
+                  category:false,
+                  rating:false,
+                  image:media_columns.indexOf(i) !== -1,
+                  Classification: 'Neither',
+                  Categorical: false,
+                  Editable: false,
+                  hidden: media_columns.indexOf(i) !== -1,
+                  selected: false,
+                  lastSelected: false
+                });
               mapping.fromJS(attributes, component.attributes);
               component.tab(5);
+              $('.browser-continue').toggleClass("disabled", false);
             }
           });
         }
@@ -72,14 +88,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.upload_table = function() {
+      $('.local-browser-continue').toggleClass("disabled", true);
       client.post_model_files({
         mid: component.model._id(),
         files: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
         success: upload_success,
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.local-browser-continue').toggleClass("disabled", false);
+        },
       });
     };
 
@@ -105,15 +125,21 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.load_table = function() {
+      $('.remote-browser-continue').toggleClass("disabled", true);
       client.post_model_files({
         mid: component.model._id(),
         sids: [component.remote.sid()],
         paths: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
-        success: upload_success,
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        success: function(){
+          upload_success();
+        },
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.remote-browser-continue').toggleClass("disabled", false);
+        },
       });
     };
 
@@ -157,6 +183,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       return true;
     };
 
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
+    };
+
     component.finish = function() {
       var input_columns = [];
       var output_columns = [];
@@ -164,45 +194,53 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var category_columns = [];
       var image_columns = [];
       for(var i = 0; i != component.attributes().length; ++i) {
-        if(component.attributes()[i].input())
+        if(component.attributes()[i].Classification() == 'Input')
           input_columns.push(i);
-        if(component.attributes()[i].output())
+        if(component.attributes()[i].Classification() == 'Output')
           output_columns.push(i);
-        if(component.attributes()[i].category())
+        if(component.attributes()[i].Categorical())
           category_columns.push(i);
-        if(component.attributes()[i].rating())
+        if(component.attributes()[i].Editable())
           rating_columns.push(i);
+        // if(component.attributes()[i].input())
+        //   input_columns.push(i);
+        // if(component.attributes()[i].output())
+        //   output_columns.push(i);
+        // if(component.attributes()[i].category())
+        //   category_columns.push(i);
+        // if(component.attributes()[i].rating())
+        //   rating_columns.push(i);
         if(component.attributes()[i].image())
           image_columns.push(i);
       }
 
       client.put_model_parameter({
         mid: component.model._id(),
-        name: "input-columns",
+        aid: "input-columns",
         value: input_columns,
         input: true,
         success: function() {
           client.put_model_parameter({
             mid: component.model._id(),
-            name: "output-columns",
+            aid: "output-columns",
             value: output_columns,
             input: true,
             success: function() {
               client.put_model_parameter({
                 mid: component.model._id(),
-                name: "rating-columns",
+                aid: "rating-columns",
                 value: rating_columns,
                 input: true,
                 success: function() {
                   client.put_model_parameter({
                     mid: component.model._id(),
-                    name: "category-columns",
+                    aid: "category-columns",
                     value: category_columns,
                     input: true,
                     success: function() {
                       client.put_model_parameter({
                         mid: component.model._id(),
-                        name: "image-columns",
+                        aid: "image-columns",
                         value: image_columns,
                         input: true,
                         success: function() {

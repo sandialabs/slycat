@@ -1,0 +1,195 @@
+<div class="bootstrap-styles zooming-modals">
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-navbar-content">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" data-bind="attr:{href:server_root + 'projects'}">Slycat</a>
+      </div>
+      <div class="collapse navbar-collapse" id="slycat-navbar-content">
+        <ol class="breadcrumb navbar-left">
+          <li data-bind="visible: true"><a data-bind="attr:{href:server_root + 'projects'}">Projects</a></li>
+          <!-- ko foreach: project -->
+            <li><a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a></li>
+          <!-- /ko -->
+          <!-- ko foreach: model -->
+            <li class="slycat-unclickable"><a data-bind="text:name,popover:{trigger:'hover',html:true,content:$parent.model_popover()}"></a></li>
+          <!-- /ko -->
+        </ol>
+        <ul class="nav navbar-nav navbar-left">
+          <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
+            <button type="button" id="slycat-create-wizards" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: model_create_wizards -->
+                <li class="slycat-clickable"><a class="" data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible: model_create_wizards().length && project_create_wizards().length"></li>
+              <!-- ko foreach: project_create_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible: project_create_wizards().length && global_create_wizards().length"></li>
+              <!-- ko foreach: global_create_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <li class="dropdown" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length">
+            <button type="button" id="slycat-edit-wizards" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: model_edit_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"></li>
+              <!-- ko foreach: project_edit_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"></li>
+              <!-- ko foreach: global_edit_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <li class="dropdown" data-bind="visible: project_info_wizards().length" data-toggle="dropdown">
+            <button type="button" id="slycat-info-wizards" class="btn btn-xs btn-info navbar-btn dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: project_info_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click: $parent.run_wizard"></a></li>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <li class="dropdown nav-bookmarks" data-bind="visible: model_id() || project_id()">
+            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown"
+              data-bind="css: { disabled: model_id() ? false : saved_bookmarks().length < 1 }">
+              Bookmarks <span class="caret"/>
+            </button>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: model_bookmark_wizards -->
+                <li class="slycat-clickable">
+                  <a class="bookmark-new" data-bind="click: $parent.run_wizard">
+                     <span class="fa fa-plus"></span>
+                     <!-- <span class="fa fa-plus-circle"></span>
+                     <span class="fa fa-plus-square"></span>
+                     <span class="fa fa-plus-square-o"></span> -->
+                    <span data-bind="text: label"></span></a>
+                </li>
+              <!-- /ko -->
+              <li role="separator" class="divider" data-bind="visible: model_bookmark_wizards().length && saved_bookmarks().length"></li>
+              <!-- ko foreach: saved_bookmarks -->
+                <li class="slycat-clickable">
+                  <a class="bookmark-link" data-bind="attr: {href:uri}">
+                    <span>
+                      <!-- <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="fa fa-pencil"></span></button> -->
+                      <button type="button" class="btn btn-xs btn-danger bookmark-delete" title="Delete bookmark"
+                        data-bind="click: $parent.delete_saved_bookmark">
+                        <span class="fa fa-trash-o"></span>
+                      </button>
+                    </span>
+                    <span class="label label-default" data-bind="visible: model_type && !$parent.model_id(), text:model_type + ' model'"></span>
+                    <strong>
+                      <span data-bind="visible: !$parent.model_id()">
+                        <span data-bind="text:model_name"></span> 
+                        - 
+                      </span>
+                      <span data-bind="text:name"></span></strong>
+                    <small>
+                      <em>
+                        Created <span data-bind="text:created"></span>
+                        by <span data-bind="text:creator"></span>
+                      </em>
+                    </small>
+                  </a>
+                </li>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length">
+            <button type="button" id="slycat-delete-wizards" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: model_delete_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"></li>
+              <!-- ko foreach: project_delete_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"></li>
+              <!-- ko foreach: global_delete_wizards -->
+                <li><a data-bind="text: label, click:$parent.run_wizard"></a></li>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <li class="dropdown" data-bind="visible:open_models().length">
+            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: finished_models -->
+                <li>
+                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()},popover:{trigger:'hover',content:$data.message()}">
+                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{'btn-success':$data.result && $data.result()==='succeeded','btn-danger':$data.result && $data.result()!=='succeeded'}"><span class="fa fa-check"></span></button>
+                    <span data-bind="text:name"></span>
+                  </a>
+                </li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li>
+              <!-- ko foreach: running_models -->
+                <li>
+                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()}">
+                    <span data-bind="text:name"></span>
+                  </a>
+                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}">
+                </li>
+              <!-- /ko -->
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li class="navbar-text slycat-clickable"><span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">Help <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li class="slycat-clickable"><a data-bind="click:about"><span class="fa fa-fw"></span> About Slycat</a></li>
+              <li class="slycat-clickable"><a data-bind="click:support_request"><span class="fa fa-fw fa-envelope-o"></span> Support Request</a></li>
+              <li class="slycat-clickable"><a data-bind="click:open_documentation"><span class="fa fa-fw fa-book"></span> Documentation</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- ko foreach: model_alerts -->
+    <div class="alert slycat-navbar-alert" data-bind="css:{'alert-danger':$data.type === 'danger','alert-info':$data.type === 'info','alert-success':$data.type === 'success'}">
+      <p data-bind="text:message"></p>
+      <pre data-bind="visible:detail,text:detail,css:{'bg-danger':$data.type === 'danger','bg-info':$data.type === 'info','bg-success':$data.type === 'success'}"></pre>
+    </div>
+  <!-- /ko -->
+  <div class="modal fade" id="slycat-wizard" data-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content zoom-sensitive">
+        <div data-bind="if: wizard" style="height: 100%">
+          <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" class="zoom-sensitive" style="height: 100%">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="slycat-about">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="jumbotron">
+            <img data-bind="attr:{src:server_root + 'css/slycat-brand.png'}"/>
+            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p>
+          </div>
+          <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p>
+          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

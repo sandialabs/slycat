@@ -121,16 +121,12 @@ class Session(object):
 
   def close(self):
     if self._agent is not None:
-      cherrypy.log.error("Shutting-down remote agent for %s@%s from %s" % (self.username, self.hostname, self.client))
+      cherrypy.log.error("Instructing remote agent for %s@%s from %s to shutdown." % (self.username, self.hostname, self.client))
       stdin, stdout, stderr = self._agent
       command = {"action":"exit"}
       stdin.write("%s\n" % json.dumps(command))
       stdin.flush()
-      response = json.loads(stdout.readline())
-      if response["ok"]:
-        cherrypy.log.error("Shutdown remote agent for %s@%s from %s" % (self.username, self.hostname, self.client))
-      else:
-        cherrypy.log.error("Error shutting-down remote agent.")
+
     self._sftp.close()
     self._ssh.close()
 
@@ -426,6 +422,14 @@ def create_session(hostname, username, password, agent):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=hostname, username=username, password=password)
+    ssh.get_transport().set_keepalive(5)
+
+    # Detect problematic startup scripts.
+    stdin, stdout, stderr = ssh.exec_command("/bin/true")
+    if stdout.read():
+      raise cherrypy.HTTPError("500 Slycat can't connect because you have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. Startup scripts should only write to stderr, never stdout - see sshd(8).")
+
+    # Start sftp.
     sftp = ssh.open_sftp()
 
     # Optionally start an agent.
@@ -515,6 +519,7 @@ def delete_session(sid):
     if sid in session_cache:
       session = session_cache[sid]
       cherrypy.log.error("Deleting remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
+      session_cache[sid].close()
       del session_cache[sid]
 
 def _expire_session(sid):

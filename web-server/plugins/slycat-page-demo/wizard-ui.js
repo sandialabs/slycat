@@ -36,6 +36,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         error: dialog.ajax_error("Error creating model.")
       });
     }
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
+    }
 
     return component;
   }

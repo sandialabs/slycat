@@ -1,0 +1,89 @@
+<div class="slycat-table-ingestion">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <!-- ko foreach: properties -->
+          <!-- ko if: type == 'bool' -->
+            <th class="bool property-start property-end">
+              <span data-bind="text: name"></span>
+              <i class="fa fa-toggle-on select-all-button button" data-bind="
+                attr: { title: $parent.selected() ? 'Toggle selected rows' : 'No rows selected' },
+                css: { 'disabled': ! $parent.selected() },
+                click: $parent.selected() ? $parent.checkAll : void(0)
+              "></i>
+            </th>
+          <!-- /ko -->
+          <!-- ko if: type == 'select' -->
+            <!-- ko foreach: values -->
+              <th class="select" 
+              data-bind="
+                css: {
+                  'property-start': $index() == 0,
+                  'property-end': $index() == ($parent.values.length - 1)
+                }
+              ">
+                <span data-bind="text: $data"></span>
+                <i class="fa fa-toggle-on select-all-button button" data-bind="
+                  attr: { title: $parents[1].selected() ? 'Set selected rows' : 'No rows selected' },
+                  css: { 'disabled': ! $parents[1].selected() },
+                  click: $parents[1].selected() ? $parents[1].selectAll($parent, $data) : void(0)
+                "></i>
+              </th>
+            <!-- /ko -->
+          <!-- /ko -->
+        <!-- /ko -->
+      </tr>
+    </thead>
+    <tbody data-bind="foreach: { data: variables, as: 'variable' }">
+      <tr data-bind="
+        visible: !hidden(),
+        css: {
+          'selected': selected(),
+          'lastSelected': lastSelected()
+        }
+      ">
+        <th data-bind="
+          text: name,
+          click: $parent.select
+        "></th>
+        <!-- ko foreach: $parent.properties -->
+          <!-- ko if: type == 'bool' -->
+            <td class="bool property-start property-end">
+              <input type="checkbox"
+                data-bind="
+                  attr: { 
+                    name: variable.name()+name, 
+                    value: 'true' 
+                  },
+                  checked: variable[name]
+                  "
+              />
+            </td>
+          <!-- /ko -->
+          <!-- ko if: type == 'select' -->
+            <!-- ko foreach: values -->
+              <td class="select"
+                data-bind="css: {
+                    'property-start': $index() == 0,
+                    'property-end': $index() == ($parent.values.length - 1)
+                  }
+                "
+              >
+                <input type="radio"
+                  data-bind="
+                    attr: { 
+                      name: variable.name()+$parent.name, 
+                      value: $data
+                    },
+                    checked: variable[$parent.name]
+                  "
+                />
+              </td>
+            <!-- /ko -->
+          <!-- /ko -->
+        <!-- /ko -->
+      </tr>
+    </tbody>
+  </table>
+</div>

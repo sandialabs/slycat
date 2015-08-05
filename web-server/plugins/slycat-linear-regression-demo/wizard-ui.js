@@ -36,19 +36,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
     component.upload_table = function()
     {
+      $('.local-browser-continue').toggleClass("disabled", true);
       client.post_model_files(
       {
         mid: component.model._id(),
         files: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
         success: function()
         {
           client.get_model_table_metadata(
           {
             mid: component.model._id(),
-            name: "data-table",
+            aid: "data-table",
             success: function(metadata)
             {
               var attributes = [];
@@ -66,18 +67,25 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               }
               mapping.fromJS(attributes, component.attributes);
               component.tab(2);
+              $('.local-browser-continue').toggleClass("disabled", false);
             }
           });
         },
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.local-browser-continue').toggleClass("disabled", false);
+        },
       });
+    }
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
     }
     component.finish = function()
     {
       client.put_model_parameter(
       {
         mid: component.model._id(),
-        name: "x-column",
+        aid: "x-column",
         value: component.x_column(),
         input: true,
         success: function()
@@ -85,7 +93,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "y-column",
+            aid: "y-column",
             value: component.y_column(),
             input: true,
             success: function()

@@ -13,6 +13,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       component.tab(1);
     }
 
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
+    }
+
     component.finish = function()
     {
       client.post_project_models(
@@ -29,7 +33,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "name",
+            aid: "name",
             value: component.recipient(),
             input: true,
             success: function()

@@ -83,10 +83,10 @@ def start(root_path, config_file):
   dispatcher.connect("get-global-resource", "/resources/global/{resource:.*}", slycat.web.server.handlers.get_global_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.get_model_arrayset_data, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/arraysets/:name/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/arraysets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-resource", "/resources/models/:mtype/{resource:.*}", slycat.web.server.handlers.get_model_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-page-resource", "/resources/pages/:ptype/{resource:.*}", slycat.web.server.handlers.get_page_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
@@ -113,15 +113,14 @@ def start(root_path, config_file):
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remote-browse", "/remotes/:sid/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remote-videos", "/remotes/:sid/videos", slycat.web.server.handlers.post_remote_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
-  dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:name/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
-  dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:name/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
-  dispatcher.connect("put-model-arrayset", "/models/:mid/arraysets/:name", slycat.web.server.handlers.put_model_arrayset, conditions={"method" : ["PUT"]})
+  dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
+  dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
+  dispatcher.connect("put-model-arrayset", "/models/:mid/arraysets/:aid", slycat.web.server.handlers.put_model_arrayset, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-inputs", "/models/:mid/inputs", slycat.web.server.handlers.put_model_inputs, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model", "/models/:mid", slycat.web.server.handlers.put_model, conditions={"method" : ["PUT"]})
-  dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:name", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
+  dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
   #dispatcher.connect("tests-request", "/tests/request", slycat.web.server.handlers.tests_request, conditions={"method" : ["GET", "PUT", "POST", "DELETE"]})
 
@@ -218,6 +217,9 @@ def start(root_path, config_file):
 
   # Start all of our cleanup workers.
   cherrypy.engine.subscribe("start", slycat.web.server.cleanup.start, priority=80)
+
+  # sets a custom 404 page
+  cherrypy.config.update({ 'error_page.404': os.path.join(root_path, "templates/slycat-404.html") })
 
   # Start the web server.
   cherrypy.quickstart(None, "/", configuration)

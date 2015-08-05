@@ -1,9 +1,9 @@
 <div class="modal-header">
-  <h3 class="modal-title">Remapped Parameter Space Model</h3>
+  <h3 class="modal-title">Remapped Wizard</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Create Model</a></li>
+    <li data-bind="css:{active:tab() == 0}"><a>Name Model</a></li>
     <li data-bind="css:{active:tab() == 1}"><a>Remap Paths</a></li>
     <li data-bind="css:{active:tab() == 2}"><a>Results</a></li>
   </ul>
@@ -24,7 +24,8 @@
 </div>
 <div class="modal-footer">
   <button class="btn btn-default pull-left" data-bind="visible:tab() != 2,click:cancel" data-dismiss="modal">Cancel</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Next</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 1,click:finish">Finish</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 2" data-dismiss="modal">Close</button>
+  <button class="btn btn-default pull-left" data-bind="visible:tab() == 2" data-dismiss="modal">Close</button>
+  <button class="btn btn-default" data-bind="visible:tab() == 2,click:go_to_model">Go To Model</button>
 </div>

@@ -46,7 +46,6 @@ def css_bundle():
       ])
       slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
       slycat.web.server.resource.manager.add_directory("fonts/font-awesome", "fonts/font-awesome")
-      slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
   return css_bundle._bundle
 css_bundle._lock = threading.Lock()
 css_bundle._bundle = None
@@ -89,7 +88,9 @@ def js_bundle():
         "js/slycat-projects-main.js",
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
-        "js/slycat-resizing-modals.js"
+        "js/slycat-resizing-modals.js",
+        "js/slycat-table-ingestion.js",
+        "js/slycat-3d-viewer.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()
@@ -455,12 +456,18 @@ def put_model(mid):
 
   save_model = False
   for key, value in cherrypy.request.json.items():
-    if key in ["name", "description", "state", "result", "progress", "message", "started", "finished", "marking"]:
-      if value != model.get(key):
-        model[key] = value
-        save_model = True
-    else:
+    if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished", "marking"]:
       raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
+
+    if key in ["started", "finished"]:
+      try:
+        datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+      except:
+        raise cherrypy.HTTPError("400 Timestamp fields must use ISO-8601.")
+
+    if value != model.get(key):
+      model[key] = value
+      save_model = True
 
   if save_model:
     database.save(model)
@@ -481,7 +488,7 @@ def post_model_finish(mid):
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
   cherrypy.response.status = "202 Finishing model."
 
-def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=None, parser=None, **kwargs):
+def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=None, parser=None, **kwargs):
   if input is None:
     raise cherrypy.HTTPError("400 Required input parameter is missing.")
   input = True if input == "true" else False
@@ -507,10 +514,10 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=N
   else:
     raise cherrypy.HTTPError("400 Must supply files parameter, or sids and paths parameters.")
 
-  if names is None:
-    names = []
-  if not isinstance(names, list):
-    names = [names]
+  if aids is None:
+    aids = []
+  if not isinstance(aids, list):
+    aids = [aids]
 
   if parser is None:
     raise cherrypy.HTTPError("400 Required parser parameter is missing.")
@@ -523,8 +530,9 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, names=N
   slycat.web.server.authentication.require_project_writer(project)
 
   try:
-    slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, names, **kwargs)
+    slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
   except Exception as e:
+    cherrypy.log.error("Exception parsing posted files: %s" % e)
     raise cherrypy.HTTPError("400 %s" % e.message)
 
 @cherrypy.tools.json_in(on = True)
@@ -543,7 +551,7 @@ def put_model_inputs(mid):
   slycat.web.server.put_model_inputs(database, model, source, deep_copy)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_parameter(mid, name):
+def put_model_parameter(mid, aid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -552,10 +560,10 @@ def put_model_parameter(mid, name):
   value = require_parameter("value")
   input = require_boolean_parameter("input")
 
-  slycat.web.server.put_model_parameter(database, model, name, value, input)
+  slycat.web.server.put_model_parameter(database, model, aid, value, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_arrayset(mid, name):
+def put_model_arrayset(mid, aid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -563,10 +571,10 @@ def put_model_arrayset(mid, name):
 
   input = require_boolean_parameter("input")
 
-  slycat.web.server.put_model_arrayset(database, model, name, input)
+  slycat.web.server.put_model_arrayset(database, model, aid, input)
 
 @cherrypy.tools.json_in(on = True)
-def put_model_arrayset_array(mid, name, array):
+def put_model_arrayset_array(mid, aid, array):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -576,9 +584,9 @@ def put_model_arrayset_array(mid, name, array):
   array_index = int(array)
   attributes = cherrypy.request.json["attributes"]
   dimensions = cherrypy.request.json["dimensions"]
-  slycat.web.server.put_model_array(database, model, name, array_index, attributes, dimensions)
+  slycat.web.server.put_model_array(database, model, aid, array_index, attributes, dimensions)
 
-def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
+def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
   # Validate inputs.
   try:
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
@@ -595,14 +603,14 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (name))
+  slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
 
   if byteorder is None:
     data = json.load(data.file)
     data_iterator = iter(data)
 
   with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % name], "r+") as file:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
@@ -610,7 +618,7 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
           if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
             raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing %s/%s/%s/%s" % (name, array.index, attribute.expression.index, hyperslice))
+            cherrypy.log.error("Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
 
             # We have to convert our hyperslice into a shape with explicit extents so we can compute
             # how many bytes to extract from the input data.
@@ -642,7 +650,6 @@ def put_model_arrayset_data(mid, name, hyperchunks, data, byteorder=None):
               raise NotImplementedError()
 
             hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
-
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
@@ -749,18 +756,18 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
           return data.tostring(order="C")
 
 @cherrypy.tools.json_out(on = True)
-def get_model_arrayset_metadata(mid, name, **kwargs):
+def get_model_arrayset_metadata(mid, aid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
 
-  artifact = model.get("artifact:%s" % name, None)
+  artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
     raise cherrypy.HTTPError(404)
-  artifact_type = model["artifact-types"][name]
+  artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    raise cherrypy.HTTPError("400 %s is not an array artifact." % name)
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   try:
     arrays = slycat.hyperchunks.parse(kwargs["arrays"]) if "arrays" in kwargs else None
@@ -777,7 +784,7 @@ def get_model_arrayset_metadata(mid, name, **kwargs):
   except:
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
-  results = slycat.web.server.get_model_arrayset_metadata(database, model, name, arrays, statistics, unique)
+  results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
   if "unique" in results:
     for unique in results["unique"]:
       unique["values"] = [array.tolist() for array in unique["values"]]
@@ -1117,13 +1124,16 @@ def get_model_file(mid, aid):
   return database.get_attachment(mid, fid)
 
 @cherrypy.tools.json_out(on = True)
-def get_model_parameter(mid, name):
+def get_model_parameter(mid, aid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
 
-  return slycat.web.server.get_model_parameter(database, model, name)
+  try:
+    return slycat.web.server.get_model_parameter(database, model, aid)
+  except KeyError as e:
+    raise cherrypy.HTTPError("404 Unknown artifact: %s" % aid)
 
 def get_bookmark(bid):
   accept = cherrypy.lib.cptools.accept(media=["application/json"])
@@ -1243,6 +1253,10 @@ def get_configuration_wizards():
 
 @cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
 def get_global_resource(resource):
+  if not get_global_resource._ready:
+    with get_global_resource._lock:
+      slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
+      get_global_resource._ready = True
   if resource in slycat.web.server.resource.manager.bundles:
     content_type, content = slycat.web.server.resource.manager.bundles[resource]
     cherrypy.response.headers["content-type"] = content_type
@@ -1250,6 +1264,8 @@ def get_global_resource(resource):
   if resource in slycat.web.server.resource.manager.files:
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
   raise cherrypy.HTTPError(404)
+get_global_resource._lock = threading.Lock()
+get_global_resource._ready = False
 
 def tests_request(*arguments, **keywords):
   cherrypy.log.error("Request: %s" % cherrypy.request.request_line)

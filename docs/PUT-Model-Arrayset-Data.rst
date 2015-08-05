@@ -1,18 +1,18 @@
 PUT Model Arrayset Data
 =======================
 
-.. http:put:: /models/(mid)/arraysets/(name)/data
+.. http:put:: /models/(mid)/arraysets/(aid)/data
 
   Upload data to be stored in arrayset array attributes. The request may
   contain data to be stored in any combinations of arrays, attributes, and
   hyperslices.  The destination array(s) must have already been initialized
-  with :http:put:`/models/(mid)/arraysets/(name)/arrays/(array)`.
+  with :http:put:`/models/(mid)/arraysets/(aid)/arrays/(array)`.
 
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Unique arrayset name.
-  :type name: string
+  :param aid: Unique artifact id.
+  :type aid: string
 
   :requestheader Content-Type: multipart/form-data
 
@@ -95,6 +95,6 @@ See Also
 --------
 
 - :ref:`hyperchunks`
-- :http:put:`/models/(mid)/arraysets/(name)`
-- :http:put:`/models/(mid)/arraysets/(name)/arrays/(array)`
+- :http:put:`/models/(mid)/arraysets/(aid)`
+- :http:put:`/models/(mid)/arraysets/(aid)/arrays/(array)`
 

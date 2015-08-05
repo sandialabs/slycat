@@ -1,7 +1,9 @@
 GET Model Table Metadata
 ========================
 
-.. http:get:: /models/(mid)/tables/(name)/arrays/(array)/metadata
+.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/metadata
+
+  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/metadata` instead.
 
   Used to retrieve metadata from a 1D arrayset array artifact, optimized
   for use as a table. The metadata for the table describes the number of
@@ -14,8 +16,8 @@ GET Model Table Metadata
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Arrayset artifact name.
-  :type name: string
+  :param aid: Arrayset artifact id.
+  :type aid: string
 
   :param array: Array index.
   :type array: int
@@ -57,7 +59,7 @@ GET Model Table Metadata
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/chunk`
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/sorted-indices`
-- :http:get:`/models/(mid)/tables/(name)/arrays/(array)/unsorted-indices`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/chunk`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
+- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
 

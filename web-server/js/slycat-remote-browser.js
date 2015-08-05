@@ -29,23 +29,29 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
 
       component.files = component.raw_files.map(function(file)
       {
-        var icon = "";
-        if(file.mime_type() in component.icon_map)
+        var icon = "<span class='fa fa-file-o'></span>";
+        if(_.startsWith(file.mime_type(), "application/x-directory"))
         {
-          icon = component.icon_map[file.mime_type()];
+          icon = "<span class='fa fa-folder'></span>";
         }
-        else if(_.startsWith(file.mime_type(), "text/"))
-        {
-          icon = "<span class='fa fa-file-text-o'></span>";
-        }
-        else if(_.startsWith(file.mime_type(), "image/"))
-        {
-          icon = "<span class='fa fa-file-image-o'></span>";
-        }
-        else if(_.startsWith(file.mime_type(), "video/"))
-        {
-          icon = "<span class='fa fa-file-video-o'></span>";
-        }
+        // Disabling file specific icons per https://github.com/sandialabs/slycat/issues/454
+        // var icon = "";
+        // if(file.mime_type() in component.icon_map)
+        // {
+        //   icon = component.icon_map[file.mime_type()];
+        // }
+        // else if(_.startsWith(file.mime_type(), "text/"))
+        // {
+        //   icon = "<span class='fa fa-file-text-o'></span>";
+        // }
+        // else if(_.startsWith(file.mime_type(), "image/"))
+        // {
+        //   icon = "<span class='fa fa-file-image-o'></span>";
+        // }
+        // else if(_.startsWith(file.mime_type(), "video/"))
+        // {
+        //   icon = "<span class='fa fa-file-video-o'></span>";
+        // }
 
         return {
           type: file.type,
@@ -54,6 +60,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
           mtime: file.mtime,
           mime_type: file.mime_type,
           icon: icon,
+          selected: ko.observable(false)
         };
       });
 
@@ -83,6 +90,15 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         var selection = [path_join(component.path(), file.name())];
         component.selection(selection);
+        if(file.type() == "f")
+        {
+          // Clear current selection
+          for(var i=0; i < component.files().length; i++)
+          {
+            component.files()[i].selected(false);
+          }
+          file.selected(true);
+        }
       }
 
       component.open = function(file)
@@ -122,6 +138,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             for(var i = 0; i != results.names.length; ++i)
               files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mime_type:results["mime-types"][i]});
             mapping.fromJS(files, component.raw_files);
+            $('.slycat-remote-browser-files').scrollTop(0);
           },
           error : function(results)
           {
@@ -137,6 +154,11 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             component.browse(current_path);
           }
         });
+      }
+
+      component.browse_path = function(formElement)
+      {
+        component.browse(component.path());
       }
 
       component.sid.subscribe(function(new_sid)

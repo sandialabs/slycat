@@ -1,7 +1,7 @@
 GET Model Arrayset Data
 =======================
 
-.. http:get:: /models/(mid)/arraysets/(name)/data
+.. http:get:: /models/(mid)/arraysets/(aid)/data
 
   Retrieve data stored in arrayset darray attributes.  The caller may request
   data stored using any combination of arrays, attributes, and hyperslices.
@@ -9,8 +9,8 @@ GET Model Arrayset Data
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Arrayset artifact name.
-  :type name: string
+  :param aid: Arrayset artifact id.
+  :type aid: string
 
   :query hyperchunks:
 
@@ -41,7 +41,7 @@ GET Model Arrayset Data
   :responseheader Content-Type: application/octet-stream or application/json
 
   The following request will return all of the data for array 0, attribute 1 from
-  an arrayset artifact named "foo":
+  an arrayset artifact with id "foo":
 
   **Sample Request**
 
@@ -70,6 +70,6 @@ See Also
 --------
 
 - :ref:`hyperchunks`
-- :http:get:`/models/(mid)/arraysets/(name)/metadata`
-- :http:put:`/models/(mid)/arraysets/(name)/data`
+- :http:get:`/models/(mid)/arraysets/(aid)/metadata`
+- :http:put:`/models/(mid)/arraysets/(aid)/data`
 

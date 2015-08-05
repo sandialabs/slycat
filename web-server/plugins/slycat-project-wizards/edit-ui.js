@@ -17,6 +17,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     });
     component.new_user = ko.observable("");
 
+    component.user = ko.observable({});
+    client.get_user({
+      success: function(user){ component.user(user); }
+    })
+
     component.add_project_member = function()
     {
       client.get_user(
@@ -104,7 +109,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.remove_project_member = function(context)
     {
-      component.remove_user(context.user());
+      if(component.user().name === context.user())
+      {
+        dialog.confirm({
+          title: "Warning!",
+          message: "You are removing yourself as an administrator. \
+            If you do this and save changes, you will be unable to access this project.",
+          ok: function(){ component.remove_user(context.user()) },
+       })
+      }
+      else
+      {
+        component.remove_user(context.user());
+      }
     }
 
     component.save_project = function()

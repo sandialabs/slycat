@@ -64,13 +64,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     }
     component.load_table = function()
     {
+      $('.remote-browser-continue').toggleClass("disabled", true);
       client.post_model_files(
       {
         mid: component.model._id(),
         sids: [component.remote.sid()],
         paths: component.browser.selection(),
         input: true,
-        names: ["data-table"],
+        aids: ["data-table"],
         parser: component.parser(),
         success: function()
         {
@@ -84,7 +85,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               client.get_model_table_metadata(
               {
                 mid: component.model._id(),
-                name: "data-table",
+                aid: "data-table",
                 success: function(metadata)
                 {
                   var attributes = [];
@@ -92,12 +93,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                     attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false,output:false,category:false,rating:false,image:media_columns.indexOf(i) !== -1})
                   mapping.fromJS(attributes, component.attributes);
                   component.tab(3);
+                  $('.remote-browser-continue').toggleClass("disabled", false);
                 }
               });
             }
           });
         },
-        error: dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: "),
+        error: function(){
+          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $('.remote-browser-continue').toggleClass("disabled", false);
+        },
       });
     }
 
@@ -146,6 +151,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       return true;
     }
 
+    component.go_to_model = function() {
+      location = server_root + 'models/' + component.model._id();
+    }
+
     component.finish = function()
     {
       var input_columns = [];
@@ -170,7 +179,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       client.put_model_parameter(
       {
         mid: component.model._id(),
-        name: "input-columns",
+        aid: "input-columns",
         value: input_columns,
         input: true,
         success: function()
@@ -178,7 +187,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           client.put_model_parameter(
           {
             mid: component.model._id(),
-            name: "output-columns",
+            aid: "output-columns",
             value: output_columns,
             input: true,
             success: function()
@@ -186,7 +195,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               client.put_model_parameter(
               {
                 mid: component.model._id(),
-                name: "rating-columns",
+                aid: "rating-columns",
                 value: rating_columns,
                 input: true,
                 success: function()
@@ -194,7 +203,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   client.put_model_parameter(
                   {
                     mid: component.model._id(),
-                    name: "category-columns",
+                    aid: "category-columns",
                     value: category_columns,
                     input: true,
                     success: function()
@@ -202,7 +211,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                       client.put_model_parameter(
                       {
                         mid: component.model._id(),
-                        name: "image-columns",
+                        aid: "image-columns",
                         value: image_columns,
                         input: true,
                         success: function()

@@ -1,7 +1,7 @@
 GET Model Parameter
 ===================
 
-.. http:get:: /models/(mid)/parameters/(name)
+.. http:get:: /models/(mid)/parameters/(aid)
 
   Retrieves a model parameter (name / value pair) artifact. The result is a
   JSON expression and may be arbitrarily complex.
@@ -9,8 +9,8 @@ GET Model Parameter
   :param mid: Unique model identifier.
   :type mid: string
 
-  :param name: Parameter artifact name.
-  :type name: string
+  :param aid: Parameter artifact id.
+  :type aid: string
 
   :responseheader Content-Type: application/json
 
@@ -44,5 +44,5 @@ GET Model Parameter
 See Also
 --------
 
-- :http:put:`/models/(mid)/parameters/(name)`
+- :http:put:`/models/(mid)/parameters/(aid)`
 

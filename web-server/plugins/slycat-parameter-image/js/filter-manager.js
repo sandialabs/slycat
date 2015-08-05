@@ -1,4 +1,4 @@
-define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "jquery"], function(server_root, _,  ko, mapping, $) {
+define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-dialog", "lodash", "knockout", "knockout-mapping", "jquery"], function(server_root, dialog, _,  ko, mapping, $) {
 
   function FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns) {
     var self = this;
@@ -94,8 +94,19 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
         buildComputedFilters(self.allFilters);
 
         _.each(numericFilters(), function (filter) {
+          filter.max.extend({ notify: 'always' });
+          filter.min.extend({ notify: 'always' });
           filter.rateLimitedHigh = ko.pureComputed( filter.high ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
           filter.rateLimitedLow = ko.pureComputed( filter.low ).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } });
+          // Add max_stats and min_stats if they do not exists because bookmark is old
+          if( !('max_stats' in filter) )
+          {
+            filter.max_stats = ko.observable( self.table_statistics[ filter.index() ]["max"] );
+          }
+          if( !('min_stats' in filter) )
+          {
+            filter.min_stats = ko.observable( self.table_statistics[ filter.index() ]["min"] );
+          }
         });
 
         _.each(categoryFilters(), function (filter) {
@@ -132,8 +143,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
             name: ko.observable( self.table_metadata["column-names"][i] ),
             type: ko.observable('numeric'),
             index: ko.observable( i ),
-            max: ko.observable( self.table_statistics[i]["max"] ),
-            min: ko.observable( self.table_statistics[i]["min"] ),
+            max_stats: ko.observable( self.table_statistics[i]["max"] ),
+            min_stats: ko.observable( self.table_statistics[i]["min"] ),
+            max: ko.observable( self.table_statistics[i]["max"] ).extend({ notify: 'always' }),
+            min: ko.observable( self.table_statistics[i]["min"] ).extend({ notify: 'always' }),
             high: high,
             low: low,
             invert: ko.observable(false),
@@ -273,6 +286,143 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "lodash",
               category.selected(false);
           });
         };
+        vm.maxMinKeyPress = function(filter, event) {
+          // console.log("maxMin has keypress. event.which is: " + event.which);
+          // Want to capture enter key on keypress and prevent it from adding new lines.
+          // Instead, it needs to start validation and saving of new value.
+          if(event.which == 13)
+          {
+            // Enter key was pressed, so we need to validate
+            // console.log("enter key was pressed.");
+            event.target.blur();
+
+            return false;
+          }
+          // Detecting escape key does not seem to work with keypress event, at least not in Firefox.
+          // Instead, we catch escape key with the keyup event.
+          // else if(event.which == 27)
+          // {
+          //   // escape key was pressed, so we need to validate
+          //   console.log("escape key was pressed");
+          //   return false;
+          // }
+          else
+            return true;
+        };
+        vm.maxMinKeyUp = function(filter, event) {
+          // console.log("maxMin has keyup. event.which is: " + event.which);
+          // Detecting escape key here on keyup because it doesn't work reliably on keypress.
+          if(event.which == 27)
+          {
+            // escape key was pressed, so we need to validate
+            // console.log("escape key was pressed.");
+            event.target.blur();
+            return false;
+          }
+          else
+            return true;
+        };
+        vm.maxMinFocus = function(filter, event) {
+          var textContent = "";
+          if( $(event.target).hasClass("max-field") )
+            textContent = this.max();
+          else
+            textContent = this.min();
+          $(event.target).toggleClass("editing", true);
+          event.target.textContent = textContent;
+          // console.log("maxMin has focus.");
+        };
+        vm.maxMinBlur = function(filter, event) {
+          var newValue = Number(event.target.textContent);
+          var max_limit, min_limit;
+          if( $(event.target).hasClass("max-field") )
+          {
+            max_limit = filter.max_stats();
+            min_limit = filter.min();
+          }
+          else
+          {
+            max_limit = filter.max();
+            min_limit = filter.min_stats();
+          }
+          if ( isNaN(newValue) || newValue > max_limit || newValue < min_limit )
+          {
+            // console.log("validation failed");
+            dialog.dialog({
+              title: isNaN(newValue) ? "Oops, Please Enter A Number" : "Oops, Number Outside Of Data Range",
+              message: "Please enter a number between " + min_limit + " and " + max_limit + ".",
+              buttons: [
+                {className: "btn-primary",  label:"OK"}
+              ],
+              callback: function(button)
+              {
+                if(button.label == "OK")
+                  $(event.target).focus();
+              },
+            });
+          }
+          else
+          {
+            $(event.target).toggleClass("editing", false);
+            if( $(event.target).hasClass("max-field") )
+            {
+              if(this.low() > newValue)
+              {
+                this.low(newValue);
+              }
+              if(this.high() > newValue)
+              {
+                this.high(newValue);
+              }
+              this.max(newValue);
+            }
+            else
+            {
+              if(this.high() < newValue)
+              {
+                this.high(newValue);
+              }
+              if(this.low() < newValue)
+              {
+                this.low(newValue);
+              }
+              this.min(newValue);
+            }
+            self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+          }
+            
+          // console.log("maxMin lost focus.");
+        };
+        vm.maxMinMouseOver = function(filter, event) {
+          $(event.target).toggleClass("hover", true);
+          // console.log("maxMin mouse over.");
+        };
+        vm.maxMinMouseOut = function(filter, event) {
+          $(event.target).toggleClass("hover", false);
+          // console.log("maxMin mouse out.");
+        };
+        vm.maxMinReset = function(filter, event) {
+          if( $(event.target).hasClass("max-reset") )
+          {
+            if(this.high() > this.max_stats())
+            {
+              this.high( this.max_stats() );
+            }
+            this.max(this.max_stats());
+          }
+          else
+          {
+            if(this.low() < this.min_stats())
+            {
+              this.low( this.min_stats() );
+            }
+            this.min(this.min_stats());
+          }
+            
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+          // console.log("maxMin reset.");
+        };
+
       };
 
       ko.applyBindings(

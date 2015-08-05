@@ -11,6 +11,7 @@ import numbers
 import numpy
 import os
 import requests
+import requests.exceptions as exceptions
 import shlex
 import slycat.darray
 import sys
@@ -175,6 +176,20 @@ class Connection(object):
     """
     self.request("DELETE", "/projects/%s/cache/%s" % (pid, key))
 
+  def delete_reference(self, rid):
+    """Delete an existing reference.
+
+    Parameters
+    ----------
+    rid: string, required
+      The unique reference identifier.
+
+    See Also
+    --------
+    :http:delete:`/references/(rid)`
+    """
+    self.request("DELETE", "/references/%s" % (rid))
+
   def delete_remote(self, sid):
     """Delete an existing remote session.
 
@@ -209,6 +224,93 @@ class Connection(object):
     """
     return self.request("GET", "/bookmarks/%s" % (bid))
 
+  def get_configuration_markings(self):
+    """Retrieve marking information from the server.
+
+    Returns
+    -------
+    markings: server marking information.
+
+    See Also
+    --------
+    :http:get:`/configuration/markings`
+    """
+    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
+
+  def get_configuration_parsers(self):
+    """Retrieve parser plugin information from the server.
+
+    Returns
+    -------
+    parsers: server parser plugin information.
+
+    See Also
+    --------
+    :http:get:`/configuration/parsers`
+    """
+    return self.request("GET", "/configuration/parsers", headers={"accept":"application/json"})
+
+  def get_configuration_remote_hosts(self):
+    """Retrieve remote host information from the server.
+
+    Returns
+    -------
+    parsers: server remote host information.
+
+    See Also
+    --------
+    :http:get:`/configuration/remote-hosts`
+    """
+    return self.request("GET", "/configuration/remote-hosts", headers={"accept":"application/json"})
+
+  def get_configuration_support_email(self):
+    """Retrieve support email information from the server.
+
+    Returns
+    -------
+    parsers: server support email information.
+
+    See Also
+    --------
+    :http:get:`/configuration/support-email`
+    """
+    return self.request("GET", "/configuration/support-email", headers={"accept":"application/json"})
+
+  def get_configuration_version(self):
+    """Retrieve version information from the server.
+
+    Returns
+    -------
+    version: server version information.
+
+    See Also
+    --------
+    :http:get:`/configuration/version`
+    """
+    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
+
+  def get_configuration_wizards(self):
+    """Retrieve wizard plugin information from the server.
+
+    Returns
+    -------
+    version: server wizard plugin information.
+
+    See Also
+    --------
+    :http:get:`/configuration/wizards`
+    """
+    return self.request("GET", "/configuration/wizards", headers={"accept":"application/json"})
+
+  def get_global_resource(self, resource):
+    return self.request("GET", "/resources/global/%s" % resource)
+
+  def get_model_resource(self, mtype, resource):
+    return self.request("GET", "/resources/models/%s/%s" % (mtype, resource))
+
+  def get_wizard_resource(self, wtype, resource):
+    return self.request("GET", "/resources/wizards/%s/%s" % (wtype, resource))
+
   def get_model(self, mid):
     """Retrieve an existing model.
 
@@ -229,10 +331,45 @@ class Connection(object):
     """
     return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
 
-  def get_model_file(self, mid, name):
-    return self.request("GET", "/models/%s/files/%s" % (mid, name))
+  def get_model_arrayset_metadata(self, mid, aid, arrays=None, statistics=None, unique=None):
+    """Retrieve metadata describing an existing model arrayset artifact.
 
-  def get_model_parameter(self, mid, name):
+    Parameters
+    ----------
+    mid: string, required
+      The unique model identifier.
+    aid: string, required
+      The unique artifact identifier.
+    arrays: string, optional
+      A set of arrays, specified using HQL.
+    statistics: string, optional
+      A set of attributes, specified using HQL.
+    unique: string, optional
+      A set of attributes, specified using HQL.
+
+    Returns
+    -------
+    metadata: object
+      The arrayset metadata, which is an arbitrary collection of
+      JSON-compatible data.
+
+    See Also
+    --------
+    :http:get:`/models/(mid)/arraysets/(aid)/metadata`
+    """
+    params = dict()
+    if arrays is not None:
+      params["arrays"] = arrays
+    if statistics is not None:
+      params["statistics"] = statistics
+    if unique is not None:
+      params["unique"] = unique
+    return self.request("GET", "/models/%s/arraysets/%s/metadata" % (mid, aid), params=params, headers={"accept":"application/json"})
+
+  def get_model_file(self, mid, aid):
+    return self.request("GET", "/models/%s/files/%s" % (mid, aid))
+
+  def get_model_parameter(self, mid, aid):
     """Retrieve a model parameter artifact.
 
     Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
@@ -243,8 +380,8 @@ class Connection(object):
     ----------
     mid: string, required
       Unique model identifier.
-    name: string, required
-      Unique (within the model) artifact name.
+    aid: string, required
+      Unique (within the model) artifact id.
 
     Returns
     -------
@@ -252,29 +389,17 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/parameters/(name)`
+    :http:put:`/models/(mid)/parameters/(aid)`
     """
-    return self.request("GET", "/models/%s/parameters/%s" % (mid, name), headers={"accept":"application/json"})
-
-  def get_model_table_chunk(self, mid, name, array, rows, columns):
-    """Returns a chunk (set of rows and columns) from a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/chunk?rows=%s&columns=%s" % (mid, name, array, ",".join([str(row) for row in rows]), ",".join([str(column) for column in columns])), headers={"accept":"application/json"})
-
-  def get_model_table_metadata(self, mid, name, array):
-    """Returns the metadata for a table (array) artifact."""
-    return self.request("GET", "/models/%s/tables/%s/arrays/%s/metadata" % (mid, name, array), headers={"accept":"application/json"})
-
-  def get_model_table_sorted_indices(self, mid, name, array, rows, index=None, sort=None):
-    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/sorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
-    return numpy.fromstring(content, dtype="int32")
-
-  def get_model_table_unsorted_indices(self, mid, name, array, rows, index=None, sort=None):
-    content = self.request("GET", "/models/%s/tables/%s/arrays/%s/unsorted-indices?rows=%s%s%s&byteorder=%s" % (mid, name, array, ",".join([str(row) for row in rows]), "&index=%s" % index if index is not None else "", "&sort=%s" % ",".join(["%s:%s" % (column, order) for column, order in sort]) if sort is not None else "", sys.byteorder))
-    return numpy.fromstring(content, dtype="int32")
+    return self.request("GET", "/models/%s/parameters/%s" % (mid, aid), headers={"accept":"application/json"})
 
   def get_project_models(self, pid):
     """Returns every model in a project."""
     return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
+
+  def get_project_references(self, pid):
+    """Returns every reference in a project."""
+    return self.request("GET", "/projects/%s/references" % pid, headers={"accept":"application/json"})
 
   def get_project(self, pid):
     """Retrieve an existing project.
@@ -379,13 +504,13 @@ class Connection(object):
     """
     return self.request("GET", "/remotes/%s/image%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
 
-  def get_user(self, uid):
+  def get_user(self, uid=None):
     """Retrieve directory information about an existing user.
 
     Parameters
     ----------
-    uid: string, required
-      Unique user identifier.
+    uid: string, optional
+      Unique user identifier.  If unspecified, returns information about the user making the call.
 
     Returns
     -------
@@ -395,41 +520,18 @@ class Connection(object):
     --------
     :http:get:`/users/(uid)`
     """
-    return self.request("GET", "/users/%s" % uid, headers={"accept":"application/json"})
+    return self.request("GET", "/users/%s" % ("-" if uid is None else uid), headers={"accept":"application/json"})
 
-  def get_configuration_markings(self):
-    """Retrieve marking information from the server.
+  def post_events(self, path, parameters={}):
+    self.request("POST", "/events/%s" % path, params=parameters)
 
-    Returns
-    -------
-    markings: server marking information.
-
-    See Also
-    --------
-    :http:get:`/configuration/markings`
-    """
-    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
-
-  def get_configuration_version(self):
-    """Retrieve version information from the server.
-
-    Returns
-    -------
-    version: server version information.
-
-    See Also
-    --------
-    :http:get:`/configuration/version`
-    """
-    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
-
-  def post_model_files(self, mid, names, files, parser, input=True, parameters={}):
+  def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
     """Stores a model file artifacts."""
     data = parameters
 
     data.update({
       "input": json.dumps(input),
-      "names": names,
+      "aids": aids,
       "parser": parser
     })
 
@@ -475,9 +577,36 @@ class Connection(object):
     """
     return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
-  def post_project_models(self, pid, type, name, marking="", description=""):
+  def post_project_models(self, pid, mtype, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
-    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":type, "name":name, "marking":marking, "description":description}))["id"]
+    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
+
+  def post_project_references(self, pid, name, mtype=None, mid=None, bid=None):
+    """Store a project reference.
+
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+    name: string, required
+      Reference name.
+    mtype: string, optional
+      Optional model type.
+    mid: string, optional
+      Optional model identifier.
+    bid: string, optional
+      Optional bookmark identifier.
+
+    Returns
+    -------
+    rid: string
+      Unique reference identifier.
+
+    See Also
+    --------
+    :http:post:`/projects/(pid)/references`
+    """
+    return self.request("POST", "/projects/%s/references" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
 
   def post_projects(self, name, description=""):
     """Creates a new project, returning the project ID."""
@@ -501,15 +630,15 @@ class Connection(object):
   def put_model(self, mid, model):
     self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
-  def put_model_arrayset_data(self, mid, name, hyperchunks, data, force_json=False):
+  def put_model_arrayset_data(self, mid, aid, hyperchunks, data, force_json=False):
     """Write data to an arrayset artifact on the server.
 
     Parameters
     ----------
     mid: string, required
       Unique model identifier.
-    name: string, required
-      Unique (to the model) arrayset artifact name.
+    aid: string, required
+      Unique (to the model) arrayset artifact id.
     hyperchunks: string, required
       Specifies where the data will be stored, in :ref:`Hyperchunks` format.
     data: iterable, required)
@@ -520,13 +649,13 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/arraysets/(name)/data`
+    :http:put:`/models/(mid)/arraysets/(aid)/data`
     """
     # Sanity check arguments
     if not isinstance(mid, basestring):
       raise ValueError("Model id must be a string.")
-    if not isinstance(name, basestring):
-      raise ValueError("Artifact name must be a string.")
+    if not isinstance(aid, basestring):
+      raise ValueError("Artifact id must be a string.")
     if not isinstance(hyperchunks, basestring):
       raise ValueError("Hyperchunks specification must be a string.")
     for chunk in data:
@@ -550,21 +679,21 @@ class Connection(object):
       request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
-    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, name), data=request_data, files={"data":request_buffer.getvalue()})
+    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, aid), data=request_data, files={"data":request_buffer.getvalue()})
 
-  def put_model_arrayset_array(self, mid, name, array, dimensions, attributes):
+  def put_model_arrayset_array(self, mid, aid, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
     stub = slycat.darray.Stub(dimensions, attributes)
-    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, name, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
+    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
-  def put_model_arrayset(self, mid, name, input=True):
+  def put_model_arrayset(self, mid, aid, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/arraysets/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+    self.request("PUT", "/models/%s/arraysets/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_inputs(self, source, target):
     self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
-  def put_model_parameter(self, mid, name, value, input=True):
+  def put_model_parameter(self, mid, aid, value, input=True):
     """Store a model parameter artifact.
 
     Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
@@ -572,15 +701,15 @@ class Connection(object):
     arraysets or files).
 
     To get the value of a parameter artifact, use :func:`get_model` and read the value
-    directly from the model record.  An artifact named `foo` will be accessible in the
+    directly from the model record.  An artifact id `foo` will be accessible in the
     record as `model["artifact:foo"]`.
 
     Parameters
     ----------
     mid: string, required
       Unique model identifier.
-    name: string, required
-      Unique (within the model) artifact name.
+    aid: string, required
+      Unique (within the model) artifact id.
     value: object, required
       An arbitrary collection of JSON-compatible data.
     input: boolean, optional
@@ -588,9 +717,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/parameters/(name)`
+    :http:put:`/models/(mid)/parameters/(aid)`
     """
-    self.request("PUT", "/models/%s/parameters/%s" % (mid, name), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+    self.request("PUT", "/models/%s/parameters/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
     """Modifies a project."""
