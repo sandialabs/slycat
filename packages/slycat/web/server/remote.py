@@ -131,11 +131,11 @@ class Session(object):
     self._ssh.close()
 
   def launch(self, command):
-    command = command.split(' ')
-
     # launch via the agent...
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
+
+      command = command.split(' ')
       payload = { "action": "launch", "command": command }
 
       stdin.write("%s\n" % json.dumps(payload))
@@ -149,7 +149,12 @@ class Session(object):
 
     # launch via ssh...
     try:
-      print "[remote.py] launch via ssh"
+      stdin, stdout, stderr = self._ssh.exec_command(command)
+      response = { "command": command, "output": str(stdout.readline()) }
+      return response
+    except paramiko.SSHException as e:
+      cherrypy.response.headers["x-slycat-message"] = str(e)
+      raise cherrypy.HTTPError(500)
     except Exception as e:
       cherrypy.response.headers["x-slycat-message"] = str(e)
       raise cherrypy.HTTPError(400)
