@@ -15,10 +15,11 @@ class Manager(object):
 
     self.directories = {}
     self.markings = {}
-    self.model_bundles = {}
     self.model_commands = {}
-    self.model_resources = {}
     self.models = {}
+    self.page_bundles = {}
+    self.pages = {}
+    self.page_resources = {}
     self.parsers = {}
     self.password_checks = {}
     self.tools = {}
@@ -116,13 +117,13 @@ class Manager(object):
     self.markings[type] = {"label":label, "badge":badge, "page-before":page_before, "page-after": page_after}
     cherrypy.log.error("Registered marking '%s'." % type)
 
-  def register_model_bundle(self, type, content_type, paths):
-    if type not in self.models:
-      raise Exception("Unknown model type: %s." % type)
-    if type not in self.model_bundles:
-      self.model_bundles[type] = {}
+  def register_page_bundle(self, type, content_type, paths):
+    if type not in self.pages:
+      raise Exception("Unknown page type: %s." % type)
+    if type not in self.page_bundles:
+      self.page_bundles[type] = {}
 
-    cherrypy.log.error("Bundled model '%s' resources" % type)
+    cherrypy.log.error("Bundled page '%s' resources" % type)
 
     key_hash = hashlib.md5()
     key_hash.update(content_type)
@@ -138,8 +139,8 @@ class Manager(object):
       content += resource_content + "\n\n"
 
     key = key_hash.hexdigest()
-    self.model_bundles[type][key] = (content_type, content)
-    cherrypy.log.error("  as /resources/models/%s/%s" % (type, key))
+    self.page_bundles[type][key] = (content_type, content)
+    cherrypy.log.error("  as /resources/pages/%s/%s" % (type, key))
 
     return key
 
@@ -166,44 +167,44 @@ class Manager(object):
     self.model_commands[key] = handler
     cherrypy.log.error("Registered custom command '%s %s %s'." % (verb, type, command))
 
-  def register_model_resource(self, type, resource, path):
-    """Register a custom resource associated with a model type.
+  def register_page_resource(self, type, resource, path):
+    """Register a custom resource associated with a page type.
 
     Parameters
     ----------
     type: string, required
-      Unique identifier of an already-registered model type.
+      Unique identifier of an already-registered page type.
     resource: string, required
       Server endpoint to retrieve the resource.
     path: string, required
       Absolute filesystem path of the resource to be retrieved.
       The resource may be a single file, or a directory.
     """
-    if type not in self.models:
-      raise Exception("Unknown model type: %s." % type)
-    if type not in self.model_resources:
-      self.model_resources[type] = {}
-    if resource in self.model_resources[type]:
-      raise Exception("Resource '%s' has already been registered with model '%s'." % (resource, type))
+    if type not in self.pages:
+      raise Exception("Unknown page type: %s." % type)
+    if type not in self.page_resources:
+      self.page_resources[type] = {}
+    if resource in self.page_resources[type]:
+      raise Exception("Resource '%s' has already been registered with page '%s'." % (resource, type))
     if not os.path.isabs(path):
       raise Exception("Resource '%s' must have an absolute path." % (resource))
     if not os.path.exists(path):
       raise Exception("Resource '%s' does not exist." % (resource))
     if os.path.isdir(path):
-      cherrypy.log.error("Registered model '%s' resources" % type)
+      cherrypy.log.error("Registered page '%s' resources" % type)
       for file_path in sorted(os.listdir(path)):
         resource_path = os.path.join(resource, file_path)
         file_path = os.path.join(path, file_path)
-        self.model_resources[type][resource_path] = file_path
+        self.page_resources[type][resource_path] = file_path
         cherrypy.log.error("  %s" % file_path)
-      cherrypy.log.error("  under /resources/models/%s/%s" % (type, resource))
+      cherrypy.log.error("  under /resources/pages/%s/%s" % (type, resource))
     else:
-      self.model_resources[type][resource] = path
-      cherrypy.log.error("Registered model '%s' resource" % type)
+      self.page_resources[type][resource] = path
+      cherrypy.log.error("Registered page '%s' resource" % type)
       cherrypy.log.error("  %s" % path)
-      cherrypy.log.error("  as /resources/models/%s/%s" % (type, resource))
+      cherrypy.log.error("  as /resources/pages/%s/%s" % (type, resource))
 
-  def register_model(self, type, finish, html):
+  def register_model(self, type, finish, ptype=None):
     """Register a new model type.
 
     Parameters
@@ -212,14 +213,37 @@ class Manager(object):
       A unique identifier for the new model type.
     finish: callable, required
       Called to finish (perform computation on) a new instance of the model.
-    html: callable, required
-      Called to generate an HTML representation of the model.
+    ptype: string, optional
+      A unique page type identifier to be used as the default interface when
+      viewing the model.  Defaults to the same string as the model type.
     """
     if type in self.models:
       raise Exception("Model type '%s' has already been registered." % type)
 
-    self.models[type] = {"finish": finish, "html": html}
+    if ptype is None:
+      ptype = type
+
+    if not isinstance(ptype, basestring):
+      raise Exception("Page type '%s' must be a string." % ptype)
+
+    self.models[type] = {"finish": finish, "ptype": ptype}
     cherrypy.log.error("Registered model '%s'." % type)
+
+  def register_page(self, type, html):
+    """Register a new page type.
+
+    Parameters
+    ----------
+    type: string, required
+      A unique identifier for the new page type.
+    html: callable, required
+      Called to generate an HTML representation of the page.
+    """
+    if type in self.pages:
+      raise Exception("Page type '%s' has already been registered." % type)
+
+    self.pages[type] = {"html": html}
+    cherrypy.log.error("Registered page '%s'." % type)
 
   def register_parser(self, type, label, categories, parse):
     """Register a new parser type.
