@@ -166,7 +166,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     {
       //console.log("#scatterplot mousedown");
       e.preventDefault();
-      self.start_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
+      self.start_drag = [self._offsetX(e), self._offsetY(e)];
       self.end_drag = null;
     });
 
@@ -180,7 +180,7 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       {
         if(self.end_drag) // Already dragging ...
         {
-          self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
+          self.end_drag = [self._offsetX(e), self._offsetY(e)];
 
           var width = self.element.width();
           var height = self.element.height();
@@ -194,10 +194,10 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
         }
         else
         {
-          if(Math.abs((e.originalEvent.offsetX || e.originalEvent.layerX) - self.start_drag[0]) > self.options.drag_threshold || Math.abs((e.originalEvent.offsetY || e.originalEvent.layerY) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
+          if(Math.abs(self._offsetX(e) - self.start_drag[0]) > self.options.drag_threshold || Math.abs(self._offsetY(e) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
           {
             self.state = "rubber-band-drag";
-            self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
+            self.end_drag = [self._offsetX(e), self._offsetY(e)];
             self.selection_layer.append("rect")
               .attr("class", "rubberband")
               .attr("x", Math.min(self.start_drag[0], self.end_drag[0]))
@@ -259,10 +259,10 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
       }
       else // Pick selection ...
       {
-        var x1 = (e.originalEvent.offsetX || e.originalEvent.layerX) - self.options.pick_distance;
-        var x2 = (e.originalEvent.offsetX || e.originalEvent.layerX) + self.options.pick_distance;
-        var y1 = (e.originalEvent.offsetY || e.originalEvent.layerY) - self.options.pick_distance;
-        var y2 = (e.originalEvent.offsetY || e.originalEvent.layerY) + self.options.pick_distance;
+        var x1 = self._offsetX(e) - self.options.pick_distance;
+        var x2 = self._offsetX(e) + self.options.pick_distance;
+        var y1 = self._offsetY(e) - self.options.pick_distance;
+        var y2 = self._offsetY(e) + self.options.pick_distance;
 
         for(var i = count - 1; i > -1; i--)
         {
@@ -1673,8 +1673,8 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     if(self.state != "")
       return;
 
-    var x = e.originalEvent.offsetX || e.originalEvent.layerX,
-        y = e.originalEvent.offsetY || e.originalEvent.layerY,
+    var x = self._offsetX(e),
+        y = self._offsetY(e),
         filtered_indices = self.options.filtered_indices,
         filtered_selection = self.options.filtered_selection,
         square_size = self.options.canvas_square_size,
@@ -1849,6 +1849,16 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
     self.datum_layer.selectAll("circle.openHover")
       .classed("openHover", false)
       ;
+  },
+
+  _offsetX: function(e)
+  {
+    return e.pageX - e.currentTarget.getBoundingClientRect().left;
+  },
+
+  _offsetY: function(e)
+  {
+    return e.pageY - e.currentTarget.getBoundingClientRect().top;
   },
 
   pin: function(simulations)
