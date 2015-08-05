@@ -210,7 +210,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
       });
 
       $('#slycat-3d-stats-check', $container).on('change', function() {
-        toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'));
+        toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'), isModel);
       });
 
 
