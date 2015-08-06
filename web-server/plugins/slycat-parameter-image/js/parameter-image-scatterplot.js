@@ -1456,8 +1456,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       add_resize_handle(frame_html);
       add_pin_button(frame_html);
-
-      return;
     }
 
     console.log("Attempting to load image from server-side cache");
