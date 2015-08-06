@@ -15,30 +15,6 @@ def register_slycat_plugin(context):
   import traceback
   import urlparse
 
-  class ImageCache(object):
-    def __init__(self):
-      self._reset()
-
-    def _reset(self):
-      self._storage = {}
-
-    def reset(self):
-      #slycat.web.client.log.info("Resetting image cache.")
-      self._reset()
-
-    def image(self, path, process=lambda x,y:x):
-      if path not in self._storage:
-        #slycat.web.client.log.info("Loading %s." % path)
-        import PIL.Image
-        try:
-          self._storage[path] = process(numpy.asarray(PIL.Image.open(path)), path)
-        except Exception as e:
-          #slycat.web.client.log.error(str(e))
-          self._storage[path] = None
-      return self._storage[path]
-
-  image_cache = ImageCache()
-
   def csv_distance(left_index, left_path, right_index, right_path):
     return csv_distance.matrix[left_index][right_index]
   csv_distance.matrix = None
@@ -51,9 +27,7 @@ def register_slycat_plugin(context):
     "csv" : csv_distance,
     }
 
-  columns = []
-
-  def compute_distance(left, right, storage, cluster_name, measure_name, measure):
+  def compute_distance(left, right, storage, cluster_name, measure_name, measure, columns):
     distance = numpy.empty(len(left))
     for index in range(len(left)):
       i = left[index]
@@ -65,15 +39,16 @@ def register_slycat_plugin(context):
       uri_j = columns[column_j][1][row_j]
       path_j = urlparse.urlparse(uri_j).path
       distance[index] = measure(i, path_i, j, path_j)
-      #slycat.web.client.log.info("Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index]))
+      print "Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index])
     return distance
+
 
   def media_columns(database, model, verb, type, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video)."""
     expression = re.compile("file://")
     search = numpy.vectorize(lambda x:bool(expression.search(x)))
 
-    columns = []
+    media_cols = []
     metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", "0")["arrays"][0]
     for index, attribute in enumerate(metadata["attributes"]):
       if attribute["type"] != "string":
@@ -81,10 +56,10 @@ def register_slycat_plugin(context):
       column = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index))
       if not numpy.any(search(column)):
         continue
-      columns.append(index)
+      media_cols.append(index)
 
     cherrypy.response.headers["content-type"] = "application/json"
-    return json.dumps(columns)
+    return json.dumps(media_cols)
 
   def compute(mid):
     """Called in a thread to perform work on the model."""
@@ -94,16 +69,15 @@ def register_slycat_plugin(context):
 
       # Do useful work here
       try:
-        clusters = slycat.web.server.get_model_file(database, model, "clusters")
-        print "we have a clusters file, so no work needs to be done on the server"
+        clusters_model_file = slycat.web.server.get_model_file(database, model, "clusters")
       except:
-        import pudb; pu.db
         cluster_columns = slycat.web.server.get_model_parameter(database, model, "cluster-columns")
         cluster_measure = slycat.web.server.get_model_parameter(database, model, "cluster-measure")
         cluster_linkage = slycat.web.server.get_model_parameter(database, model, "cluster-linkage")
         metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
         column_infos = metadata[0]['attributes']
         column_data = list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", ".../.../..."))
+        columns = []
         for column_index, column_info in enumerate(column_infos):
           columns.append((column_info['name'], column_data[column_index]))
 
@@ -123,17 +97,16 @@ def register_slycat_plugin(context):
         cluster_exemplars = {}
 
         for index, (name, storage) in enumerate(sorted(clusters.items())):
-          image_cache.reset()
           progress_begin = float(index) / float(len(clusters))
           progress_end = float(index + 1) / float(len(clusters))
 
           # Compute a distance matrix comparing every image to every other ...
           observation_count = len(storage)
           left, right = numpy.triu_indices(observation_count, k=1)
-          distance = compute_distance(left, right, storage, name, cluster_measure, measures[cluster_measure])
+          distance = compute_distance(left, right, storage, name, cluster_measure, measures[cluster_measure], columns)
 
           # Use the distance matrix to cluster observations ...
-          #slycat.web.client.log.info("Clustering %s" % name)
+          print "Clustering %s" % name
           #distance = scipy.spatial.distance.squareform(distance_matrix)
           linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_linkage))
           cluster_linkages[name] = linkage
@@ -149,7 +122,7 @@ def register_slycat_plugin(context):
             exemplars[i] = i
             cluster_membership.append(set([i]))
 
-          #slycat.web.client.log.info("Identifying examplars for %s" % (name))
+          print "Identifying examplars for %s" % (name)
           for i in range(len(linkage)):
             cluster_id = i + observation_count
             (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -188,30 +161,23 @@ def register_slycat_plugin(context):
 
         # Ingest the raw data into Slycat.
         # Store an alphabetized collection of cluster names.
-        #connection.post_model_files(mid, aids=["clusters"], files=[json.dumps(sorted(clusters.keys()))], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
-        slycat.web.server.put_model_file(database, model, "clusters", value=[json.dumps(sorted(clusters.keys()))], content_type="application/json", input=True)
+        slycat.web.server.put_model_file(database, model, "clusters", value=json.dumps(sorted(clusters.keys())), content_type="application/json", input=True)
+
+        model = database.get("model", mid)
 
         # Store each cluster.
         for key in clusters.keys():
-          # connection.post_model_files(mid, aids=["cluster-%s" % key], files=[json.dumps({
-          #   "linkage" : cluster_linkages[key].tolist(),
-          #   "exemplars" : cluster_exemplars[key],
-          #   "input-indices" : [row_index for row_index, column_index in clusters[key]],
-          #   })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
           slycat.web.server.put_model_file(
             database, 
             model, 
             "cluster-%s" % key, 
-            value=[json.dumps({"linkage" : cluster_linkages[key].tolist(), "exemplars" : cluster_exemplars[key], "input-indices" : [row_index for row_index, column_index in clusters[key]],})], 
+            value=json.dumps({"linkage" : cluster_linkages[key].tolist(), "exemplars" : cluster_exemplars[key], "input-indices" : [row_index for row_index, column_index in clusters[key]],}), 
             content_type="application/json", 
             input=True)
 
-
-        print "we have no clusters file, now we need to create it on the server!!!"
-        # import pudb; pu.db
-        # import pdb; pdb.set_trace()
-
+      model = database.get("model", mid)
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+      print "Finished computing new model."
 
     except:
       cherrypy.log.error("%s" % traceback.format_exc())
