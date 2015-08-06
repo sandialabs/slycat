@@ -85,6 +85,7 @@ def js_bundle():
         "js/slycat-remotes.js",
         "js/slycat-login-controls.js",
         "js/slycat-range-slider.js",
+        "js/slycat-page-main.js",
         "js/slycat-projects-main.js",
         "js/slycat-project-main.js",
         "js/slycat-model-main.js",
@@ -345,6 +346,29 @@ def post_project_references(pid):
   cherrypy.response.status = "201 Reference created."
   return {"id" : rid}
 
+def get_page(ptype):
+  database = slycat.web.server.database.couchdb.connect()
+
+  context = {}
+  context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
+  context["slycat-css-bundle"] = css_bundle()
+  context["slycat-js-bundle"] = js_bundle()
+  context["slycat-page-type"] = ptype
+
+  if ptype not in slycat.web.server.plugin.manager.pages:
+    context["slycat-page-html"] = u"""
+    <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
+      <p>No plugin available for page type \u201c%s\u201d.</p>
+    </div>""" % ptype
+    return slycat.web.server.template.render("slycat-page.html", context)
+
+  context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model=None)
+  if ptype in slycat.web.server.plugin.manager.page_bundles:
+    context["slycat-page-css-bundles"] =[{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/css"]
+    context["slycat-page-js-bundles"] = [{"bundle":key} for key, (content_type, content) in slycat.web.server.plugin.manager.page_bundles[ptype].items() if content_type == "text/javascript"]
+
+  return slycat.web.server.template.render("slycat-page.html", context)
+
 def get_model(mid, **kwargs):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -375,20 +399,20 @@ def get_model(mid, **kwargs):
     context["slycat-model-type"] = mtype
 
     if mtype not in slycat.web.server.plugin.manager.models.keys():
-      context["slycat-page-html"] = """
+      context["slycat-page-html"] = u"""
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-        <p>No plugin available for this model.</p>
-      </div>"""
+        <p>No plugin available for model type \u201c%s\u201d.</p>
+      </div>""" % mtype
       return slycat.web.server.template.render("slycat-model-page.html", context)
 
     if ptype is None:
       ptype = slycat.web.server.plugin.manager.models[mtype]["ptype"]
 
     if ptype not in slycat.web.server.plugin.manager.pages:
-      context["slycat-page-html"] = """
+      context["slycat-page-html"] = u"""
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-        <p>No plugin available for this page type.</p>
-      </div>"""
+        <p>No plugin available for page type \u201c%s\u201d.</p>
+      </div>""" % ptype
       return slycat.web.server.template.render("slycat-model-page.html", context)
 
 
