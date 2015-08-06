@@ -1123,9 +1123,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
 
       // Create the loading image ...
-      var loading_image = frame_html.append("img")
-        .attr("class", "loading-image")
-        .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif");
+      var loading_image = frame_html.append("div")
+        .attr("class", "loading-image");
 
       // Schedule timeout for hover
       self.element.one("mousemove", handlers["hover"]);
@@ -1501,10 +1500,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 return function(){
                   var hostname = URI(img.uri).hostname();
                   var images = $(this).closest(".media-layer").children(".scaffolding").filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == hostname; })
-                  var loading_image = d3.selectAll(images).append("img")
-                    .attr("class", "loading-image")
-                    .attr("src", server_root + "resources/models/parameter-image/" + "ajax-loader.gif")
-                    ;
+                  var loading_image = d3.selectAll(images).append("div").attr("class", "loading-image");
                   images.find(".reload-button").remove();
                   self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
                 }})(image, frame));
