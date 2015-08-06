@@ -58,11 +58,14 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute Linear Regression Demo Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def model_html(database, model):
+  def page_html(database, model):
     return open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read()
 
-  context.register_model("linear-regression-demo", finish_model, model_html)
-  context.register_model_bundle("linear-regression-demo", "text/javascript", [
+  context.register_model("linear-regression-demo", finish_model)
+
+  context.register_page("linear-regression-demo", page_html)
+
+  context.register_page_bundle("linear-regression-demo", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "d3.min.js"),
     os.path.join(os.path.dirname(__file__), "ui.js"),
     ])

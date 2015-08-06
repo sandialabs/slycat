@@ -44,7 +44,7 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
 
       this.element.mousedown(function(e)
       {
-        self.start_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
+        self.start_drag = [self._offsetX(e), self._offsetY(e)];
         self.end_drag = null;
       });
 
@@ -54,7 +54,7 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
         {
           if(self.end_drag) // Already dragging ...
           {
-            self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
+            self.end_drag = [self._offsetX(e), self._offsetY(e)];
 
             var width = self.element.width();
             var height = self.element.height();
@@ -70,9 +70,9 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
           }
           else
           {
-            if(Math.abs((e.originalEvent.offsetX || e.originalEvent.layerX) - self.start_drag[0]) > self.options.drag_threshold || Math.abs((e.originalEvent.offsetY || e.originalEvent.layerY) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
+            if(Math.abs(self._offsetX(e) - self.start_drag[0]) > self.options.drag_threshold || Math.abs(self._offsetY(e) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
             {
-              self.end_drag = [e.originalEvent.offsetX || e.originalEvent.layerX, e.originalEvent.offsetY || e.originalEvent.layerY];
+              self.end_drag = [self._offsetX(e), self._offsetY(e)];
             }
           }
         }
@@ -106,10 +106,10 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
         }
         else // Pick selection ...
         {
-          var x1 = self.x_scale.invert((e.originalEvent.offsetX || e.originalEvent.layerX) - self.options.pick_distance);
-          var y1 = self.y_scale.invert((e.originalEvent.offsetY || e.originalEvent.layerY) + self.options.pick_distance);
-          var x2 = self.x_scale.invert((e.originalEvent.offsetX || e.originalEvent.layerX) + self.options.pick_distance);
-          var y2 = self.y_scale.invert((e.originalEvent.offsetY || e.originalEvent.layerY) - self.options.pick_distance);
+          var x1 = self.x_scale.invert(self._offsetX(e) - self.options.pick_distance);
+          var y1 = self.y_scale.invert(self._offsetY(e) + self.options.pick_distance);
+          var x2 = self.x_scale.invert(self._offsetX(e) + self.options.pick_distance);
+          var y2 = self.y_scale.invert(self._offsetY(e) - self.options.pick_distance);
 
           for(var i = 0; i != count; ++i)
           {
@@ -132,6 +132,16 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
         self._schedule_update({render_selection:true});
         self.element.trigger("selection-changed", [self.options.selection]);
       });
+    },
+
+    _offsetX: function(e)
+    {
+      return e.pageX - e.currentTarget.getBoundingClientRect().left;
+    },
+
+    _offsetY: function(e)
+    {
+      return e.pageY - e.currentTarget.getBoundingClientRect().top;
     },
 
     _setOption: function(key, value)

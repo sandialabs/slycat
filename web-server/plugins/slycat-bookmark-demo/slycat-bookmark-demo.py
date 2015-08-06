@@ -7,11 +7,14 @@ def register_slycat_plugin(context):
     import slycat.web.server
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-  def model_html(database, model):
+  def page_html(database, model):
     return open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read()
 
-  context.register_model("bookmark-demo", finish_model, model_html)
-  context.register_model_bundle("bookmark-demo", "text/javascript", [
+  context.register_model("bookmark-demo", finish_model)
+
+  context.register_page("bookmark-demo", page_html)
+
+  context.register_page_bundle("bookmark-demo", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "ui.js"),
     ])
 
