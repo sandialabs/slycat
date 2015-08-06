@@ -7,10 +7,13 @@ def register_slycat_plugin(context):
   import numpy
   import os
   import re
+  import scipy.cluster.hierarchy
+  import scipy.spatial.distance
   import slycat.web.server.database.couchdb
   import slycat.web.server
   import threading
   import traceback
+  import urlparse
 
   class ImageCache(object):
     def __init__(self):
@@ -37,7 +40,7 @@ def register_slycat_plugin(context):
   image_cache = ImageCache()
 
   def csv_distance(left_index, left_path, right_index, right_path):
-    return csv_distance.matrix[left_index, right_index]
+    return csv_distance.matrix[left_index][right_index]
   csv_distance.matrix = None
 
   # Map measure names to functions
@@ -47,6 +50,8 @@ def register_slycat_plugin(context):
     # "euclidean-rgb" : euclidean_rgb_distance,
     "csv" : csv_distance,
     }
+
+  columns = []
 
   def compute_distance(left, right, storage, cluster_name, measure_name, measure):
     distance = numpy.empty(len(left))
@@ -94,14 +99,15 @@ def register_slycat_plugin(context):
       except:
         import pudb; pu.db
         cluster_columns = slycat.web.server.get_model_parameter(database, model, "cluster-columns")
+        cluster_measure = slycat.web.server.get_model_parameter(database, model, "cluster-measure")
+        cluster_linkage = slycat.web.server.get_model_parameter(database, model, "cluster-linkage")
         metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
         column_infos = metadata[0]['attributes']
         column_data = list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", ".../.../..."))
-        columns = []
         for column_index, column_info in enumerate(column_infos):
           columns.append((column_info['name'], column_data[column_index]))
 
-        distance_matrix_data = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix", ".../.../..."))
+        csv_distance.matrix = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix", ".../.../..."))
 
         # Create a mapping from unique cluster names to column rows.
         clusters = collections.defaultdict(list)
@@ -124,12 +130,12 @@ def register_slycat_plugin(context):
           # Compute a distance matrix comparing every image to every other ...
           observation_count = len(storage)
           left, right = numpy.triu_indices(observation_count, k=1)
-          distance = compute_distance(left, right, storage, name, arguments.cluster_measure, measures[arguments.cluster_measure])
+          distance = compute_distance(left, right, storage, name, cluster_measure, measures[cluster_measure])
 
           # Use the distance matrix to cluster observations ...
           #slycat.web.client.log.info("Clustering %s" % name)
           #distance = scipy.spatial.distance.squareform(distance_matrix)
-          linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_linkage))
+          linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_linkage))
           cluster_linkages[name] = linkage
 
           # Identify exemplar waveforms for each cluster ...
@@ -179,6 +185,26 @@ def register_slycat_plugin(context):
 
             exemplars[cluster_id] = exemplar_id
           cluster_exemplars[name] = exemplars
+
+        # Ingest the raw data into Slycat.
+        # Store an alphabetized collection of cluster names.
+        #connection.post_model_files(mid, aids=["clusters"], files=[json.dumps(sorted(clusters.keys()))], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
+        slycat.web.server.put_model_file(database, model, "clusters", value=[json.dumps(sorted(clusters.keys()))], content_type="application/json", input=True)
+
+        # Store each cluster.
+        for key in clusters.keys():
+          # connection.post_model_files(mid, aids=["cluster-%s" % key], files=[json.dumps({
+          #   "linkage" : cluster_linkages[key].tolist(),
+          #   "exemplars" : cluster_exemplars[key],
+          #   "input-indices" : [row_index for row_index, column_index in clusters[key]],
+          #   })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
+          slycat.web.server.put_model_file(
+            database, 
+            model, 
+            "cluster-%s" % key, 
+            value=[json.dumps({"linkage" : cluster_linkages[key].tolist(), "exemplars" : cluster_exemplars[key], "input-indices" : [row_index for row_index, column_index in clusters[key]],})], 
+            content_type="application/json", 
+            input=True)
 
 
         print "we have no clusters file, now we need to create it on the server!!!"
