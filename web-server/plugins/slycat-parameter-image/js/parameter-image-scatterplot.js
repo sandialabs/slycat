@@ -1001,7 +1001,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   _sync_open_images: function()
   {
     var self = this;
-    var isStl = false;
 
     // Get the scatterplot width so we can convert absolute to relative coordinates.
     var width = Number(self.svg.attr("width"));
@@ -1023,9 +1022,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.element.trigger("open-images-changed", [open_images]);
   },
 
-  _open_images: function(images)
+  _open_images: function(images, is_stl_return)
   {
     var self = this;
+    // If the list of images is empty, we're done.
+    if(images.length == 0) return;
+    var image = images[0];
+
+    var fileUriArr = image.uri.split('/');
+    var isStl = fileUriArr[fileUriArr.length - 1].indexOf('.stl') !== -1 ? true : false;
+
+    var frame_html = null;
 
     within_svg = function(e, options) {
       return 0 <= e.y && e.y <= options.height && 0 <= e.x && e.x <= options.width;
@@ -1282,11 +1289,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       })
     }
 
-    // If the list of images is empty, we're done.
-    if(images.length == 0)
-      return;
-    var image = images[0];
-
     // Don't open images for hidden simulations
     if($.inArray(image.index, self.options.hidden_simulations) != -1) {
       self._open_images(images.slice(1));
@@ -1305,34 +1307,32 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     // Create scaffolding and status indicator if we already don't have one
-    if( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ) {
-      var frame_html = build_frame_html(image);
+    if ( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() && !isStl ) {
+      frame_html = build_frame_html(image);
     }
 
     // If the image is already in the cache, display it.
-    if(image.uri in self.options.image_cache)
-    {
-      console.log("Displaying image " + image.uri + " from cache");
+    if (image.uri in self.options.image_cache && !isStl) {
+      console.log("Displaying image " + image.uri + " from cache...");
       var url_creator = window.URL || window.webkitURL;
       var blob = self.options.image_cache[image.uri];
       var image_url = url_creator.createObjectURL(blob);
 
       // Define a default size for every image.
-      if(image.width === undefined)
-      {
+      if(image.width === undefined) {
         image.width = self.options.pinned_width;
       }
-      if(image.height === undefined)
-      {
+
+      if(image.height === undefined) {
         image.height = self.options.pinned_height;
       }
+
       // Define a default position for every image.
-      if(image.x === undefined)
-      {
+      if(image.x === undefined) {
         image.x = self._getDefaultXPosition(image.index, image.width);
       }
-      if(image.y === undefined)
-      {
+
+      if(image.y === undefined) {
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
@@ -1422,7 +1422,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       if(!image.no_sync)
         self._sync_open_images();
-      self._open_images(images.slice(1));
+
+      self._open_images(images.slice(1), true);
 
       return;
     }
@@ -1432,12 +1433,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
 
-    var fileUriArr = image.uri.split('/');
-    var isStl = fileUriArr[fileUriArr.length - 1].indexOf('.stl') !== -1 ? true : false;
-
-    if (isStl) {
+    if (isStl && is_stl_return) {
       if (!frame_html) {
-        var frame_html = build_frame_html(image);
+        frame_html = build_frame_html(image);
       }
 
       var container = frame_html[0][0];
@@ -1455,33 +1453,31 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       add_resize_handle(frame_html);
       add_pin_button(frame_html);
+
+      return;
     }
 
-    console.log("Attempting to load image from server-side cache");
-    // Retrieve the image.
-    console.log("Loading image " + image.uri + " from server");
+    console.log("Attempting to load image from server-side cache...");
+    console.log("Loading image " + image.uri + " from server...");
 
     var xhr = new XMLHttpRequest();
     var api = "/file";
-    if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
-    {
+    if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1) {
       api = "/file";
     }
+
     xhr.image = image;
     xhr.open("GET", server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
     xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
+
+    xhr.onload = function(e){
       //If the image isn't in cache, open an agent session:
-      if(this.status == 404)
-      {
-        self.remotes.get_remote(
-        {
+      if (this.status == 404) {
+        self.remotes.get_remote({
           hostname: uri.hostname(),
           title: "Login to " + uri.hostname(),
           message: "Loading " + uri.pathname(),
-          cancel: function()
-          {
+          cancel: function() {
             var jFrame = $(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
             var frame = d3.select(jFrame[0]);
             var related_frames = jFrame.closest('.media-layer').children('.scaffolding').filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == uri.hostname(); });
@@ -1505,25 +1501,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                   self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
                 }})(image, frame));
           },
-          success: function(sid)
-          {
+          success: function(sid) {
             var xhr = new XMLHttpRequest();
             var api = "/file";
-            if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1)
-            {
+            if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1) {
               api = "/file";
             }
+
             xhr.image = image;
             //Double encode to avoid cherrypy's auto unencode in the controller
             xhr.open("GET", server_root + "remotes/" + sid + api + uri.pathname() + "?cache=project&project=" + model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
             xhr.responseType = "arraybuffer";
-            xhr.onload = function(e)
-            {
+            xhr.onload = function(e) {
               // If we get 404, the remote session no longer exists because it timed-out.
               // If we get 500, there was an internal error communicating to the remote host.
               // Either way, delete the cached session and create a new one.
-              if(this.status == 404 || this.status == 500)
-              {
+              if(this.status == 404 || this.status == 500) {
                 self.remotes.delete_remote(uri.hostname());
                 self._open_images(images);
                 return;
@@ -1531,55 +1524,43 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               // If we get 400, it means that the session is good and we're
               // communicating with the remote host, but something else went wrong
               // (probably file permissions issues).
-              if(this.status == 400)
-              {
-                console.log(this);
-                console.log(this.getAllResponseHeaders());
+              if(this.status == 400) {
                 var message = this.getResponseHeader("slycat-message");
                 var hint = this.getResponseHeader("slycat-hint");
 
-                if(message && hint)
-                {
+                if(message && hint) {
                   window.alert(message + "\n\n" + hint);
-                }
-                else if(message)
-                {
+                } else if(message) {
                   window.alert(message);
-                }
-                else
-                {
+                } else {
                   window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
                 }
+
                 return;
-              }
-              else
-              {
-                console.debug("Loaded image");
+              } else {
                 // We received the image, so put it in the cache and start-over.
                 var array_buffer_view = new Uint8Array(this.response);
                 var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
                 self.options.image_cache[image.uri] = blob;
-                self._open_images(images);
+                self._open_images(images, true);
               }
             }
+
             xhr.send();
           },
         })
-      }
-      else
-      {
+      } else {
         // We received the image, so put it in the cache and start-over.
         var array_buffer_view = new Uint8Array(this.response);
         var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
         self.options.image_cache[image.uri] = blob;
-        self._open_images(images);
+        self._open_images(images, true);
       }
     }
     xhr.send();
   },
 
-  _close_hidden_simulations: function()
-  {
+  _close_hidden_simulations: function() {
     var self = this;
     $(".media-layer div.image-frame")
       .filter(function(){
@@ -1587,12 +1568,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       })
       .each(function(){
         self._remove_image_and_leader_line(d3.select(this));
-      })
-      ;
+      });
   },
 
-  close_all_simulations: function()
-  {
+  close_all_simulations: function() {
     var self = this;
     $(".media-layer div.image-frame")
       .each(function(){
@@ -1602,8 +1581,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self._sync_open_images();
   },
 
-  _schedule_hover_canvas: function(e)
-  {
+  _schedule_hover_canvas: function(e) {
     var self = this;
     self._cancel_hover_canvas();
 
@@ -1614,8 +1592,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self.hover_timer_canvas = window.setTimeout( function(){ self._open_hover_canvas(e) }, self.options.hover_time );
   },
 
-  _open_hover_canvas: function(e)
-  {
+  _open_hover_canvas: function(e) {
     var self = this;
 
     // Disable hovering whenever anything else is going on ...
@@ -1637,13 +1614,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._open_first_match(x, y, filtered_indices, shift, square_size);
   },
 
-  _open_first_match: function(x, y, indices, shift, size)
-  {
+  _open_first_match: function(x, y, indices, shift, size) {
     var self = this,
         xvalues = self.options.x,
         yvalues = self.options.y;
-    for(var i = indices.length-1; i > -1; i-- )
-    {
+    for(var i = indices.length-1; i > -1; i-- ) {
       index = indices[i];
       x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
       y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
