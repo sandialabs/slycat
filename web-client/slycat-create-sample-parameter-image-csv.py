@@ -7,6 +7,7 @@ import argparse
 import numpy
 import os
 import PIL.Image, PIL.ImageDraw, PIL.ImageFont
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--category-count", type=int, default=2, help="Category column count.  Default: %(default)s")
@@ -16,6 +17,7 @@ parser.add_argument("--image-directory", default="sample-parameter-images", help
 parser.add_argument("--image-height", type=int, default=1000, help="Image height.  Default: %(default)s")
 parser.add_argument("--image-hostname", default="localhost", help="Image hostname.  Default: %(default)s")
 parser.add_argument("--image-width", type=int, default=1000, help="Image width.  Default: %(default)s")
+parser.add_argument("--image-type", default="jpg", help="Image type: jpg or stl. Default: %(default)s")
 parser.add_argument("--input-count", type=int, default=3, help="Input column count.  Default: %(default)s")
 parser.add_argument("--metadata-count", type=int, default=3, help="Metadata column count.  Default: %(default)s")
 parser.add_argument("--output-count", type=int, default=3, help="Output column count.  Default: %(default)s")
@@ -57,7 +59,7 @@ for i in range(arguments.metadata_count):
 
 for i in range(arguments.image_count):
   names.append("image%s" % i)
-  columns.append(numpy.array(["file://%s%s/%s.jpg" % (arguments.image_hostname, os.path.abspath(arguments.image_directory), (arguments.row_count * i) + j) for j in range(arguments.row_count)]))
+  columns.append(numpy.array(["file://%s%s/%s.%s" % (arguments.image_hostname, os.path.abspath(arguments.image_directory), (arguments.row_count * i) + j, arguments.image_type) for j in range(arguments.row_count)]))
 
 with open(arguments.data_file, "w") as file:
   file.write(",".join(names) + "\n")
@@ -65,16 +67,27 @@ with open(arguments.data_file, "w") as file:
     file.write(",".join([str(column[row]) for column in columns]) + "\n")
 
 # Generate random images ...
-os.mkdir(arguments.image_directory)
-for index in numpy.arange(arguments.row_count * arguments.image_count):
-  image = PIL.Image.new("RGB", (arguments.image_width, arguments.image_height), "white")
-  draw = PIL.ImageDraw.Draw(image)
-  draw.rectangle(
-    (
-      (numpy.random.randint(0, arguments.image_width), numpy.random.randint(0, arguments.image_height)),
-      (numpy.random.randint(0, arguments.image_width), numpy.random.randint(0, arguments.image_height)),
-    ),
-    fill=numpy.random.choice(["black", "darkgreen", "goldenrod", "lightcyan"])
-    )
-  image.save(os.path.join(arguments.image_directory, "%s.jpg" % index))
+if not os.path.exists(arguments.image_directory):
+  os.mkdir(arguments.image_directory)
+
+try:
+  if arguments.image_type == "jpg":
+    for index in numpy.arange(arguments.row_count * arguments.image_count):
+      image = PIL.Image.new("RGB", (arguments.image_width, arguments.image_height), "white")
+      draw = PIL.ImageDraw.Draw(image)
+      draw.rectangle(
+        (
+          (numpy.random.randint(0, arguments.image_width), numpy.random.randint(0, arguments.image_height)),
+          (numpy.random.randint(0, arguments.image_width), numpy.random.randint(0, arguments.image_height)),
+        ),
+        fill=numpy.random.choice(["black", "darkgreen", "goldenrod", "lightcyan"])
+        )
+      image.save(os.path.join(arguments.image_directory, "%s.jpg" % index))
+  elif arguments.image_type == "stl":
+    for index in numpy.arange(arguments.row_count * arguments.image_count):
+      shutil.copyfile("cube.stl", "%s/%s.stl" % (arguments.image_directory, index))
+  else:
+    raise Exception("Unknown image type")
+except Exception as e:
+  print(e)
 

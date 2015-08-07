@@ -371,7 +371,7 @@ rights in this software.
 }
 #controls
 {
-  
+
 }
 #controls {
   margin: 2px 0;
@@ -569,6 +569,10 @@ rights in this software.
   left: 0;
   right: 0;
   top: 0;
+
+  background-image: url("ajax-loader.gif");
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
 }
 
 /* Sliders */
@@ -880,7 +884,7 @@ a {
 {
     background-color: white;
 }
-.bootstrap-styles .btn-default:active, 
+.bootstrap-styles .btn-default:active,
 .bootstrap-styles .btn-default.active,
 .bootstrap-styles .btn-default.focus.active,
 .bootstrap-styles .open > .btn-default.dropdown-toggle,

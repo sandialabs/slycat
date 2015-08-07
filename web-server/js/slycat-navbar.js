@@ -349,14 +349,17 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
 
       component.update_references = function()
       {
-        client.get_project_references(
+        if(component.project_id())
         {
-          pid: component.project_id(),
-          success: function(result)
+          client.get_project_references(
           {
-            mapping.fromJS(result, references);
-          }
-        });
+            pid: component.project_id(),
+            success: function(result)
+            {
+              mapping.fromJS(result, references);
+            }
+          });
+        }
       }
 
       component.update_references();
