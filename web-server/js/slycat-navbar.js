@@ -299,10 +299,34 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
 
       var references = mapping.fromJS([]);
 
-      component.saved_bookmarks = references.filter(function(reference)
+      component.saved_project_bookmarks = references.filter(function(reference)
       {
         if(component.model_id() === undefined)
           return reference.bid() && reference.mid();
+        else
+          return reference.bid() && reference.mid() && reference.mid() != component.model_id();
+      }).map(function(reference)
+      {
+        var model = ko.utils.arrayFirst(component.models(), function(model)
+        {
+          return model._id() == reference.mid();
+        });
+
+        return {
+          _id: reference._id,
+          name: reference.name,
+          model_name: model ? model.name() : "",
+          model_type: reference["model-type"] ? reference["model-type"]() : "",
+          created: reference.created,
+          creator: reference.creator,
+          uri: server_root + "models/" + reference.mid() + "?bid=" + reference.bid(),
+        };
+      });
+
+      component.saved_model_bookmarks = references.filter(function(reference)
+      {
+        if(component.model_id() === undefined)
+          return false;
         else
           return reference.bid() && reference.mid() && reference.mid() == component.model_id();
       }).map(function(reference)

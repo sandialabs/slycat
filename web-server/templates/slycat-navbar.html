@@ -63,7 +63,7 @@
           </li>
           <li class="dropdown nav-bookmarks" data-bind="visible: model_id() || project_id()">
             <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown"
-              data-bind="css: { disabled: model_id() ? false : saved_bookmarks().length < 1 }">
+              data-bind="css: { disabled: model_id() ? false : saved_project_bookmarks().length < 1 && saved_model_bookmarks().length < 1 }">
               Bookmarks <span class="caret"/>
             </button>
             <ul class="dropdown-menu">
@@ -77,8 +77,8 @@
                     <span data-bind="text: label"></span></a>
                 </li>
               <!-- /ko -->
-              <li role="separator" class="divider" data-bind="visible: model_bookmark_wizards().length && saved_bookmarks().length"></li>
-              <!-- ko foreach: saved_bookmarks -->
+              <li role="separator" class="divider" data-bind="visible: model_bookmark_wizards().length && (saved_project_bookmarks().length || saved_model_bookmarks().length)"></li>
+              <!-- ko foreach: saved_model_bookmarks -->
                 <li class="slycat-clickable">
                   <a class="bookmark-link" data-bind="attr: {href:uri}">
                     <span>
@@ -88,13 +88,37 @@
                         <span class="fa fa-trash-o"></span>
                       </button>
                     </span>
-                    <span class="label label-default" data-bind="visible: model_type && !$parent.model_id(), text:model_type + ' model'"></span>
                     <strong>
-                      <span data-bind="visible: !$parent.model_id()">
+                      <span data-bind="text:name"></span>
+                    </strong>
+                    <small>
+                      <em>
+                        Created <span data-bind="text:created"></span>
+                        by <span data-bind="text:creator"></span>
+                      </em>
+                    </small>
+                  </a>
+                </li>
+              <!-- /ko -->
+              <li role="separator" class="divider" data-bind="visible: saved_project_bookmarks().length && saved_model_bookmarks().length"></li>
+              <!-- ko foreach: saved_project_bookmarks -->
+                <li class="slycat-clickable">
+                  <a class="bookmark-link" data-bind="attr: {href:uri}">
+                    <span>
+                      <!-- <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="fa fa-pencil"></span></button> -->
+                      <button type="button" class="btn btn-xs btn-danger bookmark-delete" title="Delete bookmark"
+                        data-bind="click: $parent.delete_saved_bookmark">
+                        <span class="fa fa-trash-o"></span>
+                      </button>
+                    </span>
+                    <span class="label label-default" data-bind="visible: model_type, text:model_type + ' model'"></span>
+                    <strong>
+                      <span>
                         <span data-bind="text:model_name"></span> 
                         - 
                       </span>
-                      <span data-bind="text:name"></span></strong>
+                      <span data-bind="text:name"></span>
+                    </strong>
                     <small>
                       <em>
                         Created <span data-bind="text:created"></span>
