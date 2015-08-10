@@ -1,5 +1,7 @@
 define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping','URI'], function(server_root, ko, mapping, URI) {
   var static_index = 0;
+  // number of pixels that needs to be added to the viewer for the canvas to fill it...
+  var arbitrary_viewer_pixels = 11;
 
   /**
    * A Knockout component to render STL files in slycat, using the Three.js
@@ -76,7 +78,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
       adjustViewerHeight(viewer);
 
       var width = viewer.offsetWidth;
-      var height = viewer.offsetHeight;
+      var height = viewer.offsetHeight + arbitrary_viewer_pixels;
 
       var renderer = null;
       var camera = null;
@@ -210,7 +212,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
       });
 
       $('#slycat-3d-stats-check', $container).on('change', function() {
-        toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'));
+        toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'), isModel);
       });
 
 
@@ -248,8 +250,11 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
     var h;
 
     if (isModel) {
-      w = $(viewer).outerWidth();
-      h = $(viewer).outerHeight();
+      $v = $(viewer);
+      $v.height($v.height() + arbitrary_viewer_pixels);
+
+      w = $v.outerWidth();
+      h = $v.outerHeight();
     } else {
       headerHeight = $(container.firstChild).outerHeight();
       statsHeight = $('#stats', $(container)).is(':visible') ? $('#stats', $(container)).height() : 0;

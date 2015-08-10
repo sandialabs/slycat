@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], function(server_root, URI, $)
+define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery", "lodash"], function(server_root, URI, $, lodash)
 {
   var module = {};
 
@@ -41,6 +41,7 @@ define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], funct
   module.create = function(pid, mid)
   {
     var manager = {};
+    var bid_callbacks = [];
 
     var bid = null;
     var current_location = URI(window.location);
@@ -67,7 +68,17 @@ define("slycat-bookmark-manager", ["slycat-server-root", "URI", "jquery"], funct
     {
       var new_location = URI(window.location).removeQuery("bid").addQuery("bid", bid);
       window.history.replaceState( null, null, new_location.toString() );
+      lodash.each(bid_callbacks, function(callback)
+      {
+        callback(bid);
+      });
       // Consider using window.history.pushState instead to enable back button navigation within the model
+    }
+
+    manager.bid = {};
+    manager.bid.subscribe = function(callback)
+    {
+      bid_callbacks.push(callback);
     }
 
     // Updates the bookmark state (privileged)
