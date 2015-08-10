@@ -150,7 +150,7 @@ class Session(object):
     # launch via ssh...
     try:
       stdin, stdout, stderr = self._ssh.exec_command(command)
-      response = { "command": command, "output": str(stdout.readline()) }
+      response = { "command": command, "output": str(stdout.readlines()) }
       return response
     except paramiko.SSHException as e:
       cherrypy.response.headers["x-slycat-message"] = str(e)
