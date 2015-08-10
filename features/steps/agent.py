@@ -117,25 +117,24 @@ def step_impl(context):
 
 @when(u'browsing a directory with a directory reject rule')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "path":os.path.join(root_dir, "packages/slycat")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"w[^/]*$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories')
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
-  nose.tools.assert_not_in("table", listing["names"])
-  nose.tools.assert_not_in("timer", listing["names"])
+  nose.tools.assert_not_in("web", listing["names"])
 
 @when(u'browsing a directory with directory reject and allow rules')
 def step_impl(context):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"t[^/]*$", "directory-allow":"timer$", "path":os.path.join(root_dir, "packages/slycat")}))
+  context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "directory-reject":"[hw][^/]*$", "directory-allow":"web$", "path":os.path.join(root_dir, "packages/slycat")}))
   context.agent.stdin.flush()
 
 @then(u'the agent should return the directory information without the rejected directories, with the allowed directories')
 def step_impl(context):
   listing = json.loads(context.agent.stdout.readline())
-  nose.tools.assert_not_in("table", listing["names"])
-  nose.tools.assert_in("timer", listing["names"])
+  nose.tools.assert_not_in("hyperchunks", listing["names"])
+  nose.tools.assert_in("web", listing["names"])
 
 @given(u'a sample csv file')
 def step_impl(context):
