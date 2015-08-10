@@ -14,7 +14,10 @@ def register_slycat_plugin(context):
       </div>""" % name
 
   # Register the new model.
-  context.register_model("hello-world", finish, html)
+  context.register_model("hello-world", finish)
+
+  # Register a default page for displaying the model.
+  context.register_page("hello-world", html)
 
   # Register a wizard for creating instances of the new model.
   context.register_wizard("hello-world", "New Hello World Model", require={"action":"create", "context":"project"})

@@ -30,7 +30,7 @@ def register_slycat_plugin(context):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-  def html(database, model):
+  def page_html(database, model):
     """Add the HTML representation of the model to the context object."""
     import json
     import pystache
@@ -43,7 +43,9 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
-  context.register_model("tracer-image", finish, html)
+  context.register_model("tracer-image", finish)
+
+  context.register_page("tracer-image", page_html)
 
   # Register JS
   javascripts = [
@@ -88,7 +90,7 @@ def register_slycat_plugin(context):
     "init.js",
     "load.js",
   ]
-  context.register_model_bundle("tracer-image", "text/javascript", [
+  context.register_page_bundle("tracer-image", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
     ])
 
@@ -107,7 +109,7 @@ def register_slycat_plugin(context):
     "slick-slycat-theme.css",
     "model-tracer-image.css",
   ]
-  context.register_model_bundle("tracer-image", "text/css", [
+  context.register_page_bundle("tracer-image", "text/css", [
     os.path.join(os.path.join(os.path.dirname(__file__), "css"), css) for css in stylesheets
     ])
 
@@ -137,7 +139,7 @@ def register_slycat_plugin(context):
     "repeat.png",
   ]
   for image in images:
-    context.register_model_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), "img", image))
+    context.register_page_resource("tracer-image", image, os.path.join(os.path.dirname(__file__), "img", image))
 
   # Register a custom command for use by the wizard.
   context.register_model_command("GET", "tracer-image", "media-columns", media_columns)

@@ -93,7 +93,7 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute CCA Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def html(database, model):
+  def page_html(database, model):
     # At the moment, the CCA client UI is still hard-coded into the server.
     import pystache
     context = dict()
@@ -102,8 +102,11 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
-  context.register_model("cca", finish, html)
-  context.register_model_bundle("cca", "text/css", [
+  context.register_model("cca", finish)
+
+  context.register_page("cca", page_html)
+
+  context.register_page_bundle("cca", "text/css", [
     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
@@ -113,7 +116,7 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
     os.path.join(os.path.dirname(__file__), "css/ui.css"),
     ])
-  context.register_model_bundle("cca", "text/javascript", [
+  context.register_page_bundle("cca", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
     os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
@@ -133,7 +136,7 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
     os.path.join(os.path.dirname(__file__), "js/ui.js"),
     ])
-  context.register_model_resource("cca", "images", os.path.join(os.path.dirname(__file__), "images"))
+  context.register_page_resource("cca", "images", os.path.join(os.path.dirname(__file__), "images"))
 
   # Register custom wizards for creating CCA models.
   context.register_wizard("new-cca", "New CCA Model", require={"action":"create", "context":"project"})

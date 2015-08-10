@@ -130,6 +130,36 @@ class Session(object):
     self._sftp.close()
     self._ssh.close()
 
+  def launch(self, command):
+    # launch via the agent...
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+
+      command = command.split(' ')
+      payload = { "action": "launch", "command": command }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        raise cherrypy.HTTPError(400)
+      return { "command": response["command"], "output": response["output"] }
+
+    # launch via ssh...
+    try:
+      stdin, stdout, stderr = self._ssh.exec_command(command)
+      response = { "command": command, "output": str(stdout.readlines()) }
+      return response
+    except paramiko.SSHException as e:
+      cherrypy.response.headers["x-slycat-message"] = str(e)
+      raise cherrypy.HTTPError(500)
+    except Exception as e:
+      cherrypy.response.headers["x-slycat-message"] = str(e)
+      raise cherrypy.HTTPError(400)
+
+
   def browse(self, path, file_reject, file_allow, directory_reject, directory_allow):
     # Use the agent to browse.
     if self._agent is not None:

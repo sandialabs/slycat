@@ -25,7 +25,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         error: dialog.ajax_error('Error creating model.'),
       });
     };
-    
+
     component.go_to_model = function() {
       location = server_root + 'models/' + component.model._id();
     };
@@ -61,7 +61,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         },
         error: function(){
           dialog.ajax_error('There was a problem uploading the file: ')();
-          $('.local-browser-continue').toggleClass("disabled", false);
+          $('.local-browser-continue').toggleClass('disabled', false);
         },
       });
     };

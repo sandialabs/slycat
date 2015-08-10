@@ -191,7 +191,7 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def html(database, model):
+  def page_html(database, model):
     """Add the HTML representation of the model to the context object."""
     import json
     import pystache
@@ -204,7 +204,9 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
-  context.register_model("parameter-image-plus", finish, html)
+  context.register_model("parameter-image-plus", finish)
+
+  context.register_page("parameter-image-plus", page_html)
 
   # Register JS
   javascripts = [
@@ -229,7 +231,7 @@ def register_slycat_plugin(context):
     "ui.js",
     #For development and debugging, comment out js here and load it dynamically inside model.
   ]
-  context.register_model_bundle("parameter-image-plus", "text/javascript", [
+  context.register_page_bundle("parameter-image-plus", "text/javascript", [
     os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
     ])
 
@@ -242,7 +244,7 @@ def register_slycat_plugin(context):
     "slick-slycat-theme.css",
     "ui.css"
   ]
-  context.register_model_bundle("parameter-image-plus", "text/css", [
+  context.register_page_bundle("parameter-image-plus", "text/css", [
     os.path.join(os.path.join(os.path.dirname(__file__), "css"), css) for css in stylesheets
     ])
 
@@ -265,7 +267,7 @@ def register_slycat_plugin(context):
     "sort-dendrogram.png",
   ]
   for image in images:
-    context.register_model_resource("parameter-image-plus", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
+    context.register_page_resource("parameter-image-plus", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
 
   # Register jquery ui images, which are expected in images folder
   jqimages = [
@@ -276,7 +278,7 @@ def register_slycat_plugin(context):
     "ui-bg_flat_0_aaaaaa_40x100.png",
   ]
   for jqimage in jqimages:
-    context.register_model_resource("parameter-image-plus", "images/" + jqimage, os.path.join(os.path.join(os.path.dirname(__file__), "img"), jqimage))
+    context.register_page_resource("parameter-image-plus", "images/" + jqimage, os.path.join(os.path.join(os.path.dirname(__file__), "img"), jqimage))
 
   devs = [
     # "js/parameter-image-dendrogram.js",
@@ -284,7 +286,7 @@ def register_slycat_plugin(context):
     # "js/ui.js",
   ]
   for dev in devs:
-    context.register_model_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))
+    context.register_page_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)

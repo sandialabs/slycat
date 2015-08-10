@@ -306,7 +306,7 @@ class Connection(object):
     return self.request("GET", "/resources/global/%s" % resource)
 
   def get_model_resource(self, mtype, resource):
-    return self.request("GET", "/resources/models/%s/%s" % (mtype, resource))
+    return self.request("GET", "/resources/pages/%s/%s" % (mtype, resource))
 
   def get_wizard_resource(self, wtype, resource):
     return self.request("GET", "/resources/wizards/%s/%s" % (wtype, resource))

@@ -30,12 +30,15 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def html(database, model):
+  def page_html(database, model):
     """Add the HTML representation of the model to the context object."""
     return open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read()
 
   # Register our new model type
-  context.register_model("generic", finish, html)
-  context.register_model_bundle("generic", "text/javascript", [
+  context.register_model("generic", finish)
+
+  context.register_page("generic", page_html)
+
+  context.register_page_bundle("generic", "text/javascript", [
     os.path.join(os.path.dirname(__file__), "ui.js"),
     ])
