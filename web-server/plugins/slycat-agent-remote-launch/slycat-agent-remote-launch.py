@@ -10,12 +10,13 @@ def register_slycat_plugin(context):
     return open(os.path.join(os.path.dirname(__file__), 'ui.html'), 'r').read();
 
   # Register the new model.
-  context.register_model("agent-remote-launch", finish_model, model_html)
-  context.register_model_bundle("agent-remote-launch", "text/css", [
+  context.register_model("agent-remote-launch", finish_model)
+  context.register_page("agent-remote-launch", model_html)
+  context.register_page_bundle("agent-remote-launch", "text/css", [
     os.path.join(os.path.dirname(__file__), 'ui.css')
   ])
 
-  context.register_model_bundle('agent-remote-launch', 'text/javascript', [
+  context.register_page_bundle('agent-remote-launch', 'text/javascript', [
     os.path.join(os.path.dirname(__file__), 'ui.js')
   ])
 
