@@ -13,7 +13,7 @@ def parse_file(file):
   data = []
   for column in zip(*rows):
     try:
-      data.append(numpy.array(column[1:]).astype("float64"))
+      data.append(numpy.array(column[1:]).astype("float64", casting='safe'))
       attributes.append({"name":column[0], "type":"float64"})
     except:
       data.append(numpy.array(column[1:]))
