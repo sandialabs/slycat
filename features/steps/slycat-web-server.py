@@ -52,7 +52,7 @@ def step_impl(context):
 def step_impl(context):
   context.browser.driver.set_window_size(800,600)
   context.browser.driver.get("https://slycat:slycat@localhost/projects")
-  context.browser.wait_until_visible((By.ID, "slycat-navbar-context"))
+  context.browser.wait_until_visible((By.ID, "slycat-navbar-content"))
 
 @given(u'a project')
 def step_impl(context):
