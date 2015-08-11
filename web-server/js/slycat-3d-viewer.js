@@ -171,10 +171,25 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
         renderFixed(animation, renderer, scene, camera, controls, fps, ms);
       });
 
+      /** this is necessary to move the settings modal up in the DOM */
+      var parent_id = 'parameter-image-plus-layout';
+      var $pi = $('#' + parent_id);
+      if (!$pi.hasClass('bootstrap-styles')) $pi.addClass('bootstrap-styles');
 
       vm.show_settings = ko.observable(false).extend({ notify: 'always' });
       vm.show_settings.subscribe(function(value) {
-        $('#' + vm.settings_modal_id()).modal(value ? 'show' : 'hide');
+        var $m = $('#' + vm.settings_modal_id());
+        var $p = $m.parent();
+        /**  checks if it has been moved already... */
+        var moved = $p.attr('id') === parent_id;
+
+        if (value && !moved) {
+          /** moves the settings modal higher up in the DOM... */
+          $m.detach();
+          $pi.prepend($m);
+        }
+
+        $m.modal(value ? 'show' : 'hide');
       });
 
       vm.run_settings = function(item) {
