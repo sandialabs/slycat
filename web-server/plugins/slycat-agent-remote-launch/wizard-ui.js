@@ -9,7 +9,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.remote.focus.extend({ notify: 'always' });
     component.server_root = server_root;
     component.command = ko.observable('');
-    component.output = ko.observable('');
+    component.output = ko.observable('Output for the current job will be posted here...');
 
     component.cancel = function() {
       if (component.remote.sid())

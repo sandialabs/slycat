@@ -26,12 +26,57 @@
     <div data-bind="visible:tab() == 2">
       <form class="form-horizontal">
         <div class="form-group">
-          <label for="slycat-agent-remote-launch-command" class="col-sm-2 control-label">Command</label>
+          <div class="col-sm-10">
+            <label>
+              <input type="radio" name="agent-remote-radio" id="agent-remote-radio-single-command" value="single-command" style="margin-right: 7px;" checked>
+              Single command
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="slycat-agent-remote-launch-command" class="col-sm-2 control-label">$</label>
           <div class="col-sm-10">
             <input id="slycat-agent-remote-launch-command" class="form-control" type="text" placeholder="enter command here" data-bind="value: command">
           </div>
         </div>
+        <div class="form-group">
+          <div class="col-sm-10">
+            <label>
+              <input type="radio" name="agent-remote-radio" id="agent-remote-radio-batch-file" value="batch-file" style="margin-right: 7px;">
+              Custom job
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="slycat-agent-remote-launch-command" class="col-sm-2 control-label">Batch file</label>
+          <div class="col-sm-10">
+            <input class="form-control" type="text" placeholder="enter batch file location here">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-10">
+            <label>
+              <input type="radio" name="agent-remote-radio" id="agent-remote-radio-slycat-function" value="slycat-function" style="margin-right: 7px;">
+              Slycat pre-built
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="slycat-agent-remote-launch-command" class="col-sm-2 control-label">WCID</label>
+          <div class="col-sm-10">
+            <input class="form-control" type="text">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="slycat-agent-remote-launch-command" class="col-sm-2 control-label">Job name</label>
+          <div class="col-sm-10">
+            <select class="form-control">
+              <option value="distance-metrics">distance metrics</option>
+            </select>
+          </div>
+        </div>
       </form>
+      <hr>
       <div data-bind="text: output" style="white-space: pre-wrap"></div>
     </div>
 

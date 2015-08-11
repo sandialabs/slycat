@@ -1,9 +1,17 @@
 Feature: Parameter Space Model
 
+  Background:
+    Given a running Slycat server.
+    And a browser is open
+    And a project
+    And the first project is open
+    And a sample Parameterspace csv file with images
+    And a parameterspace model
+
   # Variable changes
 
-  Scenario: Change color theme in the parameter space model
-    When the theme colors variable is changed between Night, Day, and Rainbow
+  Scenario Outline: Change color theme in the parameter space model
+    When the colormap is changed to <color>
     Then the colormap should be changed to the corresponding theme's default colormap
     And the color band in the legend should display the new theme's colormap
     And the background should be redrawn using the new theme's background color
@@ -12,6 +20,12 @@ Feature: Parameter Space Model
     And the background should be redrawn using the new theme's background color
     And any selected points should be redrawn using the new theme's colormap as highlighted points
     And the identities of the selected points should not change
+
+    Examples:
+      | color |
+      | Night |
+      |  Day  |
+      |Rainbow|
 
   Scenario: Change Point Color variable in the parameter space model
     When the Point Color variable is changed either through the drop down or through clicking on the table column header
@@ -100,8 +114,8 @@ Feature: Parameter Space Model
   # Images
 
   Scenario: Image retrieval in the parameter space model
-    Given a scatterplot, mouse coordinates, and an image set selection
-    When the mouse location is within the boundary definitions of one or more points 
+    When a point is moused over
+    And a valid user logs in
     Then the point closest to the mouse coordinates should be identified, and the associated image from the current selected image set should be retrieved and displayed
     And a line should be drawn between the displayed image and its associated scatterplot point
     And the pin and resize icons should be visible in the image corners
