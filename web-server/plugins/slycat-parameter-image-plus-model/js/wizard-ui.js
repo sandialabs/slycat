@@ -143,6 +143,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       });
     };
 
+    component.select_columns = function() {
+      component.tab(4);
+    };
+
     var upload_matrix_success = function() {
       client.get_model_command({
         mid: component.model._id(),
@@ -171,7 +175,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               //     lastSelected: false
               //   });
               // mapping.fromJS(attributes, component.attributes);
-              component.tab(5);
+              component.finish();
               $('.browser-continue').toggleClass("disabled", false);
             }
           });
@@ -186,7 +190,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         files: component.browser.selection(),
         input: true,
         aids: ["distance-matrix"],
-        parser: component.parser(),
+        parser: "slycat-csv-parser",
         success: upload_matrix_success,
         error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
@@ -196,7 +200,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.connect = function() {
-      //component.remote.enable(false);
       component.remote.status_type("info");
       component.remote.status("Connecting ...");
       client.post_remotes({
@@ -208,7 +211,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           component.tab(2);
         },
         error: function(request, status, reason_phrase) {
-          component.remote.enable(true);
           component.remote.status_type("danger");
           component.remote.status(reason_phrase);
           component.remote.focus("password");
@@ -217,7 +219,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.connect_matrix = function() {
-      //component.remote.enable(false);
       component.remote_matrix.status_type("info");
       component.remote_matrix.status("Connecting ...");
       client.post_remotes({
@@ -226,10 +227,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         password: component.remote_matrix.password(),
         success: function(sid) {
           component.remote_matrix.sid(sid);
-          component.tab(4);
+          component.tab(5);
         },
         error: function(request, status, reason_phrase) {
-          component.remote_matrix.enable(true);
           component.remote_matrix.status_type("danger");
           component.remote_matrix.status(reason_phrase);
           component.remote_matrix.focus("password");
@@ -264,7 +264,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         paths: component.browser.selection(),
         input: true,
         aids: ["distance-matrix"],
-        parser: component.parser(),
+        parser: "slycat-csv-parser",
         success: function(){
           upload_matrix_success();
         },
@@ -320,6 +320,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.finish = function() {
+      component.tab(6);
       var input_columns = [];
       var output_columns = [];
       var rating_columns = [];
