@@ -13,7 +13,39 @@ define(["slycat-server-root", "slycat-web-client"], function(server_root, client
         mid: component.model._id(),
         success: function()
         {
-          window.location.href = server_root + "projects/" + component.project._id();
+          client.get_project_references({
+            pid: component.project._id(),
+            success: function(result)
+            {
+              var outgoing = 0;
+              var incoming = 0;
+              for(var i=0; result.length > i; i++)
+              {
+                var reference = result[i];
+                if( (reference.mid == component.model._id()) && reference.bid )
+                {
+                  outgoing++;
+                  client.delete_reference({
+                    rid: reference._id,
+                    success: function(){
+                      delete_reference_success();
+                    }
+                  });
+                }
+                function delete_reference_success(){
+                  incoming++;
+                }
+              }
+              function redirect(){
+                if (outgoing != incoming){
+                  setTimeout(redirect,100);
+                } else {
+                  window.location.href = server_root + "projects/" + component.project._id();
+                }
+              }
+              redirect();
+            }
+          });
         }
       });
     }
