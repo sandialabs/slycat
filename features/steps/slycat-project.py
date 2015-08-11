@@ -12,26 +12,12 @@ import sys
 def click_continue(driver):
   driver.find_element(By.XPATH, "//button[not(contains(@style,'display: none'))][contains(.,'Continue')]").click()
 
-@given(u'a parameterspace model')
-def step_impl(context):
-  try:
-    context.browser.find_by_text("a", "parameter-image model")
-    context.execute_steps(u'''
-      when I open the first parameterspace model
-    ''')
-  except (NoSuchElementException, TimeoutException):
-    context.execute_steps(u'''
-      when I open the create parameterspace model wizard
-      and I enter model information
-      and I select a local file
-      and I select values for the columns
-    ''')
-
 @given(u'a sample Parameterspace csv file')
 def step_impl(context):
   with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as file:
     context.path = file.name
     file.write("""input,output,neither,categorical,editable\n0,0,0,0,0\n1,1,1,1,1\n0,1,0,1,0\n1,0,1,0,1""")
+  context.model_columns = {"input": "Input", "output": "Output", "neither": "Neither", "categorical": "Categorical", "editable": "Editable"}
 
 @when(u'I open the create parameterspace model wizard')
 def step_impl(context):
@@ -62,9 +48,9 @@ def step_impl(context):
 
 @when(u'I select values for the columns')
 def step_impl(context):
-  for type in ["input", "output", "neither", "categorical", "editable"]:
-    context.browser.find_by_text("th", type).click()
-    context.browser.driver.find_element(By.XPATH, "//th[contains(.,'" + type.capitalize() + "')]/i").click()
+  for (column_name, input_type) in context.model_columns.iteritems():
+    context.browser.find_by_text("th", column_name).click()
+    context.browser.driver.find_element(By.XPATH, "//th[contains(.,'" + input_type + "')]/i").click()
   context.browser.find_by_text("button", "Finish").click()
   context.browser.find_by_text("slycat-model-results", "Created Model")
   context.mid = context.browser.driver.find_element(By.XPATH, "//slycat-model-results//a[contains(.,'here')]").get_attribute("href").split("/").pop()
@@ -74,3 +60,4 @@ def step_impl(context):
 def step_impl(context):
   context.browser.find_by_text("a", context.model_name)
   nose.tools.assert_true(context.browser.driver.current_url.endswith(context.mid))
+  context.browser.wait_until_hidden((By.XPATH, "//div[contains(@class, 'slycat-navbar-alert')]/p[contains(.,'waiting')]"))

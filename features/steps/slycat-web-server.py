@@ -22,6 +22,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities 
+from selenium.webdriver.common.action_chains import ActionChains
 
 class Driver():
   d = DesiredCapabilities.FIREFOX
@@ -32,10 +33,14 @@ class Driver():
 
   driver = webdriver.Firefox(capabilities=d)
   wait = WebDriverWait(driver, 10)
+  action = ActionChains(driver)
 
   def wait_until_visible(self, element_tuple):
     self.wait.until(EC.visibility_of_element_located(element_tuple))
     return self.driver.find_element(element_tuple[0], element_tuple[1])
+
+  def wait_until_hidden(self, element_tuple):
+    self.wait.until(EC.invisibility_of_element_located(element_tuple))
 
   def find_by_text(self, tag, text):
     return self.wait_until_visible((By.XPATH,"//" + tag + "[contains(.,'" + text + "')]"))
