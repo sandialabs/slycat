@@ -63,6 +63,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.select_type = function() {
+      $('.local-browser-continue-data').toggleClass("disabled", true);
       var type = component.ps_type();
 
       if (type === "local") {
@@ -75,6 +76,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.select_matrix_type = function() {
+      $('.local-browser-continue-matrix').toggleClass("disabled", true);
       var type = component.matrix_type();
 
       if (type === "local") {
@@ -238,7 +240,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.load_table = function() {
-      $('.remote-browser-continue').toggleClass("disabled", true);
+      $('.remote-browser-continue-data').toggleClass("disabled", true);
       client.post_model_files({
         mid: component.model._id(),
         sids: [component.remote.sid()],
@@ -257,7 +259,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.load_distance_matrix = function() {
-      $('.remote-browser-continue').toggleClass("disabled", true);
+      $('.remote-browser-continue-matrix').toggleClass("disabled", true);
       client.post_model_files({
         mid: component.model._id(),
         sids: [component.remote_matrix.sid()],
