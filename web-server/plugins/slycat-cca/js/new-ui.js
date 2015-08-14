@@ -79,7 +79,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               input:type != "string" && !constant, 
               output:false,
               Classification: type != "string" && !constant ? 'Input' : 'Neither',
-              hidden: false,
+              hidden: type == "string",
               selected: false,
               lastSelected: false
             });
