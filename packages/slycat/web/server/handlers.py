@@ -28,6 +28,7 @@ import slycat.web.server.remote
 import slycat.web.server.resource
 import slycat.web.server.streaming
 import slycat.web.server.template
+import slycat.web.server.upload
 import stat
 import subprocess
 import sys
@@ -554,12 +555,7 @@ def post_uploads():
     raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
   aids = require_parameter("aids")
 
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_writer(project)
-
-  uid = uuid.uuid4().hex
+  uid = slycat.web.server.upload.create_session(mid, input, parser, aids)
 
   cherrypy.response.headers["location"] = "%s/uploads/%s" % (cherrypy.request.base, uid)
   cherrypy.response.status = "201 Upload started."
@@ -573,7 +569,8 @@ def post_upload_finished(uid):
   pass
 
 def delete_upload(uid):
-  pass
+  slycat.web.server.upload.delete_session(uid)
+  cherrypy.response.status = "204 Upload session deleted."
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
