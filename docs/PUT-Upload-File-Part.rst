@@ -1,7 +1,7 @@
 PUT Upload
 ==========
 
-.. http:put:: /uploads/(uid)
+.. http:put:: /uploads/(uid)/files/(fid)/parts/(pid)
 
     Upload a file (or part of a file) as part of an upload session created with
     :http:post:`/uploads`.
@@ -14,11 +14,13 @@ PUT Upload
 
     :param uid: Unique upload session identifier.
     :type uid: string
+    :parm fid: Zero-based file index of the data to be uploaded.
+    :type fid: integer
+    :parm pid: Zero-based part index of the data to be uploaded.
+    :type pid: integer
 
     :requestheader Content-Type: form/multipart
 
-    :form fid: Zero-based integer index of the file to be uploaded.
-    :form pid: Zero-based integer part index of the file to be uploaded.
     :form file: Local file for upload.
     :form path: Remote host absolute filesystem path.
     :form sid: Remote session id.
@@ -29,5 +31,5 @@ See Also
 --------
 
 * :http:post:`/uploads`
-* :http:post:`/uploads/(uid)`
+* :http:post:`/uploads/(uid)/finished`
 

@@ -42,5 +42,5 @@ POST Uploads
 
 See Also
 --------
-* :http:put:`/uploads/(uid)`
+* :http:put:`/uploads/(uid)/files/(fid)/parts/(pid)`
 

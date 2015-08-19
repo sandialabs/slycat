@@ -57,5 +57,5 @@ any programming language or library that supports HTTP requests.
   PUT-Model-Parameter.rst
   PUT-Model.rst
   PUT-Project.rst
-  PUT-Upload.rst
+  PUT-Upload-File-Part.rst
 

@@ -18,5 +18,5 @@ DELETE Upload
 See Also
 --------
 
-* :http:post:`/uploads/(uid)`
+* :http:post:`/uploads/(uid)/finished`
 
