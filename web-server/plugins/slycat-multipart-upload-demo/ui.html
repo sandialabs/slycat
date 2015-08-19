@@ -1,8 +1,73 @@
 <div>
   <script type="text/javascript">
-    require(["slycat-server-root"], function(server_root)
+    require(["slycat-web-client"], function(client)
     {
-      console.log(server_root);
+      create_project();
+
+      function create_project()
+      {
+        client.post_projects({
+          name: "Multipart Upload Demo",
+          success: function(pid)
+          {
+            console.log("Project created.");
+            create_model(pid);
+          }
+        });
+      }
+
+      function create_model(pid)
+      {
+        client.post_project_models({
+          name: "Multipart Upload Demo",
+          type: "generic",
+          pid: pid,
+          success: function(mid)
+          {
+            console.log("Model created.");
+            start_upload(pid, mid);
+          }
+        });
+      }
+
+      function start_upload(pid, mid)
+      {
+        client.post_uploads({
+          mid: mid,
+          input: true,
+          parser: "slycat-blob-parser",
+          aids: ["foo"],
+          success: function(uid)
+          {
+            console.log("Upload session created.");
+            finish_upload(pid, mid, uid);
+          }
+        });
+      }
+
+      function finish_upload(pid, mid, uid)
+      {
+        client.delete_upload({
+          uid: uid,
+          success: function()
+          {
+            console.log("Upload session deleted.");
+            delete_project(pid);
+          }
+        });
+      }
+
+      function delete_project(pid)
+      {
+        client.delete_project({
+          pid: pid,
+          success: function()
+          {
+            console.log("Project deleted.");
+          }
+        });
+      }
+
     });
   </script>
 </div>

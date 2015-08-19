@@ -550,6 +550,9 @@ def post_uploads():
   mid = require_parameter("mid")
   input = require_boolean_parameter("input")
   parser = require_parameter("parser")
+  if parser not in slycat.web.server.plugin.manager.parsers:
+    raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
+  aids = require_parameter("aids")
 
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -562,11 +565,11 @@ def post_uploads():
   cherrypy.response.status = "201 Upload started."
   return {"id" : uid}
 
-def put_upload(uid):
+def put_upload_file_part(uid, fid, pid):
   pass
 
 @cherrypy.tools.json_in(on = True)
-def post_upload(uid):
+def post_upload_finished(uid):
   pass
 
 def delete_upload(uid):
