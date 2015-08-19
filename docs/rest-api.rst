@@ -15,6 +15,7 @@ any programming language or library that supports HTTP requests.
   DELETE-Project.rst
   DELETE-Project-Cache-Object.rst
   DELETE-Remote.rst
+  DELETE-Upload.rst
   GET-Bookmark.rst
   GET-Home.rst
   GET-Model-Arrayset-Data.rst
@@ -39,7 +40,6 @@ any programming language or library that supports HTTP requests.
   GET-User.rst
   POST-Events.rst
   POST-Model-Command.rst
-  POST-Model-Files.rst
   POST-Model-Finish.rst
   POST-Project-Bookmark.rst
   POST-Project-Models.rst
@@ -47,6 +47,8 @@ any programming language or library that supports HTTP requests.
   POST-Remote-Browse.rst
   POST-Remote-Videos.rst
   POST-Remotes.rst
+  POST-Uploads.rst
+  POST-Uploads-Finished.rst
   PUT-Model-Arrayset-Array.rst
   PUT-Model-Arrayset-Data.rst
   PUT-Model-Arrayset.rst
@@ -55,4 +57,5 @@ any programming language or library that supports HTTP requests.
   PUT-Model-Parameter.rst
   PUT-Model.rst
   PUT-Project.rst
+  PUT-Upload.rst
 
