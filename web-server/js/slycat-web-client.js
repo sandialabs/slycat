@@ -653,6 +653,58 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  module.post_submit_batch = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({}),
+      type: 'POST',
+      url: server_root + 'remotes/' + params.sid + '/submit-batch/' + params.filename,
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase)
+      }
+    });
+  };
+
+  module.post_checkjob = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({}),
+      type: 'POST',
+      url: server_root + 'remotes/' + params.sid + '/checkjob/' + params.jid,
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase)
+      }
+    });
+  };
+
+  module.get_job_output = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({}),
+      type: 'POST',
+      url: server_root + 'remotes/' + params.sid + "/get-job-output/" + params.jid,
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase)
+      }
+    });
+  };
+
+
   module.post_remote_browse = function(params)
   {
     $.ajax(

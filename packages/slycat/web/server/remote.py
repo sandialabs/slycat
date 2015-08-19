@@ -130,12 +130,81 @@ class Session(object):
     self._sftp.close()
     self._ssh.close()
 
+  def submit_batch(self, filename):
+    # launch via the agent...
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      payload = { "action": "submit-batch", "command": filename }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        raise cherrypy.HTTPError(400)
+
+      # parses out the job ID
+      jid = [int(s) for s in response["output"].split() if s.isdigit()][0]
+
+      return { "filename": response["filename"], "jid": jid }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      raise cherrypy.HTTPError(500)
+
+  def checkjob(self, jid):
+    # launch via the agent...
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      payload = { "action": "checkjob", "command": jid }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = reponse["message"]
+        raise cherrypy.HTTPError(400)
+
+      # parses the useful information from job status
+      out = response["output"]
+      # arranges items from scontrol show into a flat list
+      # items are formatted as: item_name=value
+      out = sum([s.strip().split() for s in out.splitlines()], [])
+      js = [s.split('=')[1] for s in out if s.split('=')[0] == 'JobState'][0]
+
+      status = {
+        "state": js
+      }
+
+      return { "jid": response["jid"], "status": status }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      raise cherrypy.HTTPError(500)
+
+  def get_job_output(self, jid):
+    # launch via the agent...
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      payload = { "action": "get-job-output", "command": jid }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        raise cherrypy.HTTPError(400)
+      return { "jid": response["jid"], "output": response["output"] }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      raise cherrypy.HTTPError(500)
+
   def launch(self, command):
     # launch via the agent...
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
 
-      command = command.split(' ')
       payload = { "action": "launch", "command": command }
 
       stdin.write("%s\n" % json.dumps(payload))

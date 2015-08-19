@@ -57,31 +57,52 @@ class VideoSession(threading.Thread):
       self.exception = e
     self.finished = True
 
-
-def fetch_image_info(url, queue):
-  sp = subprocess.Popen(["stat", url], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  out, err = sp.communicate()
-  queue.put(out)
+def run_remote_command(command):
+  command = command.split(' ')
+  p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  return p.communicate()
 
 def launch(command):
   results = {
     "ok": True,
-    "command": ' '.join(command["command"]),
+    "command": command["command"]
   }
 
-  if command["command"][0] == "demo":
-    output_queue = multiprocessing.Queue()
-    results["output"] = ""
+  results["output"], results["errors"] = run_remote_command(command["command"]);
 
-    for i in range(1, len(command["command"])):
-      p = multiprocessing.Process(target=fetch_image_info, args=(command["command"][i], output_queue,))
-      p.start()
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
 
-    for i in range(len(command["command"]) - 1):
-      results["output"] += output_queue.get()
-  else:
-    p = subprocess.Popen(command["command"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    results["output"], results["errors"] = p.communicate();
+def submit_batch(command):
+  results = {
+    "ok": True,
+    "filename": command["command"],
+    "output": -1
+  }
+
+  results["output"], results["errors"] = run_remote_command("sbatch %s" % results["filename"])
+
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
+
+def checkjob(command):
+  results = {
+    "ok": True,
+    "jid": command["command"]
+  }
+
+  results["output"], results["errors"] = run_remote_command("scontrol show jobid=%s" % results["jid"])
+
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
+
+def get_job_output(command):
+  results = {
+    "ok": True,
+    "jid": command["command"]
+  }
+
+  results["output"], results["errors"] = run_remote_command("cat slurm-%s.out" % results["jid"])
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
@@ -351,6 +372,12 @@ def main():
         get_video(command, arguments)
       elif action == "launch":
         launch(command)
+      elif action == "submit-batch":
+        submit_batch(command)
+      elif action == "checkjob":
+        checkjob(command)
+      elif action == "get-job-output":
+        get_job_output(command)
       else:
         raise Exception("Unknown command.")
     except Exception as e:

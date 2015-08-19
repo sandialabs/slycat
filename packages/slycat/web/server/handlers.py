@@ -1187,6 +1187,24 @@ def post_remote_launch(sid, command):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
+def post_submit_batch(sid, filename):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.submit_batch(filename)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_checkjob(sid, jid):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.checkjob(jid)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def get_job_output(sid, jid):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_job_output(jid)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
 def post_remote_browse(sid, path):
   file_reject = re.compile(cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
   file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None

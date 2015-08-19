@@ -8,8 +8,16 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null });
     component.remote.focus.extend({ notify: 'always' });
     component.server_root = server_root;
+    component.slycatRemoteOption = ko.observable('single-command');
     component.command = ko.observable('');
+    component.batch = ko.observable('');
+    component.wckey = ko.observable('');
+    component.slycatjobs = ko.observableArray(['distance metrics']);
     component.output = ko.observable('Output for the current job will be posted here...');
+
+    component.jid = ko.observable(-1);
+    var iid = -1; // window.setInterval() ID
+
 
     component.cancel = function() {
       if (component.remote.sid())
@@ -17,6 +25,8 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
 
       if (component.model._id())
         client.delete_model({ mid: component.model._id() });
+
+      clearInterval(iid);
     };
 
     component.create_model = function() {
@@ -56,26 +66,88 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
       });
     };
 
-    /**
-     * This is the method to execute the remote command from the user.
-     */
-    component.go_to_output = function() {
-      if (!component.command().length) {
+    /** */
+
+    var invalid_form = function() {
+      var type = component.slycatRemoteOption();
+
+      if (!component.command().length && type === 'single-command') {
         component.output('A valid command needs to be entered...');
-        return void 0;
+        return true;
       }
 
+      if (!component.batch().length && type === 'batch-file') {
+        component.output('A valid file name needs to be entered...');
+        return true;
+      }
+
+      return false;
+    };
+
+    var on_single_command = function() {
       client.post_remote_launch({
         sid: component.remote.sid(),
         command: component.command(),
         success: function(results) {
-          console.log(results);
           component.output(results.output);
         }
       });
-
-      // component.tab(3);
     };
+
+
+    var get_job_output = function() {
+      client.get_job_output({
+        sid: component.remote.sid(),
+        jid: component.jid(),
+        success: function(results) {
+          component.output('The output for job ID=' + component.jid() + ' is:\n\n' + results.output);
+        }
+      });
+    };
+
+    var checkjob = function() {
+      client.post_checkjob({
+        sid: component.remote.sid(),
+        jid: component.jid(),
+        success: function(results) {
+          var s = results.status.state;
+          component.output('The job ID=' + component.jid() + ' is in state: ' + s);
+
+          if (s === 'COMPLETED') {
+            clearInterval(iid);
+            get_job_output()
+          }
+        }
+      });
+    };
+
+    var on_batch_file = function() {
+      client.post_submit_batch({
+        sid: component.remote.sid(),
+        filename: component.batch(),
+        success: function(results) {
+          component.jid(results.jid);
+          component.output('The job ID=' + component.jid() + ' has been submitted.');
+          iid = setInterval(checkjob, 1000);
+        }
+      });
+    };
+
+    var on_slycat_fn = function() {
+
+    };
+
+    var callback_map = { 'single-command': on_single_command, 'batch-file': on_batch_file, 'slycat-function': on_slycat_fn };
+
+    component.go_to_output = function() {
+      if (invalid_form())
+        return void 0;
+
+      component.tab(3);
+      callback_map[component.slycatRemoteOption()]();
+    };
+
+    /** */
 
     component.go_to_model = function() {
       location = server_root + 'models/' + component.model._id();
