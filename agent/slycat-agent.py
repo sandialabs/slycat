@@ -102,7 +102,12 @@ def get_job_output(command):
     "jid": command["command"]
   }
 
-  results["output"], results["errors"] = run_remote_command("cat slurm-%s.out" % results["jid"])
+  f = "slurm-%s.out" % results["jid"]
+  if os.path.isfile(f):
+    results["output"], results["errors"] = run_remote_command("cat %s" % f)
+  else:
+    results["output"] = "see errors"
+    results["errors"] = "the file %s does not exist." % f
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()

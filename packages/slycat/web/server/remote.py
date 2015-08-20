@@ -147,7 +147,7 @@ class Session(object):
       # parses out the job ID
       jid = [int(s) for s in response["output"].split() if s.isdigit()][0]
 
-      return { "filename": response["filename"], "jid": jid }
+      return { "filename": response["filename"], "jid": jid, "errors": response["errors"] }
     else:
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)
@@ -177,7 +177,7 @@ class Session(object):
         "state": js
       }
 
-      return { "jid": response["jid"], "status": status }
+      return { "jid": response["jid"], "status": status, "errors": response["errors"] }
     else:
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)
@@ -195,7 +195,7 @@ class Session(object):
       if not response["ok"]:
         cherrypy.response.headers["x-slycat-message"] = response["message"]
         raise cherrypy.HTTPError(400)
-      return { "jid": response["jid"], "output": response["output"] }
+      return { "jid": response["jid"], "output": response["output"], "errors": response["errors"] }
     else:
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)
@@ -214,7 +214,7 @@ class Session(object):
       if not response["ok"]:
         cherrypy.response.headers["x-slycat-message"] = response["message"]
         raise cherrypy.HTTPError(400)
-      return { "command": response["command"], "output": response["output"] }
+      return { "command": response["command"], "output": response["output"], "errors": response["errors"] }
 
     # launch via ssh...
     try:

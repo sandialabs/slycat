@@ -12,7 +12,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.command = ko.observable('');
     component.batch = ko.observable('');
     component.wckey = ko.observable('');
-    component.slycatjobs = ko.observableArray(['distance metrics']);
+    component.slycatjobs = ko.observableArray([]);
     component.output = ko.observable('Output for the current job will be posted here...');
 
     component.jid = ko.observable(-1);
@@ -89,7 +89,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         sid: component.remote.sid(),
         command: component.command(),
         success: function(results) {
-          component.output(results.output);
+          if (results.errors)
+            component.output('[Error] Command ' + component.command() + ' was not processed correctly: ' + results.errors);
+          else
+            component.output(results.output);
         }
       });
     };
@@ -100,7 +103,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         sid: component.remote.sid(),
         jid: component.jid(),
         success: function(results) {
-          component.output('The output for job ID=' + component.jid() + ' is:\n\n' + results.output);
+          if (results.errors)
+            component.output('[Error] Could not read the job ID=' + component.jid() + ' output: ' + results.errors);
+          else
+            component.output('The output for job ID=' + component.jid() + ' is:\n\n' + results.output);
         }
       });
     };
@@ -110,8 +116,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         sid: component.remote.sid(),
         jid: component.jid(),
         success: function(results) {
+          if (results.errors) {
+            component.output('[Error] Could not check job iD=' + component.jid() + ' status: ' + results.errors);
+            return void 0;
+          }
+
           var s = results.status.state;
-          component.output('The job ID=' + component.jid() + ' is in state: ' + s);
+          component.output('Job ID=' + component.jid() + ' is ' + s);
 
           if (s === 'COMPLETED') {
             clearInterval(iid);
@@ -126,9 +137,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         sid: component.remote.sid(),
         filename: component.batch(),
         success: function(results) {
+          if (results.errors) {
+            component.output('[Error] Could not start batch file ' + component.batch() + ': ' + results.errors);
+            return void 0;
+          }
+
           component.jid(results.jid);
-          component.output('The job ID=' + component.jid() + ' has been submitted.');
+          component.output('Job ID=' + component.jid() + ' has been submitted.');
           iid = setInterval(checkjob, 1000);
+        },
+        error: function(request, status, reason_phrase) {
+          component.output('[Error] Could not start Batch file ' + component.batch() + ': ' + reason_phrase);
         }
       });
     };
