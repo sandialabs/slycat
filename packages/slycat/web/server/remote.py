@@ -182,11 +182,11 @@ class Session(object):
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)
 
-  def get_job_output(self, jid):
+  def get_job_output(self, jid, path):
     # launch via the agent...
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
-      payload = { "action": "get-job-output", "command": jid }
+      payload = { "action": "get-job-output", "command": { "jid": jid, "path": path } }
 
       stdin.write("%s\n" % json.dumps(payload))
       stdin.flush()

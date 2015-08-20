@@ -14,9 +14,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.wckey = ko.observable('');
     component.slycatjobs = ko.observableArray([]);
     component.output = ko.observable('Output for the current job will be posted here...');
-
     component.jid = ko.observable(-1);
+
     var iid = -1; // window.setInterval() ID
+    var batch_path = '';
 
 
     component.cancel = function() {
@@ -102,6 +103,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
       client.get_job_output({
         sid: component.remote.sid(),
         jid: component.jid(),
+        path: batch_path,
         success: function(results) {
           if (results.errors)
             component.output('[Error] Could not read the job ID=' + component.jid() + ' output: ' + results.errors);

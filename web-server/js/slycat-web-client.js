@@ -639,9 +639,12 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   module.post_remote_launch = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({}),
+      data: JSON.stringify({
+        sid: params.sid,
+        command: params.command
+      }),
       type: 'POST',
-      url: server_root + 'remotes/' + params.sid + "/launch/" + params.command,
+      url: server_root + 'remotes/launch',
       success: function(result) {
         if (params.success)
           params.success(result);
@@ -656,9 +659,12 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   module.post_submit_batch = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({}),
+      data: JSON.stringify({
+        sid: params.sid,
+        filename: params.filename
+      }),
       type: 'POST',
-      url: server_root + 'remotes/' + params.sid + '/submit-batch/' + params.filename,
+      url: server_root + 'remotes/submit-batch',
       success: function(result) {
         if (params.success)
           params.success(result);
@@ -673,9 +679,12 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   module.post_checkjob = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({}),
+      data: JSON.stringify({
+        sid: params.sid,
+        jid: params.jid
+      }),
       type: 'POST',
-      url: server_root + 'remotes/' + params.sid + '/checkjob/' + params.jid,
+      url: server_root + 'remotes/checkjob',
       success: function(result) {
         if (params.success)
           params.success(result);
@@ -690,9 +699,13 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   module.get_job_output = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({}),
+      data: JSON.stringify({
+        sid: params.sid,
+        jid: params.jid,
+        path: params.path
+      }),
       type: 'POST',
-      url: server_root + 'remotes/' + params.sid + "/get-job-output/" + params.jid,
+      url: server_root + 'remotes/get-job-output',
       success: function(result) {
         if (params.success)
           params.success(result);

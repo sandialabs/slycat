@@ -1181,27 +1181,36 @@ def delete_remote(sid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_remote_launch(sid, command):
+def post_remote_launch():
+  sid = cherrypy.request.json["sid"]
+  command = cherrypy.request.json["command"]
   with slycat.web.server.remote.get_session(sid) as session:
     return session.launch(command)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_submit_batch(sid, filename):
+def post_submit_batch():
+  sid = cherrypy.request.json["sid"]
+  filename = cherrypy.request.json["filename"]
   with slycat.web.server.remote.get_session(sid) as session:
     return session.submit_batch(filename)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def post_checkjob(sid, jid):
+def post_checkjob():
+  sid = cherrypy.request.json["sid"]
+  jid = cherrypy.request.json["jid"]
   with slycat.web.server.remote.get_session(sid) as session:
     return session.checkjob(jid)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def get_job_output(sid, jid):
+def get_job_output():
+  sid = cherrypy.request.json["sid"]
+  jid = cherrypy.request.json["jid"]
+  path = cherrypy.request.json["path"]
   with slycat.web.server.remote.get_session(sid) as session:
-    return session.get_job_output(jid)
+    return session.get_job_output(jid, path)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

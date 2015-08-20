@@ -99,10 +99,11 @@ def checkjob(command):
 def get_job_output(command):
   results = {
     "ok": True,
-    "jid": command["command"]
+    "jid": command["command"]["jid"]
   }
 
-  f = "slurm-%s.out" % results["jid"]
+  path = command["command"]["path"]
+  f = path + "slurm-%s.out" % results["jid"]
   if os.path.isfile(f):
     results["output"], results["errors"] = run_remote_command("cat %s" % f)
   else:
