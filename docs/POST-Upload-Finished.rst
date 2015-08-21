@@ -1,5 +1,5 @@
-POST Uploads Finished
-=====================
+POST Upload Finished
+====================
 
 .. http:post:: /uploads/(uid)/finished
 
