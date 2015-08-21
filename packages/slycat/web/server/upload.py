@@ -31,6 +31,7 @@ the same client IP address is allowed to access the session.
 
 import cherrypy
 import datetime
+import glob
 import os
 import shutil
 import slycat.web.server.authentication
@@ -43,16 +44,19 @@ import uuid
 session_cache = {}
 session_cache_lock = threading.Lock()
 
+def root():
+  if root.path is None:
+    root.path = cherrypy.tree.apps[""].config["slycat-web-server"]["upload-store"]
+  return root.path
+root.path = None
+
 def path(uid, fid=None, pid=None):
-  if path.root is None:
-    path.root = cherrypy.tree.apps[""].config["slycat-web-server"]["upload-store"]
-  result = os.path.join(path.root, uid)
+  result = os.path.join(root(), uid)
   if fid is not None:
     result = os.path.join(result, "file-%s" % fid)
   if pid is not None:
     result = os.path.join(result, "part-%s" % pid)
   return result
-path.root = None
 
 class Session(object):
   """Encapsulates an upload session.
@@ -96,7 +100,7 @@ class Session(object):
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
-  def put_file_part(fid, pid, data):
+  def put_file_part(self, fid, pid, data):
     storage = path(self._uid, fid, pid)
     if not os.path.exists(os.path.dirname(storage)):
       os.makedirs(os.path.dirname(storage))
@@ -204,6 +208,13 @@ def _expire_session(uid):
 def _session_monitor():
   while True:
     cherrypy.log.error("Upload session cleanup worker running.")
+    # Remove orphaned file storage (could happen if the server is restarted while an upload session is active).
+    for storage in glob.glob(os.path.join(root(), "*")):
+      if os.path.basename(storage) not in session_cache:
+        cherrypy.log.error("Removing orphaned upload session storage %s" % storage)
+        shutil.rmtree(storage)
+
+    # Remove expired upload sessions.
     with session_cache_lock:
       for uid in list(session_cache.keys()): # We make an explicit copy of the keys because we may be modifying the dict contents
         _expire_session(uid)

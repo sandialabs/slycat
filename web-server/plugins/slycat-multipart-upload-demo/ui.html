@@ -43,6 +43,22 @@
           success: function(uid)
           {
             console.log("Upload session created.");
+            upload_file(pid, mid, uid);
+          }
+        });
+      }
+
+      function upload_file(pid, mid, uid)
+      {
+        file = document.getElementById("file").files[0];
+        console.log("Upload file", file);
+        client.put_upload_file_part({
+          uid: uid,
+          fid: 0,
+          pid: 0,
+          file: file,
+          success: function()
+          {
             finish_upload(pid, mid, uid);
           }
         });

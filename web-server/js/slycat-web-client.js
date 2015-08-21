@@ -861,7 +861,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       processData: false,
       data: data,
       type: "PUT",
-      url: server_root + "uploads/" + params.uid + "/files/" + fid + "/parts/" + pid,
+      url: server_root + "uploads/" + params.uid + "/files/" + params.fid + "/parts/" + params.pid,
       success: function()
       {
         if(params.success)
