@@ -1,9 +1,12 @@
-<div>
+<div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:12px;">
+  <div class="form-group">
+    <input type="file" id="file"></input>
+    <button class="btn btn-default" id="upload">Upload</button>
+  </div>
+
   <script type="text/javascript">
     require(["slycat-web-client"], function(client)
     {
-      create_project();
-
       function create_project()
       {
         client.post_projects({
@@ -67,6 +70,8 @@
           }
         });
       }
+
+      document.getElementById("upload").addEventListener("click", create_project, false);
 
     });
   </script>

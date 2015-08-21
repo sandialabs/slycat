@@ -31,6 +31,8 @@ the same client IP address is allowed to access the session.
 
 import cherrypy
 import datetime
+import os
+import shutil
 import slycat.web.server.authentication
 import slycat.web.server.database
 import threading
@@ -40,6 +42,17 @@ import uuid
 
 session_cache = {}
 session_cache_lock = threading.Lock()
+
+def path(uid, fid=None, pid=None):
+  if path.root is None:
+    path.root = cherrypy.tree.apps[""].config["slycat-web-server"]["upload-store"]
+  result = os.path.join(path.root, uid)
+  if fid is not None:
+    result = os.path.join(result, "file-%s" % fid)
+  if pid is not None:
+    result = os.path.join(result, "part-%s" % pid)
+  return result
+path.root = None
 
 class Session(object):
   """Encapsulates an upload session.
@@ -55,8 +68,9 @@ class Session(object):
   ...   print session.username
 
   """
-  def __init__(self, client, mid, input, parser, aids):
+  def __init__(self, uid, client, mid, input, parser, aids):
     now = datetime.datetime.utcnow()
+    self._uid = uid
     self._client = client
     self._mid = mid
     self._input = input
@@ -82,8 +96,19 @@ class Session(object):
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
+  def put_file_part(fid, pid, data):
+    storage = path(self._uid, fid, pid)
+    if not os.path.exists(os.path.dirname(storage)):
+      os.makedirs(os.path.dirname(storage))
+    cherrypy.log.error("Storing upload file part %s" % storage)
+    with open(storage, "wb") as file:
+      file.write(data)
+
   def close(self):
-    pass
+    storage = path(self._uid)
+    cherrypy.log.error("Destroying temporary upload storage %s" % storage)
+    if os.path.exists(storage):
+      shutil.rmtree(storage)
 
 def create_session(mid, input, parser, aids):
   """Create a cached upload session for the given model.
@@ -110,7 +135,7 @@ def create_session(mid, input, parser, aids):
 
   uid = uuid.uuid4().hex
   with session_cache_lock:
-    session_cache[uid] = Session(client, mid, input, parser, aids)
+    session_cache[uid] = Session(uid, client, mid, input, parser, aids)
   return uid
 
 def get_session(uid):
@@ -159,7 +184,7 @@ def delete_session(uid):
   with session_cache_lock:
     if uid in session_cache:
       session = session_cache[uid]
-      cherrypy.log.error("Deleting upload session from %s" % (session.client))
+      cherrypy.log.error("Deleting upload session for %s" % (session.client))
       session_cache[uid].close()
       del session_cache[uid]
 

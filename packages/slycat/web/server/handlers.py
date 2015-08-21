@@ -561,8 +561,20 @@ def post_uploads():
   cherrypy.response.status = "201 Upload started."
   return {"id" : uid}
 
-def put_upload_file_part(uid, fid, pid):
-  pass
+def put_upload_file_part(uid, fid, pid, file=None, sid=None, path=None):
+  if file is not None and sid is None and path is None:
+    data = file.file.read()
+  elif file is None and sid is not None and path is not None:
+    with slycat.web.server.remote.get_session(sid) as session:
+      filename = "%s@%s:%s" % (session.username, session.hostname, path)
+      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+        raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+      data = session.sftp.file(path).read()
+  else:
+    raise cherrypy.HTTPError("400 Must supply file parameter, or sid and path parameters.")
+
+  with slycat.web.server.upload.get_session(uid) as session:
+    session.put_file_part(fid, pid, data)
 
 @cherrypy.tools.json_in(on = True)
 def post_upload_finished(uid):
