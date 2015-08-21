@@ -59,12 +59,35 @@
           file: file,
           success: function()
           {
-            finish_upload(pid, mid, uid);
+            client.put_upload_file_part({
+              uid: uid,
+              fid: 0,
+              pid: 1,
+              file: file,
+              success: function()
+              {
+                console.log("File uploaded.");
+                finish_upload(pid, mid, uid);
+              }
+            });
           }
         });
       }
 
       function finish_upload(pid, mid, uid)
+      {
+        client.post_upload_finished({
+          uid: uid,
+          uploaded: [2],
+          success: function()
+          {
+            console.log("Upload session finished.");
+            delete_upload(pid, mid, uid);
+          }
+        });
+      }
+
+      function delete_upload(pid, mid, uid)
       {
         client.delete_upload({
           uid: uid,

@@ -80,33 +80,57 @@ class Session(object):
     self._input = input
     self._parser = parser
     self._aids = aids
+    self._received = set()
     self._created = now
     self._accessed = now
     self._lock = threading.Lock()
+
   def __enter__(self):
     self._lock.__enter__()
     return self
+
   def __exit__(self, exc_type, exc_value, traceback):
     return self._lock.__exit__(exc_type, exc_value, traceback)
+
   @property
   def client(self):
     """Return the IP address of the client that created the session."""
     return self._client
+
   @property
   def mid(self):
     """Return the model id that will store data uploaded during the session."""
     return self._mid
+
   @property
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
-  def put_file_part(self, fid, pid, data):
+
+  def put_upload_file_part(self, fid, pid, data):
     storage = path(self._uid, fid, pid)
     if not os.path.exists(os.path.dirname(storage)):
       os.makedirs(os.path.dirname(storage))
     cherrypy.log.error("Storing upload file part %s" % storage)
     with open(storage, "wb") as file:
       file.write(data)
+    self._received.add((fid, pid))
+
+  def post_upload_finished(self, uploaded):
+    uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
+
+    missing = [part for part in uploaded if part not in self._received]
+    excess = [part for part in self._received if part not in uploaded]
+
+    if missing:
+      cherrypy.response.status = "400 Upload incomplete."
+      return {"missing": missing}
+
+    if excess:
+      cherrypy.response.status = "400 Client confused."
+      return {"excess": excess}
+
+    cherrypy.response.status = "202 Upload session finished."
 
   def close(self):
     storage = path(self._uid)

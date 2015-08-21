@@ -730,6 +730,30 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_upload_finished = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(
+      {
+        "uploaded": params.uploaded,
+      }),
+      type: "POST",
+      url: server_root + "uploads/" + params.uid + "/finished",
+      success: function(result)
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.put_model_inputs = function(params)
   {
     $.ajax(
