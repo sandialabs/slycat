@@ -15,7 +15,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
    *
    * @param {String} mid Model ID. This is an optional parameter.
    * @param {String} aid Artifact ID.
-   * @param {Stringcid Container ID. This is the CSS ID of the container for the STL viewer.
+   * @param {String} cid Container ID. This is the CSS ID of the container for the STL viewer.
    */
   ko.components.register('slycat-3d-viewer', {
     viewModel: function(params) {
