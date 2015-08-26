@@ -17,6 +17,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       var modal_id = 'slycat-remote-interface-connect-modal';
       var iid = -1; // window.setInterval() ID
       var batch_path = '';
+      var previous_state = '';
 
 
       vm.connect = function() {
@@ -51,12 +52,12 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         var type = vm.radio();
 
         if (!vm.command().length && type === 'single-command') {
-          vm.output('A valid command needs to be entered...');
+          vm.output(vm.output() + '\n' + 'A valid command needs to be entered...');
           return true;
         }
 
         if (!vm.batch().length && type === 'batch-file') {
-          vm.output('A valid file name needs to be entered...');
+          vm.output(vm.output() + '\n' + 'A valid file name needs to be entered...');
           return true;
         }
 
@@ -69,9 +70,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           command: vm.command(),
           success: function(results) {
             if (results.errors)
-              vm.output('[Error] Command ' + vm.command() + ' was not processed correctly: ' + results.errors);
+              vm.output(vm.output() + '\n' + '[Error] Command ' + vm.command() + ' was not processed correctly: ' + results.errors);
             else
-              vm.output(results.output);
+              vm.output(vm.output() + '\n' + results.output);
           }
         });
       };
@@ -83,11 +84,15 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           path: batch_path,
           success: function(results) {
             if (results.errors)
-              vm.output('[Error] Could not read the job ID=' + vm.jid() + ' output: ' + results.errors);
+              vm.output(vm.output() + '\n' + '[Error] Could not read the job ID=' + vm.jid() + ' output: ' + results.errors);
             else
-              vm.output('The output for job ID=' + vm.jid() + ' is:\n\n' + results.output);
+              vm.output(vm.output() + '\n' + 'The output for job ID=' + vm.jid() + ' is:\n\n' + results.output);
           }
         });
+      };
+
+      var repeated_state = function(state) {
+        return previous_state === state ? true : false;
       };
 
       var checkjob = function() {
@@ -96,17 +101,22 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           jid: vm.jid(),
           success: function(results) {
             if (results.errors) {
-              vm.output('[Error] Could not check job iD=' + vm.jid() + ' status: ' + results.errors);
+              vm.output(vm.output() + '\n' + '[Error] Could not check job iD=' + vm.jid() + ' status: ' + results.errors);
               return void 0;
             }
 
             var s = results.status.state;
-            vm.output('Job ID=' + vm.jid() + ' is ' + s);
+
+            if (!repeated_state(s))
+              vm.output(vm.output() + '\n' + 'Job ID=' + vm.jid() + ' is ' + s);
 
             if (s === 'COMPLETED') {
               clearInterval(iid);
               get_job_output()
+              previous_state = '';
             }
+
+            previous_state = s;
           }
         });
       };
@@ -117,16 +127,17 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           filename: vm.batch(),
           success: function(results) {
             if (results.errors) {
-              vm.output('[Error] Could not start batch file ' + vm.batch() + ': ' + results.errors);
+              vm.output(vm.output() + '\n' + '[Error] Could not start batch file ' + vm.batch() + ': ' + results.errors);
               return void 0;
             }
 
             vm.jid(results.jid);
-            vm.output('Job ID=' + vm.jid() + ' has been submitted.');
+            vm.output(vm.output() + '\n' + 'Job ID=' + vm.jid() + ' has been submitted.');
+            previous_state = '';
             iid = setInterval(checkjob, 1000);
           },
           error: function(request, status, reason_phrase) {
-            vm.output('[Error] Could not start Batch file ' + vm.batch() + ': ' + reason_phrase);
+            vm.output(vm.output() + '\n' + '[Error] Could not start Batch file ' + vm.batch() + ': ' + reason_phrase);
           }
         });
       };
