@@ -1,5 +1,11 @@
 define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-server-root', 'URI', 'slycat-web-client'], function(ko, mapping, server_root, URI, client) {
 
+  /**
+   * A Knockout component to interact with remote hosts. Currently, for the
+   * batch files and Slycat prebuilt functions option, the remote cluster
+   * should have SLURM (Simple Linux Utility for Resource Management) installed
+   * and configured.
+   */
   ko.components.register('slycat-remote-interface', {
     viewModel: function(params) {
 
@@ -161,6 +167,13 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         }
 
         callback_map[vm.radio()]();
+      });
+
+      $('#clear-output').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        vm.output('');
       });
     },
 
