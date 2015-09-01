@@ -125,7 +125,9 @@ def start(root_path, config_file):
   dispatcher.connect("post-remote-launch", "/remotes/launch", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
   dispatcher.connect("post-submit-batch", "/remotes/submit-batch", slycat.web.server.handlers.post_submit_batch, conditions={ "method": ["POST"] })
   dispatcher.connect("post-checkjob", "/remotes/checkjob", slycat.web.server.handlers.post_checkjob, conditions={ "method": ["POST"] })
+  dispatcher.connect("post-cancel-job", "/remotes/cancel-job", slycat.web.server.handlers.post_cancel_job, conditions={ "method": ["POST"] })
   dispatcher.connect("get-job-output", "/remotes/get-job-output", slycat.web.server.handlers.get_job_output, conditions={ "method": ["POST"] })
+  dispatcher.connect("post-agent-function", "/remotes/run-agent-function", slycat.web.server.handlers.run_agent_function, conditions={ "method": ["POST"] })
   #dispatcher.connect("tests-request", "/tests/request", slycat.web.server.handlers.tests_request, conditions={"method" : ["GET", "PUT", "POST", "DELETE"]})
 
   def log_configuration(tree, indent=""):

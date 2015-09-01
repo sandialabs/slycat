@@ -1206,12 +1206,37 @@ def post_checkjob():
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
+def post_cancel_job():
+  sid = cherrypy.request.json["sid"]
+  jid = cherrypy.request.json["jid"]
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.cancel_job(jid)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
 def get_job_output():
   sid = cherrypy.request.json["sid"]
   jid = cherrypy.request.json["jid"]
   path = cherrypy.request.json["path"]
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_job_output(jid, path)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def run_agent_function():
+  sid = cherrypy.request.json["sid"]
+  wckey = cherrypy.request.json["wckey"]
+  nnodes = cherrypy.request.json["nnodes"]
+  partition = cherrypy.request.json["partition"]
+  ntasks_per_node = cherrypy.request.json["ntasks_per_node"]
+  ntasks = cherrypy.request.json["ntasks"]
+  ncpu_per_task = cherrypy.request.json["ncpu_per_task"]
+  time_hours = cherrypy.request.json["time_hours"]
+  time_minutes = cherrypy.request.json["time_minutes"]
+  time_seconds = cherrypy.request.json["time_seconds"]
+  fn = cherrypy.request.json["fn"]
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.run_agent_function(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

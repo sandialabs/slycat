@@ -202,7 +202,23 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
+
+  module.get_configuration_agent_functions = function(params) {
+    $.ajax({
+      dataType: "json",
+      type: "GET",
+      url: server_root + "configuration/agent-functions",
+      success: function(fns) {
+        if (params.success)
+          params.success(fns);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
 
   module.get_model = function(params)
   {
@@ -222,7 +238,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       }
     });
-  }
+  };
 
   module.get_model_file = function(params) {
     $.ajax({
@@ -671,7 +687,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       },
       error: function(request, status, reason_phrase) {
         if (params.error)
-          params.error(request, status, reason_phrase)
+          params.error(request, status, reason_phrase);
       }
     });
   };
@@ -691,7 +707,27 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       },
       error: function(request, status, reason_phrase) {
         if (params.error)
-          params.error(request, status, reason_phrase)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  module.post_cancel_job = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({
+        sid: params.sid,
+        jid: params.jid
+      }),
+      type: 'POST',
+      url: server_root + 'remotes/cancel-job',
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
       }
     });
   };
@@ -712,7 +748,36 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       },
       error: function(request, status, reason_phrase) {
         if (params.error)
-          params.error(request, status, reason_phrase)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  module.post_agent_function = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({
+        sid: params.sid,
+        wckey: params.wckey,
+        nnodes: params.nnodes,
+        partition: params.partition,
+        ntasks_per_node: params.ntasks_per_node,
+        ntasks: params.ntasks,
+        ncpu_per_task: params.ncpu_per_task,
+        time_hours: params.time_hours,
+        time_minutes: params.time_minutes,
+        time_seconds: params.time_seconds,
+        fn: params.fn
+      }),
+      type: 'POST',
+      url: server_root + 'remotes/run-agent-function',
+      success: function(response) {
+        if (params.success)
+          params.success(response);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
       }
     });
   };
@@ -739,7 +804,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
 
   module.post_remote_video = function(params)
   {

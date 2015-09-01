@@ -182,6 +182,24 @@ class Session(object):
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)
 
+  def cancel_job(self, jid):
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      payload = { "action": "cancel-job", "command": jid }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = reponse["message"]
+        raise cherrypy.HTTPError(400)
+
+      return { "jid": response["jid"], "output": response["output"], "errors": response["errors"] }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      raise cherrypy.HTTPError(500)
+
   def get_job_output(self, jid, path):
     # launch via the agent...
     if self._agent is not None:
@@ -196,6 +214,39 @@ class Session(object):
         cherrypy.response.headers["x-slycat-message"] = response["message"]
         raise cherrypy.HTTPError(400)
       return { "jid": response["jid"], "output": response["output"], "errors": response["errors"] }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      raise cherrypy.HTTPError(500)
+
+  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn):
+    # launch via the agent...
+    if self._agent is not None:
+      # verifies the fn is allowed to be run from this Slycat instance...
+      restricted_fns = ["distance-metrics"]
+
+      if fn not in restricted_fns:
+        cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
+        raise cherrypy.HTTPError(500)
+      else:
+        stdin, stdout, stderr = self._agent
+        payload = { "action": "run-function", "command": { "wckey": wckey, "nnodes": nnodes, "partition": partition, "ntasks_per_node": ntasks_per_node, "ntasks": ntasks, "ncpu_per_task": ncpu_per_task, "time_hours": time_hours, "time_minutes": time_minutes, "time_seconds": time_seconds, "fn": fn } }
+
+        stdin.write("%s\n" % json.dumps(payload))
+        stdin.flush()
+
+        response = json.loads(stdout.readline())
+        if not response["ok"]:
+          cherrypy.response.headers["x-slycat-message"] = response["message"]
+          raise cherrypy.HTTPError(400)
+
+        # parses out the job ID
+        arr = [int(s) for s in response["output"].split() if s.isdigit()]
+        if len(arr) > 0:
+          jid = arr[0]
+        else:
+          jid = -1
+
+        return { "jid": jid, "errors": response["errors"] }
     else:
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)

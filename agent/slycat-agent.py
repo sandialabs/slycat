@@ -96,6 +96,17 @@ def checkjob(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+def cancel_job(command):
+  results = {
+    "ok": True,
+    "jid": command["command"]
+  }
+
+  results["output"], results["errors"] = run_remote_command("scancel %s" % results["jid"])
+
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
+
 def get_job_output(command):
   results = {
     "ok": True,
@@ -112,6 +123,52 @@ def get_job_output(command):
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
+
+
+def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn):
+  name = os.path.expanduser('~') + "/batch.%s.bash" % fn
+  if not os.path.isfile(name):
+    f = open(name, 'w')
+
+    f.write("#!/bin/bash\n\n")
+    f.write("#SBATCH --nodes=%s\n" % nnodes)
+    f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+    f.write("#SBATCH --account=%s\n" % wckey)
+    f.write("#SBATCH --job-name=%s\n" % fn)
+    f.write("#SBATCH --partition=%s\n\n" % partition)
+    f.write("nodes=$SLURM_JOB_NUM_NODES\n")
+    f.write("cores=8\n\n")
+    f.write("export TMPDIR=/tmp/$SLURM_JOB_ID\n\n")
+    f.write("srun --ntasks-per-node %s --ntasks %s --cpus-per-task=%s python %s.py" % (ntasks_per_node, ntasks, ncpu_per_task, fn))
+    f.close()
+
+def run_function(command):
+  results = {
+    "ok": True,
+    "output": -1
+  }
+
+  wckey = command["command"]["wckey"]
+  nnodes = command["command"]["nnodes"]
+  partition = command["command"]["partition"]
+  ntasks_per_node = command["command"]["ntasks_per_node"]
+  ntasks = command["command"]["ntasks"]
+  ncpu_per_task = command["command"]["ncpu_per_task"]
+  time_hours = command["command"]["time_hours"]
+  time_minutes = command["command"]["time_minutes"]
+  time_seconds = command["command"]["time_seconds"]
+  fn = command["command"]["fn"]
+
+  if os.path.isfile("%s.py" % fn):
+    generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn)
+    results["output"], results["errors"] = run_remote_command("sbatch batch.%s.bash" % fn)
+  else:
+    results["output"] = "see errors"
+    results["errors"] = "the function %s does not have a definition." % fn
+
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
+
 
 # Handle the 'browse' command.
 def browse(command):
@@ -384,6 +441,10 @@ def main():
         checkjob(command)
       elif action == "get-job-output":
         get_job_output(command)
+      elif action == "run-function":
+        run_function(command)
+      elif action == "cancel-job":
+        cancel_job(command)
       else:
         raise Exception("Unknown command.")
     except Exception as e:
