@@ -1,7 +1,7 @@
 POST Remote Launch
 ==================
 
-.. http:post:: /remotes/launch/
+.. http:post:: /remotes/launch
 
   Uses an existing remote session to submit a command.
   The session must have been created successfully using :http:post:`/remotes`.

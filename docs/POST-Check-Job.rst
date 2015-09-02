@@ -11,6 +11,7 @@ POST Check Job
 
   :status 200: The response contains the command, its output and possible errors.
   :status 400: The request failed due to invalid parameters or a Slycat agent issue.
+  :status 500: The request failed due to no Slycat agent present and configured on the remote system.
 
   :responseheader Content-Type: application/json
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
