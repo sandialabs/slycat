@@ -277,7 +277,7 @@ class Session(object):
     partition : string
       Name of the partition where the job will be run
     ntasks_per_node : int
-      Number of tasks to run a node
+      Number of tasks to run on a node
     ntasks : int
       Number of tasks allocated for the job
     ncpu_per_task : int
