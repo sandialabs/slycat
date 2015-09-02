@@ -131,7 +131,18 @@ class Session(object):
     self._ssh.close()
 
   def submit_batch(self, filename):
-    # launch via the agent...
+    """Submits a command to the slycat-agent to start an input batch file on a cluster running SLURM.
+
+    Parameters
+    ----------
+    filename : string
+      Name of the batch file.
+
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: filename, jid, errors
+    """
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
       payload = { "action": "submit-batch", "command": filename }
@@ -153,7 +164,18 @@ class Session(object):
       raise cherrypy.HTTPError(500)
 
   def checkjob(self, jid):
-    # launch via the agent...
+    """Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.
+
+    Parameters
+    ----------
+    jid : int
+      Job ID
+
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: jid, status, errors
+    """
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
       payload = { "action": "checkjob", "command": jid }
@@ -183,6 +205,18 @@ class Session(object):
       raise cherrypy.HTTPError(500)
 
   def cancel_job(self, jid):
+    """Submits a command to the slycat-agent to cancel a running job on a cluster running SLURM.
+
+    Parameters
+    ----------
+    jid : int
+      Job ID
+
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: jid, output, errors
+    """
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
       payload = { "action": "cancel-job", "command": jid }
@@ -201,7 +235,20 @@ class Session(object):
       raise cherrypy.HTTPError(500)
 
   def get_job_output(self, jid, path):
-    # launch via the agent...
+    """Submits a command to the slycat-agent to fetch the content of the a job's output file from a cluster running SLURM.
+
+    Note that the expected format for the output file is slurm-[jid].out.
+
+    Parameters
+    ----------
+    jid : int
+      Job ID
+
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: jid, output, errors
+    """
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
       payload = { "action": "get-job-output", "command": { "jid": jid, "path": path } }
@@ -219,11 +266,37 @@ class Session(object):
       raise cherrypy.HTTPError(500)
 
   def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn):
-    # launch via the agent...
-    if self._agent is not None:
-      # verifies the fn is allowed to be run from this Slycat instance...
-      restricted_fns = ["distance-metrics"]
+    """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 
+    Parameters
+    ----------
+      wckey : string
+        Workload characterization key
+      nnodes : int
+        Number of nodes requested for the job
+      partition : string
+        Name of the partition where the job will be run
+      ntasks_per_node : int
+        Number of tasks to run a node
+      ntasks : int
+        Number of tasks allocated for the job
+      ncpu_per_task : int
+        Number of CPUs per task requested for the job
+      time_hours : int
+        Number of hours requested for the job
+      time_minutes : int
+        Number of minutes requested for the job
+      time_seconds : int
+        Number of seconds requested for the job
+
+      Returns
+      -------
+      response : dict
+        A dictionary with the following keys: jid, errors
+    """
+    if self._agent is not None:
+      # verifies the fn is allowed to be run...
+      restricted_fns = ["distance-metrics"]
       if fn not in restricted_fns:
         cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
         raise cherrypy.HTTPError(500)
@@ -252,7 +325,18 @@ class Session(object):
       raise cherrypy.HTTPError(500)
 
   def launch(self, command):
-    # launch via the agent...
+    """Submits a single command to a remote location via the slycat-agent or SSH.
+
+    Parameters
+    ----------
+    command : string
+      Command
+
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: command, output, errors
+    """
     if self._agent is not None:
       stdin, stdout, stderr = self._agent
 
