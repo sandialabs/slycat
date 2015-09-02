@@ -385,12 +385,13 @@ function metadata_loaded()
     {
       $.ajax(
       {
-        type : "GET",
-        url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/"
-          + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+        type : "GET",//https://192.168.99.100/models/0e7421a5443448bdba90811ce56af309/arraysets/data-table/arrays/0/attributes/16/chunk?ranges=0,100
+        //url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/"
+        //  + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+        url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
         success : function(result)
         {
-          images = result;
+          images = result[0];
           setup_scatterplot();
           //setup_table();
         },
@@ -926,11 +927,12 @@ function handle_image_variable_change(variable)
   $.ajax(
   {
     type : "GET",
-    url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" +
-      images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+    url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
+    //url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" +
+    //  images_index + "/chunk?ranges=0," + table_metadata["row-count"],
     success : function(result)
     {
-      images = result;
+      images = result[0];
       // Passing new images to both scatterplot and dendrogram
       $("#scatterplot").scatterplot("option", "images", images);
     },
