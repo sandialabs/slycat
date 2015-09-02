@@ -136,7 +136,7 @@ class Session(object):
     Parameters
     ----------
     filename : string
-      Name of the batch file.
+      Name of the batch file
 
     Returns
     -------
@@ -270,29 +270,29 @@ class Session(object):
 
     Parameters
     ----------
-      wckey : string
-        Workload characterization key
-      nnodes : int
-        Number of nodes requested for the job
-      partition : string
-        Name of the partition where the job will be run
-      ntasks_per_node : int
-        Number of tasks to run a node
-      ntasks : int
-        Number of tasks allocated for the job
-      ncpu_per_task : int
-        Number of CPUs per task requested for the job
-      time_hours : int
-        Number of hours requested for the job
-      time_minutes : int
-        Number of minutes requested for the job
-      time_seconds : int
-        Number of seconds requested for the job
+    wckey : string
+      Workload characterization key
+    nnodes : int
+      Number of nodes requested for the job
+    partition : string
+      Name of the partition where the job will be run
+    ntasks_per_node : int
+      Number of tasks to run a node
+    ntasks : int
+      Number of tasks allocated for the job
+    ncpu_per_task : int
+      Number of CPUs per task requested for the job
+    time_hours : int
+      Number of hours requested for the job
+    time_minutes : int
+      Number of minutes requested for the job
+    time_seconds : int
+      Number of seconds requested for the job
 
-      Returns
-      -------
-      response : dict
-        A dictionary with the following keys: jid, errors
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: jid, errors
     """
     if self._agent is not None:
       # verifies the fn is allowed to be run...
