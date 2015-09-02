@@ -149,10 +149,11 @@ function get_model_array_attribute(parameters) {
 
   function retrieve_model_array_attribute(parameters) {
     var ranges = [];
+    var range = '';
     var metadata = parameters.metadata;
     var attribute = parameters.attribute;
     var isStringAttribute = metadata.attributes[attribute].type == "string";
-    var byteorder = "&byteorder=" + (is_little_endian() ? "little" : "big");
+    var byteorder = (is_little_endian() ? "little" : "big");
     if(isStringAttribute)
     {
       byteorder = "";
@@ -160,13 +161,16 @@ function get_model_array_attribute(parameters) {
 
     for(var dimension in metadata.dimensions)
     {
-      ranges.push(metadata.dimensions[dimension].begin);
-      ranges.push(metadata.dimensions[dimension].end);
+      range = '';
+      range += metadata.dimensions[dimension].begin;
+      range += ':';
+      range += metadata.dimensions[dimension].end;
+      ranges.push(range);
     }
-    ranges = ranges.join(",");
+    ranges = ranges.join("|");
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/arrays/" + parameters.array + "/attributes/" + parameters.attribute + "/chunk?ranges=" + ranges + byteorder);
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges+ "&byteorder=" + byteorder);
     if(!isStringAttribute)
     {
       request.responseType = "arraybuffer";
