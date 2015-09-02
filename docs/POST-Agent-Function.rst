@@ -62,7 +62,7 @@ See Also
 
 * :http:post:`/remotes/cancel-job`
 * :http:post:`/remotes/checkjob`
-* :http:post:`/remotes/checkjob`
+* :http:post:`/remotes/get-job-output`
 * :http:post:`/remotes/launch`
 * :http:post:`/remotes/submit-batch`
 
