@@ -59,6 +59,15 @@ extensions = [
   "sphinxcontrib.httpdomain",
 ]
 
+# Use the following extensions definition if using Sphinx 1.3+
+# extensions = [
+#   "sphinx.ext.autodoc",
+#   "sphinx.ext.viewcode",
+#   "sphinx.ext.mathjax",
+#   "sphinx.ext.napoleon",
+#   "sphinxcontrib.httpdomain",
+# ]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
