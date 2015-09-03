@@ -386,11 +386,10 @@ function metadata_loaded()
       $.ajax(
       {
         type : "GET",
-        url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/"
-          + images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+        url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
         success : function(result)
         {
-          images = result;
+          images = result[0];
           setup_scatterplot();
           //setup_table();
         },
@@ -926,11 +925,10 @@ function handle_image_variable_change(variable)
   $.ajax(
   {
     type : "GET",
-    url : server_root + "models/" + model_id + "/arraysets/data-table/arrays/0/attributes/" +
-      images_index + "/chunk?ranges=0," + table_metadata["row-count"],
+    url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
     success : function(result)
     {
-      images = result;
+      images = result[0];
       // Passing new images to both scatterplot and dendrogram
       $("#scatterplot").scatterplot("option", "images", images);
     },
