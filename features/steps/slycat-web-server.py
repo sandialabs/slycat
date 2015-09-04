@@ -2,7 +2,11 @@ from __future__ import division
 from behave import *
 from parse import *
 
-import cStringIO as StringIO
+try:
+  import cStringIO as StringIO
+except:
+  import StringIO
+
 import nose.tools
 import operator
 import os
@@ -21,7 +25,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities 
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.action_chains import ActionChains
 
 class Driver():

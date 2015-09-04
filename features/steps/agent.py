@@ -1,6 +1,10 @@
 from __future__ import division
 
-import cStringIO as StringIO
+try:
+  import cStringIO as StringIO
+except:
+  import StringIO
+
 import json
 import nose.tools
 import os

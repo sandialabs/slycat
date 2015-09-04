@@ -9,7 +9,12 @@ import PIL.Image
 
 # Python standard library
 import argparse
-import cStringIO as StringIO
+
+try:
+  import cStringIO as StringIO
+except:
+  import StringIO
+
 import datetime
 import errno
 import json
