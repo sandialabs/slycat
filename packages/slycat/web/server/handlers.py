@@ -707,63 +707,63 @@ def delete_project_cache_object(pid, key):
 
   raise cherrypy.HTTPError(404)
 
-def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
-  try:
-    attribute = int(attribute)
-  except:
-    raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
-
-  try:
-    ranges = [int(spec) for spec in arguments["ranges"].split(",")]
-    i = iter(ranges)
-    ranges = list(itertools.izip(i, i))
-  except:
-    raise cherrypy.HTTPError("400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
-
-  byteorder = arguments.get("byteorder", None)
-  if byteorder is not None:
-    if byteorder not in ["little", "big"]:
-      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
-    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
-  else:
-    accept = cherrypy.lib.cptools.accept(["application/json"])
-  cherrypy.response.headers["content-type"] = accept
-
-  database = slycat.web.server.database.couchdb.connect()
-  model = database.get("model", mid)
-  project = database.get("project", model["project"])
-  slycat.web.server.authentication.require_project_reader(project)
-
-  artifact = model.get("artifact:%s" % aid, None)
-  if artifact is None:
-    raise cherrypy.HTTPError(404)
-  artifact_type = model["artifact-types"][aid]
-  if artifact_type not in ["hdf5"]:
-    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
-
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(artifact) as file:
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      hdf5_array = hdf5_arrayset[array]
-
-      if not(0 <= attribute and attribute < len(hdf5_array.attributes)):
-        raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
-      if len(ranges) != hdf5_array.ndim:
-        raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
-
-      ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(hdf5_array.dimensions, ranges)]
-      index = tuple([slice(begin, end) for begin, end in ranges])
-
-      attribute_type =  hdf5_array.attributes[attribute]["type"]
-      data = hdf5_array.get_data(attribute)[index]
-
-      if byteorder is None:
-        return json.dumps(data.tolist())
-      else:
-        if sys.byteorder != byteorder:
-          return data.byteswap().tostring(order="C")
-        else:
-          return data.tostring(order="C")
+# def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
+#   try:
+#     attribute = int(attribute)
+#   except:
+#     raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
+#
+#   try:
+#     ranges = [int(spec) for spec in arguments["ranges"].split(",")]
+#     i = iter(ranges)
+#     ranges = list(itertools.izip(i, i))
+#   except:
+#     raise cherrypy.HTTPError("400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
+#
+#   byteorder = arguments.get("byteorder", None)
+#   if byteorder is not None:
+#     if byteorder not in ["little", "big"]:
+#       raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+#     accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+#   else:
+#     accept = cherrypy.lib.cptools.accept(["application/json"])
+#   cherrypy.response.headers["content-type"] = accept
+#
+#   database = slycat.web.server.database.couchdb.connect()
+#   model = database.get("model", mid)
+#   project = database.get("project", model["project"])
+#   slycat.web.server.authentication.require_project_reader(project)
+#
+#   artifact = model.get("artifact:%s" % aid, None)
+#   if artifact is None:
+#     raise cherrypy.HTTPError(404)
+#   artifact_type = model["artifact-types"][aid]
+#   if artifact_type not in ["hdf5"]:
+#     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+#
+#   with slycat.web.server.hdf5.lock:
+#     with slycat.web.server.hdf5.open(artifact) as file:
+#       hdf5_arrayset = slycat.hdf5.ArraySet(file)
+#       hdf5_array = hdf5_arrayset[array]
+#
+#       if not(0 <= attribute and attribute < len(hdf5_array.attributes)):
+#         raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
+#       if len(ranges) != hdf5_array.ndim:
+#         raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
+#
+#       ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(hdf5_array.dimensions, ranges)]
+#       index = tuple([slice(begin, end) for begin, end in ranges])
+#
+#       attribute_type =  hdf5_array.attributes[attribute]["type"]
+#       data = hdf5_array.get_data(attribute)[index]
+#
+#       if byteorder is None:
+#         return json.dumps(data.tolist())
+#       else:
+#         if sys.byteorder != byteorder:
+#           return data.byteswap().tostring(order="C")
+#         else:
+#           return data.tostring(order="C")
 
 @cherrypy.tools.json_out(on = True)
 def get_model_arrayset_metadata(mid, aid, **kwargs):
