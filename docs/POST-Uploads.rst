@@ -32,8 +32,8 @@ POST Uploads
     :<json string parser: Parsing plugin name.
     :<json array aids: Artifact ids for storage.
 
-    :status 200: The response contains the requested browsing information.
-    :status 400: The browse request failed due to invalid parameters (e.g: unknown model, unknown parser, invalid parser parameters).
+    :status 200: The new upload session was created, and the response contains the new session id.
+    :status 400: An upload session couldn't be created due to invalid parameters (e.g: unknown model, unknown parser, invalid parser parameters).
     :status 403: Client doesn’t have write access to the given model
 
     :responseheader Content-Type: application/json

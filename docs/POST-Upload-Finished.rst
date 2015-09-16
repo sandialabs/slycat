@@ -4,10 +4,13 @@ POST Upload Finished
 .. http:post:: /uploads/(uid)/finished
 
     Notify the server that all files have been uploaded for the given upload
-    session, and processing can begin.  The request must include the `finished`
+    session, and processing can begin.  The request must include the `uploaded`
     parameter, which specifies the number of files that were uploaded, and the
-    number of parts in each file.  This allows the server a chance to validate
-    that it has received every part of every file.
+    number of parts in each file.  The server uses this information to validate
+    that it received every part of every file that the client sent.
+
+    :param uid: Unique upload session identifier.
+    :type uid: string
 
     :requestheader Content-Type: application/json
 
