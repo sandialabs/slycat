@@ -14,9 +14,9 @@ PUT Upload
 
     :param uid: Unique upload session identifier.
     :type uid: string
-    :parm fid: Zero-based file index of the data to be uploaded.
+    :param fid: Zero-based file index of the data to be uploaded.
     :type fid: integer
-    :parm pid: Zero-based part index of the data to be uploaded.
+    :param pid: Zero-based part index of the data to be uploaded.
     :type pid: integer
 
     :requestheader Content-Type: form/multipart
