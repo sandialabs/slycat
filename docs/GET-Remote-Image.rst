@@ -31,10 +31,10 @@ GET Remote Image
   :query key: Cached object key.  Must be specified when `cache` is set to `project`.
 
   :status 200: The requested file is returned in the body of the response.
-  :status 400 Access denied.: The session user doesn't have permissions to access the file.
-  :status 400 Agent required.: This call requires a remote agent, but the current session isn't running an agent.
-  :status 400 Can't read directory.: The remote path is a directory instead of a file.
-  :status 400 File not found.: The remote path doesn't exist.
+  :status 400: "Access denied" The session user doesn't have permissions to access the file.
+  :status 400: "Agent required" This call requires a remote agent, but the current session isn't running an agent.
+  :status 400: "Can't read directory" The remote path is a directory instead of a file.
+  :status 400: "File not found" The remote path doesn't exist.
   :status 404: The session doesn't exist or has timed-out.
 
   :responseheader Content-Type: image/jpeg or image/png, depending on the type of the remote file and optional conversion.

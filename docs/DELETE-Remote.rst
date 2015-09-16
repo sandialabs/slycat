@@ -8,7 +8,7 @@ DELETE Remote
   :param sid: Unique session identifier.
   :type mid: string
 
-  :status 204 Remote deleted.: The remote session has been deleted.
+  :status 204: The remote session has been deleted.
 
   **Sample Request**
 

@@ -14,8 +14,8 @@ POST Upload Finished
     :<json array uploaded: array containing the number of parts :math:`M` for every uploaded file :math:`N`.
 
     :status 202: The server has validated all of the uploaded data, and will begin the parsing process.
-    :status 400: "Upload incomplete" - The server did not receive all of the file parts specified in the `uploaded` parameter.  Parsing will not begin until the missing parts have been uploaded and :http:post:`/uploads/(uid)/finished` is called again.
-    :status 400: "Client confused" - The server received more file parts than those specified in the `uploaded` parameter.  Parsing will not begin unless :http:post:`/uploads/(uid)` is called again with the correct part counts in `uploaded`.
+    :status 400: "Upload incomplete" The server did not receive all of the file parts specified in the `uploaded` parameter.  Parsing will not begin until the missing parts have been uploaded and :http:post:`/uploads/(uid)/finished` is called again.
+    :status 400: "Client confused" The server received more file parts than those specified in the `uploaded` parameter.  Parsing will not begin unless :http:post:`/uploads/(uid)/finished` is called again with the correct part counts in `uploaded`.
 
     :responseheader Content-Type: application/json
 

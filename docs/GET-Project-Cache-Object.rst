@@ -13,7 +13,7 @@ GET Project Cache Object
   :type key: string
 
   :status 200: The requested file is returned in the body of the response.
-  :status 404 Not in cache.: The requested object isn't in the cache.
+  :status 404: The requested object isn't in the cache.
 
   :responseheader Content-Type: The content type of the cached object, which could be any valid MIME type.
 
