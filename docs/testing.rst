@@ -93,7 +93,7 @@ To run the coverage report::
 
   $ coverage report
 
-Modifying Regression Tests
---------------------------
+Modifying Tests
+---------------
 
 Behave feature and step definition files are located in the `slycat/features` and `slycat/features/steps` directories, respectively.
