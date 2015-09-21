@@ -77,7 +77,7 @@ To install and use Conda for the Python interpreter and dependencies::
 Running Tests
 -------------
 
-Create a file `proxy-server-config.conf` with the following content::
+Create a file `proxy-server-config.conf` in the `/home/slycat` directory with the following content::
 
   global
     daemon
