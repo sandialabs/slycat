@@ -1,5 +1,5 @@
-PUT Upload
-==========
+PUT Upload File Part
+====================
 
 .. http:put:: /uploads/(uid)/files/(fid)/parts/(pid)
 
