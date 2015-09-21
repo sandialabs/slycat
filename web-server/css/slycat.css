@@ -69,7 +69,7 @@ body
   font-weight: bold !important;
 }
 .nav-bookmarks .bookmark-new .fa {
-  
+
 }
 .nav-bookmarks .bookmark-link {
   position: relative;
@@ -185,7 +185,7 @@ slycat-navbar .alert pre
 {
   background-color: transparent;
 }
-.bootstrap-styles #slycat-wizard .nav-pills > li.active > a, 
+.bootstrap-styles #slycat-wizard .nav-pills > li.active > a,
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover
 {
   color: white;
@@ -430,7 +430,7 @@ slycat-navbar .alert pre
 
 /* slycat-table-ingestion component */
 
-.slycat-table-ingestion table 
+.slycat-table-ingestion table
 {
   width: 100%;
 }
@@ -482,7 +482,8 @@ slycat-navbar .alert pre
 
 /* New PIP model wizard */
 #slycat-wizard .parameter-image-plus-model-wizard .local-browser,
-#slycat-wizard .parameter-image-plus-model-wizard .remote-controls
+#slycat-wizard .parameter-image-plus-model-wizard .remote-controls,
+#slycat-wizard .parameter-image-plus-model-wizard .slurm-interface
 {
   margin-left: 60px;
 }

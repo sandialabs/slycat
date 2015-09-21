@@ -288,6 +288,8 @@ class Session(object):
       Number of minutes requested for the job
     time_seconds : int
       Number of seconds requested for the job
+    fn : string
+      Name for the Slycat agent function
 
     Returns
     -------

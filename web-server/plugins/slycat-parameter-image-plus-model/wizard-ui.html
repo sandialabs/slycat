@@ -83,8 +83,8 @@
       <slycat-table-ingestion params="
         variables: attributes,
         properties: [
-          {name: 'Classification', type: 'select', values: ['Input','Output','Neither']}, 
-          {name: 'Categorical', type: 'bool'}, 
+          {name: 'Classification', type: 'select', values: ['Input','Output','Neither']},
+          {name: 'Categorical', type: 'bool'},
           {name: 'Editable', type: 'bool'}
         ]
       "></slycat-table-ingestion>
@@ -92,7 +92,7 @@
         <div class="cluster-column form-group">
           <label class="col-sm-3 control-label">Cluster Column</label>
           <div class="col-sm-9">
-            <select class="form-control" 
+            <select class="form-control"
               data-bind="options: image_attributes,
                          optionsText: 'name',
                          optionsValue: 'name',
@@ -121,6 +121,17 @@
       <div class="remote-controls">
         <form class="form-horizontal" role="form">
           <slycat-remote-controls params="hostname:remote_matrix.hostname,username:remote_matrix.username,password:remote_matrix.password,status:remote_matrix.status,status_type:remote_matrix.status_type,enable:remote_matrix.enable,focus:remote_matrix.focus,activate:connect_matrix"></slycat-remote-controls>
+        </form>
+      </div>
+      <div class="radio slurm" style="margin-left: 15px;">
+        <label>
+          <input type="radio" name="matrix-local-or-remote-radios" id="remote-slurm" value="slurm" data-bind="checked: matrix_type">
+          Compute
+        </label>
+      </div>
+      <div class="slurm-interface">
+        <form class="slurm form-horizontal" role="form">
+          <slycat-remote-interface params="disabled: ko.computed(function(){return matrix_type() == 'slurm' ? false : true;})"></slycat-remote-interface>
         </form>
       </div>
     </div>
