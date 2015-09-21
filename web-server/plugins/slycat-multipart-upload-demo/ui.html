@@ -95,6 +95,13 @@
           {
             console.log("Upload session deleted.");
             delete_project(pid);
+          },
+          error: function(request, status, reason_phrase)
+          {
+            if(request.status == 409)
+            {
+              window.setTimeout(delete_upload.bind(null, pid, mid, uid), 3000)
+            }
           }
         });
       }

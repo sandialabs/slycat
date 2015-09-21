@@ -575,7 +575,9 @@ def post_uploads():
     raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
   aids = require_json_parameter("aids")
 
-  uid = slycat.web.server.upload.create_session(mid, input, parser, aids)
+  kwargs = {key : value for key, value in cherrypy.request.json.items() if key not in ["mid", "input", "parser", "aids"]}
+
+  uid = slycat.web.server.upload.create_session(mid, input, parser, aids, kwargs)
 
   cherrypy.response.headers["location"] = "%s/uploads/%s" % (cherrypy.request.base, uid)
   cherrypy.response.status = "201 Upload started."

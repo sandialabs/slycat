@@ -36,6 +36,7 @@ import os
 import shutil
 import slycat.web.server.authentication
 import slycat.web.server.database
+import StringIO
 import threading
 import time
 import uuid
@@ -72,7 +73,7 @@ class Session(object):
   ...   print session.username
 
   """
-  def __init__(self, uid, client, mid, input, parser, aids):
+  def __init__(self, uid, client, mid, input, parser, aids, kwargs):
     now = datetime.datetime.utcnow()
     self._uid = uid
     self._client = client
@@ -80,9 +81,11 @@ class Session(object):
     self._input = input
     self._parser = parser
     self._aids = aids
-    self._received = set()
+    self._kwargs = kwargs
     self._created = now
     self._accessed = now
+    self._received = set()
+    self._parsing_thread = None
     self._lock = threading.Lock()
 
   def __enter__(self):
@@ -108,6 +111,9 @@ class Session(object):
     return self._accessed
 
   def put_upload_file_part(self, fid, pid, data):
+    if self._parsing_thread is not None:
+      raise cherrypy.HTTPError("409 Upload already finished.")
+
     storage = path(self._uid, fid, pid)
     if not os.path.exists(os.path.dirname(storage)):
       os.makedirs(os.path.dirname(storage))
@@ -117,6 +123,9 @@ class Session(object):
     self._received.add((fid, pid))
 
   def post_upload_finished(self, uploaded):
+    if self._parsing_thread is not None:
+      raise cherrypy.HTTPError("409 Upload already finished.")
+
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
 
     missing = [part for part in uploaded if part not in self._received]
@@ -130,15 +139,51 @@ class Session(object):
       cherrypy.response.status = "400 Client confused."
       return {"excess": excess}
 
+    self._parsing_thread = threading.Thread(name="Upload parsing", target=Session._parse_uploads, args=[self])
+    self._parsing_thread.start()
+
     cherrypy.response.status = "202 Upload session finished."
 
+  def _parse_uploads(self):
+    cherrypy.log.error("Upload parsing started.")
+
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", self._mid)
+
+    def numeric_order(x):
+      """Files and file parts must be loaded in numeric, not lexicographical, order."""
+      return int(x.split("-")[-1])
+
+    files = []
+    storage = path(self._uid)
+    for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
+      cherrypy.log.error("Assembling %s" % file_dir)
+      file = ""
+      for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
+        cherrypy.log.error(" Loading %s" % file_part)
+        with open(file_part, "r") as f:
+          file += f.read()
+      files.append(file)
+
+    try:
+      slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files, self._aids, **self._kwargs)
+    except Exception as e:
+      cherrypy.log.error("Exception parsing posted files: %s" % e)
+      import traceback
+      cherrypy.log.error(traceback.format_exc())
+
+    cherrypy.log.error("Upload parsing finished.")
+
   def close(self):
+    if self._parsing_thread is not None and self._parsing_thread.is_alive():
+      raise cherrypy.HTTPError("409 Parsing in progress.")
+
     storage = path(self._uid)
     cherrypy.log.error("Destroying temporary upload storage %s" % storage)
     if os.path.exists(storage):
       shutil.rmtree(storage)
 
-def create_session(mid, input, parser, aids):
+def create_session(mid, input, parser, aids, kwargs):
   """Create a cached upload session for the given model.
 
   Parameters
@@ -163,7 +208,7 @@ def create_session(mid, input, parser, aids):
 
   uid = uuid.uuid4().hex
   with session_cache_lock:
-    session_cache[uid] = Session(uid, client, mid, input, parser, aids)
+    session_cache[uid] = Session(uid, client, mid, input, parser, aids, kwargs)
   return uid
 
 def get_session(uid):
