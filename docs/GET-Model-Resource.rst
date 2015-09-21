@@ -43,5 +43,5 @@ See Also
 --------
 
 -  :http:get:`/models/(mid)`
--  :http:get:`/models/(mid)/commands/(command)`
+-  :http:get:`/models/(mid)/commands/(type)/(command)`
 

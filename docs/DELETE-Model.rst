@@ -8,7 +8,7 @@ DELETE Model
   :param mid: Unique model identifier.
   :type mid: string
 
-  :status 204 Model deleted.: The model and its artifacts have been deleted.
+  :status 204: The model and its artifacts have been deleted.
 
   **Sample Request**
 

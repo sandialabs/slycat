@@ -84,6 +84,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.delete_upload = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "uploads/" + params.uid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.get_configuration_markings = function(params)
   {
     $.ajax(
@@ -831,6 +850,57 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_uploads = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(
+      {
+        "mid": params.mid,
+        "input": params.input,
+        "parser": params.parser,
+        "aids": params.aids,
+      }),
+      type: "POST",
+      url: server_root + "uploads",
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result.id);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
+  module.post_upload_finished = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(
+      {
+        "uploaded": params.uploaded,
+      }),
+      type: "POST",
+      url: server_root + "uploads/" + params.uid + "/finished",
+      success: function(result)
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   module.put_model_inputs = function(params)
   {
     $.ajax(
@@ -942,6 +1012,39 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       },
     });
   };
+
+  module.put_upload_file_part = function(params)
+  {
+    var data = new FormData();
+    if(params.sid && params.path)
+    {
+      data.append("sid", params.sid);
+      data.append("path", params.path);
+    }
+    else if(params.file)
+    {
+      data.append("file", params.file);
+    }
+
+    $.ajax(
+    {
+      contentType: false,
+      processData: false,
+      data: data,
+      type: "PUT",
+      url: server_root + "uploads/" + params.uid + "/files/" + params.fid + "/parts/" + params.pid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
 
   return module;
 });

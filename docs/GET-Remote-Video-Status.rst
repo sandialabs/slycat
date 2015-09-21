@@ -14,8 +14,8 @@ GET Remote Video Status
   :type vsid: string
 
   :status 200: The status is contained in the response body.
-  :status 400 Agent required.: This call requires a remote agent, but the current session isn't running an agent.
-  :statuscode 404: If the session doesn't exist or has timed out.
+  :status 400: "Agent required" This call requires a remote agent, but the current session isn't running an agent.
+  :status 404: If the session doesn't exist or has timed out.
 
   :responseheader Content-Type: application/json
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.

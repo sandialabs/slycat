@@ -11,7 +11,7 @@ DELETE Project Cache Object
   :param key: Cache object identifier.
   :type key: string
 
-  :status 204 Object deleted.: The cached object has been deleted.
+  :status 204: The cached object has been deleted.
 
   **Sample Request**
 

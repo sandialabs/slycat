@@ -28,6 +28,7 @@ import slycat.web.server.remote
 import slycat.web.server.resource
 import slycat.web.server.streaming
 import slycat.web.server.template
+import slycat.web.server.upload
 import stat
 import subprocess
 import sys
@@ -98,16 +99,36 @@ def js_bundle():
 js_bundle._lock = threading.Lock()
 js_bundle._bundle = None
 
-def require_parameter(name):
+def require_json_parameter(name):
   if name not in cherrypy.request.json:
-    raise cherrypy.HTTPError("400 Missing %s parameter." % name)
+    raise cherrypy.HTTPError("400 Missing '%s' parameter." % name)
   return cherrypy.request.json[name]
 
-def require_boolean_parameter(name):
-  value = require_parameter(name)
+def require_boolean_json_parameter(name):
+  value = require_json_parameter(name)
   if value != True and value != False:
-    raise cherrypy.HTTPError("400 Parameter %s must be true or false." % name)
+    raise cherrypy.HTTPError("400 '%s' parameter must be true or false." % name)
   return value
+
+def require_array_json_parameter(name):
+  array = require_json_parameter(name)
+  if not isinstance(array, list):
+    raise cherrypy.HTTPError("400 '%s' parameter must be an array." % name)
+  return array
+
+def require_integer_array_json_parameter(name):
+  array = require_array_json_parameter(name)
+  try:
+    array = [int(value) for value in array]
+  except:
+    raise cherrypy.HTTPError("400 '%s' parameter must be an array of integers." % name)
+  return array
+
+def require_integer_parameter(value, name):
+  try:
+    return int(value)
+  except:
+    raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
 
 def get_projects(_=None):
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
@@ -546,6 +567,53 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
     raise cherrypy.HTTPError("400 %s" % e.message)
 
 @cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_uploads():
+  mid = require_json_parameter("mid")
+  input = require_boolean_json_parameter("input")
+  parser = require_json_parameter("parser")
+  if parser not in slycat.web.server.plugin.manager.parsers:
+    raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
+  aids = require_json_parameter("aids")
+
+  kwargs = {key : value for key, value in cherrypy.request.json.items() if key not in ["mid", "input", "parser", "aids"]}
+
+  uid = slycat.web.server.upload.create_session(mid, input, parser, aids, kwargs)
+
+  cherrypy.response.headers["location"] = "%s/uploads/%s" % (cherrypy.request.base, uid)
+  cherrypy.response.status = "201 Upload started."
+  return {"id" : uid}
+
+def put_upload_file_part(uid, fid, pid, file=None, sid=None, path=None):
+  fid = require_integer_parameter(fid, "fid")
+  pid = require_integer_parameter(pid, "pid")
+
+  if file is not None and sid is None and path is None:
+    data = file.file.read()
+  elif file is None and sid is not None and path is not None:
+    with slycat.web.server.remote.get_session(sid) as session:
+      filename = "%s@%s:%s" % (session.username, session.hostname, path)
+      if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+        raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+      data = session.sftp.file(path).read()
+  else:
+    raise cherrypy.HTTPError("400 Must supply file parameter, or sid and path parameters.")
+
+  with slycat.web.server.upload.get_session(uid) as session:
+    session.put_upload_file_part(fid, pid, data)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_upload_finished(uid):
+  uploaded = require_integer_array_json_parameter("uploaded")
+  with slycat.web.server.upload.get_session(uid) as session:
+    return session.post_upload_finished(uploaded)
+
+def delete_upload(uid):
+  slycat.web.server.upload.delete_session(uid)
+  cherrypy.response.status = "204 Upload session deleted."
+
+@cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
@@ -567,8 +635,8 @@ def put_model_parameter(mid, aid):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  value = require_parameter("value")
-  input = require_boolean_parameter("input")
+  value = require_json_parameter("value")
+  input = require_boolean_json_parameter("input")
 
   slycat.web.server.put_model_parameter(database, model, aid, value, input)
 
@@ -579,7 +647,7 @@ def put_model_arrayset(mid, aid):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
-  input = require_boolean_parameter("input")
+  input = require_boolean_json_parameter("input")
 
   slycat.web.server.put_model_arrayset(database, model, aid, input)
 

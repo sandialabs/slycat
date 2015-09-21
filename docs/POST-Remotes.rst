@@ -17,11 +17,11 @@ POST Remotes
   :<json boolean agent: (optional) Create an agent when the connection is established.  By default, agents are created automatically if the hostname has an agent configuration.  Use this parameter to explicitly require / prevent agent creation.
 
   :status 200: The connection was created successfully.
-  :status 400 Missing agent configuration.: The server isn't configured to start an agent on the given hostname.
-  :status 403 Remote authentication failed.: Authentication of the provided username and password failed.
-  :status 500 Missing agent configuration.: The server isn't properly configured to start an agent on the given hostname.
-  :status 500 Agent startup failed.: The server couldn't start an agent on the given hostname.
-  :status 500 Remote connection failed.: Unknown failure making the remote connection.
+  :status 400: "Missing agent configuration" The server isn't configured to start an agent on the given hostname.
+  :status 403: "Remote authentication failed" Authentication of the provided username and password failed.
+  :status 500: "Missing agent configuration" The server isn't properly configured to start an agent on the given hostname.
+  :status 500: "Agent startup failed" The server couldn't start an agent on the given hostname.
+  :status 500: "Remote connection failed" Unknown failure making the remote connection.
 
   :responseheader Content-Type: application/json
 

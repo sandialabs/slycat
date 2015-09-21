@@ -21,9 +21,9 @@ GET Remote File
 
   :status 200: The requested file is returned in the body of the response.
   :status 404: The session doesn't exist or has timed-out.
-  :status 400 Can't read directory.: The remote path is a directory instead of a file.
-  :status 400 File not found.: The remote path doesn't exist.
-  :status 400 Access denied.: The session user doesn't have permissions to access the file.
+  :status 400: "Can't read directory" The remote path is a directory instead of a file.
+  :status 400: "File not found" The remote path doesn't exist.
+  :status 400: "Access denied" The session user doesn't have permissions to access the file.
 
   :responseheader Content-Type: The MIME type of the response is automatically determined using the requested filename.
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.

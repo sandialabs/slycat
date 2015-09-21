@@ -1,0 +1,161 @@
+<div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:12px;">
+  <div class="form-group">
+    <p>Choose the cars.csv file to upload</p>
+    <input type="file" id="file"></input>
+    <button class="btn btn-default" id="upload">Upload</button>
+  </div>
+
+  <script type="text/javascript">
+    require(["slycat-web-client"], function(client)
+    {
+      function create_project()
+      {
+        client.post_projects({
+          name: "Multipart Upload Demo",
+          success: function(pid)
+          {
+            console.log("Project created.");
+            create_model(pid);
+          }
+        });
+      }
+
+      function create_model(pid)
+      {
+        client.post_project_models({
+          name: "Multipart Upload Demo",
+          type: "cca",
+          pid: pid,
+          success: function(mid)
+          {
+            console.log("Model created.");
+            start_upload(pid, mid);
+          }
+        });
+      }
+
+      function start_upload(pid, mid)
+      {
+        client.post_uploads({
+          mid: mid,
+          input: true,
+          parser: "slycat-csv-parser",
+          aids: ["data-table"],
+          success: function(uid)
+          {
+            console.log("Upload session created.");
+            upload_file(pid, mid, uid);
+          }
+        });
+      }
+
+      function upload_file(pid, mid, uid)
+      {
+        file = document.getElementById("file").files[0];
+        console.log("Upload file", file);
+
+        // Split the file into two halves.
+        boundary = Math.floor(file.size / 2);
+        first_part = file.slice(0, boundary);
+        second_part = file.slice(boundary, file.size);
+
+        // Upload each half separately.
+        console.log("Uploading first part", first_part);
+        client.put_upload_file_part({
+          uid: uid,
+          fid: 0,
+          pid: 0,
+          file: first_part,
+          success: function()
+          {
+            console.log("Uploading second part", second_part);
+            client.put_upload_file_part({
+              uid: uid,
+              fid: 0,
+              pid: 1,
+              file: second_part,
+              success: function()
+              {
+                console.log("File uploaded.");
+                finish_upload(pid, mid, uid);
+              }
+            });
+          }
+        });
+      }
+
+      function finish_upload(pid, mid, uid)
+      {
+        client.post_upload_finished({
+          uid: uid,
+          uploaded: [2],
+          success: function()
+          {
+            console.log("Upload session finished.");
+            delete_upload(pid, mid, uid);
+          }
+        });
+      }
+
+      function delete_upload(pid, mid, uid)
+      {
+        client.delete_upload({
+          uid: uid,
+          success: function()
+          {
+            console.log("Upload session deleted.");
+            finish_model(pid, mid);
+          },
+          error: function(request, status, reason_phrase)
+          {
+            if(request.status == 409)
+            {
+              window.setTimeout(delete_upload.bind(null, pid, mid, uid), 3000)
+            }
+          }
+        });
+      }
+
+      function finish_model(pid, mid)
+      {
+        client.put_model_parameter({
+          mid: mid,
+          aid: "input-columns",
+          input: true,
+          value: [2, 3, 5, 7],
+          success: function()
+          {
+            client.put_model_parameter({
+              mid: mid,
+              aid: "output-columns",
+              input: true,
+              value: [1, 4, 6],
+              success: function()
+              {
+                client.put_model_parameter({
+                  mid: mid,
+                  aid: "scale-inputs",
+                  input: true,
+                  value: true,
+                  success: function()
+                  {
+                    client.post_model_finish({
+                      mid: mid,
+                      success: function()
+                      {
+                        console.log("Model finished.");
+                      }
+                    });
+                  }
+                })
+              }
+            })
+          }
+        });
+      }
+
+      document.getElementById("upload").addEventListener("click", create_project, false);
+
+    });
+  </script>
+</div>

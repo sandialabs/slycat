@@ -22,7 +22,7 @@ POST Remote Videos
   :<json array images: List of absolute paths pointing to static images.
 
   :status 202: Video creation has started.
-  :status 400 Agent required.: This call requires a remote agent, but the current session isn't running an agent.
+  :status 400: "Agent required" This call requires a remote agent, but the current session isn't running an agent.
   :status 400: Couldn't start video creation with the current request parameters.
   :status 404: The session doesn't exist or has timed-out.
 

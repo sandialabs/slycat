@@ -8,7 +8,7 @@ DELETE Project
   :param pid: Unique project identifier.
   :type mid: string
 
-  :status 204 Project deleted.: The project, its models, and artifacts have been deleted.
+  :status 204: The project, its models, and artifacts have been deleted.
 
   **Sample Request**
 
