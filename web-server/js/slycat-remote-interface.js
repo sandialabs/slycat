@@ -29,7 +29,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
       vm.output = ko.observable('Output for the current job will be posted here...');
       vm.jid = ko.observable(-1);
-      vm.agent_functions = ko.observableArray([ 'distance-metrics' ]);
+      vm.agent_functions = ko.observableArray(params.agent_functions === undefined ? [] : params.agent_functions);
 
       var modal_id = 'slycat-remote-interface-connect-modal';
       var select_id = 'slycat-remote-interface-agent-functions';

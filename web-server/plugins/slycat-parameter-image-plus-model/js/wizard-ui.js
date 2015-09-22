@@ -8,6 +8,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.cluster_linkage = ko.observable("average"); // average is selected by default...
     component.cluster_column = ko.observable(false);
     component.ps_type = ko.observable("remote"); // local is selected by default...
+    component.is_compute = ko.observable("no_compute");
     component.matrix_type = ko.observable("remote"); // local is selected by default...
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Plus Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null});
@@ -102,8 +103,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               for(var i = 0; i != metadata["column-names"].length; ++i)
               {
                 attributes.push({
-                  name:metadata["column-names"][i], 
-                  type:metadata["column-types"][i], 
+                  name:metadata["column-names"][i],
+                  type:metadata["column-types"][i],
                   input:false,
                   output:false,
                   category:false,
@@ -146,7 +147,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.select_columns = function() {
-      component.tab(4);
+      if (component.ps_type() === "remote") {
+        $('.ps-tab-compute-matrix').css('display', 'block');
+        component.tab(4);
+      } else
+        component.tab(5);
+    };
+
+    component.select_compute = function() {
+      component.tab(5);
     };
 
     var upload_matrix_success = function() {
@@ -162,8 +171,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               // var attributes = [];
               // for(var i = 0; i != metadata["column-names"].length; ++i)
               //   attributes.push({
-              //     name:metadata["column-names"][i], 
-              //     type:metadata["column-types"][i], 
+              //     name:metadata["column-names"][i],
+              //     type:metadata["column-types"][i],
               //     input:false,
               //     output:false,
               //     category:false,
