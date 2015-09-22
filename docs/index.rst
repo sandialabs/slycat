@@ -52,8 +52,8 @@ Documentation:
 .. toctree::
   :maxdepth: 2
 
-  design.rst
   user-manual.rst
+  design.rst
   tutorial.rst
   setup-clients.rst
   setup-server.rst
