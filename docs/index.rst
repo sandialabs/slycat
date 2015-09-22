@@ -53,6 +53,7 @@ Documentation:
   :maxdepth: 2
 
   design.rst
+  user-manual.rst
   tutorial.rst
   setup-clients.rst
   setup-server.rst
