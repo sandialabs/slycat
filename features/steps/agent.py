@@ -348,7 +348,7 @@ def step_impl(context, type):
   nose.tools.assert_equal(video_format["nb_streams"], 1)
   nose.tools.assert_in("mp4" if type == "mp4" else "webm", video_format["format_name"])
   video_stream = video_metadata["streams"][0]
-  nose.tools.assert_equal(video_stream["codec_name"], "h264" if type == "mp4" else "vp8")
+  nose.tools.assert_equal(video_stream["codec_name"], "h264" if type == "mp4" else "vp9")
   nose.tools.assert_equal(video_stream["codec_type"], "video")
   nose.tools.assert_equal(video_stream["width"], 1024)
   nose.tools.assert_equal(video_stream["height"], 512)
