@@ -1853,12 +1853,12 @@ define("slycat-parameter-image-scatterplot", ["d3"], function(d3)
 
   _offsetX: function(e)
   {
-    return e.pageX - e.currentTarget.getBoundingClientRect().left;
+    return e.pageX - e.currentTarget.getBoundingClientRect().left - $(document).scrollLeft();
   },
 
   _offsetY: function(e)
   {
-    return e.pageY - e.currentTarget.getBoundingClientRect().top;
+    return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
   },
 
   pin: function(simulations)
