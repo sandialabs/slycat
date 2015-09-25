@@ -119,7 +119,7 @@
       </div>
       <div class="compute-interface">
         <form class="compute form-horizontal" role="form">
-          <slycat-remote-interface params="agent_functions: ['correlation-distance', 'jaccard-distance'], disabled: ko.computed(function(){return is_compute() == 'yes_compute' ? false : true;})"></slycat-remote-interface>
+          <slycat-remote-interface params="agent_functions: ['correlation-distance', 'jaccard-distance'], agent_functions_params: { 'column': cluster_column(), 'input': browser.selection()[0] }, disabled: ko.computed(function(){return is_compute() == 'yes_compute' ? false : true;})"></slycat-remote-interface>
         </form>
       </div>
     </div>

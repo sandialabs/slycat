@@ -265,7 +265,7 @@ class Session(object):
       cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
       raise cherrypy.HTTPError(500)
 
-  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn):
+  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, fn_params):
     """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 
     Parameters
@@ -290,6 +290,8 @@ class Session(object):
       Number of seconds requested for the job
     fn : string
       Name for the Slycat agent function
+    fn_params : dict
+      Additional params for the agent function
 
     Returns
     -------
@@ -297,14 +299,38 @@ class Session(object):
       A dictionary with the following keys: jid, errors
     """
     if self._agent is not None:
+      def create_jaccard_distance_matrix(params):
+        return ["module load slycat", "ipcluster start -n 4 &", "sleep 2m", "python %s --distance-measure jaccard --distance-column %s %s jaccard_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"])]
+
+      def create_correlation_distance_matrix(params):
+        return ["module load slycat", "ipcluster start -n 4 &", "sleep 2m", "python %s --distance-measure correlation --distance-column %s %s correlation_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"])]
+
       # verifies the fn is allowed to be run...
-      restricted_fns = ["distance-metrics"]
+      restricted_fns = {
+        "correlation-distance": create_correlation_distance_matrix,
+        "jaccard-distance": create_jaccard_distance_matrix
+      }
+
       if fn not in restricted_fns:
         cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
         raise cherrypy.HTTPError(500)
       else:
         stdin, stdout, stderr = self._agent
-        payload = { "action": "run-function", "command": { "wckey": wckey, "nnodes": nnodes, "partition": partition, "ntasks_per_node": ntasks_per_node, "ntasks": ntasks, "ncpu_per_task": ncpu_per_task, "time_hours": time_hours, "time_minutes": time_minutes, "time_seconds": time_seconds, "fn": fn } }
+        payload = {
+          "action": "run-function",
+          "command": {
+            "wckey": wckey,
+            "nnodes": nnodes,
+            "partition": partition,
+            "ntasks_per_node": ntasks_per_node,
+            "ntasks": ntasks,
+            "ncpu_per_task": ncpu_per_task,
+            "time_hours": time_hours,
+            "time_minutes": time_minutes,
+            "time_seconds": time_seconds,
+            "fn": restricted_fns[fn](fn_params)
+          }
+        }
 
         stdin.write("%s\n" % json.dumps(payload))
         stdin.flush()

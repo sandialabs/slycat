@@ -238,7 +238,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         password: component.remote_matrix.password(),
         success: function(sid) {
           component.remote_matrix.sid(sid);
-          component.tab(5);
+          component.tab(6);
         },
         error: function(request, status, reason_phrase) {
           component.remote_matrix.status_type("danger");
@@ -331,7 +331,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.finish = function() {
-      component.tab(6);
+      component.tab(7);
       var input_columns = [];
       var output_columns = [];
       var rating_columns = [];
@@ -403,7 +403,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                                   client.post_model_finish({
                                     mid: component.model._id(),
                                     success: function() {
-                                      component.tab(6);
+                                      component.tab(7);
                                     }
                                   });
                                 }

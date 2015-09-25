@@ -786,7 +786,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         time_hours: params.time_hours,
         time_minutes: params.time_minutes,
         time_seconds: params.time_seconds,
-        fn: params.fn
+        fn: params.fn,
+        fn_params: params.fn_params
       }),
       type: 'POST',
       url: server_root + 'remotes/run-agent-function',

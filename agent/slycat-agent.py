@@ -131,21 +131,23 @@ def get_job_output(command):
 
 
 def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn):
-  name = os.path.expanduser('~') + "/batch.%s.bash" % fn
-  if not os.path.isfile(name):
-    f = open(name, 'w')
+  name = os.path.expanduser('~') + "/batch.slycat-tmp.bash"
+  f = open(name, 'w')
 
-    f.write("#!/bin/bash\n\n")
-    f.write("#SBATCH --nodes=%s\n" % nnodes)
-    f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-    f.write("#SBATCH --account=%s\n" % wckey)
-    f.write("#SBATCH --job-name=%s\n" % fn)
-    f.write("#SBATCH --partition=%s\n\n" % partition)
-    f.write("nodes=$SLURM_JOB_NUM_NODES\n")
-    f.write("cores=8\n\n")
-    f.write("export TMPDIR=/tmp/$SLURM_JOB_ID\n\n")
-    f.write("srun --ntasks-per-node %s --ntasks %s --cpus-per-task=%s python %s.py" % (ntasks_per_node, ntasks, ncpu_per_task, fn))
-    f.close()
+  f.write("#!/bin/bash\n\n")
+  f.write("#SBATCH --nodes=%s\n" % nnodes)
+  f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+  f.write("#SBATCH --account=%s\n" % wckey)
+  f.write("#SBATCH --job-name=slycat-tmp\n")
+  f.write("#SBATCH --partition=%s\n\n" % partition)
+  f.write("nodes=$SLURM_JOB_NUM_NODES\n")
+  f.write("cores=8\n\n")
+  f.write("export TMPDIR=/tmp/$SLURM_JOB_ID\n\n")
+
+  for c in fn:
+    f.write("%s\n" % c)
+
+  f.close()
 
 def run_function(command):
   results = {
@@ -164,12 +166,8 @@ def run_function(command):
   time_seconds = command["command"]["time_seconds"]
   fn = command["command"]["fn"]
 
-  if os.path.isfile("%s.py" % fn):
-    generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn)
-    results["output"], results["errors"] = run_remote_command("sbatch batch.%s.bash" % fn)
-  else:
-    results["output"] = "see errors"
-    results["errors"] = "the function %s does not have a definition." % fn
+  generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn)
+  results["output"], results["errors"] = run_remote_command("sbatch batch.slycat-tmp.bash" % fn)
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()

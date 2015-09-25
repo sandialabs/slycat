@@ -30,6 +30,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.output = ko.observable('Output for the current job will be posted here...');
       vm.jid = ko.observable(-1);
       vm.agent_functions = ko.observableArray(params.agent_functions === undefined ? [] : params.agent_functions);
+      vm.agent_functions_params = params.agent_functions_params === undefined ? {} :  params.agent_functions_params;
 
       var modal_id = 'slycat-remote-interface-connect-modal';
       var select_id = 'slycat-remote-interface-agent-functions';
@@ -178,6 +179,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             }
 
             previous_state = s;
+          },
+          error: function(request, status, reason_phrase) {
+            vm.output(vm.output() + '\n' + '[Error] Could not check job status: ' + status + ' :' + reason_phrase);
           }
         });
       };
@@ -218,6 +222,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           time_minutes: vm.time_minutes() === undefined ? 0 : vm.time_minutes(),
           time_seconds: vm.time_seconds() === undefined ? 0 : vm.time_seconds(),
           fn: fn,
+          fn_params: vm.agent_functions_params(),
           success: function(results) {
             if (results.errors) {
               vm.output(vm.output() + '\n' + '[Error] Could not start batch file batch.' + fn + '.bash: ' + results.errors);
