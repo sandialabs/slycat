@@ -1,5 +1,10 @@
+# coding=utf-8
+
 def register_slycat_plugin(context):
-  """Called during startup when the plugin is loaded."""
+  """
+  Called during startup when the plugin is loaded.
+  :param context:
+  """
   import cherrypy
   import datetime
   import json
@@ -10,7 +15,16 @@ def register_slycat_plugin(context):
   from urlparse import urlparse
 
   def media_columns(database, model, verb, type, command, **kwargs):
-    """Identify columns in the input data that contain media URIs (image or video)."""
+    """Identify columns in the input data that contain media URIs (image or video).
+    :param kwargs:
+    :param command:
+    :param type:
+    :param verb:
+    :param model:
+      model ID in the data base
+    :param database:
+      our connection to couch db
+    """
     expression = re.compile("file://")
     search = numpy.vectorize(lambda x:bool(expression.search(x)))
 
@@ -28,7 +42,15 @@ def register_slycat_plugin(context):
     return json.dumps(columns)
 
   def finish(database, model):
-    """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
+    """
+    Called to finish the model.
+    This function must return immediately,
+    so any real work would be done in a separate thread.
+    :param model:
+      model ID in the data base
+    :param database:
+      our connection to couch db
+    """
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def page_html(database, model):
@@ -38,9 +60,9 @@ def register_slycat_plugin(context):
 
     context = dict()
     context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
-    context["_id"] = model["_id"];
-    context["name"] = model["name"];
-    context["full-project"] = database.get("project", model["project"]);
+    context["_id"] = model["_id"]
+    context["name"] = model["name"]
+    context["full-project"] = database.get("project", model["project"])
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   # Register our new model type
@@ -48,7 +70,7 @@ def register_slycat_plugin(context):
 
   context.register_page("parameter-image", page_html)
 
-    # Register JS
+  # Register JS
   javascripts = [
     "jquery-ui-1.10.4.custom.min.js",
     "jquery.layout-latest.min.js",
