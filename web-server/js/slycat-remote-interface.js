@@ -11,6 +11,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
       var vm = this;
       vm.disabled = params.disabled === undefined ? false : params.disabled;
+      vm.output_max_height = params.output_max_height === undefined ? 150 : params.output_max_height;
       vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null });
       vm.remote.focus.extend({ notify: 'always' });
       vm.radio = ko.observable('batch-file');
@@ -38,6 +39,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       var batch_path = '';
       var previous_state = '';
 
+      $('.slycat-remote-interface-output').css('max-height', vm.output_max_height);
 
       vm.connect = function() {
         vm.remote.enable(false);
