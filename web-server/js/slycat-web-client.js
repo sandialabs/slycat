@@ -410,6 +410,32 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     if(params.index)
       url += "?index=" + params.index;
 
+
+//    //other section
+//    var new_url = server_root + "models/" + params.mid + "/arraysets/" + params.aid +  "/metadata?arrays=" + (params.array || "0") + "%3b1&" +"statistics=0";
+////    if(params.index)
+////      new_url += "?index=" + params.index;
+//    $.ajax(
+//    {
+//      dataType: "json",
+//      type: "GET",
+//      url: new_url,
+//      success: function(result)
+//      {
+//        if(params.success)
+//          console.log("\nNEW:  " + new_url + "\n" + JSON.stringify(result) +"\n");
+//          //params.success(result);
+//      },
+//      error: function(request, status, reason_phrase)
+//      {
+//        if(params.error)
+//          console.log("\nNEW:  " + url + "\n" + request + reason_phrase + status +"\n");
+//          //params.error(request, status, reason_phrase);
+//      },
+//    });
+//    //END other section
+
+
     $.ajax(
     {
       dataType: "json",
@@ -418,6 +444,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       success: function(result)
       {
         if(params.success)
+          console.log("\nOLD:  " + url + "\n" + JSON.stringify(result) +"\n");
           params.success(result);
       },
       error: function(request, status, reason_phrase)
