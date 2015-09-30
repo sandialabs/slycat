@@ -175,7 +175,8 @@ define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "slycat-bookmar
     var self = this;
     $.ajax({
       type : "GET",
-      url : server_root + "models/" + self.id + "/arraysets/data-table/arrays/0/attributes/" + index + "/chunk?ranges=0," + self.metadata["row-count"],
+      //url : server_root + "models/" + self.id + "/arraysets/data-table/arrays/0/attributes/" + index + "/chunk?ranges=0," + self.metadata["row-count"],//this is the old way of doing it
+      url : server_root + "models/" + self.id + "/arraysets/data-table/data?hyperchunks=0/" + index + "/ranges=0:" + self.metadata["row-count"],
       success: success_callback,
       error: artifact_missing
     });
