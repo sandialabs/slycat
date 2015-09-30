@@ -41,6 +41,6 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
 
     },
 
-    template: { require: "text!" + server_root + "resources/models/parameter-image/slycat-category-select.html" }
+    template: { require: "text!" + server_root + "resources/pages/parameter-image/slycat-category-select.html" }
   });
 });
