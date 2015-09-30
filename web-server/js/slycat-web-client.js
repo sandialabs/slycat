@@ -444,7 +444,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       success: function(result)
       {
         if(params.success)
-          console.log("\nOLD:  " + url + "\n" + JSON.stringify(result) +"\n");
+          //console.log("\nOLD:  " + url + "\n" + JSON.stringify(result) +"\n");
           params.success(result);
       },
       error: function(request, status, reason_phrase)
