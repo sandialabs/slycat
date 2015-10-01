@@ -46,6 +46,8 @@ var sliders_ready = false;
 var image_uri = document.createElement("a");
 var layout = null;
 
+var filterxhr = null;
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1272,11 +1274,16 @@ function filters_changed(newValue)
   // We have one or more filters
   if( !(filter_expression == null || filter_expression == "") )
   {
-    $.ajax(
+    // Abort existing ajax request
+    if(filterxhr && filterxhr.readyState != 4)
+    {
+      filterxhr.abort();
+      console.log('aborted');
+    }
+    filterxhr = $.ajax(
     {
       type : "GET",
       url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/index(0)|" + filter_expression + "/...",
-      async : false,
       success : function(data)
       {
         var filter_indices = data[0];
