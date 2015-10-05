@@ -2,6 +2,7 @@ def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
   import cherrypy
   import datetime
+  import time
   import collections
   import json
   import numpy
@@ -168,11 +169,11 @@ def register_slycat_plugin(context):
         # Store each cluster.
         for key in clusters.keys():
           slycat.web.server.put_model_file(
-            database, 
-            model, 
-            "cluster-%s" % key, 
-            value=json.dumps({"linkage" : cluster_linkages[key].tolist(), "exemplars" : cluster_exemplars[key], "input-indices" : [row_index for row_index, column_index in clusters[key]],}), 
-            content_type="application/json", 
+            database,
+            model,
+            "cluster-%s" % key,
+            value=json.dumps({"linkage" : cluster_linkages[key].tolist(), "exemplars" : cluster_exemplars[key], "input-indices" : [row_index for row_index, column_index in clusters[key]],}),
+            content_type="application/json",
             input=True)
 
       model = database.get("model", mid)
@@ -185,6 +186,34 @@ def register_slycat_plugin(context):
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
       slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
+
+  def checkjob_thread(sid, jid, request_from, stop_event):
+    cherrypy.request.headers["x-forwarded-for"] = request_from
+
+    while True:
+      response = slycat.web.server.checkjob(sid, jid)
+      state = response["status"]["state"]
+      cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
+
+      if state == "CANCELLED" or state == "FAILED":
+        stop_event.set()
+        break;
+
+      if state == "COMPLETED":
+        stop_event.set()
+        break;
+
+      time.sleep(5)
+
+  def checkjob(database, model, verb, type, command, **kwargs):
+    sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
+    jid = kwargs["jid"]
+    stop_event = threading.Event()
+
+    t = threading.Thread(target=checkjob_thread, args=(sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event))
+    t.start()
+
+    return json.dumps({"ok":True})
 
   def finish(database, model):
     """Called to finish the model.  This function must return immediately, so the actual work is done in a separate thread."""
@@ -290,6 +319,7 @@ def register_slycat_plugin(context):
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)
+  context.register_model_command("POST", "parameter-image-plus", "checkjob", checkjob)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image-plus", "New Parameter Image Plus Model", require={"action":"create", "context":"project"})

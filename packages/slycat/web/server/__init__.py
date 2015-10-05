@@ -10,6 +10,7 @@ import shutil
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.web.server.hdf5
+import slycat.web.server.remote
 import uuid
 
 config = {}
@@ -116,7 +117,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
     with slycat.web.server.hdf5.lock:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file: 
+      with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
         results = []
         for array in sorted(hdf5_arrayset.keys()):
@@ -350,3 +351,10 @@ def put_model_parameter(database, model, aid, value, input=False):
     model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
   database.save(model)
 
+
+def create_session(hostname, username, password):
+  return slycat.web.server.remote.create_session(hostname, username, password, None)
+
+def checkjob(sid, jid):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.checkjob(jid)

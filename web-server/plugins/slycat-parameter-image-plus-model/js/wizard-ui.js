@@ -149,13 +149,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.select_columns = function() {
       if (component.ps_type() === "remote") {
         $('.ps-tab-compute-matrix').css('display', 'block');
+        $('.ps-tab-locate-matrix').css('display', 'none');
         component.tab(4);
       } else
         component.tab(5);
     };
 
     component.select_compute = function() {
-      component.tab(5);
+      component.tab(7);
     };
 
     var upload_matrix_success = function() {

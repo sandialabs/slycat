@@ -301,11 +301,11 @@ class Session(object):
     if self._agent is not None:
       def create_jaccard_distance_matrix(params):
         path = "/".join(params["input"].split("/")[:-1])
-        return ["module load slycat", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python %s --distance-measure jaccard --distance-column %s %s %s/jaccard_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"], path)]
+        return ["module load slycat", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python %s --distance-measure jaccard --distance-column %s %s %s/slycat_jaccard_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"], path)]
 
       def create_correlation_distance_matrix(params):
         path = "/".join(params["input"].split("/")[:-1])
-        return ["module load slycat", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python %s --distance-measure correlation --distance-column %s %s %s/correlation_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"], path)]
+        return ["module load slycat", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python %s --distance-measure correlation --distance-column %s %s %s/slycat_correlation_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"], path)]
 
       # verifies the fn is allowed to be run...
       restricted_fns = {

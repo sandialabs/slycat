@@ -300,7 +300,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
 
   module.get_model_arrayset_data = function(params)
   {
@@ -320,7 +320,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
 
   module.get_model_command = function(params)
   {
@@ -340,7 +340,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
 
   module.post_model_command = function(params)
   {
@@ -360,7 +360,24 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
+
+  module.post_sensitive_model_command = function(params) {
+    $.ajax({
+      contentType: "application/json",
+      type: "POST",
+      url: server_root + "models/" + params.mid + "/sensitive/" + params.type + "/" + params.command,
+      data: JSON.stringify(params.parameters || {}),
+      success: function(result) {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
 
   module.put_model_command = function(params)
   {
@@ -380,7 +397,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
           params.error(request, status, reason_phrase);
       },
     });
-  }
+  };
 
   module.get_model_parameter = function(params)
   {
