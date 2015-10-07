@@ -1173,7 +1173,7 @@ define("tracer-image-scatterplot-widget", ["d3", "PlotControl"], function(d3, Pl
           .attr("y", 2)
           .attr("width", 16)
           .attr("height", 16)
-          .attr("xlink:href", "/resources/models/tracer-image/pin.png")
+          .attr("xlink:href", "/resources/pages/tracer-image/pin.png")
           .on("mousedown", function(){
             //console.log("pin button mousedown");
             d3.event.stopPropagation(); // silence other listeners

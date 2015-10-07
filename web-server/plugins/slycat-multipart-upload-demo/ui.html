@@ -44,46 +44,123 @@
           success: function(uid)
           {
             console.log("Upload session created.");
-            upload_file(pid, mid, uid);
+            upload_file_universal(pid, mid, uid);
           }
         });
       }
 
-      function upload_file(pid, mid, uid)
-      {
-        file = document.getElementById("file").files[0];
-        console.log("Upload file", file);
+ //     function upload_file(pid, mid, uid)
+  //    {
+  //    file = document.getElementById("file").files[0];
+  //      console.log("Upload file"+ file + " \nfile size:" + file.size);
 
         // Split the file into two halves.
-        boundary = Math.floor(file.size / 2);
-        first_part = file.slice(0, boundary);
-        second_part = file.slice(boundary, file.size);
+  //      boundary = Math.floor(file.size / 2);
+  //      first_part = file.slice(0, boundary);
+  //      second_part = file.slice(boundary, file.size);
 
         // Upload each half separately.
-        console.log("Uploading first part", first_part);
-        client.put_upload_file_part({
-          uid: uid,
-          fid: 0,
-          pid: 0,
-          file: first_part,
-          success: function()
-          {
-            console.log("Uploading second part", second_part);
+  //      console.log("Uploading first part", first_part);
+  //      client.put_upload_file_part({
+  //        uid: uid,
+  //        fid: 0,
+  //        pid: 0,
+  //        file: first_part,
+  //        success: function()
+  //        {
+  //          console.log("Uploading second part", second_part);
+  //          client.put_upload_file_part({
+  //            uid: uid,
+  //            fid: 0,
+  //            pid: 1,
+  //            file: second_part,
+  //            success: function()
+  //            {
+  //              console.log("File uploaded.");
+  //              finish_upload(pid, mid, uid);
+  //            }
+  //          });
+  //        }
+  //      });
+  //    }
+      /**
+       * This function is designed to handle all file uploads and works
+       * by splitting a file into 1 megabyte slices for upload to the
+       * server
+       * @param pid
+       *  project id
+       * @param mid
+       *  model id
+       * @param uid
+       *  unique id for the file upload on the server
+       */
+      function upload_file_universal(pid, mid, uid)
+      {
+        //TODO: figure out why file upload is only doing 0/0
+        MEGABYTE = 1000000;
+        //MEGABYTE = 1000;
+        var FILE = document.getElementById("file").files[0];
+        console.log("Upload file"+ FILE + " \nfile size:" + file.size);
+        var fileSize = Math.floor(FILE.size / 1000);
+        console.log("floor size" + fileSize);
+
+        if(FILE.size > MEGABYTE){
+          // Split the file into slices.
+          current_slice_boundary = 0;
+          file_upload_part_count = 0;
+          var uploading_files = true;
+          failures = 0;
+          while(uploading_files){
+            if((current_slice_boundary + MEGABYTE) < FILE.size){
+              var file_slice = FILE.slice(current_slice_boundary, current_slice_boundary + MEGABYTE);
+            }else{
+              uploading_files = false;
+              FILE.slice(current_slice_boundary, FILE.size)
+            }
+            current_slice_boundary += MEGABYTE;
+            // Upload each part separately.
+            console.log("Uploading part", file_upload_part_count);
             client.put_upload_file_part({
               uid: uid,
               fid: 0,
-              pid: 1,
-              file: second_part,
-              success: function()
+              pid: file_upload_part_count,
+              file: file_slice,
+              success: function(count)
               {
-                console.log("File uploaded.");
-                finish_upload(pid, mid, uid);
+                file_upload_part_count ++;
+                console.log("File uploaded part:" + file_upload_part_count + " successfully");
+              },
+              error: function(){
+                failures ++;
+                console.log("File part " + file_upload_part_count + " failed to upload");
+                console.log("only " + (100-failures) + " failures left before restart of upload");
               }
             });
+            //if we have to many failures die gracefully
+            if(failures > 100){
+              console.log("to many errors during upload killing the session");
+              uploading_files = false;
+              delete_upload(pid, mid, uid);
+            }
           }
-        });
+          console.log("File uploaded.");
+          finish_upload(pid, mid, uid);//good to go
+        }else{
+          // Upload the whole file since it is small.
+          console.log("Uploading part whole file");
+          client.put_upload_file_part({
+            uid: uid,
+            fid: 0,
+            pid: 0,
+            file: FILE,
+            success: function()
+            {
+              console.log("File uploaded.");
+              finish_upload(pid, mid, uid);
+            }
+          });
+        }
       }
-
       function finish_upload(pid, mid, uid)
       {
         client.post_upload_finished({

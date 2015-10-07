@@ -336,6 +336,6 @@ def register_slycat_plugin(context):
   context.register_model_command("POST", "parameter-image-plus", "checkjob", checkjob)
 
   # Register custom wizards for creating PI models.
-  context.register_wizard("parameter-image-plus", "New Parameter Image Plus Model", require={"action":"create", "context":"project"})
+  context.register_wizard("parameter-image-plus", "New Parameter Image Model", require={"action":"create", "context":"project"})
   context.register_wizard_resource("parameter-image-plus", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
   context.register_wizard_resource("parameter-image-plus", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))
