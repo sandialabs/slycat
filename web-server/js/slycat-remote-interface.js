@@ -199,6 +199,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           command: "checkjob",
           parameters: {
             jid: vm.jid(),
+            fn: $('#' + select_id).val(),
             hostname: vm.remote.hostname(),
             username: vm.remote.username(),
             password: vm.remote.password()

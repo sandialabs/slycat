@@ -28,6 +28,12 @@ def register_slycat_plugin(context):
     "csv" : csv_distance,
     }
 
+  # Maps the slycat-agent functions to their respective output files
+  filenames = {
+    "correlation-distance": "slycat_correlation_distance_matrix.csv",
+    "jaccard-distance": "slycat_jaccard_distance_matrix.csv"
+    }
+
   def compute_distance(left, right, storage, cluster_name, measure_name, measure, columns):
     distance = numpy.empty(len(left))
     for index in range(len(left)):
@@ -187,7 +193,7 @@ def register_slycat_plugin(context):
       model = database.get("model", mid)
       slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
-  def checkjob_thread(sid, jid, request_from, stop_event):
+  def checkjob_thread(sid, jid, request_from, stop_event, callback):
     cherrypy.request.headers["x-forwarded-for"] = request_from
 
     while True:
@@ -200,6 +206,7 @@ def register_slycat_plugin(context):
         break;
 
       if state == "COMPLETED":
+        callback()
         stop_event.set()
         break;
 
@@ -208,9 +215,16 @@ def register_slycat_plugin(context):
   def checkjob(database, model, verb, type, command, **kwargs):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
-    stop_event = threading.Event()
+    fn = kwargs["fn"]
 
-    t = threading.Thread(target=checkjob_thread, args=(sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event))
+    def callback():
+      slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/%s" % (kwargs["username"], filenames[fn]), "distance-matrix", "slycat-csv-parser")
+      media_columns(database, model, verb, type, command)
+      slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
+      finish(database, model)
+
+    stop_event = threading.Event()
+    t = threading.Thread(target=checkjob_thread, args=(sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
     t.start()
 
     return json.dumps({"ok":True})

@@ -11,6 +11,7 @@ import slycat.hdf5
 import slycat.hyperchunks
 import slycat.web.server.hdf5
 import slycat.web.server.remote
+import stat
 import uuid
 
 config = {}
@@ -358,3 +359,32 @@ def create_session(hostname, username, password):
 def checkjob(sid, jid):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.checkjob(jid)
+
+def get_remote_file(sid, path):
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.get_file(path)
+
+def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, **kwargs):
+  if input is None:
+    raise Exception("Required input parameter is missing.")
+
+  if path is not None and sid is not None:
+    with slycat.web.server.remote.get_session(sid) as session:
+      filename = "%s@%s:%s" % (session.username, session.hostname, path)
+      # TODO verify that the file exists first...
+      file = session.sftp.file(path).read()
+  else:
+    raise Exception("Must supply path and sid parameters.")
+
+  if parser is None:
+    Exception("Required parser parameter is missing.")
+  if parser not in slycat.web.server.plugin.manager.parsers:
+    raise Exception("Unknown parser plugin: %s." % parser)
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+
+  try:
+    slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, [file], [aid], **kwargs)
+  except Exception as e:
+    raise Exception("%s" % e)
