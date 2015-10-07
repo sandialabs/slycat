@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, dialog, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, dialog, model_names, ko, mapping)
 {
   ko.components.register("slycat-navbar",
   {
@@ -12,6 +12,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
     {
       var component = this;
       component.server_root = server_root;
+      component.model_names = model_names;
 
       // Keep track of the current project, if any.
       component.project_id = ko.observable(params.project_id);

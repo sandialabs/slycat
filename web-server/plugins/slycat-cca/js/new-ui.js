@@ -99,11 +99,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         input: true,
         aids: ["data-table"],
         parser: component.parser(),
-        success: upload_success,
+        success: function(){
+            upload_success();
+        },
         error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.local-browser-continue').toggleClass("disabled", false);
-        },
+        }
       });
     };
 
@@ -137,11 +139,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         input: true,
         aids: ["data-table"],
         parser: component.parser(),
-        success: upload_success,
+        success: function(){
+            upload_success();
+        },
         error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.remote-browser-continue').toggleClass("disabled", false);
-        },
+        }
       });
     };
     
@@ -196,6 +200,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/new-cca/ui.html"},
+    template: { require: "text!" + server_root + "resources/wizards/new-cca/ui.html"}
   };
 });

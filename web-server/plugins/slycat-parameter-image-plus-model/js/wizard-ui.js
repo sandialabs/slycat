@@ -10,7 +10,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.ps_type = ko.observable("remote"); // local is selected by default...
     component.is_compute = ko.observable("no_compute");
     component.matrix_type = ko.observable("remote"); // local is selected by default...
-    component.model = mapping.fromJS({_id: null, name: "New Parameter Image Plus Model", description: "", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.remote_matrix = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.matrix_type() == 'remote' ? true : false;}), focus: false, sid: null});
