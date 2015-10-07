@@ -111,7 +111,7 @@
                         <span class="fa fa-trash-o"></span>
                       </button>
                     </span>
-                    <span class="label label-default" data-bind="visible: model_type, text:model_type + ' model'"></span>
+                    <span class="label label-default" data-bind="visible: model_type, text:$parent.model_names.translate_model_type(model_type) + ' model'"></span>
                     <strong>
                       <span>
                         <span data-bind="text:model_name"></span> 
