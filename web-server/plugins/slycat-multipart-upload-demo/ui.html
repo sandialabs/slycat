@@ -83,6 +83,36 @@
   //        }
   //      });
   //    }
+      //MEGABYTE = 1000000;
+      MEGABYTE = 1000;
+      function get_file_slice(slice_number, file){
+          var current_slice_boundary = (slice_number * MEGABYTE);
+          if((current_slice_boundary + MEGABYTE) < file.size){
+            return file.slice(current_slice_boundary, current_slice_boundary + MEGABYTE);
+          }else{
+            return file.slice(current_slice_boundary, file.size)
+          }
+      }
+      function upload_file_slice(uid, slice_number, file){
+        // Split the file into slices.
+        var uploading_files = true;
+        var file_slice = get_file_slice(slice_number, file);
+          // Upload each part separately.
+          console.log("Uploading part", slice_number);
+          client.put_upload_file_part({
+            uid: uid,
+            fid: 0,
+            pid: slice_number,
+            file: file_slice,
+            success: function()
+            {
+              console.log("File uploaded part:" + slice_number + " successfully");
+            },
+            error: function(){
+              console.log("File part " + slice_number + " failed to upload will try to re-upload at the end");
+            }
+          });
+      }
       /**
        * This function is designed to handle all file uploads and works
        * by splitting a file into 1 megabyte slices for upload to the
@@ -96,55 +126,21 @@
        */
       function upload_file_universal(pid, mid, uid)
       {
-        //TODO: figure out why file upload is only doing 0/0
-        MEGABYTE = 1000000;
-        //MEGABYTE = 1000;
-        var FILE = document.getElementById("file").files[0];
-        console.log("Upload file"+ FILE + " \nfile size:" + file.size);
-        var fileSize = Math.floor(FILE.size / 1000);
-        console.log("floor size" + fileSize);
 
-        if(FILE.size > MEGABYTE){
-          // Split the file into slices.
-          current_slice_boundary = 0;
-          file_upload_part_count = 0;
-          var uploading_files = true;
-          failures = 0;
-          while(uploading_files){
-            if((current_slice_boundary + MEGABYTE) < FILE.size){
-              var file_slice = FILE.slice(current_slice_boundary, current_slice_boundary + MEGABYTE);
-            }else{
-              uploading_files = false;
-              FILE.slice(current_slice_boundary, FILE.size)
-            }
-            current_slice_boundary += MEGABYTE;
-            // Upload each part separately.
-            console.log("Uploading part", file_upload_part_count);
-            client.put_upload_file_part({
-              uid: uid,
-              fid: 0,
-              pid: file_upload_part_count,
-              file: file_slice,
-              success: function(count)
-              {
-                file_upload_part_count ++;
-                console.log("File uploaded part:" + file_upload_part_count + " successfully");
-              },
-              error: function(){
-                failures ++;
-                console.log("File part " + file_upload_part_count + " failed to upload");
-                console.log("only " + (100-failures) + " failures left before restart of upload");
-              }
-            });
-            //if we have to many failures die gracefully
-            if(failures > 100){
-              console.log("to many errors during upload killing the session");
-              uploading_files = false;
-              delete_upload(pid, mid, uid);
-            }
+        var file = document.getElementById("file").files[0];
+        console.log("Upload file"+ file + " \nfile size:" + File.size);
+        console.log("floor size" + Math.floor(file.size / MEGABYTE));
+
+        if(file.size > MEGABYTE){
+          console.log("multi File upload initiated.");
+          var running = true;
+          var slice_number = 0;
+          while(running) {
+            upload_file_slice(uid, slice_number, file);
+            running = ((slice_number * MEGABYTE) <= file.size);
+            slice_number ++;
           }
-          console.log("File uploaded.");
-          finish_upload(pid, mid, uid);//good to go
+          finish_upload(pid, mid, uid, slice_number);//good to go
         }else{
           // Upload the whole file since it is small.
           console.log("Uploading part whole file");
@@ -152,24 +148,34 @@
             uid: uid,
             fid: 0,
             pid: 0,
-            file: FILE,
+            file: file,
             success: function()
             {
               console.log("File uploaded.");
-              finish_upload(pid, mid, uid);
+              finish_upload(pid, mid, uid, 1);
             }
           });
         }
       }
-      function finish_upload(pid, mid, uid)
+
+      function finish_upload(pid, mid, uid, number_of_uploaded_slices)
       {
         client.post_upload_finished({
           uid: uid,
-          uploaded: [2],
+          uploaded: [number_of_uploaded_slices],
           success: function()
           {
             console.log("Upload session finished.");
             delete_upload(pid, mid, uid);
+          },
+          error: function(request, status, reason_phrase)
+          {
+            if(request.status == 400)
+            {
+              console.log(request);
+              console.log(JSON.stringify(status));
+              console.log(reason_phrase);
+            }
           }
         });
       }
