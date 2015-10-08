@@ -1,4 +1,4 @@
-define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-server-root', 'URI', 'slycat-web-client'], function(ko, mapping, server_root, URI, client) {
+define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-server-root', 'URI', 'slycat-web-client', 'slycat-dialog'], function(ko, mapping, server_root, URI, client, dialog) {
 
   /**
    * A Knockout component to interact with remote hosts. Currently, for the
@@ -32,6 +32,10 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.jid = ko.observable(-1);
       vm.agent_functions = ko.observableArray(params.agent_functions === undefined ? [] : params.agent_functions);
       vm.agent_functions_params = params.agent_functions_params === undefined ? {} :  params.agent_functions_params;
+
+      vm.model_type = params.model_type;
+      vm.mid = params.mid;
+
 
       var modal_id = 'slycat-remote-interface-connect-modal';
       var select_id = 'slycat-remote-interface-agent-functions';
@@ -169,7 +173,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             else
               vm.output(vm.output() + '.');
 
-            if (s === 'COMPLETED') {
+            if (s === 'COMPLETED' || s === 'FAILED') {
               clearInterval(iid);
               get_job_output();
               previous_state = '';
@@ -188,6 +192,22 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         });
       };
 
+      var server_checkjob = function() {
+        client.post_sensitive_model_command({
+          mid: vm.mid(),
+          type: vm.model_type,
+          command: "checkjob",
+          parameters: {
+            jid: vm.jid(),
+            fn: $('#' + select_id).val(),
+            hostname: vm.remote.hostname(),
+            username: vm.remote.username(),
+            password: vm.remote.password()
+          },
+          error: dialog.ajax_error("There was a problem checking job status from the server:")
+        });
+      };
+
       var on_batch_file = function() {
         client.post_submit_batch({
           sid: vm.remote.sid(),
@@ -202,6 +222,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             vm.output(vm.output() + '\n' + 'Job ID=' + vm.jid() + ' has been submitted.');
             previous_state = '';
             iid = setInterval(checkjob, 1000);
+            server_checkjob();
           },
           error: function(request, status, reason_phrase) {
             vm.output(vm.output() + '\n' + '[Error] Could not start batch file ' + vm.batch() + ': ' + reason_phrase);
@@ -235,6 +256,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             vm.output(vm.output() + '\n' + 'Slycat pre-built ' + fn  + ': job ID=' + vm.jid() + ' has been submitted.');
             previous_state = '';
             iid = setInterval(checkjob, 1000);
+            server_checkjob();
           },
           error: function(request, status, reason_phrase) {
             vm.output(vm.output() + '\n' + '[Error] Could not start batch file batch.' + fn + '.bash: ' + reason_phrase);

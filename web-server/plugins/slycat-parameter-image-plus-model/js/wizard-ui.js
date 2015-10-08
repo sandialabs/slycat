@@ -149,13 +149,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.select_columns = function() {
       if (component.ps_type() === "remote") {
         $('.ps-tab-compute-matrix').css('display', 'block');
+        $('.ps-tab-locate-matrix').css('display', 'none');
         component.tab(4);
       } else
         component.tab(5);
     };
 
     component.select_compute = function() {
-      component.tab(5);
+      if (component.is_compute() === 'yes_compute') {
+        component.finish(true);
+      } else if (component.is_compute() === 'no_compute') {
+        $('.ps-tab-locate-matrix').css('display', 'block');
+        $('.ps-tab-remote-matrix').css('display', 'block');
+        component.tab(5);
+      }
     };
 
     var upload_matrix_success = function() {
@@ -330,7 +337,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       location = server_root + 'models/' + component.model._id();
     };
 
-    component.finish = function() {
+    component.finish = function(not_finished) {
       component.tab(7);
       var input_columns = [];
       var output_columns = [];
@@ -400,12 +407,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                                 value: 'csv',
                                 input: true,
                                 success: function() {
-                                  client.post_model_finish({
-                                    mid: component.model._id(),
-                                    success: function() {
-                                      component.tab(7);
-                                    }
-                                  });
+                                  if (!not_finished) {
+                                    client.post_model_finish({
+                                      mid: component.model._id(),
+                                      success: function() {
+                                        component.tab(7);
+                                      }
+                                    });
+                                  }
                                 }
                               });
                             }

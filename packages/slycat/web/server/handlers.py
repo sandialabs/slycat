@@ -458,6 +458,19 @@ def model_command(mid, type, command, **kwargs):
     return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type, command, **kwargs)
   raise cherrypy.HTTPError("400 Unknown command: %s" % command)
 
+@cherrypy.tools.json_in(on = True)
+def model_sensitive_command(mid, type, command):
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+  kwargs = cherrypy.request.json
+
+  key = (cherrypy.request.method, type, command)
+  if key in slycat.web.server.plugin.manager.model_commands:
+    return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type, command, **kwargs)
+  raise cherrypy.HTTPError("400 Unknown command: %s" % command)
+
 def get_page_resource(ptype, resource):
   if ptype in slycat.web.server.plugin.manager.page_bundles:
     if resource in slycat.web.server.plugin.manager.page_bundles[ptype]:
