@@ -237,15 +237,16 @@ def register_slycat_plugin(context):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
+    output_path = "/".join(kwargs["fn_params"]["input"].split("/")[:-1])
 
     def callback():
-      slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/%s" % (kwargs["username"], filenames[fn]), "distance-matrix", "slycat-csv-parser")
+      slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, filenames[fn]), "distance-matrix", "slycat-csv-parser")
       media_columns(database, model, verb, type, command)
       slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
       finish(database, model)
 
     stop_event = threading.Event()
-    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback, filenames[fn]))
+    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback, "%s/%s" % (output_path, filenames[fn])))
     t.start()
 
     return json.dumps({"ok":True})
