@@ -44,7 +44,7 @@
           success: function(uid)
           {
             console.log("Upload session created.");
-            upload_file_universal(pid, mid, uid);
+            upload_file(pid, mid, uid);
           }
         });
       }
@@ -83,8 +83,18 @@
   //        }
   //      });
   //    }
-      //MEGABYTE = 1000000;
-      MEGABYTE = 1000;
+      var MEGABYTE = 1000000;
+      //MEGABYTE = 10000;
+
+      /**
+       * get a file slice
+       * @param slice_number
+       *  The incremental identifier for the file slice
+       * @param file
+       *  The file to be sliced
+       * @return
+       *  The slice of the file associated with the slice number
+       */
       function get_file_slice(slice_number, file){
           var current_slice_boundary = (slice_number * MEGABYTE);
           if((current_slice_boundary + MEGABYTE) < file.size){
@@ -93,9 +103,17 @@
             return file.slice(current_slice_boundary, file.size)
           }
       }
+      /**
+       * Used to upload a slice of a file to the server database
+       * @param uid
+       *  unique upload session id
+       * @param slice_number
+       *  The incremental identifier for the file slice
+       * @param file
+       *  file to be uploaded
+       */
       function upload_file_slice(uid, slice_number, file){
         // Split the file into slices.
-        var uploading_files = true;
         var file_slice = get_file_slice(slice_number, file);
           // Upload each part separately.
           console.log("Uploading part", slice_number);
@@ -124,7 +142,7 @@
        * @param uid
        *  unique id for the file upload on the server
        */
-      function upload_file_universal(pid, mid, uid)
+      function upload_file(pid, mid, uid)
       {
 
         var file = document.getElementById("file").files[0];
@@ -140,7 +158,7 @@
             running = ((slice_number * MEGABYTE) <= file.size);
             slice_number ++;
           }
-          finish_upload(pid, mid, uid, slice_number);//good to go
+          finish_upload(pid, mid, uid, file, slice_number);//good to go
         }else{
           // Upload the whole file since it is small.
           console.log("Uploading part whole file");
@@ -152,13 +170,13 @@
             success: function()
             {
               console.log("File uploaded.");
-              finish_upload(pid, mid, uid, 1);
+              finish_upload(pid, mid, uid, file, 1);
             }
           });
         }
       }
 
-      function finish_upload(pid, mid, uid, number_of_uploaded_slices)
+      function finish_upload(pid, mid, uid, file, number_of_uploaded_slices)
       {
         client.post_upload_finished({
           uid: uid,
@@ -172,9 +190,12 @@
           {
             if(request.status == 400)
             {
-              console.log(request);
-              console.log(JSON.stringify(status));
-              console.log(reason_phrase);
+              var missing_elements = JSON.parse(request.responseText).missing;
+              missing_elements.forEach(function(missing_element){
+                console.log("missing element " + missing_element[1] + " for file" + missing_element[0]);
+                upload_file_slice(uid, missing_element[1], file);
+                finish_upload(pid, mid, uid, file, number_of_uploaded_slices);
+              });
             }
           }
         });

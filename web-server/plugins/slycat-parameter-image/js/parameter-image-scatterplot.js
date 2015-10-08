@@ -813,7 +813,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // canvas.fillRect(0 + 0.5, 0 + 0.5, width, height);
       // canvas.strokeRect(0 + 0.5, 0 + 0.5, width, height);
       var end = time.now();
-      console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
+      // console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
     }
 
     if (self.updates.render_selection) {

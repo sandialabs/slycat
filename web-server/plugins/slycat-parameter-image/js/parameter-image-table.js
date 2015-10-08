@@ -160,6 +160,13 @@ $.widget("parameter_image.table",
       editCommandHandler : self._editCommandHandler,
     });
 
+    self.data.onDataLoaded.subscribe(function (e, args) {
+      for (var i = args.from; i <= args.to; i++) {
+        self.grid.invalidateRow(i);
+      }
+      self.grid.render();
+    });
+
     var header_buttons = new Slick.Plugins.HeaderButtons();
     header_buttons.onCommand.subscribe(function(e, args)
     {
@@ -392,13 +399,13 @@ $.widget("parameter_image.table",
     {
       if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
         if( self.columns[i].id == self.options["y-variable"]){
-          self.columns[i].header.buttons[0].cssClass = "icon-y-on";
-          self.columns[i].header.buttons[0].tooltip = "Current y variable";
-          self.columns[i].header.buttons[0].command = "";
+          self.columns[i].header.buttons[2].cssClass = "icon-y-on";
+          self.columns[i].header.buttons[2].tooltip = "Current y variable";
+          self.columns[i].header.buttons[2].command = "";
         } else {
-          self.columns[i].header.buttons[0].cssClass = "icon-y-off";
-          self.columns[i].header.buttons[0].tooltip = "Set as y variable";
-          self.columns[i].header.buttons[0].command = "y-on";
+          self.columns[i].header.buttons[2].cssClass = "icon-y-off";
+          self.columns[i].header.buttons[2].tooltip = "Set as y variable";
+          self.columns[i].header.buttons[2].command = "y-on";
         }
         self.grid.updateColumnHeader(self.columns[i].id);
       }
@@ -470,7 +477,10 @@ $.widget("parameter_image.table",
     self.hidden_simulations = parameters.hidden_simulations;
 
     self.pages = {};
+    self.pages_in_progress = {};
     self.page_size = 50;
+
+    self.onDataLoaded = new Slick.Event();
 
     self.getLength = function()
     {
@@ -484,8 +494,14 @@ $.widget("parameter_image.table",
       var page = Math.floor(index / self.page_size);
       var page_begin = page * self.page_size;
 
+      if(self.pages_in_progress[page])
+      {
+        return null;
+      }
+
       if(!(page in self.pages))
       {
+        self.pages_in_progress[page] = true;
         var row_begin = page_begin;
         var row_end = (page + 1) * self.page_size;
 
@@ -502,11 +518,9 @@ $.widget("parameter_image.table",
         {
           type : "GET",
           url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "| index(0)" + sort + "/" + row_begin + ":" + row_end,
-          async : false,
           success : function(data)
           {
             self.pages[page] = [];
-            //var arrayPage = [];
             for(var i=0; i < data[0].length; i++)
             {
               result = {};
@@ -516,12 +530,15 @@ $.widget("parameter_image.table",
               }
               self.pages[page].push(result);
             }
+            self.pages_in_progress[page] = false;
+            self.onDataLoaded.notify({from: row_begin, to: row_end});
           },
           error: function(request, status, reason_phrase)
           {
             console.log("error", request, status, reason_phrase);
           }
         });
+        return null;
       }
 
       return self.pages[page][index - page_begin];
@@ -529,6 +546,12 @@ $.widget("parameter_image.table",
 
     self.getItemMetadata = function(index)
     {
+      var page = Math.floor(index / self.page_size);
+      if((self.pages_in_progress[page]) || !(page in self.pages))
+      {
+        return null;
+      }
+
       var row = this.getItem(index);
       var column_end = self.analysis_columns.length;
       var cssClasses = "";
@@ -607,7 +630,6 @@ $.widget("parameter_image.table",
     self.invalidate = function()
     {
       self.pages = {};
-
     }
   },
 
