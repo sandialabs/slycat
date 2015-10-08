@@ -400,13 +400,13 @@ $.widget("parameter_image.table",
     {
       if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
         if( self.columns[i].id == self.options["y-variable"]){
-          self.columns[i].header.buttons[0].cssClass = "icon-y-on";
-          self.columns[i].header.buttons[0].tooltip = "Current y variable";
-          self.columns[i].header.buttons[0].command = "";
+          self.columns[i].header.buttons[2].cssClass = "icon-y-on";
+          self.columns[i].header.buttons[2].tooltip = "Current y variable";
+          self.columns[i].header.buttons[2].command = "";
         } else {
-          self.columns[i].header.buttons[0].cssClass = "icon-y-off";
-          self.columns[i].header.buttons[0].tooltip = "Set as y variable";
-          self.columns[i].header.buttons[0].command = "y-on";
+          self.columns[i].header.buttons[2].cssClass = "icon-y-off";
+          self.columns[i].header.buttons[2].tooltip = "Set as y variable";
+          self.columns[i].header.buttons[2].command = "y-on";
         }
         self.grid.updateColumnHeader(self.columns[i].id);
       }
