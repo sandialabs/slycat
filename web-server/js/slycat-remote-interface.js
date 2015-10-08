@@ -248,12 +248,12 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           fn_params: vm.agent_functions_params(),
           success: function(results) {
             if (results.errors) {
-              vm.output(vm.output() + '\n' + '[Error] Could not start batch file batch.' + fn + '.bash: ' + results.errors);
+              vm.output(vm.output() + '\n' + '[Error] Could not start batch file for Slycat pre-built function ' + fn + ': ' + results.errors);
               return void 0;
             }
 
             vm.jid(results.jid);
-            vm.output(vm.output() + '\n' + 'Slycat pre-built ' + fn  + ': job ID=' + vm.jid() + ' has been submitted.');
+            vm.output(vm.output() + '\n' + 'Slycat pre-built function ' + fn  + ': job ID=' + vm.jid() + ' has been submitted.');
             previous_state = '';
             iid = setInterval(checkjob, 1000);
             server_checkjob();
