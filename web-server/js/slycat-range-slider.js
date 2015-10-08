@@ -122,30 +122,24 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       });
       scrollbar.low_thumb.mousedown = function(model, event)
       {
-        console.log("scrollbar.low_thumb.mousedown start");
         scrollbar.low_thumb.dragging(true);
         scrollbar.low_thumb.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.low_thumb.mousemove, true);
         window.addEventListener("mouseup", scrollbar.low_thumb.mouseup, true);
-        console.log("scrollbar.low_thumb.mousedown finish");
       }
       scrollbar.high_thumb.mousedown = function(model, event)
       {
-        console.log("scrollbar.high_thumb.mousedown start");
         scrollbar.high_thumb.dragging(true);
         scrollbar.high_thumb.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.high_thumb.mousemove, true);
         window.addEventListener("mouseup", scrollbar.high_thumb.mouseup, true);
-        console.log("scrollbar.high_thumb.mousedown finish");
       }
       scrollbar.range.mousedown = function(model, event)
       {
-        console.log("scrollbar.range.mousedown start");
         scrollbar.range.dragging(true);
         scrollbar.range.last_drag = [event.pageX, event.pageY];
         window.addEventListener("mousemove", scrollbar.range.mousemove, true);
         window.addEventListener("mouseup", scrollbar.range.mouseup, true);
-        console.log("scrollbar.range.mousedown finish");
       }
       scrollbar.low_thumb.mousemove = function(event)
       {
@@ -239,45 +233,21 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       }
       scrollbar.low_thumb.mouseup = function(event)
       {
-        console.log("scrollbar.low_thumb.mouseup start");
         scrollbar.low_thumb.dragging(false);
         window.removeEventListener("mousemove", scrollbar.low_thumb.mousemove, true);
         window.removeEventListener("mouseup", scrollbar.low_thumb.mouseup, true);
-        console.log("scrollbar.low_thumb.mouseup finish");
       }
-      
-
-
-
-      // Begin debug code. Remove before commiting to master.
-      document.body.onmouseup = function() {
-        console.log('document.body.onmouseup');
-      }
-      window.onmouseup = function() {
-        console.log('window.onmouseup');
-      }
-      window.addEventListener('mouseup', function(e) { console.log('window.addEventListener mouseup true'); }, true);
-      window.addEventListener('mouseup', function(e) { console.log('window.addEventListener mouseup false'); }, false);
-      // End debug code.
-
-
-
-
       scrollbar.high_thumb.mouseup = function(event)
       {
-        console.log("scrollbar.high_thumb.mouseup start");
         scrollbar.high_thumb.dragging(false);
         window.removeEventListener("mousemove", scrollbar.high_thumb.mousemove, true);
         window.removeEventListener("mouseup", scrollbar.high_thumb.mouseup, true);
-        console.log("scrollbar.high_thumb.mouseup finish");
       }
       scrollbar.range.mouseup = function(event)
       {
-        console.log("scrollbar.range.mouseup start");
         scrollbar.range.dragging(false);
         window.removeEventListener("mousemove", scrollbar.range.mousemove, true);
         window.removeEventListener("mouseup", scrollbar.range.mouseup, true);
-        console.log("scrollbar.range.mouseup finish");
       }
     },
     template: { require: "text!" + server_root + "templates/slycat-range-slider.html" }
