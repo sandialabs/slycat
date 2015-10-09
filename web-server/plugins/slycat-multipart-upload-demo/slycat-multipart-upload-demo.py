@@ -23,3 +23,6 @@ def register_slycat_plugin(context):
 
   '''
   context.register_page("multipart-upload-demo", page_html)
+  context.register_page_bundle("multipart-upload-demo", "text/javascript", [
+    os.path.join(os.path.dirname(__file__), "file_uploader_factory.js")
+    ])

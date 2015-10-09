@@ -4,10 +4,11 @@
     <input type="file" id="file"></input>
     <button class="btn btn-default" id="upload">Upload</button>
   </div>
-
+  <script type="text/javascript" src="file_uploader_factory.js"></script>
   <script type="text/javascript">
-    require(["slycat-web-client"], function(client)
+    require(["slycat-web-client","file_uploader_factory"], function(client,fileUploader)
     {
+      console.log("check library fact"+fileUploader.MEGABYTE);
       function create_project()
       {
         client.post_projects({
@@ -30,21 +31,6 @@
           {
             console.log("Model created.");
             start_upload(pid, mid);
-          }
-        });
-      }
-
-      function start_upload(pid, mid)
-      {
-        client.post_uploads({
-          mid: mid,
-          input: true,
-          parser: "slycat-csv-parser",
-          aids: ["data-table"],
-          success: function(uid)
-          {
-            console.log("Upload session created.");
-            upload_file(pid, mid, uid);
           }
         });
       }
@@ -85,7 +71,27 @@
   //    }
       var MEGABYTE = 1000000;
       //MEGABYTE = 10000;
-
+      /**
+       * Initiate the file upload session
+       *  @param pid
+       *    project id
+       *  @param mid
+       *    model id
+       */
+      function start_upload(pid, mid)
+      {
+        client.post_uploads({
+          mid: mid,
+          input: true,
+          parser: "slycat-csv-parser",
+          aids: ["data-table"],
+          success: function(uid)
+          {
+            console.log("Upload session created.");
+            upload_file(pid, mid, uid);
+          }
+        });
+      }
       /**
        * get a file slice
        * @param sliceNumber
@@ -176,6 +182,19 @@
         }
       }
 
+      /**
+       *
+       * @param pid
+       *  project id
+       * @param mid
+       *  model id
+       * @param uid
+       *  unique session id
+       * @param file
+       *  file that is being loaded
+       * @param numberOfUploadedSlices
+       *  number of slices the file was split into when uploaded starting from 1(not 0)
+       */
       function finish_upload(pid, mid, uid, file, numberOfUploadedSlices)
       {
         client.post_upload_finished({
@@ -201,6 +220,15 @@
         });
       }
 
+      /**
+       * Used to delete a file upload session at any point during the upload
+       * @param pid
+       *  project id
+       * @param mid
+       *  model id
+       * @param uid
+       *  unique upload session id
+       */
       function delete_upload(pid, mid, uid)
       {
         client.delete_upload({
