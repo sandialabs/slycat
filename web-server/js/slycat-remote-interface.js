@@ -19,11 +19,11 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.batch = ko.observable('');
 
       vm.wckey = ko.observable('');
-      vm.nnodes = ko.observable();
+      vm.nnodes = ko.observable(1);
       vm.partition = ko.observable('');
-      vm.ntasks_per_node = ko.observable();
-      vm.ntasks = ko.observable();
-      vm.ncpu_per_task = ko.observable();
+      vm.ntasks_per_node = ko.observable(1);
+      vm.ntasks = ko.observable(1);
+      vm.ncpu_per_task = ko.observable(4);
       vm.time_hours = ko.observable();
       vm.time_minutes = ko.observable(5);
       vm.time_seconds = ko.observable();
