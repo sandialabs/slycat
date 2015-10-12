@@ -3,7 +3,7 @@ Copyright 2015, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
-define("file_uploader_factory",["slycat-web-client"], function(client)
+define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
     {
       var module = {};
       module.MEGABYTE = 1000000;
@@ -66,6 +66,7 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
        */
       function uploadFileSlice(uid, sliceNumber, file){
         // Split the file into slices.
+        //TODO: add incrementing file id in upload file
         var fileSlice = getFileSlice(sliceNumber, file);
           // Upload each part separately.
           console.log("Uploading part", sliceNumber);
@@ -127,6 +128,11 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
             {
               console.log("File uploaded.");
               finishUpload(pid, mid, uid, file, 1, fileObject);
+            },
+            error: function(){
+              if(fileObject.error) {
+                fileObject.error();
+              }
             }
           });
         }
@@ -168,6 +174,10 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
                 uploadFileSlice(uid, missingElement[1], file);
                 finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject);
               });
+            }else{
+              if(fileObject.error) {
+                fileObject.error();
+              }
             }
           }
         });
