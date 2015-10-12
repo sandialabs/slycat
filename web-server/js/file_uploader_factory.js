@@ -28,7 +28,7 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
           mid: fileObject.mid,
           input: true,
           parser: fileObject.parser,
-          aids: ["data-table"],
+          aids: fileObject.aids,
           success: function(uid)
           {
             console.log("Upload session created.");
