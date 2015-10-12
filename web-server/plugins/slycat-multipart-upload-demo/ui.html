@@ -9,6 +9,9 @@
     require(["slycat-web-client","file_uploader_factory"], function(client, fileUploader)
     {
       //console.log("check library factory loader :"+ fileUploader.MEGABYTE);
+      /**
+       * create a cca project for the cars.csv file
+       */
       function create_project()
       {
         client.post_projects({
@@ -20,7 +23,9 @@
           }
         });
       }
-
+      /**
+       * create a model within a project
+       */
       function create_model(pid)
       {
         client.post_project_models({
@@ -57,41 +62,13 @@
         });
       }
 
- //     function upload_file(pid, mid, uid)
-  //    {
-  //    file = document.getElementById("file").files[0];
-  //      console.log("Upload file"+ file + " \nfile size:" + file.size);
-
-        // Split the file into two halves.
-  //      boundary = Math.floor(file.size / 2);
-  //      first_part = file.slice(0, boundary);
-  //      second_part = file.slice(boundary, file.size);
-
-        // Upload each half separately.
-  //      console.log("Uploading first part", first_part);
-  //      client.put_upload_file_part({
-  //        uid: uid,
-  //        fid: 0,
-  //        pid: 0,
-  //        file: first_part,
-  //        success: function()
-  //        {
-  //          console.log("Uploading second part", second_part);
-  //          client.put_upload_file_part({
-  //            uid: uid,
-  //            fid: 0,
-  //            pid: 1,
-  //            file: second_part,
-  //            success: function()
-  //            {
-  //              console.log("File uploaded.");
-  //              finish_upload(pid, mid, uid);
-  //            }
-  //          });
-  //        }
-  //      });
-  //    }
-
+      /**
+       * finish the cca model we just uploaded for the cars data set
+       * @param pid
+       *  project id
+       * @param mid
+       *  model id
+         */
       function finish_model(pid, mid)
       {
         console.log("finishing model");
