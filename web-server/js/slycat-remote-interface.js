@@ -193,6 +193,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       };
 
       var server_checkjob = function() {
+        if (!vm.mid)
+          return void 0;
+
         client.post_sensitive_model_command({
           mid: vm.mid(),
           type: vm.model_type,
