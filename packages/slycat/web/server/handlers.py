@@ -71,6 +71,7 @@ def js_bundle():
         "js/slycat-server-root.js",
         "js/slycat-bookmark-manager.js",
         "js/slycat-web-client.js",
+        "js/file_uploader_factory.js",
         "js/slycat-dialog.js",
         "js/slycat-markings.js",
         "js/slycat-nag.js",
