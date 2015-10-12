@@ -6,9 +6,9 @@
   </div>
   <script type="text/javascript" src="file_uploader_factory.js"></script>
   <script type="text/javascript">
-    require(["slycat-web-client","file_uploader_factory"], function(client,fileUploader)
+    require(["slycat-web-client","file_uploader_factory"], function(client, fileUploader)
     {
-      console.log("check library fact"+fileUploader.MEGABYTE);
+      //console.log("check library factory loader :"+ fileUploader.MEGABYTE);
       function create_project()
       {
         client.post_projects({
@@ -30,7 +30,29 @@
           success: function(mid)
           {
             console.log("Model created.");
-            start_upload(pid, mid);
+             /*   fileobject
+             *    {
+             *      pid: project id
+             *      mid: model id
+             *      file: file to be uploaded
+             *      parser: parser to be used for uploading
+             *      success: function called if upload is successful
+             *    }
+             */
+            var file = document.getElementById("file").files[0];
+            console.log("Upload file"+ file + " \nfile size:" + file.size);
+            console.log("floor size" + Math.floor(file.size / fileUploader.MEGABYTE));
+            var fileObject ={
+             pid: pid,
+             mid: mid,
+             file: file,
+             parser: "slycat-csv-parser",
+             success: function(){
+               finish_model(pid, mid);
+             }
+            };
+            fileUploader.uploadFile(fileObject);
+            //start_upload(pid, mid);
           }
         });
       }
@@ -69,187 +91,10 @@
   //        }
   //      });
   //    }
-      var MEGABYTE = 1000000;
-      //MEGABYTE = 10000;
-      /**
-       * Initiate the file upload session
-       *  @param pid
-       *    project id
-       *  @param mid
-       *    model id
-       */
-      function start_upload(pid, mid)
-      {
-        client.post_uploads({
-          mid: mid,
-          input: true,
-          parser: "slycat-csv-parser",
-          aids: ["data-table"],
-          success: function(uid)
-          {
-            console.log("Upload session created.");
-            upload_file(pid, mid, uid);
-          }
-        });
-      }
-      /**
-       * get a file slice
-       * @param sliceNumber
-       *  The incremental identifier for the file slice
-       * @param file
-       *  The file to be sliced
-       * @return
-       *  The slice of the file associated with the slice number
-       */
-      function get_file_slice(sliceNumber, file){
-          var currentSliceBoundary = (sliceNumber * MEGABYTE);
-          if((currentSliceBoundary + MEGABYTE) < file.size){
-            return file.slice(currentSliceBoundary, currentSliceBoundary + MEGABYTE);
-          }else{
-            return file.slice(currentSliceBoundary, file.size)
-          }
-      }
-      /**
-       * Used to upload a slice of a file to the server database
-       * @param uid
-       *  unique upload session id
-       * @param sliceNumber
-       *  The incremental identifier for the file slice
-       * @param file
-       *  file to be uploaded
-       */
-      function upload_file_slice(uid, sliceNumber, file){
-        // Split the file into slices.
-        var fileSlice = get_file_slice(sliceNumber, file);
-          // Upload each part separately.
-          console.log("Uploading part", sliceNumber);
-          client.put_upload_file_part({
-            uid: uid,
-            fid: 0,
-            pid: sliceNumber,
-            file: fileSlice,
-            success: function()
-            {
-              console.log("File uploaded part:" + sliceNumber + " successfully");
-            },
-            error: function(){
-              console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
-            }
-          });
-      }
-      /**
-       * This function is designed to handle all file uploads and works
-       * by splitting a file into 1 megabyte slices for upload to the
-       * server
-       * @param pid
-       *  project id
-       * @param mid
-       *  model id
-       * @param uid
-       *  unique id for the file upload on the server
-       */
-      function upload_file(pid, mid, uid)
-      {
-
-        var file = document.getElementById("file").files[0];
-        console.log("Upload file"+ file + " \nfile size:" + File.size);
-        console.log("floor size" + Math.floor(file.size / MEGABYTE));
-
-        if(file.size > MEGABYTE){
-          console.log("multi File upload initiated.");
-          var running = true;
-          var sliceNumber = 0;
-          while(running) {
-            upload_file_slice(uid, sliceNumber, file);
-            running = ((sliceNumber * MEGABYTE) <= file.size);
-            sliceNumber ++;
-          }
-          finish_upload(pid, mid, uid, file, sliceNumber);//good to go
-        }else{
-          // Upload the whole file since it is small.
-          console.log("Uploading part whole file");
-          client.put_upload_file_part({
-            uid: uid,
-            fid: 0,
-            pid: 0,
-            file: file,
-            success: function()
-            {
-              console.log("File uploaded.");
-              finish_upload(pid, mid, uid, file, 1);
-            }
-          });
-        }
-      }
-
-      /**
-       *
-       * @param pid
-       *  project id
-       * @param mid
-       *  model id
-       * @param uid
-       *  unique session id
-       * @param file
-       *  file that is being loaded
-       * @param numberOfUploadedSlices
-       *  number of slices the file was split into when uploaded starting from 1(not 0)
-       */
-      function finish_upload(pid, mid, uid, file, numberOfUploadedSlices)
-      {
-        client.post_upload_finished({
-          uid: uid,
-          uploaded: [numberOfUploadedSlices],
-          success: function()
-          {
-            console.log("Upload session finished.");
-            delete_upload(pid, mid, uid);
-          },
-          error: function(request, status, reason_phrase)
-          {
-            if(request.status == 400)
-            {
-              var missingElements = JSON.parse(request.responseText).missing;
-              missingElements.forEach(function(missingElement){
-                console.log("missing element " + missingElement[1] + " for file" + missingElement[0]);
-                upload_file_slice(uid, missingElement[1], file);
-                finish_upload(pid, mid, uid, file, numberOfUploadedSlices);
-              });
-            }
-          }
-        });
-      }
-
-      /**
-       * Used to delete a file upload session at any point during the upload
-       * @param pid
-       *  project id
-       * @param mid
-       *  model id
-       * @param uid
-       *  unique upload session id
-       */
-      function delete_upload(pid, mid, uid)
-      {
-        client.delete_upload({
-          uid: uid,
-          success: function()
-          {
-            console.log("Upload session deleted.");
-            finish_model(pid, mid);
-          },
-          error: function(request, status, reason_phrase)
-          {
-            if(request.status == 409)
-            {
-              window.setTimeout(delete_upload.bind(null, pid, mid, uid), 3000)
-            }
-          }
-        });
-      }
 
       function finish_model(pid, mid)
       {
+        console.log("finishing model");
         client.put_model_parameter({
           mid: mid,
           aid: "input-columns",

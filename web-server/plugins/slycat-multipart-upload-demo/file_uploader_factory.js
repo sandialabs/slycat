@@ -1,3 +1,8 @@
+/*
+Copyright 2015, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
 define("file_uploader_factory",["slycat-web-client"], function(client)
     {
       var module = {};
@@ -8,14 +13,17 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
        *
        *  @param fileObject
        *    json object with the following field values
-       *    pid: project id
-       *    mid: model id
-       *    file: file to be uploaded
-       *    parser: parser to be used for uploading
-       *    success: function called if upload is successful
+       *    {
+       *      pid: project id
+       *      mid: model id
+       *      file: file to be uploaded
+       *      parser: parser to be used for uploading
+       *      success: function called if upload is successful
+       *    }
        */
       module.uploadFile = function (fileObject)
       {
+        console.log("creating upload session");
         client.post_uploads({
           mid: fileObject.mid,
           input: true,
@@ -94,7 +102,7 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
        */
       function uploadFile(pid, mid, uid, file, fileObject)
       {
-        console.log("Upload file"+ file + " \nfile size:" + File.size);
+        console.log("Uploading file "+ file + " \nfile size:" + file.size);
         console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
 
         if(file.size > module.MEGABYTE){
@@ -148,7 +156,7 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
           success: function()
           {
             console.log("Upload session finished.");
-            delete_upload(pid, mid, uid, fileObject);
+            deleteUpload(pid, mid, uid, fileObject);
           },
           error: function(request, status, reason_phrase)
           {
@@ -197,5 +205,5 @@ define("file_uploader_factory",["slycat-web-client"], function(client)
           }
         });
       }
-
+      return module;
     });
