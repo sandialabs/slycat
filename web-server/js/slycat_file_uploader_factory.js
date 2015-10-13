@@ -23,19 +23,55 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
        */
       module.uploadFile = function (fileObject)
       {
-        console.log("creating upload session");
-        client.post_uploads({
-          mid: fileObject.mid,
-          input: true,
-          parser: fileObject.parser,
-          aids: fileObject.aids,
-          success: function(uid)
+        if(fileObject.sids && fileObject.paths){
+          console.log("creating remote file upload session");
+          client.post_uploads({
+            mid: fileObject.mid,
+            input: true,
+            parser: fileObject.parser,
+            aids: fileObject.aids,
+            success: function (uid) {
+              console.log("Upload session created.");
+              uploadRemoteFile(fileObject.pid, fileObject.mid, uid, fileObject.sids, fileObject.paths, fileObject);
+            }
+          });
+        }else {
+          console.log("creating file upload session");
+          client.post_uploads({
+            mid: fileObject.mid,
+            input: true,
+            parser: fileObject.parser,
+            aids: fileObject.aids,
+            success: function (uid) {
+              console.log("Upload session created.");
+              uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject);
+            }
+          });
+        }
+      };
+      function uploadRemoteFile(pid, mid, uid, sid, path, fileObject){
+        console.log("got some paths"+ path);
+        console.log("got some sids"+ sid);
+        // Upload the whole file since it is over ssh.
+        console.log("Uploading part whole file");
+        client.put_upload_file_part({
+          uid: uid,
+          fid: 0,
+          pid: 0,
+          path: path,
+          sid: sid,
+          success: function()
           {
-            console.log("Upload session created.");
-            uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject);
+            console.log("File uploaded.");
+            finishUpload(pid, mid, uid, null, 1, fileObject);
+          },
+          error: function(){
+            if(fileObject.error) {
+              fileObject.error();
+            }
           }
         });
-      };
+      }
       /**
        * get a file slice
        *
@@ -166,7 +202,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
           },
           error: function(request, status, reason_phrase)
           {
-            if(request.status == 400)
+            if(request.status == 400 && !fileObject.sids && !fileObject.paths)
             {
               var missingElements = JSON.parse(request.responseText).missing;
               missingElements.forEach(function(missingElement){
