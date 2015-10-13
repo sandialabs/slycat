@@ -5,18 +5,22 @@ rights in this software.
 */
 define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
     {
-      var module = {};
-      module.MEGABYTE = 1000000;
-      //module.MEGABYTE = 10000;
+      var module = {};//uploader object we wish to populate and return
+      module.MEGABYTE = 1000000;//the number we will split large files on
+
       /**
-       *  File uploader
+       *  File uploader that can either be given a file or
+       *  the location of a file on a remote host and upload
+       *  it to the server.
        *
        *  @param fileObject
        *    json object with the following field values
        *    {
        *      pid: project id
        *      mid: model id
-       *      file: file to be uploaded
+       *      sids: (used for remote file) Suser session id
+       *      paths: (used for remote file)paths to files on the server for upload
+       *      file: (used for local files)file to be uploaded if on the local system
        *      parser: parser to be used for uploading
        *      success: function called if upload is successful
        *    }
@@ -49,6 +53,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
           });
         }
       };
+
       /**
        * used to upload a file to the server from a remote computer
        * @param pid
@@ -85,6 +90,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
           }
         });
       }
+
       /**
        * get a file slice
        *
@@ -103,6 +109,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
             return file.slice(currentSliceBoundary, file.size)
           }
       }
+
       /**
        * Used to upload a slice of a file to the server database
        *
