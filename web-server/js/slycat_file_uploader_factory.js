@@ -49,9 +49,22 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
           });
         }
       };
+      /**
+       * used to upload a file to the server from a remote computer
+       * @param pid
+       *  project id
+       * @param mid
+       *  model id
+       * @param uid
+       *  unique session id
+       * @param sid
+       *  Suser id
+       * @param path
+       *  path to file on remote host
+       * @param fileObject
+       *  object that contains all info about the file we wish to upload to couch
+       */
       function uploadRemoteFile(pid, mid, uid, sid, path, fileObject){
-        console.log("got some paths"+ path);
-        console.log("got some sids"+ sid);
         // Upload the whole file since it is over ssh.
         console.log("Uploading part whole file");
         client.put_upload_file_part({
@@ -251,5 +264,6 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
           }
         });
       }
+      //return new file uploader
       return module;
     });
