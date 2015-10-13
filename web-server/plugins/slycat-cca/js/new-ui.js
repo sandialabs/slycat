@@ -93,38 +93,39 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.upload_table = function() {
       $('.local-browser-continue').toggleClass("disabled", true);
-      //var file = component.browser.selection();
+      //TODO: add logic to the file uploader to look for multiple files list to add
+      var file = component.browser.selection()[0];
       //console.log("Upload cca file"+ file + " \nfile size:" + file.size);
       //console.log("floor size" + Math.floor(file.size / fileUploader.MEGABYTE));
-      //var fileObject ={
-      // pid: component.project._id(),
-      // mid: component.model._id(),
-      // file: file,
-      // aids: ["data-table"],
-      // parser: component.parser(),
-      // success: function(){
-      //   upload_success();
-      // },
-      // error: function(){
-      //    dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-      //    $('.local-browser-continue').toggleClass("disabled", false);
-      //  }
-      //};
-      //fileUploader.uploadFile(fileObject);
-      client.post_model_files({
-        mid: component.model._id(),
-        files: component.browser.selection(),
-        input: true,
-        aids: ["data-table"],
-        parser: component.parser(),
-        success: function(){
-            upload_success();
-        },
-        error: function(){
+      var fileObject ={
+       pid: component.project._id(),
+       mid: component.model._id(),
+       file: file,
+       aids: ["data-table"],
+       parser: component.parser(),
+       success: function(){
+         upload_success();
+       },
+       error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.local-browser-continue').toggleClass("disabled", false);
         }
-      });
+      };
+      fileUploader.uploadFile(fileObject);
+      //client.post_model_files({
+      //  mid: component.model._id(),
+      //  files: component.browser.selection(),
+      //  input: true,
+      //  aids: ["data-table"],
+      //  parser: component.parser(),
+      //  success: function(){
+      //      upload_success();
+      //  },
+      //  error: function(){
+      //    dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+      //    $('.local-browser-continue').toggleClass("disabled", false);
+      //  }
+      //});
     };
 
     component.connect = function() {
