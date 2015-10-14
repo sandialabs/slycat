@@ -1,4 +1,4 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping"], function(server_root, client, dialog, ko, mapping)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, ko, mapping, fileUploader)
 {
   function constructor(params)
   {
@@ -16,7 +16,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     {
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
-    }
+    };
     component.create_model = function()
     {
       client.post_project_models(
@@ -33,20 +33,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         },
         error: dialog.ajax_error("Error creating model.")
       });
-    }
+    };
     component.upload_table = function()
     {
       $('.local-browser-continue').toggleClass("disabled", true);
-      client.post_model_files(
-      {
-        mid: component.model._id(),
-        files: component.browser.selection(),
-        input: true,
-        aids: ["data-table"],
-        parser: component.parser(),
-        success: function()
-        {
-          client.get_model_table_metadata(
+      var file = component.browser.selection()[0];
+      var fileObject ={
+       pid: component.project._id(),
+       mid: component.model._id(),
+       file: file,
+       aids: ["data-table"],
+       parser: component.parser(),
+       success: function(){
+         client.get_model_table_metadata(
           {
             mid: component.model._id(),
             aid: "data-table",
@@ -58,7 +57,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                 var name = metadata["column-names"][i];
                 var type = metadata["column-types"][i];
 
-                attributes.push({name: name, type: type})
+                attributes.push({name: name, type: type});
 
                 if(type != "string" && component.x_column() === null)
                   component.x_column(i);
@@ -70,16 +69,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               $('.local-browser-continue').toggleClass("disabled", false);
             }
           });
-        },
-        error: function(){
+       },
+       error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.local-browser-continue').toggleClass("disabled", false);
-        },
-      });
-    }
+        }
+      };
+      fileUploader.uploadFile(fileObject);
+
+    };
     component.go_to_model = function() {
       location = server_root + 'models/' + component.model._id();
-    }
+    };
     component.finish = function()
     {
       client.put_model_parameter(
@@ -110,13 +111,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           });
         }
       });
-    }
+    };
 
     return component;
   }
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/linear-regression-demo/ui.html" },
+    template: { require: "text!" + server_root + "resources/wizards/linear-regression-demo/ui.html" }
     };
 });
