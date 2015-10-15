@@ -475,6 +475,7 @@ $.widget("parameter_image.table",
     self.analysis_columns = self.inputs.concat(self.outputs);
     self.indexOfIndex = parameters.indexOfIndex;
     self.hidden_simulations = parameters.hidden_simulations;
+    self.ranked_indices = {};
 
     self.pages = {};
     self.pages_in_progress = {};
@@ -584,29 +585,57 @@ $.widget("parameter_image.table",
         callback([]);
         return;
       }
-
-      var sort = "";
-      if(self.sort_column !== null && self.sort_order !== null)
+      // We have no sort column or order, so just returning the same rows as were asked for since they're in the same order
+      if(self.sort_column == null || self.sort_order == null)
       {
-        var sort_order = self.sort_order;
-        if(sort_order == "asc")
-          sort_order = "ascending";
-        else if(sort_order == "desc")
-          sort_order = "descending";
-
-        sort = "&sort=" + self.sort_column + ":" + sort_order;
+        callback(rows);
       }
-
-      var row_string = "";
-      for(var i = 0; i < rows.length; ++i)
+      else
       {
-        row_string += rows[i];
-        break
-      }
-      for(var i = 1; i < rows.length; ++i)
-      {
-        row_string += ",";
-        row_string += rows[i];
+        if(self.ranked_indices[self.sort_column])
+        {
+          // we have data for this column, so figure out what to return
+          var indices = self.ranked_indices[self.sort_column];
+          var response = []; 
+          for(var i=0; i<rows.length; i++)
+          {
+            // Need to get ride of the *2 and /2 and insead figure out why Int32Array is putting in zeros between each correct array element.
+            if(direction == "unsorted")
+            {
+              response.push( indices[ rows[i] * 2 ] );
+            }
+            else if(direction == "sorted")
+            {
+              response.push( indices.indexOf(rows[i]) / 2 );
+            }
+          }
+          callback(new Int32Array(response));
+        }
+        else
+        {
+          if( self.sort_column == self.metadata["column-count"]-1 )
+          {
+            // we are sorting by the index column, so we can just make the data we need.
+            self.ranked_indices[self.sort_column] = new Int32Array( d3.range(self.metadata["row-count"]) );
+            self.get_indices(direction, rows, callback);
+          }
+          else
+          {
+            // we have no data for this column, so go retrieve it and call this function again.
+            var request = new XMLHttpRequest();
+            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (is_little_endian() ? "little" : "big") );
+            request.responseType = "arraybuffer";
+            request.direction = direction;
+            request.rows = rows;
+            request.callback = callback;
+            request.onload = function(e)
+            {
+              self.ranked_indices[self.sort_column] = new Int32Array(this.response);
+              self.get_indices(this.direction, this.rows, this.callback);
+            }
+            request.send();
+          }
+        }
       }
 
       function is_little_endian()
@@ -615,16 +644,6 @@ $.widget("parameter_image.table",
           this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
         return this.result;
       }
-
-      var request = new XMLHttpRequest();
-      request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
-      request.responseType = "arraybuffer";
-      request.callback = callback;
-      request.onload = function(e)
-      {
-        this.callback(new Int32Array(this.response));
-      }
-      request.send();
     }
 
     self.invalidate = function()
