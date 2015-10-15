@@ -79,9 +79,8 @@ def update_model(database, model, **kwargs):
 
   Parameters
   ----------
-  database : database object
-  model : model object
-
+  database: database object
+  model: model object
   """
   for name, value in kwargs.items():
     if name in ["state", "result", "started", "finished", "progress", "message"]:
@@ -231,19 +230,18 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
               yield values[hyperslice]
 
 def get_model_parameter(database, model, aid):
-  """Retrieve a model's artifact
+  """Retrieve a model's artifact.
 
   Parameters
   ----------
-  database : database object
-  model : model object
-  aid : string
+  database: database object
+  model: model object
+  aid: string
     Artifact identifier
 
   Returns
   -------
-  artifact : object
-
+  artifact: object
   """
   key = "artifact:%s" % aid
   if key not in model:
@@ -255,12 +253,11 @@ def put_model_arrayset(database, model, aid, input=False):
 
   Parameters
   ----------
-  database : database object
-  model : model object
-  aid : string
+  database: database object
+  model: model object
+  aid: string
     Artifact identifier
-  input : boolean
-
+  input: boolean
   """
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
   storage = uuid.uuid4().hex
@@ -329,18 +326,17 @@ def put_model_file(database, model, aid, value, content_type, input=False):
 
   Parameters
   ----------
-  database : database object
-  model : model object
-  aid : string
+  database: database object
+  model: model object
+  aid: string
     Artifact identifier
-  value : string
-  content_type : string
-  input : boolean
+  value: string
+  content_type: string
+  input: boolean
 
   Returns
   -------
-  model : model object
-
+  model: model object
   """
   fid = database.write_file(model, content=value, content_type=content_type)
   model = database[model["_id"]] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
@@ -356,15 +352,14 @@ def get_model_file(database, model, aid):
 
 Parameters
 ----------
-database : database object
-model : model object
-aid : string
+database: database object
+model: model object
+aid: string
   Artifact identifier
 
 Returns
 -------
-file : object
-
+file: object
 """
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
@@ -408,17 +403,16 @@ def put_model_inputs(database, model, source, deep_copy=False):
   database.save(model)
 
 def put_model_parameter(database, model, aid, value, input=False):
-  """Add an artifact to the model
+  """Add an artifact to the model.
 
   Parameters
   ----------
-  database : database object
-  model : model object
-  aid : string
+  database: database object
+  model: model object
+  aid: string
     Artifact identifier
-  value : string
-  input : boolean
-
+  value: string
+  input: boolean
   """
   model["artifact:%s" % aid] = value
   model["artifact-types"][aid] = "json"
@@ -432,18 +426,17 @@ def create_session(hostname, username, password):
 
   Parameters
   ----------
-  hostname : string
+  hostname: string
     Name of the remote host to connect via ssh
-  username : string
+  username: string
     Username for SSH authentication
-  password : string
+  password: string
     Password for the SSH authentication
 
   Returns
   -------
-  sid : string
+  sid: string
     A unique session identifier
-
   """
   return slycat.web.server.remote.create_session(hostname, username, password, None)
 
@@ -452,56 +445,53 @@ def checkjob(sid, jid):
 
   Parameters
   ----------
-  sid : int
+  sid: int
     Session identifier
-  jid : int
+  jid: int
     Job identifier
 
   Returns
   -------
-  response : dict
+  response: dict
     A dictionary with the following keys: jid, status, errors
-
   """
   with slycat.web.server.remote.get_session(sid) as session:
     return session.checkjob(jid)
 
 def get_remote_file(sid, path):
-  """Retrieve a file's content from a remote filesystem
+  """Retrieve a file's content from a remote filesystem.
 
   Parameters
   ----------
-  sid : int
+  sid: int
     Session identifier
-  path : string
+  path: string
     Path for the file
 
   Returns
   -------
-  content : string
+  content: string
     The content of the requested file
-
   """
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_file(path)
 
 def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, **kwargs):
-  """Store a model file artifact
+  """Store a model file artifact.
 
   Parameters
   ----------
-  mid : string
+  mid: string
     Model identifier
-  input : boolean
-  sid : int
+  input: boolean
+  sid: int
     Session identifier
-  path : string
+  path: string
     Path for the input file
-  aid : string
+  aid: string
     Artifact identifier
-  parser : string
+  parser: string
     Name for the parser
-
   """
   if input is None:
     raise Exception("Required input parameter is missing.")
