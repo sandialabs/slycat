@@ -75,7 +75,14 @@ def evaluate(hdf5_array, expression, expression_type, expression_level = 0):
     raise ValueError("Unknown expression: %s" % expression)
 
 def update_model(database, model, **kwargs):
-  """Update the model, and signal any waiting threads that it's changed."""
+  """Update the model, and signal any waiting threads that it's changed.
+
+  Parameters
+  ----------
+  database : database object
+  model : model object
+
+  """
   for name, value in kwargs.items():
     if name in ["state", "result", "started", "finished", "progress", "message"]:
       model[name] = value
@@ -224,13 +231,37 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
               yield values[hyperslice]
 
 def get_model_parameter(database, model, aid):
+  """Retrieve a model's artifact
+
+  Parameters
+  ----------
+  database : database object
+  model : model object
+  aid : string
+    Artifact identifier
+
+  Returns
+  -------
+  artifact : object
+
+  """
   key = "artifact:%s" % aid
   if key not in model:
     raise KeyError("Unknown artifact: %s" % aid)
   return model["artifact:" + aid]
 
 def put_model_arrayset(database, model, aid, input=False):
-  """Start a new model array set artifact."""
+  """Start a new model array set artifact.
+
+  Parameters
+  ----------
+  database : database object
+  model : model object
+  aid : string
+    Artifact identifier
+  input : boolean
+
+  """
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
   storage = uuid.uuid4().hex
   with slycat.web.server.hdf5.lock:
@@ -294,6 +325,23 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
             hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
 
 def put_model_file(database, model, aid, value, content_type, input=False):
+  """Put a model file artifact.
+
+  Parameters
+  ----------
+  database : database object
+  model : model object
+  aid : string
+    Artifact identifier
+  value : string
+  content_type : string
+  input : boolean
+
+  Returns
+  -------
+  model : model object
+
+  """
   fid = database.write_file(model, content=value, content_type=content_type)
   model = database[model["_id"]] # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
   model["artifact:%s" % aid] = fid
@@ -304,6 +352,20 @@ def put_model_file(database, model, aid, value, content_type, input=False):
   return model
 
 def get_model_file(database, model, aid):
+"""Retrieve a file from a model
+
+Parameters
+----------
+database : database object
+model : model object
+aid : string
+  Artifact identifier
+
+Returns
+-------
+file : object
+
+"""
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
     raise cherrypy.HTTPError(404)
@@ -346,6 +408,18 @@ def put_model_inputs(database, model, source, deep_copy=False):
   database.save(model)
 
 def put_model_parameter(database, model, aid, value, input=False):
+  """Add an artifact to the model
+
+  Parameters
+  ----------
+  database : database object
+  model : model object
+  aid : string
+    Artifact identifier
+  value : string
+  input : boolean
+
+  """
   model["artifact:%s" % aid] = value
   model["artifact-types"][aid] = "json"
   if input:
@@ -354,17 +428,81 @@ def put_model_parameter(database, model, aid, value, input=False):
 
 
 def create_session(hostname, username, password):
+  """Create a cached remote session for the given host.
+
+  Parameters
+  ----------
+  hostname : string
+    Name of the remote host to connect via ssh
+  username : string
+    Username for SSH authentication
+  password : string
+    Password for the SSH authentication
+
+  Returns
+  -------
+  sid : string
+    A unique session identifier
+
+  """
   return slycat.web.server.remote.create_session(hostname, username, password, None)
 
 def checkjob(sid, jid):
+  """Submit a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  jid : int
+    Job identifier
+
+  Returns
+  -------
+  response : dict
+    A dictionary with the following keys: jid, status, errors
+
+  """
   with slycat.web.server.remote.get_session(sid) as session:
     return session.checkjob(jid)
 
 def get_remote_file(sid, path):
+  """Retrieve a file's content from a remote filesystem
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  path : string
+    Path for the file
+
+  Returns
+  -------
+  content : string
+    The content of the requested file
+
+  """
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_file(path)
 
 def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, **kwargs):
+  """Store a model file artifact
+
+  Parameters
+  ----------
+  mid : string
+    Model identifier
+  input : boolean
+  sid : int
+    Session identifier
+  path : string
+    Path for the input file
+  aid : string
+    Artifact identifier
+  parser : string
+    Name for the parser
+
+  """
   if input is None:
     raise Exception("Required input parameter is missing.")
 
