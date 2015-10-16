@@ -375,6 +375,20 @@ def checkjob(sid, jid):
     return session.checkjob(jid)
 
 def get_remote_file(sid, path):
+  """Returns the content of a file from a remote system.
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  path : string
+    Path for the requested file
+
+  Returns
+  -------
+  content : string
+    Content of the requested file
+  """
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_file(path)
 
