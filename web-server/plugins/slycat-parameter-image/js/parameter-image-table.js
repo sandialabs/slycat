@@ -572,7 +572,9 @@ $.widget("parameter_image.table",
     self.set_sort = function(column, order)
     {
       if(column == self.sort_column && order == self.sort_order)
+      {
         return;
+      }
       self.sort_column = column;
       self.sort_order = order;
       self.pages = {};
@@ -596,17 +598,26 @@ $.widget("parameter_image.table",
         {
           // we have data for this column, so figure out what to return
           var indices = self.ranked_indices[self.sort_column];
+          // Reverse response indexes for descending sort order
+          if(self.sort_order == 'desc')
+          {
+            var plain_array = [];
+            for(var i=0; i<indices.length; i++)
+            {
+              plain_array.push(indices[i]);
+            }
+            indices = plain_array.reverse();
+          }
           var response = []; 
           for(var i=0; i<rows.length; i++)
           {
-            // Need to get ride of the *2 and /2 and insead figure out why Int32Array is putting in zeros between each correct array element.
             if(direction == "unsorted")
             {
-              response.push( indices[ rows[i] * 2 ] );
+              response.push( indices[ rows[i] ] );
             }
             else if(direction == "sorted")
             {
-              response.push( indices.indexOf(rows[i]) / 2 );
+              response.push( indices.indexOf(rows[i]) );
             }
           }
           callback(new Int32Array(response));
@@ -630,7 +641,15 @@ $.widget("parameter_image.table",
             request.callback = callback;
             request.onload = function(e)
             {
-              self.ranked_indices[self.sort_column] = new Int32Array(this.response);
+              var indices = [];
+              var data = new Int32Array(this.response);
+              // Filtering out every other element in the reponse array, because it's full of extraneous 0 (zeros) for some reason.
+              // Need to figure out why, but this is a fix for now.
+              for(var i=0; i<data.length; i=i+2)
+              {
+                indices.push(data[i]);
+              }
+              self.ranked_indices[self.sort_column] = new Int32Array(indices);
               self.get_indices(this.direction, this.rows, this.callback);
             }
             request.send();
