@@ -147,6 +147,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.select_columns = function() {
+      component.put_model_parameters();
+
       if (component.ps_type() === "remote") {
         $('.ps-tab-compute-matrix').css('display', 'block');
         $('.ps-tab-locate-matrix').css('display', 'none');
@@ -157,7 +159,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.select_compute = function() {
       if (component.is_compute() === 'yes_compute') {
-        component.finish(true);
+        component.tab(7);
       } else if (component.is_compute() === 'no_compute') {
         $('.ps-tab-locate-matrix').css('display', 'block');
         $('.ps-tab-remote-matrix').css('display', 'block');
@@ -337,8 +339,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       location = server_root + 'models/' + component.model._id();
     };
 
-    component.finish = function(not_finished) {
-      component.tab(7);
+    component.put_model_parameters = function(callback) {
       var input_columns = [];
       var output_columns = [];
       var rating_columns = [];
@@ -407,14 +408,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                                 value: 'csv',
                                 input: true,
                                 success: function() {
-                                  if (!not_finished) {
-                                    client.post_model_finish({
-                                      mid: component.model._id(),
-                                      success: function() {
-                                        component.tab(7);
-                                      }
-                                    });
-                                  }
+                                  if (callback)
+                                    callback();
                                 }
                               });
                             }
@@ -428,6 +423,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             }
           });
         }
+      });
+    };
+
+    component.finish = function() {
+      component.tab(7);
+
+      client.post_model_finish({
+        mid: component.model._id(),
+        success: function() {}
       });
     };
 

@@ -19,11 +19,11 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.batch = ko.observable('');
 
       vm.wckey = ko.observable('');
-      vm.nnodes = ko.observable();
+      vm.nnodes = ko.observable(1);
       vm.partition = ko.observable('');
-      vm.ntasks_per_node = ko.observable();
-      vm.ntasks = ko.observable();
-      vm.ncpu_per_task = ko.observable();
+      vm.ntasks_per_node = ko.observable(1);
+      vm.ntasks = ko.observable(1);
+      vm.ncpu_per_task = ko.observable(4);
       vm.time_hours = ko.observable();
       vm.time_minutes = ko.observable(5);
       vm.time_seconds = ko.observable();
@@ -193,6 +193,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       };
 
       var server_checkjob = function() {
+        if (!vm.mid)
+          return void 0;
+
         client.post_sensitive_model_command({
           mid: vm.mid(),
           type: vm.model_type,
@@ -202,7 +205,8 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             fn: $('#' + select_id).val(),
             hostname: vm.remote.hostname(),
             username: vm.remote.username(),
-            password: vm.remote.password()
+            password: vm.remote.password(),
+            fn_params: vm.agent_functions_params()
           },
           error: dialog.ajax_error("There was a problem checking job status from the server:")
         });
@@ -248,12 +252,12 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           fn_params: vm.agent_functions_params(),
           success: function(results) {
             if (results.errors) {
-              vm.output(vm.output() + '\n' + '[Error] Could not start batch file batch.' + fn + '.bash: ' + results.errors);
+              vm.output(vm.output() + '\n' + '[Error] Could not start batch file for Slycat pre-built function ' + fn + ': ' + results.errors);
               return void 0;
             }
 
             vm.jid(results.jid);
-            vm.output(vm.output() + '\n' + 'Slycat pre-built ' + fn  + ': job ID=' + vm.jid() + ' has been submitted.');
+            vm.output(vm.output() + '\n' + 'Slycat pre-built function ' + fn  + ': job ID=' + vm.jid() + ' has been submitted.');
             previous_state = '';
             iid = setInterval(checkjob, 1000);
             server_checkjob();

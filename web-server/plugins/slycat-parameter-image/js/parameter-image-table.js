@@ -518,7 +518,7 @@ $.widget("parameter_image.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "| index(0)" + sort + "/" + row_begin + ":" + row_end,
+          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
           success : function(data)
           {
             self.pages[page] = [];

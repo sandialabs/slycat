@@ -357,6 +357,20 @@ def create_session(hostname, username, password):
   return slycat.web.server.remote.create_session(hostname, username, password, None)
 
 def checkjob(sid, jid):
+  """Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  jid : int
+    Job identifier
+
+  Returns
+  -------
+  response : dict
+    A dictionary with the following keys: jid, status, errors
+  """
   with slycat.web.server.remote.get_session(sid) as session:
     return session.checkjob(jid)
 

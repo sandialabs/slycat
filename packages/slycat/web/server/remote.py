@@ -299,19 +299,26 @@ class Session(object):
       A dictionary with the following keys: jid, errors
     """
     if self._agent is not None:
-      def create_jaccard_distance_matrix(params):
-        path = "/".join(params["input"].split("/")[:-1])
-        return ["module load slycat", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python %s --distance-measure jaccard --distance-column %s %s %s/slycat_jaccard_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"], path)]
-
-      def create_correlation_distance_matrix(params):
-        path = "/".join(params["input"].split("/")[:-1])
-        return ["module load slycat", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python %s --distance-measure correlation --distance-column %s %s %s/slycat_correlation_distance_matrix.csv" % (cherrypy.request.app.config["slycat-web-server"]["pip-distance-matrix"], params["column"], params["input"], path)]
-
       # verifies the fn is allowed to be run...
       restricted_fns = {
-        "correlation-distance": create_correlation_distance_matrix,
-        "jaccard-distance": create_jaccard_distance_matrix
+        "jaccard-distance": "jaccard",
+        "jaccard2-distance": "jaccard2",
+        "one-norm-distance": "one-norm",
+        "correlation-distance": "correlation",
+        "cosine-distance": "cosine",
+        "hamming-distance": "hamming"
       }
+
+      def create_distance_matrix(fn_id, params):
+        f = restricted_fns[fn_id]
+        path = "/".join(params["input"].split("/")[:-1])
+        return ["module load slycat-dev", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s %s/slycat_%s_distance_matrix.csv" % (f, params["column"], params["input"], path, f)]
+
+      def agent_functions(fn_id, params):
+        # agent_function is a placeholder for the future:
+        # it will contain the logic for different type of agent functions
+        # depending on the function identifier.
+        return create_distance_matrix(fn_id, params)
 
       if fn not in restricted_fns:
         cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
@@ -330,7 +337,7 @@ class Session(object):
             "time_hours": time_hours,
             "time_minutes": time_minutes,
             "time_seconds": time_seconds,
-            "fn": restricted_fns[fn](fn_params)
+            "fn": agent_functions(fn, fn_params)
           }
         }
 

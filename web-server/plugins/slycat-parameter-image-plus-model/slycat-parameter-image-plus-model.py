@@ -30,9 +30,13 @@ def register_slycat_plugin(context):
 
   # Maps the slycat-agent functions to their respective output files
   filenames = {
+    "jaccard-distance": "slycat_jaccard_distance_matrix.csv",
+    "jaccard2-distance": "slycat_jaccard2_distance_matrix.csv",
+    "one-norm-distance": "slycat_one-norm_distance_matrix.csv",
     "correlation-distance": "slycat_correlation_distance_matrix.csv",
-    "jaccard-distance": "slycat_jaccard_distance_matrix.csv"
-    }
+    "cosine-distance": "slycat_cosine_distance_matrix.csv",
+    "hamming-distance": "slycat_hamming_distance_matrix.csv"
+  }
 
   def compute_distance(left, right, storage, cluster_name, measure_name, measure, columns):
     distance = numpy.empty(len(left))
@@ -193,22 +197,39 @@ def register_slycat_plugin(context):
       model = database.get("model", mid)
       slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
 
-  def checkjob_thread(sid, jid, request_from, stop_event, callback):
+  def fail_model(mid, message):
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
+
+  def checkjob_thread(mid, sid, jid, request_from, stop_event, callback, filename):
     cherrypy.request.headers["x-forwarded-for"] = request_from
 
     while True:
-      response = slycat.web.server.checkjob(sid, jid)
+      try:
+        response = slycat.web.server.checkjob(sid, jid)
+      except Exception as e:
+        fail_model(mid, "Something went wrong while checking on job %s status: check for the distance matrix file %s when the job completes." % (jid, filename))
+        raise Exception("An error occurred while checking on a remote job: %s" % e.message)
+        stop_event.set()
+
       state = response["status"]["state"]
       cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
 
-      if state == "CANCELLED" or state == "FAILED":
+      if state == "CANCELLED":
+        fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
-        break;
+        break
+
+      if state == "FAILED":
+        fail_model(mid, "Job %s has failed." % jid)
+        stop_event.set()
+        break
 
       if state == "COMPLETED":
         callback()
         stop_event.set()
-        break;
+        break
 
       time.sleep(5)
 
@@ -216,15 +237,16 @@ def register_slycat_plugin(context):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
+    output_path = "/".join(kwargs["fn_params"]["input"].split("/")[:-1])
 
     def callback():
-      slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/%s" % (kwargs["username"], filenames[fn]), "distance-matrix", "slycat-csv-parser")
+      slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, filenames[fn]), "distance-matrix", "slycat-csv-parser")
       media_columns(database, model, verb, type, command)
       slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
       finish(database, model)
 
     stop_event = threading.Event()
-    t = threading.Thread(target=checkjob_thread, args=(sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
+    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback, "%s/%s" % (output_path, filenames[fn])))
     t.start()
 
     return json.dumps({"ok":True})

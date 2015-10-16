@@ -130,8 +130,8 @@ def get_job_output(command):
   sys.stdout.flush()
 
 
-def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn):
-  name = os.path.expanduser('~') + "/batch.slycat-tmp.bash"
+def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, filename):
+  name = os.path.expanduser('~') + ("/%s" % filename) 
   f = open(name, 'w')
 
   f.write("#!/bin/bash\n\n")
@@ -143,7 +143,7 @@ def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_t
   f.write("nodes=$SLURM_JOB_NUM_NODES\n")
   f.write("cores=8\n\n")
   f.write("export TMPDIR=/tmp/$SLURM_JOB_ID\n\n")
-
+  
   for c in fn:
     f.write("%s\n" % c)
 
@@ -166,8 +166,9 @@ def run_function(command):
   time_seconds = command["command"]["time_seconds"]
   fn = command["command"]["fn"]
 
-  generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn)
-  results["output"], results["errors"] = run_remote_command("sbatch batch.slycat-tmp.bash" % fn)
+  filename = "batch.slycat-%s.bash" % time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
+  generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, filename)
+  results["output"], results["errors"] = run_remote_command("sbatch %s" % filename)
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
