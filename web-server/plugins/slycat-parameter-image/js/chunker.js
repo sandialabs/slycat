@@ -120,7 +120,7 @@ function get_model_array_attribute(parameters) {
     var metadata = parameters.metadata;
     var attribute = parameters.attribute;
     var isStringAttribute = metadata.attributes[attribute].type == "string";
-    var byteorder = (is_little_endian() ? "little" : "big");
+    var byteorder = "&byteorder=" + (is_little_endian() ? "little" : "big");
     if(isStringAttribute)
     {
       byteorder = "";
@@ -137,7 +137,7 @@ function get_model_array_attribute(parameters) {
     ranges = ranges.join("|");
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges+ "&byteorder=" + byteorder);
+    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges + byteorder);
     if(!isStringAttribute)
     {
       request.responseType = "arraybuffer";
