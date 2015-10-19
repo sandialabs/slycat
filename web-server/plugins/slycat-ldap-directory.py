@@ -1,6 +1,7 @@
 import cherrypy
 import datetime
 import traceback
+import slycat.email
 
 configuration = {
   "cache"    : {},
@@ -38,7 +39,9 @@ def user(uid):
       # perform the query
       result = connection.search_s(configuration["base"], ldap.SCOPE_ONELEVEL, "uid=%s" % uid, configuration["attrlist"])
 
-      if result == []: raise AssertionError, "User ID, %s, was not found ." % uid
+      if result == []:
+        slycat.email.send_error("slycat-ldap-directory.py user", "User ID, %s, was not found." % uid)
+        raise AssertionError, "User ID, %s, was not found ." % uid
 
       # Cache the information we need for speedy lookup.
       result = result[0][1]
@@ -47,12 +50,15 @@ def user(uid):
         "email" : result[configuration["ldapEmail"]][0],
         }
     except ldap.NO_SUCH_OBJECT:
+      slycat.email.send_error("slycat-ldap-directory.py user", "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT")
       raise cherrypy.HTTPError(404)
     except AssertionError as e:
       cherrypy.log.error( e.message )
+      slycat.email.send_error("slycat-ldap-directory.py user", "cherrypy.HTTPError 404 %s" % e.message)
       raise cherrypy.HTTPError(404)
     except:
       cherrypy.log.error(traceback.format_exc())
+      slycat.email.send_error("slycat-ldap-directory.py user", "cherrypy.HTTPError 500 %s" % traceback.format_exc())
       raise cherrypy.HTTPError(500)
   return configuration["cache"][uid]
 

@@ -14,6 +14,7 @@ import requests
 import requests.exceptions as exceptions
 import shlex
 import slycat.darray
+import slycat.email
 import sys
 import time
 
@@ -39,6 +40,7 @@ def _require_array_ranges(ranges):
   elif isinstance(ranges, list):
     return ranges
   else:
+    slycat.email.send_error("slycat.web.client.__init__.py", "Not a valid ranges object.")
     raise Exception("Not a valid ranges object.")
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -127,6 +129,7 @@ class Connection(object):
       return body
     except:
       log.debug(log_message)
+      slycat.email.send_error("slycat.web.client.__init__.py request", "%s" % log_message)
       raise
 
   ###########################################################################################################3
@@ -653,13 +656,17 @@ class Connection(object):
     """
     # Sanity check arguments
     if not isinstance(mid, basestring):
+      slycat.email.send_error("slycat.web.client.__init__.py put_model_arrayset_data", "Model id must be a string")
       raise ValueError("Model id must be a string.")
     if not isinstance(aid, basestring):
+      slycat.email.send_error("slycat.web.client.__init__.py put_model_arrayset_data", "Artifact id must be a string")
       raise ValueError("Artifact id must be a string.")
     if not isinstance(hyperchunks, basestring):
+      slycat.email.send_error("slycat.web.client.__init__.py put_model_arrayset_data", "Hyperchunks specification must be a string.")
       raise ValueError("Hyperchunks specification must be a string.")
     for chunk in data:
       if not isinstance(chunk, numpy.ndarray):
+        slycat.email.send_error("slycat.web.client.__init__.py put_model_arrayset_data", "Data chunk must be a numpy array.")
         raise ValueError("Data chunk must be a numpy array.")
 
     # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
@@ -752,10 +759,12 @@ class Connection(object):
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
+      slycat.email.send_error("slycat.web.client.__init__.py find_project", "More than one project matched the given name.")
       raise Exception("More than one project matched the given name.")
     elif len(projects) == 1:
       return projects[0]
     else:
+      slycat.email.send_error("slycat.web.client.__init__.py find_project", "No project matched the given name.")
       raise Exception("No project matched the given name.")
 
   def find_or_create_project(self, name, description=""):
@@ -785,6 +794,7 @@ class Connection(object):
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
+      slycat.email.send_error("slycat.web.client.__init__.py find_or_create_project", "More than one project matched the given name. Try using a different project name instead.")
       raise Exception("More than one project matched the given name.  Try using a different project name instead.")
     elif len(projects) == 1:
       return projects[0]["_id"]

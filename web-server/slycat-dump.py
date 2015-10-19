@@ -9,6 +9,7 @@ import logging
 import os
 import shutil
 import slycat.hdf5
+import slycat.email
 import sys
 
 parser = argparse.ArgumentParser()
@@ -29,6 +30,7 @@ logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname
 if arguments.force and os.path.exists(arguments.output_dir):
   shutil.rmtree(arguments.output_dir)
 if os.path.exists(arguments.output_dir):
+  slycat.email.send_error("slycat-dump.py", "Output directory already exists.")
   raise Exception("Output directory already exists.")
 
 couchdb = couchdb.Server()[arguments.couchdb_database]

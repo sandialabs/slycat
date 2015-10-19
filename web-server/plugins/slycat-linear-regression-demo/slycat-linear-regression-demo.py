@@ -8,6 +8,7 @@ def register_slycat_plugin(context):
     import numpy
     import scipy.stats
     import slycat.web.server.database.couchdb
+    import slycat.email
 
     try:
       database = slycat.web.server.database.couchdb.connect()
@@ -18,8 +19,10 @@ def register_slycat_plugin(context):
       output_column = slycat.web.server.get_model_parameter(database, model, "y-column")
 
       if input_column is None:
+        slycat.email.send_error("slycat-linear-regression-demo.py compute", "Linear regression model requires an input column.")
         raise Exception("Linear regression model requires an input column.")
       if output_column is None:
+        slycat.email.send_error("slycat-linear-regression-demo.py compute", "Linear regression model requires an output column.")
         raise Exception("Linear regression model requires an output column.")
 
       # Extract a column of x values and a column of y values.

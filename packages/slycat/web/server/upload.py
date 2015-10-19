@@ -36,6 +36,7 @@ import os
 import shutil
 import slycat.web.server.authentication
 import slycat.web.server.database
+import slycat.email
 import StringIO
 import threading
 import time
@@ -112,6 +113,7 @@ class Session(object):
 
   def put_upload_file_part(self, fid, pid, data):
     if self._parsing_thread is not None:
+      slycat.email.send_error("slycat.web.server.upload.py put_upload_file_part", "cherrypy.HTTPError 409 upload already finished.")
       raise cherrypy.HTTPError("409 Upload already finished.")
 
     storage = path(self._uid, fid, pid)
@@ -124,6 +126,7 @@ class Session(object):
 
   def post_upload_finished(self, uploaded):
     if self._parsing_thread is not None:
+      slycat.email.send_error("slycat.web.server.upload.py post_upload_finished", "cherrypy.HTTPError 409 upload already finished.")
       raise cherrypy.HTTPError("409 Upload already finished.")
 
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
@@ -176,6 +179,7 @@ class Session(object):
 
   def close(self):
     if self._parsing_thread is not None and self._parsing_thread.is_alive():
+      slycat.email.send_error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
       raise cherrypy.HTTPError("409 Parsing in progress.")
 
     storage = path(self._uid)
@@ -237,9 +241,11 @@ def get_session(uid):
       if client != session.client:
         cherrypy.log.error("Client %s attempted to access upload session from %s" % (client, session.client))
         del session_cache[uid]
+        slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404")
         raise cherrypy.HTTPError("404")
 
     if uid not in session_cache:
+      slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404")
       raise cherrypy.HTTPError("404")
 
     session = session_cache[uid]

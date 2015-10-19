@@ -7,6 +7,7 @@ import numbers
 import numpy
 import os
 import shutil
+import slycat.email
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.web.server.hdf5
@@ -56,6 +57,7 @@ def evaluate(hdf5_array, expression, expression_type, expression_level = 0):
       elif expression.operator == "not in":
         left = numpy.in1d(left, right, invert=True)
       else:
+        slycat.email.send_error("slycat.web.server.__init__.py evaluate", "Unknown operator: %s" % expression.operator)
         raise ValueError("Unknown operator: %s" % expression.operator)
     return left
   elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
@@ -68,10 +70,12 @@ def evaluate(hdf5_array, expression, expression_type, expression_level = 0):
         order = order[::-1]
       return order
     else:
+      slycat.email.send_error("slycat.web.server.__init__.py evaluate", "Unknown function: %s" % expression.name)
       raise ValueError("Unknown function: %s" % expression.name)
   elif isinstance(expression, slycat.hyperchunks.grammar.List):
     return expression.values
   else:
+    slycat.email.send_error("slycat.web.server.__init__.py evaluate", "Unknown expression: %s" % expression)
     raise ValueError("Unknown expression: %s" % expression)
 
 def update_model(database, model, **kwargs):
@@ -226,6 +230,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
   if key not in model:
+    slycat.email.send_error("slycat.web.server.__init__.py get_model_parameter", "Unknown artifact: %s" % aid)
     raise KeyError("Unknown artifact: %s" % aid)
   return model["artifact:" + aid]
 
@@ -283,6 +288,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
         hdf5_array = hdf5_arrayset[array.index]
         for attribute in array.attributes(len(hdf5_array.attributes)):
           if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+            slycat.email.send_error("slycat.web.server.__init__.py put_model_arrayset_data", "Cannot write to computed attribute.")
             raise ValueError("Cannot write to computed attribute.")
           stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
           for hyperslice in attribute.hyperslices():
@@ -306,9 +312,11 @@ def put_model_file(database, model, aid, value, content_type, input=False):
 def get_model_file(database, model, aid):
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
+    slycat.email.send_error("slycat.web.server.__init__.py get_model_file", "cherrypy.HTTPError 404")
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type != "file":
+    slycat.email.send_error("slycat.web.server.__init__.py get_model_file", "cherrypy.HTTPError 404 %s is not a file artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not a file artifact." % aid)
   fid = artifact
   return database.get_attachment(model, fid)
@@ -338,6 +346,7 @@ def put_model_inputs(database, model, source, deep_copy=False):
       database.put_attachment(model, original_content, filename=original_value, content_type=original_content_type)
       model["artifact:%s" % aid] = original_value
     else:
+      slycat.email.send_error("slycat.web.server.__init__.py put_model_inputs", "Cannot copy unknown input artifact type %s." % original_type)
       raise Exception("Cannot copy unknown input artifact type %s." % original_type)
     model["artifact-types"][aid] = original_type
     model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
@@ -394,6 +403,7 @@ def get_remote_file(sid, path):
 
 def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, **kwargs):
   if input is None:
+    slycat.email.send_error("slycat.web.server.__init__.py put_model_file", "Required input parameter is missing.")
     raise Exception("Required input parameter is missing.")
 
   if path is not None and sid is not None:
@@ -402,11 +412,13 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
       # TODO verify that the file exists first...
       file = session.sftp.file(path).read()
   else:
+    slycat.email.send_error("slycat.web.server.__init__.py post_model_file", "Must supply path and sid parameters.")
     raise Exception("Must supply path and sid parameters.")
 
   if parser is None:
     Exception("Required parser parameter is missing.")
   if parser not in slycat.web.server.plugin.manager.parsers:
+    slycat.email.send_error("slycat.web.server.__init__.py post_model_file", "Unknown parser plugin: %s." % parser)
     raise Exception("Unknown parser plugin: %s." % parser)
 
   database = slycat.web.server.database.couchdb.connect()
@@ -415,4 +427,5 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
   try:
     slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, [file], [aid], **kwargs)
   except Exception as e:
+    slycat.email.send_error("slycat.web.server.__init__.py post_model_file", "%s" % e)
     raise Exception("%s" % e)

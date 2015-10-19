@@ -10,15 +10,18 @@ def register_slycat_plugin(context):
   import functools
   import slycat.web.server.database.couchdb
   import slycat.web.server.plugin
+  import slycat.email
   import uuid
 
   def authenticate(realm, rules=None):
     # Sanity-check our inputs.
     if '"' in realm:
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "Realm cannot contain the \" (quote) character.")
       raise ValueError("Realm cannot contain the \" (quote) character.")
 
     # Require a secure connection.
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 403 secure connection required.")
       raise cherrypy.HTTPError("403 Secure connection required.")
 
     # Get the client ip, which might be forwarded by a proxy.
@@ -43,18 +46,22 @@ def register_slycat_plugin(context):
     authorization = cherrypy.request.headers.get("authorization")
     if authorization is None:
       cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authenticatation required.")
       raise cherrypy.HTTPError(401, "Authentication required.")
 
     # Parse the client's authentication response.
     try:
       scheme, params = authorization.split(" ", 1)
     except:
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
       raise cherrypy.HTTPError(400)
     if scheme.lower() != "basic":
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
       raise cherrypy.HTTPError(400)
     try:
       username, password = base64_decode(params).split(":", 1)
     except:
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
       raise cherrypy.HTTPError(400)
 
     cherrypy.log.error("%s@%s: Checking password." % (username, remote_ip))
@@ -66,6 +73,7 @@ def register_slycat_plugin(context):
       args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
       kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
       if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
+        slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 no password check plugin found.")
         raise cherrypy.HTTPError("500 No password check plugin found.")
       authenticate.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs)
 
@@ -76,8 +84,10 @@ def register_slycat_plugin(context):
         deny = None
         for operation, category, members in rules:
           if operation not in ["allow", "deny"]:
+            slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 unknown operation: %s." % operation)
             raise cherrypy.HTTPError("500 Unknown operation: %s." % operation)
           if category not in ["users", "groups"]:
+            slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 unknown category: %s." % category)
             raise cherrypy.HTTPError("500 Unknown category: %s." % category)
 
           operation_default = True if operation == "allow" else False
@@ -117,6 +127,7 @@ def register_slycat_plugin(context):
     # Authentication failed, tell the client to try again.
     cherrypy.log.error("%s@%s: Password check failed." % (username, remote_ip))
     cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
+    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authentication required.")
     raise cherrypy.HTTPError(401, "Authentication required.")
 
   authenticate.password_check = None

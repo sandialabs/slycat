@@ -7,6 +7,7 @@ def register_slycat_plugin(context):
   import slycat.cca
   import slycat.web.server
   import slycat.web.server.database.couchdb
+  import slycat.email
   import threading
   import traceback
 
@@ -22,8 +23,10 @@ def register_slycat_plugin(context):
       scale_inputs = slycat.web.server.get_model_parameter(database, model, "scale-inputs")
 
       if len(input_columns) < 1:
+        slycat.email.send_error("slycat-cca.py compute", "CCA model requires at least one input column.")
         raise Exception("CCA model requires at least one input column.")
       if len(output_columns) < 1:
+        slycat.email.send_error("slycat-cca.py compute", "CCA model requires at least one output column.")
         raise Exception("CCA model requires at least one output column.")
 
       # Transform the input data table to a form usable with our cca() function ...

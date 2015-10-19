@@ -17,6 +17,7 @@ import sys
 import slycat.web.server.cleanup
 import slycat.web.server.handlers
 import slycat.web.server.plugin
+import slycat.email
 
 class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
@@ -38,6 +39,7 @@ def start(root_path, config_file):
   configuration = {}
   config_file = abspath(config_file)
   if not os.path.exists(config_file):
+    slycat.email.send_error("slycat.web.server.engine.py start", "Configuration file %s does not exist." % config_file)
     raise Exception("Configuration file %s does not exist." % config_file)
 
   cherrypy.engine.autoreload.files.add(config_file)
@@ -211,11 +213,13 @@ def start(root_path, config_file):
   # Sanity-check to ensure that we have a marking plugin for every allowed marking type.
   for allowed_marking in configuration["slycat-web-server"]["allowed-markings"]:
     if allowed_marking not in manager.markings.keys():
+      slycat.email.send_error("slycat.web.server.engine.py start", "No marking plugin for type: %s" % allowed_marking)
       raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Setup the requested directory plugin.
   directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
   if directory_type not in manager.directories.keys():
+    slycat.email.send_error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory.type)
     raise Exception("No directory plugin for type: %s" % directory_type)
   directory_args = configuration["slycat-web-server"]["directory"].get("args", [])
   directory_kwargs = configuration["slycat-web-server"]["directory"].get("kwargs", {})
