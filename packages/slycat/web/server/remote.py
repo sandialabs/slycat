@@ -534,7 +534,7 @@ class Session(object):
     try:
       if stat.S_ISDIR(self._sftp.stat(path).st_mode):
         cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
-        slycat.email.send_error("slycat.web.server.remote.py get_file", "cherrypy.HTTPError 400 can't read directory %s:%." % (self.hostname, path))
+        slycat.email.send_error("slycat.web.server.remote.py get_file", "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
         raise cherrypy.HTTPError("400 Can't read directory.")
 
       content_type, encoding = slycat.mime_type.guess_type(path)

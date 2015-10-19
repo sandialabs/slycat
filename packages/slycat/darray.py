@@ -170,7 +170,7 @@ def _require_dimension_name(name):
 
 def _require_dimension_type(type):
   if type not in _require_dimension_type.allowed_types:
-    slycat.email.send_error("darray.py _require_dimension_type", "Dimension type must be one of %s" % ",",join(_require_dimension_type.allowed_types))
+    slycat.email.send_error("darray.py _require_dimension_type", "Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
     raise ValueError("Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
   return type
 _require_dimension_type.allowed_types = set(["int64"])
