@@ -140,6 +140,12 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/ui.js"),
     ])
   context.register_page_resource("cca", "images", os.path.join(os.path.dirname(__file__), "images"))
+  # Register images and other resources
+  images = [
+    'ui-bg_glass_75_e6e6e6_1x400.png',
+  ]
+  for image in images:
+    context.register_page_resource("cca", image, os.path.join(os.path.dirname(__file__), "images", image))
 
   # Register custom wizards for creating CCA models.
   context.register_wizard("new-cca", "New CCA Model", require={"action":"create", "context":"project"})
