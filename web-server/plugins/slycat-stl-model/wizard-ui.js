@@ -43,27 +43,29 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         $('.local-browser-continue').toggleClass("disabled", false);
         return;
       }
-
-      client.post_model_files({
-        mid: component.model._id(),
-        files: component.browser.selection(),
-        input: true,
-        aids: ['geometry'],
-        parser: 'slycat-blob-parser',
-        success: function() {
-          client.post_model_finish({
-            mid: component.model._id(),
-            success: function() {
-              component.tab(2);
-              $('.local-browser-continue').toggleClass("disabled", false);
-            }
-          });
-        },
-        error: function(){
-          dialog.ajax_error('There was a problem uploading the file: ')();
-          $('.local-browser-continue').toggleClass('disabled', false);
-        },
-      });
+      //TODO: add logic to the file uploader to look for multiple files list to add
+      var file = component.browser.selection()[0];
+      var fileObject ={
+       pid: component.project._id(),
+       mid: component.model._id(),
+       file: file,
+       aids: ['geometry'],
+       parser: 'slycat-blob-parser',
+       success: function() {
+         client.post_model_finish({
+           mid: component.model._id(),
+           success: function() {
+             component.tab(2);
+             $('.local-browser-continue').toggleClass("disabled", false);
+           }
+         });
+       },
+       error: function(){
+         dialog.ajax_error('There was a problem uploading the file: ')();
+         $('.local-browser-continue').toggleClass('disabled', false);
+       }
+      };
+      fileUploader.uploadFile(fileObject);
     };
 
     return component;
