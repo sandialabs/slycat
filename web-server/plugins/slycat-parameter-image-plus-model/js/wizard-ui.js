@@ -210,18 +210,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.upload_distance_matrix = function() {
       //$('.local-browser-continue').toggleClass("disabled", true);
-      client.post_model_files({
-        mid: component.model._id(),
-        files: component.browser.selection(),
-        input: true,
-        aids: ["distance-matrix"],
-        parser: "slycat-csv-parser",
-        success: upload_matrix_success,
-        error: function(){
+      var file = component.browser.selection()[0];
+      var fileObject ={
+       pid: component.project._id(),
+       mid: component.model._id(),
+       file: file,
+       aids: ["distance-matrix"],
+       parser: "slycat-csv-parser",
+       success: function(){
+         upload_matrix_success();
+       },
+       error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.local-browser-continue').toggleClass("disabled", false);
-        },
-      });
+        }
+      };
+      fileUploader.uploadFile(fileObject);
     };
 
     component.connect = function() {
