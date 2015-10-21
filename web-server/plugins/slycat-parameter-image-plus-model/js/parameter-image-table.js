@@ -475,6 +475,7 @@ $.widget("parameter_image.table",
     self.analysis_columns = self.inputs.concat(self.outputs);
     self.indexOfIndex = parameters.indexOfIndex;
     self.hidden_simulations = parameters.hidden_simulations;
+    self.ranked_indices = {};
 
     self.pages = {};
     self.page_size = 50;
@@ -560,21 +561,74 @@ $.widget("parameter_image.table",
         callback([]);
         return;
       }
-
-      var sort = "";
-      if(self.sort_column !== null && self.sort_order !== null)
-        sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-
-      var row_string = "";
-      for(var i = 0; i < rows.length; ++i)
+      // We have no sort column or order, so just returning the same rows as were asked for since they're in the same order
+      if(self.sort_column == null || self.sort_order == null)
       {
-        row_string += rows[i];
-        break
+        callback(rows);
       }
-      for(var i = 1; i < rows.length; ++i)
+      else
       {
-        row_string += ",";
-        row_string += rows[i];
+        if(self.ranked_indices[self.sort_column])
+        {
+          // we have data for this column, so figure out what to return
+          var indices = self.ranked_indices[self.sort_column];
+          // Reverse response indexes for descending sort order
+          if(self.sort_order == 'descending')
+          {
+            var plain_array = [];
+            for(var i=0; i<indices.length; i++)
+            {
+              plain_array.push(indices[i]);
+            }
+            indices = plain_array.reverse();
+          }
+          var response = []; 
+          for(var i=0; i<rows.length; i++)
+          {
+            if(direction == "unsorted")
+            {
+              response.push( indices[ rows[i] ] );
+            }
+            else if(direction == "sorted")
+            {
+              response.push( indices.indexOf(rows[i]) );
+            }
+          }
+          callback(new Int32Array(response));
+        }
+        else
+        {
+          if( self.sort_column == self.metadata["column-count"]-1 )
+          {
+            // we are sorting by the index column, so we can just make the data we need.
+            self.ranked_indices[self.sort_column] = new Int32Array( d3.range(self.metadata["row-count"]) );
+            self.get_indices(direction, rows, callback);
+          }
+          else
+          {
+            // we have no data for this column, so go retrieve it and call this function again.
+            var request = new XMLHttpRequest();
+            request.open("GET", server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (is_little_endian() ? "little" : "big") );
+            request.responseType = "arraybuffer";
+            request.direction = direction;
+            request.rows = rows;
+            request.callback = callback;
+            request.onload = function(e)
+            {
+              var indices = [];
+              var data = new Int32Array(this.response);
+              // Filtering out every other element in the reponse array, because it's full of extraneous 0 (zeros) for some reason.
+              // Need to figure out why, but this is a fix for now.
+              for(var i=0; i<data.length; i=i+2)
+              {
+                indices.push(data[i]);
+              }
+              self.ranked_indices[self.sort_column] = new Int32Array(indices);
+              self.get_indices(this.direction, this.rows, this.callback);
+            }
+            request.send();
+          }
+        }
       }
 
       function is_little_endian()
@@ -583,16 +637,6 @@ $.widget("parameter_image.table",
           this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
         return this.result;
       }
-
-      var request = new XMLHttpRequest();
-      request.open("GET", server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + direction + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
-      request.responseType = "arraybuffer";
-      request.callback = callback;
-      request.onload = function(e)
-      {
-        this.callback(new Int32Array(this.response));
-      }
-      request.send();
     }
 
     self.invalidate = function()
