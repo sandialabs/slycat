@@ -268,21 +268,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.load_table = function() {
       $('.remote-browser-continue-data').toggleClass("disabled", true);
-      client.post_model_files({
-        mid: component.model._id(),
-        sids: [component.remote.sid()],
-        paths: component.browser.selection(),
-        input: true,
-        aids: ["data-table"],
-        parser: component.parser(),
-        success: function(){
-          upload_success();
-        },
-        error: function(){
+      var fileObject ={
+       pid: component.project._id(),
+       sids: [component.remote.sid()],
+       mid: component.model._id(),
+       paths: [component.browser.selection()],
+       aids: ["data-table"],
+       parser: component.parser(),
+       success: function(){
+         upload_success();
+       },
+       error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-          $('.remote-browser-continue').toggleClass("disabled", false);
-        },
-      });
+          $('.local-browser-continue').toggleClass("disabled", false);
+        }
+      };
+      fileUploader.uploadFile(fileObject);
     };
 
     component.load_distance_matrix = function() {
