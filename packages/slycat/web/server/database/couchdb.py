@@ -56,10 +56,10 @@ class Database:
     try:
       document = self[id]
     except couchdb.client.http.ResourceNotFound:
-      slycat.email.send_error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404")
+      slycat.email.send_error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404 couchdb.client.http.ResourceNotFound")
       raise cherrypy.HTTPError(404)
     if document["type"] != type:
-      slycat.email.send_error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404")
+      slycat.email.send_error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404 document type %s is different than input type: %s" % (document["type"], type))
       raise cherrypy.HTTPError(404)
     return document
 
