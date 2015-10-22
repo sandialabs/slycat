@@ -567,9 +567,9 @@ function setup_scatterplot()
       x_label: table_metadata["column-names"][x_index],
       y_label: table_metadata["column-names"][y_index],
       v_label: table_metadata["column-names"][v_index],
-      x: x,
-      y: y,
-      v: v,
+      x: table_metadata["column-types"][x_index]=="string" ? x[0] : x,
+      y: table_metadata["column-types"][y_index]=="string" ? y[0] : y,
+      v: table_metadata["column-types"][v_index]=="string" ? v[0] : v,
       x_string: table_metadata["column-types"][x_index]=="string",
       y_string: table_metadata["column-types"][y_index]=="string",
       v_string: table_metadata["column-types"][v_index]=="string",
@@ -972,7 +972,11 @@ function update_widgets_after_color_variable_change()
 {
   update_current_colorscale();
   $("#table").table("option", "colorscale", colorscale);
-  $("#scatterplot").scatterplot("update_color_scale_and_v", {v : v, v_string : table_metadata["column-types"][v_index]=="string", colorscale : colorscale});
+  $("#scatterplot").scatterplot("update_color_scale_and_v", {
+    v : table_metadata["column-types"][v_index]=="string" ? v[0] : v, 
+    v_string : table_metadata["column-types"][v_index]=="string", 
+    colorscale : colorscale
+  });
   $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
 }
 
@@ -1145,7 +1149,11 @@ function update_scatterplot_x(variable)
     attribute : variable,
     success : function(result)
     {
-      $("#scatterplot").scatterplot("option", {x_string: table_metadata["column-types"][variable]=="string", x: result, x_label:table_metadata["column-names"][variable]});
+      $("#scatterplot").scatterplot("option", {
+        x_string: table_metadata["column-types"][variable]=="string", 
+        x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+        x_label:table_metadata["column-names"][variable]
+      });
     },
     error : artifact_missing
   });
@@ -1161,7 +1169,11 @@ function update_scatterplot_y(variable)
     attribute : variable,
     success : function(result)
     {
-      $("#scatterplot").scatterplot("option", {y_string: table_metadata["column-types"][variable]=="string", y: result, y_label:table_metadata["column-names"][variable]});
+      $("#scatterplot").scatterplot("option", {
+        y_string: table_metadata["column-types"][variable]=="string", 
+        y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+        y_label:table_metadata["column-names"][variable]
+      });
     },
     error : artifact_missing
   });
