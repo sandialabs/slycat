@@ -501,7 +501,7 @@ def get_page_resource(ptype, resource):
       if page_resource == resource:
         return cherrypy.lib.static.serve_file(page_path)
 
-  slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404")
+  slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404 invalid input type: %s" % ptype)
   raise cherrypy.HTTPError("404")
 
 def get_wizard_resource(wtype, resource):
@@ -510,7 +510,7 @@ def get_wizard_resource(wtype, resource):
       if wizard_resource == resource:
         return cherrypy.lib.static.serve_file(wizard_path)
 
-  slycat.email.send_error("slycat.web.server.handlers.py get_wizard_resource", "cherrypy.HTTPError 404")
+  slycat.email.send_error("slycat.web.server.handlers.py get_wizard_resource", "cherrypy.HTTPError 404 invalid input wizard type: %s" % wtype)
   raise cherrypy.HTTPError("404")
 
 @cherrypy.tools.json_in(on = True)
@@ -724,7 +724,7 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
-      slycat.email.send_error("slycat.web.server.engine.py put_model_arrayset_data", "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
+      slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
       raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
 
   # Handle the request.
@@ -766,7 +766,7 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                   start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
                   data_shape.append(stop - start)
                 else:
-                  slycat.email.send_error("slycat.web.server.engine.py put_model_arrayset_data", "Unexpected hyperslice: %s" % hyperslice_dimension)
+                  slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "Unexpected hyperslice: %s" % hyperslice_dimension)
                   raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
 
             # Convert data to an array ...
@@ -778,7 +778,7 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
             elif byteorder == sys.byteorder:
               hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
             else:
-              slycat.email.send_error("slycat.web.server.engine.py put_model_arrayset_data", "Not implemented error.")
+              slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "Not implemented error.")
               raise NotImplementedError()
 
             hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
@@ -814,7 +814,7 @@ def get_project_cache_object(pid, key):
     cherrypy.response.headers["content-type"] = cache_object["_attachments"]["content"]["content_type"]
     return database.get_attachment(cache_object, "content")
 
-  slycat.email.send_error("slycat.web.server.engine.py get_project_cache_object", "cherrypy.HTTPError 404")
+  slycat.email.send_error("slycat.web.server.handlers.py get_project_cache_object", "cherrypy.HTTPError 404 no cache for project %s and key %s" % (pid, key))
   raise cherrypy.HTTPError(404)
 
 def delete_project_cache_object(pid, key):
@@ -828,7 +828,7 @@ def delete_project_cache_object(pid, key):
     cherrypy.response.status = "204 Cache object deleted."
     return
 
-  slycat.email.send_error("slycat.web.server.engine.py delete_project_cache_object", "cherrypy.HTTPError 404")
+  slycat.email.send_error("slycat.web.server.handlers.py delete_project_cache_object", "cherrypy.HTTPError 404")
   raise cherrypy.HTTPError(404)
 
 # def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
@@ -898,28 +898,29 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   try:
     arrays = slycat.hyperchunks.parse(kwargs["arrays"]) if "arrays" in kwargs else None
   except:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
   try:
     statistics = slycat.hyperchunks.parse(kwargs["statistics"]) if "statistics" in kwargs else None
   except:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
   try:
     unique = slycat.hyperchunks.parse(kwargs["unique"]) if "unique" in kwargs else None
   except:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
   results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
@@ -935,12 +936,12 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   try:
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
   except:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
-      slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_data", "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
+      slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
       raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
     accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
   else:
@@ -954,11 +955,11 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_data", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 404")
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_arrayset_data", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   def mask_nans(array):
@@ -987,11 +988,11 @@ def validate_table_rows(rows):
     rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
     return rows
   except:
-    slycat.email.send_error("slycat.web.server.engine.py validate_table_rows", "cherrypy.HTTPError 400 malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
+    slycat.email.send_error("slycat.web.server.handlers.py validate_table_rows", "cherrypy.HTTPError 400 malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
     raise cherrypy.HTTPError("400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
 
   if numpy.any(rows < 0):
-    slycat.email.send_error("slycat.web.server.engine.py validate_table_rows", "cherrypy.HTTPError 400 row values must be non-negative.")
+    slycat.email.send_error("slycat.web.server.handlers.py validate_table_rows", "cherrypy.HTTPError 400 row values must be non-negative.")
     raise cherrypy.HTTPError("400 Row values must be non-negative.")
 
   return rows
@@ -1004,11 +1005,11 @@ def validate_table_columns(columns):
     columns = columns[columns >= 0]
     return columns
   except:
-    slycat.email.send_error("slycat.web.server.engine.py validate_table_columns", "cherrypy.HTTPError 400 malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
+    slycat.email.send_error("slycat.web.server.handlers.py validate_table_columns", "cherrypy.HTTPError 400 malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
     raise cherrypy.HTTPError("400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
 
   if numpy.any(columns < 0):
-    slycat.email.send_error("slycat.web.server.engine.py validate_table_columns", "cherrypy.HTTPError 400 column values must be non-negative.")
+    slycat.email.send_error("slycat.web.server.handlers.py validate_table_columns", "cherrypy.HTTPError 400 column values must be non-negative.")
     raise cherrypy.HTTPError("400 Column values must be non-negative.")
 
   return columns
@@ -1019,25 +1020,25 @@ def validate_table_sort(sort):
       sort = [spec.split(":") for spec in sort.split(",")]
       sort = [(column, order) for column, order in sort]
     except:
-      slycat.email.send_error("slycat.web.server.engine.py validate_table_sort", "cherrypy.HTTPError 400 malformed order argument must be a comma separated collection of column:order tuples.")
+      slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort", "cherrypy.HTTPError 400 malformed order argument must be a comma separated collection of column:order tuples.")
       raise cherrypy.HTTPError("400 Malformed order argument must be a comma separated collection of column:order tuples.")
 
     try:
       sort = [(int(column), order) for column, order in sort]
     except:
-      slycat.email.send_error("slycat.web.server.engine.py validate_table_sort", "cherrypy.HTTPError 400 sort column must be an integer.")
+      slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort", "cherrypy.HTTPError 400 sort column must be an integer.")
       raise cherrypy.HTTPError("400 Sort column must be an integer.")
 
     for column, order in sort:
       if column < 0:
-        slycat.email.send_error("slycat.web.server.engine.py validate_table_sort", "cherrypy.HTTPError 400 sort column must be non-negative.")
+        slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort", "cherrypy.HTTPError 400 sort column must be non-negative.")
         raise cherrypy.HTTPError("400 Sort column must be non-negative.")
       if order not in ["ascending", "descending"]:
-        slycat.email.send_error("slycat.web.server.engine.py validate_table_sort", "cherrypy.HTTPError 400 sort-order must be 'ascending' or 'descending'")
+        slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort", "cherrypy.HTTPError 400 sort-order must be 'ascending' or 'descending'")
         raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
 
     if len(sort) != 1:
-      slycat.email.send_error("slycat.web.server.engine.py validate_table_sort", "cherrypy.HTTPError 400 currently, only one column can be sorted.")
+      slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort", "cherrypy.HTTPError 400 currently, only one column can be sorted.")
       raise cherrypy.HTTPError("400 Currently, only one column can be sorted.")
 
   return sort
@@ -1045,7 +1046,7 @@ def validate_table_sort(sort):
 def validate_table_byteorder(byteorder):
   if byteorder is not None:
     if byteorder not in ["little", "big"]:
-      slycat.email.send_error("slycat.web.server.engine.py validate_table_sort", "cherrypy.HTTPError 400 malformed byteorder argument must be 'little' or 'big'.")
+      slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort", "cherrypy.HTTPError 400 malformed byteorder argument must be 'little' or 'big'.")
       raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
     accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
   else:
@@ -1078,7 +1079,7 @@ def get_table_metadata(file, array_index, index):
   array = arrayset[array_index]
 
   if array.ndim != 1:
-    slycat.email.send_error("slycat.web.server.engine.py get_table_metadata", "cherrypy.HTTPError 400 not a table (1D array) artifact.")
+    slycat.email.send_error("slycat.web.server.handlers.py get_table_metadata", "cherrypy.HTTPError 400 not a table (1D array) artifact.")
     raise cherrypy.HTTPError("400 Not a table (1D array) artifact.")
 
   dimensions = array.dimensions
@@ -1112,11 +1113,11 @@ def get_model_table_metadata(mid, aid, array, index = None):
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_metadata", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_metadata", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_metadata", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_metadata", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.hdf5.lock:
@@ -1137,11 +1138,11 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_chunk", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_chunk", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.hdf5.lock:
@@ -1151,12 +1152,12 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
       # Constrain end <= count along both dimensions
       rows = rows[rows < metadata["row-count"]]
       if numpy.any(columns >= metadata["column-count"]):
-        slycat.email.send_error("slycat.web.server.engine.py get_model_table_chunk", "cherrypy.HTTPError 400 column out-of-range.")
+        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "cherrypy.HTTPError 400 column out-of-range.")
         raise cherrypy.HTTPError("400 Column out-of-range.")
       if sort is not None:
         for column, order in sort:
           if column >= metadata["column-count"]:
-            slycat.email.send_error("slycat.web.server.engine.py get_model_table_chunk", "400 sort column out-of-range.")
+            slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "400 sort column out-of-range.")
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
       # Retrieve the data
@@ -1197,11 +1198,11 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_sorted_indices", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.hdf5.lock:
@@ -1213,7 +1214,7 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
       if sort is not None:
         for column, order in sort:
           if column >= metadata["column-count"]:
-            slycat.email.send_error("slycat.web.server.engine.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
+            slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
       # Retrieve the data ...
@@ -1240,11 +1241,11 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_unsorted_indices", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type not in ["hdf5"]:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
   with slycat.web.server.hdf5.lock:
@@ -1256,7 +1257,7 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
       if sort is not None:
         for column, order in sort:
           if column >= metadata["column-count"]:
-            slycat.email.send_error("slycat.web.server.engine.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
+            slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
       # Generate a database query
@@ -1279,11 +1280,11 @@ def get_model_file(mid, aid):
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_file", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_file", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type != "file":
-    slycat.email.send_error("slycat.web.server.engine.py get_model_file", "cherrypy.HTTPError 400 %s is not a file artifact." % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_file", "cherrypy.HTTPError 400 %s is not a file artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not a file artifact." % aid)
   fid = artifact
 
@@ -1300,7 +1301,7 @@ def get_model_parameter(mid, aid):
   try:
     return slycat.web.server.get_model_parameter(database, model, aid)
   except KeyError as e:
-    slycat.email.send_error("slycat.web.server.engine.py get_model_parameter", "cherrypy.HTTPError 404 unknown artifact: %s" % aid)
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_parameter", "cherrypy.HTTPError 404 unknown artifact: %s" % aid)
     raise cherrypy.HTTPError("404 Unknown artifact: %s" % aid)
 
 def get_bookmark(bid):
@@ -1320,7 +1321,7 @@ def get_user(uid):
     uid = cherrypy.request.login
   user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
   if user is None:
-    slycat.email.send_error("slycat.web.server.engine.py get_user", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.handlers.py get_user", "cherrypy.HTTPError 404 user is None for uid: %s" % uid)
     raise cherrypy.HTTPError(404)
   # Add the uid to the record, since the caller may not know it.
   user["uid"] = uid
@@ -1421,10 +1422,10 @@ def get_remote_image(sid, path, **kwargs):
 @cherrypy.tools.json_out(on = True)
 def post_remote_videos(sid):
   if "content-type" not in cherrypy.request.json:
-    slycat.email.send_error("slycat.web.server.engine.py post_remote_videos", "cherrypy.HTTPError 400 missing content-type.")
+    slycat.email.send_error("slycat.web.server.handlers.py post_remote_videos", "cherrypy.HTTPError 400 missing content-type.")
     raise cherrypy.HTTPError("400 Missing content-type.")
   if "images" not in cherrypy.request.json:
-    slycat.email.send_error("slycat.web.server.engine.py post_remote_videos", "cherrypy.HTTPError 400 missing images.")
+    slycat.email.send_error("slycat.web.server.handlers.py post_remote_videos", "cherrypy.HTTPError 400 missing images.")
     raise cherrypy.HTTPError("400 Missing images.")
 
   with slycat.web.server.remote.get_session(sid) as session:
@@ -1493,6 +1494,8 @@ def get_global_resource(resource):
     return content
   if resource in slycat.web.server.resource.manager.files:
     return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
+
+  slycat.email.send_error("slycat.web.server.handlers.py get_global_resource", "cherrypy.HTTPError 404 invalid resource: %s" % resource)
   raise cherrypy.HTTPError(404)
 get_global_resource._lock = threading.Lock()
 get_global_resource._ready = False

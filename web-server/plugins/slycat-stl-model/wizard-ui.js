@@ -1,4 +1,4 @@
-define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 'knockout-mapping'], function(server_root, client, dialog, ko, mapping) {
+define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 'knockout-mapping', 'slycat_file_uploader_factory'], function(server_root, client, dialog, ko, mapping, fileUploader) {
   function constructor(params) {
     var component = {};
     component.tab = ko.observable(0);

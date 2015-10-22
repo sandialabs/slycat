@@ -241,11 +241,11 @@ def get_session(uid):
       if client != session.client:
         cherrypy.log.error("Client %s attempted to access upload session from %s" % (client, session.client))
         del session_cache[uid]
-        slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404")
+        slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404 client %s attempted to access upload session from %s" % (client, session.client))
         raise cherrypy.HTTPError("404")
 
     if uid not in session_cache:
-      slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404")
+      slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404 uid is not in session_cache")
       raise cherrypy.HTTPError("404")
 
     session = session_cache[uid]

@@ -312,7 +312,7 @@ def put_model_file(database, model, aid, value, content_type, input=False):
 def get_model_file(database, model, aid):
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
-    slycat.email.send_error("slycat.web.server.__init__.py get_model_file", "cherrypy.HTTPError 404")
+    slycat.email.send_error("slycat.web.server.__init__.py get_model_file", "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
     raise cherrypy.HTTPError(404)
   artifact_type = model["artifact-types"][aid]
   if artifact_type != "file":
