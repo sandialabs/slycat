@@ -46,7 +46,8 @@ def register_slycat_plugin(context):
     authorization = cherrypy.request.headers.get("authorization")
     if authorization is None:
       cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
-      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authentication required.")
+      # Not sure if email should be sent for this error: it is generated everytime a new user hit the homepage...
+      # slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authentication required.")
       raise cherrypy.HTTPError(401, "Authentication required.")
 
     # Parse the client's authentication response.
