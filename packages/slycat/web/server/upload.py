@@ -179,7 +179,8 @@ class Session(object):
 
   def close(self):
     if self._parsing_thread is not None and self._parsing_thread.is_alive():
-      slycat.email.send_error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
+      # Commenting out the error email since it seems like a frequent one as well...
+      # slycat.email.send_error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
       raise cherrypy.HTTPError("409 Parsing in progress.")
 
     storage = path(self._uid)
