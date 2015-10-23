@@ -361,8 +361,23 @@ def put_model_parameter(database, model, aid, value, input=False):
     model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
   database.save(model)
 
-
 def create_session(hostname, username, password):
+  """Create a cached remote session for the given host.
+
+  Parameters
+  ----------
+  hostname : string
+    Name of the remote host to connect via SSH.
+  username : string
+    Username for SSH authentication.
+  password : string
+    Password for SSH authentication
+
+  Returns
+  -------
+  sid : string
+    A unique session identifier.
+  """
   return slycat.web.server.remote.create_session(hostname, username, password, None)
 
 def checkjob(sid, jid):
