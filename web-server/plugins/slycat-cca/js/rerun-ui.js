@@ -32,11 +32,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           attributes.push({
             name: name, 
             type: type, 
-            constant: constant, 
-            //input: type != "string" && !constant, 
-            input: false, 
-            output: false,
-            Classification: type != "string" && !constant ? 'Input' : 'Neither',
+            constant: constant,
+            Classification: 'Neither',
             hidden: type == "string",
             selected: false,
             lastSelected: false
@@ -51,7 +48,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           success: function(value)
           {
             for(var i = 0; i != value.length; ++i)
-              component.attributes()[value[i]].input(true);
+            {
+              component.attributes()[value[i]].Classification('Input');
+            }
           }
         });
 
@@ -62,53 +61,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           success: function(value)
           {
             for(var i = 0; i != value.length; ++i)
-              component.attributes()[value[i]].output(true);
+            {
+              component.attributes()[value[i]].Classification('Output');
+            }
           }
         });
       }
     });
-
-    // client.get_model_table_metadata(
-    // {
-    //   mid: component.original._id(),
-    //   aid: "data-table",
-    //   success: function(metadata)
-    //   {
-    //     var attributes = [];
-    //     for(var i = 0; i != metadata["column-names"].length; ++i)
-    //     {
-    //       attributes.push({
-    //         name: metadata["column-names"][i], 
-    //         type: metadata["column-types"][i], 
-    //         input: false, 
-    //         output: false
-    //       });
-    //     }
-    //     mapping.fromJS(attributes, component.attributes);
-
-    //     client.get_model_parameter(
-    //     {
-    //       mid: component.original._id(),
-    //       aid: "input-columns",
-    //       success: function(value)
-    //       {
-    //         for(var i = 0; i != value.length; ++i)
-    //           component.attributes()[value[i]].input(true);
-    //       }
-    //     });
-
-    //     client.get_model_parameter(
-    //     {
-    //       mid: component.original._id(),
-    //       aid: "output-columns",
-    //       success: function(value)
-    //       {
-    //         for(var i = 0; i != value.length; ++i)
-    //           component.attributes()[value[i]].output(true);
-    //       }
-    //     });
-    //   }
-    // });
 
     client.get_model_parameter(
     {
@@ -119,18 +78,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         component.scale_inputs(value);
       }
     });
-
-    component.set_input = function(attribute)
-    {
-      attribute.output(false);
-      return true;
-    }
-
-    component.set_output = function(attribute)
-    {
-      attribute.input(false);
-      return true;
-    }
 
     component.cancel = function()
     {
@@ -163,7 +110,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       });
     }
 
-
     component.go_to_model = function() {
       location = server_root + 'models/' + component.model._id();
     }
@@ -174,9 +120,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var output_columns = [];
       for(var i = 0; i != component.attributes().length; ++i)
       {
-        if(component.attributes()[i].input())
+        if(component.attributes()[i].Classification() == 'Input')
           input_columns.push(i);
-        if(component.attributes()[i].output())
+        if(component.attributes()[i].Classification() == 'Output')
           output_columns.push(i);
       }
 
