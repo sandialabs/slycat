@@ -316,10 +316,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
     $("#color-switcher").colorswitcher({colormap:colormap});
-    $("#color-switcher").bind("colormap-changed", function(event, colormap)
-    {
-      selected_colormap_changed(colormap);
-    });
   }
 
   function setup_widgets()
@@ -347,34 +343,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         min: table_metadata["column-min"][v_index],
         max: table_metadata["column-max"][v_index],
       });
-
-      // Changing the color map updates the legend ...
-      $("#color-switcher").bind("colormap-changed", function(event, colormap)
-      {
-        $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-        $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
-      });
-
-      // Changing the table variable selection updates the legend ...
-      $("#table").bind("variable-selection-changed", function(event, selection)
-      {
-        $("#legend").legend("option", {
-          min: table_metadata["column-min"][selection[0]],
-          max: table_metadata["column-max"][selection[0]],
-          label: table_metadata["column-names"][selection[0]],
-        });
-      });
-
-      // Changing the barplot variable updates the legend ...
-      $("#barplot-table").bind("variable-changed", function(event, v_index)
-      {
-        $("#legend").legend("option", {
-          min: table_metadata["column-min"][v_index],
-          max: table_metadata["column-max"][v_index],
-          label: table_metadata["column-names"][v_index],
-        });
-      });
-
     }
 
     // Setup the barplot ...
@@ -410,11 +378,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       $("#barplot-table").bind("component-sort-changed", function(event, component, order)
       {
         component_sort_changed(component, order);
-      });
-
-      $("#barplot-table").bind("variable-changed", function(event, variable)
-      {
-        selected_variable_changed(variable);
       });
 
       if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
@@ -459,23 +422,10 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         selected_simulations_changed(selected_simulations);
       });
 
-      // Changing the color map updates the scatterplot ...
-      $("#color-switcher").bind("colormap-changed", function(event, colormap)
-      {
-        $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-        $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_scale", colormap)});
-      });
-
       // Changing the barplot component updates the scatterplot ...
       $("#barplot-table").bind("component-changed", function(event, component)
       {
         $("#scatterplot").scatterplot("option", {x : x[component], y : y[component]});
-      });
-
-      // Changing the barplot variable updates the scatterplot ...
-      $("#barplot-table").bind("variable-changed", function(event, variable)
-      {
-        update_scatterplot_value(variable);
       });
     }
 
@@ -531,12 +481,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
         variable_sort_changed(variable, order);
       });
 
-      // Log changes to the table variable selection ...
-      $("#table").bind("variable-selection-changed", function(event, selection)
-      {
-        selected_variable_changed(selection[0]);
-      });
-
       // Log changes to the table row selection ...
       $("#table").bind("row-selection-changed", function(event, selection)
       {
@@ -552,31 +496,6 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
 
         selected_simulations_changed(selected_simulations);
       });
-
-      // Changing the colormap updates the table ...
-      $("#color-switcher").bind("colormap-changed", function(event, colormap)
-      {
-        $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
-      });
-
-      // Changing the barplot variable updates the table ...
-      $("#barplot-table").bind("variable-changed", function(event, variable)
-      {
-        $("#table").table("option", "variable-selection", [variable]);
-      });
-
-      // Changing the table variable updates the barplot ...
-      $("#table").bind("variable-selection-changed", function(event, selection)
-      {
-        $("#barplot-table").barplot("option", "variable", selection[0]);
-      });
-
-      // Changing the table variable updates the scatterplot ...
-      $("#table").bind("variable-selection-changed", function(event, selection)
-      {
-        update_scatterplot_value(selection[0]);
-      });
-
     }
 
     // Setup controls ...
@@ -584,14 +503,30 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     {
       controls_ready = true;
 
+      var color_variables = [];
+      for(var i = 0; i < table_metadata["column-types"].length; i++)
+      {
+        if(table_metadata["column-types"][i] != "string")
+        {
+          color_variables.push(i);
+        }
+      }
+
+      var color_variable = table_metadata["column-count"] - 1;
+      if("variable-selection" in bookmark)
+      {
+        color_variable = [bookmark["variable-selection"]];
+      }
+
       $("#controls-pane #controls").controls({
         mid : model._id,
         model_name: model_name,
         aid : "data-table",
         metadata: table_metadata,
+        color_variables: color_variables,
+        "color-variable" : color_variable,
         selection : selected_simulations,
       });
-
     }
 
   }
@@ -599,6 +534,78 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
   //////////////////////////////////////////////////////////////////////////////////////////
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
+
+  // Changes to the barplot variable ...
+  $("#barplot-table").bind("variable-changed", function(event, variable)
+  {
+    // Log changes to the barplot variable selection ...
+    selected_variable_changed(variable);
+    // Changing the barplot variable updates the legend ...
+    $("#legend").legend("option", {
+      min: table_metadata["column-min"][variable],
+      max: table_metadata["column-max"][variable],
+      label: table_metadata["column-names"][variable],
+    });
+    // Changing the barplot variable updates the scatterplot ...
+    update_scatterplot_value(variable);
+    // Changing the barplot variable updates the table ...
+    $("#table").table("option", "variable-selection", [variable]);
+    // Changing the barplot variable updates the controls ...
+    $("#controls").controls("option", "color-variable", variable);
+  });
+
+  // Changes to the color map ...
+  $("#color-switcher").bind("colormap-changed", function(event, colormap)
+  {
+    // Log changes to the selected color map ...
+    selected_colormap_changed(colormap);
+    // Changing the color map updates the legend ...
+    $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
+    // Changing the color map updates the scatterplot ...
+    $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_scale", colormap)});
+    // Changing the colormap updates the table ...
+    $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
+  });
+
+  // Changes to the table variable selection ...
+  $("#table").bind("variable-selection-changed", function(event, selection)
+  {
+    // Log changes to the table variable selection ...
+    selected_variable_changed(selection[0]);
+    // Changing the table variable updates the barplot ...
+    $("#barplot-table").barplot("option", "variable", selection[0]);
+    // Changing the table variable updates the scatterplot ...
+    update_scatterplot_value(selection[0]);
+    // Changing the table variable updates the controls ...
+    $("#controls").controls("option", "color-variable", selection[0]);
+    // Changing the table variable selection updates the legend ...
+    $("#legend").legend("option", {
+      min: table_metadata["column-min"][selection[0]],
+      max: table_metadata["column-max"][selection[0]],
+      label: table_metadata["column-names"][selection[0]],
+    });
+  });
+
+  // Handle color variable selection ...
+  $("#controls").bind("color-selection-changed", function(event, variable)
+  {
+    // Log changes to the color variable ...
+    selected_variable_changed(variable);
+    // Changing the color variable updates the barplot ...
+    $("#barplot-table").barplot("option", "variable", variable);
+    // Changing the color variable updates the legend ...
+    $("#legend").legend("option", {
+      min: table_metadata["column-min"][variable],
+      max: table_metadata["column-max"][variable],
+      label: table_metadata["column-names"][variable],
+    });
+    // Changing the barplot variable updates the scatterplot ...
+    update_scatterplot_value(variable);
+    // Changing the color variable updates the table ...
+    $("#table").table("option", "variable-selection", [Number(variable)]);
+  });
 
   function selected_colormap_changed(colormap)
   {
