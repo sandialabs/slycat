@@ -67,7 +67,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         arrays: "0",
         statistics: "0/...",
         success: function(metadata) {
-          console.log(metadata);
           var attributes = [];
           for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
           {
@@ -75,11 +74,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             var type = metadata.arrays[0].attributes[i].type;
             var constant = metadata.statistics[i].unique == 1;
             attributes.push({
-              name:name, 
-              type:type, 
-              constant:constant, 
-              input:type != "string" && !constant, 
-              output:false,
+              name: name, 
+              type: type, 
+              constant: constant, 
+              input: type != "string" && !constant, 
+              output: false,
               Classification: type != "string" && !constant ? 'Input' : 'Neither',
               hidden: type == "string",
               selected: false,

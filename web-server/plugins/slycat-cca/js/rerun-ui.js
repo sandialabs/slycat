@@ -16,17 +16,34 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(false);
 
-    client.get_model_table_metadata(
-    {
+    client.get_model_arrayset_metadata({
       mid: component.original._id(),
       aid: "data-table",
-      success: function(metadata)
-      {
+      arrays: "0",
+      statistics: "0/...",
+      success: function(metadata) {
+        console.log(metadata);
         var attributes = [];
-        for(var i = 0; i != metadata["column-names"].length; ++i)
-          attributes.push({name:metadata["column-names"][i], type:metadata["column-types"][i], input:false, output:false})
+        for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
+        {
+          var name = metadata.arrays[0].attributes[i].name;
+          var type = metadata.arrays[0].attributes[i].type;
+          var constant = metadata.statistics[i].unique == 1;
+          attributes.push({
+            name: name, 
+            type: type, 
+            constant: constant, 
+            //input: type != "string" && !constant, 
+            input: false, 
+            output: false,
+            Classification: type != "string" && !constant ? 'Input' : 'Neither',
+            hidden: type == "string",
+            selected: false,
+            lastSelected: false
+          });
+        }
         mapping.fromJS(attributes, component.attributes);
-
+        
         client.get_model_parameter(
         {
           mid: component.original._id(),
@@ -50,6 +67,48 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         });
       }
     });
+
+    // client.get_model_table_metadata(
+    // {
+    //   mid: component.original._id(),
+    //   aid: "data-table",
+    //   success: function(metadata)
+    //   {
+    //     var attributes = [];
+    //     for(var i = 0; i != metadata["column-names"].length; ++i)
+    //     {
+    //       attributes.push({
+    //         name: metadata["column-names"][i], 
+    //         type: metadata["column-types"][i], 
+    //         input: false, 
+    //         output: false
+    //       });
+    //     }
+    //     mapping.fromJS(attributes, component.attributes);
+
+    //     client.get_model_parameter(
+    //     {
+    //       mid: component.original._id(),
+    //       aid: "input-columns",
+    //       success: function(value)
+    //       {
+    //         for(var i = 0; i != value.length; ++i)
+    //           component.attributes()[value[i]].input(true);
+    //       }
+    //     });
+
+    //     client.get_model_parameter(
+    //     {
+    //       mid: component.original._id(),
+    //       aid: "output-columns",
+    //       success: function(value)
+    //       {
+    //         for(var i = 0; i != value.length; ++i)
+    //           component.attributes()[value[i]].output(true);
+    //       }
+    //     });
+    //   }
+    // });
 
     client.get_model_parameter(
     {

@@ -15,6 +15,10 @@
       </form>
     </div>
     <div data-bind="visible:tab() == 1">
+      <slycat-table-ingestion params="
+        variables: attributes,
+        properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
+      "></slycat-table-ingestion>
       <table style="width:100%">
         <thead>
           <tr>
