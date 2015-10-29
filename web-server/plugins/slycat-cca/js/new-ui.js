@@ -161,8 +161,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       if( input_columns.length > component.row_count() || output_columns.length > component.row_count() )
       {
         dialog.dialog({
-          message:"The number of outputs and inputs must be less than or equal to " + component.row_count() + ", because that is the number of rows in the data."
-        })();
+          message:"The number of outputs and inputs must be less than or equal to " + component.row_count() + 
+                  ", because that is the number of rows in the data. You have selected " + input_columns.length +
+                  " inputs and " + output_columns.length + " outputs."
+
+        });
       }
       else
       {
